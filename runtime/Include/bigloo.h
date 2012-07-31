@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Jul 29 20:27:28 2012 (serrano)                */
+/*    Last change :  Tue Jul 31 05:48:33 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -334,7 +334,6 @@ typedef union scmobj {
       void *timeout;             /*    - a timeout structure           */
       void *userdata;            /*    - a user data (see SSL sockets) */
       int (*sysclose)();         /*    - the system close              */
-      long (*sysseek)();         /*    - the system seek               */
    } port_t;
       
    struct output_port {          /*  output_port:                      */
@@ -345,6 +344,7 @@ typedef union scmobj {
       int bufmode;               /*    - the buffering mode            */
       size_t (*syswrite)();      /*    - the system write              */
       union scmobj *(*sysflush)();/*   - the system flush              */
+      long (*sysseek)();         /*    - the system seek               */
       union scmobj *fhook;       /*    - the flush hook                */
       union scmobj *flushbuf;    /*    - the flush buffer              */
    } output_port_t;
@@ -354,7 +354,7 @@ typedef union scmobj {
       long filepos;              /*    - the position in the file      */
       long fillbarrier;          /*    - the fill barrier position     */
       long (*sysread)();         /*    - the system reader             */
-      int (*sysseek)();          /*    - the system seek               */
+      void (*seek)();            /*    - the seek function             */
       bool_t eof;                /*    - have we seen an end-of-file   */
       long matchstart;           /*    - the start of a match position */
       long matchstop;            /*    - the end of the match          */

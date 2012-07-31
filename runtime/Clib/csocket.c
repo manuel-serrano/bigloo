@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Jul 21 20:16:28 2012 (serrano)                */
+/*    Last change :  Tue Jul 31 06:20:35 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -83,8 +83,8 @@ long opensocket;
 /*---------------------------------------------------------------------*/
 /*    Imports ...                                                      */
 /*---------------------------------------------------------------------*/
+extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t bgl_close_input_port( obj_t );
-extern obj_t bgl_file_to_buffered_input_port( obj_t, FILE *, obj_t );
 extern long bgl_read( obj_t, char *, long );
 extern obj_t make_vector();
 extern unsigned char get_hash_number( char * );
@@ -990,6 +990,14 @@ bgl_sclose_rd( FILE *stream ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_input_socket_seek ...                                        */
+/*---------------------------------------------------------------------*/
+static void
+bgl_input_socket_seek( obj_t port, long offset ) {
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_socket_flush ...                                             */
 /*---------------------------------------------------------------------*/
@@ -1038,9 +1046,9 @@ set_socket_io_ports( int s, obj_t sock, char *who, obj_t inb, obj_t outb ) {
    host = SOCKET( sock ).hostip;
 
    /* Create input port */
-   SOCKET( sock ).input = bgl_file_to_buffered_input_port( host, fs, inb );
-   SOCKET( sock ).input->port_t.kindof = KINDOF_SOCKET;
+   SOCKET( sock ).input = bgl_make_input_port( host, fs, KINDOF_SOCKET, inb );
    SOCKET( sock ).input->input_port_t.sysread = bgl_read;
+   SOCKET( sock ).input->input_port_t.seek = bgl_input_socket_seek;
    SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
 
    /* Create output port */

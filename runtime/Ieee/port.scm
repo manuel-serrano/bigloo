@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Jul 21 19:35:05 2012 (serrano)                */
+;*    Last change :  Tue Jul 31 05:44:06 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -103,7 +103,7 @@
 	    ($open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring) "bgl_open_output_procedure")
 	    ($close-input-port::obj (::obj) "bgl_close_input_port")
 	    (c-input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
-	    ($set-input-port-position!::obj (::input-port ::long) "bgl_input_port_seek")
+	    ($set-input-port-position!::void (::input-port ::long) "bgl_input_port_seek")
 	    (macro c-input-port-position::long (::input-port)
 		   "INPUT_PORT_FILEPOS")
 	    (macro $input-port-fill-barrier::long (::input-port)
@@ -247,7 +247,7 @@
 		       "bgl_close_input_port")
 	       (method static c-input-port-reopen!::obj (::input-port)
 		       "bgl_input_port_reopen")
-	       (method static $set-input-port-position!::obj (::input-port ::long)
+	       (method static $set-input-port-position!::void (::input-port ::long)
 		       "bgl_input_port_seek")
 	       (method static c-set-output-port-position!::obj (::output-port ::long)
 		       "bgl_output_port_seek")
@@ -1088,11 +1088,8 @@
 ;*    set-input-port-position! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-input-port-position! port::input-port pos::long)
-   (if (not ($set-input-port-position! port pos))
-       (error/errno $errno-io-port-error
-		    'set-input-port-position!
-		    "Cannot seek port"
-		    port)))
+   ($set-input-port-position! port pos)
+   #unspecified)
    
 ;*---------------------------------------------------------------------*/
 ;*    input-port-position ...                                          */

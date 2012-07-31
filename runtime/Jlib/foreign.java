@@ -5127,12 +5127,12 @@ public final class foreign
       return false;
    }
    
-   public static Object bgl_input_port_seek(input_port p, int pos)
+   public static void bgl_input_port_seek(input_port p, int pos)
       {
 	 try {
-	    return p.bgl_input_port_seek(pos);
-	 } catch(Exception e) {
-	    return bigloo.foreign.BFALSE;
+	    p.bgl_input_port_seek(pos);
+	 } catch( Exception e ) {
+	    fail("set-input-port-position!", e.getMessage(), p);
 	 }
       }
 

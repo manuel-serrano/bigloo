@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Feb  1 10:49:35 2012 (serrano)                */
+/*    Last change :  Tue Jul 31 06:18:53 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -630,18 +630,18 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
    return class;
 }
 
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_file_to_input_port ...                                       */
-/*---------------------------------------------------------------------*/
-obj_t
-bgl_file_to_input_port( FILE *file ) {
-   obj_t buffer = ____make_string_sans_fill( 8192 );
-   
-   return ____bgl_file_to_buffered_input_port( string_to_bstring( "file" ),
-					       file,
-					       buffer );
-}
+/* {*---------------------------------------------------------------------*} */
+/* {*    obj_t                                                            *} */
+/* {*    bgl_file_to_input_port ...                                       *} */
+/* {*---------------------------------------------------------------------*} */
+/* obj_t                                                               */
+/* bgl_file_to_input_port( FILE *file ) {                              */
+/*    obj_t buffer = ____make_string_sans_fill( 8192 );                */
+/*                                                                     */
+/*    return ____bgl_file_to_buffered_input_port( string_to_bstring( "file" ), */
+/* 					       file,                   */
+/* 					       buffer );               */
+/* }                                                                   */
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -776,7 +776,7 @@ WRAPPER2( bgl_output_port_timeout_set, PORT_TIMEOUT_TYPE_NUM, -1, (void *o, long
 /* input port */
 WRAPPER( bgl_make_input_port, INPUT_PORT_TYPE_NUM, (obj_t s, FILE *f, obj_t o, obj_t b), (s, f, o, b) )
 WRAPPER( bgl_open_input_file, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
-WRAPPER( bgl_file_to_buffered_input_port, INPUT_PORT_TYPE_NUM, (obj_t s, FILE *f, obj_t b), (s, f, b) )
+/* WRAPPER( bgl_file_to_buffered_input_port, INPUT_PORT_TYPE_NUM, (obj_t s, FILE *f, obj_t b), (s, f, b) ) */
 WRAPPER( bgl_open_input_pipe, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_resource, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_string, INPUT_PORT_TYPE_NUM, (obj_t o, int i), (o, i) )
