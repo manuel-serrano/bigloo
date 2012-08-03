@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Tue Apr 10 16:28:54 2012 (serrano)                */
+;*    Last change :  Tue Jul 31 06:24:01 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -126,14 +126,14 @@
        (set! out (socket-output socket)))
       ((and (not in) (not out))
        (unless (and host port)
-	  (error 'http "Missing either \"host\" or \"port\" argument" host))
+	  (error "http" "Missing either \"host\" or \"port\" argument" host))
        (set! socket (make-http-socket host port proxy timeout))
        (set! in (socket-input socket))
        (set! out (socket-output socket)))
       ((not in)
-       (error 'http "Missing either \"in\" or \"socket\" argument" in))
+       (error "http" "Missing either \"in\" or \"socket\" argument" in))
       ((not out)
-       (error 'http "Missing \"out\" argument" out)))
+       (error "http" "Missing \"out\" argument" out)))
    ;; header line
    (if (string? proxy)
        (display-proxy-method method host port path http-version out)
@@ -505,7 +505,7 @@
 		 (let ((e (read/rp value-grammar (the-port))))
 		    (cond
 		       ((not (output-port? po))
-			(error 'expect-header
+			(error "expect-header"
 			       "Cannot honnor message because output-port is #f"
 			       po))
 		       ((string=? e "100-continue")

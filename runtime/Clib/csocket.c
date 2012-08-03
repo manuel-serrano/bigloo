@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jul 31 06:20:35 2012 (serrano)                */
+/*    Last change :  Wed Aug  1 21:31:11 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -995,6 +995,40 @@ bgl_sclose_rd( FILE *stream ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_input_socket_seek( obj_t port, long offset ) {
+   long pos = INPUT_PORT_FILEPOS( port );
+
+   if( offset > pos ) {
+      obj_t buf = INPUT_PORT( port ).buf;
+      long buflen = STRING_LENGTH( buf );
+      
+      /* ignore the chars upto the desired position */
+      while( offset > 0 ) {
+	 long sz = offset - pos;
+	 long rs = sz > buflen ? buflen : sz;
+	 
+	 bgl_read( port, (char *)&STRING_REF( buf, 0 ), rs );
+	 offset -= rs;
+      }
+	 
+      INPUT_PORT( port ).filepos = pos;
+      INPUT_PORT( port ).eof = 0;
+      INPUT_PORT( port ).matchstart = 0;
+      INPUT_PORT( port ).matchstop = 0;
+      INPUT_PORT( port ).forward = 0;
+      INPUT_PORT( port ).bufpos = 0;
+      INPUT_PORT( port ).lastchar = '\n';
+      RGC_BUFFER_SET( port, 0, '\0' );
+
+      return;
+   }
+
+   if( offset < pos ) {
+      /* cannot seek backward */
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"set-input-port-position!",
+			"cannot rewind socket input port",
+			port );
+   }
 }
 
 /*---------------------------------------------------------------------*/
