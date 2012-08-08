@@ -14,7 +14,7 @@ makedepends=('java-environment' 'emacs' 'zip' 'flac' 'mpg123' 'alsa-lib' 'avahi'
 optdepends=('emacs')
 options=('!makeflags')
 install=bigloo.install
-source=(@REPOSITORY@/${pkgname}${_pkgver}.tar.gz)
+source=(ftp://ftp-sop.inria.fr/indes/fp/Bigloo/${pkgname}${_pkgver}.tar.gz)
 md5sums=('@MD5SUM@')
 
 build() {
