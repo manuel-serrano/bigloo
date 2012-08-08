@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Jul 18 06:39:57 2012 (serrano)                */
+;*    Last change :  Wed Aug  8 06:45:34 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -67,6 +67,7 @@
 	 (flags::symbol read-only (default 'none))
 	 (proc::procedure read-only)
 	 (groups::pair-nil (default '()))
+	 (browsers::pair-nil (default '()))
 	 (version::bstring
 	    read-only
 	    (get (lambda (o::avahi-client)
@@ -408,8 +409,9 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-client-close o::avahi-client)
    ($bgl-avahi-client-close o)
-   (with-access::avahi-client o (groups)
-      (set! groups '()))
+   (with-access::avahi-client o (groups browsers)
+      (set! groups '())
+      (set! browsers '()))
    (avahi-gc-unmark! o))
 
 ;*---------------------------------------------------------------------*/
@@ -590,10 +592,11 @@
 ;*    avahi-init ::avahi-service-browser ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-service-browser)
-   (with-access::avahi-service-browser o (proc)
+   (with-access::avahi-service-browser o (proc client)
       (if (correct-arity? proc 8)
 	  (begin
-	     (avahi-gc-mark! o)
+	     (with-access::avahi-client client (browsers)
+		(set! browsers (cons o browsers)))
 	     ($bgl-avahi-service-browser-new o))
 	  (avahi-error "avahi-service-browser" "Illegal callback" proc
 	     $avahi-err-invalid-object))))

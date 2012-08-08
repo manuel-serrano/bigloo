@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Fri Nov 18 14:01:33 2011 (serrano)                */
+;*    Last change :  Wed Aug  8 08:24:31 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -368,7 +368,7 @@
 	 ((or (not (keyword? (car args)))
 	      (null? (cdr args))
 	      (not (memq (car args) keys)))
-	  args)
+	  (cons (car args) (loop (cdr args))))
 	 (else
 	  (loop (cddr args))))))
    

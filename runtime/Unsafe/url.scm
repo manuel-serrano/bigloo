@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Sat Oct  1 19:56:42 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Tue Aug  7 08:30:56 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
 ;*=====================================================================*/
@@ -84,19 +84,17 @@
        (values "*" #f #f #f (read-line (the-port))))))
 
 ;*---------------------------------------------------------------------*/
-;*    http-uri-grammar ...                                             */
+;*    abspath-grammar ...                                              */
 ;*---------------------------------------------------------------------*/
-(define http-uri-grammar
-   (regular-grammar ((CRLF "\r\n"))
-      ("*"
-       (values "*" #f #f #f "*"))
-      ((: "/" (* (out " \r\n")))
-       (values "*" #f #f #f (the-string)))
-      ((: (out #\/) (* (out #\:)) "://")
-       (read/rp absolute-http-uri-grammar (the-port) (the-substring 0 -3) #f))
+(define abspath-grammar
+   (regular-grammar ()
+      ((: (in "?/") (* (out "\r\n")))
+       (the-string))
       (else
-       (rgc-buffer-unget-char (the-port) (the-byte))
-       (read/rp absolute-http-uri-grammar (the-port) "http" #f))))
+       (let ((c (the-failure)))
+	  (if (eof-object? c)
+	      "/"
+	      (parse-error (the-port) "Illegal character" (the-failure)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    absolute-uri-grammar ...                                         */
@@ -129,17 +127,19 @@
        (parse-error (the-port) "Illegal character" (the-failure)))))
 
 ;*---------------------------------------------------------------------*/
-;*    abspath-grammar ...                                              */
+;*    http-uri-grammar ...                                             */
 ;*---------------------------------------------------------------------*/
-(define abspath-grammar
-   (regular-grammar ()
-      ((: (in "?/") (* (out "\r\n")))
-       (the-string))
+(define http-uri-grammar
+   (regular-grammar ((CRLF "\r\n"))
+      ("*"
+       (values "*" #f #f #f "*"))
+      ((: "/" (* (out " \r\n")))
+       (values "*" #f #f #f (the-string)))
+      ((: (out #\/) (* (out #\:)) "://")
+       (read/rp absolute-http-uri-grammar (the-port) (the-substring 0 -3) #f))
       (else
-       (let ((c (the-failure)))
-	  (if (eof-object? c)
-	      "/"
-	      (parse-error (the-port) "Illegal character" (the-failure)))))))
+       (rgc-buffer-unget-char (the-port) (the-byte))
+       (read/rp absolute-http-uri-grammar (the-port) "http" #f))))
       
 ;*---------------------------------------------------------------------*/
 ;*    absolute-http-uri-grammar ...                                    */
@@ -179,7 +179,10 @@
       ((: "/" (* (out " \r\n")))
        (the-string))
       (else
-       (parse-error (the-port) "Illegal character" (the-failure)))))
+       (let ((c (the-failure)))
+	  (if (or (eof-object? c) (memq c '(#\space #\tab #\return)))
+	      "/"
+	      (parse-error (the-port) "Illegal character" (the-failure)))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    http-port-grammar ...                                            */
@@ -204,7 +207,7 @@
 	     (read/rp uri-grammar p)
 	     (close-input-port p))))
       (else
-       (bigloo-type-error 'url-parse "input-port or string" url))))
+       (bigloo-type-error "url-parse" "input-port or string" url))))
 
 ;*---------------------------------------------------------------------*/
 ;*    url-sans-protocol-parse ...                                      */
@@ -219,7 +222,7 @@
 	     (read/rp absolute-uri-grammar p protocol #f)
 	     (close-input-port p))))
       (else
-       (bigloo-type-error 'url-sans-protocol-parse "input-port or string" url))))
+       (bigloo-type-error "url-sans-protocol-parse" "input-port or string" url))))
 
 ;*---------------------------------------------------------------------*/
 ;*    http-url-parse ...                                               */
@@ -234,7 +237,7 @@
 	     (read/rp http-uri-grammar p)
 	     (close-input-port p))))
       (else
-       (bigloo-type-error 'url-parse "input-port or string" url))))
+       (bigloo-type-error "url-parse" "input-port or string" url))))
 
 ;*---------------------------------------------------------------------*/
 ;*    encode-char ...                                                  */
