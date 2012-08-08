@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Aug  8 10:07:32 2012 (serrano)                */
+/*    Last change :  Wed Aug  8 15:09:15 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -179,10 +179,10 @@ typedef struct callback {
 /*---------------------------------------------------------------------*/
 /*    CHECK_PROCEDURE                                                  */
 /*---------------------------------------------------------------------*/
-#define CHECK_PROCEDURE( proc, arity ) \
+#define CHECK_PROCEDURE( proc, arity, name ) \
    if( !PROCEDURE_CORRECT_ARITYP( proc, arity ) ) { \
       char buf[ 80 ]; \
-      sprintf( buf, "Wrong number of arguments for callback (%d expected)", arity ); \
+      sprintf( buf, "Wrong number of arguments for %s callback (%d expected)", name, arity ); \
       C_SYSTEM_FAILURE( BGL_ERROR, "avahi", buf, proc ); \
    }
 
@@ -259,8 +259,6 @@ void
 bgl_avahi_apply_callback( callback_t cb ) {
    obj_t proc = cb->proc;
 	 
-   CHECK_PROCEDURE( proc, cb->arity );
-
    switch( cb->arity ) {
       case 0:
 	 PROCEDURE_ENTRY( proc )
@@ -436,10 +434,12 @@ bgl_avahi_call_or_register_callback( bgl_avahi_client_t o, callback_t cb ) {
 /*    make_callback ...                                                */
 /*---------------------------------------------------------------------*/
 static callback_t
-make_callback( obj_t proc, int arity ) {
+make_callback( obj_t proc, int arity, char *name ) {
    callback_t cb =
       malloc( sizeof( struct callback ) +
 	      ((arity - 1) * sizeof( struct callback_conv )) );
+
+   CHECK_PROCEDURE( proc, cb->arity, name );
 
    cb->proc = proc;
    cb->arity = arity;
@@ -508,7 +508,7 @@ bgl_avahi_simple_poll_new( bgl_avahi_simple_poll_t o ) {
 /*---------------------------------------------------------------------*/
 static void
 simple_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
-   callback_t cb = make_callback( (obj_t)udata, 0 );
+   callback_t cb = make_callback( (obj_t)udata, 0, "timeout" );
    bgl_avahi_apply_callback( cb );
    free( cb );
 }
@@ -564,7 +564,7 @@ bgl_avahi_threaded_poll_new( bgl_avahi_threaded_poll_t o ) {
 /*---------------------------------------------------------------------*/
 static void
 threaded_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
-   callback_t cb = make_callback( (obj_t)udata, 0 );
+   callback_t cb = make_callback( (obj_t)udata, 0, "timeout" );
    fprintf( stderr, "threaded_poll_timeout(%s:%d) e=%p udata=%p cb=%p\n",
 	    __FILE__, __LINE__, e, udata, cb );
    bgl_avahi_register_async_callback( cb );
@@ -608,7 +608,7 @@ bgl_avahi_client_callback( AvahiClient *client,
 			   AvahiClientState state,
 			   void *udata ) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_CLIENT_PROC( o ), 2 );
+   callback_t cb = make_callback( BGL_AVAHI_CLIENT_PROC( o ), 2, "client" );
 
    if( !BGL_AVAHI_CLIENT_BUILTIN( o ) )
       BGL_AVAHI_CLIENT_BUILTIN( o ) = client;
@@ -671,7 +671,7 @@ bgl_avahi_entry_group_callback( AvahiEntryGroup *group,
 				AvahiEntryGroupState state,
 				void *udata ) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_ENTRY_GROUP_PROC( o ), 2 );
+   callback_t cb = make_callback( BGL_AVAHI_ENTRY_GROUP_PROC( o ), 2, "group" );
 
    cb->args[ 0 ].convert = &bgl_avahi_identity;
    cb->args[ 0 ].value = o;
@@ -735,7 +735,7 @@ bgl_avahi_service_browser_callback( AvahiServiceBrowser *browser,
 				    AvahiLookupResultFlags flags,
 				    void *udata ) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_SERVICE_BROWSER_PROC( o ), 8 );
+   callback_t cb = make_callback( BGL_AVAHI_SERVICE_BROWSER_PROC( o ), 8, "service-browser" );
 
    if( !BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) )
       BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) = browser;
@@ -824,7 +824,7 @@ bgl_avahi_service_type_browser_callback( AvahiServiceTypeBrowser *browser,
 					 AvahiLookupResultFlags flags,
 					 void *udata ) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o ), 7 );
+   callback_t cb = make_callback( BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o ), 7, "type-browser" );
 
    if( !BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) )
       BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) = browser;
@@ -908,7 +908,7 @@ bgl_avahi_domain_browser_callback( AvahiDomainBrowser *browser,
 				   AvahiLookupResultFlags flags,
 				   void *udata ) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_DOMAIN_BROWSER_PROC( o ), 5 );
+   callback_t cb = make_callback( BGL_AVAHI_DOMAIN_BROWSER_PROC( o ), 5, "domain-browser" );
 
    if( !BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) )
       BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) = browser;
@@ -994,7 +994,7 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
 				     AvahiLookupResultFlags flags,
 				     void *udata ) {
    obj_t o = (obj_t)udata;
-   callback_t cb = make_callback( BGL_AVAHI_SERVICE_RESOLVER_PROC( o ), 12 );
+   callback_t cb = make_callback( BGL_AVAHI_SERVICE_RESOLVER_PROC( o ), 12, "service-resolver" );
    char a[ AVAHI_ADDRESS_STR_MAX ];
 
    if( address ) {

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Tue Dec 13 14:36:30 2011 (serrano)                */
-;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug  8 16:24:40 2012 (serrano)                */
+;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
 ;*=====================================================================*/
@@ -535,25 +535,25 @@
 	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
 	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
-			 (if *unsafe-type*
-			     `(let ,lname ((,l ,list))
-				   (cond
-				      (((@ null? __r4_pairs_and_lists_6_3) ,l)
-				       #t)
-				      ((,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
-				       (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))
-				      (else
-				       #f)))
-			     `(let ,lname ((,l ,list))
-				   (cond
-				      (((@ null? __r4_pairs_and_lists_6_3) ,l)
-				       #t)
-				      (((@ pair? __r4_pairs_and_lists_6_3) ,l)
-				       (if (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
-					   (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
-					   #f))
-				      (else
-				       ,(list-expected "every?" l loc))))))))
+			 ,(if *unsafe-type*
+			      `(let ,lname ((,l ,list))
+				    (cond
+				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
+					#t)
+				       ((,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
+					(,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))
+				       (else
+					#f)))
+			      `(let ,lname ((,l ,list))
+				    (cond
+				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
+					#t)
+				       (((@ pair? __r4_pairs_and_lists_6_3) ,l)
+					(if (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
+					    (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
+					    #f))
+				       (else
+					,(list-expected "every?" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)
