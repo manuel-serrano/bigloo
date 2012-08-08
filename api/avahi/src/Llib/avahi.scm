@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Aug  8 06:45:34 2012 (serrano)                */
+;*    Last change :  Wed Aug  8 09:23:56 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -66,8 +66,9 @@
 	 (poll::avahi-poll read-only)
 	 (flags::symbol read-only (default 'none))
 	 (proc::procedure read-only)
-	 (groups::pair-nil (default '()))
-	 (browsers::pair-nil (default '()))
+	 (%groups::pair-nil (default '()))
+	 (%browsers::pair-nil (default '()))
+	 (%resolvers::pair-nil (default '()))
 	 (version::bstring
 	    read-only
 	    (get (lambda (o::avahi-client)
@@ -409,9 +410,10 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-client-close o::avahi-client)
    ($bgl-avahi-client-close o)
-   (with-access::avahi-client o (groups browsers)
-      (set! groups '())
-      (set! browsers '()))
+   (with-access::avahi-client o (%groups %browsers %resolvers)
+      (set! %groups '())
+      (set! %browsers '())
+      (set! %resolvers '()))
    (avahi-gc-unmark! o))
 
 ;*---------------------------------------------------------------------*/
@@ -447,8 +449,8 @@
    (with-access::avahi-entry-group o (proc client)
       (if (correct-arity? proc 2)
 	  (begin
-	     (with-access::avahi-client client (groups)
-		(set! groups (cons o groups)))
+	     (with-access::avahi-client client (%groups)
+		(set! %groups (cons o %groups)))
 	     ($bgl-avahi-entry-group-new o))
 	  (avahi-error "avahi-entry-group" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -459,8 +461,8 @@
 (define (avahi-entry-group-close o::avahi-entry-group)
    ($bgl-avahi-entry-group-close o)
    (with-access::avahi-entry-group o ($builtin client)
-      (with-access::avahi-client client (groups)
-	 (set! groups (remq! o groups)))))
+      (with-access::avahi-client client (%groups)
+	 (set! %groups (remq! o %groups)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-entry-group-empty? ...                                     */
@@ -483,8 +485,8 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-entry-group-reset! o::avahi-entry-group)
    (with-access::avahi-entry-group o ($builtin client)
-      (with-access::avahi-client client (groups)
-	 (set! groups (remq! o groups)))
+      (with-access::avahi-client client (%groups)
+	 (set! %groups (remq! o %groups)))
       (let ((n ($avahi-entry-group-reset $builtin)))
 	 (unless (>=fx n 0)
 	    (avahi-error "avahi-entry-group" ($avahi-strerror n) o n)))))
@@ -595,8 +597,8 @@
    (with-access::avahi-service-browser o (proc client)
       (if (correct-arity? proc 8)
 	  (begin
-	     (with-access::avahi-client client (browsers)
-		(set! browsers (cons o browsers)))
+	     (with-access::avahi-client client (%browsers)
+		(set! %browsers (cons o %browsers)))
 	     ($bgl-avahi-service-browser-new o))
 	  (avahi-error "avahi-service-browser" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -606,7 +608,9 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-service-browser-close o::avahi-service-browser)
    ($bgl-avahi-service-browser-close o)
-   (avahi-gc-unmark! o)
+   (with-access::avahi-service-browser o (client)
+      (with-access::avahi-client client (%browsers)
+	 (set! %browsers (remq! o %browsers))))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -653,10 +657,11 @@
 ;*    avahi-init ::avahi-service-resolver ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (avahi-init o::avahi-service-resolver)
-   (with-access::avahi-service-resolver o (proc)
+   (with-access::avahi-service-resolver o (proc client)
       (if (correct-arity? proc 12)
 	  (begin
-	     (avahi-gc-mark! o)
+	     (with-access::avahi-client client (%resolvers)
+		(set! %resolvers (cons o %resolvers)))
 	     ($bgl-avahi-service-resolver-new o))
 	  (avahi-error "avahi-service-resolver" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -666,7 +671,9 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-service-resolver-close o::avahi-service-resolver)
    ($bgl-avahi-service-resolver-close o)
-   (avahi-gc-unmark! o)
+   (with-access::avahi-service-resolver o (client)
+      (with-access::avahi-client client (%resolvers)
+	 (set! %resolvers (remq! o %resolvers))))
    #unspecified)
    
 ;*---------------------------------------------------------------------*/

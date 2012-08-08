@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Fri Jul 13 10:18:40 2012 (serrano)                */
+/*    Last change :  Wed Aug  8 10:07:32 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -999,49 +999,51 @@ bgl_avahi_service_resolver_callback( AvahiServiceResolver *resolver,
 
    if( address ) {
       avahi_address_snprint( a, sizeof( a ), address );
-      
-      if( !BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) )
-	 BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
-      
-      cb->args[ 0 ].convert = &bgl_avahi_identity;
-      cb->args[ 0 ].value = o;
-   
-      cb->args[ 1 ].convert = &bgl_avahi_int;
-      cb->args[ 1 ].value = (void *)interface;
-
-      cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
-      cb->args[ 2 ].value = (void *)protocol;
-
-      cb->args[ 3 ].convert = (obj_t (*)(void*))bgl_avahi_resolver_event_to_symbol;
-      cb->args[ 3 ].value = (void *)event;
-
-      cb->args[ 4 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-      cb->args[ 4 ].value = (void *)STRDUP( name );
-
-      cb->args[ 5 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-      cb->args[ 5 ].value = (void *)STRDUP( type );
-
-      cb->args[ 6 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-      cb->args[ 6 ].value = (void *)STRDUP( domain );
-
-      cb->args[ 7 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-      cb->args[ 7 ].value = (void *)STRDUP( hostname );
-
-      cb->args[ 8 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
-      cb->args[ 8 ].value = (void *)STRDUP( a );
-
-      cb->args[ 9 ].convert = &bgl_avahi_int;
-      cb->args[ 9 ].value = (void *)((long)port);
-
-      cb->args[ 10 ].convert = (obj_t (*)(void*))&bgl_avahi_string_list_to_list;
-      cb->args[ 10 ].value = (void *)avahi_string_list_copy( txt );
-
-      cb->args[ 11 ].convert = &bgl_avahi_int;
-      cb->args[ 11 ].value = (void *)flags;
-
-      bgl_avahi_call_or_register_callback(
-	 BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ), cb );
+   } else {
+      a[ 0 ] = 0;
    }
+      
+   if( !BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) )
+      BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) = resolver;
+      
+   cb->args[ 0 ].convert = &bgl_avahi_identity;
+   cb->args[ 0 ].value = o;
+   
+   cb->args[ 1 ].convert = &bgl_avahi_int;
+   cb->args[ 1 ].value = (void *)interface;
+
+   cb->args[ 2 ].convert = (obj_t (*)(void*))&bgl_avahi_protocol_to_symbol;
+   cb->args[ 2 ].value = (void *)protocol;
+
+   cb->args[ 3 ].convert = (obj_t (*)(void*))bgl_avahi_resolver_event_to_symbol;
+   cb->args[ 3 ].value = (void *)event;
+
+   cb->args[ 4 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[ 4 ].value = (void *)STRDUP( name );
+
+   cb->args[ 5 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[ 5 ].value = (void *)STRDUP( type );
+
+   cb->args[ 6 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[ 6 ].value = (void *)STRDUP( domain );
+
+   cb->args[ 7 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[ 7 ].value = (void *)STRDUP( hostname );
+
+   cb->args[ 8 ].convert = (obj_t (*)(void*))&bgl_avahi_string_to_bstring;
+   cb->args[ 8 ].value = (void *)STRDUP( a );
+
+   cb->args[ 9 ].convert = &bgl_avahi_int;
+   cb->args[ 9 ].value = (void *)((long)port);
+
+   cb->args[ 10 ].convert = (obj_t (*)(void*))&bgl_avahi_string_list_to_list;
+   cb->args[ 10 ].value = (void *)avahi_string_list_copy( txt );
+
+   cb->args[ 11 ].convert = &bgl_avahi_int;
+   cb->args[ 11 ].value = (void *)flags;
+
+   bgl_avahi_call_or_register_callback(
+      BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ), cb );
 }
    
 /*---------------------------------------------------------------------*/
