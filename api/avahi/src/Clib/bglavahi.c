@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Aug  8 15:09:15 2012 (serrano)                */
+/*    Last change :  Thu Aug  9 08:13:29 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -439,7 +439,7 @@ make_callback( obj_t proc, int arity, char *name ) {
       malloc( sizeof( struct callback ) +
 	      ((arity - 1) * sizeof( struct callback_conv )) );
 
-   CHECK_PROCEDURE( proc, cb->arity, name );
+   CHECK_PROCEDURE( proc, arity, name );
 
    cb->proc = proc;
    cb->arity = arity;
@@ -565,8 +565,7 @@ bgl_avahi_threaded_poll_new( bgl_avahi_threaded_poll_t o ) {
 static void
 threaded_poll_timeout_callback( AvahiTimeout *e, void *udata ) {
    callback_t cb = make_callback( (obj_t)udata, 0, "timeout" );
-   fprintf( stderr, "threaded_poll_timeout(%s:%d) e=%p udata=%p cb=%p\n",
-	    __FILE__, __LINE__, e, udata, cb );
+   
    bgl_avahi_register_async_callback( cb );
 }
 
@@ -579,8 +578,6 @@ bgl_avahi_threaded_poll_timeout( AvahiThreadedPoll *o, long t, obj_t proc ) {
    struct timeval tv;
    const AvahiPoll *poll = avahi_threaded_poll_get( o );
 
-   fprintf( stderr, "bgl_avahi_threaded_poll_timeout(%s:%d) o=%p proc=%p\n",
-	    __FILE__, __LINE__, o, proc );
    poll->timeout_new( poll,
 		      avahi_elapse_time( &tv, t, 0 ),
 		      threaded_poll_timeout_callback,
