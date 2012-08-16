@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Tue Aug  7 08:30:56 2012 (serrano)                */
+;*    Last change :  Tue Aug 14 15:44:57 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
@@ -130,7 +130,7 @@
 ;*    http-uri-grammar ...                                             */
 ;*---------------------------------------------------------------------*/
 (define http-uri-grammar
-   (regular-grammar ((CRLF "\r\n"))
+   (regular-grammar ()
       ("*"
        (values "*" #f #f #f "*"))
       ((: "/" (* (out " \r\n")))

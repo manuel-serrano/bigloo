@@ -637,15 +637,6 @@ The strings returned by @code{read-line} do not contain the newline delimiters.
 The strings returned by @code{read-line-newline} do contain them.
 @end deffn
 
-@deffn {bigloo procedure} read-line-newline [input-port]
-Reads characters from @var{input-port} until a @code{#\Newline}, 
-a @code{#\Return} or an @code{end of file} condition is encountered. 
-@code{read-line} returns a newly allocated string composed of the characters 
-read.
-
-The returned string does not contain the newline delimiter.
-@end deffn
-
 @deffn {bigloo procedure} read-lines [input-port]
 Accumulates all the line of an @var{input-port} into a list.
 @end deffn
