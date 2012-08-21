@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Fri Mar 16 08:21:11 2012 (serrano)                */
+#*    Last change :  Tue Aug 21 15:13:29 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -29,6 +29,7 @@ POPULATION = Makefile \
   $(POP72ALPHA4) \
   $(POP72ALPHA5) \
   $(POP72ALPHA6) \
+  $(POP72D) \
   $(POP73ALPHA1_20120316) \
   sparc_linux_mach_dep.c \
   gc-7.1.tar.gz \
@@ -94,6 +95,12 @@ POP72ALPHA6 = install-gc-7.2alpha6 \
   configure-gc-7.2alpha6-android \
   gc-7.2alpha6.patch \
   Makefile-gc-7.2alpha6
+
+POP72D = install-gc-7.2d \
+  configure-gc-7.2d \
+  configure-gc-7.2d-android \
+  gc-7.2d.patch \
+  Makefile-gc-7.2d
 
 POP73ALPHA1_20120316 = install-gc-7.3alpha1-20120316 \
   configure-gc-7.3alpha1-20120316 \
