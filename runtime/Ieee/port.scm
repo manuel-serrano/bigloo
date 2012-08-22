@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Jul 31 05:44:06 2012 (serrano)                */
+;*    Last change :  Wed Aug 22 18:21:37 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -102,7 +102,8 @@
 	    ($open-output-string::output-port (::bstring) "bgl_open_output_string")
 	    ($open-output-procedure::obj (::procedure ::procedure ::procedure ::bstring) "bgl_open_output_procedure")
 	    ($close-input-port::obj (::obj) "bgl_close_input_port")
-	    (c-input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
+	    ($input-port-reopen!::obj (::input-port) "bgl_input_port_reopen")
+	    ($input-port-clone!::input-port (::input-port ::input-port) "bgl_input_port_clone")
 	    ($set-input-port-position!::void (::input-port ::long) "bgl_input_port_seek")
 	    (macro c-input-port-position::long (::input-port)
 		   "INPUT_PORT_FILEPOS")
@@ -156,10 +157,15 @@
 	    (macro $output-port-flushbuf-set!::void (::output-port ::obj)
 		   "BGL_OUTPUT_PORT_FLUSHBUF_SET")
 	    
-	    (macro c-input-port-chook::obj (::input-port)
+	    (macro $input-port-chook::obj (::input-port)
 		   "PORT_CHOOK")
-	    (macro c-input-port-chook-set!::void (::input-port ::procedure)
+	    (macro $input-port-chook-set!::void (::input-port ::procedure)
 		   "PORT_CHOOK_SET")
+
+	    (macro $input-port-useek::obj (::input-port)
+		   "BGL_INPUT_PORT_USEEK")
+	    (macro $input-port-useek-set!::void (::input-port ::procedure)
+		   "BGL_INPUT_PORT_USEEK_SET")
 
 	    (macro $input-port-buffer::bstring (::input-port)
 		   "BGL_INPUT_PORT_BUFFER")
@@ -245,8 +251,10 @@
 		       "bgl_open_output_procedure")
 	       (method static $close-input-port::obj (::input-port)
 		       "bgl_close_input_port")
-	       (method static c-input-port-reopen!::obj (::input-port)
+	       (method static $input-port-reopen!::obj (::input-port)
 		       "bgl_input_port_reopen")
+	       (method static $input-port-clone!::input-port (::input-port ::input-port)
+		       "bgl_input_port_clone")
 	       (method static $set-input-port-position!::void (::input-port ::long)
 		       "bgl_input_port_seek")
 	       (method static c-set-output-port-position!::obj (::output-port ::long)
@@ -311,10 +319,14 @@
 		       "OUTPUT_PORT_FLUSHBUF")
 	       (method static $output-port-flushbuf-set!::void (::output-port ::obj)
 		       "OUTPUT_PORT_FLUSHBUF_SET")
-	       (method static c-input-port-chook::obj (::input-port)
+	       (method static $input-port-chook::obj (::input-port)
 		       "INPUT_PORT_CHOOK")
-	       (method static c-input-port-chook-set!::void (::input-port ::procedure)
+	       (method static $input-port-chook-set!::void (::input-port ::procedure)
 		       "INPUT_PORT_CHOOK_SET")
+	       (method static $input-port-useek::obj (::input-port)
+		       "INPUT_PORT_USEEK")
+	       (method static $input-port-useek-set!::void (::input-port ::procedure)
+		       "INPUT_PORT_USEEK_SET")
 	       
 	       (method static $input-port-buffer::bstring (::input-port)
 		       "BGL_INPUT_PORT_BUFFER")
@@ -404,12 +416,13 @@
 	    (inline output-port-name::bstring ::output-port)
 	    (inline output-port-position::long ::output-port)
 	    (inline set-output-port-position! ::output-port ::long)
-	    (inline set-input-port-position! ::input-port ::long)
+	    (set-input-port-position! ::input-port ::long)
 	    (inline input-port-position::long ::input-port)
 	    (inline input-port-fill-barrier ::input-port)
 	    (inline input-port-fill-barrier-set! ::input-port ::long)
 	    (inline input-port-last-token-position::long ::input-port)
 	    (inline input-port-reopen! ::input-port)
+	    (inline input-port-clone! ::input-port ::input-port)
 	    (inline input-port-name::bstring ::input-port)
 	    (inline input-port-length::elong ::input-port)
 	    (inline output-port-close-hook::obj ::output-port)
@@ -420,6 +433,8 @@
 	    (inline output-port-flush-buffer-set! ::output-port ::obj)
 	    (inline input-port-close-hook::obj ::input-port)
 	    (input-port-close-hook-set! ::input-port ::procedure)
+	    (inline input-port-seek::procedure ::input-port)
+	    (input-port-seek-set! ::input-port ::procedure)
 
 	    (inline input-port-buffer::bstring ::input-port)
 	    (inline input-port-buffer-set! ::input-port ::bstring)
@@ -561,9 +576,15 @@
 ;*    @deffn input-port-reopen!@ ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-reopen! port::input-port)
-   (if (not (c-input-port-reopen! port))
-       (error/errno $errno-io-port-error
-		    'input-port-reopen! "Cannot reopen port" port)))
+   (if (not ($input-port-reopen! port))
+       (error/errno
+	  $errno-io-port-error 'input-port-reopen! "Cannot reopen port" port)))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn input-port-clone!! ...                                    */
+;*---------------------------------------------------------------------*/
+(define-inline (input-port-clone! dst::input-port src::input-port)
+   ($input-port-clone! dst src))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-input-from-file@ ...                                 */
@@ -877,25 +898,35 @@
    
    (multiple-value-bind (protocol login host port abspath)
       (url-sans-protocol-parse string "http")
-      (let* ((sock (http :host host
-		      :port port
-		      :login login
-		      :path abspath
-		      :timeout timeout
-		      :header '()))
-	     (ip (socket-input sock))
-	     (op (socket-output sock)))
-	 (when (and (integer? timeout) (> timeout 0))
-	    (input-port-timeout-set! ip timeout)
-	    (output-port-timeout-set! op timeout))
-	 (input-port-close-hook-set! ip (lambda (ip) (socket-close sock)))
-	 (with-handler
-	    (lambda (e)
-	       (socket-close sock)
-	       (when (isa? e &http-redirection)
-		  (with-access::&http-redirection e (url)
-		     (open-input-file url bufinfo))))
-	    (http-parse-response ip op parser)))))
+      (let loop ((ip #f)
+		 (header '((user-agent: "Mozilla/5.0"))))
+	 (let* ((sock (http :host host
+			 :port port
+			 :login login
+			 :path abspath
+			 :timeout timeout
+			 :header header))
+		(op (socket-output sock)))
+	    (if (input-port? ip)
+	       (input-port-clone! ip (socket-input sock))
+	       (set! ip (socket-input sock)))
+	    (when (and (integer? timeout) (> timeout 0))
+	       (input-port-timeout-set! ip timeout)
+	       (output-port-timeout-set! op timeout))
+	    (input-port-close-hook-set! ip
+	       (lambda (ip) (socket-close sock)))
+	    (input-port-seek-set! ip
+	       (lambda (ip offset)
+		  (socket-close sock)
+		  (loop ip `((range: (format "~a-" offset))
+			     (user-agent: "Mozilla/5.0")))))
+	    (with-handler
+	       (lambda (e)
+		  (socket-close sock)
+		  (when (isa? e &http-redirection)
+		     (with-access::&http-redirection e (url)
+			(open-input-file url bufinfo))))
+	       (http-parse-response ip op parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-file ...                                              */
@@ -1087,8 +1118,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    set-input-port-position! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (set-input-port-position! port::input-port pos::long)
-   ($set-input-port-position! port pos)
+(define (set-input-port-position! port::input-port pos::long)
+   (let ((useek ($input-port-useek port)))
+      (if (procedure? useek)
+	  (useek port pos)
+	  ($set-input-port-position! port pos)))
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
@@ -1205,7 +1239,7 @@
 ;*    input-port-close-hook ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-close-hook port)
-   (c-input-port-chook port))
+   ($input-port-chook port))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-close-hook-set! ...                                   */
@@ -1217,7 +1251,26 @@
 		    "Illegal hook"
 		    proc)
        (begin
-	  (c-input-port-chook-set! port proc)
+	  ($input-port-chook-set! port proc)
+	  proc)))
+
+;*---------------------------------------------------------------------*/
+;*    input-port-seek ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (input-port-seek port)
+   ($input-port-useek port))
+
+;*---------------------------------------------------------------------*/
+;*    input-port-seek-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (input-port-seek-set! port proc)
+   (if (not (and (procedure? proc) (correct-arity? proc 2)))
+       (error/errno $errno-io-port-error
+	  'input-port-seek-set!
+	  "Illegal seek procedure"
+	  proc)
+       (begin
+	  ($input-port-useek-set! port proc)
 	  proc)))
 
 ;*---------------------------------------------------------------------*/

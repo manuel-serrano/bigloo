@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Wed Feb 17 15:59:56 2010 (serrano)                */
-/*    Copyright   :  2000-10 Manuel Serrano                            */
+/*    Last change :  Wed Aug 22 16:38:33 2012 (serrano)                */
+/*    Copyright   :  2000-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -17,8 +17,8 @@ import java.net.*;
 /*    INPUT_SOCKET_PORT                                                */
 /*---------------------------------------------------------------------*/
 public class input_socket_port extends input_port {
-   public final InputStream in;
-   private final Socket socket;
+   public InputStream in;
+   private Socket socket;
 
    public input_socket_port( final Socket s, final byte[] buf ) {
       super( "[socket]", buf );
@@ -109,6 +109,15 @@ public class input_socket_port extends input_port {
       return (0 < bufpos);
    }
 
+   public Object bgl_input_port_clone( input_port src )
+      {
+	 super.bgl_input_port_clone( src );
+	 in = ((input_socket_port)src).in;
+	 socket = ((input_socket_port)src).socket;
+
+	 return this;
+      }
+   
    public boolean timeout_set( int to ) {
       try {
 	 socket.setSoTimeout( to );

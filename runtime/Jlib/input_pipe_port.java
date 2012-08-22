@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Dec  9 11:49:41 2000                          */
-/*    Last change :  Wed Feb 17 16:10:33 2010 (serrano)                */
-/*    Copyright   :  2000-10 Manuel Serrano                            */
+/*    Last change :  Wed Aug 22 16:37:45 2012 (serrano)                */
+/*    Copyright   :  2000-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo JVM input pipe ports.                                     */
 /*=====================================================================*/
@@ -139,6 +139,13 @@ public class input_pipe_port extends input_port {
       p.write( "#<input_pipe_port:" + name + ">" );
    }
 
+   public Object bgl_input_port_clone( input_port src ) {
+      super.bgl_input_port_clone( src );
+      in = ((input_pipe_port)src).in;
+
+      return this;
+   }
+   
    /*--- static methods --------------------------------------------------*/
    static boolean pipe_name_p( final byte[] name ) {
       return ( (name[ 0 ] == (byte)'|') && (name[ 1 ] == (byte)' ') );

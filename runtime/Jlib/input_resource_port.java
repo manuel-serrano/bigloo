@@ -175,6 +175,13 @@ public class input_resource_port extends input_port {
       return bigloo.foreign.BTRUE;
    }
 
+   public Object bgl_input_port_clone( input_port src ) {
+      super.bgl_input_port_clone( src );
+      in = ((input_resource_port)src).in;
+      
+      return this;
+   }
+   
    public void write( final output_port  p ) {
       p.write( "#<input_resource_port:" + name + ">" );
    }

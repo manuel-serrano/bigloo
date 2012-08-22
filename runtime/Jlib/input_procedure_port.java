@@ -91,6 +91,13 @@ public class input_procedure_port extends input_port
 
     return true;
   }
+
+   public Object bgl_input_port_clone( input_port src ) {
+      super.bgl_input_port_clone( src );
+      in = ((input_procedure_port)src).in;
+      
+      return this;
+   }
 }
 
 

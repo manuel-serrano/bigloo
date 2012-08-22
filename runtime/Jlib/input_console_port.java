@@ -93,4 +93,12 @@ public class input_console_port extends input_port
     this.bufpos = bufpose;
     return (0 < this.bufpos);
   }
+   
+  public Object bgl_input_port_clone( input_port src ) {
+     super.bgl_input_port_clone( src );
+     in = ((input_console_port)src).in;
+
+     return this;
+  }
+   
 }

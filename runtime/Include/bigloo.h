@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jul 31 05:48:33 2012 (serrano)                */
+/*    Last change :  Wed Aug 22 17:45:40 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -354,7 +354,8 @@ typedef union scmobj {
       long filepos;              /*    - the position in the file      */
       long fillbarrier;          /*    - the fill barrier position     */
       long (*sysread)();         /*    - the system reader             */
-      void (*seek)();            /*    - the seek function             */
+      void (*sysseek)();         /*    - the seek function             */
+      union scmobj *userseek;    /*    - optional user seek function   */
       bool_t eof;                /*    - have we seen an end-of-file   */
       long matchstart;           /*    - the start of a match position */
       long matchstop;            /*    - the end of the match          */
@@ -1964,6 +1965,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_INPUT_PORT_LENGTH_SET( o, v ) \
    (INPUT_PORT( o ).length = (v))
 
+#define BGL_INPUT_PORT_USEEK( o ) \
+   INPUT_PORT( o ).userseek
+   
+#define BGL_INPUT_PORT_USEEK_SET( o, p ) \
+   INPUT_PORT( o ).userseek = p
+   
 /*---------------------------------------------------------------------*/
 /*    Binary ports                                                     */
 /*---------------------------------------------------------------------*/

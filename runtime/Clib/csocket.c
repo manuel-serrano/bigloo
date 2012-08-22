@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Aug  1 21:31:11 2012 (serrano)                */
+/*    Last change :  Wed Aug 22 17:38:04 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1001,12 +1001,12 @@ bgl_input_socket_seek( obj_t port, long offset ) {
       obj_t buf = INPUT_PORT( port ).buf;
       long buflen = STRING_LENGTH( buf );
       
-      /* ignore the chars upto the desired position */
+      /* ignore the chars up to the desired position */
       while( offset > 0 ) {
 	 long sz = offset - pos;
 	 long rs = sz > buflen ? buflen : sz;
-	 
-	 bgl_read( port, (char *)&STRING_REF( buf, 0 ), rs );
+
+	 INPUT_PORT( port ).sysread( port, (char *)&STRING_REF( buf, 0 ), rs );
 	 offset -= rs;
       }
 	 
@@ -1082,7 +1082,7 @@ set_socket_io_ports( int s, obj_t sock, char *who, obj_t inb, obj_t outb ) {
    /* Create input port */
    SOCKET( sock ).input = bgl_make_input_port( host, fs, KINDOF_SOCKET, inb );
    SOCKET( sock ).input->input_port_t.sysread = bgl_read;
-   SOCKET( sock ).input->input_port_t.seek = bgl_input_socket_seek;
+   SOCKET( sock ).input->input_port_t.sysseek = bgl_input_socket_seek;
    SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
 
    /* Create output port */

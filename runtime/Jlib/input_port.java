@@ -18,6 +18,7 @@ public abstract class input_port extends obj
   public int bufpos = 1;
   public byte[] buffer;
   public Object chook = bigloo.foreign.BUNSPEC;
+  public Object userseek = bigloo.foreign.BUNSPEC;
 
   public input_port( final String name, final byte[] buf )
   {
@@ -76,10 +77,26 @@ public abstract class input_port extends obj
     return bigloo.foreign.BFALSE;
   }
 
-  Object bgl_input_port_reopen()
-    throws IOException
-  {
+  Object bgl_input_port_reopen() throws IOException {
     return bigloo.foreign.BFALSE;
+  }
+
+  public Object bgl_input_port_clone( input_port src ) {
+     filepos = src.filepos;
+     pseudoeof = src.pseudoeof;
+     length = src.length;
+     bufsiz = src.bufsiz;
+     eof = src.eof;
+     other_eof = src.other_eof;
+     matchstart = src.matchstart;
+     matchstop = src.matchstop;
+     forward = src.forward;
+     lastchar = src.lastchar;
+     bufpos = src.bufpos;
+     buffer = src.buffer;
+     chook = src.chook;
+
+     return this;
   }
 
   public void write( final output_port p )

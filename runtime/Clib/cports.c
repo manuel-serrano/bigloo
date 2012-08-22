@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Jul 31 06:18:18 2012 (serrano)                */
+/*    Last change :  Wed Aug 22 18:05:50 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1036,7 +1036,8 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
    new_input_port->port_t.timeout = 0L;
    new_input_port->port_t.chook = BUNSPEC;
    new_input_port->port_t.userdata = BUNSPEC;
-   new_input_port->input_port_t.seek = 0L;
+   new_input_port->input_port_t.sysseek = 0L;
+   new_input_port->input_port_t.userseek = BUNSPEC;
    new_input_port->input_port_t.filepos = 0;
    new_input_port->input_port_t.fillbarrier = -1;
    new_input_port->input_port_t.length = -1;
@@ -1096,7 +1097,6 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
 	 new_input_port->input_port_t.sysread = bgl_read;
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
    }
-
 
    return BREF( new_input_port );
 }
@@ -1282,7 +1282,7 @@ bgl_open_input_file( obj_t name, obj_t buffer ) {
 	  BGL_INPUT_PORT_LENGTH_SET( port, bgl_file_size( cname ) );
 
 	  /* file seek */
-	  INPUT_PORT( port ).seek = &bgl_input_file_seek;
+	  INPUT_PORT( port ).sysseek = &bgl_input_file_seek;
 	  
 	  return port;
        }
@@ -1330,7 +1330,7 @@ bgl_open_input_string( obj_t string, int start ) {
    CREF( port )->input_port_t.eof = 1;
    CREF( port )->input_port_t.bufpos = bufsiz;
    CREF( port )->input_port_t.length = bufsiz;
-   CREF( port )->input_port_t.seek = &bgl_input_string_seek;
+   CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
 
    return port;
 }
@@ -1353,7 +1353,7 @@ bgl_open_input_string_bang( obj_t buffer ) {
    CREF( port )->input_port_t.eof = 1;
    CREF( port )->input_port_t.bufpos = bufsiz;
    CREF( port )->input_port_t.length = bufsiz;
-   CREF( port )->input_port_t.seek = &bgl_input_string_seek;
+   CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
 
    return port;
 }
@@ -1427,7 +1427,7 @@ bgl_open_input_c_string( char *c_string ) {
 
    CREF( port )->input_port_t.eof = 1;
    CREF( port )->input_port_t.bufpos = bufsiz;
-   CREF( port )->input_port_t.seek = &bgl_input_string_seek;
+   CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
 
    return port;
 }
@@ -1497,8 +1497,8 @@ bgl_close_input_port( obj_t port ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_input_port_seek( obj_t port, long pos ) {
-   if( INPUT_PORT( port ).seek ) {
-      INPUT_PORT( port ).seek( port, pos );
+   if( INPUT_PORT( port ).sysseek ) {
+      INPUT_PORT( port ).sysseek( port, pos );
    } else {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"set-input-port-position!",
@@ -1574,6 +1574,18 @@ bgl_input_port_reopen( obj_t port ) {
    RGC_BUFFER_SET( port, 0, '\0' );
 
    return BTRUE;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_input_port_clone ...                                         */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_input_port_clone( obj_t dst, obj_t src ) {
+   INPUT_PORT( dst ) = INPUT_PORT( src );
+   PORT( dst ) = PORT( src );
+   
+   return dst;
 }
 
 /*---------------------------------------------------------------------*/
@@ -2176,8 +2188,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 			   strerror( errno ),
 			   MAKE_PAIR( ip, op ) );
    }
-   if( (offset > 0) && INPUT_PORT( ip ).seek ) {
-      INPUT_PORT( ip ).seek( ip, offset + n + ws );
+   if( (offset > 0) && INPUT_PORT( ip ).sysseek ) {
+      INPUT_PORT( ip ).sysseek( ip, offset + n + ws );
    }
 #endif /* BGL_HAVE_SENDFILE */
    

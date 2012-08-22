@@ -5030,6 +5030,16 @@ public final class foreign
 	 o.chook = p;
       }
       
+   public static Object INPUT_PORT_USEEK(input_port o)
+      {
+	 return o.userseek;
+      }
+
+   public static void INPUT_PORT_USEEK_SET(input_port o, procedure p)
+      {
+	 o.userseek = p;
+      }
+      
    public static byte[] BGL_INPUT_PORT_BUFFER(input_port o)
       {
 	 return o.buffer;
@@ -5139,6 +5149,11 @@ public final class foreign
    public static Object bgl_input_port_reopen(input_port p) throws IOException
       {
 	 return p.bgl_input_port_reopen();
+      }
+
+   public static Object bgl_input_port_clone(input_port dst, input_port src) throws IOException
+      {
+	 return dst.bgl_input_port_clone( src );
       }
 
    public static Object bgl_output_port_seek(output_port p,

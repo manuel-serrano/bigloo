@@ -9,5 +9,12 @@ public class input_gzip_port extends input_procedure_port {
       input_port = inp;
       in = p;
    }
+   
+   public Object bgl_input_port_clone( input_port src ) {
+      super.bgl_input_port_clone( src );
+      input_port = ((input_gzip_port)src).input_port;
+
+      return this;
+   }
 }
 
