@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Aug 22 19:53:35 2012 (serrano)                */
+;*    Last change :  Thu Aug 23 15:44:15 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -414,18 +414,27 @@
    (define (play-playlist n)
       ;; start playing the playlist
       (with-access::alsamusic o (%playlist %aready %!playid)
-	 (let ((playlist %playlist))
-	    (when (and (>=fx n 0) (<fx n (length playlist)))
-	       ;; init alsa pcm
-	       (pcm-init o)
-	       ;; wait the the music player to be ready
-	       (set! %!playid (+fx 1 %!playid))
-	       (let ((playid %!playid))
-		  (alsamusic-wait-ready! o)
-		  (when (=fx %!playid playid)
-		     (set! %aready #f)
-		     ;; play the list of urls
-		     (play-urls (list-tail playlist n) n)))))))
+	 (unwind-protect
+	    (let ((playlist %playlist))
+	       (when (and (>=fx n 0) (<fx n (length playlist)))
+		  ;; init alsa pcm
+		  (pcm-init o)
+		  ;; wait the the music player to be ready
+		  (set! %!playid (+fx 1 %!playid))
+		  (let ((playid %!playid))
+		     (alsamusic-wait-ready! o)
+		     (when (=fx %!playid playid)
+			(set! %aready #f)
+			;; play the list of urls
+			(play-urls (list-tail playlist n) n)))))
+	    (with-access::alsamusic o (%buffer %decoder %acondv)
+	       ;; reset the player state
+	       (set! %aready #t)
+	       (set! %buffer #f)
+	       (set! %decoder #f)
+	       (pcm-reset! o)
+	       ;; signal if someone waiting for the music player
+	       (condition-variable-signal! %acondv)))))
 
    (define (resume-from-pause o)
       (with-access::alsamusic o (%decoder)
@@ -438,9 +447,7 @@
 	       (mutex-unlock! %dmutex)
 	       #t))))
    
-   (with-access::alsamusic o (%amutex %acondv
-				%decoder %buffer %aready
-				%status onerror)
+   (with-access::alsamusic o (%amutex %status onerror)
       (with-handler
 	 (lambda (e)
 	    (mutex-lock! %amutex)
@@ -452,27 +459,18 @@
 	    (raise e))
 	 (with-lock %amutex
 	    (lambda ()
-	       (unwind-protect
-		  (cond
-		     ((pair? s)
-		      ;; play the playing from a user index
-		      (unless (integer? (car s))
-			 (bigloo-type-error "music-play ::alsamusic" 'int (car s)))
-		      (play-playlist (car s)))
-		     ((resume-from-pause o)
-		      #unspecified)
-		     (else
-		      ;; play the playlist from the current position
-		      (with-access::musicstatus %status (song)
-			 (play-playlist song))))
-		  (begin
-		     ;; reset the player state
-		     (set! %aready #t)
-		     (set! %buffer #f)
-		     (set! %decoder #f)
-		     (pcm-reset! o)
-		     ;; signal if someone waiting for the music player
-		     (condition-variable-signal! %acondv))))))))
+	       (cond
+		  ((pair? s)
+		   ;; play the playing from a user index
+		   (unless (integer? (car s))
+		      (bigloo-type-error "music-play ::alsamusic" 'int (car s)))
+		   (play-playlist (car s)))
+		  ((resume-from-pause o)
+		   #unspecified)
+		  (else
+		   ;; play the playlist from the current position
+		   (with-access::musicstatus %status (song)
+		      (play-playlist song)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::alsamusic ...                                       */
