@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Aug 22 18:21:37 2012 (serrano)                */
+;*    Last change :  Thu Aug 23 07:59:39 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -918,8 +918,8 @@
 	    (input-port-seek-set! ip
 	       (lambda (ip offset)
 		  (socket-close sock)
-		  (loop ip `((range: (format "~a-" offset))
-			     (user-agent: "Mozilla/5.0")))))
+		  (let ((r (string-append "bytes=" (integer->string offset) "-")))
+		     (loop ip `((range: ,r) (user-agent: "Mozilla/5.0"))))))
 	    (with-handler
 	       (lambda (e)
 		  (socket-close sock)

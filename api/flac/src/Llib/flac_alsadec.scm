@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Aug 22 18:09:02 2012 (serrano)                */
+;*    Last change :  Thu Aug 23 09:57:40 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -54,7 +54,7 @@
 (define (flac-debug)
    (if (>fx ($compiler-debug) 0)
        (bigloo-debug)
-       0))
+       2))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
@@ -106,7 +106,6 @@
 ;*    alsadecoder-seek ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-seek o::flac-alsadecoder sec)
-   (tprint "ALSADECODER-SEEK: " sec)
    (with-access::flac-alsadecoder o (%flac %inseek)
       (unless %inseek
 	 (set! %inseek #t)
@@ -130,7 +129,6 @@
 ;*    flac-decoder-seek ::flac-alsa ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-seek o::flac-alsa off)
-   (tprint "FLAC-DECODER-SEEK: " off)
    (with-access::flac-alsa o (%decoder %buffer)
       (with-access::flac-alsadecoder %decoder (%flac %inseek)
 	 (when (isa? %buffer alsabuffer)
@@ -309,12 +307,20 @@
 		  (%empty
 		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
-		       beof
-		       (let ((d0 (current-microseconds)))
+		       (begin
+			  (when (>=fx (flac-debug) 2)
+			     (tprint "!!! FLAC_DECODER, EOF"
+				" url=" url))
+			  beof)
+		       (begin
 			  (when (>=fx (flac-debug) 2)
 			     (tprint "!!! FLAC_DECODER, buffer empty "
 				(if %eof " EOF" "")
 				" url=" url))
+			  (if %has-been-empty-once
+			      (with-access::alsamusic am (onerror)
+				 (onerror am "empty buffer"))
+			      (onstate am 'buffering))
 			  (mutex-lock! %bmutex)
 			  (let liip ()
 			     ;; wait until the buffer is filled

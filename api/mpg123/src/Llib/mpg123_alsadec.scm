@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sun Jul 29 07:39:32 2012 (serrano)                */
+;*    Last change :  Thu Aug 23 09:55:53 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -224,8 +224,10 @@
 			  (when (>=fx (mpg123-debug) 2)
 			     (tprint "!!! MPG123_DECODER, buffer empty "
 				" url=" url))
-			  (let ((d0 (current-microseconds)))
-			     (onstate am 'buffering)
+			  (begin
+			     (if has-been-empty-once
+				 (onerror am "empty buffer")
+				 (onstate am 'buffering))
 			     (mutex-lock! %bmutex)
 			     (let liip ()
 				;; wait until the buffer is filled

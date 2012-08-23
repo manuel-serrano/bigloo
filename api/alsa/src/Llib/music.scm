@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Aug 22 18:31:27 2012 (serrano)                */
+;*    Last change :  Wed Aug 22 19:53:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -263,7 +263,6 @@
 
    (define (prepare-next-buffer o buffer playlist::pair-nil)
       (when (pair? playlist)
-	 (tprint "PREPARE-NEXT-BUFFER...")
 	 (with-access::alsaportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
 	    (with-access::alsamusic o (%amutex %nextbuffer %status)
 	       (with-lock %amutex
@@ -629,8 +628,8 @@
 	       ((and (=fx %head %tail) (not %empty))
 		;; buffer full
 		(mutex-lock! %bmutex)
-		(when (>=fx (alsa-debug) 3)
-		   (tprint ">>> ALSA: wait buffer full url=" url))
+		(when (>=fx (alsa-debug) 4)
+		   (tprint ">>> ALSA: wait on buffer full url=" url))
 		(condition-variable-wait! %bcondv %bmutex)
 		(mutex-unlock! %bmutex)
 		(loop))
