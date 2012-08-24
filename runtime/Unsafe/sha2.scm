@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Apr 17 07:52:57 2012 (serrano)                */
+;*    Last change :  Fri Aug 24 08:19:49 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
@@ -51,7 +51,6 @@
    
    (use    __type
 	   __bigloo
-	   __tvector
 	   __bexit
 	   __object
 	   __thread
@@ -78,13 +77,13 @@
 	   __error
 	   __evenv
 	   __os
-	   __srfi4
 	   __structure)
-
-   (use __r4_output_6_10_3)
    
    (import __param
-	   __hmac)
+	   __hmac
+	   __tvector)
+
+   (from   __srfi4)
    
    (export (sha256sum::bstring ::obj)
 	   (sha256sum-string::bstring ::bstring)

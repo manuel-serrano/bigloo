@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Wed May  4 09:28:32 2011 (serrano)                */
+;*    Last change :  Fri Aug 24 05:58:42 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -18,11 +18,8 @@
    
    (use     __type
 	    __bigloo
-	    __tvector
-	    __bexit
 	    __object
 	    __thread
-	    __bignum
 	    __r4_control_features_6_9
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

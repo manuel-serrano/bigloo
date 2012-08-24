@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Fri Feb 18 15:18:54 2011 (serrano)                */
+;*    Last change :  Fri Aug 24 08:16:31 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -20,7 +20,8 @@
 	    __bexit
 	    __bignum
 	    __object
-	    __thread)
+	    __thread
+	    __r4_symbols_6_4)
    
    (use     __type
 	    __bigloo
@@ -33,7 +34,6 @@
 	    __r4_characters_6_6
 	    __r4_vectors_6_8
 	    __r4_pairs_and_lists_6_3
-	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r4_output_6_10_3
 	    __r4_ports_6_10_1
