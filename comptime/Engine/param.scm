@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue May  8 06:48:09 2012 (serrano)                */
+;*    Last change :  Fri Aug 24 15:16:17 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -82,6 +82,7 @@
 	    *optim-jvm-branch*
 	    *optim-jvm-fasteq*
 	    *optim-symbol-case*
+	    *optim-unbox-closure-args*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -837,6 +838,9 @@
    #f)
 (param-define *optim-symbol-case*
    "Optimize case forms descrimining on symbols only"
+   #f)
+(param-define *optim-unbox-closure-args*
+   "Unbox closure arguments"
    #f)
 (param-define *purify*
    "Produce byte code verifier compliant JVM code"

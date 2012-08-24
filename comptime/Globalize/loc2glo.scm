@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Wed May  4 18:02:55 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Aug 24 15:26:46 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -71,12 +71,10 @@
        ;; function are _always_ of type procedure x obj x .. x obj -> obj
        ;; because type check cannot be perform on the call site.
        *obj*)
-      ((or #t (bigloo-type? type))
+      (else
        ;; if funcall-tracking is enable, the type of the global function
        ;; is the type of the local function
-       type)
-      (else
-       *obj*)))
+       type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fix-escaping-definition ...                                      */
@@ -84,8 +82,9 @@
 (define (fix-escaping-definition global local args kaptured body)
    (let* ((env      (make-local-svar 'env *procedure*))
 	  (new-free (map (lambda (old)
-			    (let ((new (make-local-svar (local-id old)
-							(default-type))))
+			    (let ((new (make-local-svar
+					  (local-id old)
+					  (default-type))))
 			       (local-user?-set! new (local-user? old))
 			       (widen!::local/Ginfo new)
 			       (widen!::svar/Ginfo (local-value new)
@@ -96,7 +95,9 @@
 	  (new-args (map (lambda (old)
 			    (let ((new (make-local-svar
 					  (local-id old)
-					  (default-type))))
+					  (if *optim-unbox-closure-args*
+					      (local-type old)
+					      (default-type)))))
 			       (local-user?-set! new (local-user? old))
 			       (widen!::local/Ginfo new)
 			       (widen!::svar/Ginfo (local-value new)
@@ -131,9 +132,10 @@
 				 (local-type-set! n (local-type o))
 				 (local-type-set! n *obj*)))
 		   (cdr nargs) (cdr args)))
-	     (for-each (lambda (l)
-			  (local-type-set! l *obj*))
-		nargs)))
+	     (unless *optim-unbox-closure-args*
+		(for-each (lambda (l)
+			     (local-type-set! l *obj*))
+		   nargs))))
       (global-value-set! global new-fun)
       (sfun-body-set!
        new-fun
@@ -200,8 +202,9 @@
 ;*---------------------------------------------------------------------*/
 (define (fix-non-escaping-definition global local args kaptured body)
    (let* ((add-args (map (lambda (old)
-			    (let ((new (make-local-svar (local-id old)
-							(default-type))))
+			    (let ((new (make-local-svar
+					  (local-id old)
+					  (local-type old))))
 			       (local-user?-set! new (local-user? old))
 			       (widen!::local/Ginfo new)
 			       (widen!::svar/Ginfo (local-value new)

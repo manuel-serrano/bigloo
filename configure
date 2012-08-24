@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Aug 21 15:29:34 2012 (serrano)                */
+#*    Last change :  Fri Aug 24 11:28:08 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1927,10 +1927,6 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for gstreamer
 pkg="gstreamer-@VERSION@ gstreamer-base-@VERSION@ gstreamer-plugins-base-@VERSION@"
-
-if [ "$gstreamer " = " " ]; then
-   gstreamer=`$autoconf gstreamer --cflags="$cflags" --pkg="$pkg"` || exit 1;
-fi
 
 if [ "$gstreamer " != " " ]; then
   pkgv=`echo $pkg | sed "s/@VERSION@/$gstreamer/g"`
