@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Aug 24 15:31:36 2012 (serrano)                */
+;*    Last change :  Fri Aug 24 15:55:09 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -110,14 +110,9 @@
 		   (with-access::make-procedure-app alloc (args T X)
 		      (let ((f (variable-value (var-variable (car args)))))
 			 (cond
-			    (X
-			     (sfun-strength-set! f 'elight))
-			    (T
-			     (sfun-box-arguments! f)
-			     (sfun-strength-set! f 'light))
-			    (else
-			     (sfun-box-arguments! f)
-			     (sfun-strength-set! f '???))))))
+			    (X (sfun-strength-set! f 'elight))
+			    (T (sfun-strength-set! f 'light))
+			    (else (sfun-strength-set! f '???))))))
 	 *make-procedure-list*)
       ;; we print the result
       (show-X-T *make-procedure-list*)
@@ -126,15 +121,6 @@
       ;; to procedure's classifications and free variables types.
       (light-closure! globals)))
 
-;*---------------------------------------------------------------------*/
-;*    sfun-box-arguments! ...                                          */
-;*---------------------------------------------------------------------*/
-(define (sfun-box-arguments! f)
-   (when *optim-unbox-closure-args*
-      (for-each (lambda (l)
-		   (local-type-set! l *obj*))
-	 (cdr (sfun-args f)))))
-      
 ;*---------------------------------------------------------------------*/
 ;*    X! ...                                                           */
 ;*    -------------------------------------------------------------    */

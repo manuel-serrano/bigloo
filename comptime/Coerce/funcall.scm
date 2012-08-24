@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Fri Feb  3 14:31:55 2012 (serrano)                */
+;*    Last change :  Fri Aug 24 16:47:46 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -39,12 +39,23 @@
    (let ((error-msg (list 'quote (shape node)))
 	 (strength  (funcall-strength node))
 	 (nty (node-type node)))
-      ;; we coerce the arguments
-      (coerce-funcall-args! node caller to safe)
-      (if (memq strength '(light elight))
-	  (convert! node nty to safe)
+      (case strength
+	 ((elight)
+	  (if *optim-unbox-closure-args*
+	      (coerce-funcall-elight-args! node caller to safe)
+	      (coerce-funcall-args! node caller to safe))
+	  ;; convert the call
+	  (convert! node nty to safe))
+	 ((light)
+	  ;; convert the arguments
+	  (coerce-funcall-args! node caller to safe)
+	  ;; convert the call
+	  (convert! node nty to safe))
+	 (else
 	  ;; we coerce the procedure
 	  (let ((c-fun (coerce! (funcall-fun node) caller *procedure* safe)))
+	     ;; we coerce the arguments
+	     (coerce-funcall-args! node caller to safe)
 	     ;; we check arity
 	     (if *unsafe-arity*
 		 (begin
@@ -56,32 +67,32 @@
 				   (loc loc)
 				   (type *int*)
 				   (value (-fx (length (funcall-args node))
-					       2))))
+					     2))))
 			(a-len  (mark-symbol-non-user! (gensym 'len)))
 			(a-tlen (mark-symbol-non-user!
-				 (symbol-append a-len '::int)))
+				   (symbol-append a-len '::int)))
 			(lnode  (instantiate::let-var
 				   (loc loc)
 				   (type (strict-node-type to nty))
 				   (bindings (list (cons fun c-fun)))
 				   (body (top-level-sexp->node
-					  `(let ((,a-tlen ,len))
-					      (if (correct-arity? ,fun ,a-len)
-						  ,(convert! node nty to safe)
-						  ,(make-arity-error-node
-						    fun
-						    error-msg
-						    loc
-						    caller
-						    to)))
-					  loc)))))
+					    `(let ((,a-tlen ,len))
+						(if (correct-arity? ,fun ,a-len)
+						    ,(convert! node nty to safe)
+						    ,(make-arity-error-node
+							fun
+							error-msg
+							loc
+							caller
+							to)))
+					    loc)))))
 		    (funcall-fun-set! node (instantiate::var
 					      (loc loc)
 					      (type (strict-node-type
-						     (variable-type fun) *obj*))
+						       (variable-type fun) *obj*))
 					      (variable fun)))
 		    (lvtype-node! lnode)
-		    lnode))))))
+		    lnode)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-arity-error-node ...                                        */
@@ -117,10 +128,12 @@
 ;*    coerce-funcall-args! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (coerce-funcall-args! node caller to safe)
+   
    (define (toplevel-exp node)
       (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
 	 (lvtype-node! n)
 	 n))
+   
    (if (null? (funcall-args node))
        (funcall-args-set! node (list (toplevel-exp node)))
        (let loop ((actuals (funcall-args node))
@@ -130,3 +143,27 @@
 	      (begin
 		 (set-car! actuals (coerce! (car actuals) caller *obj* safe))
 		 (loop (cdr actuals) actuals))))))
+
+;*---------------------------------------------------------------------*/
+;*    coerce-funcall-elight-args! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (coerce-funcall-elight-args! node caller to safe)
+   
+   (define (toplevel-exp node)
+      (let ((n (top-level-sexp->node '__eoa__ (node-loc node))))
+	 (lvtype-node! n)
+	 n))
+   
+   (if (null? (funcall-args node))
+       (funcall-args-set! node (list (toplevel-exp node)))
+       (let ((callee (variable-value (var-variable (funcall-fun node)))))
+	  (let loop ((actuals (funcall-args node))
+		     (formals (sfun-args callee))
+		     (prev    'dummy))
+	     (if (null? actuals)
+		 (set-cdr! prev (list (toplevel-exp node)))
+		 (begin
+		    (set-car! actuals
+		       (coerce! (car actuals) caller (local-type (car formals))
+			  safe))
+		    (loop (cdr actuals) (cdr formals) actuals)))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Aug 24 15:49:16 2012 (serrano)                */
+;*    Last change :  Fri Aug 24 16:17:41 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -426,10 +426,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::setq)
    (with-access::setq node (var value)
-      (tprint ">>> TYPE-NODE: " (shape node))
       (set! value (type-node! value))
       (set! var (type-node! var))
-      (tprint "<<< TYPE-NODE: " (shape node))
       node))
 
 ;*---------------------------------------------------------------------*/

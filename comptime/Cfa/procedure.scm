@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Mon Nov 14 18:08:16 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Aug 24 16:20:07 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
 ;*=====================================================================*/
@@ -294,6 +294,8 @@
 	  (v (var-variable callee))
 	  (fun (variable-value v)))
       (trace (cfa 2) "     set-polymorphic!: " (shape v) " " (typeof fun) #\Newline)
+      (when *optim-unbox-closure-args*
+	 (for-each loose-arg! (cdr (sfun-args fun))))
       (cond
 	 ((intern-sfun/Cinfo? fun)
 	  (unless (intern-sfun/Cinfo-polymorphic? fun)
@@ -303,3 +305,15 @@
 	  (unless (extern-sfun/Cinfo-polymorphic? fun)
 	     (continue-cfa! "polymorphic extern fun")
 	     (extern-sfun/Cinfo-polymorphic?-set! fun #t))))))
+
+;*---------------------------------------------------------------------*/
+;*    loose-arg! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (loose-arg! a)
+   (local-type-set! a *obj*)
+   (when (reshaped-local? a)
+      (let ((value (variable-value a)))
+	 (if (svar/Cinfo? value)
+	     (with-access::approx (svar/Cinfo-approx value) (type)
+		(set! type *obj*))
+	     (tprint "PAS GLOP: " (typeof value))))))
