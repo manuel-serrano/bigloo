@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Aug 24 15:55:09 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 18:52:38 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -300,8 +300,8 @@
 (define (light-funcall!)
    (for-each (lambda (app::funcall)
 		(trace (cfa 2) "light-funcall!: " (shape app) " ... ")
-		(let* ((fun        (funcall-fun app))
-		       (approx     (cfa! fun))
+		(let* ((fun (funcall-fun app))
+		       (approx (cfa! fun))
 		       (alloc-list (set->list (approx-allocs approx))))
 		   (if (or (not (pair? alloc-list))
 			   (not (make-procedure-app? (car alloc-list))))
@@ -312,26 +312,76 @@
 			  (with-access::make-procedure-app alloc (X T args approx)
 			     (cond
 				(X
+				 ;;; extra-light funcall
 				 (trace (cfa 2) "extra-light" #\Newline)
 				 (funcall-fun-set!
-				  app
-				  (duplicate::var (car args)
-				     (type (strict-node-type
-					    (get-approx-type approx (car args))
-					    (var-type (car args))))))
+				    app
+				    (duplicate::var (car args)
+				       (type (strict-node-type
+						(get-approx-type approx (car args))
+						(var-type (car args))))))
 				 (funcall-functions-set! app (list (car args)))
 				 (funcall-strength-set! app 'elight))
 				(T
+				 ;;; light funcall
 				 (trace (cfa 2) "light" #\Newline)
 				 (let ((f (map (lambda (a)
 						  (car (make-procedure-app-args a)))
-					       alloc-list)))
-				    (funcall-functions-set! app f))
-				 (funcall-strength-set! app 'light))
+					     alloc-list)))
+				    (funcall-functions-set! app f)
+				    (funcall-strength-set! app 'light)))
 				(else
 				 (trace (cfa 2) "heavy2" #\Newline)
 				 'nothing-to-do)))))))
-	     *funcall-list*))
+      *funcall-list*)
+   (when *optim-cfa-unbox-closure-args*
+      ;; fix point over all the T procedures to merge all the types
+      ;; on funcall sites
+      (let ((funcall-l (filter (lambda (app::funcall)
+				  (eq? (funcall-strength app) 'light))
+			  *funcall-list*)))
+	 (let loop ((cont #t))
+	    (when cont
+	       (for-each (lambda (app::funcall)
+			    (let* ((fun (funcall-fun app))
+				   (approx (cfa! fun))
+				   (apps (set->list (approx-allocs approx))))
+			       (when (and (pair? apps) (pair? (cdr apps)))
+				  (set! cont
+				     (or (merge-app-types! apps) cont)))))
+		  funcall-l))))))
+
+;*---------------------------------------------------------------------*/
+;*    merge-app-types! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (merge-app-types! apps0::pair-nil)
+   
+   (define (merge2! app0::make-procedure-app app1::make-procedure-app)
+      (let* ((f0 (var-variable (car (make-procedure-app-args app0))))
+	     (f1 (var-variable (car (make-procedure-app-args app1)))))
+	 (let loop ((a0 (cdr (sfun-args (variable-value f0))))
+		    (a1 (cdr (sfun-args (variable-value f1))))
+		    (cont #f))
+	    (if (and (pair? a0) (pair? a1))
+		(let* ((p0 (svar/Cinfo-approx (variable-value (car a0))))
+		       (p1 (svar/Cinfo-approx (variable-value (car a1))))
+		       (t0 (approx-type p0))
+		       (t1 (approx-type p1)))
+		   (if (eq? t0 t1)
+		       (loop (cdr a0) (cdr a1) cont)
+		       (begin
+			  (tprint "t1=" (shape t1) " t0=" (shape t0))
+			  (tprint "a0=" (map shape a0))
+			  (tprint "a1=" (map shape a1))
+			  (variable-type-set! (car a0) (get-bigloo-type t0))
+			  (variable-type-set! (car a1) (get-bigloo-type t1))
+			  (loop (cdr a0) (cdr a1) #t))))))))
+
+   (let loop ((apps (cdr apps0))
+	      (cont #f))
+      (if (null? apps)
+	  cont
+	  (loop (cdr apps) (or (merge2! (car apps0) (car apps)) cont)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    light-access! ...                                                */

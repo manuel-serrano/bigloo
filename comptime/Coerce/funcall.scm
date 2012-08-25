@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Fri Aug 24 16:47:46 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 09:28:52 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
@@ -41,14 +41,16 @@
 	 (nty (node-type node)))
       (case strength
 	 ((elight)
-	  (if *optim-unbox-closure-args*
+	  (if *optim-cfa-unbox-closure-args*
 	      (coerce-funcall-elight-args! node caller to safe)
 	      (coerce-funcall-args! node caller to safe))
 	  ;; convert the call
 	  (convert! node nty to safe))
 	 ((light)
 	  ;; convert the arguments
-	  (coerce-funcall-args! node caller to safe)
+	  (if *optim-cfa-unbox-closure-args*
+	      (coerce-funcall-light-args! node caller to safe)
+	      (coerce-funcall-args! node caller to safe))
 	  ;; convert the call
 	  (convert! node nty to safe))
 	 (else
@@ -156,10 +158,10 @@
    
    (if (null? (funcall-args node))
        (funcall-args-set! node (list (toplevel-exp node)))
-       (let ((callee (variable-value (var-variable (funcall-fun node)))))
+       (let ((callee (var-variable (car (funcall-functions node)))))
 	  (let loop ((actuals (funcall-args node))
-		     (formals (sfun-args callee))
-		     (prev    'dummy))
+		     (formals (sfun-args (variable-value callee)))
+		     (prev 'dummy))
 	     (if (null? actuals)
 		 (set-cdr! prev (list (toplevel-exp node)))
 		 (begin
@@ -167,3 +169,9 @@
 		       (coerce! (car actuals) caller (local-type (car formals))
 			  safe))
 		    (loop (cdr actuals) (cdr formals) actuals)))))))
+
+;*---------------------------------------------------------------------*/
+;*    coerce-funcall-light-args! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (coerce-funcall-light-args! node caller to safe)
+   (coerce-funcall-elight-args! node caller to safe))

@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Feb  3 14:35:46 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 09:23:14 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We make the obvious type election (taking care of tvectors).     */
+;*    Type election for light closures.                                */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

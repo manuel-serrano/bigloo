@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Tue Jun 14 14:20:17 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Aug 25 07:00:37 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::funcall/Cinfo)
    (with-access::funcall/Cinfo node (approx fun args)
-      (trace (cfa 2) "  funcall: " (shape node) " approx=" (shape approx)
+      (trace (cfa 2) ">>>  funcall: " (shape node) " approx=" (shape approx)
 	     #\Newline)
       (let* ((fapprox (cfa! fun))
 	     (aapprox (map cfa! (cdr args))))
@@ -91,7 +91,7 @@
 		     (make-empty-approx)))
 	      fapprox)))
 	 ;; If approx is *obj* it must be propagated in all the procedures
-	 ;; that from now on they must return a bigloo type. In consequence
+	 ;; which from now they must return a bigloo type. In consequence
 	 ;; for each closure we find the most possible specific Bigloo type
    	 (when (and *optim-cfa-funcall-tracking?*
 		    (bigloo-type? (approx-type approx))
@@ -100,7 +100,8 @@
 				      (when (make-procedure-app? a)
 					 (set-procedure-approx-polymorphic! a)))
 				   fapprox))
-	 (trace (cfa 2) "  funcall <- " (shape approx) #\Newline)
+	 (trace (cfa 2) "<<<  funcall: " (shape node) " approx=" (shape approx)
+	     #\Newline)
 	 approx)))
 
 ;*---------------------------------------------------------------------*/

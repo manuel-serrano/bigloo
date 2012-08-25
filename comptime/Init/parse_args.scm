@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat May 12 08:46:45 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 06:03:29 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -424,6 +424,10 @@
        (set! *optim-cfa-pair?* #t))
       (("-fnocfa-pair" (help "Disable CFA pairs approximations"))
        (set! *optim-cfa-pair?* #f))
+      (("-fcfa-unbox-closure-args" (help "Enable CFA unboxed closure args"))
+       (set! *optim-cfa-unbox-closure-args* #t))
+      (("-fnocfa-unbox-closure-args" (help "Disable CFA unboxed closure args"))
+       (set! *optim-cfa-unbox-closure-args* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
        (set! *optim-unroll-loop?* #t))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Fri Aug 24 15:26:46 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 06:04:04 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -95,7 +95,7 @@
 	  (new-args (map (lambda (old)
 			    (let ((new (make-local-svar
 					  (local-id old)
-					  (if *optim-unbox-closure-args*
+					  (if *optim-cfa-unbox-closure-args*
 					      (local-type old)
 					      (default-type)))))
 			       (local-user?-set! new (local-user? old))
@@ -132,7 +132,7 @@
 				 (local-type-set! n (local-type o))
 				 (local-type-set! n *obj*)))
 		   (cdr nargs) (cdr args)))
-	     (unless *optim-unbox-closure-args*
+	     (unless *optim-cfa-unbox-closure-args*
 		(for-each (lambda (l)
 			     (local-type-set! l *obj*))
 		   nargs))))

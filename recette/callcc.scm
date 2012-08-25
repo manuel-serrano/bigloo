@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 13:57:49 1992                          */
-;*    Last change :  Sun Oct 17 08:27:35 2010 (serrano)                */
+;*    Last change :  Sat Aug 25 07:08:38 2012 (serrano)                */
 ;*                                                                     */
 ;*    On test differents call/cc                                       */
 ;*---------------------------------------------------------------------*/
@@ -64,9 +64,9 @@
 	     (r obj))))))
 
 ;*---------------------------------------------------------------------*/
-;*    test1 ...                                                        */
+;*    test-set ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (test1)
+(define (test-set)
    (let (v)
       (let ((k (call/cc (lambda (x) (set! v x)))))
 	 (if k
@@ -218,7 +218,7 @@
 ;*    test-callcc2 ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (test-callcc2)
-   (test "call/cc(set!).1" ((test1) #f) #f)
+   (test "call/cc(set!).1" ((test-set) #f) #f)
    (test "call/cc(set!).2" ((lambda (a)
 			       (begin (set! a (call/cc (lambda (k) k)))
 				      (a (lambda (x) 1))))

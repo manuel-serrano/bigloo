@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan  7 16:20:22 1993                          */
-;*    Last change :  Sat Nov 11 18:41:37 2006 (serrano)                */
+;*    Last change :  Fri Aug 24 17:02:55 2012 (serrano)                */
 ;*                                                                     */
 ;*    On test les `define's internes                                   */
 ;*---------------------------------------------------------------------*/

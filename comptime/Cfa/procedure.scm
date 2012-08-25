@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:08:59 1996                          */
-;*    Last change :  Fri Aug 24 16:20:07 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 07:16:06 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The procedure approximation management                           */
@@ -36,15 +36,22 @@
 ;*    disable-X-T! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (disable-X-T! approx reason)
+   
    (define (disable-alloc! app)
       (when (make-procedure-app? app)
 	 (trace (cfa 3)
-		"!!! disable X-T: " (shape app)
-		" because " reason
-		#\Newline)
+	    "!!! disable X-T: " (shape app)
+	    " because " reason
+	    #\Newline)
 	 (with-access::make-procedure-app app (X-T?)
 	    (set! X-T? #f))
-	 (set-procedure-approx-polymorphic! app)))
+	 (set-procedure-approx-polymorphic! app)
+	 (when *optim-cfa-unbox-closure-args*
+	    (let* ((callee (car (make-procedure-app-args app)))
+		   (v (var-variable callee))
+		   (fun (variable-value v)))
+	       (for-each loose-arg! (cdr (sfun-args fun)))))))
+   
    (for-each-approx-alloc disable-alloc! approx))
 
 ;*---------------------------------------------------------------------*/
@@ -278,7 +285,9 @@
 	 (let* ((callee (car (make-procedure-app-args alloc)))
 		(v (var-variable callee))
 		(fun (variable-value v)))
-	    (cfa-export-var! fun v)))))
+	    (cfa-export-var! fun v)
+	    (when *optim-cfa-unbox-closure-args*
+	       (for-each loose-arg! (cdr (sfun-args fun))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-procedure-approx-polymorphic! ...                            */
@@ -294,8 +303,6 @@
 	  (v (var-variable callee))
 	  (fun (variable-value v)))
       (trace (cfa 2) "     set-polymorphic!: " (shape v) " " (typeof fun) #\Newline)
-      (when *optim-unbox-closure-args*
-	 (for-each loose-arg! (cdr (sfun-args fun))))
       (cond
 	 ((intern-sfun/Cinfo? fun)
 	  (unless (intern-sfun/Cinfo-polymorphic? fun)
@@ -316,4 +323,4 @@
 	 (if (svar/Cinfo? value)
 	     (with-access::approx (svar/Cinfo-approx value) (type)
 		(set! type *obj*))
-	     (tprint "PAS GLOP: " (typeof value))))))
+	     (tprint "INTERNAL CFA ERROR: " (typeof value))))))

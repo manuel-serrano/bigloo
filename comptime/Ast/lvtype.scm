@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Fri Feb  3 14:28:25 2012 (serrano)                */
+;*    Last change :  Sat Aug 25 09:20:04 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -236,6 +236,6 @@
 (define (set-variable-type! variable::variable type::type)
    (let ((ntype (if (eq? type *_*) *obj* type))
 	 (otype (variable-type variable))) 
-      (if (eq? otype *_*)
-	  (variable-type-set! variable ntype))))
+      (when (eq? otype *_*)
+	 (variable-type-set! variable ntype))))
 
