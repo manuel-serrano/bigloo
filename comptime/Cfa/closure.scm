@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sat Aug 25 18:52:38 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 12:16:24 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -41,6 +41,7 @@
 	    cfa_type)
    (export  (closure-optimization! ::pair-nil)
 	    (closure-optimization?)
+	    (type-closures!)
 	    (add-procedure-ref!  ::node)
 	    (get-procedure-list::pair-nil)
 	    (add-make-procedure! ::node)
@@ -352,6 +353,25 @@
 		  funcall-l))))))
 
 ;*---------------------------------------------------------------------*/
+;*    type-closures! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (type-closures!)
+   (when *optim-cfa-unbox-closure-args*
+      (for-each (lambda (app::make-procedure-app)
+		   (with-access::make-procedure-app app (X T)
+		      (unless (or X T)
+			 (let* ((f (car (make-procedure-app-args app)))
+				(v (var-variable f)))
+			    (for-each (lambda (a)
+					 (let* ((val (variable-value a))
+						(p (svar/Cinfo-approx val))
+						(t (approx-type p)))
+					    (variable-type-set!
+					       a (get-bigloo-type t))))
+			       (cdr (sfun-args (variable-value v))))))))
+	 (get-procedure-list))))
+
+;*---------------------------------------------------------------------*/
 ;*    merge-app-types! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (merge-app-types! apps0::pair-nil)
@@ -370,9 +390,24 @@
 		   (if (eq? t0 t1)
 		       (loop (cdr a0) (cdr a1) cont)
 		       (begin
-			  (tprint "t1=" (shape t1) " t0=" (shape t0))
-			  (tprint "a0=" (map shape a0))
-			  (tprint "a1=" (map shape a1))
+;* 			  (tprint "t1=" (shape t1) " t0=" (shape t0))  */
+;* 			  (tprint "a0=" (map shape a0))                */
+;* 			  (tprint "a1=" (map shape a1))                */
+			  ;; The merge is not complete because this procedures
+			  ;; does not enforce type equality. It only enforces
+			  ;; boxing equalifty. That is, the merge of the
+			  ;; two following prototypes:
+			  ;;   p0=(::obj ::int ::input-port)
+			  ;;   p1=(::obj ::double ::bstring)
+			  ;; produces:
+			  ;;   p0=(::obj ::bint ::input-port)
+			  ;;   p1=(::obj ::read ::bstring)
+			  ;; This is not a problem for the C backend because
+			  ;; bint, input-port, bstring are all represented
+			  ;; by the same C type but this makes the JVM
+			  ;; more complex (see the procedure
+			  ;;   funcall-light@saw_jvm_funcall
+			  ;; (in file SawJvm/funcall.scm)
 			  (variable-type-set! (car a0) (get-bigloo-type t0))
 			  (variable-type-set! (car a1) (get-bigloo-type t1))
 			  (loop (cdr a0) (cdr a1) #t))))))))
@@ -441,9 +476,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    lists for the closure optimization                               */
 ;*---------------------------------------------------------------------*/
-(define *funcall-list*        '())
+(define *funcall-list* '())
 (define *make-procedure-list* '())
-(define *procedure-ref-list*  '())
+(define *procedure-ref-list* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    get-procedure-list ...                                           */
@@ -455,22 +490,21 @@
 ;*    add-funcall! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (add-funcall! ast)
-   (if (closure-optimization?)
-       (set! *funcall-list* (cons ast *funcall-list*))))
+   (when (closure-optimization?)
+      (set! *funcall-list* (cons ast *funcall-list*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-make-procedure! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (add-make-procedure! ast)
-   (if (closure-optimization?)
-       (set! *make-procedure-list* (cons ast *make-procedure-list*))))
+   (set! *make-procedure-list* (cons ast *make-procedure-list*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    add-procedure-ref! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (add-procedure-ref! ast)
-   (if (closure-optimization?)
-       (set! *procedure-ref-list* (cons ast *procedure-ref-list*))))
+   (when (closure-optimization?)
+      (set! *procedure-ref-list* (cons ast *procedure-ref-list*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    approx-procedure-el? ...                                         */

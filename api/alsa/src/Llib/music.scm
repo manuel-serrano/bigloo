@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Aug 23 15:44:15 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 09:01:18 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -56,8 +56,7 @@
 	       (%inbufp::string read-only)
 	       (%head::long (default 0))
 	       (%tail::long (default 0))
-	       (%empty::bool (default #t))
-	       (%filled::bool (default #f)))
+	       (%empty::bool (default #t)))
 	    
 	    (class alsadecoder
 	       (alsadecoder-init)
@@ -93,14 +92,15 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (begin (bigloo-compiler-debug) 1))
+   (bigloo-compiler-debug))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-debug ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (alsa-debug)
-   (when (>fx ($compiler-debug) 0)
-      (bigloo-debug)))
+   (if (>fx ($compiler-debug) 0)
+       (bigloo-debug)
+       0))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
@@ -372,8 +372,11 @@
    (define (play-url o d::alsadecoder url::bstring playlist notify)
       (cond
 	 ((next-buffer? url) (play-url-next o d url playlist))
-	 ((file-exists? url) (play-url-mmap o d url playlist notify))
-	 (else (play-url-port o d url playlist notify))))
+;* 	 ((file-exists? url) (play-url-mmap o d url playlist notify))  */
+;* 	 (else (play-url-port o d url playlist notify))))              */
+	 (else (when (file-exists? url)
+		  (tprint "ALSA, MMAP disabled..."))
+	       (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
       (with-access::alsamusic o (%amutex %!playid onerror %decoder)
@@ -556,16 +559,16 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsaportbuffer o::alsamusic)
-   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %filled %seek readsz port url)
+   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %seek readsz port url)
       
       (define inlen %inlen)
 
       (define (read-fill-string-debug! %inbuf %head sz port)
-	 (tprint ">>> ALSA: read sz=" sz)
+	 (debug ">>> ALSA: read sz=" sz)
 	 (let* ((d0 (current-microseconds))
 		(r (read-fill-string! %inbuf %head sz port))
 		(d1 (current-microseconds)))
-	    (tprint "<<< ALSA: read " r "/" sz " (" (-llong d1 d0) "us)")
+	    (debug "<<< ALSA: read " r "/" sz " (" (-llong d1 d0) "us)")
 	    r))
       
       (define (timed-read sz)
@@ -577,6 +580,9 @@
 	 (with-access::alsamusic o (onevent)
 	    (mutex-lock! %bmutex)
 	    (set! %eof #t)
+	    (when (>=fx (alsa-debug) 2)
+	       (debug ">>> ALSA: broadcast eof ("
+		  (current-microseconds) ") url=" url))
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex)
 	    (onevent o 'loaded url)))
@@ -586,9 +592,12 @@
 	    (if (=fx nhead inlen)
 		(set! %head 0)
 		(set! %head nhead))
-	    (when (or %empty (not %filled))
+	    (when %empty
 	       ;; buffer was empty
 	       (mutex-lock! %bmutex)
+	       (when (>=fx (alsa-debug) 2)
+		  (debug ">>> ALSA: broadcast non-empty ("
+		     (current-microseconds) ") url=" url))
 	       (set! %empty #f)
 	       (condition-variable-broadcast! %bcondv)
 	       (mutex-unlock! %bmutex))))
@@ -598,6 +607,8 @@
 	 (condition-variable-broadcast! %bcondv)
 	 (mutex-unlock! %bmutex))
 
+      (when (>fx (alsa-debug) 0) (debug-init!))
+      
       (with-handler
 	 (lambda (e)
 	    (exception-notify e)
@@ -617,17 +628,19 @@
 		#unspecified)
 	       ((>=elong %seek #e0)
 		;; seek buffer
-		(tprint "ALSABUFFER-FILL! ::alsaportbuffer SEEK: "
-		   %seek "/" (input-port-length port)
-		   " head=" %head " tail=" %tail " inlen=" inlen)
+		(when (>fx (alsa-debug) 0)
+		   (debug "ALSABUFFER-FILL! ::alsaportbuffer SEEK: "
+		      %seek "/" (input-port-length port)
+		      " head=" %head " tail=" %tail " inlen=" inlen))
 		(set-input-port-position! port %seek)
 		(set! %seek #e-1)
 		(loop))
 	       ((and (=fx %head %tail) (not %empty))
 		;; buffer full
 		(mutex-lock! %bmutex)
-		(when (>=fx (alsa-debug) 4)
-		   (tprint ">>> ALSA: wait on buffer full url=" url))
+		(when (>=fx (alsa-debug) 1)
+		   (debug ">>> ALSA: wait on buffer full ("
+		      (current-microseconds) ") url=" url))
 		(condition-variable-wait! %bcondv %bmutex)
 		(mutex-unlock! %bmutex)
 		(loop))
@@ -640,7 +653,10 @@
 		   (cond
 		      ((eof-object? i) (set-eof!))
 		      ((>fx i 0) (inc-head! i)))
-		   (loop))))))))
+		   (loop))))))
+
+      (when (>fx (alsa-debug) 0)
+	 (debug-stop!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */
@@ -777,7 +793,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-seek buffer::alsaportbuffer offset)
    (with-access::alsaportbuffer buffer (%seek port %tail %head %empty
-					  %bmutex %bcondv %filled %eof)
+					  %bmutex %bcondv %eof)
       ;; only ports that support seek have a position length
       (when (>fx (input-port-length port) 0)
 	 (unless %eof
@@ -785,7 +801,6 @@
 	    ;; mark the seek position
 	    (set! %empty #t)
 	    (set! %seek (if (llong? offset) (llong->fixnum offset) offset))
-	    (set! %filled #f)
 	    (set! %head %tail)
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex))
@@ -858,3 +873,27 @@
 	      (mime-type (substring path 6 i))
 	      (mime-type-file path)))
        (mime-type-file path)))
+
+;*---------------------------------------------------------------------*/
+;*    *debug-port* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *debug-port* #f)
+
+;*---------------------------------------------------------------------*/
+;*    debug-init! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (debug-init!)
+   (set! *debug-port* (open-output-file "/tmp/ALSA.log")))
+
+;*---------------------------------------------------------------------*/
+;*    debug-stop! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (debug-stop!)
+   (close-output-port *debug-port*))
+   
+;*---------------------------------------------------------------------*/
+;*    debug ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (debug . args)
+   (apply fprint *debug-port* args)
+   (flush-output-port *debug-port*))

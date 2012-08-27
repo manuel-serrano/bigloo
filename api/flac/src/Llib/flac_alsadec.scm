@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Aug 23 09:57:40 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 09:15:26 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -54,7 +54,7 @@
 (define (flac-debug)
    (if (>fx ($compiler-debug) 0)
        (bigloo-debug)
-       2))
+       0))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
@@ -157,11 +157,14 @@
 	 (set! %alsamusic am)
 	 (set! %decoder dec)
 	 (with-access::alsamusic am (%amutex %status pcm)
+	    (when (>fx (flac-debug) 0) (debug-init!))
 	    (unwind-protect
 	       (flac-decoder-decode %flac)
 	       (with-access::alsabuffer %buffer (%eof)
 		  (alsa-snd-pcm-cleanup pcm)
-		  (onstate am (if %eof 'ended 'stop))))))))
+		  (onstate am (if %eof 'ended 'stop))
+		  (when (>fx (flac-debug) 0)
+		     (debug-stop!))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    onstate ...                                                      */
@@ -216,7 +219,7 @@
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
 					     %inbuf %inbufp %inlen
 					     %tail %head %eof
-					     %empty %filled
+					     %empty
 					     url)
 	    
 	    (define inlen %inlen)
@@ -249,7 +252,7 @@
 		     (when (or (and (or (< p 75) %has-been-empty-once)
 				    (not %eof))
 			       (>=fx (flac-debug) 3))
-			(tprint "--- FLAC_DECODER, buffer: "
+			(debug "--- FLAC_DECODER, buffer: "
 			   (cond
 			      ((>= p 80) "")
 			      ((> p 25) "[0m[1;33m")
@@ -267,14 +270,18 @@
 		  ;; check buffer emptyness
 		  (when (=fx ntail %head)
 		     (set! %has-been-empty-once #t)
-		     (set! %empty #t)
-		     (set! %filled #f))
+		     (tprint "INC-TAIL set filled=#f")
+		     (set! %empty #t))
 		  ;; increment the shared %tail
 		  (set! %tail ntail))
 	       ;; debug
 	       (debug-inc-tail)
 	       ;; notify the buffer no longer full
 	       (when (buffer-flushed?)
+		  (when (>=fx (flac-debug) 2)
+		     (debug ">>> FLAC_DECODER, broadcast no longer full "
+			"(" (current-microseconds) ")"
+			" url=" url))
 		  (mutex-lock! %bmutex)
 		  (condition-variable-broadcast! %bcondv)
 		  (mutex-unlock! %bmutex)))
@@ -309,13 +316,14 @@
 		   (if %eof
 		       (begin
 			  (when (>=fx (flac-debug) 2)
-			     (tprint "!!! FLAC_DECODER, EOF"
+			     (debug "!!! FLAC_DECODER, EOF"
 				" url=" url))
 			  beof)
 		       (begin
-			  (when (>=fx (flac-debug) 2)
-			     (tprint "!!! FLAC_DECODER, buffer empty "
+			  (when (>=fx (flac-debug) 1)
+			     (debug "!!! FLAC_DECODER, buffer empty "
 				(if %eof " EOF" "")
+				"(" (current-microseconds) ")"
 				" url=" url))
 			  (if %has-been-empty-once
 			      (with-access::alsamusic am (onerror)
@@ -324,7 +332,12 @@
 			  (mutex-lock! %bmutex)
 			  (let liip ()
 			     ;; wait until the buffer is filled
-			     (unless (or %eof %!dabort (buffer-filled?))
+			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
+				(when (>=fx (flac-debug) 2)
+				   (debug "!!! FLAC_DECODER, waiting buffer "
+				      (if %eof " EOF" "")
+				      "(" (current-microseconds) ")"
+				      " url=" url))
 				(condition-variable-wait! %bcondv %bmutex)
 				(with-access::alsamusic am (%status)
 				   (with-access::musicstatus %status (buffering)
@@ -332,7 +345,7 @@
 					 (buffer-percentage-filled))))
 				(onstate am 'buffering)
 				(liip)))
-			  (set! %filled #t)
+			  (tprint "EMPTY set filled=#t")
 			  (mutex-unlock! %bmutex)
 			  (onstate am 'play)
 			  (loop size i))))
@@ -347,6 +360,30 @@
 		      (if (<fx s size)
 			  (loop (- size s) (+fx i s))
 			  (+fx i s))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    *debug-port* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *debug-port* #f)
+
+;*---------------------------------------------------------------------*/
+;*    debug-init! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (debug-init!)
+   (set! *debug-port* (open-output-file "/tmp/FLAC.log")))
+
+;*---------------------------------------------------------------------*/
+;*    debug-stop! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (debug-stop!)
+   (close-output-port *debug-port*))
+   
+;*---------------------------------------------------------------------*/
+;*    debug ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (debug . args)
+   (apply fprint *debug-port* args)
+   (flush-output-port *debug-port*))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Aug 24 16:17:41 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 11:13:35 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -36,6 +36,7 @@
 ;*    type-settings! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (type-settings! globals)
+   (type-closures!)
    (for-each type-fun! globals))
 
 ;*---------------------------------------------------------------------*/

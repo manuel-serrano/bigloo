@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Thu Aug 23 09:55:53 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 09:15:11 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -99,7 +99,7 @@
 (define-method (alsadecoder-seek dec::mpg123-alsadecoder sec)
    (with-access::mpg123-alsadecoder dec (%mpg123 %!dseek)
       (when (>=fx (mpg123-debug) 2)
-	 (tprint "*** MPG123_SEEK, seek=" sec))
+	 (debug "*** MPG123_SEEK, seek=" sec))
       (when (<fx %!dseek 0)
 	 (set! %!dseek sec))))
 
@@ -123,7 +123,7 @@
 	 (with-access::alsabuffer buffer (%bmutex %bcondv
 					    %inbufp %inlen
 					    %tail %head
-					    %eof %empty %filled
+					    %eof %empty
 					    url)
 	    
 	    (define inlen %inlen)
@@ -156,7 +156,7 @@
 		     (when (or (and (or (< p 75) has-been-empty-once)
 				    (not %eof))
 			       (>=fx (mpg123-debug) 3))
-			(tprint "--- MPG123_DECODER, buffer: "
+			(debug "--- MPG123_DECODER, buffer: "
 			   (cond
 			      ((>= p 80) "")
 			      ((> p 25) "[0m[1;33m")
@@ -174,14 +174,17 @@
 		  ;; check buffer emptyness
 		  (when (=fx ntail %head)
 		     (set! has-been-empty-once #t)
-		     (set! %empty #t)
-		     (set! %filled #f))
+		     (set! %empty #t))
 		  (set! %tail ntail))
 	       ;; debug 
 	       (debug-inc-tail)
 	       ;; notify the buffer no longer full
 	       (when (buffer-flushed?)
 		  (mutex-lock! %bmutex)
+		  (when (>=fx (mpg123-debug) 2)
+		     (debug ">>> MPG123_DECODER, broadcast no longer full "
+			"(" (current-microseconds) ")"
+			" url=" url))
 		  (condition-variable-broadcast! %bcondv)
 		  (mutex-unlock! %bmutex)))
 
@@ -191,6 +194,8 @@
 		     (set! state st)
 		     (onstate am %status))))
 
+	    (when (>fx (mpg123-debug) 0) (debug-init!))
+	    
 	    (let loop ()
 	       (cond
 		  (%!dpause
@@ -218,31 +223,34 @@
 		   (if %eof
 		       (begin
 			  (when (>=fx (mpg123-debug) 2)
-			     (tprint "!!! MPG123_DECODER, EOF url=" url))
+			     (debug "!!! MPG123_DECODER, EOF url=" url))
 			  (onstate am 'ended))
 		       (begin
-			  (when (>=fx (mpg123-debug) 2)
-			     (tprint "!!! MPG123_DECODER, buffer empty "
-				" url=" url))
-			  (begin
-			     (if has-been-empty-once
-				 (onerror am "empty buffer")
-				 (onstate am 'buffering))
-			     (mutex-lock! %bmutex)
-			     (let liip ()
-				;; wait until the buffer is filled
-				(unless (or %eof %!dabort (buffer-filled?))
-				   (condition-variable-wait! %bcondv %bmutex)
-				   (with-access::alsamusic am (%status)
-				      (with-access::musicstatus %status (buffering)
-					 (set! buffering
-					    (buffer-percentage-filled))))
-				   (onstate am 'buffering)
-				   (liip)))
-			     (set! %filled #t)
-			     (mutex-unlock! %bmutex)
-			     (onstate am 'play)
-			     (loop)))))
+			  (when (>=fx (mpg123-debug) 1)
+			     (debug "!!! MPG123_DECODER, buffer empty ("
+				(current-microseconds)
+				") url=" url))
+			  (if has-been-empty-once
+			      (onerror am "empty buffer")
+			      (onstate am 'buffering))
+			  (mutex-lock! %bmutex)
+			  (let liip ()
+			     ;; wait until the buffer is filled
+			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
+				(when (>=fx (mpg123-debug) 2)
+				   (debug "!!! MPG123_DECODER, waiting buffer ("
+				      (current-microseconds)
+				      ") url=" url))
+				(condition-variable-wait! %bcondv %bmutex)
+				(with-access::alsamusic am (%status)
+				   (with-access::musicstatus %status (buffering)
+				      (set! buffering
+					 (buffer-percentage-filled))))
+				(onstate am 'buffering)
+				(liip)))
+			  (mutex-unlock! %bmutex)
+			  (onstate am 'play)
+			  (loop))))
 		  (else
 		   ;; the buffer contains available bytes
 		   (let flush ((s (minfx decsz
@@ -252,7 +260,7 @@
 		      (let ((status ($bgl-mpg123-decode
 				       %mpg123 %inbufp %tail s outbuf outlen)))
 			 (when (>=fx (mpg123-debug) 4)
-			    (tprint "~~~ MPG123_DECODER, s=" s
+			    (debug "~~~ MPG123_DECODER, s=" s
 			       " tl=" %tail " hd=" %head
 			       " -> status="
 			       (mpg123-decode-status->symbol status)))
@@ -271,7 +279,7 @@
 			     ;; play and keep decoding
 			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>=fx (mpg123-debug) 5)
-				   (tprint "~~~ MPG123_DECODER, OK s=" s
+				   (debug "~~~ MPG123_DECODER, OK s=" s
 				      " size=" size))
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)
@@ -280,7 +288,7 @@
 			     ;; play and loop to get more bytes
 			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>=fx (mpg123-debug) 5)
-				   (tprint "~~~ MPG123_DECODER, NEED-MORE s=" s
+				   (debug "~~~ MPG123_DECODER, NEED-MORE s=" s
 				      " size=" size " %empty=" %empty
 				      " tail=" %tail))
 				(when (>fx size 0)
@@ -303,7 +311,10 @@
 			     ;; an error occurred
 			     (with-access::musicstatus %status (err)
 				(set! err "mp3 decoding error"))
-			     (onerror am "mp3 decoding error"))))))))))))
+			     (onerror am "mp3 decoding error"))))))))
+
+	    (when (>fx (mpg123-debug) 0)
+	       (debug-stop!))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    new-format ...                                                   */
@@ -335,6 +346,30 @@
 	    (alsadecoder-info dec)
 	    (set! bitrate bitrate)
 	    (set! khz rate)))))
+
+;*---------------------------------------------------------------------*/
+;*    *debug-port* ...                                                 */
+;*---------------------------------------------------------------------*/
+(define *debug-port* #f)
+
+;*---------------------------------------------------------------------*/
+;*    debug-init! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (debug-init!)
+   (set! *debug-port* (open-output-file "/tmp/MPG123.log")))
+
+;*---------------------------------------------------------------------*/
+;*    debug-stop! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (debug-stop!)
+   (close-output-port *debug-port*))
+   
+;*---------------------------------------------------------------------*/
+;*    debug ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (debug . args)
+   (apply fprint *debug-port* args)
+   (flush-output-port *debug-port*))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 12:37:15 1998                          */
-;*    Last change :  Fri Feb 18 15:02:28 2011 (serrano)                */
+;*    Last change :  Mon Aug 27 11:04:15 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A simple implementation of bit vectors for handling set of       */
 ;*    integers.                                                        */

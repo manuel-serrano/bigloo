@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Fri Aug 24 08:19:49 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 11:50:51 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
