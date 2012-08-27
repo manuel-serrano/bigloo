@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Aug 27 09:01:18 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 16:10:05 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -410,7 +410,7 @@
 			    (onerror o
 			       (instantiate::&io-parse-error
 				  (proc "music-play")
-				  (msg "Illegal format")
+				  (msg "Illegal music format")
 				  (obj url)))
 			    (mutex-lock! %amutex)))))))))
 
@@ -863,7 +863,7 @@
 	 ((string-suffix? ".wav" path) "audio/x-wav")
 	 ((string-suffix? ".swf" path) "application/x-shockwave-flash")
 	 ((string-suffix? ".swfl" path) "application/x-shockwave-flash")
-	 (else "audio/binary")))
+	 (else "audio/mpeg")))
    
    (if (and (string-prefix? "http" path)
 	    (or (string-prefix? "http://" path)
