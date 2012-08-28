@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Aug 28 09:58:43 2012 (serrano)                */
+;*    Last change :  Tue Aug 28 15:17:11 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -276,7 +276,7 @@
 	       ;; debug
 	       (debug-inc-tail)
 	       ;; notify the buffer no longer full
-	       (when (buffer-flushed?)
+	       (when (and (buffer-flushed?) (not %eof))
 		  (when (>=fx (flac-debug) 2)
 		     (debug "--> FLAC_DECODER, broadcast not-full "
 			url " " (current-microseconds)))
@@ -322,21 +322,17 @@
 			  (when (>=fx (flac-debug) 1)
 			     (debug "<-- FLAC_DECODER, wait not-empty " url
 				" " (current-microseconds) "..."))
-			  (if %has-been-empty-once
-			      (with-access::alsamusic am (onerror)
-				 (onerror am "empty buffer"))
-			      (onstate am 'buffering))
 			  (mutex-lock! %bmutex)
 			  (debug "empty=" %empty " eof=" %eof "...")
 			  (let liip ()
 			     ;; wait until the buffer is filled
 			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
-				(condition-variable-wait! %bcondv %bmutex)
 				(with-access::alsamusic am (%status)
 				   (with-access::musicstatus %status (buffering)
 				      (set! buffering
 					 (buffer-percentage-filled))))
 				(onstate am 'buffering)
+				(condition-variable-wait! %bcondv %bmutex)
 				(liip)))
 			  (mutex-unlock! %bmutex)
 			  (when (>=fx (flac-debug) 1)

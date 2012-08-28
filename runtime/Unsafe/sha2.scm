@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Sun Aug 26 08:52:39 2012 (serrano)                */
+;*    Last change :  Tue Aug 28 14:56:19 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
@@ -82,6 +82,8 @@
    (import __param
 	   __hmac
 	   __tvector)
+
+;*    (import __r4_output_6_10_3)                                      */
 
    (from   __srfi4)
    
@@ -400,36 +402,6 @@
 	 (else
 	  (set-state! state a b c d e f g h)
 	  state))))
-
-;*---------------------------------------------------------------------*/
-;*    sha256-update ...                                                */
-;*---------------------------------------------------------------------*/
-(define (sha256-update-TO-BE-REMOVED state::u32vector buffer::u32vector
-		       len::long o::obj fill-word!::procedure)
-   
-   (define (fill-buffer! buffer i)
-      (let loop ((j 0)
-		 (i i))
-	 (when (<fx j 16)
-	    (fill-word! buffer j o i)
-	    (loop (+fx j 1) (+fx i 4)))))
-   
-   (let* ((l (*fx len 8))
-	  (k (-fx 448 (remainderfx (+fx l 1) 512))))
-      (let loop ((l (/fx (+fx (+fx 64 (+fx l 1)) (if (<fx k 0) (+fx k 512) k)) 8))
-		 (i 0))
-	 (cond
-	    ((>fx l 64)
-	     (let ((words (fill-buffer! buffer i)))
-		(sha256-internal-transform state buffer)
-		(loop (-fx l 64) (+fx i 64))))
-	    (else
-	     (let ((words (fill-buffer! buffer i)))
-		;; Add the length at the end of the message. The length is
-		;; a 64 bits integer but we are using here 32bits values
-		(let ((ulen::ulong (*fx 8 len)))
-		   (u32vector-set! buffer 15 ulen))
-		(sha256-internal-transform state buffer)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sha256-update ...                                                */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Aug 28 10:13:58 2012 (serrano)                */
+;*    Last change :  Tue Aug 28 15:11:25 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -49,7 +49,6 @@
 	    (class alsabuffer
 	       (url::bstring read-only)
 	       (%eof::bool (default #f))
-	       (%!babort::bool (default #f))
 	       (%bcondv::condvar read-only (default (make-condition-variable)))
 	       (%bmutex::mutex read-only (default (make-mutex)))
 	       (%inlen::long read-only)
@@ -252,7 +251,7 @@
       (with-access::alsamusic o (pcm)
 	 (when (eq? (alsa-snd-pcm-get-state pcm) 'not-open)
 	    (alsa-snd-pcm-open pcm))))
-
+   
    (define (pcm-reset! o)
       (with-access::alsamusic o (pcm)
 	 (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
@@ -260,7 +259,7 @@
 	       (when (memq pcm-state '(running prepared))
 		  (alsa-snd-pcm-drop pcm))
 	       (alsa-snd-pcm-cleanup pcm)))))
-
+   
    (define (prepare-next-buffer o buffer playlist::pair-nil)
       (when (pair? playlist)
 	 (with-access::alsaportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
@@ -282,7 +281,7 @@
 					    (%nexttail %head))))
 				 (set! %nextbuffer buf)
 				 buf))))))))))
-	 
+   
    (define (play-url-port o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
       (let ((ip (open-file url o)))
@@ -322,7 +321,7 @@
 		      (proc "music-play")
 		      (msg "Cannot open")
 		      (obj url)))))))
-
+   
    (define (play-url-mmap o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
       (let ((mmap (open-mmap url :read #t :write #f)))
@@ -349,7 +348,7 @@
 		      (proc "music-play")
 		      (msg "Cannot open")
 		      (obj url)))))))
-
+   
    (define (play-url-next o d::alsadecoder url::bstring playlist)
       (with-access::alsamusic o (%amutex %buffer %nextbuffer)
 	 (with-access::alsaportbuffer %nextbuffer (%nexttail %tail %head)
@@ -359,7 +358,7 @@
 	 (mutex-unlock! %amutex)
 	 (alsadecoder-reset! d)
 	 (alsadecoder-decode d o %buffer)))
-
+   
    (define (next-buffer? url)
       (with-access::alsamusic o (%nextbuffer)
 	 (when (isa? %nextbuffer alsabuffer)
@@ -413,7 +412,7 @@
 				  (msg "Illegal music format")
 				  (obj url)))
 			    (mutex-lock! %amutex)))))))))
-
+   
    (define (play-playlist n)
       ;; start playing the playlist
       (with-access::alsamusic o (%playlist %aready %!playid)
@@ -438,7 +437,7 @@
 	       (pcm-reset! o)
 	       ;; signal if someone waiting for the music player
 	       (condition-variable-signal! %acondv)))))
-
+   
    (define (resume-from-pause o)
       (with-access::alsamusic o (%decoder)
 	 (when (isa? %decoder alsadecoder)
@@ -510,22 +509,33 @@
 ;*    alsabuffer-abort! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (alsabuffer-abort! b::alsabuffer)
-   (with-access::alsabuffer b (%bmutex %bcondv %!babort)
+   (with-access::alsabuffer b (%bmutex %bcondv url %eof %empty)
+      (when (>=fx (alsa-debug) 2)
+	 (debug "--> ALSA: broadcast abort " url
+	    " " (current-microseconds) "..."))
       (mutex-lock! %bmutex)
-      (set! %!babort #t)
+      (set! %empty #t)
+      (set! %eof #t)
       (condition-variable-broadcast! %bcondv)
-      (mutex-unlock! %bmutex)))
+      (mutex-unlock! %bmutex)
+      (when (>=fx (alsa-debug) 2)
+	 (debug (current-microseconds) "\n"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-abort! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (alsadecoder-abort! d::alsadecoder)
    (with-access::alsadecoder d (%!dabort %!dpause %dmutex %dcondv)
+      (when (>=fx (alsa-debug) 2)
+	 (debug "--> ALSA: signal decoder abort "
+	    (current-microseconds) "..."))
       (mutex-lock! %dmutex)
       (set! %!dpause #f)
       (set! %!dabort #t)
       (condition-variable-signal! %dcondv)
-      (mutex-unlock! %dmutex)))
+      (mutex-unlock! %dmutex)
+      (when (>=fx (alsa-debug) 2)
+	 (debug (current-microseconds) "\n"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ...                                                  */
@@ -559,7 +569,7 @@
 ;*    alsabuffer-fill! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-fill! buffer::alsaportbuffer o::alsamusic)
-   (with-access::alsaportbuffer buffer (%bmutex %bcondv %!babort %head %tail %inbuf %inlen %eof %empty %seek readsz port url)
+   (with-access::alsaportbuffer buffer (%bmutex %bcondv %head %tail %inbuf %inlen %eof %empty %seek readsz port url)
       
       (define inlen %inlen)
 
@@ -606,16 +616,6 @@
 	       (when (>=fx (alsa-debug) 2)
 		  (debug (current-microseconds) "\n")))))
       
-      (define (abort)
-	 (when (>=fx (alsa-debug) 2)
-	    (debug "--> ALSA: broadcast abort " url
-	       " " (current-microseconds) "..."))
-	 (mutex-lock! %bmutex)
-	 (condition-variable-broadcast! %bcondv)
-	 (mutex-unlock! %bmutex)
-	 (when (>=fx (alsa-debug) 2)
-	    (debug (current-microseconds) "\n")))
-
       (when (>fx (alsa-debug) 0) (debug-init! url))
       
       (with-handler
@@ -624,27 +624,17 @@
 	       (debug "!!! ALSA ERROR: " url
 		  " " (current-microseconds) " " e "\n"))
 	    (exception-notify e)
-	    (set! %!babort #t)
-	    (set! %eof #t)
-	    (abort)
+	    (set-eof!)
+	    (when (>=fx (alsa-debug) 1)
+	       (debug "ALSA ABORT.on-error\n"))
+	    (alsabuffer-abort! buffer)
 	    (with-access::alsamusic o (onerror)
 	       (onerror o e)
 	       (sleep (*fx 1000 1000))))
 	 (let loop ()
 	    (cond
-	       (%!babort
-   	        ;;; external abort
-		(abort))
 	       (%eof
 	        ;;; done looping
-		(when (>=fx (alsa-debug) 2)
-		   (debug "--> ALSA: broadcast eof " url
-		      " " (current-microseconds) "..."))
-		(mutex-lock! %bmutex)
-		(condition-variable-broadcast! %bcondv)
-		(mutex-unlock! %bmutex)
-		(when (>=fx (alsa-debug) 2)
-		   (debug (current-microseconds) "\n"))
 		#unspecified)
 	       ((>=elong %seek #e0)
 		;; seek buffer
@@ -920,5 +910,6 @@
 ;*    debug ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (debug . args)
-   (for-each (lambda (a) (display a *debug-port*)) args)
-   (flush-output-port *debug-port*))
+   (when (output-port? *debug-port*)
+      (for-each (lambda (a) (display a *debug-port*)) args)
+      (flush-output-port *debug-port*)))

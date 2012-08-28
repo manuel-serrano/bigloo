@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Fri Aug 24 05:58:45 2012 (serrano)                */
+;*    Last change :  Tue Aug 28 14:55:21 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -405,11 +405,10 @@
 	  (vsetid (symbol-append '$ tid '-set!)))
       `(define (,make len #!optional (init ,init))
 	  (let ((v (,aid len)))
-	     (unless (= init 0)
-		(let loop ((i 0))
-		   (when (<fx i len)
-		      (,vsetid v i init)
-		      (loop (+fx i 1)))))
+	     (let loop ((i 0))
+		(when (<fx i len)
+		   (,vsetid v i init)
+		   (loop (+fx i 1))))
 	     v))))
 
 (define-make-hvector s 8 0)

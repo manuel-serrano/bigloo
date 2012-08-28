@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Tue Aug 28 10:08:05 2012 (serrano)                */
+;*    Last change :  Tue Aug 28 15:17:17 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -179,7 +179,7 @@
 	       ;; debug 
 	       (debug-inc-tail)
 	       ;; notify the buffer no longer full
-	       (when (buffer-flushed?)
+	       (when (and (buffer-flushed?) (not %eof))
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug "--> MPG123_DECODER, broadcast not-full "
 			url " " (current-microseconds) "..."))
@@ -196,7 +196,7 @@
 		     (onstate am %status))))
 
 	    (when (>fx (mpg123-debug) 0) (debug-init! url))
-	    
+
 	    (let loop ()
 	       (cond
 		  (%!dpause
@@ -230,20 +230,17 @@
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug "<-- MPG123_DECODER, wait not-empty " url " "
 				(current-microseconds) "..."))
-			  (if has-been-empty-once
-			      (onerror am "empty buffer")
-			      (onstate am 'buffering))
 			  (mutex-lock! %bmutex)
 			  (debug "empty=" %empty " eof=" %eof "...")
 			  (let liip ()
 			     ;; wait until the buffer is filled
 			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
-				(condition-variable-wait! %bcondv %bmutex)
 				(with-access::alsamusic am (%status)
 				   (with-access::musicstatus %status (buffering)
 				      (set! buffering
 					 (buffer-percentage-filled))))
 				(onstate am 'buffering)
+				(condition-variable-wait! %bcondv %bmutex)
 				(liip)))
 			  (mutex-unlock! %bmutex)
 			  (when (>=fx (mpg123-debug) 1)
