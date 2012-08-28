@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Aug 27 16:10:05 2012 (serrano)                */
+;*    Last change :  Tue Aug 28 10:13:58 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -564,11 +564,11 @@
       (define inlen %inlen)
 
       (define (read-fill-string-debug! %inbuf %head sz port)
-	 (debug ">>> ALSA: read sz=" sz)
+	 (debug "~~> ALSA: read sz=" sz "...")
 	 (let* ((d0 (current-microseconds))
 		(r (read-fill-string! %inbuf %head sz port))
 		(d1 (current-microseconds)))
-	    (debug "<<< ALSA: read " r "/" sz " (" (-llong d1 d0) "us)")
+	    (debug " r=" r " (" (-llong d1 d0) "us)\n")
 	    r))
       
       (define (timed-read sz)
@@ -578,13 +578,15 @@
 
       (define (set-eof!)
 	 (with-access::alsamusic o (onevent)
+	    (when (>=fx (alsa-debug) 2)
+	       (debug "--> ALSA: broadcast eof " url " "
+		  (current-microseconds) "..."))
 	    (mutex-lock! %bmutex)
 	    (set! %eof #t)
-	    (when (>=fx (alsa-debug) 2)
-	       (debug ">>> ALSA: broadcast eof ("
-		  (current-microseconds) ") url=" url))
 	    (condition-variable-broadcast! %bcondv)
 	    (mutex-unlock! %bmutex)
+	    (when (>=fx (alsa-debug) 2)
+	       (debug (current-microseconds) "\n"))
 	    (onevent o 'loaded url)))
 
       (define (inc-head! i)
@@ -594,23 +596,33 @@
 		(set! %head nhead))
 	    (when %empty
 	       ;; buffer was empty
-	       (mutex-lock! %bmutex)
 	       (when (>=fx (alsa-debug) 2)
-		  (debug ">>> ALSA: broadcast non-empty ("
-		     (current-microseconds) ") url=" url))
+		  (debug "--> ALSA: broadcast not-empty " url
+		     " " (current-microseconds) "..."))
+	       (mutex-lock! %bmutex)
 	       (set! %empty #f)
 	       (condition-variable-broadcast! %bcondv)
-	       (mutex-unlock! %bmutex))))
+	       (mutex-unlock! %bmutex)
+	       (when (>=fx (alsa-debug) 2)
+		  (debug (current-microseconds) "\n")))))
       
       (define (abort)
+	 (when (>=fx (alsa-debug) 2)
+	    (debug "--> ALSA: broadcast abort " url
+	       " " (current-microseconds) "..."))
 	 (mutex-lock! %bmutex)
 	 (condition-variable-broadcast! %bcondv)
-	 (mutex-unlock! %bmutex))
+	 (mutex-unlock! %bmutex)
+	 (when (>=fx (alsa-debug) 2)
+	    (debug (current-microseconds) "\n")))
 
-      (when (>fx (alsa-debug) 0) (debug-init!))
+      (when (>fx (alsa-debug) 0) (debug-init! url))
       
       (with-handler
 	 (lambda (e)
+	    (when (>=fx (alsa-debug) 1)
+	       (debug "!!! ALSA ERROR: " url
+		  " " (current-microseconds) " " e "\n"))
 	    (exception-notify e)
 	    (set! %!babort #t)
 	    (set! %eof #t)
@@ -625,24 +637,35 @@
 		(abort))
 	       (%eof
 	        ;;; done looping
+		(when (>=fx (alsa-debug) 2)
+		   (debug "--> ALSA: broadcast eof " url
+		      " " (current-microseconds) "..."))
+		(mutex-lock! %bmutex)
+		(condition-variable-broadcast! %bcondv)
+		(mutex-unlock! %bmutex)
+		(when (>=fx (alsa-debug) 2)
+		   (debug (current-microseconds) "\n"))
 		#unspecified)
 	       ((>=elong %seek #e0)
 		;; seek buffer
 		(when (>fx (alsa-debug) 0)
-		   (debug "ALSABUFFER-FILL! ::alsaportbuffer SEEK: "
+		   (debug "~~~ ALSABUFFER-FILL! ::alsaportbuffer SEEK: "
 		      %seek "/" (input-port-length port)
-		      " head=" %head " tail=" %tail " inlen=" inlen))
+		      " head=" %head " tail=" %tail " inlen=" inlen "\n"))
 		(set-input-port-position! port %seek)
 		(set! %seek #e-1)
 		(loop))
 	       ((and (=fx %head %tail) (not %empty))
 		;; buffer full
-		(mutex-lock! %bmutex)
 		(when (>=fx (alsa-debug) 1)
-		   (debug ">>> ALSA: wait on buffer full ("
-		      (current-microseconds) ") url=" url))
-		(condition-variable-wait! %bcondv %bmutex)
+		   (debug "<-- ALSA: wait not-full " url
+		      " " (current-microseconds) "..."))
+		(mutex-lock! %bmutex)
+		(when (and (=fx %head %tail) (not %empty))
+		   (condition-variable-wait! %bcondv %bmutex))
 		(mutex-unlock! %bmutex)
+		(when (>=fx (alsa-debug) 1)
+		   (debug (current-microseconds) "\n"))
 		(loop))
 	       (else
 		(let* ((s (minfx readsz
@@ -656,7 +679,7 @@
 		   (loop))))))
 
       (when (>fx (alsa-debug) 0)
-	 (debug-stop!))))
+	 (debug-stop! url))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-fill! ...                                             */
@@ -882,18 +905,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug-init! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (debug-init!)
-   (set! *debug-port* (open-output-file "/tmp/ALSA.log")))
+(define (debug-init! url)
+   (set! *debug-port* (open-output-file "/tmp/ALSA.log"))
+   (debug ">>> ALSA init " url " " (current-microseconds) "\n"))
 
 ;*---------------------------------------------------------------------*/
 ;*    debug-stop! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (debug-stop!)
+(define (debug-stop! url)
+   (debug ">>> ALSA stop " url " " (current-microseconds) "\n")
    (close-output-port *debug-port*))
    
 ;*---------------------------------------------------------------------*/
 ;*    debug ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (debug . args)
-   (apply fprint *debug-port* args)
+   (for-each (lambda (a) (display a *debug-port*)) args)
    (flush-output-port *debug-port*))
