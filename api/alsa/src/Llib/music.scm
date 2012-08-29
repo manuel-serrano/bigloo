@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Aug 29 10:36:41 2012 (serrano)                */
+;*    Last change :  Wed Aug 29 10:57:03 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -608,7 +608,6 @@
       
       (with-handler
 	 (lambda (e)
-	    (tprint "ALSA: WITH-HANDLER.3: " (typeof e))
 	    (when (>=fx (alsa-debug) 1)
 	       (debug "!!! ALSA ERROR: " url
 		  " " (current-microseconds) " " e "\n")
