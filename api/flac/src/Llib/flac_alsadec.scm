@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Aug 28 15:17:11 2012 (serrano)                */
+;*    Last change :  Wed Aug 29 10:44:23 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -323,7 +323,8 @@
 			     (debug "<-- FLAC_DECODER, wait not-empty " url
 				" " (current-microseconds) "..."))
 			  (mutex-lock! %bmutex)
-			  (debug "empty=" %empty " eof=" %eof "...")
+			  (when (>=fx (flac-debug) 1)
+			     (debug "empty=" %empty " eof=" %eof "..."))
 			  (let liip ()
 			     ;; wait until the buffer is filled
 			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
