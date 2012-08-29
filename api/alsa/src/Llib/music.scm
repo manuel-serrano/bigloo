@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Aug 28 15:11:25 2012 (serrano)                */
+;*    Last change :  Wed Aug 29 07:46:40 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -378,7 +378,7 @@
 	       (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!playid onerror %decoder)
+      (with-access::alsamusic o (%amutex %!playid onerror %decoder %status)
 	 (let ((playid %!playid))
 	    (let loop ((l urls)
 		       (n n)
@@ -393,14 +393,14 @@
 			    ;; play-url unlocks %amutex
 			    (with-handler
 			       (lambda (e)
-				  (if (isa? e &error)
-				      (with-access::&error e (msg proc)
-					 (raise
-					    (instantiate::&io-error
-					       (proc proc)
-					       (msg msg)
-					       (obj url))))
-				      (raise e)))
+				  (tprint "ALSA: WITH-HANDLER.1: " e)
+				  (when (>=fx (alsa-debug) 1)
+				     (exception-notify e))
+				  (mutex-lock! %amutex)
+				  (with-access::musicstatus %status (state)
+				     (set! state 'error))
+				  (mutex-unlock! %amutex)
+				  (onerror o e))
 			       (play-url o decoder url l notify))
 			    (mutex-lock! %amutex)
 			    (loop (cdr l) (+fx 1 n) #f))
@@ -450,29 +450,20 @@
 	       #t))))
    
    (with-access::alsamusic o (%amutex %status onerror)
-      (with-handler
-	 (lambda (e)
-	    (mutex-lock! %amutex)
-	    (with-access::musicstatus %status (state song)
-	       (set! song (+fx 1 song))
-	       (set! state 'error))
-	    (mutex-unlock! %amutex)
-	    (onerror o e)
-	    (raise e))
-	 (with-lock %amutex
-	    (lambda ()
-	       (cond
-		  ((pair? s)
-		   ;; play the playing from a user index
-		   (unless (integer? (car s))
-		      (bigloo-type-error "music-play ::alsamusic" 'int (car s)))
-		   (play-playlist (car s)))
-		  ((resume-from-pause o)
-		   #unspecified)
-		  (else
-		   ;; play the playlist from the current position
-		   (with-access::musicstatus %status (song)
-		      (play-playlist song)))))))))
+      (with-lock %amutex
+	 (lambda ()
+	    (cond
+	       ((pair? s)
+		;; play the playing from a user index
+		(unless (integer? (car s))
+		   (bigloo-type-error "music-play ::alsamusic" 'int (car s)))
+		(play-playlist (car s)))
+	       ((resume-from-pause o)
+		#unspecified)
+	       (else
+		;; play the playlist from the current position
+		(with-access::musicstatus %status (song)
+		   (play-playlist song))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::alsamusic ...                                       */
@@ -620,10 +611,11 @@
       
       (with-handler
 	 (lambda (e)
+	    (tprint "ALSA: WITH-HANDLER.3: " e)
 	    (when (>=fx (alsa-debug) 1)
 	       (debug "!!! ALSA ERROR: " url
-		  " " (current-microseconds) " " e "\n"))
-	    (exception-notify e)
+		  " " (current-microseconds) " " e "\n")
+	       (exception-notify e))
 	    (set-eof!)
 	    (when (>=fx (alsa-debug) 1)
 	       (debug "ALSA ABORT.on-error\n"))
