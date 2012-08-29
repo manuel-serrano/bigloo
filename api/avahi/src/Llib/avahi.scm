@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Aug  8 09:23:56 2012 (serrano)                */
+;*    Last change :  Wed Aug 29 15:08:09 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -53,7 +53,8 @@
 	 (avahi-init))
 
       (abstract-class avahi-poll::avahi-object
-	 ($ctype::int (default -1)))
+	 ($ctype::int (default -1))
+	 (%procs::pair-nil (default '())))
       
       (class avahi-simple-poll::avahi-poll
 	 ($builtin::$avahi-simple-poll read-only (default ($avahi-simple-poll-nil))))
@@ -319,7 +320,8 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-simple-poll-timeout o::avahi-simple-poll t::long proc::procedure)
    (if (correct-arity? proc 0)
-       (with-access::avahi-simple-poll o ($builtin)
+       (with-access::avahi-simple-poll o ($builtin %procs)
+	  (set! %procs (cons proc %procs))
 	  ($bgl-avahi-simple-poll-timeout $builtin t proc))
        (avahi-error "avahi-simple-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))
@@ -380,7 +382,8 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-threaded-poll-timeout o::avahi-threaded-poll t::long proc::procedure)
    (if (correct-arity? proc 0)
-       (with-access::avahi-threaded-poll o ($builtin)
+       (with-access::avahi-threaded-poll o ($builtin %procs)
+	  (set! %procs (cons proc %procs))
 	  ($bgl-avahi-threaded-poll-timeout $builtin t proc))
        (avahi-error "avahi-threaded-poll-timeout" "Illegal callback" proc
 	  $avahi-err-invalid-object)))

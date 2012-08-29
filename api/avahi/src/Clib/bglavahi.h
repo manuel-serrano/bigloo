@@ -39,12 +39,14 @@ typedef struct BgL_avahizd2pollzd2_bgl {
    header_t header;
    obj_t widening;
    int BgL_z42ctypez42;
+   obj_t BgL_z52procsz52;
 } *BgL_avahizd2pollzd2_bglt;
 
 typedef struct BgL_avahizd2simplezd2pollz00_bgl {
    header_t header;
    obj_t widening;
    int BgL_z42ctypez42;
+   obj_t BgL_z52procsz52;
    AvahiSimplePoll * BgL_z42builtinz42;
 } *BgL_avahizd2simplezd2pollz00_bglt;
 
@@ -52,6 +54,7 @@ typedef struct BgL_avahizd2threadedzd2pollz00_bgl {
    header_t header;
    obj_t widening;
    int BgL_z42ctypez42;
+   obj_t BgL_z52procsz52;
    AvahiThreadedPoll * BgL_z42builtinz42;
 } *BgL_avahizd2threadedzd2pollz00_bglt;
 
