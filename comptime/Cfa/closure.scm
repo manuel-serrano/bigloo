@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Mon Aug 27 12:16:24 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 19:16:18 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -250,6 +250,7 @@
 ;*    the sprocedure prototypes emmission.                             */
 ;*---------------------------------------------------------------------*/
 (define (light-make-procedure!)
+   
    (define (make-elight-procedure-app app)
       (with-access::make-procedure-app app (fun args type)
 	 (let* ((size (get-node-atom-value (caddr args)))
@@ -271,6 +272,7 @@
 		(set! type *procedure-el*))))
 	 (set! args (cddr args))
 	 app))
+   
    (define (make-light-procedure-app app)
       (with-access::make-procedure-app app (fun args type)
 	 (let* ((size (get-node-atom-value (caddr args)))
@@ -287,6 +289,7 @@
 	    (set! type *procedure*)
 	    (set-cdr! args (cddr args))
 	    app)))
+   
    ;; we change the procedure allocation sites
    (for-each (lambda (app)
 		(with-access::make-procedure-app app (X T)
@@ -353,25 +356,6 @@
 		  funcall-l))))))
 
 ;*---------------------------------------------------------------------*/
-;*    type-closures! ...                                               */
-;*---------------------------------------------------------------------*/
-(define (type-closures!)
-   (when *optim-cfa-unbox-closure-args*
-      (for-each (lambda (app::make-procedure-app)
-		   (with-access::make-procedure-app app (X T)
-		      (unless (or X T)
-			 (let* ((f (car (make-procedure-app-args app)))
-				(v (var-variable f)))
-			    (for-each (lambda (a)
-					 (let* ((val (variable-value a))
-						(p (svar/Cinfo-approx val))
-						(t (approx-type p)))
-					    (variable-type-set!
-					       a (get-bigloo-type t))))
-			       (cdr (sfun-args (variable-value v))))))))
-	 (get-procedure-list))))
-
-;*---------------------------------------------------------------------*/
 ;*    merge-app-types! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (merge-app-types! apps0::pair-nil)
@@ -417,6 +401,26 @@
       (if (null? apps)
 	  cont
 	  (loop (cdr apps) (or (merge2! (car apps0) (car apps)) cont)))))
+
+;*---------------------------------------------------------------------*/
+;*    type-closures! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (type-closures!)
+   
+   (define (set-type! app::make-procedure-app)
+      (with-access::make-procedure-app app (X T args)
+	 (unless (or X T)
+	    ;; a non optimized procedure
+	    (let* ((var (var-variable (car args)))
+		   (sfun (variable-value var)))
+	       (for-each (lambda (a)
+			    (let* ((p (svar/Cinfo-approx (variable-value a)))
+				   (t (approx-type p)))
+			       (variable-type-set! a (get-bigloo-type t))))
+		  (cdr (sfun-args sfun)))))))
+   
+   (when *optim-cfa-unbox-closure-args*
+      (for-each set-type! (get-procedure-list))))
 
 ;*---------------------------------------------------------------------*/
 ;*    light-access! ...                                                */
@@ -521,14 +525,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    A small cache                                                    */
 ;*---------------------------------------------------------------------*/
-(define *procedure-ref*       #f)
-(define *procedure-set!*      #f)
-(define *procedure-l-ref*     #f)
-(define *procedure-l-set!*    #f)
-(define *procedure-el-ref*    #f)
-(define *procedure-el-set!*   #f)
-(define *make-el-procedure*   #f)
-(define *make-l-procedure*    #f)
+(define *procedure-ref* #f)
+(define *procedure-set!* #f)
+(define *procedure-l-ref* #f)
+(define *procedure-l-set!* #f)
+(define *procedure-el-ref* #f)
+(define *procedure-el-set!* #f)
+(define *make-el-procedure* #f)
+(define *make-l-procedure* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    start-closure-cache ...                                          */

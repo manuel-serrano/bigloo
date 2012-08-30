@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Aug 29 10:42:03 2012 (serrano)                */
+;*    Last change :  Thu Aug 30 08:25:57 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -40,7 +40,7 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (bigloo-compiler-debug))
+   (begin (bigloo-compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-debug ...                                                 */
@@ -117,7 +117,7 @@
 		  am::alsamusic
 		  buffer::alsabuffer)
    
-   (with-access::alsamusic am (pcm %status onerror)
+   (with-access::alsamusic am (pcm %status onerror %error)
       (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv outbuf
 					      %!dabort %!dpause %!dseek)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv
@@ -307,8 +307,10 @@
 			     (onstate am 'ended))
 			    (else
 			     ;; an error occurred
-			     (with-access::musicstatus %status (err)
-				(set! err "mp3 decoding error"))
+			     (with-access::musicstatus %status (err state)
+				(set! err "mp3 decoding error")
+				(set! state 'error))
+			     (set! %error "mp3 decoding error")
 			     (onerror am "mp3 decoding error"))))))))
 
 	    (when (>fx (mpg123-debug) 0)

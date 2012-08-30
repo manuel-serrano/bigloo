@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Aug 29 10:44:23 2012 (serrano)                */
+;*    Last change :  Thu Aug 30 08:24:09 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -46,7 +46,7 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (bigloo-compiler-debug))
+   (begin (bigloo-compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-debug ...                                                   */

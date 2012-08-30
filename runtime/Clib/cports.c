@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Aug 22 18:05:50 2012 (serrano)                */
+/*    Last change :  Thu Aug 30 09:40:58 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -118,6 +118,15 @@ extern ssize_t sendfile( int, int, off_t *, size_t );
 #  endif       
 #endif
 
+/*---------------------------------------------------------------------*/
+/*    bgl_input_timeout ...                                            */
+/*---------------------------------------------------------------------*/
+struct bgl_input_timeout {
+   struct timeval timeout;
+   long (*sysread)();
+   int (*sysclose)( obj_t );
+};
+   
 /*---------------------------------------------------------------------*/
 /*    compatibility kit ISO C / POSIX 2001.                            */
 /*---------------------------------------------------------------------*/
@@ -423,25 +432,24 @@ posix_timed_read( obj_t port, char *ptr, long num ) {
    struct bgl_input_timeout *tmt = PORT( port ).timeout;
    int fd = fileno( (FILE *)PORT_STREAM( port ) );
    fd_set readfds;
-   struct timeval timeout;
    long n;
+   struct timeval tv = tmt->timeout;
+   
 #if( defined( DEBUG_TIMED_READ ) )
    extern int bgl_debug();
-   int debug = CINT( bgl_debug() );
+   int debug = bgl_debug();
    struct timeval tv1, tv2;
 
    if( debug >= 2 ) gettimeofday( &tv1, 0 );
-   
 #endif
-	 
+
 loop:
    FD_ZERO( &readfds );
    FD_SET( fd, &readfds );
 
-   timeout.tv_sec = tmt->timeout / 1000000;
-   timeout.tv_usec = tmt->timeout % 1000000;
-
-   if( (n = select( fd + 1, &readfds, NULL, NULL, &timeout )) <= 0 ) {
+   if( (n = select( fd + 1, &readfds, NULL, NULL, &tv )) <= 0 ) {
+#if( defined( DEBUG_TIMED_READ ) )
+#endif      
       if( n == 0 ) {
 	 char buf[ 100 ];
 
@@ -452,10 +460,16 @@ loop:
 	    "read/timeout", buf, port );
       } else {
 	 /* MS: 23 Jan 2008. No attention was paid to EINTR */
-	 /* I'm not 100% sure that this new test is correct */
+	 /* I'm not 100% sure whether this new test is correct or not */
 	 if( errno == EINTR ) {
 	    goto loop;
 	 }
+	 
+	 if( debug >= 1 ) {
+           fprintf( stderr, "%s:%d posix_timed_read, select err=%s(%d) port=%s\n",
+	    __FILE__, __LINE__, 
+	    strerror( errno ), errno, BSTRING_TO_STRING( PORT( port ).name ) );
+         }
 	 
 	 C_SYSTEM_FAILURE(
 	    BGL_IO_READ_ERROR,
@@ -470,8 +484,11 @@ loop:
 
 	 mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
 
-	 fprintf( stderr, "%s:%d posix_timed_read: [0m[1;33m%dms[0m\n",
-		  __FILE__, __LINE__, (mu * 1000) );
+	 if( debug >= 3 || (mu > (1000 * 10)) ) {
+            fprintf( stderr, "%s:%d posix_timed_read, ok: [0m[1;33m%ds(%dms/%dus)[0m port=%s\n",
+	 __FILE__, __LINE__, (mu / 1000000), mu / 1000, mu,
+	 BSTRING_TO_STRING( PORT( port ).name) );
+	 }
       }
 #endif
       
@@ -503,6 +520,11 @@ sysread_with_timeout( obj_t port, char *ptr, long num ) {
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_READ_ERROR);
 
+#if( defined( DEBUG_TIMED_READ ) )
+      fprintf( stderr, "%s:%d sysread_with_timeout err=%s(%d) port=%s\n",
+	 __FILE__, __LINE__, 
+	 strerror( errno ), errno, BSTRING_TO_STRING( PORT( port ).name ) );
+#endif      
 	 C_SYSTEM_FAILURE( e, "read/timeout", strerror( errno ), port );
       }
    }
@@ -1150,16 +1172,19 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 	 return 0;
       } else {
 	 if( PORT( port ).timeout ) {
-	    ((struct bgl_input_timeout *)PORT( port ).timeout)->timeout =
-	       timeout;
+	    struct bgl_input_timeout *to = PORT( port ).timeout;
+	    
+	    to->timeout.tv_sec = timeout / 1000000;
+	    to->timeout.tv_usec = timeout % 1000000;
 	 } else {
 	    struct bgl_input_timeout *to =
 	       (struct bgl_input_timeout *)
 	       GC_MALLOC( sizeof( struct bgl_input_timeout ) );
 
-	    to->timeout = timeout;
 	    to->sysread = INPUT_PORT( port ).sysread;
-
+	    to->timeout.tv_sec = timeout / 1000000;
+	    to->timeout.tv_usec = timeout % 1000000;
+	    
 	    if( (int)PORT_STREAM( port ) == -1 ) {
 	       C_SYSTEM_FAILURE( bglerror( errno ),
 				 "input-port-timeout-set!",

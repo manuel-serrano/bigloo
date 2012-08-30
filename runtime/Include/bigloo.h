@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Aug 22 17:45:40 2012 (serrano)                */
+/*    Last change :  Thu Aug 30 08:37:51 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -637,13 +637,6 @@ typedef struct BgL_objectz00_bgl {
    obj_t widening;
 } *BgL_objectz00_bglt;
 
-/* bgl_input_timeout_t */
-struct bgl_input_timeout {
-   long timeout;
-   long (*sysread)();
-   int (*sysclose)( obj_t );
-};
-   
 /*---------------------------------------------------------------------*/
 /*    The garbage collector                                            */
 /*---------------------------------------------------------------------*/

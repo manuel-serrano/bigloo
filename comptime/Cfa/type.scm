@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Mon Aug 27 11:13:35 2012 (serrano)                */
+;*    Last change :  Mon Aug 27 19:13:33 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -36,7 +36,9 @@
 ;*    type-settings! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (type-settings! globals)
+   ;; set a polymorphic type for the non-optimized procedures
    (type-closures!)
+   ;; type the functions body
    (for-each type-fun! globals))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Aug 29 10:57:03 2012 (serrano)                */
+;*    Last change :  Thu Aug 30 08:25:34 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -44,7 +44,8 @@
 	       (%aready::bool (default #t))
 	       (%amutex::mutex read-only (default (make-mutex)))
 	       (%!playid::int (default -1))
-	       (%acondv::condvar read-only (default (make-condition-variable))))
+	       (%acondv::condvar read-only (default (make-condition-variable)))
+	       (%error::obj (default #f)))
 
 	    (class alsabuffer
 	       (url::bstring read-only)
@@ -91,7 +92,7 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (bigloo-compiler-debug))
+   (begin (bigloo-compiler-debug) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-debug ...                                                   */
@@ -100,6 +101,12 @@
    (if (>fx ($compiler-debug) 0)
        (bigloo-debug)
        0))
+
+;*---------------------------------------------------------------------*/
+;*    *error-sleep-duration* ...                                       */
+;*---------------------------------------------------------------------*/
+(define *error-sleep-duration*
+   (* 2 1000 1000))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ::alsamusic ...                                       */
@@ -368,14 +375,14 @@
 		      (alsabuffer-abort! %nextbuffer)
 		      #f))))))
    
-   (define (play-url o d::alsadecoder url::bstring playlist notify)
+   (define (play-url o::alsamusic d::alsadecoder url::bstring playlist notify)
       (cond
 	 ((next-buffer? url) (play-url-next o d url playlist))
 	 ((file-exists? url) (play-url-mmap o d url playlist notify))
 	 (else (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!playid onerror %decoder %status)
+      (with-access::alsamusic o (%amutex %!playid onerror %decoder %status %error)
 	 (let ((playid %!playid))
 	    (let loop ((l urls)
 		       (n n)
@@ -390,16 +397,22 @@
 			    ;; play-url unlocks %amutex
 			    (with-handler
 			       (lambda (e)
-				  (tprint "ALSA: WITH-HANDLER.1: " (typeof e))
 				  (when (>=fx (alsa-debug) 1)
+				     (debug "!!! ALSA ERROR.1: " url
+					" " (current-microseconds) " " e "\n")
 				     (exception-notify e))
 				  (mutex-lock! %amutex)
 				  (with-access::musicstatus %status (state)
 				     (set! state 'error))
+				  (set! %error e)
 				  (mutex-unlock! %amutex)
-				  (onerror o e))
+				  (onerror o e)
+				  (sleep *error-sleep-duration*))
+			       (set! %error #f)
 			       (play-url o decoder url l notify))
 			    (mutex-lock! %amutex)
+			    (when %error
+			       (sleep *error-sleep-duration*))
 			    (loop (cdr l) (+fx 1 n) #f))
 			 (begin
 			    (mutex-unlock! %amutex)
@@ -575,17 +588,15 @@
 	     (read-fill-string! %inbuf %head sz port)))
 
       (define (set-eof!)
-	 (with-access::alsamusic o (onevent)
-	    (when (>=fx (alsa-debug) 2)
-	       (debug "--> ALSA: broadcast eof " url " "
-		  (current-microseconds) "..."))
-	    (mutex-lock! %bmutex)
-	    (set! %eof #t)
-	    (condition-variable-broadcast! %bcondv)
-	    (mutex-unlock! %bmutex)
-	    (when (>=fx (alsa-debug) 2)
-	       (debug (current-microseconds) "\n"))
-	    (onevent o 'loaded url)))
+	 (when (>=fx (alsa-debug) 2)
+	    (debug "--> ALSA: broadcast eof " url " "
+	       (current-microseconds) "..."))
+	 (mutex-lock! %bmutex)
+	 (set! %eof #t)
+	 (condition-variable-broadcast! %bcondv)
+	 (mutex-unlock! %bmutex)
+	 (when (>=fx (alsa-debug) 2)
+	    (debug (current-microseconds) "\n")))
 
       (define (inc-head! i)
 	 (let ((nhead (+fx %head i)))
@@ -605,20 +616,19 @@
 		  (debug (current-microseconds) "\n")))))
       
       (when (>fx (alsa-debug) 0) (debug-init! url))
-      
+
       (with-handler
 	 (lambda (e)
 	    (when (>=fx (alsa-debug) 1)
-	       (debug "!!! ALSA ERROR: " url
+	       (debug "!!! ALSA ERROR.2: " url
 		  " " (current-microseconds) " " e "\n")
 	       (exception-notify e))
 	    (set-eof!)
-	    (when (>=fx (alsa-debug) 1)
-	       (debug "ALSA ABORT.on-error\n"))
-	    (alsabuffer-abort! buffer)
-	    (with-access::alsamusic o (onerror)
+	    (with-access::alsamusic o (onerror %status %error %amutex)
 	       (onerror o e)
-	       (sleep (*fx 1000 1000))))
+	       (mutex-lock! %amutex)
+	       (set! %error e)
+	       (mutex-unlock! %amutex)))
 	 (let loop ()
 	    (cond
 	       (%eof
@@ -652,8 +662,12 @@
 				 (-fx inlen %head))))
 		       (i (timed-read s)))
 		   (cond
-		      ((eof-object? i) (set-eof!))
-		      ((>fx i 0) (inc-head! i)))
+		      ((eof-object? i)
+		       (set-eof!)
+		       (with-access::alsamusic o (onevent)
+			  (onevent o 'loaded url)))
+		      ((>fx i 0)
+		       (inc-head! i)))
 		   (loop))))))
 
       (when (>fx (alsa-debug) 0)
