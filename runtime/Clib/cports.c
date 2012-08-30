@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Aug 30 09:40:58 2012 (serrano)                */
+/*    Last change :  Thu Aug 30 10:51:56 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -448,12 +448,30 @@ loop:
    FD_SET( fd, &readfds );
 
    if( (n = select( fd + 1, &readfds, NULL, NULL, &tv )) <= 0 ) {
-#if( defined( DEBUG_TIMED_READ ) )
-#endif      
       if( n == 0 ) {
 	 char buf[ 100 ];
 
-	 sprintf( buf, "time limit (%ld us) exceeded", tmt->timeout );
+#if( defined( DEBUG_TIMED_READ ) )    
+	 if( debug >= 2 ) {
+	    long mu;
+	 
+	    gettimeofday( &tv2, 0 );
+
+	    mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
+
+	    if( debug >= 1 ) {
+	       fprintf( stderr, "%s:%d posix_timed_read, timeout: [0m[1;33m%dms[0m max=%dms select=%dms port=%s\n",
+			__FILE__, __LINE__,
+			mu / 1000,
+			(tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec) / 1000,
+			(tv.tv_sec * 1000000 + tv.tv_usec) / 1000,
+			BSTRING_TO_STRING( PORT( port ).name) );
+	    }
+	 }
+#endif
+	 
+	 sprintf( buf, "Time limit (%ld us) exceeded",
+	       tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
 	 
 	 C_SYSTEM_FAILURE(
 	    BGL_IO_TIMEOUT_ERROR,
@@ -485,9 +503,8 @@ loop:
 	 mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
 
 	 if( debug >= 3 || (mu > (1000 * 10)) ) {
-            fprintf( stderr, "%s:%d posix_timed_read, ok: [0m[1;33m%ds(%dms/%dus)[0m port=%s\n",
-	 __FILE__, __LINE__, (mu / 1000000), mu / 1000, mu,
-	 BSTRING_TO_STRING( PORT( port ).name) );
+            fprintf( stderr, "%s:%d posix_timed_read, ok: [0m[1;33m%dms[0m port=%s\n",
+	 __FILE__, __LINE__, mu / 1000, BSTRING_TO_STRING( PORT( port ).name) );
 	 }
       }
 #endif
