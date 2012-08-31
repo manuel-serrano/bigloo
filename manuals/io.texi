@@ -189,7 +189,7 @@ of @var{thunk}.
 @end smalllisp
 @end deffn
 
-@deffn {procedure} open-input-file file-name [buffer #f]
+@deffn {procedure} open-input-file file-name [buffer #f] [timeout 5000000]
 
 
 If @var{file-name} is a regular file name, @code{open-input-file} behaves as
@@ -277,6 +277,8 @@ The optional argument @var{buffer} can either be:
 @item A string, it is used as buffer.
 @end itemize
 
+The optional argument @var{timeout}, an integer represents a microseconds 
+timeout for the open operation.
 @end deffn
 
 @deffn {bigloo procedure} open-input-gzip-file file-name [buffer #t]

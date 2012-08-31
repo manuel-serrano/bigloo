@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Aug 23 07:59:39 2012 (serrano)                */
+;*    Last change :  Fri Aug 31 07:59:25 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -908,11 +908,13 @@
 			 :header header))
 		(op (socket-output sock)))
 	    (if (input-port? ip)
-	       (input-port-clone! ip (socket-input sock))
-	       (set! ip (socket-input sock)))
-	    (when (and (integer? timeout) (> timeout 0))
-	       (input-port-timeout-set! ip timeout)
-	       (output-port-timeout-set! op timeout))
+		;; the socket has been re-opened for seek, reuse
+		;; the user input-port
+		(input-port-clone! ip (socket-input sock))
+		(set! ip (socket-input sock)))
+;* 	    (when (and (integer? timeout) (> timeout 0))               */
+;* 	       (input-port-timeout-set! ip timeout)                    */
+;* 	       (output-port-timeout-set! op timeout))                  */
 	    (input-port-close-hook-set! ip
 	       (lambda (ip) (socket-close sock)))
 	    (input-port-seek-set! ip
@@ -926,7 +928,9 @@
 		  (when (isa? e &http-redirection)
 		     (with-access::&http-redirection e (url)
 			(open-input-file url bufinfo))))
-	       (http-parse-response ip op parser))))))
+	       (let ((ip (http-parse-response ip op parser)))
+		  (close-output-port op)
+		  ip))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-file ...                                              */
