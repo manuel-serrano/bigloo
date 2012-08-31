@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Wed Nov 16 11:13:02 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Fri Aug 31 12:23:24 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
 ;*=====================================================================*/
@@ -356,7 +356,7 @@
 	(instantiate::css-selector-pseudo
 	   (expr (instantiate::css-uri (value (car URI))))
 	   (fun (car FUNCTION))))
-       ((COLON FUNCTION NUMBER S* PAR-CLO)
+       ((COLON FUNCTION S* NUMBER S* PAR-CLO)
 	(instantiate::css-selector-pseudo
 	   (expr (car NUMBER))
 	   (fun (car FUNCTION))))
