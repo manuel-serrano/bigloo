@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Aug 30 10:51:56 2012 (serrano)                */
+/*    Last change :  Sat Sep  1 02:11:38 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -177,7 +177,7 @@ static int bsd_sendfile(int out_fd, int in_fd, off_t *offset, size_t count) {
 /*    DEBUG_TIMED_READ                                                 */
 /*---------------------------------------------------------------------*/
 #define DEBUG_TIMED_READ 1
-//#undef DEBUG_TIMED_READ
+#undef DEBUG_TIMED_READ
 
 /*---------------------------------------------------------------------*/
 /*    isascii                                                          */
@@ -449,33 +449,40 @@ loop:
 
    if( (n = select( fd + 1, &readfds, NULL, NULL, &tv )) <= 0 ) {
       if( n == 0 ) {
-	 char buf[ 100 ];
+	 if( !FD_ISSET( fd, &readfds ) ) {
+	    INPUT_PORT( port ).eof = 1;
+	    /* eof */
+	    return 0;
+	 } else {
+	    /* timeout */
+	    char buf[ 100 ];
 
 #if( defined( DEBUG_TIMED_READ ) )    
-	 if( debug >= 2 ) {
-	    long mu;
+	    if( debug >= 2 ) {
+	       long mu;
 	 
-	    gettimeofday( &tv2, 0 );
+	       gettimeofday( &tv2, 0 );
 
-	    mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
+	       mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
 
-	    if( debug >= 1 ) {
-	       fprintf( stderr, "%s:%d posix_timed_read, timeout: [0m[1;33m%dms[0m max=%dms select=%dms port=%s\n",
-			__FILE__, __LINE__,
-			mu / 1000,
-			(tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec) / 1000,
-			(tv.tv_sec * 1000000 + tv.tv_usec) / 1000,
-			BSTRING_TO_STRING( PORT( port ).name) );
+	       if( debug >= 1 ) {
+		  fprintf( stderr, "%s:%d posix_timed_read, timeout: [0m[1;33m%dms[0m max=%dms select=%dms port=%s\n",
+			   __FILE__, __LINE__,
+			   mu / 1000,
+			   (tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec) / 1000,
+			   (tv.tv_sec * 1000000 + tv.tv_usec) / 1000,
+			   BSTRING_TO_STRING( PORT( port ).name) );
+	       }
 	    }
-	 }
 #endif
 	 
-	 sprintf( buf, "Time limit (%ld us) exceeded",
-	       tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
+	    sprintf( buf, "Time limit (%ld us) exceeded",
+		     tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
 	 
-	 C_SYSTEM_FAILURE(
-	    BGL_IO_TIMEOUT_ERROR,
-	    "read/timeout", buf, port );
+	    C_SYSTEM_FAILURE(
+	       BGL_IO_TIMEOUT_ERROR,
+	       "read/timeout", buf, port );
+	 }
       } else {
 	 /* MS: 23 Jan 2008. No attention was paid to EINTR */
 	 /* I'm not 100% sure whether this new test is correct or not */
@@ -483,11 +490,13 @@ loop:
 	    goto loop;
 	 }
 	 
+#if( defined( DEBUG_TIMED_READ ) )    
 	 if( debug >= 1 ) {
            fprintf( stderr, "%s:%d posix_timed_read, select err=%s(%d) port=%s\n",
 	    __FILE__, __LINE__, 
 	    strerror( errno ), errno, BSTRING_TO_STRING( PORT( port ).name ) );
          }
+#endif
 	 
 	 C_SYSTEM_FAILURE(
 	    BGL_IO_READ_ERROR,
