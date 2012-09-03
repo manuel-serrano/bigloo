@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Sep  3 10:03:22 2012 (serrano)                */
+;*    Last change :  Mon Sep  3 11:03:53 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -486,7 +486,6 @@
 		;; play the playlist from the current position
 		(with-access::musicstatus %status (song)
 		   (play-playlist song))))))
-      (tprint "PLAYLIST-ENDED-ID: " playlist-ended-id)
       (when playlist-ended-id
 	 (with-access::alsamusic o (onevent)
 	    (onevent o 'ended playlist-ended-id)))))
