@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Aug 31 08:00:41 2012 (serrano)                */
+;*    Last change :  Mon Sep  3 10:03:22 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -238,6 +238,8 @@
 ;*    music-play ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-play o::alsamusic . s)
+
+   (define playlist-ended-id #f)
    
    (define (find-decoder o url)
       (with-access::alsamusic o (decoders)
@@ -389,41 +391,49 @@
 	    (let loop ((l urls)
 		       (n n)
 		       (notify #t))
-	       (when (and (eq? playid %!playid) (pair? l))
-		  (let* ((url (car l))
-			 (decoder (find-decoder o url)))
-		     (if decoder
-			 (begin
-			    (set! %decoder decoder)
-			    (update-song-status! o n)
-			    ;; play-url unlocks %amutex
-			    (with-handler
-			       (lambda (e)
-				  (when (>=fx (alsa-debug) 1)
-				     (debug "!!! ALSA ERROR.1: " url
-					" " (current-microseconds) " " e "\n")
-				     (exception-notify e))
-				  (mutex-lock! %amutex)
-				  (with-access::musicstatus %status (state)
-				     (set! state 'error))
-				  (set! %error e)
-				  (mutex-unlock! %amutex)
-				  (onerror o e)
-				  (sleep *error-sleep-duration*))
-			       (set! %error #f)
-			       (play-url o decoder url l notify))
-			    (mutex-lock! %amutex)
-			    (when %error
-			       (sleep *error-sleep-duration*))
-			    (loop (cdr l) (+fx 1 n) #f))
-			 (begin
-			    (mutex-unlock! %amutex)
-			    (onerror o
-			       (instantiate::&io-parse-error
-				  (proc "music-play")
-				  (msg "Illegal music format")
-				  (obj url)))
-			    (mutex-lock! %amutex)))))))))
+	       (cond
+		  ((not (eq? playid %!playid))
+		   ;; the playlist has changed
+		   #unspecified)
+		  ((pair? l)
+		   ;; still stuff to be played
+		   (let* ((url (car l))
+			  (decoder (find-decoder o url)))
+		      (if decoder
+			  (begin
+			     (set! %decoder decoder)
+			     (update-song-status! o n)
+			     ;; play-url unlocks %amutex
+			     (with-handler
+				(lambda (e)
+				   (when (>=fx (alsa-debug) 1)
+				      (debug "!!! ALSA ERROR.1: " url
+					 " " (current-microseconds) " " e "\n")
+				      (exception-notify e))
+				   (mutex-lock! %amutex)
+				   (with-access::musicstatus %status (state)
+				      (set! state 'error))
+				   (set! %error e)
+				   (mutex-unlock! %amutex)
+				   (onerror o e)
+				   (sleep *error-sleep-duration*))
+				(set! %error #f)
+				(play-url o decoder url l notify))
+			     (mutex-lock! %amutex)
+			     (when %error
+				(sleep *error-sleep-duration*))
+			     (loop (cdr l) (+fx 1 n) #f))
+			  (begin
+			     (mutex-unlock! %amutex)
+			     (onerror o
+				(instantiate::&io-parse-error
+				   (proc "music-play")
+				   (msg "Illegal music format")
+				   (obj url)))
+			     (mutex-lock! %amutex)))))
+		  (else
+		   ;; done with this playlist
+		   (set! playlist-ended-id playid)))))))
    
    (define (play-playlist n)
       ;; start playing the playlist
@@ -475,7 +485,11 @@
 	       (else
 		;; play the playlist from the current position
 		(with-access::musicstatus %status (song)
-		   (play-playlist song))))))))
+		   (play-playlist song))))))
+      (tprint "PLAYLIST-ENDED-ID: " playlist-ended-id)
+      (when playlist-ended-id
+	 (with-access::alsamusic o (onevent)
+	    (onevent o 'ended playlist-ended-id)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::alsamusic ...                                       */
