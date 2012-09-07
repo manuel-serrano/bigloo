@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Sep  3 11:03:53 2012 (serrano)                */
+;*    Last change :  Fri Sep  7 07:58:02 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -101,6 +101,12 @@
    (if (>fx ($compiler-debug) 0)
        (bigloo-debug)
        0))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-debug-file ...                                              */
+;*---------------------------------------------------------------------*/
+(define (alsa-debug-file)
+   (>fx (alsa-debug) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    *error-sleep-duration* ...                                       */
@@ -381,9 +387,12 @@
    
    (define (play-url o::alsamusic d::alsadecoder url::bstring playlist notify)
       (cond
-	 ((next-buffer? url) (play-url-next o d url playlist))
-	 ((file-exists? url) (play-url-mmap o d url playlist notify))
-	 (else (play-url-port o d url playlist notify))))
+	 ((next-buffer? url)
+	  (play-url-next o d url playlist))
+	 ((and (file-exists? url) (not (alsa-debug-file)))
+	  (play-url-mmap o d url playlist notify))
+	 (else
+	  (play-url-port o d url playlist notify))))
    
    (define (play-urls urls n)
       (with-access::alsamusic o (%amutex %!playid onerror %decoder %status %error)

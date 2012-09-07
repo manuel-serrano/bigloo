@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Aug 30 08:24:09 2012 (serrano)                */
+;*    Last change :  Fri Sep  7 08:15:58 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -157,14 +157,15 @@
 	 (set! %alsamusic am)
 	 (set! %decoder dec)
 	 (with-access::alsamusic am (%amutex %status pcm)
-	    (when (>fx (flac-debug) 0) (debug-init!))
-	    (unwind-protect
-	       (flac-decoder-decode %flac)
-	       (with-access::alsabuffer %buffer (%eof)
-		  (alsa-snd-pcm-cleanup pcm)
-		  (onstate am (if %eof 'ended 'stop))
-		  (when (>fx (flac-debug) 0)
-		     (debug-stop!))))))))
+	    (with-access::alsabuffer buffer (url)
+	       (when (>=fx (flac-debug) 1) (debug-init! url))
+	       (unwind-protect
+		  (flac-decoder-decode %flac)
+		  (with-access::alsabuffer %buffer (%eof)
+		     (alsa-snd-pcm-cleanup pcm)
+		     (onstate am (if %eof 'ended 'stop))
+		     (when (>=fx (flac-debug) 1)
+			(debug-stop! url)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    onstate ...                                                      */
@@ -315,7 +316,7 @@
 		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
 		       (begin
-			  (when (>=fx (flac-debug) 2)
+			  (when (>=fx (flac-debug) 1)
 			     (debug "--- FLAC_DECODER, EOF " url "\n"))
 			  beof)
 		       (begin
@@ -350,7 +351,11 @@
 			 (inc-tail! s))
 		      (if (<fx s size)
 			  (loop (- size s) (+fx i s))
-			  (+fx i s))))))))))
+			  (let ((r (+fx i s)))
+			     (when (and (>=fx (flac-debug) 1) (=fx r 0))
+				(debug "!!! FLAC_DECODER, read 0 chars "
+				   url " " (current-microseconds)))
+			     r))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *debug-port* ...                                                 */
@@ -360,13 +365,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    debug-init! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (debug-init!)
-   (set! *debug-port* (open-output-file "/tmp/FLAC.log")))
+(define (debug-init! url)
+   (set! *debug-port* (open-output-file "/tmp/FLAC.log"))
+   (debug ">>> FLAC_DECODER init " url " " (current-microseconds) "\n"))
 
 ;*---------------------------------------------------------------------*/
 ;*    debug-stop! ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (debug-stop!)
+(define (debug-stop! url)
+   (debug ">>> FLAC_DECODER stop " url " " (current-microseconds) "\n")
    (close-output-port *debug-port*))
    
 ;*---------------------------------------------------------------------*/
