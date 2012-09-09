@@ -55,11 +55,12 @@ be done by the means of @code{output-char}, @code{input-char},
 @end deffn
 
 @deffn {bigloo procedure} input-char binary-port
-@deffnx {bigloo procedure} output-char binary-port
+@deffnx {bigloo procedure} output-char binary-port char
+@deffnx {bigloo procedure} output-byte binary-port byte
 The function @code{input-char} reads a single character from a 
 @var{binary-port}. It returns the read character or the @code{end-of-file} 
-object. The function @code{output-char} writes a character into a 
-@var{binary-port}.
+object. The function @code{output-char} and @code{output-byte} writes a 
+character, respectively a byte, into a  @var{binary-port}.
 @end deffn
 
 @deffn {bigloo procedure} input-string binary-port len

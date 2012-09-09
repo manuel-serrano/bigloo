@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Sep  7 08:15:58 2012 (serrano)                */
+;*    Last change :  Sun Sep  9 10:44:13 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -21,19 +21,25 @@
    (import __flac_flac)
    
    (extern (macro $flac-blit-string!::void
-	      (::string ::long ::string ::long ::long) "BGL_FLAC_BLIT_STRING"))
+	      (::string ::long ::string ::long ::long) "BGL_FLAC_BLIT_STRING")
+	   (macro $ref::byte
+	      (::string ::long) "BGL_FLAC_STRING_REF")
+	   (export flac-checksum-debug "bgl_flac_checksum_debug"))
    
    (static (class flac-alsa::flac-decoder
 	      (%alsamusic (default #f))
 	      (%buffer (default #f))
 	      (%decoder (default #f))
-	      (%has-been-empty-once (default #f))))
+	      (%rate::int (default 80))
+	      (%rate-max::int (default 80))
+	      (%rate-min::int (default 30))))
    
    (cond-expand
       ((library alsa)
        (export (class flac-alsadecoder::alsadecoder
 	          (%flac::obj (default #unspecified))
-		  (%inseek (default #f)))))))
+		  (%inseek (default #f)))
+	       (flac-checksum-debug::int ::int ::string ::int ::int)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */
@@ -57,6 +63,18 @@
        0))
 
 ;*---------------------------------------------------------------------*/
+;*    flac-checksum-debug ...                                          */
+;*---------------------------------------------------------------------*/
+(define (flac-checksum-debug::int c::int buffer::string i::int s::int)
+   (if (>=fx (flac-debug) 1)
+       (let loop ((n 0)
+		  (c c))
+	  (if (=fx n s)
+	      c
+	      (loop (+fx n 1) (bit-xor c ($ref buffer (+fx i n))))))
+       c))
+	 
+;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
 ;*---------------------------------------------------------------------*/
 (define-method (alsadecoder-init dec::flac-alsadecoder)
@@ -69,8 +87,10 @@
 ;*    flac-decoder-reset! ::flac-alsa ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-reset! o::flac-alsa)
-   (with-access::flac-alsa o (%has-been-empty-once)
-      (set! %has-been-empty-once #f)
+   (with-access::flac-alsa o (%rate %bchecksum %rchecksum)
+      (set! %rate 80)
+      (set! %bchecksum #x80)
+      (set! %rchecksum #x80)
       (call-next-method)))
 
 ;*---------------------------------------------------------------------*/
@@ -165,6 +185,10 @@
 		     (alsa-snd-pcm-cleanup pcm)
 		     (onstate am (if %eof 'ended 'stop))
 		     (when (>=fx (flac-debug) 1)
+			(with-access::flac-alsa %flac (%bchecksum %rchecksum)
+			   (debug "--- FLAC_DECODER, buffer checksum: "
+			      %bchecksum
+			      " read checksum: " %rchecksum))
 			(debug-stop! url)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -215,7 +239,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
    (with-access::flac-alsa o (%flacbuf %buffer (am %alsamusic) %decoder
-				%has-been-empty-once)
+				%rate %rate-max %rate-min)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
 					     %inbuf %inbufp %inlen
@@ -238,30 +262,15 @@
 	       (and (not %empty)
 		    (>fx (*fx 4 (alsabuffer-available %buffer)) inlen)))
 	    
-	    (define (buffer-flushed?)
-	       ;; flushed when slow fill or buffer fill < 80%
-	       (or %has-been-empty-once
-		   (>fx (*fx 5 (-fx inlen (alsabuffer-available %buffer)))
-		      inlen)))
-	    
-	    (define (buffer-full?)
-	       (and (=fx %head %tail) (not %empty)))
-	    
-	    (define (debug-inc-tail)
-	       (when (>=fx (flac-debug) 3)
-		  (let ((p (buffer-percentage-filled)))
-		     (when (or (and (or (< p 75) %has-been-empty-once)
-				    (not %eof))
-			       (>=fx (flac-debug) 4))
-			(debug "--- FLAC_DECODER, buffer fill: "
-			   (cond
-			      ((>= p 80) "")
-			      ((> p 25) "[0m[1;33m")
-			      (else "[0m[1;32m"))
-			   p
-			   "%[0m"
-			   (if %eof " EOF" "")
-			   " url=" url "\n")))))
+	    (define (broadcast-not-full p)
+	       (when (>=fx (flac-debug) 2)
+		  (debug "--> FLAC_DECODER, broadcast not-full "
+		     url " " p "%" " " (current-microseconds)))
+	       (mutex-lock! %bmutex)
+	       (condition-variable-broadcast! %bcondv)
+	       (mutex-unlock! %bmutex)
+	       (when (>=fx (flac-debug) 2)
+		  (debug (current-microseconds) "\n")))
 	    
 	    (define (inc-tail! size)
 	       ;; increment the tail
@@ -270,22 +279,36 @@
 		     (set! ntail 0))
 		  ;; check buffer emptyness
 		  (when (=fx ntail %head)
-		     (set! %has-been-empty-once #t)
+		     (when (<fx %rate 80) (set! %rate 80))
 		     (set! %empty #t))
 		  ;; increment the shared %tail
 		  (set! %tail ntail))
-	       ;; debug
-	       (debug-inc-tail)
-	       ;; notify the buffer no longer full
-	       (when (and (buffer-flushed?) (not %eof))
-		  (when (>=fx (flac-debug) 2)
-		     (debug "--> FLAC_DECODER, broadcast not-full "
-			url " " (current-microseconds)))
-		  (mutex-lock! %bmutex)
-		  (condition-variable-broadcast! %bcondv)
-		  (mutex-unlock! %bmutex)
-		  (when (>=fx (flac-debug) 2)
-		     (debug (current-microseconds) "\n"))))
+	       (unless %eof
+		  ;; check if we must notify the buffer filler
+		  ;; that the buffer is no longer full
+		  (let* ((avail (alsabuffer-available %buffer))
+			 (p (/fx (*fx avail 100) inlen)))
+		     (cond
+			((<fx p %rate)
+			 (tprint "BCAST not full p=" p " r=" %rate)
+			 (broadcast-not-full p)
+			 (when (<fx %rate %rate-max)
+			    (set! %rate (+fx %rate 10))))
+			((>fx p %rate-min)
+			 (when (>fx %rate %rate-min)
+			    (set! %rate (-fx %rate 1))))))))
+
+	    (when (>=fx (flac-debug) 1)
+	       (with-access::flac-alsa o (%bchecksum %rchecksum)
+		  (unless (=fx %bchecksum %rchecksum)
+		     (tprint "FLAC CHECKSUM ERROR: bchecksum="
+			%bchecksum " rchecksum=" %rchecksum)
+		     (debug "!!! FLAC_DECODER, CHECKSUM_ERROR"
+			" bchecksum=" %bchecksum
+			" rchecksum=" %rchecksum
+			" %tail=" %tail " %head=" %head
+			" size=" size "\n")
+		     (exit -1))))
 	    
 	    (let loop ((size size)
 		       (i 0))
@@ -347,6 +370,12 @@
 				   (-fx %head %tail)
 				   (-fx inlen %tail)))))
 		      (when (>fx s 0)
+			 (when (>=fx (flac-debug) 1)
+			    (with-access::flac-alsa o (%bchecksum)
+;* 			       (toberemoved-debug-bcheck %inbufp %tail s) */
+			       (set! %bchecksum
+				  (flac-checksum-debug
+				     %bchecksum %inbufp %tail s))))
 			 ($flac-blit-string! %inbufp %tail flacbuf i s)
 			 (inc-tail! s))
 		      (if (<fx s size)
@@ -356,6 +385,20 @@
 				(debug "!!! FLAC_DECODER, read 0 chars "
 				   url " " (current-microseconds)))
 			     r))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    toberemoved-debug-bcheck ...                                     */
+;*---------------------------------------------------------------------*/
+(define foo #f)
+
+(define (toberemoved-debug-bcheck buf::string i s)
+   (unless (binary-port? foo)
+      (set! foo (open-output-binary-file "/tmp/DEBUG_BCHECK")))
+   (let loop ((n 0))
+      (when (<fx n s)
+	 (output-byte foo ($ref buf (+ i n)))
+	 (loop (+fx n 1))))
+   (flush-binary-port foo))
 
 ;*---------------------------------------------------------------------*/
 ;*    *debug-port* ...                                                 */

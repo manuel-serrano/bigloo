@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat Jul 28 06:07:45 2012 (serrano)                */
+/*    Last change :  Sun Sep  9 08:58:21 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -40,6 +40,8 @@ extern obj_t bgl_flac_decoder_length( BgL_flaczd2decoderzd2_bglt );
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52samplez52)
 #define BGL_DECODER_VOLUME( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52volumez52)
+#define BGL_DECODER_RCHECKSUM( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52rchecksumz52)
 
 /*---------------------------------------------------------------------*/
 /*    Local declarations                                               */
@@ -85,9 +87,18 @@ bgl_error_callback( const FLAC__StreamDecoder *,
 		    FLAC__StreamDecoderErrorStatus,
 		    void *client_data );
 
-static FILE *foo = 0L;
-static int count = 0;
-static long pos = 0;
+toberemoved_debug_rcheck( char *buf, int o ) {
+   static FILE *foo = 0;
+   int i;
+
+   if( !foo ) foo = fopen( "/tmp/DEBUG_RCHECK", "w" );
+
+   for( i = 0; i < o; i++ ) {
+      fputc( buf[ i ], foo );
+   }
+
+   fflush( foo );
+}
 
 /*---------------------------------------------------------------------*/
 /*    FLAC__StreamDecoderInitStatus                                    */
@@ -134,6 +145,11 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
 
       if( cres >= 0 ) {
 	 *size = cres;
+
+/* 	 toberemoved_debug_rcheck( buffer, cres );                     */
+	 BGL_DECODER_RCHECKSUM( obj ) =
+	    bgl_flac_checksum_debug( BGL_DECODER_RCHECKSUM( obj ), buffer, 0, cres );
+
 	 return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
       } else {
 	 // fprintf( stderr, "bgl_read_callback... abort\n" );

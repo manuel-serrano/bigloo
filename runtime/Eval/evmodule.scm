@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Mon Aug  6 09:13:39 2012 (serrano)                */
+;*    Last change :  Fri Sep  7 20:47:14 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -347,7 +347,6 @@
 	  (unless classp
 	     (let ((id (untype-ident s)))
 		(bind-global! id mod loc)
-;* 		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod) */
 		(evmodule-export! mod id mod)
 		(mark-global-uninitialized! id mod loc))))
 	 ((class (and ?cla (? symbol?)) . ?clauses)
@@ -376,6 +375,8 @@
 		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 ((macro . ?-)
+	  #unspecified)
+	 ((expander ?-)
 	  #unspecified)
 	 (((and (? symbol?) ?s) . ?-)
 	  (unless classp

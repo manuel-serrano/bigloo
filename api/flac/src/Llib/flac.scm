@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sat Jul 28 06:12:12 2012 (serrano)                */
+;*    Last change :  Sun Sep  9 06:39:24 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -32,7 +32,9 @@
 	      (%eof::bool (default #f))
 	      (%sample::long (default 0))
 	      (%volume::double (default 1.))
-	      (md5check::bool read-only (default #f)))
+	      (md5check::bool read-only (default #f))
+	      (%bchecksum::int (default #x80))
+	      (%rchecksum::int (default #x80)))
 
 	   (class &flac-error::&error)
 

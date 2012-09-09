@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  7 10:38:25 1994                          */
-;*    Last change :  Tue Apr 17 07:56:52 2012 (serrano)                */
+;*    Last change :  Sun Sep  9 12:19:45 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Les entrees/sorties compactees des objets Scheme (eventuellement */
 ;*    circulaires).                                                    */
@@ -48,61 +48,65 @@
 
    (extern  (macro c-binary-port?::bool (::obj) "BINARY_PORTP")
 	    
-	    (c-open-output-binary-file::obj (::bstring)
+	    ($open-output-binary-file::obj (::bstring)
 					    "open_output_binary_file")
-	    (c-append-output-binary-file::obj (::bstring)
+	    ($append-output-binary-file::obj (::bstring)
 					      "append_output_binary_file")
-	    (c-open-input-binary-file::obj (::bstring)
+	    ($open-input-binary-file::obj (::bstring)
 					   "open_input_binary_file")
-	    (c-close-binary-port::obj (::binary-port)
+	    ($close-binary-port::obj (::binary-port)
 				      "close_binary_port")
-	    (c-flush-binary-port::obj (::binary-port)
+	    ($flush-binary-port::obj (::binary-port)
 				      "bgl_flush_binary_port")
-	    (c-input-obj::obj (::binary-port)
+	    ($input-obj::obj (::binary-port)
 			      "input_obj")
-	    (c-output-obj::obj (::binary-port ::obj)
+	    ($output-obj::obj (::binary-port ::obj)
 			       "output_obj")
-	    (macro c-output-char::obj (::binary-port ::char)
+	    (macro $output-char::obj (::binary-port ::char)
 		   "BGL_OUTPUT_CHAR")
-	    (macro c-input-char::int (::binary-port)
+	    (macro $output-byte::obj (::binary-port ::byte)
+		   "BGL_OUTPUT_CHAR")
+	    (macro $input-char::int (::binary-port)
 		   "BGL_INPUT_CHAR")
-	    (c-output-string::int (::binary-port ::bstring)
+	    ($output-string::int (::binary-port ::bstring)
 				  "bgl_output_string")
-	    (c-input-string::bstring (::binary-port ::int)
+	    ($input-string::bstring (::binary-port ::int)
 				     "bgl_input_string")
-	    (c-input-fill-string::int (::binary-port ::bstring)
+	    ($input-fill-string::int (::binary-port ::bstring)
 				      "bgl_input_fill_string")
-	    (macro c-int-eof?::bool (::int)
+	    (macro $int-eof?::bool (::int)
 		   "BGL_INT_EOFP"))
 
    (java    (class foreign
 	       (method static c-binary-port?::bool (::obj)
 		       "BINARY_PORTP")
-	       (method static c-open-output-binary-file::obj (::bstring)
+	       (method static $open-output-binary-file::obj (::bstring)
 		       "open_output_binary_file")
-	       (method static c-append-output-binary-file::obj (::bstring)
+	       (method static $append-output-binary-file::obj (::bstring)
 		       "append_output_binary_file")
-	       (method static c-open-input-binary-file::obj (::bstring)
+	       (method static $open-input-binary-file::obj (::bstring)
 		       "open_input_binary_file")
-	       (method static c-close-binary-port::obj (::binary-port)
+	       (method static $close-binary-port::obj (::binary-port)
 		       "close_binary_port")
-	       (method static c-flush-binary-port::obj (::binary-port)
+	       (method static $flush-binary-port::obj (::binary-port)
 		       "bgl_flush_binary_port")
-	       (method static c-input-obj::obj (::binary-port)
+	       (method static $input-obj::obj (::binary-port)
 		       "input_obj")
-	       (method static c-output-obj::obj (::binary-port ::obj)
+	       (method static $output-obj::obj (::binary-port ::obj)
 		       "output_obj")
-	       (method static c-output-char::obj (::binary-port ::char)
+	       (method static $output-char::obj (::binary-port ::char)
 		       "BGL_OUTPUT_CHAR")
-	       (method static c-input-char::int (::binary-port)
+	       (method static $output-byte::obj (::binary-port ::byte)
+		       "BGL_OUTPUT_CHAR")
+	       (method static $input-char::int (::binary-port)
 		       "BGL_INPUT_CHAR")
-	       (method static c-output-string::int (::binary-port ::bstring)
+	       (method static $output-string::int (::binary-port ::bstring)
 		       "bgl_output_string")
-	       (method static c-input-string::bstring (::binary-port ::int)
+	       (method static $input-string::bstring (::binary-port ::int)
 		       "bgl_input_string")
-	       (method static c-input-fill-string::int (::binary-port ::bstring)
+	       (method static $input-fill-string::int (::binary-port ::bstring)
 		       "bgl_input_fill_string")
-	       (method static c-int-eof?::bool (::int)
+	       (method static $int-eof?::bool (::int)
 		       "BGL_INT_EOFP")))
    
    (export  (inline binary-port?::bool ::obj)
@@ -114,15 +118,17 @@
 	    (inline output-obj ::binary-port ::obj)
 	    (inline input-obj ::binary-port)
 	    (inline output-char ::binary-port ::char)
+	    (inline output-byte ::binary-port ::byte)
 	    (inline input-char::obj ::binary-port)
 	    (inline output-string ::binary-port ::bstring)
 	    (inline input-string::bstring ::binary-port ::int)
 	    (inline input-fill-string!::int ::binary-port ::bstring))
    
    (pragma  (c-binary-port? (predicate-of binary-port) nesting)
-	    (c-output-char nesting args-safe)
-	    (c-input-char nesting args-safe)
-	    (c-int-eof? nesting args-safe)
+	    ($output-char nesting args-safe)
+	    ($output-byte nesting args-safe)
+	    ($input-char nesting args-safe)
+	    ($int-eof? nesting args-safe)
 	    (binary-port? side-effect-free nesting)))
 
 ;*---------------------------------------------------------------------*/
@@ -135,56 +141,62 @@
 ;*    open-output-binary-file ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (open-output-binary-file str)
-   (c-open-output-binary-file str))
+   ($open-output-binary-file str))
 
 ;*---------------------------------------------------------------------*/
 ;*    append-output-binary-file ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (append-output-binary-file str)
-   (c-append-output-binary-file str))
+   ($append-output-binary-file str))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-binary-file ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (open-input-binary-file str)
-   (c-open-input-binary-file str))
+   ($open-input-binary-file str))
 
 ;*---------------------------------------------------------------------*/
 ;*    close-binary-port ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (close-binary-port port)
-   (c-close-binary-port port))
+   ($close-binary-port port))
 
 ;*---------------------------------------------------------------------*/
 ;*    flush-binary-port ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (flush-binary-port port)
-   (c-flush-binary-port port))
+   ($flush-binary-port port))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-obj ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-obj port)
-   (c-input-obj port))
+   ($input-obj port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-obj ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-obj port obj)
-   (c-output-obj port obj))
+   ($output-obj port obj))
 	    
 ;*---------------------------------------------------------------------*/
 ;*    output-char ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-char port char)
-   (c-output-char port char))
+   ($output-char port char))
+
+;*---------------------------------------------------------------------*/
+;*    output-byte ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (output-byte port char)
+   ($output-byte port char))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-char ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-char port)
-   (let ((char (c-input-char port)))
-      (if (c-int-eof? char)
+   (let ((char ($input-char port)))
+      (if ($int-eof? char)
 	  beof
 	  (integer->char char))))
 
@@ -192,16 +204,16 @@
 ;*    output-string ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-string port string)
-   (c-output-string port string))
+   ($output-string port string))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-string ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-string port len)
-   (c-input-string port len))
+   ($input-string port len))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-fill-string! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-fill-string! port str)
-   (c-input-fill-string port str))
+   ($input-fill-string port str))
