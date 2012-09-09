@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Sep  9 12:51:56 2012 (serrano)                */
+;*    Last change :  Sun Sep  9 19:13:24 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -32,7 +32,8 @@
 	      (%decoder (default #f))
 	      (%rate::int (default 80))
 	      (%rate-max::int (default 80))
-	      (%rate-min::int (default 30))))
+	      (%rate-min::int (default 30))
+	      (%last-percentage::int (default 0))))
    
    (cond-expand
       ((library alsa)
@@ -87,8 +88,9 @@
 ;*    flac-decoder-reset! ::flac-alsa ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-reset! o::flac-alsa)
-   (with-access::flac-alsa o (%rate %bchecksum %rchecksum)
+   (with-access::flac-alsa o (%rate %bchecksum %rchecksum %last-percentage)
       (set! %rate 80)
+      (set! %last-percentage 0)
       (set! %bchecksum #x80)
       (set! %rchecksum #x80)
       (call-next-method)))
@@ -185,10 +187,6 @@
 		     (alsa-snd-pcm-cleanup pcm)
 		     (onstate am (if %eof 'ended 'stop))
 		     (when (>=fx (flac-debug) 1)
-			(with-access::flac-alsa %flac (%bchecksum %rchecksum)
-			   (debug "--- FLAC_DECODER, buffer checksum: "
-			      %bchecksum
-			      " read checksum: " %rchecksum))
 			(debug-stop! url)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -239,7 +237,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (flac-decoder-read o::flac-alsa size::long)
    (with-access::flac-alsa o (%flacbuf %buffer (am %alsamusic) %decoder
-				%rate %rate-max %rate-min)
+				%rate %rate-max %rate-min %last-percentage)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
 	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
 					     %inbuf %inbufp %inlen
@@ -250,6 +248,8 @@
 	    (define inlen %inlen)
 	    
 	    (define flacbuf (custom-identifier %flacbuf))
+
+	    
 	    
 	    (define (buffer-percentage-filled)
 	       (llong->fixnum
@@ -291,11 +291,13 @@
 		     (cond
 			((<fx p %rate)
 			 (broadcast-not-full p)
-			 (when (<fx %rate %rate-max)
+			 (when (and (<=fx p %last-percentage) (<fx %rate %rate-max))
 			    (set! %rate (+fx %rate 10))))
 			((>fx p %rate-min)
 			 (when (>fx %rate %rate-min)
-			    (set! %rate (-fx %rate 1))))))))
+			    (set! %rate (-fx %rate 1)))))
+		     (set! %last-percentage p)
+		     #unspecified)))
 
 	    (when (>=fx (flac-debug) 1)
 	       (with-access::flac-alsa o (%bchecksum %rchecksum)
@@ -371,7 +373,6 @@
 		      (when (>fx s 0)
 			 (when (>=fx (flac-debug) 1)
 			    (with-access::flac-alsa o (%bchecksum)
-;* 			       (toberemoved-debug-bcheck %inbufp %tail s) */
 			       (set! %bchecksum
 				  (flac-checksum-debug
 				     %bchecksum %inbufp %tail s))))
