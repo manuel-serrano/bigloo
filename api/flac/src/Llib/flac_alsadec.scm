@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Sep  9 19:13:24 2012 (serrano)                */
+;*    Last change :  Mon Sep 10 08:22:28 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -32,7 +32,7 @@
 	      (%decoder (default #f))
 	      (%rate::int (default 80))
 	      (%rate-max::int (default 80))
-	      (%rate-min::int (default 30))
+	      (%rate-min::int (default 50))
 	      (%last-percentage::int (default 0))))
    
    (cond-expand
@@ -265,7 +265,7 @@
 	    (define (broadcast-not-full p)
 	       (when (>=fx (flac-debug) 2)
 		  (debug "--> FLAC_DECODER, broadcast not-full "
-		     url " " p "%" " " (current-microseconds)))
+		     url " " p "%" " " (current-microseconds) "..."))
 	       (mutex-lock! %bmutex)
 	       (condition-variable-broadcast! %bcondv)
 	       (mutex-unlock! %bmutex)

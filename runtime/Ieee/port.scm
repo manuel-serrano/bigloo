@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri Aug 31 07:59:25 2012 (serrano)                */
+;*    Last change :  Mon Sep 10 12:20:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -912,9 +912,6 @@
 		;; the user input-port
 		(input-port-clone! ip (socket-input sock))
 		(set! ip (socket-input sock)))
-;* 	    (when (and (integer? timeout) (> timeout 0))               */
-;* 	       (input-port-timeout-set! ip timeout)                    */
-;* 	       (output-port-timeout-set! op timeout))                  */
 	    (input-port-close-hook-set! ip
 	       (lambda (ip) (socket-close sock)))
 	    (input-port-seek-set! ip
