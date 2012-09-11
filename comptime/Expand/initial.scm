@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Dec  7 13:48:56 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Sep 11 15:22:16 2012 (serrano)                */
+;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -995,6 +995,21 @@
     'mmap-ref
     (lambda (x::obj e::procedure)
        (bound-check x 'mmap-length '$mmap-bound-check? e)))
+
+   ;; with-lock
+   (install-O-comptime-expander 'with-lock
+      (lambda (x::obj e::procedure)
+	 (match-case x
+	    ((with-lock (and (? symbol?) ?var) (lambda () . ?body))
+	     (e `(unwind-protect
+		    (begin (mutex-lock! ,var) ,@body)
+		    (mutex-unlock! ,var))
+		e))
+	    ((with-lock ?lock (and ?proc (lambda () . ?body)))
+	     (let ((var (gensym 'lock)))
+		(e `(let ((,var ,lock)) (with-lock ,var ,proc)) e)))
+	    (else
+	     (map (lambda (x) (e x e)) x)))))
 
    ;; pregexp
    (let ((pregexp-expander (lambda (x::obj e::procedure)

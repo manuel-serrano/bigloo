@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Fri Jul 22 09:59:04 2011 (serrano)                */
-;*    Copyright   :  2002-11 Dorai Sitaram, Manuel Serrano             */
+;*    Last change :  Tue Sep 11 15:23:28 2012 (serrano)                */
+;*    Copyright   :  2002-12 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
 ;*    -------------------------------------------------------------    */
@@ -18,7 +18,8 @@
 
    (import  __error
 	    __object
-	    __thread)
+	    __thread
+	    __bexit)
    
    (use     __type
 	    __bigloo
