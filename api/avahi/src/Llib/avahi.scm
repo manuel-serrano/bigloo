@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Aug 29 15:08:09 2012 (serrano)                */
+;*    Last change :  Wed Sep 12 09:05:57 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -69,7 +69,7 @@
 	 (proc::procedure read-only)
 	 (%groups::pair-nil (default '()))
 	 (%browsers::pair-nil (default '()))
-	 (%resolvers::pair-nil (default '()))
+	 (resolvers::pair-nil (default '()))
 	 (version::bstring
 	    read-only
 	    (get (lambda (o::avahi-client)
@@ -413,10 +413,10 @@
 ;*---------------------------------------------------------------------*/
 (define (avahi-client-close o::avahi-client)
    ($bgl-avahi-client-close o)
-   (with-access::avahi-client o (%groups %browsers %resolvers)
+   (with-access::avahi-client o (%groups %browsers resolvers)
       (set! %groups '())
       (set! %browsers '())
-      (set! %resolvers '()))
+      (set! resolvers '()))
    (avahi-gc-unmark! o))
 
 ;*---------------------------------------------------------------------*/
@@ -663,8 +663,8 @@
    (with-access::avahi-service-resolver o (proc client)
       (if (correct-arity? proc 12)
 	  (begin
-	     (with-access::avahi-client client (%resolvers)
-		(set! %resolvers (cons o %resolvers)))
+	     (with-access::avahi-client client (resolvers)
+		(set! resolvers (cons o resolvers)))
 	     ($bgl-avahi-service-resolver-new o))
 	  (avahi-error "avahi-service-resolver" "Illegal callback" proc
 	     $avahi-err-invalid-object))))
@@ -675,8 +675,8 @@
 (define (avahi-service-resolver-close o::avahi-service-resolver)
    ($bgl-avahi-service-resolver-close o)
    (with-access::avahi-service-resolver o (client)
-      (with-access::avahi-client client (%resolvers)
-	 (set! %resolvers (remq! o %resolvers))))
+      (with-access::avahi-client client (resolvers)
+	 (set! resolvers (remq! o resolvers))))
    #unspecified)
    
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon Sep 10 08:22:28 2012 (serrano)                */
+;*    Last change :  Wed Sep 12 08:10:21 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -229,7 +229,10 @@
    (with-access::flac-alsa o (outbuf %alsamusic %buffer)
       (with-access::alsamusic %alsamusic (pcm %status)
 	 (when (>fx size 0)
-	    (alsa-snd-pcm-write pcm outbuf size)
+	    (let ((n (alsa-snd-pcm-write pcm outbuf size)))
+	       (when (>=fx (flac-debug) 1)
+		  (unless (=fx n size)
+		     (tprint "FLAC-DECODER-WRITE, wrong number written: provided=" size " returned=" n))))
 	    #t))))
 
 ;*---------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/avahi.scm)                                                        */
 /*   Bigloo (3.8d)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Tue Sep 11 15:28:26 CEST 2012       */
+/*   Inria -- Sophia Antipolis (c)       Wed Sep 12 09:14:58 CEST 2012       */
 /*===========================================================================*/
 /* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/3.8d -unsafe -safee -srfi avahi -copt -D_REENTRANT -copt -fPIC -copt -IClib -copt  Llib/avahi.scm -o Clib/bglavahi.h -hgen)*/
 
@@ -67,7 +67,7 @@ typedef struct BgL_avahizd2clientzd2_bgl {
    obj_t BgL_procz00;
    obj_t BgL_z52groupsz52;
    obj_t BgL_z52browsersz52;
-   obj_t BgL_z52resolversz52;
+   obj_t BgL_resolversz00;
 } *BgL_avahizd2clientzd2_bglt;
 
 typedef struct BgL_avahizd2entryzd2groupz00_bgl {

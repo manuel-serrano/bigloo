@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Fri Jan 20 16:56:53 2012 (serrano)                */
+;*    Last change :  Tue Sep 11 19:52:31 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -281,7 +281,7 @@
 	     err))))
 
 ;*---------------------------------------------------------------------*/
-;*    alsa-snd-pcm-wait ...                                           */
+;*    alsa-snd-pcm-wait ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-wait pcm::alsa-snd-pcm tmt::int)
    (with-access::alsa-snd-pcm pcm ($builtin)
