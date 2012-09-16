@@ -1,12 +1,12 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/getifaddrs                  */
+#*    serrano/prgm/project/bigloo/autoconf/gethwaddrs                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Sep 13 16:29:32 2012 (serrano)                */
+#*    Last change :  Thu Sep 13 16:29:22 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
-#*    Check for the getifaddrs                                         */
+#*    Check for the gethwaddrs                                         */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -58,39 +58,27 @@ fi
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
 #include <stdio.h>
-#include <sys/types.h>
-#include <ifaddrs.h>
-#include <string.h>
-#include <arpa/inet.h>
-#ifdef __FreeBSD__
-#  include <netinet/in.h>
-#endif
-#ifdef BGL_ANDROID
-#  include <linux/in.h>
-#endif
+#include <sys/ioctl.h>
+#include <sys/types.h>    
+#include <sys/socket.h>
+#include <net/if.h>
 
-int main (int argc, const char * argv[]) {
-    struct ifaddrs *ifAddrStruct = 0L;
-    struct ifaddrs *ifa = 0L;
-    void *tmpAddrPtr=NULL;
+int main( int argc, char *argv[] ) {
+   int s;
+   struct ifreq ifreq;
 
-    getifaddrs( &ifAddrStruct );
+   if( (s = socket( PF_INET, SOCK_DGRAM, 0 )) != -1 ) {
+      memset( &ifreq, 0x00, sizeof( ifreq ) );
 
-    for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa ->ifa_addr->sa_family == AF_INET) {
-            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-            char addressBuffer[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
-        } else if (ifa->ifa_addr->sa_family == AF_INET6) {
-            tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
-            char addressBuffer[INET6_ADDRSTRLEN];
-            inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
-        } 
-    }
-    if (ifAddrStruct!=0L) freeifaddrs(ifAddrStruct);
-    return 0;
+      strcpy(ifreq.ifr_name, argv[ 1 ]);
+      ioctl(s, SIOCGIFHWADDR, &ifreq);
+
+      printf("%.2X:", (unsigned char)ifreq.ifr_hwaddr.sa_data[5]);
+
+      close(s);
+   }
+
+   return 0;
 }
 EOF
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Jul 12 15:11:09 2012 (serrano)                */
+;*    Last change :  Sun Sep 16 09:06:19 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -270,8 +270,9 @@
 	   super::obj sub::pair-nil max
 	   alloc ha
 	   fd::vector allfd::vector
-	   constr virt new nil shrink evdata)
-   (let ((v ($create-vector-uncollectable 19)))
+	   constr virt new nil shrink depth::long ancestors::vector
+	   evdata)
+   (let ((v ($create-vector-uncollectable 21)))
       ;; the class name
       (vector-set-ur! v 0 name)
       ;; the class number
@@ -308,8 +309,12 @@
       (vector-set-ur! v 16 module)
       ;; nil instance
       (vector-set-ur! v 17 #f)
+      ;; the class depth
+      (vector-set-ur! v 18 depth)
+      ;; the class ancestors
+      (vector-set-ur! v 19 ancestors)
       ;;  a stamp to implement class?
-      (vector-set-ur! v 18 *class-key*)
+      (vector-set-ur! v 20 *class-key*)
       v))
 
 ;*---------------------------------------------------------------------*/
@@ -317,8 +322,8 @@
 ;*---------------------------------------------------------------------*/
 (define (class? obj)
    (and (vector? obj)
-	(=fx (vector-length obj) 19)
-	(eq? (vector-ref-ur obj 18) *class-key*)))
+	(=fx (vector-length obj) 21)
+	(eq? (vector-ref-ur obj 20) *class-key*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-exists ...                                                 */
@@ -530,6 +535,18 @@
    (vector-ref-ur class 3))
 		     
 ;*---------------------------------------------------------------------*/
+;*    class-depth ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (class-depth class)
+   (vector-ref-ur class 18))
+		     
+;*---------------------------------------------------------------------*/
+;*    class-ancestors ...                                              */
+;*---------------------------------------------------------------------*/
+(define (class-ancestors class)
+   (vector-ref-ur class 19))
+		     
+;*---------------------------------------------------------------------*/
 ;*    class-abstract? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (class-abstract? class)
@@ -552,12 +569,6 @@
 ;*---------------------------------------------------------------------*/
 (define (class-subclasses-set! class sub)
    (vector-set-ur! class 4 sub))
-
-;*---------------------------------------------------------------------*/
-;*    class-ancestors ...                                              */
-;*---------------------------------------------------------------------*/
-(define (class-ancestors class)
-   (vector-ref-ur class 5))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-allocator ...                                              */
@@ -666,27 +677,33 @@
       (unless (pair? *class-key*) (set! *class-key* (cons 1 2)))))
 
 ;*---------------------------------------------------------------------*/
-;*    double-vector ...                                                */
+;*    extend-vector ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (double-vector old-vec fill)
+(define (extend-vector old-vec fill extend)
    (let* ((old-len (vector-length old-vec))
-	  (new-len (*fx 2 old-len))
+	  (new-len (+fx extend old-len))
 	  (new-vec ($make-vector-uncollectable new-len fill)))
       (let loop ((i 0))
 	 (if (=fx i old-len)
-	     (begin
-		($free-vector-uncollectable old-vec)
-		new-vec)
+	     new-vec
 	     (begin
 		(vector-set-ur! new-vec i (vector-ref-ur old-vec i))
 		(loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    double-vector! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (double-vector! old-vec fill)
+   (let ((new-vec (extend-vector old-vec fill (vector-length old-vec))))
+      ($free-vector-uncollectable old-vec)
+      new-vec))
       
 ;*---------------------------------------------------------------------*/
 ;*    double-nb-classes! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (double-nb-classes!)
    (set! *nb-classes-max* (*fx 2 *nb-classes-max*))
-   (set! *classes* (double-vector *classes* #f))
+   (set! *classes* (double-vector! *classes* #f))
    ;; we have to enlarge the method vector for each generic
    (let loop ((i 0))
       (when (<fx i *nb-generics*)
@@ -695,7 +712,7 @@
 		(old-method-array (generic-method-array gen)))
 	    (generic-method-array-set!
 	     gen
-	     (double-vector old-method-array default-bucket))
+	     (double-vector! old-method-array default-bucket))
 	    (loop (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/
@@ -703,7 +720,7 @@
 ;*---------------------------------------------------------------------*/
 (define (double-nb-generics!)
    (set! *nb-generics-max* (*fx 2 *nb-generics-max*))
-   (set! *generics* (double-vector *generics* #f)))
+   (set! *generics* (double-vector! *generics* #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object? ...                                                      */
@@ -846,6 +863,12 @@
 	 (unless (vector? plain)
 	    (error "register-class" "fields not a vector" plain))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
+		(depth (if (class? super)
+			   (+fx (class-depth super) 1)
+			   1))
+		(ancestors (if (class? super)
+			       (extend-vector (class-ancestors super) super 1)
+			       ($make-vector-uncollectable 1 super)))
 		(class (make-class name module
 			  num
 			  -1
@@ -863,18 +886,24 @@
 			  creator
 			  nil
 			  shrink
+			  depth
+			  ancestors
 			  #f)))
 	    ;; we set the sub field of the super class
-	    (if (class? super)
-		(begin
-		   ;; we add the class to its super subclasses list
-		   (class-subclasses-set!
-		      super (cons class (class-subclasses super)))
-		   ;; and then, we renumber the tree
-		   (class-hierarchy-numbering! class super))
-		(begin
-		   (class-min-num-set! class 1)
-		   (class-max-num-set! class 1)))
+	    (when (class? super)
+	       ;; add the class to its super subclasses list
+	       (class-subclasses-set!
+		  super (cons class (class-subclasses super))))
+	    (cond-expand
+	       (ABANDONNED-RENUMBERING
+		(if (class? super)
+		    (begin
+		       (class-hierarchy-numbering! class super))
+		    (begin
+		       (class-min-num-set! class 1)
+		       (class-max-num-set! class 1))))
+	       (else
+		#f))
 	    ;; we add the class in the *classes* vector (we declare the class)
 	    (vector-set! *classes* *nb-classes* class)
 	    ;; we increment the global class number
@@ -1110,11 +1139,34 @@
 		    (loop (class-super class))))))))
    
 ;*---------------------------------------------------------------------*/
+;*    nil? ...                                                         */
+;*---------------------------------------------------------------------*/
+(define (nil? obj::object)
+   (let ((klass (object-class obj)))
+      (eq? (class-nil klass) obj)))
+
+;*---------------------------------------------------------------------*/
 ;*    isa? ...                                                         */
 ;*    -------------------------------------------------------------    */
-;*    The constant time implementation of is-a?                        */
+;*    The constant-time and thread-safe implementation of is-a?        */
 ;*---------------------------------------------------------------------*/
 (define (isa? obj class)
+   (if (object? obj)
+       (let ((oclass (object-class obj)))
+	  (if (eq? oclass class)
+	      #t
+	      (let ((odepth (class-depth oclass))
+		    (cdepth (class-depth class)))
+		 (if (<fx cdepth odepth)
+		     (eq? (vector-ref-ur (class-ancestors oclass) cdepth) class)
+		     #f))))
+       #f))
+
+(cond-expand
+   (ABANDONNED-RENUMBERING
+(define (isa? obj class)
+   ;; This version has been abonned since bigloo3.8d because it is not
+   ;; thread safe. It requires a mutex to protect against parallel renumbering
    (if (object? obj)
        ;; it is an object, we check if OBJ inherits of CLASS
        (let ((oclass (object-class obj)))
@@ -1130,24 +1182,22 @@
 		  #f)))
        ;; not even a class instance
        #f))
-
-;*---------------------------------------------------------------------*/
-;*    nil? ...                                                         */
-;*---------------------------------------------------------------------*/
-(define (nil? obj::object)
-   (let ((klass (object-class obj)))
-      (eq? (class-nil klass) obj)))
+))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-hierarchy-numbering! ...                                   */
 ;*    -------------------------------------------------------------    */
 ;*    We tried to avoid as much as possible complete tree traversal.   */
 ;*---------------------------------------------------------------------*/
+(cond-expand
+   (ABANDONNED-RENUMBERING
 (define (class-hierarchy-numbering! class super)
+   ;; class hierarchy number has been abonned since bigloo3.8d,
+   ;; see isa? above
    (let* ((super-min (class-min-num super))
 	  (super-max (class-max-num super))
 	  (subclasses (class-subclasses super))
-	  (new-num (if (null? (cdr subclasses))
+	  (new-num::long (if (null? (cdr subclasses))
 		       (+fx 1 (class-min-num super))
 		       (+fx 1 (class-max-num (cadr subclasses))))))
       ;; test the validity of the class number
@@ -1161,11 +1211,14 @@
       (when (>fx new-num super-max)
 	 ;; we have to re-number a part of the tree
 	 (class-hierarchy-up-renumber! super))))
+))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-hierarchy-up-renumber ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (class-hierarchy-up-renumber! class)
+(cond-expand
+   (ABANDONNED-RENUMBERING
+(define (class-hierarchy-up-renumber!-ABANDONNED class)
    ;; we increment the max number for the current class
    (let* ((old-num (class-max-num class))
 	  (new-num (cond
@@ -1206,11 +1259,14 @@
 		(else
 		 (loop (cdr sisters)
 		       (cons (car sisters) old-sisters))))))))
+))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-hierarchy-down-renumber! ...                               */
 ;*---------------------------------------------------------------------*/
-(define (class-hierarchy-down-renumber! class num)
+(cond-expand
+   (ABANDONNED-RENUMBERING
+(define (class-hierarchy-down-renumber!-ABANDONNED class num)
    ;; we set the min number for the class and we walk thru its children
    (class-min-num-set! class num)
    (let liip ((classes (reverse (class-subclasses class)))
@@ -1222,6 +1278,7 @@
 	  (liip (cdr classes)
 	     (class-hierarchy-down-renumber!
 		(car classes) (+fx 1 max-num))))))
+))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ...                                               */

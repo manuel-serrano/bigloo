@@ -29,7 +29,7 @@ Compiling Bigloo for Android requires several things:
       http://developer.android.com/sdk/index.html
 
   * Get Android source code (Elcair or Froyo), for which you'll need git. 
-    See instructions below (Section 1.1).
+    See instructions below (Section 2.1).
 
   * Bigloo comes with its own version of droid-gcc, a wrapper that is in
     charge of invoking correctly gcc. If a more recent version is
@@ -72,24 +72,24 @@ Download repo, a wrapper around git:
   $ curl http://android.git.kernel.org/repo > ~/bin/repo
   $ chmod a+x ~/bin/repo
 
-Get definitions and source code:
+Get definitions and source code (* see the note below for old Android repo):
 
-  $ mkdir eclair-git
-  $ cd eclair-git
-  $ repo init -u git://android.git.kernel.org/platform/manifest.git -b eclair
-  $ repo sync
-  $ cd ..
-
-(Froyos can be obtained similarly by replacing "eclair" with "froyo".)
-
-Compile
-
-  $ cd eclair-git && make 
+  $ mkdir froyo-git
+  $ cd froyo-git
+  $ ~/bin/repo init -u https://android.googlesource.com/platform/manifest
+  $ ~/bin/repo init -u https://android.googlesource.com/platform/manifest -b android-2.2_r1.3
+  $ ~/bin/repo sync
+  
+(Eclair can be obtained similarly by replacing "froyo" with "eclair".)
 
 Let the shell variable DROIDROOT be the absolute path of the directory
 containing the Android source code distribution
 
-  $ export DROIDROOT=your-path/eclair-git
+  $ export DROIDROOT=your-path/froyo-git
+
+Compile
+
+  $ make 
 
 
 3. Configure and compiling Bigloo
@@ -152,4 +152,16 @@ The it can be exectued with
 
 [5] 'adb' runs as a daemon and somehow is not affected by e.g. permission
     changes.
+
+
+(*)
+
+Before 2012, the procedure to download the code was:
+
+  $ mkdir froyo-git
+  $ cd froyo-git
+  $ repo init -u git://android.git.kernel.org/platform/manifest.git -b froyo
+  $ repo sync
+  $ cd ..
+
 

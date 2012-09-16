@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Dec  9 11:49:30 2011 (serrano)                */
-#*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat Sep 15 07:54:57 2012 (serrano)                */
+#*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/

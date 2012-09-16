@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Aug 22 17:38:04 2012 (serrano)                */
+/*    Last change :  Thu Sep 13 16:32:40 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -77,6 +77,12 @@ typedef int socklen_t;
 #   include <arpa/inet.h>
 #   include <ifaddrs.h>
 #endif
+
+#if( BGL_HAVE_GETHWADDRS )
+#  include <sys/ioctl.h>
+#  include <net/if.h>
+#endif
+
 
 long opensocket;
 
@@ -885,6 +891,42 @@ bgl_gethostname() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    gethwaddr ...                                                    */
+/*---------------------------------------------------------------------*/
+static obj_t
+gethwaddr( char *intf ) {
+#if( BGL_HAVE_GETHWADDRS )
+    struct ifreq buffer;
+    int s;
+    if( (s = socket( PF_INET, SOCK_DGRAM, 0 )) == -1 ) {
+       return BFALSE;
+    } else {
+       char buf[ 6 * 3 + 1 ];
+       memset( &buffer, 0x00, sizeof( buffer ) );
+       
+       strcpy( buffer.ifr_name, intf );
+
+       ioctl( s, SIOCGIFHWADDR, &buffer );
+       
+       close( s );
+
+       sprintf( buf,"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
+		(unsigned char)buffer.ifr_hwaddr.sa_data[ 0 ],
+		(unsigned char)buffer.ifr_hwaddr.sa_data[ 1 ],
+		(unsigned char)buffer.ifr_hwaddr.sa_data[ 2 ],
+		(unsigned char)buffer.ifr_hwaddr.sa_data[ 3 ],
+		(unsigned char)buffer.ifr_hwaddr.sa_data[ 4 ],
+		(unsigned char)buffer.ifr_hwaddr.sa_data[ 5 ] );
+
+       return string_to_bstring( buf );
+    }
+#else
+   return BFALSE;
+#endif
+}
+
+/*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_gethostinterfaces ...                                        */
 /*---------------------------------------------------------------------*/
@@ -907,7 +949,8 @@ bgl_gethostinterfaces() {
 	 tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 	 inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
 
-	 tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), BNIL );
+	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
+	 tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( ifa->ifa_name ), tmp );
 			  
@@ -918,7 +961,8 @@ bgl_gethostinterfaces() {
 	 tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
 	 
 	 inet_ntop( AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN );
-	 tmp = MAKE_PAIR( string_to_bstring( "ipv6" ), BNIL );
+	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
+	 tmp = MAKE_PAIR( string_to_bstring( "ipv6" ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( ifa->ifa_name ), tmp );
 

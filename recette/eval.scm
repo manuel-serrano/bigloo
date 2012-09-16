@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Tue Nov 15 09:45:46 2011 (serrano)                */
+;*    Last change :  Sat Sep 15 07:54:27 2012 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -565,4 +565,29 @@
 							 (glop))
 						      1)))
 					    (bar))))))
-	 1))
+	 1)
+   (test "eval define.5"
+      (eval '(define <HOPIMPRESS:ROW>
+	      (lambda args3633
+		 (let ((id #f)
+		       (data-x 0)
+		       (data-y 0)
+		       (width 0)
+		       (height 0)
+		       (attrs '())
+		       (body '()))
+		    (letrec ((loop3634
+				(lambda (args3633)
+				   (if (null? args3633)
+				       (begin
+					  (print :class #f
+					     :id #f
+					     (letrec ((loop (lambda (l x y)
+							       (if (null? l)
+								   body
+								   '()))))
+						(loop body data-x data-y))))
+				       '()))))
+		       (loop3634 args3633))))))
+      '<HOPIMPRESS:ROW>))
+		       

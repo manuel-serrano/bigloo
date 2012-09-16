@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 12:00:29 1998                          */
-;*    Last change :  Tue Nov  2 06:58:11 2010 (serrano)                */
+;*    Last change :  Sat Sep 15 08:58:53 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the search functions:                     */
 ;*      - a module definition (using the afile)                        */
@@ -165,9 +165,12 @@
       (let ((old-buffer (find-buffer-visiting (concat ude-root-directory
 						      ude-afile-name))))
 	(if (bufferp old-buffer)
-	    (sort (mapcar #'(lambda (x) (symbol-name (car x)))
-			  (read old-buffer))
-		  'string<)
+	    (save-excursion
+	      (set-buffer old-buffer)
+	      (goto-char (point-min))
+	      (sort (mapcar #'(lambda (x) (symbol-name (car x)))
+			    (read old-buffer))
+		    'string<))
 	  (let ((buffer (find-file-noselect (concat ude-root-directory
 						    ude-afile-name))))
 	    (if (bufferp buffer)

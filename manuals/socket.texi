@@ -322,7 +322,8 @@ DNS caching can be control by the means of two parameters:
 @end deffn
 
 @deffn {bigloo procedure} get-interfaces
-Returns the list of configured interfaces and their associated IP addresses.
+Returns the list of configured interfaces, their associated IP addresses, their
+protocol, and, if supported by the system, the hardware address (the mac address).
 @end deffn
 
 @deffn {bigloo procedure} get-protocols
