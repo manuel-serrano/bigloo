@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:47:50 2011                          */
-;*    Last change :  Sat Sep 15 07:46:43 2012 (serrano)                */
+;*    Last change :  Mon Sep 17 11:04:52 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the vars used by an expression                           */
@@ -122,7 +122,7 @@
       (let rec ( (l vals) (done done) )
 	 (if (null? l)
 	     (use body done)
-	     (rec (cdr l) (use (cadr l) done)) ))))
+	     (rec (cdr l) (use (cdar l) done)) ))))
 
 (define-method (use e::ev_goto done);
    (with-access::ev_goto e (args)
