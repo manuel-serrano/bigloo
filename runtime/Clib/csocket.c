@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Sep 18 16:28:04 2012 (serrano)                */
+/*    Last change :  Tue Sep 18 16:32:20 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1296,7 +1296,11 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    obj_t a_socket;
    struct sockaddr_un saddr;
    int namelen = STRING_LENGTH( path );
-   socklen_t slen = offsetof( struct sockaddr_un, sun_path ) + namelen;
+   char *name = BSTRING_TO_STRING( path );
+   socklen_t slen =
+      (name[ 0 ] == 0
+       ? offsetof( struct sockaddr_un, sun_path ) + namelen 
+       : sizeof( saddr ));
 
    /* Get a socket */
    if( BAD_SOCKET( s = (int)socket( AF_UNIX, SOCK_STREAM, 0 ) ) ) {
@@ -1311,7 +1315,7 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    memset( &saddr, 0, sizeof( saddr ) );
 
    saddr.sun_family = AF_UNIX;
-   memcpy( saddr.sun_path, BSTRING_TO_STRING( path ), namelen );
+   memcpy( saddr.sun_path, name, namelen );
    
    /* Try to connect */
    while( (err = connect( s, (struct sockaddr *)&saddr, slen ) ) != 0 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sat May 12 08:46:28 2012 (serrano)                */
+;*    Last change :  Tue Sep 18 18:21:08 2012 (serrano)                */
 ;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -144,6 +144,7 @@
 		(>fx (global-occurrence global) 0))
 	   (type-increment-global! global))
 	  ((require-prototype? global)
+	   (type-increment-global! global)
 	   (type-occurrence-increment! (global-type global))
 	   (when (sfun? (global-value global))
 	       (for-each (lambda (a)
