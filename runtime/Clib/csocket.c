@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Sep 18 15:41:58 2012 (serrano)                */
+/*    Last change :  Tue Sep 18 16:28:04 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -22,6 +22,7 @@
 #  define _BGL_WIN32_VER
 #endif
 
+#include <stddef.h>
 #include <bigloo_config.h>
 #include <time.h>
 #ifndef _BGL_WIN32_VER
@@ -1294,6 +1295,8 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    int s, err;
    obj_t a_socket;
    struct sockaddr_un saddr;
+   int namelen = STRING_LENGTH( path );
+   socklen_t slen = offsetof( struct sockaddr_un, sun_path ) + namelen;
 
    /* Get a socket */
    if( BAD_SOCKET( s = (int)socket( AF_UNIX, SOCK_STREAM, 0 ) ) ) {
@@ -1304,12 +1307,14 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    if( timeo > 0 ) set_socket_blocking( s, 1 );
 #endif
 
+   /* clear every bytes, they all count for abstract name space */
+   memset( &saddr, 0, sizeof( saddr ) );
+
    saddr.sun_family = AF_UNIX;
-   memcpy( saddr.sun_path, BSTRING_TO_STRING( path ), STRING_LENGTH( path ) );
+   memcpy( saddr.sun_path, BSTRING_TO_STRING( path ), namelen );
    
    /* Try to connect */
-   while( (err = connect( s,
-			  (struct sockaddr *)&saddr, sizeof( saddr ) ) ) != 0 
+   while( (err = connect( s, (struct sockaddr *)&saddr, slen ) ) != 0 
           && errno == EINTR );
    
    if( err < 0 ) {
