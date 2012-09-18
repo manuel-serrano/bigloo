@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Sep 13 16:32:40 2012 (serrano)                */
+/*    Last change :  Tue Sep 18 15:34:57 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1305,7 +1305,7 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
 #endif
 
    saddr.sun_family = AF_UNIX;
-   strcpy( saddr.sun_path, BSTRING_TO_STRING( path ) );
+   memcpy( saddr.sun_path, BSTRING_TO_STRING( path ), BSTRING_LENGTH( path ) );
    
    /* Try to connect */
    while( (err = connect( s,
