@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sun Sep  9 06:04:53 2012 (serrano)                */
+;*    Last change :  Thu Sep 20 05:26:10 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -106,7 +106,7 @@
 ;*    alsa-debug-file ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (alsa-debug-file)
-   (>fx (alsa-debug) 0))
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *error-sleep-duration* ...                                       */
@@ -929,8 +929,9 @@
 ;*    debug-stop! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (debug-stop! url)
-   (debug ">>> ALSA stop " url " " (current-microseconds) "\n")
-   (close-output-port *debug-port*))
+   (when (output-port? *debug-port*)
+      (debug ">>> ALSA stop " url " " (current-microseconds) "\n")
+      (close-output-port *debug-port*)))
    
 ;*---------------------------------------------------------------------*/
 ;*    debug ...                                                        */
