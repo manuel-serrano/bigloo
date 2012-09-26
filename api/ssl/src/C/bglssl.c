@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Apr 19 19:17:33 2012 (serrano)                */
+/*    Last change :  Wed Sep 26 15:37:33 2012 (serrano)                */
 /*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -176,6 +176,15 @@ loop:
    }
    
    return r;
+}
+
+/*---------------------------------------------------------------------*/
+/*    ssize_t                                                          */
+/*    sslwrite ...                                                     */
+/*---------------------------------------------------------------------*/
+ssize_t
+sslwrite( obj_t port, char *ptr, long len ) {
+   return SSL_write( (SSL *)PORT_STREAM( port ), ptr, len );
 }
 
 /*---------------------------------------------------------------------*/
@@ -448,7 +457,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    PORT( op ).stream = (obj_t)ssl;
    PORT( op ).sysclose = 0L;
    PORT( op ).chook = ssl_output_close_hook;
-   OUTPUT_PORT( op ).syswrite = (size_t(*)())&SSL_write;
+   OUTPUT_PORT( op ).syswrite = &sslwrite;
    OUTPUT_PORT( op ).sysflush = 0L;
 
    SOCKET( s ).userdata = drag;

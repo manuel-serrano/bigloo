@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Fri May  4 07:09:07 2012 (serrano)                */
+/*    Last change :  Thu Sep 20 18:15:57 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -181,7 +181,7 @@ bglpth_thread_run( void *arg ) {
    PROCEDURE_ENTRY( thunk )( thunk, BEOA );
    pthread_cleanup_pop( 1 );
 
-   /* returns self so the GC is unable to collect self (and the */
+   /* returns self so the GC is does not collect self (and the */
    /* thread specific dynamic env) until the thread completes   */
    return (void *)self;
 }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan 20 11:48:39 2002                          */
-;*    Last change :  Fri Nov 17 15:33:09 2006 (serrano)                */
-;*    Copyright   :  2002-06 Manuel Serrano                            */
+;*    Last change :  Thu Sep 20 17:26:05 2012 (serrano)                */
+;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Gnu-Emacs (hum, hum, Emacs) specific file.                       */
 ;*=====================================================================*/
@@ -313,8 +313,8 @@ static char *on[] = {
 	(error "ude-toolbar-add:illegal entry format `%S'" (car lst)))))
     (let ((omap (current-local-map)))
       (use-local-map map)
-      (mapc '(lambda (n)
-	       (local-unset-key (vector 'tool-bar n)))
+      (mapc '#(lambda (n)
+		(local-unset-key (vector 'tool-bar n)))
 	    handle-names)
       (use-local-map omap))
     (unless (>= 22 bmacs-emacs-version)

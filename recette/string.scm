@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Fri Jan 13 10:06:41 2012 (serrano)                */
+;*    Last change :  Wed Sep 26 15:06:06 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -321,6 +321,18 @@
    (test "string-compare3-ci.7" (> (string-compare3-ci "ABCI" "ABC") 0) #t)
    (test "string-compare3-ci.8" (> (string-compare3-ci "aBd" "abc") 0) #t)
    (test "string/bstring" (string/bstring) "ascf\n")
+   (test "output-string-port"
+      (let ((p (open-output-string)))
+	 (display (make-string 129 #\a) p)
+	 (flush-output-port p)
+	 (display (make-string 129 #\b) p)
+	 (flush-output-port p)
+	 (display (make-string 129 #\c) p)
+	 (close-output-port p))
+      (string-append
+	 (make-string 129 #\a)
+	 (make-string 129 #\b)
+	 (make-string 129 #\c)))
    (let ((s "abcdef")) 
       (test "base64.1" (base64-decode (base64-encode s)) s)
       (test "base64.1b" (base64-decode (base64-encode s 0)) s)

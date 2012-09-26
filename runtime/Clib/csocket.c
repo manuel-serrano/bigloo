@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Sep 18 16:32:20 2012 (serrano)                */
+/*    Last change :  Wed Sep 26 14:59:28 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -99,6 +99,7 @@ extern unsigned char bgl_get_hash_number_len( char *, int, int );
 extern bool_t bigloo_strcmp( obj_t o1, obj_t o2 );
 extern bool_t bgl_dns_enable_cache();
 extern long bgl_dns_cache_validity_timeout();
+extern ssize_t bgl_syswrite( obj_t, char *, size_t );
 
 #ifndef _BGL_WIN32_VER
 extern int dup( int );
@@ -1134,7 +1135,7 @@ set_socket_io_ports( int s, obj_t sock, char *who, obj_t inb, obj_t outb ) {
    SOCKET( sock ).output = bgl_make_output_port( host, (void *)s,
 						 KINDOF_SOCKET,
 						 outb,
-						 (size_t (*)())write,
+						 bgl_syswrite,
 						 lseek,
 						 close );
    SOCKET( sock ).output->output_port_t.sysflush = &bgl_socket_flush;
@@ -2122,11 +2123,12 @@ bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static long                                                      */
+/*    static ssize_t                                                   */
 /*    datagram_socket_write ...                                        */
 /*---------------------------------------------------------------------*/
-static long
-datagram_socket_write( void *s, void *buf, size_t len ) {
+static ssize_t
+datagram_socket_write( obj_t port, void *buf, size_t len ) {
+   obj_t s = (obj_t)PORT_STREAM( port );
    obj_t sock = (obj_t)s;
    int fd = BGL_DATAGRAM_SOCKET( sock ).fd;
    struct sockaddr *server = BGL_DATAGRAM_SOCKET( sock ).server;
@@ -2226,7 +2228,7 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    oport = bgl_make_output_port( a_socket->datagram_socket_t.hostip,
 				 (void *)a_socket, KINDOF_SOCKET,
 				 make_string_sans_fill( 0 ),
-				 (size_t (*)())&datagram_socket_write,
+				 &datagram_socket_write,
 				 0L,
 				 close );
    OUTPUT_PORT( oport ).sysflush = &bgl_socket_flush;

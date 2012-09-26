@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Aug 30 08:37:51 2012 (serrano)                */
+/*    Last change :  Wed Sep 26 14:36:20 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -342,7 +342,7 @@ typedef union scmobj {
       long cnt;                  /*    - the number of char left       */
       char *ptr;                 /*    - the next char position        */
       int bufmode;               /*    - the buffering mode            */
-      size_t (*syswrite)();      /*    - the system write              */
+      ssize_t (*syswrite)();     /*    - the system write              */
       union scmobj *(*sysflush)();/*   - the system flush              */
       long (*sysseek)();         /*    - the system seek               */
       union scmobj *fhook;       /*    - the flush hook                */
@@ -2955,7 +2955,7 @@ BGL_RUNTIME_DECL obj_t bgl_reverse_bang( obj_t );
 BGL_RUNTIME_DECL long bgl_list_length( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_remq( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_remq_bang( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t bgl_make_output_port( obj_t, void *, obj_t, obj_t, size_t (*)(), long (*)(), int (*)() );
+BGL_RUNTIME_DECL obj_t bgl_make_output_port( obj_t, void *, obj_t, obj_t, ssize_t (*)(), long (*)(), int (*)() );
 BGL_RUNTIME_DECL void bgl_output_port_buffer_set( obj_t, obj_t );   
 BGL_RUNTIME_DECL obj_t bgl_close_output_port( obj_t );
 BGL_RUNTIME_DECL obj_t get_output_string( obj_t );
