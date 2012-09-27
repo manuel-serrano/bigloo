@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Sep 26 15:35:05 2012 (serrano)                */
+/*    Last change :  Wed Sep 26 22:32:33 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -458,20 +458,25 @@ posix_timed_write( obj_t port, void *buf, size_t num ) {
 loop:
    FD_ZERO( &writefds );
    FD_SET( fd, &writefds );
+   fprintf( stderr, ">>> posix_timed_write fd=%d\n", fd );
 
    if( (n = select( fd + 1, NULL, &writefds, NULL, &tv )) <= 0 ) {
+      fprintf( stderr, "<<< posix_timed_write fd=%d n=%d errno=%d strerr=%s\n", fd, n, errno, strerror( errno ) );
       if( n == 0 ) {
 	 char buf[ 100 ];
 
+	 OUTPUT_PORT( port ).err = BGL_IO_TIMEOUT_ERROR;
 	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "write/timeout", buf, port );
       } else {
 	 if( errno == EINTR ) {
 	    goto loop;
 	 }
 	 
+	 OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
 	 C_SYSTEM_FAILURE( BGL_IO_WRITE_ERROR, "write/timeout", strerror( errno ), port );
       }
    } else {
+      fprintf( stderr, "<<< posix_timed_write fd=%d n=%d", fd, n );
       return syswrite_with_timeout( port, buf, num );
    }
 }
@@ -486,13 +491,20 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
    struct bgl_output_timeout *tmt = PORT( port ).timeout;
    long n;
 
+   fprintf( stderr, ">>> syswrite_timeout fd=%d num=%d\n",
+	    (int)PORT( port ).stream, num );
    if( (n = tmt->syswrite( port, ptr, num )) >= 0 ) {
+      fprintf( stderr, "<<< syswrite_timeout fd=%d n=%d\n",
+	       (int)PORT( port ).stream, n );
       return n;
    } else {
+      fprintf( stderr, "<<<! syswrite_timeout fd=%d  errno=%d strerr=%s\n",
+	       (int)PORT( port ).stream, errno, strerror( errno ) );
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_WRITE_ERROR);
 
+	 OUTPUT_PORT( port ).err = e;
 	 C_SYSTEM_FAILURE( e, "write/timeout", strerror( errno ), port );
       }
    }
@@ -672,6 +684,7 @@ strseek( void *port, long offset, int whence ) {
 	 if( errno == EINTR ) { \
 	    continue; \
 	 } else if( err ) { \
+	    OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR; \
 	    C_SYSTEM_FAILURE( bglerror( errno ), "write/display", strerror( errno ), port ); \
 	 } else { \
 	    break; \
@@ -729,18 +742,7 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 
       /* flush out the buffer, if needed */
       if( OUTPUT_PORT( port ).bufmode != BGL_IOEBF ) {
-	 int fd_DEBUG = (int)PORT_STREAM( port );
 	 char *buf_start = BSTRING_TO_STRING( buf );
-
-	 if( PORT( port ).kindof == KINDOF_SOCKET && err) {
-	    int val = fcntl( fd_DEBUG, F_GETFL, 0 );
-
-	    fprintf( stderr, ">>> output_flush fd=%d block=%s timeout= %ds %dms\n",
-		     fd_DEBUG,
-		     ((val & O_NONBLOCK) == O_NONBLOCK) ? "nonblock" : "block",
-		     PORT( port ).timeout ? ((struct bgl_output_timeout *)(PORT( port ).timeout))->timeout.tv_sec : 0 ,
-		     PORT( port ).timeout ? ((struct bgl_output_timeout *)(PORT( port ).timeout))->timeout.tv_usec : 0 );
-	 }
 
 	 if ( port == _stdout ) {
 	    /* take into account stdout_from */
@@ -754,15 +756,9 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	 }
 
 	 /* write the buffer */
-	 if( PORT( port ).kindof == KINDOF_SOCKET && err) {
-            fprintf( stderr, "~~! flush_string.4 fd=%d\n", fd_DEBUG );
-	 }
 	 flush_string( port, buf_start, use, err );
 	 
 	 /* write the string that raises the buffer overflow */
-	 if( PORT( port ).kindof == KINDOF_SOCKET && err) {
-	    fprintf( stderr, "~~! flush_string.5 fd=%d\n", fd_DEBUG );
-	 }
 	 flush_string( port, str, slen, err );
 
 	 /* Update the port */
@@ -779,9 +775,6 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	    OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( buf, 0 );
 	    OUTPUT_PORT( port ).cnt = STRING_LENGTH( buf );
 	 }
-	 if( PORT( port ).kindof == KINDOF_SOCKET && err) {
-	    fprintf( stderr, "<<< output_flush fd=%d\n", fd_DEBUG );
-	 }
       } else {
 	 /* invoke the flush hook, if any attached to the port */
 	 if( PROCEDUREP( fhook ) ) {
@@ -796,6 +789,8 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	    
 	    if( n < 0 && err ) {
 	       if( port == _stdout ) bgl_mutex_unlock ( stdout_mutex );
+	       
+	       OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
 	       
 	       C_SYSTEM_FAILURE( bglerror( errno ),
 				 "write/display",
@@ -887,6 +882,7 @@ bgl_make_output_port( obj_t name,
    new_output_port->output_port_t.sysflush = 0L;
    new_output_port->output_port_t.fhook = BUNSPEC;
    new_output_port->output_port_t.flushbuf = BUNSPEC;
+   new_output_port->output_port_t.err = 0;
 
    new_output_port->output_port_t.bufmode = BGL_IOFBF;
    bgl_output_port_buffer_set( BREF( new_output_port ), buf );
@@ -1140,6 +1136,17 @@ bgl_reset_output_string_port( obj_t port ) {
 }
    
 /*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_reset_output_port_error ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_reset_output_port_error( obj_t port ) {
+   OUTPUT_PORT( port ).err = 0;
+   
+   return port;
+}
+   
+/*---------------------------------------------------------------------*/
 /*    bgl_close_output_port ...                                        */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
@@ -1160,7 +1167,9 @@ bgl_close_output_port( obj_t port ) {
 
 	 res = bgl_string_shrink( buf, STRING_LENGTH( buf ) - cnt );
       } else {
-	 output_flush( port, 0, 0, 0, 0 );
+	 if( OUTPUT_PORT( port ).err == 0 ) {
+	    output_flush( port, 0, 0, 0, 0 );
+	 }
       }
       
       PORT( port ).kindof = KINDOF_CLOSED;

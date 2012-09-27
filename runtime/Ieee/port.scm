@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Mon Sep 10 12:20:57 2012 (serrano)                */
+;*    Last change :  Wed Sep 26 22:13:47 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -134,6 +134,8 @@
 		   "FLUSH_OUTPUT_PORT")
 	    (macro $reset-output-string-port::obj (::output-port)
 		   "bgl_reset_output_string_port")
+	    (macro $reset-output-port-error::obj (::output-port)
+		   "bgl_reset_output_port_error")
 	    
 	    (c-fexists?::bool (::string) "fexists")
 	    (macro c-delete-file::bool (::string) "unlink")
@@ -274,6 +276,8 @@
 		       "FLUSH_OUTPUT_PORT")
 	       (method static $reset-output-string-port::obj (::output-port)
 		       "bgl_reset_output_string_port")
+	       (method static $reset-output-port-error::obj (::output-port)
+		       "bgl_reset_output_port_error")
 	       
 	       (method static c-fexists?::bool (::string)
 		       "fexists")
@@ -1106,6 +1110,7 @@
 ;*    reset-string-port ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (reset-output-port port)
+   ($reset-output-port-error port)
    (if (c-output-string-port? port)
        ($reset-output-string-port port)
        (flush-output-port port)))

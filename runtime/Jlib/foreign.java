@@ -5788,6 +5788,10 @@ public final class foreign
 	 return ((output_string_port)p).reset();
       }
 
+   public static Object bgl_reset_output_port_error(output_port p) {
+      return p;
+   }
+
    public static Object bgl_open_output_file(byte[]file, byte[] buf) throws IOException
       {
 	 if( output_pipe_port.pipe_name_p(file) )

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Sep 26 14:36:20 2012 (serrano)                */
+/*    Last change :  Wed Sep 26 22:07:03 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -347,6 +347,7 @@ typedef union scmobj {
       long (*sysseek)();         /*    - the system seek               */
       union scmobj *fhook;       /*    - the flush hook                */
       union scmobj *flushbuf;    /*    - the flush buffer              */
+      int_t err;                 /*    - have we seen an error         */
    } output_port_t;
 
    struct input_port {           /*  an input_port:                    */

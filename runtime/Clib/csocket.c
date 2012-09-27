@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Sep 26 14:59:28 2012 (serrano)                */
+/*    Last change :  Wed Sep 26 21:55:19 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1749,8 +1749,6 @@ socket_close( obj_t sock ) {
    
       if( OUTPUT_PORTP( SOCKET( sock ).output ) ) {
 	 bgl_close_output_port( SOCKET( sock ).output );
-	 /* MS: 26 apr 2008, don't loose the port */
-	 /* SOCKET( sock ).output = BFALSE; */
       }
    }
 
