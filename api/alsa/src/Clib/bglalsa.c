@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Sun Sep 25 05:35:28 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Fri Sep 28 08:49:42 2012 (serrano)                */
+/*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
 /*=====================================================================*/
@@ -293,8 +293,11 @@ bgl_snd_pcm_write( obj_t o, char *buf, long sz ) {
    snd_pcm_uframes_t frames;
    snd_pcm_sframes_t written;
    snd_pcm_t *pcm = OBJ_TO_SND_PCM( o );
+   long w = 0;
 
-   frames = snd_pcm_bytes_to_frames( pcm, sz );
+loop:   
+   frames = snd_pcm_bytes_to_frames( pcm, sz - w );
+
    if( frames < 0 ) {
       return bgl_alsa_error(
 	 "alsa-snd-pcm-write",
@@ -302,17 +305,25 @@ bgl_snd_pcm_write( obj_t o, char *buf, long sz ) {
 	 o );
    }
 
-   written = snd_pcm_writei( pcm, buf, frames );
+   written = snd_pcm_writei( pcm, &buf[ w ], frames );
 
-   if( written == -EINTR )
-       written = 0;
-   else if( written == -EPIPE ) {
+   if( written == -EINTR ) {
+      written = 0;
+   } else if( written == -EPIPE ) {
       if( snd_pcm_prepare( pcm ) >= 0 )
-	 written = snd_pcm_writei( pcm, buf, frames );
+	 written = snd_pcm_writei( pcm, &buf[ w ], frames );
    }
 
    if( written >= 0 ) {
-      return snd_pcm_frames_to_bytes( pcm, written );
+      long bytes = snd_pcm_frames_to_bytes( pcm, written );
+
+      w += bytes;
+
+      if( w == sz ) {
+	 return w;
+      } else {
+	 goto loop;
+      }
    } else {
       if( snd_pcm_state( pcm ) == SND_PCM_STATE_SUSPENDED ) {
 	 snd_pcm_resume( pcm );

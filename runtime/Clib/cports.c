@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Sep 26 22:32:33 2012 (serrano)                */
+/*    Last change :  Fri Sep 28 07:57:11 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -491,14 +491,10 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
    struct bgl_output_timeout *tmt = PORT( port ).timeout;
    long n;
 
-   fprintf( stderr, ">>> syswrite_timeout fd=%d num=%d\n",
-	    (int)PORT( port ).stream, num );
    if( (n = tmt->syswrite( port, ptr, num )) >= 0 ) {
-      fprintf( stderr, "<<< syswrite_timeout fd=%d n=%d\n",
-	       (int)PORT( port ).stream, n );
       return n;
    } else {
-      fprintf( stderr, "<<<! syswrite_timeout fd=%d  errno=%d strerr=%s\n",
+      fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s\n",
 	       (int)PORT( port ).stream, errno, strerror( errno ) );
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
