@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Sep 28 07:57:11 2012 (serrano)                */
+/*    Last change :  Fri Sep 28 21:06:50 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -256,7 +256,7 @@ struct sendfile_info_t {
 /*    bglerror ...                                                     */
 /*---------------------------------------------------------------------*/
 static int
-bglerror( int err ) {
+bglerror( int err, int rw ) {
    switch( err ) {
       case EPIPE: return BGL_IO_SIGPIPE_ERROR;
 
@@ -283,9 +283,18 @@ bglerror( int err ) {
       case ENOSPC: return BGL_IO_WRITE_ERROR;
 #endif	 
 	 
-      default: return BGL_IO_ERROR;
+      default: {
+	 switch( rw ) {
+	    case 1 : return BGL_IO_WRITE_ERROR;
+	    case 2 : return BGL_IO_READ_ERROR;
+	    default: return BGL_IO_ERROR;
+	 }
+      }
    }
 }
+
+#define bglwerror( err ) bglerror( err, 1 )
+#define bglrerror( err ) bglerror( err, 2 )
 
 /*---------------------------------------------------------------------*/
 /*    ssize_t                                                          */
@@ -681,7 +690,7 @@ strseek( void *port, long offset, int whence ) {
 	    continue; \
 	 } else if( err ) { \
 	    OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR; \
-	    C_SYSTEM_FAILURE( bglerror( errno ), "write/display", strerror( errno ), port ); \
+	    C_SYSTEM_FAILURE( bglwerror( errno ), "write/display", strerror( errno ), port ); \
 	 } else { \
 	    break; \
 	 } \
@@ -788,10 +797,8 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	       
 	       OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
 	       
-	       C_SYSTEM_FAILURE( bglerror( errno ),
-				 "write/display",
-				 strerror( errno ),
-				 port );
+	       C_SYSTEM_FAILURE( bglwerror( errno ), "write/display",
+				 strerror( errno ), port );
 	    }
 	 }
       }
@@ -945,7 +952,7 @@ bgl_output_port_timeout_set( obj_t port, long timeout ) {
 	    to->timeout.tv_usec = timeout % 1000000;
 	    
 	    if( (int)PORT_STREAM( port ) == -1 ) {
-	       C_SYSTEM_FAILURE( bglerror( errno ),
+	       C_SYSTEM_FAILURE( bglwerror( errno ),
 				 "output-port-timeout-set!",
 				 "Illegal output-port",
 				 port );
@@ -1346,7 +1353,7 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 	    to->timeout.tv_usec = timeout % 1000000;
 	    
 	    if( (int)PORT_STREAM( port ) == -1 ) {
-	       C_SYSTEM_FAILURE( bglerror( errno ),
+	       C_SYSTEM_FAILURE( bglrerror( errno ),
 				 "input-port-timeout-set!",
 				 "Illegal input-port",
 				 port );
@@ -2065,7 +2072,7 @@ bgl_file_to_string( char *path ) {
    int fd = open( path, O_RDONLY );
 
    if( !fd ) {
-      C_SYSTEM_FAILURE( bglerror( errno ), 
+      C_SYSTEM_FAILURE( bglerror( errno, 0 ), 
 			"file->string",
 			strerror( errno ),
 			string_to_bstring( path ) );
@@ -2276,7 +2283,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       inp.forward = inp.matchstop;
 
       if( w < ws ) {
-	 C_SYSTEM_FAILURE( bglerror( errno ),
+	 C_SYSTEM_FAILURE( bglerror( errno, 0 ),
 			   "send-chars",
 			   strerror( errno ),
 			   MAKE_PAIR( ip, op ) );
@@ -2321,7 +2328,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 	 n = 0;
       }
       if( n < 0 ) {
-	 C_SYSTEM_FAILURE( bglerror( errno ), 
+	 C_SYSTEM_FAILURE( bglerror( errno, 0 ), 
 			   "send-chars",
 			   strerror( errno ),
 			   MAKE_PAIR( ip, op ) );
@@ -2368,7 +2375,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       }
 
       if( n < 0 )
-	 C_SYSTEM_FAILURE( bglerror( errno ),
+	 C_SYSTEM_FAILURE( bglerror( errno, 0 ),
 			   "send-chars",
 			   strerror( errno ),
 			   MAKE_PAIR( ip, op ) );
@@ -2444,7 +2451,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 
 	 close( in );
 	 
-	 C_SYSTEM_FAILURE( bglerror( errnum ), "send-file",
+	 C_SYSTEM_FAILURE( bglerror( errnum, 0 ), "send-file",
 			   strerror( errnum ), MAKE_PAIR( name, op ) );
       }
    }
@@ -2466,7 +2473,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 if( n < 0 ) {
 	    close( in );
 	    
-	    C_SYSTEM_FAILURE( bglerror( si.errnum ), "send-file",
+	    C_SYSTEM_FAILURE( bglerror( si.errnum, 0 ), "send-file",
 			      strerror( si.errnum ), MAKE_PAIR( name, op ) );
 	 }
       }

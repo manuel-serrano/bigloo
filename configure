@@ -188,7 +188,7 @@ avahicflags=
 phidget=
 phidgetlibs=
 phidgetlibdir=$PHIDGETLIBDIR
-phidgetcflags=
+phidgetcflags="$PHIDGETCFLAGS"
 phidgetversion=21
 
 #*--- regexp ----------------------------------------------------------*/
@@ -2046,7 +2046,7 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for phidget
 if [ "$phidget " = " " ]; then
-   phidgetlibs=`$autoconf phidget --cflags=$phidgetcflags --version=$phidgetversion`
+   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion`
 
    if [ "$phidgetlibs " = " " ]; then
       phidget=no;

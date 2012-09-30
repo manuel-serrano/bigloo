@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Sep 16 09:06:19 2012 (serrano)                */
+;*    Last change :  Fri Sep 28 21:04:38 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1396,6 +1396,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (exception-notify exc::&error)
    (error-notify exc))
+
+;*---------------------------------------------------------------------*/
+;*    exception-notify ::&io-write-error ...                           */
+;*---------------------------------------------------------------------*/
+(define-method (exception-notify exc::&io-write-error)
+   (with-access::&io-write-error exc (obj)
+      (unless (eq? obj (current-error-port))
+	 (call-next-method))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::&warning ...                                  */
