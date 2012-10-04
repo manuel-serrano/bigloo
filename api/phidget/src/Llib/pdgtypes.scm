@@ -71,6 +71,17 @@
 	       (index::int read-only)
 	       (current::double read-only))
 	    
+	    (class phidget-stepperinput-event::phidget-inputchange-event)
+	    (class phidget-steppervelocity-event::%phidget-event
+	       (index::int read-only)
+	       (velocity::double read-only))
+	    (class phidget-stepperposition-event::%phidget-event
+	       (index::int read-only)
+	       (position::llong read-only))
+	    (class phidget-steppercurrent-event::%phidget-event
+	       (index::int read-only)
+	       (current::double read-only))
+
 	    (generic %phidget-init ::%phidget)))
 
 ;*---------------------------------------------------------------------*/

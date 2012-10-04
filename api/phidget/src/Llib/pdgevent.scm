@@ -36,7 +36,11 @@
 	   (export phidget-event-spatialdata-new "bgl_phidget_event_spatialdata_new")
 	   (export phidget-event-servoposition-new "bgl_phidget_event_servoposition_new")
 	   (export phidget-event-servovelocity-new "bgl_phidget_event_servovelocity_new")
-	   (export phidget-event-servocurrent-new "bgl_phidget_event_servocurrent_new"))
+	   (export phidget-event-servocurrent-new "bgl_phidget_event_servocurrent_new")
+	   (export phidget-event-stepperinput-new "bgl_phidget_event_stepperinput_new")
+	   (export phidget-event-steppervelocity-new "bgl_phidget_event_steppervelocity_new")
+	   (export phidget-event-stepperposition-new "bgl_phidget_event_stepperposition_new")
+	   (export phidget-event-steppercurrent-new "bgl_phidget_event_steppercurrent_new"))
 
    (export (%phidget-thread-init!)
 	   (%phidget-lock!)
@@ -59,7 +63,11 @@
 	      ::double ::double ::double)
 	   (phidget-event-servoposition-new::obj ::obj ::int ::double)
 	   (phidget-event-servovelocity-new::obj ::obj ::int ::double)
-	   (phidget-event-servocurrent-new::obj ::obj ::int ::double)))
+	   (phidget-event-servocurrent-new::obj ::obj ::int ::double)
+	   (phidget-event-stepperinput-new::obj ::obj ::int ::int)
+	   (phidget-event-steppervelocity-new::obj ::obj ::int ::double)
+	   (phidget-event-stepperposition-new::obj ::obj ::int ::llong)
+	   (phidget-event-steppercurrent-new::obj ::obj ::int ::double)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *phidget-mutex* ...                                              */
@@ -231,6 +239,42 @@
 ;*---------------------------------------------------------------------*/
 (define (phidget-event-servocurrent-new target index current)
    (instantiate::phidget-servocurrent-event
+      (target target)
+      (index index)
+      (current current)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-stepperinput-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-stepperinput-new target index state)
+   (instantiate::phidget-stepperinput-event
+      (target target)
+      (index index)
+      (state state)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-steppervelocity-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-steppervelocity-new target index velocity)
+   (instantiate::phidget-steppervelocity-event
+      (target target)
+      (index index)
+      (velocity velocity)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-stepperposition-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-stepperposition-new target index position)
+   (instantiate::phidget-stepperposition-event
+      (target target)
+      (index index)
+      (position position)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-steppercurrent-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-steppercurrent-new target index current)
+   (instantiate::phidget-steppercurrent-event
       (target target)
       (index index)
       (current current)))

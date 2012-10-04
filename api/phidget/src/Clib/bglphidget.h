@@ -31,6 +31,9 @@
 #define BGL_PHIDGET_ADVANCED_SERVO_BUILTIN( o ) \
    ((CPhidgetAdvancedServoHandle *)(&(((BgL_phidgetzd2advancedzd2servoz00_bglt)o)->BgL_z42builtinz42)))
 
+#define BGL_PHIDGET_STEPPER_BUILTIN( o ) \
+   ((CPhidgetStepperHandle *)(&(((BgL_phidgetzd2stepperzd2_bglt)o)->BgL_z42builtinz42)))
+
 extern void bgl_phidget_init();
 
 extern int bgl_phidget_manager_add_event_listener(
@@ -57,6 +60,10 @@ extern obj_t bgl_phidget_event_spatialdata_new( obj_t, int, int,
 extern obj_t bgl_phidget_event_servoposition_new( obj_t, int, double );
 extern obj_t bgl_phidget_event_servovelocity_new( obj_t, int, double );
 extern obj_t bgl_phidget_event_servocurrent_new( obj_t, int, double );
+extern obj_t bgl_phidget_event_stepperinput_new( obj_t, int, int);
+extern obj_t bgl_phidget_event_steppervelocity_new( obj_t, int, double);
+extern obj_t bgl_phidget_event_stepperposition_new( obj_t, int, BGL_LONGLONG_T);
+extern obj_t bgl_phidget_event_steppercurrent_new( obj_t, int, double);
 
 extern obj_t bgl_phidget_get_device_name( CPhidgetHandle );
 extern obj_t bgl_phidget_get_device_type( CPhidgetHandle );

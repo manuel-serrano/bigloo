@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Tue Mar 13 08:59:28 2012 (serrano)                */
+;*    Last change :  Thu Oct  4 11:19:13 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -200,7 +200,7 @@
 ;*---------------------------------------------------------------------*/
 (define token-grammar
    (regular-grammar ((str (* (or (out #\" #\\) (: #\\ all)))))
-      ((+ (in "+*-_./'%" ("azAZ09")))
+      ((+ (in "+*-_./'%&" ("azAZ09")))
        (the-string))
       ((: #\" str #\")
        (the-substring 1 -1))

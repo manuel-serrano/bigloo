@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:28:51 2007                          */
-;*    Last change :  Wed Apr  4 13:03:58 2012 (serrano)                */
+;*    Last change :  Thu Oct  4 18:07:52 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of PHIDGET functions                                  */
@@ -122,6 +122,8 @@
       
       (macro $pdg-phidget-open::int (::$pdg-phidget ::int)
 	     "CPhidget_open")
+      (macro $pdg-phidget-open-remote::int (::$pdg-phidget ::int ::string ::string)
+	     "CPhidget_openRemote")
       (macro $pdg-phidget-close::int (::$pdg-phidget)
 	     "CPhidget_close")
       (macro $pdg-phidget-wait-for-attachment::int (::$pdg-phidget ::int)
@@ -208,6 +210,14 @@
 	 (::$pdg-servo ::int ::double ::double ::double)
 	 "CPhidgetServo_setServoParameters")
       
+      ($pdg-phidget-servo-get-servo-type::int
+	 (::$pdg-servo ::int ::obj)
+	 "bgl_phidget_servo_get_servo_type")
+
+      (macro $pdg-phidget-servo-set-servo-type!::int
+	 (::$pdg-servo ::int ::$pdg-servo-type)
+	 "CPhidgetServo_setServoType")
+
       ($pdg-phidget-servo-add-event-listener!::int
 	 (::$pdg-servo ::string ::obj ::procedure)
 	 "bgl_phidget_servo_add_event_listener")
@@ -299,7 +309,169 @@
       
       ($pdg-phidget-advanced-servo-add-event-listener!::int
 	 (::$pdg-advanced-servo ::string ::obj ::procedure)
-	 "bgl_phidget_advanced_servo_add_event_listener")))
+	 "bgl_phidget_advanced_servo_add_event_listener")
+
+      ($pdg-phidget-advanced-servo-get-servo-type::int
+	 (::$pdg-advanced-servo ::int ::obj)
+	 "bgl_phidget_advanced_servo_get_servo_type")
+
+      (macro $pdg-phidget-advanced-servo-set-servo-type!::int
+	 (::$pdg-advanced-servo ::int ::$pdg-servo-type)
+	 "CPhidgetAdvancedServo_setServoType")
+
+      ;; servo types
+      (type $pdg-servo-type long "CPhidget_ServoType")
+      (macro $pdg-phidget-servo-default::$pdg-servo-type
+	 "PHIDGET_SERVO_DEFAULT")
+      (macro $pdg-phidget-servo-raw-us-mode::$pdg-servo-type
+	 "PHIDGET_SERVO_RAW_us_MODE")
+      (macro $pdg-phidget-servo-hitec-hs322hd::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HS322HD")
+      (macro $pdg-phidget-servo-hitec-hs5245mg::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HS5245MG")
+      (macro $pdg-phidget-servo-hitec-805bb::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_805BB")
+      (macro $pdg-phidget-servo-hitec-hs422::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HS422")
+      (macro $pdg-phidget-servo-towerpro-mg90::$pdg-servo-type
+	 "PHIDGET_SERVO_TOWERPRO_MG90")
+      (macro $pdg-phidget-servo-hitec-hsr1425cr::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HSR1425CR")
+      (macro $pdg-phidget-servo-hitec-hs785hb::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HS785HB")
+      (macro $pdg-phidget-servo-hitec-hs485hb::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HS485HB")
+      (macro $pdg-phidget-servo-hitec-hs645mg::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_HS645MG")
+      (macro $pdg-phidget-servo-hitec-815bb::$pdg-servo-type
+	 "PHIDGET_SERVO_HITEC_815BB")
+      (macro $pdg-phidget-servo-firgelli-l12-30-50-06-r::$pdg-servo-type
+	 "PHIDGET_SERVO_FIRGELLI_L12_30_50_06_R")
+      (macro $pdg-phidget-servo-firgelli-l12-50-100-06-r::$pdg-servo-type
+	 "PHIDGET_SERVO_FIRGELLI_L12_50_100_06_R")
+      (macro $pdg-phidget-servo-firgelli-l12-50-210-06-r::$pdg-servo-type
+	 "PHIDGET_SERVO_FIRGELLI_L12_50_210_06_R")
+      (macro $pdg-phidget-servo-firgelli-l12-100-50-06-r::$pdg-servo-type
+	 "PHIDGET_SERVO_FIRGELLI_L12_100_50_06_R")
+      (macro $pdg-phidget-servo-firgelli-l12-100-100-06-r::$pdg-servo-type
+	 "PHIDGET_SERVO_FIRGELLI_L12_100_100_06_R")
+      (macro $pdg-phidget-servo-springrc-sm-s2313m::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S2313M")
+      (macro $pdg-phidget-servo-springrc-sm-s3317m::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S3317M")
+      (macro $pdg-phidget-servo-springrc-sm-s3317sr::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S3317SR")
+      (macro $pdg-phidget-servo-springrc-sm-s4303r::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S4303R")
+      (macro $pdg-phidget-servo-springrc-sm-s4315m::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S4315M")
+      (macro $pdg-phidget-servo-springrc-sm-s4315r::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S4315R")
+      (macro $pdg-phidget-servo-springrc-sm-s4505b::$pdg-servo-type
+	 "PHIDGET_SERVO_SPRINGRC_SM_S4505B")
+
+      ;; stepper
+      (type $pdg-stepper void* "CPhidgetStepperHandle")
+      (type $pdg-stepper* void* "CPhidgetStepperHandle *")
+      (macro $pdg-stepper-create::int
+	 (::$pdg-stepper*)
+	 "CPhidgetStepper_create")
+
+      (macro $pdg-stepper->phidget::$pdg-phidget
+	 (::$pdg-stepper)
+	 "(CPhidgetHandle)")
+      (macro $pdg-phidget->stepper::$pdg-stepper
+	 (::$pdg-phidget)
+	 "(CPhidgetStepperHandle)")
+
+      ($pdg-phidget-stepper-get-input-count::int
+	 (::$pdg-stepper ::obj)
+	 "bgl_phidget_stepper_get_input_count")
+      ($pdg-phidget-stepper-get-input-state::int
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_input_state")
+      ($pdg-phidget-stepper-get-motor-count::int
+	 (::$pdg-stepper ::obj)
+	 "bgl_phidget_stepper_get_motor_count")
+
+      ($pdg-phidget-stepper-get-acceleration::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_acceleration")
+      ($pdg-phidget-stepper-set-acceleration!::int
+	 (::$pdg-stepper ::int ::double)
+	 "CPhidgetStepper_setAcceleration")
+      ($pdg-phidget-stepper-get-acceleration-max::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_acceleration_max")
+      ($pdg-phidget-stepper-get-acceleration-min::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_acceleration_min")
+
+      ($pdg-phidget-stepper-get-velocity-limit::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_velocity_limit")
+      (macro $pdg-phidget-stepper-set-velocity-limit!::int
+	 (::$pdg-stepper ::int ::double)
+	 "CPhidgetStepper_setVelocityLimit")
+      ($pdg-phidget-stepper-get-velocity::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_velocity")
+      ($pdg-phidget-stepper-get-velocity-max::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_velocity_max")
+      ($pdg-phidget-stepper-get-velocity-min::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_velocity_min")
+
+      ($pdg-phidget-stepper-get-target-position::llong
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_target_position")
+      (macro $pdg-phidget-stepper-set-target-position!::int
+	 (::$pdg-stepper ::int ::llong)
+	 "CPhidgetStepper_setTargetPosition")
+      ($pdg-phidget-stepper-get-current-position::llong
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_current_position")
+      (macro $pdg-phidget-stepper-set-current-position!::int
+	 (::$pdg-stepper ::int ::llong)
+	 "CPhidgetStepper_setCurrentPosition")
+      ($pdg-phidget-stepper-get-position-max::llong
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_position_max")
+      ($pdg-phidget-stepper-get-position-min::llong
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_position_min")
+
+      ($pdg-phidget-stepper-get-current-limit::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_current_limit")
+      (macro $pdg-phidget-stepper-set-current-limit!::int
+	 (::$pdg-stepper ::int ::double)
+	 "CPhidgetStepper_setCurrentLimit")
+      ($pdg-phidget-stepper-get-current::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_current")
+      ($pdg-phidget-stepper-get-current-max::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_current_max")
+      ($pdg-phidget-stepper-get-current-min::double
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_current_min")
+
+      ($pdg-phidget-stepper-get-engaged::int
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_engaged")
+      (macro $pdg-phidget-stepper-set-engaged!::int
+	 (::$pdg-stepper ::int ::int)
+	 "CPhidgetStepper_setEngaged")
+
+      ($pdg-phidget-stepper-get-stopped::int
+	 (::$pdg-stepper ::int ::obj)
+	 "bgl_phidget_stepper_get_stopped")
+
+      ($pdg-phidget-stepper-add-event-listener!::int
+	 (::$pdg-stepper ::string ::obj ::procedure)
+	 "bgl_phidget_stepper_add_event_listener")))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-return ...                                               */

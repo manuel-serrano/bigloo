@@ -22,6 +22,7 @@
 	      "BGL_PHIDGET_ADVANCED_SERVO_BUILTIN"))
 
    (import __phidget_types
+           __phidget_ctypes
 	   __phidget
 	   __phidget_event
 	   __phidget_phidget)
@@ -81,6 +82,11 @@
 
       (phidget-advanced-servo-parameters-set!
 	 ::phidget-advanced-servo ::int ::double ::double ::double ::double)
+
+      (phidget-advanced-servo-type::symbol
+	 ::phidget-advanced-servo ::int)
+      (phidget-advanced-servo-type-set!
+	 ::phidget-advanced-servo ::int ::symbol)
 
       ($make-advanced-servo::obj ::$pdg-advanced-servo)))
 
@@ -239,9 +245,10 @@
 ;*---------------------------------------------------------------------*/
 (define (phidget-advanced-servo-engaged o i)
    (with-access::phidget o ($builtin)
-      ($pdg-phidget-advanced-servo-get-engaged
-	 ($pdg-phidget->advanced-servo $builtin)
-	 i o)))
+      (pdgbool->bool
+	 ($pdg-phidget-advanced-servo-get-engaged
+	    ($pdg-phidget->advanced-servo $builtin)
+	    i o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-advanced-servo-engaged-set! ...                          */
@@ -259,9 +266,10 @@
 ;*---------------------------------------------------------------------*/
 (define (phidget-advanced-servo-speed-ramping-on o i)
    (with-access::phidget o ($builtin)
-      ($pdg-phidget-advanced-servo-get-speed-ramping-on
-	 ($pdg-phidget->advanced-servo $builtin)
-	 i o)))
+      (pdgbool->bool
+	 ($pdg-phidget-advanced-servo-get-speed-ramping-on
+	    ($pdg-phidget->advanced-servo $builtin)
+	    i o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-advanced-servo-speed-ramping-on-set! ...                 */
@@ -279,9 +287,9 @@
 ;*---------------------------------------------------------------------*/
 (define (phidget-advanced-servo-stopped o i)
    (with-access::phidget o ($builtin)
-      ($pdg-phidget-advanced-servo-get-stopped
-	 ($pdg-phidget->advanced-servo $builtin)
-	 i o)))
+      (+fx $pdg-true ($pdg-phidget-advanced-servo-get-stopped
+			($pdg-phidget->advanced-servo $builtin)
+			i o))))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-advanced-servo-current ...                               */
@@ -303,4 +311,23 @@
 	    i d0 d1 d2 d3)
 	 "phidget-advanced-servo-parameters-set!" o)))
 
+;*---------------------------------------------------------------------*/
+;*    phidget-advanced-servo-type ...                                  */
+;*---------------------------------------------------------------------*/
+(define (phidget-advanced-servo-type o i)
+   (with-access::phidget o ($builtin)
+      (servo-type->symbol
+	 ($pdg-phidget-advanced-servo-get-servo-type
+	    ($pdg-phidget->advanced-servo $builtin)
+	    i o))))
 
+;*---------------------------------------------------------------------*/
+;*    phidget-advanced-servo-type-set! ...                             */
+;*---------------------------------------------------------------------*/
+(define (phidget-advanced-servo-type-set! o i t)
+   (with-access::phidget o ($builtin)
+      (phidget-return
+	 ($pdg-phidget-advanced-servo-set-servo-type!
+	    ($pdg-phidget->advanced-servo $builtin)
+	    i (symbol->servo-type t))
+	 "phidget-advanced-servo-type-set!" o)))

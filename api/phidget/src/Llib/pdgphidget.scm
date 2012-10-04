@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 16:54:10 2010                          */
-;*    Last change :  Wed Mar 28 12:31:36 2012 (serrano)                */
+;*    Last change :  Thu Oct  4 17:56:48 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget objects                                                  */
@@ -16,7 +16,8 @@
    
    (include "pdg.sch")
    
-   (extern (export $make-phidget "bgl_phidget_new"))
+   (extern (export $make-phidget "bgl_phidget_new")
+	   (macro $phidget-string-null::string "0L"))
    
    (import __phidget_types
 	   __phidget
@@ -110,6 +111,17 @@
       (phidget-return
        ($pdg-phidget-open $builtin %serial-number)
        "phidget-open" o)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-open-remote ...                                          */
+;*---------------------------------------------------------------------*/
+(define (phidget-open-remote o::phidget #!optional server-id password)
+   (with-access::phidget o ($builtin %serial-number)
+      (phidget-return
+       ($pdg-phidget-open-remote $builtin %serial-number
+	  (or server-id $phidget-string-null)
+	  (or password $phidget-string-null))
+       "phidget-open-remote" o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-close ...                                                */

@@ -24,7 +24,8 @@
 	    __phidget_ifkit
 	    __phidget_spatial
 	    __phidget_servo
-	    __phidget_advanced-servo)
+	    __phidget_advanced-servo
+	    __phidget_stepper)
 
    (eval    (export-all)
 
@@ -45,8 +46,13 @@
 	    (class phidget-serverconnect-event)
 	    (class phidget-serverdisconnect-event)
 	    (class phidget-spatialdata-event)
+	    (class phidget-stepperinput-event)
+	    (class phidget-steppervelocity-event)
+	    (class phidget-stepperposition-event)
+	    (class phidget-steppercurrent-event)
 
 	    (class phidget-ifkit)
 	    (class phidget-spatial)
 	    (class phidget-servo)
-	    (class phidget-advanced-servo)))
+	    (class phidget-advanced-servo)
+	    (class phidget-stepper)))

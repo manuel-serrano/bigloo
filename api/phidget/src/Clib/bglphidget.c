@@ -49,6 +49,10 @@ struct handler {
 #define EVENT_SERVOPOSITION 10
 #define EVENT_SERVOVELOCITY 11
 #define EVENT_SERVOCURRENT 12
+#define EVENT_STEPPERINPUT 13
+#define EVENT_STEPPERVELOCITY 14
+#define EVENT_STEPPERPOSITION 15
+#define EVENT_STEPPERCURRENT 16
 
 #define INITIAL_MAX_HANDLER 40
 static struct handler *handlers;
@@ -97,6 +101,10 @@ struct callback {
 	 int index;
 	 double current;
       } servocurrent;
+      struct {
+	 int index;
+	 BGL_LONGLONG_T position;
+      } stepperposition;
    } event;
 };
 
@@ -242,7 +250,34 @@ void bgl_phidget_invoke_callbacks() {
 	       cb->event.servocurrent.current );
 	    break;
 	 }
-	    
+	 case EVENT_STEPPERINPUT: {
+	    event = bgl_phidget_event_stepperinput_new(
+	       hdl->obj,
+	       cb->event.change.index,
+	       cb->event.change.istate == PTRUE );
+	    break;
+	 }
+	 case EVENT_STEPPERVELOCITY: {
+	    event = bgl_phidget_event_steppervelocity_new(
+	       hdl->obj,
+	       cb->event.servovelocity.index,
+	       cb->event.servovelocity.velocity );
+	    break;
+	 }
+	 case EVENT_STEPPERPOSITION: {
+	    event = bgl_phidget_event_stepperposition_new(
+	       hdl->obj,
+	       cb->event.stepperposition.index,
+	       cb->event.stepperposition.position );
+	    break;
+	 }
+	 case EVENT_STEPPERCURRENT: {
+	    event = bgl_phidget_event_steppercurrent_new(
+	       hdl->obj,
+	       cb->event.servocurrent.index,
+	       cb->event.servocurrent.current );
+	    break;
+	 }
 	 default:
 	    event = BUNSPEC;
 	    C_SYSTEM_FAILURE(
@@ -364,6 +399,7 @@ bgl_servoposition_handler( CPhidgetServoHandle id, void *ptr, int index, double 
 
    callbacks[ callback_index ].event.servoposition.index = index;
    callbacks[ callback_index ].event.servoposition.position = position;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
 
    bgl_phidget_signal();
    bgl_phidget_unlock();
@@ -383,6 +419,7 @@ bgl_advanced_servoposition_handler( CPhidgetAdvancedServoHandle id, void *ptr, i
 
    callbacks[ callback_index ].event.servoposition.index = index;
    callbacks[ callback_index ].event.servoposition.position = position;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
 
    bgl_phidget_signal();
    bgl_phidget_unlock();
@@ -402,6 +439,7 @@ bgl_advanced_servovelocity_handler( CPhidgetAdvancedServoHandle id, void *ptr, i
 
    callbacks[ callback_index ].event.servovelocity.index = index;
    callbacks[ callback_index ].event.servovelocity.velocity = velocity;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
 
    bgl_phidget_signal();
    bgl_phidget_unlock();
@@ -421,6 +459,87 @@ bgl_advanced_servocurrent_handler( CPhidgetAdvancedServoHandle id, void *ptr, in
 
    callbacks[ callback_index ].event.servocurrent.index = index;
    callbacks[ callback_index ].event.servocurrent.current = current;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_stepperinput_handler ...                                     */
+/*---------------------------------------------------------------------*/
+static int
+bgl_stepperinput_handler( CPhidgetStepperHandle id, void *ptr, int index, int istate ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.change.index = index;
+   callbacks[ callback_index ].event.change.istate = istate;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_steppervelocity_handler ...                                   */
+/*---------------------------------------------------------------------*/
+static int
+bgl_steppervelocity_handler( CPhidgetStepperHandle id, void *ptr, int index, double velocity ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servovelocity.index = index;
+   callbacks[ callback_index ].event.servovelocity.velocity = velocity;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_stepperposition_handler ...                                   */
+/*---------------------------------------------------------------------*/
+static int
+bgl_stepperposition_handler( CPhidgetStepperHandle id, void *ptr, int index, BGL_LONGLONG_T position ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.stepperposition.index = index;
+   callbacks[ callback_index ].event.stepperposition.position = position;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_steppercurrent_handler ...                                   */
+/*---------------------------------------------------------------------*/
+static int
+bgl_steppercurrent_handler( CPhidgetStepperHandle id, void *ptr, int index, double current ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servocurrent.index = index;
+   callbacks[ callback_index ].event.servocurrent.current = current;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
 
    bgl_phidget_signal();
    bgl_phidget_unlock();
@@ -593,6 +712,41 @@ bgl_phidget_advanced_servo_add_event_listener( CPhidgetAdvancedServoHandle id, c
       
       return CPhidgetAdvancedServo_set_OnCurrentChange_Handler(
 	 id, &bgl_advanced_servocurrent_handler, hdl );
+   } else {
+      return bgl_phidget_phidget_add_event_listener(
+	 (CPhidgetHandle)id, event, obj, proc );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_stepper_add_event_listener ...                       */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_stepper_add_event_listener( CPhidgetStepperHandle id, char *event, obj_t obj, obj_t proc ) {
+   if( !strcmp( event, "input" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_STEPPERINPUT );
+
+      return CPhidgetStepper_set_OnInputChange_Handler(
+	 id, &bgl_stepperinput_handler, hdl );
+   }
+   if( !strcmp( event, "velocity" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_STEPPERVELOCITY );
+
+      return CPhidgetStepper_set_OnVelocityChange_Handler(
+	 id, &bgl_steppervelocity_handler, hdl );
+   }
+   if( !strcmp( event, "position" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_STEPPERPOSITION );
+
+      return CPhidgetStepper_set_OnPositionChange_Handler(
+	 id, &bgl_stepperposition_handler, hdl );
+   }
+   if( !strcmp( event, "current" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_STEPPERCURRENT );
+
+      return CPhidgetStepper_set_OnCurrentChange_Handler(
+	 id, &bgl_steppercurrent_handler, hdl );
    } else {
       return bgl_phidget_phidget_add_event_listener(
 	 (CPhidgetHandle)id, event, obj, proc );
@@ -845,6 +999,15 @@ int bgl_phidget_servo_get_engaged( CPhidgetServoHandle phid, int i, obj_t o ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    CPhidget_ServoType                                               */
+/*    bgl_phidget_servo_get_servo_type ...                             */
+/*---------------------------------------------------------------------*/
+CPhidget_ServoType
+bgl_phidget_servo_get_servo_type( CPhidgetServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, ServoType, CPhidgetServo, CPhidget_ServoType, i, o );
+}
+
+/*---------------------------------------------------------------------*/
 /*    int                                                              */
 /*    bgl_phidget_advanced_servo_get_motor_count ...                   */
 /*---------------------------------------------------------------------*/
@@ -977,4 +1140,193 @@ bgl_phidget_advanced_servo_get_stopped( CPhidgetAdvancedServoHandle phid, int i,
 int
 bgl_phidget_advanced_servo_get_speed_ramping_on( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
    FIELD_INDEXED_GET( phid, SpeedRampingOn, CPhidgetAdvancedServo, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    CPhidget_ServoType                                               */
+/*    bgl_phidget_advanced_servo_get_servo_type ...                    */
+/*---------------------------------------------------------------------*/
+CPhidget_ServoType
+bgl_phidget_advanced_servo_get_servo_type( CPhidgetAdvancedServoHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, ServoType, CPhidgetAdvancedServo, CPhidget_ServoType, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_stepper_get_input_count ...                          */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_stepper_get_input_count( CPhidgetStepperHandle phid, obj_t o ) {
+   FIELD_GET( phid, InputCount, CPhidgetStepper, int, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_stepper_get_input_state ...                          */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_stepper_get_input_state( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, InputState, CPhidgetStepper, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_stepper_get_motor_count ...                          */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_stepper_get_motor_count( CPhidgetStepperHandle phid, obj_t o ) {
+   FIELD_GET( phid, MotorCount, CPhidgetStepper, int, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_acceleration ...                         */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_acceleration( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Acceleration, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_acceleration_max ...                     */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_acceleration_max( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, AccelerationMax, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_acceleration_min ...                     */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_acceleration_min( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, AccelerationMin, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_velocity_limit ...                       */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_velocity_limit( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, VelocityLimit, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_velocity ...                             */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_velocity( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Velocity, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_velocity_max ...                         */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_velocity_max( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, VelocityMax, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_velocity_min ...                         */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_velocity_min( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, VelocityMin, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    bgl_phidget_stepper_get_target_position ...                      */
+/*---------------------------------------------------------------------*/
+BGL_LONGLONG_T
+bgl_phidget_stepper_get_target_position( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, TargetPosition, CPhidgetStepper, BGL_LONGLONG_T, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    bgl_phidget_stepper_get_current_position ...                     */
+/*---------------------------------------------------------------------*/
+BGL_LONGLONG_T
+bgl_phidget_stepper_get_current_position( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, CurrentPosition, CPhidgetStepper, BGL_LONGLONG_T, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    bgl_phidget_stepper_get_position_max ...                         */
+/*---------------------------------------------------------------------*/
+BGL_LONGLONG_T
+bgl_phidget_stepper_get_position_max( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, PositionMax, CPhidgetStepper, BGL_LONGLONG_T, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    bgl_phidget_stepper_get_position_min ...                         */
+/*---------------------------------------------------------------------*/
+BGL_LONGLONG_T
+bgl_phidget_stepper_get_position_min( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, PositionMin, CPhidgetStepper, BGL_LONGLONG_T, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_current_limit ...                        */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_current_limit( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, CurrentLimit, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_current ...                              */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_current( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Current, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_current_max ...                          */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_current_max( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, CurrentMax, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    double                                                           */
+/*    bgl_phidget_stepper_get_current_min ...                          */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_stepper_get_current_min( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, CurrentMin, CPhidgetStepper, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_stepper_get_engaged ...                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_stepper_get_engaged( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Engaged, CPhidgetStepper, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_stepper_get_stopped ...                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_stepper_get_stopped( CPhidgetStepperHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Stopped, CPhidgetStepper, int, i, o );
 }

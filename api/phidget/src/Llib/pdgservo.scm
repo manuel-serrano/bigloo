@@ -21,6 +21,7 @@
 		  "BGL_PHIDGET_SERVO_BUILTIN"))
 
    (import __phidget_types
+	   __phidget_ctypes
 	   __phidget
 	   __phidget_event
 	   __phidget_phidget)
@@ -42,6 +43,9 @@
       (phidget-servo-engaged-set! ::phidget-servo ::int ::bool)
       
       (phidget-servo-parameters-set! ::phidget-servo ::int ::double ::double ::double)
+
+      (phidget-servo-type::symbol ::phidget-servo ::int)
+      (phidget-servo-type-set! ::phidget-servo ::int ::symbol)
 
       ($make-servo::obj ::$pdg-servo)))
 
@@ -111,12 +115,6 @@
 	 i o)))
 
 ;*---------------------------------------------------------------------*/
-;*    pdgbool->bool ...                                                */
-;*---------------------------------------------------------------------*/
-(define (pdgbool->bool::bool i::int)
-   (=fx i $pdg-true))
-
-;*---------------------------------------------------------------------*/
 ;*    phidget-servo-engaged ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (phidget-servo-engaged o i)
@@ -147,5 +145,26 @@
 	    ($pdg-phidget->servo $builtin)
 	    i d0 d1 d2)
 	 "phidget-servo-parameters-set!" o)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-servo-type ...                                           */
+;*---------------------------------------------------------------------*/
+(define (phidget-servo-type o i)
+   (with-access::phidget o ($builtin)
+      (servo-type->symbol
+	 ($pdg-phidget-servo-get-servo-type
+	    ($pdg-phidget->servo $builtin)
+	    i o))))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-servo-type-set! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (phidget-servo-type-set! o i t)
+   (with-access::phidget o ($builtin)
+      (phidget-return
+	 ($pdg-phidget-servo-set-servo-type!
+	    ($pdg-phidget->servo $builtin)
+	    i (symbol->servo-type t))
+	 "phidget-servo-type-set!" o)))
 
 

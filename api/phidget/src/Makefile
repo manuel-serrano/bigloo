@@ -61,7 +61,7 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= phidget pdgtypes pdglogging pdgmanager \
+_BGL_OBJECTS	= phidget pdgtypes pdg pdglogging pdgmanager pdgstepper \
                   pdgphidget pdgifkit pdgspatial pdgservo pdgaservo pdgevent
 
 _C_OBJECTS	= bglphidget
