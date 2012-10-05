@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Fri May 11 16:11:38 2012 (serrano)                */
+;*    Last change :  Fri Oct  5 21:33:30 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -178,6 +178,7 @@
       ((eq? type *cell*) '(make-cell #unspecified))
       ((eq? type *bint*) 0)
       ((eq? type *bllong*) '(string->llong "0"))
+      ((eq? type *belong*) '(string->elong "0"))
       ((eq? type *bignum*) #z0)
       ((eq? type *bool*) #f)
       ((eq? type *breal*) 0.0)
