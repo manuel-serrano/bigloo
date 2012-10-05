@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 29 10:04:44 2009                          */
-;*    Last change :  Fri Jun 15 14:55:04 2012 (serrano)                */
+;*    Last change :  Fri Oct  5 07:54:54 2012 (serrano)                */
 ;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The CSS ast class hierarchy                                      */
@@ -56,6 +56,11 @@
 	   (class css-fontface
 	      (declaration*::pair-nil read-only))
 
+	   (class css-keyframes
+	      (operator::bstring read-only)
+	      (ident::bstring read-only)
+	      (keyframe*::pair-nil read-only))
+
 	   (class css-pseudopage
 	      (ident read-only))
 
@@ -63,6 +68,10 @@
 	      (stamp::int (default -1))
 	      (specificity::obj (default #f))
 	      (selector+::pair read-only)
+	      (declaration*::pair-nil read-only))
+
+	   (class css-keyframe
+	      (selector::obj read-only)
 	      (declaration*::pair-nil read-only))
 
 	   (class css-selector
@@ -248,6 +257,18 @@
       (display "}\n" p)))
 
 ;*---------------------------------------------------------------------*/
+;*    css-write ::css-keyframes ...                                    */
+;*---------------------------------------------------------------------*/
+(define-method (css-write o::css-keyframes p::output-port)
+   (with-access::css-keyframes o (operator ident keyframe*)
+      (display operator p)
+      (display " " p)
+      (display ident p)
+      (display " {\n" p)
+      (css-write* keyframe* p)
+      (display "}\n" p)))
+
+;*---------------------------------------------------------------------*/
 ;*    css-write ::css-pseudopage ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-method (css-write o::css-pseudopage p::output-port)
@@ -279,6 +300,16 @@
       (display " {\n" p)
       (css-write* declaration* p)
       (display "}\n\n" p)))
+
+;*---------------------------------------------------------------------*/
+;*    css-write ::css-keyframe ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (css-write o::css-keyframe p::output-port)
+   (with-access::css-keyframe o (selector declaration*)
+      (display selector p)
+      (display " {\n" p)
+      (css-write* declaration* p)
+      (display "}\n" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-selector ...                                     */

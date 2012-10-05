@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Tue Jan 31 10:25:31 2012 (serrano)                */
+;*    Last change :  Fri Oct  5 07:53:35 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
@@ -133,6 +133,8 @@
        (return 'FONT_FACE_SYM))
       ("@charset"
        (return 'CHARSET_SYM))
+      ((: "@" (? (: "-" (+ (out #\-)) "-")) "keyframes")
+       (return 'KEYFRAMES_SYM (the-string)))
       ((: "@" ident)
        (return 'ATKEYWORD))
       

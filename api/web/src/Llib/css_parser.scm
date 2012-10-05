@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Wed Sep 19 08:27:50 2012 (serrano)                */
+;*    Last change :  Fri Oct  5 07:54:36 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -34,7 +34,8 @@
       
       (CDO CDC INCLUDES DASHMATCH STRING IDENT HASH
 	   IMPORT_SYM PAGE_SYM MEDIA_SYM FONT_FACE_SYM CHARSET_SYM
-	   ATKEYWORD IMPORTANT_SYM EMS EXS LENGTH ANGLE TIME FREQ DIMEN
+	   KEYFRAMES_SYM ATKEYWORD IMPORTANT_SYM
+	   EMS EXS LENGTH ANGLE TIME FREQ DIMEN
 	   PERCENTAGE NUMBREC URI NOT_PSEUDO FUNCTION UNICODERANGE RGB NUMBER
 	   COLON SEMI-COLON COMMA
 	   BRA-OPEN BRA-CLO ANGLE-OPEN ANGLE-CLO PAR-OPEN PAR-CLO
@@ -119,7 +120,8 @@
        ((ruleset) ruleset)
        ((media) media)
        ((page) page)
-       ((font_face) font_face))
+       ((font_face) font_face)
+       ((keyframes) keyframes))
 
       (one-rule-value
        ((rule-value comment*) (list rule-value comment*)))
@@ -133,7 +135,7 @@
 	(instantiate::css-media
 	   (medium+ medium+)
 	   (ruleset* ruleset*))))
-      
+
       (page
        ((PAGE_SYM S* ident? pseudo_page? BRA-OPEN declaration* BRA-CLO S*)
 	(instantiate::css-page
@@ -145,6 +147,13 @@
        ((FONT_FACE_SYM S* BRA-OPEN declaration* BRA-CLO S*)
 	(instantiate::css-fontface
 	   (declaration* declaration*))))
+      
+      (keyframes
+       ((KEYFRAMES_SYM S* IDENT S* BRA-OPEN S* keyframe* BRA-CLO S*)
+	(instantiate::css-keyframes
+	   (operator (car KEYFRAMES_SYM))
+	   (ident (car IDENT))
+	   (keyframe* keyframe*))))
       
       (medium*
        (() '())
@@ -217,6 +226,20 @@
        ((selector+ BRA-OPEN declaration* BRA-CLO S*)
 	(instantiate::css-ruleset
 	   (selector+ selector+)
+	   (declaration* declaration*))))
+      
+      (keyframe*
+       (() '())
+       ((keyframe* keyframe) `(,@keyframe* ,keyframe)))
+      
+      (keyframe
+       ((PERCENTAGE S* BRA-OPEN declaration* BRA-CLO S*)
+	(instantiate::css-keyframe
+	   (selector (car PERCENTAGE))
+	   (declaration* declaration*)))
+       ((IDENT S* BRA-OPEN declaration* BRA-CLO S*)
+	(instantiate::css-keyframe
+	   (selector (car IDENT))
 	   (declaration* declaration*))))
       
       (selector+
