@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Sat Aug 25 06:04:04 2012 (serrano)                */
+;*    Last change :  Mon Oct  8 13:31:10 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -80,7 +80,7 @@
 ;*    fix-escaping-definition ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (fix-escaping-definition global local args kaptured body)
-   (let* ((env      (make-local-svar 'env *procedure*))
+   (let* ((env (make-local-svar 'env *procedure*))
 	  (new-free (map (lambda (old)
 			    (let ((new (make-local-svar
 					  (local-id old)
@@ -139,18 +139,11 @@
       (global-value-set! global new-fun)
       (sfun-body-set!
        new-fun
-       (make-escaping-body local
-			   global
-			   new-args
-			   new-free
-			   env
-			   (node-globalize! body
-					    local
-					    (cons (cons (the-closure local #f)
-							env)
-						  (map cons
-						       kaptured
-						       new-free)))))
+       (make-escaping-body local global new-args new-free env
+	  (node-globalize! body
+	     local
+	     (cons (cons (the-closure local #f) env)
+		(map cons kaptured new-free)))))
       global))
 
 ;*---------------------------------------------------------------------*/

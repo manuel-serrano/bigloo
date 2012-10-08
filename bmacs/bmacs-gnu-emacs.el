@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan 20 11:48:39 2002                          */
-;*    Last change :  Thu Sep 20 17:26:05 2012 (serrano)                */
+;*    Last change :  Mon Oct  8 14:04:01 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Gnu-Emacs (hum, hum, Emacs) specific file.                       */
@@ -20,14 +20,12 @@
 ;*---------------------------------------------------------------------*/
 (defvar bmacs-emacs-version
   (cond
-   ((string-match "GNU Emacs 22" (emacs-version))
-    22)
-   ((string-match "GNU Emacs 21" (emacs-version))
-    21)
-   ((string-match "GNU Emacs 20" (emacs-version))
-    20)
-   (t
-    19)))
+   ((string-match "GNU Emacs 24" (emacs-version)) 24)
+   ((string-match "GNU Emacs 23" (emacs-version)) 23)
+   ((string-match "GNU Emacs 22" (emacs-version)) 22)
+   ((string-match "GNU Emacs 21" (emacs-version)) 21)
+   ((string-match "GNU Emacs 20" (emacs-version)) 20)
+   (t 19)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bmacs-etags ...                                                  */
@@ -313,7 +311,7 @@ static char *on[] = {
 	(error "ude-toolbar-add:illegal entry format `%S'" (car lst)))))
     (let ((omap (current-local-map)))
       (use-local-map map)
-      (mapc '#(lambda (n)
+      (mapc #'(lambda (n)
 		(local-unset-key (vector 'tool-bar n)))
 	    handle-names)
       (use-local-map omap))

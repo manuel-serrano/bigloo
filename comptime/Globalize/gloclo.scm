@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Sat Mar 26 07:45:34 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct  8 18:35:23 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -68,6 +68,12 @@
       gloclo))
 
 ;*---------------------------------------------------------------------*/
+;*    default-type ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (default-type)
+   (if (<fx *optim* 2) *obj* *_*))
+
+;*---------------------------------------------------------------------*/
 ;*    make-noopt-global-closure ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-noopt-global-closure global)
@@ -83,7 +89,23 @@
 					       (if (local? old)
 						   (local-id old)
 						   (gensym))
-					       *obj*)))
+					       (if *optim-cfa-unbox-closure-args*
+						   (cond
+						      ((local? old)
+						       (if (and #f (bigloo-type? (local-type old)))
+							   (local-type old)
+							   (begin
+							      (tprint "TODO.1 " (shape old))
+							      (default-type))))
+						      ((type? old)
+						       (if (and #f (bigloo-type? old))
+							   old
+							   (begin
+							      (tprint "TODO.2 " (shape old))
+							      (default-type))))
+						      (else
+						       (default-type)))
+						   (default-type)))))
 				      (if (local? old)
 					  (local-user?-set! new
 							    (local-user? old)))

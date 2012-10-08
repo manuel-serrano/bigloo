@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Mon Aug 27 19:16:18 2012 (serrano)                */
+;*    Last change :  Mon Oct  8 16:40:19 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -344,8 +344,8 @@
       (let ((funcall-l (filter (lambda (app::funcall)
 				  (eq? (funcall-strength app) 'light))
 			  *funcall-list*)))
-	 (let loop ((cont #t))
-	    (when cont
+	 (let loop ()
+	    (let ((cont #f))
 	       (for-each (lambda (app::funcall)
 			    (let* ((fun (funcall-fun app))
 				   (approx (cfa! fun))
@@ -353,7 +353,10 @@
 			       (when (and (pair? apps) (pair? (cdr apps)))
 				  (set! cont
 				     (or (merge-app-types! apps) cont)))))
-		  funcall-l))))))
+		  funcall-l)
+	       (when cont
+		  (tprint "LOOP....")
+		  (loop)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    merge-app-types! ...                                             */
@@ -371,7 +374,7 @@
 		       (p1 (svar/Cinfo-approx (variable-value (car a1))))
 		       (t0 (approx-type p0))
 		       (t1 (approx-type p1)))
-		   (if (eq? t0 t1)
+		   (if (or (eq? t0 t1) (and (bigloo-type? t0) (bigloo-type? t1)))
 		       (loop (cdr a0) (cdr a1) cont)
 		       (begin
 ;* 			  (tprint "t1=" (shape t1) " t0=" (shape t0))  */
@@ -394,12 +397,19 @@
 			  ;; (in file SawJvm/funcall.scm)
 			  (variable-type-set! (car a0) (get-bigloo-type t0))
 			  (variable-type-set! (car a1) (get-bigloo-type t1))
-			  (loop (cdr a0) (cdr a1) #t))))))))
+;* 			  (tprint "-> a0=" (map shape a0))             */
+;* 			  (tprint "-> a1=" (map shape a1))             */
+			  (loop (cdr a0) (cdr a1) #t))))
+		cont))))
 
+;*    (tprint ">>> merge: " (map shape apps0))                         */
+   
    (let loop ((apps (cdr apps0))
 	      (cont #f))
       (if (null? apps)
-	  cont
+	  (begin
+;* 	     (tprint "<<< merge cont=" cont)                           */
+	     cont)
 	  (loop (cdr apps) (or (merge2! (car apps0) (car apps)) cont)))))
 
 ;*---------------------------------------------------------------------*/
