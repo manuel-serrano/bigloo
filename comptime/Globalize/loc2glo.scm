@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Mon Oct  8 13:31:10 2012 (serrano)                */
+;*    Last change :  Tue Oct  9 08:41:46 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -38,7 +38,7 @@
 ;*    default-type ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (default-type)
-   (if (<fx *optim* 2) *obj* *_*))
+   (if (and *optim-cfa-unbox-closure-args* (>=fx *optim* 2)) *_* *obj*))
 
 ;*---------------------------------------------------------------------*/
 ;*    local->global ...                                                */
@@ -95,9 +95,7 @@
 	  (new-args (map (lambda (old)
 			    (let ((new (make-local-svar
 					  (local-id old)
-					  (if *optim-cfa-unbox-closure-args*
-					      (local-type old)
-					      (default-type)))))
+					  (default-type))))
 			       (local-user?-set! new (local-user? old))
 			       (widen!::local/Ginfo new)
 			       (widen!::svar/Ginfo (local-value new)

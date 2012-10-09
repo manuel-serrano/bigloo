@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Mon Oct  8 18:35:23 2012 (serrano)                */
+;*    Last change :  Tue Oct  9 08:40:51 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
@@ -71,7 +71,7 @@
 ;*    default-type ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (default-type)
-   (if (<fx *optim* 2) *obj* *_*))
+   (if (and *optim-cfa-unbox-closure-args* (>=fx *optim* 2)) *_* *obj*))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-noopt-global-closure ...                                    */
@@ -86,29 +86,12 @@
 			      var))
 		 (new-args (map (lambda (old)
 				   (let ((new (make-local-svar
-					       (if (local? old)
-						   (local-id old)
-						   (gensym))
-					       (if *optim-cfa-unbox-closure-args*
-						   (cond
-						      ((local? old)
-						       (if (and #f (bigloo-type? (local-type old)))
-							   (local-type old)
-							   (begin
-							      (tprint "TODO.1 " (shape old))
-							      (default-type))))
-						      ((type? old)
-						       (if (and #f (bigloo-type? old))
-							   old
-							   (begin
-							      (tprint "TODO.2 " (shape old))
-							      (default-type))))
-						      (else
-						       (default-type)))
-						   (default-type)))))
-				      (if (local? old)
-					  (local-user?-set! new
-							    (local-user? old)))
+						 (if (local? old)
+						     (local-id old)
+						     (gensym))
+						 (default-type))))
+				      (when (local? old)
+					 (local-user?-set! new (local-user? old)))
 				      (widen!::svar/Ginfo (local-value new))
 				      (widen!::local/Ginfo new)
 				      new))
