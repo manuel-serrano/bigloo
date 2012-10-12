@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri May 25 09:24:45 2012 (serrano)                */
+#*    Last change :  Fri Oct 12 14:48:59 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -369,6 +369,7 @@ fullbootstrap:
           fi
 	@ $(MAKE) fullbootstrap-sans-log
 	@ $(MAKE) -s revision LOGMSG="$(LOGMSG) (bootstrap)"
+	@ $(MAKE) ChangeLog
 
 fullbootstrap-edit-log:
 	@ $(MAKE) fullbootstrap-sans-log

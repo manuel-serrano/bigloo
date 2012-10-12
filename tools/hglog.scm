@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/hop/2.2.x/etc/hglog.scm                     */
+;*    serrano/prgm/project/bigloo/tools/hglog.scm                      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  3 07:22:22 2010                          */
-;*    Last change :  Wed Nov  3 12:08:47 2010 (serrano)                */
-;*    Copyright   :  2010 Manuel Serrano                               */
+;*    Last change :  Fri Oct 12 14:48:06 2012 (serrano)                */
+;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate a changelog with HG                                     */
 ;*=====================================================================*/
@@ -53,17 +53,18 @@
 			     (display date)
 			     (display "  ")
 			     (display author)
-			     (newline)
+;* 			     (newline)                                 */
 			     (newline))
-			  (display "\t*")
-			  (display-list files)
-			  (newline)
+;* 			  (display "\t*")                              */
+;* 			  (display-list files)                         */
+;* 			  (newline)                                    */
 			  (for-each (lambda (s)
 				       (print "\t" s))
 				    (string-split (url-decode desc) "\n"))
-			  (display* "\t[" node "]")
+			  (display "\t")
 			  (unless (string=? branch "")
-			     (display* "<" branch ">"))
+			     (display* "<" branch "> "))
+			  (display* "[" node "]")
 			  (newline)
 			  (newline)
 			  (loop (read op) date))))
@@ -97,7 +98,9 @@
 (define (skip-entry? desc)
    (or (string=? desc ".")
        (string=? desc ". (bootstrap)")
+       (string=? desc ".%20%28bootstrap%29")
        (string=? desc "bootstrap")
        (string=? desc "")
-       (string=? desc " ")))
+       (string=? desc " ")
+       (string-prefix? "Full%20Bootstrap%20at" desc)))
 
