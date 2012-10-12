@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Sep 26 14:57:01 2012 (serrano)                */
+/*    Last change :  Thu Oct 11 17:50:48 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -776,7 +776,6 @@ WRAPPER2( bgl_output_port_timeout_set, PORT_TIMEOUT_TYPE_NUM, -1, (void *o, long
 /* input port */
 WRAPPER( bgl_make_input_port, INPUT_PORT_TYPE_NUM, (obj_t s, FILE *f, obj_t o, obj_t b), (s, f, o, b) )
 WRAPPER( bgl_open_input_file, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
-/* WRAPPER( bgl_file_to_buffered_input_port, INPUT_PORT_TYPE_NUM, (obj_t s, FILE *f, obj_t b), (s, f, b) ) */
 WRAPPER( bgl_open_input_pipe, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_resource, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_string, INPUT_PORT_TYPE_NUM, (obj_t o, int i), (o, i) )

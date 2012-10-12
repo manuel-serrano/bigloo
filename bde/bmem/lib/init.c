@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Sep 26 16:05:51 2012 (serrano)                */
+/*    Last change :  Thu Oct 11 17:50:42 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -89,7 +89,7 @@ void *(*____bgl_output_port_timeout_set)( void *, long );
 /* input port */
 void *(*____bgl_make_input_port)( void *, FILE *, void *, void * );
 void *(*____bgl_open_input_file)( void *, void * );
-void *(*____bgl_file_to_buffered_input_port)( void *, FILE *, void * );
+//void *(*____bgl_file_to_buffered_input_port)( void *, FILE *, void * );
 void *(*____bgl_file_to_input_port)( FILE * );
 void *(*____bgl_open_input_pipe)( void *, void * );
 void *(*____bgl_open_input_resource)( void *, void * );
@@ -389,7 +389,6 @@ bmem_init_inner() {
    /* input port */
    ____bgl_make_input_port = (void *(*)( void *, FILE *, void *, void * ))get_function( hdl, "bgl_make_input_port" );
    ____bgl_open_input_file = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_file" );
-   ____bgl_file_to_buffered_input_port = (void *(*)( void *, FILE *, void * ))get_function( hdl, "bgl_file_to_buffered_input_port" );
    ____bgl_open_input_pipe = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
    ____bgl_open_input_resource = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
    ____bgl_open_input_string = (void *(*)( void *, int ))get_function( hdl, "bgl_open_input_string" );

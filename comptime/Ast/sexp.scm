@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Mar  7 18:21:44 2012 (serrano)                */
+;*    Last change :  Thu Oct 11 20:13:23 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -89,6 +89,15 @@
 ;*---------------------------------------------------------------------*/
 (define (if-sym? sym)
    (eq? sym *if*))
+
+;*---------------------------------------------------------------------*/
+;*    proc-or-lambda? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (proc-or-lambda? e)
+   (match-case e
+      ((? symbol?) #t)
+      ((lambda ?- . ?-) #t)
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    sexp->node ...                                                   */
@@ -376,6 +385,15 @@
 				  (lambda (obj proc msg)
 				     (user-error/location loc obj proc msg))))))
 	  (let->node nexp stack loc site)))
+;*--- the direct if applications --------------------------------------*/
+      (((if ?test
+	    (and (? proc-or-lambda?) ?proc1)
+	    (and (? proc-or-lambda?) ?proc2))
+	   . (and (? (lambda (l) (every? (lambda (l) (not (pair? l))) l)))
+		  ?args))
+       (let ((nexp `(if ,test (,proc1 ,@args) (,proc2 ,@args))))
+	  (sexp->node nexp stack (find-location/loc exp loc) site)))
+      
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)
        (match-case exp
