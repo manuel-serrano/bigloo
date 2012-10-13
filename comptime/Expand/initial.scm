@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Sep 11 15:22:16 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 08:31:36 2012 (serrano)                */
 ;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -230,7 +230,18 @@
    (install-G-comptime-expander 'map
 				(lambda (x::obj e::procedure)
 				   (map-check x e ''())))
-   
+   ;; map!
+   (install-O-comptime-expander 'map! expand-map!)
+   (install-G-comptime-expander 'map!
+				(lambda (x::obj e::procedure)
+				   (map-check x e ''())))
+
+   ;; append-map
+   (install-O-comptime-expander 'append-map expand-append-map)
+   (install-G-comptime-expander 'append-map
+				(lambda (x::obj e::procedure)
+				   (map-check x e ''())))
+
    ;; for-each
    (install-O-comptime-expander 'for-each expand-for-each)
    (install-G-comptime-expander 'for-each
@@ -238,6 +249,7 @@
 				   (map-check x e #unspecified)))
    
    ;; filter and filter!
+   (install-O-comptime-expander 'filter expand-filter)
    (install-G-comptime-expander 'filter
 				(lambda (x::obj e::procedure)
 				   (map-check x e '())))
@@ -245,26 +257,21 @@
 				(lambda (x::obj e::procedure)
 				   (map-check x e #unspecified)))
    
-   ;; any? / every?
-   (install-O-comptime-expander 'any? expand-any?)
-   (install-G-comptime-expander 'any?
-				(lambda (x::obj e::procedure)
-				   (map-check x e #f)))
-   (install-O-comptime-expander 'every? expand-every?)
-   (install-G-comptime-expander 'every?
-				(lambda (x::obj e::procedure)
-				   (map-check x e #t)))
-   
    ;; any / every
+   (install-O-comptime-expander 'any expand-any)
    (install-G-comptime-expander 'any
 				(lambda (x::obj e::procedure)
 				   (map-check x e #f)))
+   (install-O-comptime-expander 'every expand-every)
    (install-G-comptime-expander 'every
 				(lambda (x::obj e::procedure)
 				   (map-check x e #t)))
 
    ;; reduce
    (install-O-comptime-expander 'reduce expand-reduce)
+
+   ;; find 
+   (install-O-comptime-expander 'find expand-find)
    
    ;; equal?
    (install-O-comptime-expander

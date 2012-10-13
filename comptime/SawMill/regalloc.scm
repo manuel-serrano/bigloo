@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Mon Nov 14 18:53:10 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:37:51 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
 ;*=====================================================================*/
@@ -551,8 +551,8 @@
       (with-access::rtl_reg/ra r (interfere color)
 	 (let ((nr (any (lambda (reg)
 			   (and (not (regset-member? reg interfere))
-				(not (any? (lambda (r)
-					      (eq? (rtl_reg/ra-color r) reg))
+				(not (any (lambda (r)
+					     (eq? (rtl_reg/ra-color r) reg))
 					   (regset->list interfere)))
 				(not (regset-member?
 				      r

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 29 07:51:57 2003                          */
-;*    Last change :  Tue Nov 22 08:56:39 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:57:26 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The private scheduler implementation.                            */
 ;*=====================================================================*/
@@ -252,13 +252,13 @@
 	    (live %live-thread-number))
 	 (assert (runnable)
              ;;; check the runnable threads	   
-	     (every? (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) runnable))
+	     (every (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) runnable))
 	 (assert (yield)
              ;;; check the yield threads	   
-	     (every? (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) yield))
+	     (every (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) yield))
 	 (assert (timeout)
              ;;; check the timeout threads	   
-	     (every? (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) timeout)))
+	     (every (lambda (t) (>= (with-access::fthread t (%timeout) %timeout) 0)) timeout)))
       ;; mark that no threads have currently yield in the instant
       (set! %threads-ready #f)
       (let ((runnable threads-yield))

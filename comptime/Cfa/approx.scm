@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sat Aug 25 06:48:58 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:38:53 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -79,7 +79,7 @@
    (approx-set-type! dst (get-src-approx-type src))
    ;; check the consistency with *_* type
    (unless (eq? (approx-type dst) *_*)
-      (when (any? vector-approx? (set->list (approx-allocs src)))
+      (when (any vector-approx? (set->list (approx-allocs src)))
 	 (approx-set-type! dst *vector*)))
    ;; we check *obj* to prevent closure optimizations
    (when (not (or (eq? (approx-type dst) *procedure*)
@@ -199,8 +199,8 @@
 	  type)
 	 (else
 	  (let ((allocs (set->list (approx-allocs a))))
-	     (if (any? vector-approx? allocs)
-		 (if (and (eq? type *vector*) (every? vector-approx? allocs))
+	     (if (any vector-approx? allocs)
+		 (if (and (eq? type *vector*) (every vector-approx? allocs))
 		     *vector*
 		     *obj*)
 		 type))))))

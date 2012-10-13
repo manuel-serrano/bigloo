@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Tue Apr 17 07:49:52 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:08 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -477,7 +477,7 @@
       (let ( (size (length stk)) (nstk (append stk vars)) )
 	 (let ( (cvals (map (lambda (v) (comp v nstk)) vals))
 		(body (comp body nstk)) )
-	    (if (every? (lambda (v) (isa? v ev_abs)) vals)
+	    (if (every (lambda (v) (isa? v ev_abs)) vals)
 		(EVA '(binder letrec fun) ()
 		     (let rec ( (l cvals) (i (+fx bp size)) )
 			(unless (null? l)
@@ -728,7 +728,7 @@
       (cond
 	 ((or (null? l) (null? stk))
 	  #f )
-	 ((any? (lambda (e) (memq (car stk) (use e '()))) (cdr l))
+	 ((any (lambda (e) (memq (car stk) (use e '()))) (cdr l))
 	  #t )
 	 (else (rec (cdr l) (cdr stk))) )))
 

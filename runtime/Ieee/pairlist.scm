@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Wed Mar 30 08:57:14 2011 (serrano)                */
+;*    Last change :  Sat Oct 13 07:36:11 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -155,8 +155,6 @@
 	    (cons* ::obj . obj)
 	    (every::obj ::procedure . obj)
 	    (any::obj ::procedure . obj)
-	    (every?::bool ::procedure . obj)
-	    (any?::bool ::procedure . obj)
 	    (find ::procedure ::pair-nil)
 	    (find-tail::obj ::procedure ::pair-nil)
 	    (reduce::obj ::procedure ::obj ::pair-nil)
@@ -854,58 +852,6 @@
 	      #f
 	      (or (apply pred (map car l))
 		  (loop (map cdr l))))))))
-
-;*---------------------------------------------------------------------*/
-;*    every? ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (every? pred . l)
-   (cond
-      ((null? l)
-       #t)
-      ((null? (cdr l))
-       (let loop ((l (car l)))
-	  (cond
-	     ((null? l)
-	      #t)
-	     ((pred (car l))
-	      (loop (cdr l)))
-	     (else
-	      #f))))
-      (else
-       (let loop ((l l))
-	  (cond
-	     ((null? (car l))
-	      #t)
-	     ((apply pred (map car l))
-	      (loop (map cdr l)))
-	     (else
-	      #f))))))
-
-;*---------------------------------------------------------------------*/
-;*    any? ...                                                         */
-;*---------------------------------------------------------------------*/
-(define (any? pred . l)
-   (cond
-      ((null? l)
-       #f)
-      ((null? (cdr l))
-       (let loop ((l (car l)))
-	  (cond
-	     ((null? l)
-	      #f)
-	     ((pred (car l))
-	      #t)
-	     (else
-	      (loop (cdr l))))))
-      (else
-       (let loop ((l l))
-	  (cond
-	     ((null? (car l))
-	      #f)
-	     ((apply pred (map car l))
-	      #t)
-	     (else
-	      (loop (map cdr l))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find ...                                                         */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Wed Mar  7 11:44:26 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:35:52 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -417,7 +417,7 @@
 			    (type (strict-node-type *_* (variable-type v)))
 			    (bindings (list (cons var val)))
 			    (body body)))))))
-	    (if (any? (lambda (v)
+	    (if (any (lambda (v)
 			 (let ((a (car v)))
 			    (not (and (atom? a) (keyword? (atom-value a))))))
 		      collected)

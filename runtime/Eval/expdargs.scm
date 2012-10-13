@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Wed May 30 09:11:16 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:38 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
@@ -94,10 +94,10 @@
 	  (descrs (filter (lambda (x) x) (map make-help clauses))))
       `(let* ((args-parse-usage
 		 (args-parse-usage
-		    ,(list (if (any? (lambda (f)
-					(and (pair? f)
-					     (pair? (cdr f))
-					     (eq? (cadr f) 'unquote)))
+		    ,(list (if (any (lambda (f)
+				       (and (pair? f)
+					    (pair? (cdr f))
+					    (eq? (cadr f) 'unquote)))
 				  descrs)
 			       'quasiquote
 			       'quote)
@@ -198,7 +198,7 @@
 		   (fetch-option-embed-argument (car o+))
 		   (loop (cdr o+) (cons oid oid+) (cons aid aid+)))))
 	 (cond
-	    ((not (and (pair? aid+) (any? (lambda (x) x) aid+)))
+	    ((not (and (pair? aid+) (any (lambda (x) x) aid+)))
 	     (string-append
 	      (concat oid+)
 	      (let loop ((args args))
@@ -224,7 +224,7 @@
       (cond
 	 ((string? o)
 	  (make-simple-synopsis-name opt o args))
-	 ((and (list? o) (every? string? o))
+	 ((and (list? o) (every string? o))
 	  (make-multiple-synopsis-name opt o args))
 	 (else
 	  (expand-time-error-clause clause "Illegal clause")))))
@@ -277,7 +277,7 @@
       (cond
 	 ((string? o)
 	  (make-simple-opt-parser clause otable))
-	 ((and (list? o) (every? string? o))
+	 ((and (list? o) (every string? o))
 	  (make-multiple-opt-parser clause otable))
 	 (else
 	  (expand-time-error-clause clause "Illegal option")))))
@@ -341,7 +341,7 @@
 		   (fetch-option-embed-argument (car o+))
 		   (loop (cdr o+) (cons oid oid+) (cons aid aid+)))))
 	 (cond
-	    ((not (and (pair? aid+) (any? (lambda (x) x) aid+)))
+	    ((not (and (pair? aid+) (any (lambda (x) x) aid+)))
 	     (for-each (lambda (o) (bind-option! otable o clause)) oid+)
 	     (let ((a (gensym))
 		   (v (gensym))

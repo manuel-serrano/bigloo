@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Tue Mar 20 14:04:29 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:37:16 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -194,7 +194,7 @@
    (define (check-super-slot nslot sslots class)
       (unless (slot-virtual? nslot)
 	 (let ((id (slot-id nslot)))
-	    (when (any? (lambda (ss) (eq? (slot-id ss) id)) sslots)
+	    (when (any (lambda (ss) (eq? (slot-id ss) id)) sslots)
 	       (user-error/location (find-location (slot-src nslot))
 		  (tclass-id class)
 		  "slot already defined in super class"

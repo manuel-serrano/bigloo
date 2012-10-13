@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Tue Sep 11 15:23:28 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:35:13 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
@@ -344,7 +344,7 @@
 	   (error keyword "Illegal ellipsis" p)
 	   (and (list? e)
 		(let ((p0 (car p)))
-		   (every? (lambda (ei)
+		   (every (lambda (ei)
 			      (syntax-matches-pattern? keyword p0 ei k))
 			  e)))))
       ((pair? p)
@@ -428,7 +428,7 @@
 			   (if (null? res)
 			       (loop nvars f)
 			       (loop nvars (map append f res))))
-			  ((any? (lambda (e) (pair? (assq (car ovars) e))) f)
+			  ((any (lambda (e) (pair? (assq (car ovars) e))) f)
 			   (liip (cdr ovars) nvars))
 			  (else
 			   (liip (cdr ovars) (cons (car ovars) nvars)))))

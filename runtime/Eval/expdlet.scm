@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Tue Apr 17 07:45:03 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:47 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
@@ -62,7 +62,7 @@
 (define (expand-eval-let x e)
    
    (define (expand-let-loop loop bindings body x e)
-      (if (not (every? (lambda (x)
+      (if (not (every (lambda (x)
 			  (match-case x
 			     ((?- ?-) #t)
 			     (else #f)))
@@ -203,7 +203,7 @@
 					     (pair? (cdr b)))
 				   (error "letrec*" "Illegal form" x)))
 			     bindings)
-		   (if (every? (lambda (b)
+		   (if (every (lambda (b)
 				  (and (pair? (cadr b))
 				       (eq? (car (cadr b)) 'lambda)))
 			       bindings)

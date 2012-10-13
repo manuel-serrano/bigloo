@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Thu Apr 19 20:48:22 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:55:28 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
@@ -324,12 +324,12 @@
 	     (let* ((sep (imap-separator socket))
 		    (p (car folders))
 		    (lp (string-length p)))
-		(when (every? (lambda (f)
-				 (let ((lf (string-length f)))
-				    (and (>fx lf lp)
-					 (substring-at? f p 0)
-					 (=fx (string-index f sep) lp))))
-			      (cdr folders))
+		(when (every (lambda (f)
+				(let ((lf (string-length f)))
+				   (and (>fx lf lp)
+					(substring-at? f p 0)
+					(=fx (string-index f sep) lp))))
+			 (cdr folders))
 		   p))))))
 
 ;*---------------------------------------------------------------------*/

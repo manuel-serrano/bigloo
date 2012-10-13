@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Tue Jan 17 16:58:57 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:55 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -363,7 +363,7 @@
       (cond
 	 ((null? rest)
 	  (vector-map2! proc nv v))
-	 ((every? (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
+	 ((every (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
 	  (vector-mapN! proc nv v rest))
 	 (else
 	  (error "vector-map" "Illegal arguments" rest)))))
@@ -376,7 +376,7 @@
       (cond
 	 ((null? rest)
 	  (vector-map2! proc v v))
-	 ((every? (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
+	 ((every (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
 	  (vector-mapN! proc v v rest))
 	 (else
 	  (error "vector-map!" "Illegal arguments" rest)))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Wed Nov 16 10:29:31 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:54:14 2012 (serrano)                */
+;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -145,11 +145,11 @@
       (error func "Invalid certificate" cert))
    (unless (or (not pkey) (isa? pkey private-key))
       (error func "Invalid private key" pkey))
-   (unless (and (list? CAs) (every? (lambda (c) (isa? c certificate)) CAs))
+   (unless (and (list? CAs) (every (lambda (c) (isa? c certificate)) CAs))
       (error func "Invalid CA list" CAs))
    (unless (or (not accepted-certs)
 	       (and (list? accepted-certs)
-		    (every? (lambda (c) (isa? c certificate)) accepted-certs)))
+		    (every (lambda (c) (isa? c certificate)) accepted-certs)))
       (error func "Invalid accepted-certs" accepted-certs))
    (if (or (and (isa? cert certificate) (not (isa? pkey private-key)))
 	   (and (isa? pkey private-key) (not (isa? cert certificate))))

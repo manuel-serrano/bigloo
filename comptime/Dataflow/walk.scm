@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Wed Mar  7 18:13:56 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:36:52 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -430,14 +430,14 @@
 ;*    abort? ::sequence ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (abort? node::sequence)
-   (any? abort? (sequence-nodes node)))
+   (any abort? (sequence-nodes node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::let-var ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (abort? node::let-var)
    (with-access::let-var node (bindings body)
-      (or (any? (lambda (b) (abort? (cdr b))) bindings) (abort? body))))
+      (or (any (lambda (b) (abort? (cdr b))) bindings) (abort? body))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::let-fun ...                                             */
@@ -458,14 +458,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (abort? node::app)
    (with-access::app node (fun args)
-      (or (abort? fun) (any? abort? args))))
+      (or (abort? fun) (any abort? args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::funcall ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (abort? node::funcall)
    (with-access::funcall node (fun args)
-      (or (abort? fun) (any? abort? args))))
+      (or (abort? fun) (any abort? args))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::app-ly ...                                              */

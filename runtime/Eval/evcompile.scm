@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Jun 22 17:30:43 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:17 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -122,7 +122,7 @@
        (let ((@var (@variable loc id env genv mod)))
 	  (evcompile-ref @var genv loc lkp)))
        ((-> . ?l)
-       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (evcompile-field-ref exp env genv where tail loc lkp toplevelp)
 	   (evcompile-error loc "eval" "Illegal form" exp) ))
       ((quote ?cnst)
@@ -199,7 +199,7 @@
 			     genv
 			     loc)))
 	  ((?- (-> . ?l) ?val)
-	   (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+	   (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	       (evcompile-field-set l val exp env genv where tail loc lkp toplevelp)
 	       (evcompile-error loc "eval" "Illegal form" exp) ))
 	  ((?- (and (? symbol?) ?var) ?val)
@@ -696,10 +696,10 @@
 ;*    evcompile-letrec ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evcompile-letrec bindings body env genv where tail loc lkp)
-   (if (every? (lambda (x)
-		  (and (pair? x)
-		       (pair? (cadr x))
-		       (eq? (car (cadr x)) 'lambda)))
+   (if (every (lambda (x)
+		 (and (pair? x)
+		      (pair? (cadr x))
+		      (eq? (car (cadr x)) 'lambda)))
 	       bindings)
        ;; this letrec only binds functions, compile it efficiently
        (evcompile-letrec-lambda bindings body env genv where tail loc lkp)

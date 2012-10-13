@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Mon Aug 27 19:13:33 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:39:00 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -87,7 +87,7 @@
 	  type)
 	 ((approx-top? approx)
 	  *obj*)
-	 ((every? make-vector-app? alloc-list)
+	 ((every make-vector-app? alloc-list)
 	  (let* ((app (car alloc-list))
 		 (tv-type (get-vector-item-type app))
 		 (value-approx (make-vector-app-value-approx app))
@@ -97,7 +97,7 @@
 		((type? tv) tv)
 		((eq? type *_*) *vector*)
 		(else type))))
-	 ((every? valloc/Cinfo+optim? alloc-list)
+	 ((every valloc/Cinfo+optim? alloc-list)
 	  (if (not (tvector-optimization?))
 	      (if (eq? type *_*)
 		  *vector*

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Oct 11 20:13:23 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:38:42 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -178,7 +178,7 @@
 	      (error-sexp->node "Illegal `@' expression" exp loc)))))
 ;*--- -> --------------------------------------------------------------*/
       ((-> . ?l)
-       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (field-ref->node l exp stack loc site)
 	   (error-sexp->node "Illegal ->" exp loc)))
 ;*--- quote -----------------------------------------------------------*/
@@ -265,7 +265,7 @@
 	   (error-sexp->node "Illegal `if' form" exp loc))))
 ;*--- set! ------------------------------------------------------------*/
       ((set! (-> . ?l) ?val)
-       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (field-set->node l val exp stack loc site)
 	   (error-sexp->node "Illegal ->" exp loc)))
       ((set! . ?-)
@@ -389,10 +389,18 @@
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)
 	    (and (? proc-or-lambda?) ?proc2))
-	   . (and (? (lambda (l) (every? (lambda (l) (not (pair? l))) l)))
-		  ?args))
+	   . (and (? (lambda (l) (every (lambda (l) (not (pair? l))) l))) ?args))
        (let ((nexp `(if ,test (,proc1 ,@args) (,proc2 ,@args))))
 	  (sexp->node nexp stack (find-location/loc exp loc) site)))
+      (((if ?test
+	    (and (? proc-or-lambda?) ?proc1)
+	    (and (? proc-or-lambda?) ?proc2))
+	   . (and (? list?) ?args))
+       (let* ((tmps (map (lambda (_) (gensym)) args))
+	      (loc (find-location/loc exp loc))
+	      (nexp `(,(let-sym) ,(map list tmps args)
+				 (if ,test (,proc1 ,@tmps) (,proc2 ,@tmps)))))
+	  (let->node nexp stack (find-location/loc exp loc) site)))
       
 ;*--- lambda ----------------------------------------------------------*/
       ((lambda . ?-)

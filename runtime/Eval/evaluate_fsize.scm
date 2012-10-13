@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Tue Apr 17 07:49:21 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:52:43 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -266,9 +266,9 @@
 	 r )))
  
 (define (letrectail? vars vals body)
-   (every? (lambda (v)
+   (every (lambda (v)
 	      (and (tailpos body v)
-		   (every? (lambda (e)
+		   (every (lambda (e)
 			      (when (isa? e ev_abs)
 				 (with-access::ev_abs e (arity body)
 				    (and (>=fx arity 0)
@@ -423,31 +423,31 @@
 
 (define-method (tailpos e::ev_let v::ev_var);
    (with-access::ev_let e (vars vals body)
-      (and (every? (lambda (e) (not (hasvar? e v))) vals)
+      (and (every (lambda (e) (not (hasvar? e v))) vals)
 	   (tailpos body v) )))
 
 (define-method (tailpos e::ev_let* v::ev_var);
    (with-access::ev_let* e (vars vals body)
-      (and (every? (lambda (e) (not (hasvar? e v))) vals)
+      (and (every (lambda (e) (not (hasvar? e v))) vals)
 	   (tailpos body v) )))
 
 (define-method (tailpos e::ev_letrec v::ev_var);
    (with-access::ev_letrec e (vars vals body)
-      (and (every? (lambda (e) (not (hasvar? e v))) vals)
+      (and (every (lambda (e) (not (hasvar? e v))) vals)
 	   (tailpos body v) )))
 
 (define-method (tailpos e::ev_labels v::ev_var);
    (with-access::ev_labels e (vals body)
-      (and (every? (lambda (e) (tailpos (cdr e) v)) vals)
+      (and (every (lambda (e) (tailpos (cdr e) v)) vals)
 	   (tailpos body v) )))
 
 (define-method (tailpos e::ev_goto v::ev_var);
    (with-access::ev_goto e (args)
-      (every? (lambda (e) (not (hasvar? e v))) args) ))
+      (every (lambda (e) (not (hasvar? e v))) args) ))
 
 (define-method (tailpos e::ev_app v::ev_var);
    (with-access::ev_app e (fun args)
-      (and (every? (lambda (e) (not (hasvar? e v))) args)
+      (and (every (lambda (e) (not (hasvar? e v))) args)
 	   (or (eq? fun v)
 	       (not (hasvar? fun v)) ))))
 
@@ -474,7 +474,7 @@
 
 (define-method (hasvar? e::ev_list v::ev_var);
    (with-access::ev_list e (args)
-      (any? (lambda (a) (hasvar? a v)) args) ))
+      (any (lambda (a) (hasvar? a v)) args) ))
 
 (define-method (hasvar? e::ev_prog2 v::ev_var);
    (with-access::ev_prog2 e (e1 e2)
@@ -502,21 +502,21 @@
 
 (define-method (hasvar? e::ev_binder v::ev_var);
    (with-access::ev_binder e (vals body)
-      (or (any? (lambda (e) (hasvar? e v)) vals)
+      (or (any (lambda (e) (hasvar? e v)) vals)
 	  (hasvar? body v) )))
 
 (define-method (hasvar? e::ev_labels v::ev_var);
    (with-access::ev_labels e (vals body)
-      (or (any? (lambda (e) (hasvar? (cdr e) v)) vals)
+      (or (any (lambda (e) (hasvar? (cdr e) v)) vals)
 	  (hasvar? body v) )))
 
 (define-method (hasvar? e::ev_goto v::ev_var);
    (with-access::ev_goto e (args)
-      (any? (lambda (e) (hasvar? e v)) args) ))
+      (any (lambda (e) (hasvar? e v)) args) ))
 
 (define-method (hasvar? e::ev_app v::ev_var);
    (with-access::ev_app e (fun args)
-      (or (hasvar? fun v) (any? (lambda (e) (hasvar? e v)) args)) ))
+      (or (hasvar? fun v) (any (lambda (e) (hasvar? e v)) args)) ))
 
 (define-method (hasvar? e::ev_abs v::ev_var);
    (with-access::ev_abs e (vars body)

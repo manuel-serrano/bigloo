@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 17:10:12 1995                          */
-;*    Last change :  Tue Oct  3 07:43:27 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Oct 13 07:39:26 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The L property, L(f,g) stands for `f be integrated in g?'        */
 ;*=====================================================================*/
@@ -123,8 +123,8 @@
 ;*---------------------------------------------------------------------*/
 (define (owner-integrator f)
    (let ((owner (sfun/Ginfo-owner (local-value f))))
-      (if (every? (lambda (x)
-		     (or (eq? x f) (eq? x owner)))
+      (if (every (lambda (x)
+		    (or (eq? x f) (eq? x owner)))
 		  (sfun/Ginfo-cfrom (local-value f)))
 	  (list owner)
 	  #f)))
@@ -181,8 +181,8 @@
       (or (eq? h g)
 	  (or (global? h)
 	      (not (local/Ginfo-escape? h))
-	      (and (every? ok-call? (sfun/Ginfo-cto (local-value h)))
-		   (every? ok-call? (sfun/Ginfo-cfrom (local-value h))))
+	      (and (every ok-call? (sfun/Ginfo-cto (local-value h)))
+		   (every ok-call? (sfun/Ginfo-cfrom (local-value h))))
 	      (eq? (sfun/Ginfo-owner (local-value g)) h)
 	      (integrate? h))))
    (define (integrate? f)
@@ -196,8 +196,8 @@
 			      (and (<fx imark *integrate-mark*)
 				   (begin
 				      (set! imark *integrate-mark*)
-				      (let ((r (and (every? visible? cfrom)
-						    (every? visible? cto))))
+				      (let ((r (and (every visible? cfrom)
+						    (every visible? cto))))
 					 (if (not r) (set! imark #f))
 					 r))))))))))
    (let ((r (integrate? f)))

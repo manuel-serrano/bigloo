@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Wed Aug  8 16:24:40 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 08:40:45 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
@@ -20,11 +20,15 @@
 	    engine_param
 	    type_type
 	    ast_ident)
-   (export  (expand-map      ::obj ::procedure)
+   (export  (expand-map ::obj ::procedure)
 	    (expand-for-each ::obj ::procedure)
-	    (expand-any?     ::obj ::procedure)
-	    (expand-every?   ::obj ::procedure)
-	    (expand-reduce   ::obj ::procedure)))
+	    (expand-any ::obj ::procedure)
+	    (expand-every ::obj ::procedure)
+	    (expand-reduce ::obj ::procedure)
+	    (expand-filter ::obj ::procedure)
+	    (expand-map! ::obj ::procedure)
+	    (expand-find ::obj ::procedure)
+	    (expand-append-map ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    epairify! ...                                                    */
@@ -437,9 +441,9 @@
        (error #f "Illegal `for-each' form" x))))
 
 ;*---------------------------------------------------------------------*/
-;*    expand-any? ...                                                  */
+;*    expand-any ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (expand-any? x e)
+(define (expand-any x e)
    (match-case x
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
@@ -447,23 +451,19 @@
 	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
 			 `(let ,lname ((,l ,list))
-			       (cond
-				  (((@ null? __r4_pairs_and_lists_6_3) ,l)
-				   #f)
-				  ((,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
-				   #t)
-				  (else
-				   (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))
+			       (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+				   #f
+				  (or (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
+ 				      (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))
 			 `(let ,lname ((,l ,list))
 			       (cond
 				  (((@ null? __r4_pairs_and_lists_6_3) ,l)
 				   #f)
 				  (((@ pair? __r4_pairs_and_lists_6_3) ,l)
-				   (if (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
-				       #t
+				   (or (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
 				       (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))))
 				  (else
-				   ,(list-expected "any?" l loc)))))))
+				   ,(list-expected "any" l loc)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
@@ -474,49 +474,44 @@
 	      (loop  `(let ((,lfun ,fun))
 			 ,(if *unsafe-type*
 			      `(let ,lname ((,l ,list))
-				    (cond
-				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
-					#f)
-				       ((,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
-					#t)
-				       (else
-					(,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))
+				    (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+					#f
+				        (or (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
+					    (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))
 			      `(let ,lname ((,l ,list))
 				    (cond
 				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
 					#f)
 				       (((@ pair? __r4_pairs_and_lists_6_3) ,l)
-					(if (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
-					    #t
+					(or (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
 					    (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))))
 				       (else
-					,(list-expected "any?" l loc))))))))
+					,(list-expected "any" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)
-       (let ((res `(any? ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
+       (let ((res `(any ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
 	  (epairify! x res)))
       (else
-       (error #f "Illegal `any?' form" x))))
+       (error #f "Illegal `any' form" x))))
        
 ;*---------------------------------------------------------------------*/
-;*    expand-every? ...                                                */
+;*    expand-every ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (expand-every? x e)
+(define (expand-every x e)
    (match-case x
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
+	      (lv    (mark-symbol-non-user! (gensym 'lv)))
 	      (lname (mark-symbol-non-user! (gensym 'every)))
 	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
-			 `(let ,lname ((,l ,list))
-			       (cond
-				  (((@ null? __r4_pairs_and_lists_6_3) ,l)
-				   #t)
-				  ((,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
-				   (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))
-				  (else
-				   #f)))
+			 `(let ,lname ((,l ,list)
+				       (,lv #t))
+			       (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+				   ,lv
+				   (let ((nv (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))))
+				      (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l) nv)))))
 			 `(let ,lname ((,l ,list))
 			       (cond
 				  (((@ null? __r4_pairs_and_lists_6_3) ,l)
@@ -526,41 +521,39 @@
 				       (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
 				       #f))
 				  (else
-				   ,(list-expected "every?" l loc)))))))
+				   ,(list-expected "every" l loc)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
+	      (lv    (mark-symbol-non-user! (gensym 'lv)))
 	      (lname (mark-symbol-non-user! (gensym 'every)))
 	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
 	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
 			 ,(if *unsafe-type*
-			      `(let ,lname ((,l ,list))
-				    (cond
-				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
-					#t)
-				       ((,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
-					(,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))
-				       (else
-					#f)))
+			      `(let ,lname ((,l ,list)
+					    (,lv #t))
+				    (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+					,lv
+					(let ((nv (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))))
+					   (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l) nv)))))
 			      `(let ,lname ((,l ,list))
 				    (cond
 				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
 					#t)
 				       (((@ pair? __r4_pairs_and_lists_6_3) ,l)
-					(if (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))
-					    (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
-					    #f))
+					(let ((nv (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))))
+					   (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l) nv))))
 				       (else
-					,(list-expected "every?" l loc))))))))
+					,(list-expected "every" l loc))))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun . ?lists)
-       (let ((res `(every? ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
+       (let ((res `(every ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
 	  (epairify! x res)))
       (else
-       (error #f "Illegal `every?' form" x))))
+       (error #f "Illegal `every' form" x))))
        
 ;*---------------------------------------------------------------------*/
 ;*    expand-reduce ...                                                */
@@ -585,6 +578,98 @@
 	  (epairify! x res)))
       (else
        (error #f "Illegal `reduce' form" x))))
-       
-       
+
+;*---------------------------------------------------------------------*/
+;*    expand-filter ...                                                */
+;*---------------------------------------------------------------------*/
+(define (expand-filter x e)
+   (match-case x
+      ((?- (and ?fun (? inline-map-lambda?)) ?list)
+       (let ((recur (mark-symbol-non-user! (gensym 'recur)))
+	      (lis (mark-symbol-non-user! (gensym 'lis)))
+	      (head (mark-symbol-non-user! (gensym 'head)))
+	      (tail (mark-symbol-non-user! (gensym 'tail)))
+	      (new-tail (mark-symbol-non-user! (gensym 'new-tail))))
+	  (let ((res `(let ,recur ((,lis ,list))
+			   (if ((@ null? __r4_pairs_and_lists_6_3) ,lis)
+			       ,lis			
+			       (let ((,head ((@ car __r4_pairs_and_lists_6_3) ,lis))
+				     (,tail ((@ cdr __r4_pairs_and_lists_6_3) ,lis)))
+				  (if (,fun ,head)
+				      (let ((,new-tail (,recur ,tail)))
+					 (if ((@ eq? __r4_equivalence_6_2) ,tail ,new-tail)
+					     ,lis
+					     ((@ cons __r4_pairs_and_lists_6_3) ,head ,new-tail)))
+				      (,recur ,tail)))))))
+	     (epairify! x (e res e)))))
+      ((?- ?fun . ?lists)
+       (let ((res `(filter ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
+	  (epairify! x res)))
+      (else
+       (error #f "Illegal `filter' form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-map! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-map! x e)
+   (match-case x
+      ((?- (and ?fun (? inline-map-lambda?)) ?list)
+       (let ((loop (mark-symbol-non-user! (gensym 'loop)))
+	     (l (mark-symbol-non-user! (gensym 'l)))
+	     (l0 (mark-symbol-non-user! (gensym 'l0))))
+	  (let ((res `(let ((,l0 ,list))
+			 (let ,loop ((,l ,l0))
+			      (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+				  ,l0
+				  (begin
+				     ((@ set-car! __r4_pairs_and_lists_6_3)
+				      ,l (,fun ((@ car __r4_pairs_and_lists_6_3) ,l)))
+				     (,loop ((@ cdr __r4_pairs_and_lists_6_3) ,l))))))))
+	     (epairify! x (e res e)))))
+      ((?- ?fun . ?lists)
+       (let ((res `(map! ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
+	  (epairify! x res)))
+      (else
+       (error #f "Illegal `map!' form" x))))
+   
+;*---------------------------------------------------------------------*/
+;*    expand-find ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-find x e)
+   (match-case x
+      ((?- (and ?fun (? inline-map-lambda?)) ?list)
+       (let ((lp (mark-symbol-non-user! (gensym 'lp)))
+	     (lv (mark-symbol-non-user! (gensym 'list))))
+	  (let ((res `(let ,lp ((,lv ,list))
+			 (when ((@ pair? __r4_pairs_and_lists_6_3) ,lv)
+			    (if (,fun ((@ car __r4_pairs_and_lists_6_3) ,lv))
+				((@ car __r4_pairs_and_lists_6_3) ,lv)
+				(,lp ((@ cdr __r4_pairs_and_lists_6_3) ,lv)))))))
+	     (epairify! x (e res e)))))
+      ((?- ?fun . ?lists)
+       (let ((res `(find ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
+	  (epairify! x res)))
+      (else
+       (error #f "Illegal `find' form" x))))
+   
+;*---------------------------------------------------------------------*/
+;*    expand-append-map ...                                            */
+;*---------------------------------------------------------------------*/
+(define (expand-append-map x e)
+   (match-case x
+      ((?- (and ?fun (? inline-map-lambda?)) ?list)
+       (let ((loop (mark-symbol-non-user! (gensym 'loop)))
+	     (l (mark-symbol-non-user! (gensym 'l))))
+	  (let ((res `(let ,loop ((,l ,list))
+			 (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+			     '()
+			     ((@ append-2 __r4_pairs_and_lists_6_3)
+			      (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
+			      (,loop ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))))
+	     (epairify! x (e res e)))))
+      ((?- ?fun . ?lists)
+       (let ((res `(append-map ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))
+	  (epairify! x res)))
+      (else
+       (error #f "Illegal `append-map' form" x))))
    

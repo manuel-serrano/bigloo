@@ -312,26 +312,6 @@ Returns an object formed by consing all arguments together from right to left.
 If only one @var{obj} is supplied, that @var{obj} is returned.
 @end deffn
 
-@deffn {bigloo procedure} every? fun clist1 clist2 ...
-Applies the predicate across the lists, returning true if the
-predicate returns non-false on every application.
-
-@smalllisp
-(every < '(1 2 3) '(2 3 4))            @result{} #t
-(every < '(1 2 3) '(2 3 0))            @result{} #f
-@end smalllisp
-@end deffn
-
-@deffn {bigloo procedure} any? fun clist1 clist2 ...
-Applies the predicate across the lists, returning true if the
-predicate returns non-false for at least one application.
-
-@smalllisp
-(any < '(1 2 3) '(2 3 4))            @result{} #t
-(any < '(1 2 3) '(2 3 0))            @result{} #t
-@end smalllisp
-@end deffn
-
 @deffn {bigloo procedure} every fun clist1 clist2 ...
 @cindex SRFI-1
 Applies the function @var{fun} across the lists, returning the last 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 13 11:57:08 2006                          */
-;*    Last change :  Mon Mar 12 16:32:34 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:57:36 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for handling interfaces                                    */
 ;*=====================================================================*/
@@ -38,7 +38,7 @@
 	     (match-case e
 		((interface (? symbol?) . ?rest)
 		 (unless (and (list? rest)
-			      (every? list? rest))
+			      (every list? rest))
 		    (pkglib-error 'interface-read-interface
 				  "Illegal interface declaration"
 				  e))

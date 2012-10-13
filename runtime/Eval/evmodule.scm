@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Sep  7 20:47:14 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:23 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -238,7 +238,7 @@
 ;*    evmodule-library ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-library clause loc)
-   (if (not (and (list? clause) (every? symbol? clause)))
+   (if (not (and (list? clause) (every symbol? clause)))
        (evcompile-error loc "eval" "Illegal `library' clause" clause)
        (for-each/loc loc
 		     (lambda (loc s)

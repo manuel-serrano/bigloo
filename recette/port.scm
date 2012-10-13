@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Fri Jul 20 06:28:04 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:52:05 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -574,9 +574,10 @@
       (test "send-chars.4" (test-send-chars-with-length-and-offset str) str))
    (test "directory->list"
 	 (let ((lst (directory->list "misc")))
-	    (every? (lambda (f)
-		       (member f lst))
-		    '("dump.c" "dump.jvm" "input.txt" "jm.txt" "trap.txt")))
+	    (if (every (lambda (f)
+			  (member f lst))
+		   '("dump.c" "dump.jvm" "input.txt" "jm.txt" "trap.txt"))
+		#t #f))
 	 #t)
    (test "flush-output-string-port"
 	 (let ((outp (open-output-string)))

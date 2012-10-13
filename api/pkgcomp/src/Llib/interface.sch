@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 12 05:22:11 2006                          */
-;*    Last change :  Sat Sep 26 00:50:24 2009 (serrano)                */
-;*    Copyright   :  2006-09 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:56:18 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of the INTERFACE expander                     */
 ;*=====================================================================*/
@@ -28,11 +28,11 @@
 	  ((not (interface-valid-name? name))
 	   (error 'interface "Illegal interface name" x))
 	  ((or (not (list? body))
-	       (not (every? (lambda (x)
-			       (and (pair? x)
-				    (symbol? (car x))
-				    (list? (cdr x))))
-			    body)))
+	       (not (every (lambda (x)
+			      (and (pair? x)
+				   (symbol? (car x))
+				   (list? (cdr x))))
+		       body)))
 	   (error 'interface "Illegal interface body" x))
 	  (else
 	   (multiple-value-bind (lang source suffix export from import rest)
@@ -262,10 +262,10 @@
 ;*    @interface-import-compiler ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (@interface-import-compiler clause)
-   (if (every? (lambda (e)
-		  (or (symbol? e)
-		      (and (list? e) (every? symbol? e))))
-	       (cdr clause))
+   (if (every (lambda (e)
+		 (or (symbol? e)
+		     (and (list? e) (every symbol? e))))
+	  (cdr clause))
        (cdr clause)
        (error 'interface "Illegal `import' clause" clause)))
 
@@ -325,7 +325,7 @@
 ;*---------------------------------------------------------------------*/
 (define (@interface-export-exception-compiler c)
    (define (exc name parent body)
-      (if (not (every? symbol? body))
+      (if (not (every symbol? body))
 	  (error 'interface "Illegal exception clause" body)
 	  (let ((cname (symbol-append name '|::| parent)))
 	     (evepairify `(class ,cname ,@body) c))))

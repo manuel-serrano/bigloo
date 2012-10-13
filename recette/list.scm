@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:21:42 1992                          */
-;*    Last change :  Mon Mar 21 10:26:49 2011 (serrano)                */
+;*    Last change :  Sat Oct 13 07:50:47 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations primitives sur les listes                */
 ;*---------------------------------------------------------------------*/
@@ -71,18 +71,18 @@
    (test "filter!" (let ((l (list 1 2 #\a "foo" 'foo 3)))
 		      (set! l (filter! number? l))
 		      l) '(1 2 3))
-   (test "any?" (any? number? '(1 2 3 4 5 6)) #t)
-   (test "any?" (any? number? '(toto 1 2 3 4 5 6)) #t)
-   (test "any?" (any? number? '(toto 1 2 3 4 5 6 tutu)) #t)
-   (test "any?" (any? number? '(toto tutu)) #f)
-   (test "any?" (any? > '(1 2 3 4) '(5 6 7 8)) #f)
-   (test "any?" (any? > '(1 2 3 4) '(5 0 7 8)) #t)
-   (test "every?" (every? number? '(1 2 3 4 5 6)) #t)
-   (test "every?" (every? number? '(toto 1 2 3 4 5 6)) #f)
-   (test "every?" (every? number? '(toto 1 2 3 4 5 6 tutu)) #f)
-   (test "every?" (every? number? '(toto tutu)) #f)
-   (test "every?" (every? > '(1 2 3 4) '(5 6 7 8)) #f)
-   (test "every?" (every? > '(5 6 7 8) '(1 2 3 4)) #t)
+   (test "any" (any number? '(1 2 3 4 5 6)) #t)
+   (test "any" (any number? '(toto 1 2 3 4 5 6)) #t)
+   (test "any" (any number? '(toto 1 2 3 4 5 6 tutu)) #t)
+   (test "any" (any number? '(toto tutu)) #f)
+   (test "any" (any > '(1 2 3 4) '(5 6 7 8)) #f)
+   (test "any" (any > '(1 2 3 4) '(5 0 7 8)) #t)
+   (test "every" (every number? '(1 2 3 4 5 6)) #t)
+   (test "every" (every number? '(toto 1 2 3 4 5 6)) #f)
+   (test "every" (every number? '(toto 1 2 3 4 5 6 tutu)) #f)
+   (test "every" (every number? '(toto tutu)) #f)
+   (test "every" (every > '(1 2 3 4) '(5 6 7 8)) #f)
+   (test "every" (every > '(5 6 7 8) '(1 2 3 4)) #t)
    (test "reverse" (reverse '(1 2 3 4)) '(4 3 2 1))
    (test "reverse!" (reverse! '(1 2 3 4)) '(4 3 2 1))
    (test "list-tail" (list-tail '(1 2 3 4) 2) '(3 4))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Thu Apr  3 14:42:11 1997                          */
-;*    Last change :  Thu Dec  1 18:36:01 2011 (serrano)                */
-;*    Copyright   :  1997-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Oct 13 07:37:57 2012 (serrano)                */
+;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some dsssl goodies (see also runtime/Llib/dsssl.scm).            */
 ;*=====================================================================*/
@@ -139,7 +139,7 @@
 	 ((symbol? (car a))
 	  (loop (+fx i 1) (cdr a)))
 	 ((and (memq (car a) '(#!optional #!key)) optim)
-	  (if (any? dsssl-named-constant? (cdr a))
+	  (if (any dsssl-named-constant? (cdr a))
 	      (- (+fx i 1))
 	      i))
 	 (else

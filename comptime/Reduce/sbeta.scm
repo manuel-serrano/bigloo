@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Fri Nov 26 08:14:58 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:40:23 2012 (serrano)                */
+;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -152,9 +152,9 @@
 	 ((or (var? expr) (atom? expr) (kwote? expr))
 	  #f)
 	 ((vref? expr)
-	  (any? dangerous? (vref-expr* expr)))
+	  (any dangerous? (vref-expr* expr)))
 	 ((getfield? expr)
-	  (any? dangerous? (getfield-expr* expr)))
+	  (any dangerous? (getfield-expr* expr)))
 	 ((not (app? expr))
 	  #t)
 	 (else
@@ -166,7 +166,7 @@
 			 (cfun-macro? val)
 			 (not (memq 'nesting (global-pragma var))))
 		    #t
-		    (any? dangerous? args))))))))
+		    (any dangerous? args))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    side-effect-safe? ...                                            */
@@ -183,15 +183,15 @@
 	 ((or (var? expr) (atom? expr) (kwote? expr))
 	  #t)
 	 ((vref? expr)
-	  (every? side-effect-safe? (vref-expr* expr)))
+	  (every side-effect-safe? (vref-expr* expr)))
 	 ((getfield? expr)
-	  (every? side-effect-safe? (getfield-expr* expr)))
+	  (every side-effect-safe? (getfield-expr* expr)))
 	 ((not (app? expr))
 	  #f)
 	 (else
 	  (with-access::app expr (fun args)
 	     (if (not (fun-side-effect (variable-value (var-variable fun))))
-		 (every? side-effect-safe? args)
+		 (every side-effect-safe? args)
 		 #f))))))
 
 ;*---------------------------------------------------------------------*/
@@ -225,9 +225,9 @@
    (define (simple? e)
       (or (atom? e)
 	  (var? e)
-	  (and (vref? e) (every? simple? (vref-expr* e)))
-	  (and (app? e) (every? simple? (app-args e)) (not (dangerous? e)))
-	  (and (getfield? e) (every? simple? (getfield-expr* e)))))
+	  (and (vref? e) (every simple? (vref-expr* e)))
+	  (and (app? e) (every simple? (app-args e)) (not (dangerous? e)))
+	  (and (getfield? e) (every simple? (getfield-expr* e)))))
    (with-access::let-var node (body bindings removable?)
       (let ((abody (find-actual-expression body)))
 	 ;; in any case, walk thru the body of the let construction
@@ -242,17 +242,17 @@
 	     node)
 	    ((null? bindings)
 	     abody)
-	    ((or (any? (lambda (b)
-			  ;; we don't optimize if a variable has several
-			  ;; occurrences or if it is a user variable and
-			  ;; we are compiling for debugging.
-			  (or (>fx (local-occurrence (car b)) 1)
-			      (and (local-user? (car b))
-				   (memq 'bdb
-					 (backend-debug-support (the-backend)))
-				   (>fx *bdb-debug* 0))))
+	    ((or (any (lambda (b)
+			 ;; we don't optimize if a variable has several
+			 ;; occurrences or if it is a user variable and
+			 ;; we are compiling for debugging.
+			 (or (>fx (local-occurrence (car b)) 1)
+			     (and (local-user? (car b))
+				  (memq 'bdb
+				     (backend-debug-support (the-backend)))
+				  (>fx *bdb-debug* 0))))
 		       bindings)
-		 (any? dangerous-binding? bindings))
+		 (any dangerous-binding? bindings))
 	     node)
 	    ((and (pair? bindings)
 		  (null? (cdr bindings))
@@ -272,14 +272,14 @@
 		    (conditional-side-effect-set! abody (side-effect? val))))
 	     abody)
 	    ((and (app? abody)
-		  (every? simple? (app-args abody))
-		  (not (any? side-effect? (app-args abody)))
-		  (every? (lambda (b)
-			     (and (argument? (car b) (app-args abody))
-				  ;; kwote has to be checked because sbeta
-				  ;; could be first applied before constant
-				  ;; compilation
-				  (not (kwote? (cdr b)))))
+		  (every simple? (app-args abody))
+		  (not (any side-effect? (app-args abody)))
+		  (every (lambda (b)
+			    (and (argument? (car b) (app-args abody))
+				 ;; kwote has to be checked because sbeta
+				 ;; could be first applied before constant
+				 ;; compilation
+				 (not (kwote? (cdr b)))))
 			  bindings))
 	     ;; (let ((v1 <expr1>) ... (vn <exprn>)) (f var1 ... varn))
 	     ;;   ==> (let (...) (f <expr1> ... <exprn))
@@ -288,17 +288,16 @@
 		(let ((nargs (make-args-list bindings (app-args abody))))
 		   (set! args nargs)
 		   (if (not (app-side-effect abody))
-		       (app-side-effect-set! abody
-					      (any? side-effect? nargs)))))
+		       (app-side-effect-set! abody (any side-effect? nargs)))))
 	     abody)
 	    ((and (extern? abody)
-		  (every? simple? (extern-expr* abody))
-		  (every? (lambda (b)
-			     (and (argument? (car b) (extern-expr* abody))
-				  ;; kwote has to be checked because sbeta
-				  ;; could be first applied before constant
-				  ;; compilation
-				  (not (kwote? (cdr b)))))
+		  (every simple? (extern-expr* abody))
+		  (every (lambda (b)
+			    (and (argument? (car b) (extern-expr* abody))
+				 ;; kwote has to be checked because sbeta
+				 ;; could be first applied before constant
+				 ;; compilation
+				 (not (kwote? (cdr b)))))
 			  bindings))
 	     ;; (let ((v1 <expr1>) ... (vn <exprn>)) (extern var1 ... varn))
 	     ;;   ==> (let (...) (extern <expr1> ... <exprn))
@@ -307,8 +306,7 @@
 		(let ((nexpr* (make-args-list bindings (extern-expr* body))))
 		   (extern-expr*-set! abody nexpr*)
 		   (if (not (extern-side-effect abody))
-		       (extern-side-effect-set! abody
-						(any? side-effect? nexpr*)))))
+		       (extern-side-effect-set! abody (any side-effect? nexpr*)))))
 	     abody)
 	    (else
 	     node)))))
@@ -494,7 +492,7 @@
 ;*---------------------------------------------------------------------*/
 (define (node-beta-early-app!::node node::app)
    (with-access::app node (args fun)
-      (if (every? atom? args)
+      (if (every atom? args)
 	  (if (and (=fx (length args) 1) (string? (atom-value (car args))))
 	      (if (eq? (var-variable fun) *c-string-length*)
 		  (instantiate::atom

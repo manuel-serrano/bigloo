@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Wed Mar 28 20:34:20 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:55:03 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -997,7 +997,7 @@
 ;*    image-file? ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (image-file? f)
-   (any? (lambda (s) (string-suffix? s f)) '("jpg" "JPG" "png" "gif" "GIF")))
+   (any (lambda (s) (string-suffix? s f)) '("jpg" "JPG" "png" "gif" "GIF")))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory-image ...                                              */
@@ -1012,13 +1012,13 @@
 ;*---------------------------------------------------------------------*/
 (define (music-file? f db)
    (with-access::mpd-database db (suffixes)
-      (any? (lambda (s) (string-suffix? s f)) suffixes)))
+      (any (lambda (s) (string-suffix? s f)) suffixes)))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory-contains-music? ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (directory-contains-music? dir db)
-   (any? (lambda (d) (music-file? d db) (directory->list dir))))
+   (any (lambda (d) (music-file? d db) (directory->list dir))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-directories-scan ...                                */

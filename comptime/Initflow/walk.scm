@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Fri Nov 18 07:57:02 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Sat Oct 13 07:39:36 2012 (serrano)                */
+;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
 ;*    init property of a global can be one of:                         */
@@ -209,7 +209,7 @@
        (let ((lub '()))
 	  (for-each (lambda (g)
 		       (when (and (eq? (global-init g) #unspecified)
-				  (every? (lambda (i) (memq g i)) (cdr is)))
+				  (every (lambda (i) (memq g i)) (cdr is)))
 			  (if e
 			      (global-init-set! g #t)
 			      (set! lub (cons g lub)))))

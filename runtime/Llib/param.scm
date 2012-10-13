@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Thu Mar 26 07:41:20 2009 (serrano)                */
-;*    Copyright   :  2004-09 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:35:04 2012 (serrano)                */
+;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
 ;*=====================================================================*/
@@ -256,7 +256,7 @@
       (cond
 	 ((not (list? val))
 	  (error 'bigloo-library-path-set! "Illegal list" val))
-	 ((not (every? string? val))
+	 ((not (every string? val))
 	  (error 'bigloo-library-path-set!
 		 "Illegal values"
 		 (filter (lambda (s) (not (string? s))) val)))

@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Fri Aug 22 08:49:44 2008 (serrano)                */
-#*    Copyright   :  2003-08 Manuel Serrano                            */
+#*    Last change :  Sat Oct 13 08:43:44 2012 (serrano)                */
+#*    Copyright   :  2003-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -27,8 +27,12 @@ while : ; do
 
     -h|--help)
       echo "bglmemrun: [options] exe [arg1] [arg2]..." >&2;
-      echo "  -h|--help          -- This message" >&2;
+      echo "  -h|--help            -- This message" >&2;
+      echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
       exit 0;;
+
+    -u|-unsafe|--unsafe)
+      export BMEMUNSAFE=u;;
 
     *)
       exe=$1;

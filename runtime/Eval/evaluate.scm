@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sun Jun 17 17:38:19 2012 (serrano)                */
+;*    Last change :  Sat Oct 13 07:34:01 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -336,7 +336,7 @@
 	  (name id)
 	  (mod (eval-find-module modname))))
       ((-> . ?l)
-       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (conv-field-ref e locals globals tail? where loc top?)
 	   (evcompile-error loc "eval" "Illegal form" e) ))
       (((and (? symbol?)
@@ -423,7 +423,7 @@
 	  (mod (eval-find-module modname))
 	  (e (uconv e))))
       ((set! (-> . ?l) ?e2)
-       (if (and (pair? l) (pair? (cdr l)) (every? symbol? l))
+       (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (conv-field-set l e2 e locals globals tail? where loc top?)
 	   (evcompile-error loc "eval" "Illegal form" e) ))
       ((set! ?v ?e)

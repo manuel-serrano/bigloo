@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Tue Nov 15 09:49:41 2011 (serrano)                */
-;*    Copyright   :  2000-11 Manuel Serrano                            */
+;*    Last change :  Sat Oct 13 07:39:57 2012 (serrano)                */
+;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
 ;*=====================================================================*/
@@ -290,7 +290,7 @@
 ;*    java-declare-component ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (java-declare-component j jklass::jklass component)
-   (define (every? pred? lst)
+   (define (every pred? lst)
       (let loop ((lst lst))
 	 (cond
 	    ((null? lst)
@@ -302,13 +302,13 @@
 	    (else
 	     #f))))
    (define (arg-list? lst)
-      (every? (lambda (s) (and (symbol? s) (type-ident? s))) lst))
+      (every (lambda (s) (and (symbol? s) (type-ident? s))) lst))
    (define (modifier-list? lst)
-      (every? (lambda (s)
-		 (and (symbol? s)
-		      (memq s '(public private protected
-				       static final synchronized
-				       abstract))))
+      (every (lambda (s)
+		(and (symbol? s)
+		     (memq s '(public private protected
+			       static final synchronized
+			       abstract))))
 	      lst))
    (match-case component
       ((field . ?rest)

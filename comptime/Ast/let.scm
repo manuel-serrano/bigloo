@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Nov 21 18:23:36 2011 (serrano)                */
+;*    Last change :  Sat Oct 13 07:38:29 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -262,7 +262,7 @@
    
    (define (safe-rec-val? val)
       (or (atom? val) (closure? val) (kwote? val)
-	  (and (sequence? val) (every? safe-rec-val? (sequence-nodes val)))))
+	  (and (sequence? val) (every safe-rec-val? (sequence-nodes val)))))
 
    (define (safe-rec-val-optim? val vars::pair-nil)
       (or (safe-rec-val? val)
@@ -278,7 +278,7 @@
 		 (and (safe-rec-val-optim? fun vars)
 		      (safe-rec-val-optim? args vars))))
 	     ((pair? val)
-	      (every? (lambda (v) (safe-rec-val-optim? v vars)) val))
+	      (every (lambda (v) (safe-rec-val-optim? v vars)) val))
 	     ((app-ly? val)
 	      (with-access::app-ly val (fun arg)
 		 (and (safe-rec-val-optim? fun vars)
@@ -289,7 +289,7 @@
 		      (safe-rec-val-optim? args vars))))
 	     ((extern? val)
 	      (with-access::extern val (expr*)
-		 (every? (lambda (e)
+		 (every (lambda (e)
 			    (safe-rec-val-optim? e vars))
 		    expr*)))
 	     ((conditional? val)
@@ -309,21 +309,21 @@
 	     ((select? val)
 	      (with-access::select val (test clauses)
 		 (and (safe-rec-val-optim? test vars)
-		      (every? (lambda (clause)
-				 (safe-rec-val-optim? (cdr clause) vars))
+		      (every (lambda (clause)
+				(safe-rec-val-optim? (cdr clause) vars))
 			      clauses))))
 	     ((let-fun? val)
 	      (with-access::let-fun val (body locals)
 		 (and (safe-rec-val-optim? body vars)
-		      (every? (lambda (f)
-				 (safe-rec-val-optim?
-				  (sfun-body (local-value f)) vars))
+		      (every (lambda (f)
+				(safe-rec-val-optim?
+				   (sfun-body (local-value f)) vars))
 			      locals))))
 	     ((let-var? val)
 	      (with-access::let-var val (body bindings)
 		 (and (safe-rec-val-optim? body vars)
-		      (every? (lambda (binding)
-				 (safe-rec-val-optim? (cdr binding) vars))
+		      (every (lambda (binding)
+				(safe-rec-val-optim? (cdr binding) vars))
 			      bindings))))
 	     ((set-ex-it? val)
 	      (with-access::set-ex-it val (var body)
@@ -348,14 +348,14 @@
 
    (define (safe-let? node)
       (with-access::let-var node (bindings)
-	 (every? (lambda (b) (safe-rec-val? (cdr b))) bindings)))
+	 (every (lambda (b) (safe-rec-val? (cdr b))) bindings)))
    
    (define (safe-let-optim? node)
       (with-access::let-var node (bindings)
-	 (every? (lambda (b)
-		    (when (eq? (variable-access (car b)) 'read)
-		       (safe-rec-val-optim? (cdr b) vars)))
-		 bindings)))
+	 (every (lambda (b)
+		   (when (eq? (variable-access (car b)) 'read)
+		      (safe-rec-val-optim? (cdr b) vars)))
+	    bindings)))
 
    (cond
       ((or (eq? let/letrec 'let) (let-sym? let/letrec))
