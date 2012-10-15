@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Sep 28 21:06:50 2012 (serrano)                */
+/*    Last change :  Mon Oct 15 10:23:12 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -134,8 +134,8 @@ struct bgl_output_timeout {
 /*---------------------------------------------------------------------*/
 /*    compatibility kit ISO C / POSIX 2001.                            */
 /*---------------------------------------------------------------------*/
-static ssize_t posix_write( FILE *f, void *buf, size_t count ) {
-   return (ssize_t)fwrite( buf, 1, count, f );
+static ssize_t posix_write( obj_t port, void *buf, size_t count ) {
+   return (ssize_t)fwrite( buf, 1, count, (FILE *)PORT( port ).stream );
 }
 
 static long posix_lseek( FILE *f, long offset, int whence ) {
