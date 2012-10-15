@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sat Jun 23 08:00:11 2012 (serrano)                */
+;*    Last change :  Mon Oct 15 09:54:10 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -167,18 +167,44 @@
 ;*    eval-register-class ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (eval-register-class id module super abstract slots hash constr)
+
+   (define (patch-field-default-values! slots fields)
+      ;; the default values compilation has been postponned after the class
+      ;; is properly defined. this function compiles these values.
+      (for-each (lambda (field slot)
+		   ;; the index is extract from the function
+		   ;; (@ CLASS-FIELD-DEFAULT-VALUE __OBJECT)
+		   (vector-set-ur! field 6
+		      (eval! `(lambda ()
+				 ,(slot-default-value slot))
+			 module)))
+	 (vector->list fields) slots))
+
+   (define (patch-vfield-accessors! slots fields virtuals)
+      ;; virtual getters and setters compilation have been postponned after
+      ;; the class is properly defined. this function compiles these functions.
+      (for-each (lambda (field slot)
+		   ;; the indexes are extract from the function
+		   ;; (@ MAKE-CLASS-FIELD __OBJECT)
+		   (when (slot-virtual? slot)
+		      (slot-getter-set! slot (eval! (slot-getter slot) module))
+		      (slot-setter-set! slot (eval! (slot-setter slot) module))
+		      (vector-set-ur! field 1 (slot-getter slot))
+		      (vector-set-ur! field 2 (slot-setter slot))
+		      (let* ((num (slot-virtual-num slot))
+			     (vfield (vector-ref virtuals num)))
+			 (set-car! vfield (slot-getter slot))
+			 (set-cdr! vfield (slot-setter slot)))))
+	 (vector->list fields) slots))
+   
    (let* ((size (length (filter (lambda (s) (not (slot-virtual? s))) slots)))
 	  (offset (if (eval-class? super) (class-evdata super) 0))
 	  (native (let loop ((super super))
 		     (cond
-			((eval-class? super)
-			 (loop (class-super super)))
-			((eq? super object)
-			 object)
-			((class-abstract? super)
-			 (loop (class-super super)))
-			(else
-			 super))))
+			((eval-class? super) (loop (class-super super)))
+			((eq? super object) object)
+			((class-abstract? super) (loop (class-super super)))
+			(else super))))
 	  (length (+fx offset size))
 	  (classnum (make-cell -1))
 	  (clazz (register-class!
@@ -209,7 +235,12 @@
       (cell-set! classnum (class-num clazz))
       (class-evdata-set! clazz length)
       ;; once we have created the class, set the fields
-      (class-evfields-set! clazz (make-class-fields id clazz slots size offset))
+      (let ((fields (make-class-fields id clazz slots size offset)))
+	 (class-evfields-set! clazz fields)
+	 ;; now the class is properly defined, it is possible to evaluate
+	 ;; the default values and virtual getters/setters
+	 (patch-field-default-values! slots fields)
+	 (patch-vfield-accessors! slots fields (class-virtual clazz)))
       clazz))
 
 ;*---------------------------------------------------------------------*/
@@ -227,7 +258,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    classgen-slot-anonymous ...                                      */
 ;*    -------------------------------------------------------------    */
-;*    Keep in a separate function for the sake of the symmetry with    */
+;*    Kept in a separate function for the sake of the symmetry with    */
 ;*    the compiler code.                                               */
 ;*---------------------------------------------------------------------*/
 (define (classgen-slot-anonymous index s class)
@@ -372,7 +403,7 @@
 	       (lambda (field val)
 		  (unless (class-field-virtual? field)
 		     (let ((v (e (cdr val) e)))
-			`(,(%class-field-mutator field) ,new ,v))))
+			`(,(class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; constructor
 	  ,(let ((constr (find-class-constructor class)))
@@ -385,7 +416,7 @@
 			     (class-field-mutable? field)
 			     (car val))
 		     (let ((v (e (cdr val) e)))
-			`(,(%class-field-mutator field) ,new ,v))))
+			`(,(class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; return the new instance
 	  ,new)))
@@ -471,7 +502,7 @@
 	       (lambda (field val)
 		  (unless (class-field-virtual? field)
 		     (let ((v (e (cdr val) e)))
-			`(,(%class-field-mutator field) ,new ,v))))
+			`(,(class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; constructor
 	  ,(let ((constr (find-class-constructor class)))
@@ -483,7 +514,7 @@
 		  (when (and (class-field-virtual? field)
 			     (class-field-mutable? field))
 		     (let ((v (e (cdr val) e)))
-			`(,(%class-field-mutator field) ,new ,v))))
+			`(,(class-field-mutator field) ,new ,v))))
 	       fields args)
 	  ;; return the new instance
 	  ,new)))
@@ -656,7 +687,7 @@
 	  (values #f '()))
 	 ((not (list? clauses))
 	  (evcompile-error (or (get-source-location clauses) loc)
-			   "eval" "Illegal class declaration" clauses))
+	     "eval" "Illegal class declaration" clauses))
 	 ((match-case (car clauses) (((? symbol?)) #t) (else #f))
 	  ;; the constructor must be protected under a lambda because
 	  ;; may be still uninitialized
@@ -683,18 +714,6 @@
 	     (evcompile-error loc "eval" "Cannot find super class" sid)
 	     (multiple-value-bind (constructor slots)
 		(eval-parse-class loc clauses)
-		;; evaluate the slots default value and virtual accessors
-		(for-each (lambda (slot)
-			     (slot-default-value-set! slot
-				(eval! `(lambda ()
-					   ,(slot-default-value slot))
-				   mod))
-			     (when (slot-virtual? slot)
-				(slot-getter-set! slot
-				   (eval! (slot-getter slot) mod))
-				(slot-setter-set! slot
-				   (eval! (slot-setter slot) mod))))
-		   slots)
 		;; make the class and bind it to its global variable
 		(let* ((clazz (eval-register-class
 				 cid mod super abstract

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Oct 14 18:55:39 2012 (serrano)                */
+;*    Last change :  Mon Oct 15 09:42:19 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -440,7 +440,7 @@
 	    (begin
 	       (let ((f (vector-ref-ur fields i)))
 		  (unless (class-field-virtual? f)
-		     ((%class-field-mutator f) obj (read-item))))))
+		     ((class-field-mutator f) obj (read-item))))))
 	 (let ((hash (read-item)))
 	    (if (=fx hash (class-hash klass))
 		obj

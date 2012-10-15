@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Oct 14 20:36:28 2012 (serrano)                */
+;*    Last change :  Mon Oct 15 09:42:34 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -163,7 +163,6 @@
 	    (class-field-accessor::procedure ::class-field)
 	    (class-field-mutable?::bool ::class-field)
 	    (class-field-mutator::procedure ::class-field)
-	    (%class-field-mutator::procedure ::class-field)
 	    (class-field-type::obj ::class-field)
 	    (register-class!::class ::symbol ::symbol ::obj ::long ::obj ::obj ::obj ::procedure ::obj ::obj ::vector)
 	    (register-generic!::obj ::procedure ::procedure ::obj ::obj)
@@ -494,12 +493,6 @@
    (vector-ref-ur field 2))
 
 ;*---------------------------------------------------------------------*/
-;*    %class-field-mutator ...                                         */
-;*---------------------------------------------------------------------*/
-(define (%class-field-mutator::procedure field)
-   (vector-ref-ur field 2))
-
-;*---------------------------------------------------------------------*/
 ;*    class-field-info ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-field-info field)
@@ -515,6 +508,8 @@
 ;*    class-field-default-value ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (class-field-default-value field)
+   ;; the index is internally used in the function
+   ;; (@ EVAL-REGISTER-CLASS __EVOBJECT)
    (let ((p (vector-ref-ur field 6)))
       (if (procedure? p)
 	  (p)
@@ -921,12 +916,14 @@
 ;*    make-class-virtual-slots-vector ...                              */
 ;*---------------------------------------------------------------------*/
 (define (make-class-virtual-slots-vector::vector super virtuals)
+   
    (define (fill-vector-with-virtuals!::vector vec::vector)
       (for-each (lambda (virtual)
 		   (let ((num (car virtual)))
 		      (vector-set! vec num (cdr virtual))))
 		(vector->list virtuals))
       vec)
+   
    (if (not (class? super))
        (let* ((len (vector-length virtuals))
 	      (vec (make-vector len)))
