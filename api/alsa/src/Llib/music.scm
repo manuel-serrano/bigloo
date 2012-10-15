@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Sep 20 05:26:10 2012 (serrano)                */
+;*    Last change :  Mon Oct 15 21:33:07 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -301,10 +301,12 @@
    
    (define (play-url-port o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
-      (let ((ip (open-file url o)))
-	 (if (input-port? ip)
-	     (with-access::alsamusic o (%amutex inbuf %buffer onevent
-					  mkthread %status)
+      (with-access::alsamusic o (%amutex inbuf %buffer onevent onerror
+				   mkthread %status)
+	 (let ((ip (with-handler
+		      (lambda (e) #f)
+		      (open-file url o))))
+	    (if (input-port? ip)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
 				 (port ip)
@@ -316,28 +318,32 @@
 		   (thread-start!
 		      (mkthread
 			 (lambda ()
-			    (let loop ((buffer buffer)
-				       (playlist playlist))
-			       (unwind-protect
-				  (alsabuffer-fill! buffer o)
-				  (close-input-port ip))
-			       ;; next song
-			       (let ((nbuffer (prepare-next-buffer o buffer (cdr playlist))))
-				  (when (isa? nbuffer alsabuffer)
-				     (loop nbuffer (cdr playlist))))))
+			    (with-handler
+			       (lambda (e)
+				  (exception-notify e)
+				  (onerror o e))
+			       (let loop ((buffer buffer)
+					  (playlist playlist))
+				  (unwind-protect
+				     (alsabuffer-fill! buffer o)
+				     (close-input-port ip))
+				  ;; next song
+				  (let ((nbuffer (prepare-next-buffer o buffer (cdr playlist))))
+				     (when (isa? nbuffer alsabuffer)
+					(loop nbuffer (cdr playlist)))))))
 			 "alsamusic-buffer"))
 		   (when notify
 		      (with-access::musicstatus %status (playlistid)
 			 (onevent o 'playlist playlistid)))
 		   (alsadecoder-reset! d)
 		   (alsadecoder-decode d o buffer)))
-	     (with-access::alsamusic o (onerror %amutex)
-		(mutex-unlock! %amutex)
-		(onerror o
-		   (instantiate::&io-port-error
-		      (proc "music-play")
-		      (msg "Cannot open")
-		      (obj url)))))))
+	    (with-access::alsamusic o (onerror %amutex)
+	       (mutex-unlock! %amutex)
+	       (onerror o
+		  (instantiate::&io-port-error
+		     (proc "music-play")
+		     (msg "Cannot open")
+		     (obj url)))))))
    
    (define (play-url-mmap o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
