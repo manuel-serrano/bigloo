@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Sep 28 21:04:38 2012 (serrano)                */
+;*    Last change :  Sun Oct 14 20:36:28 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -861,7 +861,12 @@
 	 (when (=fx *nb-classes* *nb-classes-max*)
 	    (double-nb-classes!))
 	 (unless (vector? plain)
-	    (error "register-class" "fields not a vector" plain))
+	    (error "register-class!" "Fields not a vector" plain))
+	 (let ((k (class-exists name)))
+	    (when (class? k)
+	       (warning "register-class!" "Dangerous class redefinition: \"" name "@"
+		  module
+		  "\" (" name "@" (class-module k) ")")))
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
 		(depth (if (class? super)
 			   (+fx (class-depth super) 1)

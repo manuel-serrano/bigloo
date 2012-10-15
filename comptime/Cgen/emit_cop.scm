@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Mon Nov 21 18:48:22 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 15 08:13:07 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -66,12 +66,12 @@
       #f))
 
 ;*---------------------------------------------------------------------*/
-;*    emit-cop ::block ...                                             */
+;*    emit-cop ::cblock ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (emit-cop cop::block)
-   (with-access::block cop (body loc)
+(define-method (emit-cop cop::cblock)
+   (with-access::cblock cop (body loc)
       (emit-bdb-loc loc)
-      (if (block? body)
+      (if (isa? body cblock)
 	  (emit-cop body)
 	  (begin
 	     (display #"{ " *c-port*)

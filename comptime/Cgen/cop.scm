@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
-;*    Last change :  Mon Nov 14 17:48:20 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 15 08:12:43 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
 ;*=====================================================================*/
@@ -18,7 +18,7 @@
 	   ast_var
 	   ast_node)
 
-   (include "Cgen/cop.sch")
+   (cond-expand ((not bigloo-class-generate) (include "Cgen/cop.sch")))
    
    (export (class cop
 	      ;; the source line number associated to this instruction
@@ -32,7 +32,7 @@
 	   (class cgoto::cop
 	      (label::clabel read-only))
 
-	   (class block::cop
+	   (class cblock::cop
 	      (body::cop read-only))
 
 	   (class creturn::cop

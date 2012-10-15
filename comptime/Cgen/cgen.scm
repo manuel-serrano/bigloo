@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Mar 16 11:02:04 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 15 08:13:20 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -178,10 +178,10 @@
 ;*---------------------------------------------------------------------*/
 (define (block-kont cop loc)
    (cond
-      ((block? cop)
+      ((isa? cop cblock)
        cop)
       (else
-       (instantiate::block
+       (instantiate::cblock
 	  (body cop)
 	  (loc  loc)))))
 
@@ -384,7 +384,7 @@
 		(true (block-kont (node->cop true kont) loc))
 		(false (block-kont (node->cop false kont) loc))
 		(loc   loc))
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body
 		 (instantiate::csequence
@@ -441,7 +441,7 @@
 		   (loc  loc)
 		   (test (csetq-value cop))
 		   (clauses clauses))
-		(instantiate::block
+		(instantiate::cblock
 		   (loc loc)
 		   (body (instantiate::csequence
 			    (loc loc)
@@ -602,7 +602,7 @@
 		 (exit (csetq-value ecop))
 		 (value (csetq-value vcop)))))
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux))
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -620,7 +620,7 @@
 						    (variable eaux)))
 					   (value (csetq-value vcop))))))))))
 	    ((and (csetq? ecop) (eq? (varc-variable (csetq-var ecop)) eaux))
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -638,7 +638,7 @@
 						   (loc loc)
 						   (variable vaux)))))))))))
 	    (else
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -673,7 +673,7 @@
 					  (value v)))))
 	  (let* ((aux  (make-local-svar/name 'cellval *obj*))
 		 (cval (node->cop (node-setq aux value) *id-kont*)))
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -761,7 +761,7 @@
       (if (null? old-actuals)
 	  (if (null? auxs)
 	      (kont (reverse! new-actuals))
-	      (instantiate::block
+	      (instantiate::cblock
 		 (body (instantiate::csequence
 			  (loc loc)
 			  (cops (list

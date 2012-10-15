@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Wed Dec 14 09:42:56 2011 (serrano)                */
+;*    Last change :  Sun Oct 14 18:48:53 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -246,6 +246,10 @@ of the start of the containing expression."
 	     (while (looking-at ":[^:]+")
 	       (backward-sexp 1))
 	     (setq desired-indent (- (+ (current-column) bee-body-indent) 1)))
+	    ((in-condp state)
+	     (save-excursion
+	       (goto-char (cadr state))
+	       (setq desired-indent (1+ (current-column)))))
             ((not (or desired-indent
                       (and (boundp 'bee-indent-hook)
                            bee-indent-hook
@@ -256,6 +260,28 @@ of the start of the containing expression."
              ;; Use default indentation if not computed yet
              (setq desired-indent (current-column))))
       desired-indent)))
+
+;*---------------------------------------------------------------------*/
+;*    in-condp ...                                                     */
+;*---------------------------------------------------------------------*/
+(defun in-condp (state)
+  (and (>= (car state) 2)
+       (let* ((conts (nth 9 state))
+	      (pos (nth (- (length conts) 2) conts)))
+	 (save-excursion
+	   (goto-char (1+ pos))
+	   (looking-at cond-regexp)))))
+
+;*---------------------------------------------------------------------*/
+;*    in-modulep ...                                                   */
+;*---------------------------------------------------------------------*/
+(defun in-modulep (state)
+  (and (>= (car state) 2)
+       (let* ((conts (nth 9 state))
+	      (pos (nth (- (length conts) 2) conts)))
+	 (save-excursion
+	   (goto-char (1+ pos))
+	   (looking-at "\\(module\\|directives\\)[\t\n ]")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    normal-indent ...                                                */
@@ -300,11 +326,25 @@ of the start of the containing expression."
 	     ((and (> (length function) 11)
 		   (string-equal (substring function 0 8) "widen!::"))
 	      (bee-duplicate-indent state indent-point))
-	     ((string-match "<[^> \t]+>" function)
-	      (bee-instantiate-indent state indent-point))
-	     ;; MS: 5apr2011
 	     (t
 	      (bee-indent-defform state indent-point))))))))
+
+;*---------------------------------------------------------------------*/
+;*    bee-module-indent-hook ...                                       */
+;*---------------------------------------------------------------------*/
+(defun bee-module-indent-hook (indent-state point)
+  (if (in-modulep state)
+      (save-excursion
+	(if (= (1+ (cadr state)) (caddr state))
+	    (progn
+	      (goto-char (cadr state))
+	      (+ (current-column) bee-body-indent))
+	  (progn
+	    (goto-char (caddr state))
+	    (current-column))))
+    (save-excursion
+      (goto-char (cadr state))
+      (+ (current-column) bee-body-indent))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-indent-brace-p ...                                           */
@@ -601,6 +641,9 @@ of the start of the containing expression."
 ;*---------------------------------------------------------------------*/
 ;*    Bee indent forms                                                 */
 ;*---------------------------------------------------------------------*/
+(defvar cond-regexp
+  "\\(cond\\|case\\|match-case\\|args-parse\\|cond-expand\\|string-case\\|match-lambda\\|syntax-rule\\)[\t\n ]")
+
 ;; basic forms
 (put 'begin                     'bee-indent-hook 0)
 (put 'case                      'bee-indent-hook 1)
@@ -614,15 +657,17 @@ of the start of the containing expression."
 (put 'or                        'bee-indent-hook -1)
 (put 'and                       'bee-indent-hook -1)
 (put 'else                      'bee-indent-hook -1)
-;* (put 'static                    'bee-indent-hook -1)                */
-;* (put 'import                    'bee-indent-hook -1)                */
-;* (put 'extern                    'bee-indent-hook -1)                */
-;* (put 'export                    'bee-indent-hook -1)                */
-;* (put 'include                   'bee-indent-hook -1)                */
-;* (put 'library                   'bee-indent-hook -1)                */
-;* (put 'use                       'bee-indent-hook -1)                */
-;* (put 'from                      'bee-indent-hook -1)                */
-;* (put 'pragma                    'bee-indent-hook -1)                */
+
+;; module
+(put 'static                    'bee-indent-hook 'bee-module-indent-hook)
+(put 'import                    'bee-indent-hook 'bee-module-indent-hook)
+(put 'extern                    'bee-indent-hook 'bee-module-indent-hook)
+(put 'export                    'bee-indent-hook 'bee-module-indent-hook)
+(put 'include                   'bee-indent-hook 'bee-module-indent-hook)
+(put 'library                   'bee-indent-hook 'bee-module-indent-hook)
+(put 'use                       'bee-indent-hook 'bee-module-indent-hook)
+(put 'from                      'bee-indent-hook 'bee-module-indent-hook)
+(put 'pragma                    'bee-indent-hook 'bee-module-indent-hook)
 
 ;; binding forms
 (put 'let                       'bee-indent-hook 'bee-let-indent)
@@ -700,7 +745,6 @@ of the start of the containing expression."
 (put 'profile/gc                'bee-indent-hook 1)
 
 ;; hop
-(put '$roundtrip                'bee-indent-hook 1)
 (put 'service                   'bee-indent-hook 1)
 (put 'add-event-listener!       'bee-indent-hook 2)
 (put 'remove-event-listener!    'bee-indent-hook 2)

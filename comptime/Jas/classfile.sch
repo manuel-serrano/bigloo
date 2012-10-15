@@ -1,28 +1,28 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (3.7b)
-;; Inria -- Sophia Antipolis     Mon Nov 14 18:35:27 CET 2011 
+;; Bigloo (3.8d)
+;; Inria -- Sophia Antipolis     Mon Oct 15 07:48:55 CEST 2012 
 ;; (bigloo.new -classgen Jas/classfile.scm)
 ;; ==========================================================
 
 ;; The directives
 (directives
 
-;; type
+;; JasType
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-type::type code1250::bstring vect1251::obj)
-    (inline type?::bool ::obj)
-    (type-nil::type)
-    (inline type-vect::obj ::type)
-    (inline type-vect-set! ::type ::obj)
-    (inline type-code::bstring ::type)
-    (inline type-code-set! ::type ::bstring))))
+    (inline make-JasType::JasType code1202::bstring vect1203::obj)
+    (inline JasType?::bool ::obj)
+    (JasType-nil::JasType)
+    (inline JasType-vect::obj ::JasType)
+    (inline JasType-vect-set! ::JasType ::obj)
+    (inline JasType-code::bstring ::JasType)
+    (inline JasType-code-set! ::JasType ::bstring))))
 
 ;; basic
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-basic::basic code1247::bstring vect1248::obj)
+    (inline make-basic::basic code1199::bstring vect1200::obj)
     (inline basic?::bool ::obj)
     (basic-nil::basic)
     (inline basic-vect::obj ::basic)
@@ -33,35 +33,35 @@
 ;; vect
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-vect::vect code1243::bstring vect1244::obj type1245::type)
+    (inline make-vect::vect code1195::bstring vect1196::obj type1197::JasType)
     (inline vect?::bool ::obj)
     (vect-nil::vect)
-    (inline vect-type::type ::vect)
-    (inline vect-type-set! ::vect ::type)
+    (inline vect-type::JasType ::vect)
+    (inline vect-type-set! ::vect ::JasType)
     (inline vect-vect::obj ::vect)
     (inline vect-vect-set! ::vect ::obj)
     (inline vect-code::bstring ::vect)
     (inline vect-code-set! ::vect ::bstring))))
 
-;; fun
+;; JasFun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fun::fun code1238::bstring vect1239::obj tret1240::type targs1241::obj)
-    (inline fun?::bool ::obj)
-    (fun-nil::fun)
-    (inline fun-targs::obj ::fun)
-    (inline fun-targs-set! ::fun ::obj)
-    (inline fun-tret::type ::fun)
-    (inline fun-tret-set! ::fun ::type)
-    (inline fun-vect::obj ::fun)
-    (inline fun-vect-set! ::fun ::obj)
-    (inline fun-code::bstring ::fun)
-    (inline fun-code-set! ::fun ::bstring))))
+    (inline make-JasFun::JasFun code1190::bstring vect1191::obj tret1192::JasType targs1193::obj)
+    (inline JasFun?::bool ::obj)
+    (JasFun-nil::JasFun)
+    (inline JasFun-targs::obj ::JasFun)
+    (inline JasFun-targs-set! ::JasFun ::obj)
+    (inline JasFun-tret::JasType ::JasFun)
+    (inline JasFun-tret-set! ::JasFun ::JasType)
+    (inline JasFun-vect::obj ::JasFun)
+    (inline JasFun-vect-set! ::JasFun ::obj)
+    (inline JasFun-code::bstring ::JasFun)
+    (inline JasFun-code-set! ::JasFun ::bstring))))
 
 ;; classe
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-classe::classe code1232::bstring vect1233::obj flags1234::obj name1235::obj pool1236::obj)
+    (inline make-classe::classe code1184::bstring vect1185::obj flags1186::obj name1187::obj pool1188::obj)
     (inline classe?::bool ::obj)
     (classe-nil::classe)
     (inline classe-pool::obj ::classe)
@@ -78,7 +78,7 @@
 ;; field-or-method
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-field-or-method::field-or-method flags1222::obj name1223::bstring owner1224::obj usertype1225::obj type1226::obj pname1227::obj descriptor1228::obj pool1229::obj attributes1230::obj)
+    (inline make-field-or-method::field-or-method flags1174::obj name1175::bstring owner1176::obj usertype1177::obj type1178::obj pname1179::obj descriptor1180::obj pool1181::obj attributes1182::obj)
     (inline field-or-method?::bool ::obj)
     (field-or-method-nil::field-or-method)
     (inline field-or-method-attributes::obj ::field-or-method)
@@ -103,7 +103,7 @@
 ;; field
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-field::field flags1212::obj name1213::bstring owner1214::obj usertype1215::obj type1216::obj pname1217::obj descriptor1218::obj pool1219::obj attributes1220::obj)
+    (inline make-field::field flags1164::obj name1165::bstring owner1166::obj usertype1167::obj type1168::obj pname1169::obj descriptor1170::obj pool1171::obj attributes1172::obj)
     (inline field?::bool ::obj)
     (field-nil::field)
     (inline field-attributes::obj ::field)
@@ -128,7 +128,7 @@
 ;; method
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-method::method flags1202::obj name1203::bstring owner1204::obj usertype1205::obj type1206::obj pname1207::obj descriptor1208::obj pool1209::obj attributes1210::obj)
+    (inline make-method::method flags1154::obj name1155::bstring owner1156::obj usertype1157::obj type1158::obj pname1159::obj descriptor1160::obj pool1161::obj attributes1162::obj)
     (inline method?::bool ::obj)
     (method-nil::method)
     (inline method-attributes::obj ::method)
@@ -153,7 +153,7 @@
 ;; attribute
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-attribute::attribute type1197::obj name1198::obj size1199::obj info1200::obj)
+    (inline make-attribute::attribute type1149::obj name1150::obj size1151::obj info1152::obj)
     (inline attribute?::bool ::obj)
     (attribute-nil::attribute)
     (inline attribute-info::obj ::attribute)
@@ -168,7 +168,7 @@
 ;; classfile
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-classfile::classfile current-method1184::obj globals1185::obj pool1186::obj pool-size1187::obj pooled-names1188::obj flags1189::obj me1190::obj super1191::obj interfaces1192::obj fields1193::obj methods1194::obj attributes1195::obj)
+    (inline make-classfile::classfile current-method1136::obj globals1137::obj pool1138::obj pool-size1139::obj pooled-names1140::obj flags1141::obj me1142::obj super1143::obj interfaces1144::obj fields1145::obj methods1146::obj attributes1147::obj)
     (inline classfile?::bool ::obj)
     (classfile-nil::classfile)
     (inline classfile-attributes::obj ::classfile)
@@ -198,17 +198,17 @@
 
 ;; The definitions
 (cond-expand (bigloo-class-sans
-;; type
-(define-inline (make-type::type code1250::bstring vect1251::obj) (instantiate::type (code code1250) (vect vect1251)))
-(define-inline (type?::bool obj::obj) ((@ isa? __object) obj (@ type jas_classfile)))
-(define (type-nil::type) (class-nil (@ type jas_classfile)))
-(define-inline (type-vect::obj o::type) (with-access::type o (vect) vect))
-(define-inline (type-vect-set! o::type v::obj) (with-access::type o (vect) (set! vect v)))
-(define-inline (type-code::bstring o::type) (with-access::type o (code) code))
-(define-inline (type-code-set! o::type v::bstring) (with-access::type o (code) (set! code v)))
+;; JasType
+(define-inline (make-JasType::JasType code1202::bstring vect1203::obj) (instantiate::JasType (code code1202) (vect vect1203)))
+(define-inline (JasType?::bool obj::obj) ((@ isa? __object) obj (@ JasType jas_classfile)))
+(define (JasType-nil::JasType) (class-nil (@ JasType jas_classfile)))
+(define-inline (JasType-vect::obj o::JasType) (with-access::JasType o (vect) vect))
+(define-inline (JasType-vect-set! o::JasType v::obj) (with-access::JasType o (vect) (set! vect v)))
+(define-inline (JasType-code::bstring o::JasType) (with-access::JasType o (code) code))
+(define-inline (JasType-code-set! o::JasType v::bstring) (with-access::JasType o (code) (set! code v)))
 
 ;; basic
-(define-inline (make-basic::basic code1247::bstring vect1248::obj) (instantiate::basic (code code1247) (vect vect1248)))
+(define-inline (make-basic::basic code1199::bstring vect1200::obj) (instantiate::basic (code code1199) (vect vect1200)))
 (define-inline (basic?::bool obj::obj) ((@ isa? __object) obj (@ basic jas_classfile)))
 (define (basic-nil::basic) (class-nil (@ basic jas_classfile)))
 (define-inline (basic-vect::obj o::basic) (with-access::basic o (vect) vect))
@@ -217,31 +217,31 @@
 (define-inline (basic-code-set! o::basic v::bstring) (with-access::basic o (code) (set! code v)))
 
 ;; vect
-(define-inline (make-vect::vect code1243::bstring vect1244::obj type1245::type) (instantiate::vect (code code1243) (vect vect1244) (type type1245)))
+(define-inline (make-vect::vect code1195::bstring vect1196::obj type1197::JasType) (instantiate::vect (code code1195) (vect vect1196) (type type1197)))
 (define-inline (vect?::bool obj::obj) ((@ isa? __object) obj (@ vect jas_classfile)))
 (define (vect-nil::vect) (class-nil (@ vect jas_classfile)))
-(define-inline (vect-type::type o::vect) (with-access::vect o (type) type))
-(define-inline (vect-type-set! o::vect v::type) (with-access::vect o (type) (set! type v)))
+(define-inline (vect-type::JasType o::vect) (with-access::vect o (type) type))
+(define-inline (vect-type-set! o::vect v::JasType) (with-access::vect o (type) (set! type v)))
 (define-inline (vect-vect::obj o::vect) (with-access::vect o (vect) vect))
 (define-inline (vect-vect-set! o::vect v::obj) (with-access::vect o (vect) (set! vect v)))
 (define-inline (vect-code::bstring o::vect) (with-access::vect o (code) code))
 (define-inline (vect-code-set! o::vect v::bstring) (with-access::vect o (code) (set! code v)))
 
-;; fun
-(define-inline (make-fun::fun code1238::bstring vect1239::obj tret1240::type targs1241::obj) (instantiate::fun (code code1238) (vect vect1239) (tret tret1240) (targs targs1241)))
-(define-inline (fun?::bool obj::obj) ((@ isa? __object) obj (@ fun jas_classfile)))
-(define (fun-nil::fun) (class-nil (@ fun jas_classfile)))
-(define-inline (fun-targs::obj o::fun) (with-access::fun o (targs) targs))
-(define-inline (fun-targs-set! o::fun v::obj) (with-access::fun o (targs) (set! targs v)))
-(define-inline (fun-tret::type o::fun) (with-access::fun o (tret) tret))
-(define-inline (fun-tret-set! o::fun v::type) (with-access::fun o (tret) (set! tret v)))
-(define-inline (fun-vect::obj o::fun) (with-access::fun o (vect) vect))
-(define-inline (fun-vect-set! o::fun v::obj) (with-access::fun o (vect) (set! vect v)))
-(define-inline (fun-code::bstring o::fun) (with-access::fun o (code) code))
-(define-inline (fun-code-set! o::fun v::bstring) (with-access::fun o (code) (set! code v)))
+;; JasFun
+(define-inline (make-JasFun::JasFun code1190::bstring vect1191::obj tret1192::JasType targs1193::obj) (instantiate::JasFun (code code1190) (vect vect1191) (tret tret1192) (targs targs1193)))
+(define-inline (JasFun?::bool obj::obj) ((@ isa? __object) obj (@ JasFun jas_classfile)))
+(define (JasFun-nil::JasFun) (class-nil (@ JasFun jas_classfile)))
+(define-inline (JasFun-targs::obj o::JasFun) (with-access::JasFun o (targs) targs))
+(define-inline (JasFun-targs-set! o::JasFun v::obj) (with-access::JasFun o (targs) (set! targs v)))
+(define-inline (JasFun-tret::JasType o::JasFun) (with-access::JasFun o (tret) tret))
+(define-inline (JasFun-tret-set! o::JasFun v::JasType) (with-access::JasFun o (tret) (set! tret v)))
+(define-inline (JasFun-vect::obj o::JasFun) (with-access::JasFun o (vect) vect))
+(define-inline (JasFun-vect-set! o::JasFun v::obj) (with-access::JasFun o (vect) (set! vect v)))
+(define-inline (JasFun-code::bstring o::JasFun) (with-access::JasFun o (code) code))
+(define-inline (JasFun-code-set! o::JasFun v::bstring) (with-access::JasFun o (code) (set! code v)))
 
 ;; classe
-(define-inline (make-classe::classe code1232::bstring vect1233::obj flags1234::obj name1235::obj pool1236::obj) (instantiate::classe (code code1232) (vect vect1233) (flags flags1234) (name name1235) (pool pool1236)))
+(define-inline (make-classe::classe code1184::bstring vect1185::obj flags1186::obj name1187::obj pool1188::obj) (instantiate::classe (code code1184) (vect vect1185) (flags flags1186) (name name1187) (pool pool1188)))
 (define-inline (classe?::bool obj::obj) ((@ isa? __object) obj (@ classe jas_classfile)))
 (define (classe-nil::classe) (class-nil (@ classe jas_classfile)))
 (define-inline (classe-pool::obj o::classe) (with-access::classe o (pool) pool))
@@ -256,7 +256,7 @@
 (define-inline (classe-code-set! o::classe v::bstring) (with-access::classe o (code) (set! code v)))
 
 ;; field-or-method
-(define-inline (make-field-or-method::field-or-method flags1222::obj name1223::bstring owner1224::obj usertype1225::obj type1226::obj pname1227::obj descriptor1228::obj pool1229::obj attributes1230::obj) (instantiate::field-or-method (flags flags1222) (name name1223) (owner owner1224) (usertype usertype1225) (type type1226) (pname pname1227) (descriptor descriptor1228) (pool pool1229) (attributes attributes1230)))
+(define-inline (make-field-or-method::field-or-method flags1174::obj name1175::bstring owner1176::obj usertype1177::obj type1178::obj pname1179::obj descriptor1180::obj pool1181::obj attributes1182::obj) (instantiate::field-or-method (flags flags1174) (name name1175) (owner owner1176) (usertype usertype1177) (type type1178) (pname pname1179) (descriptor descriptor1180) (pool pool1181) (attributes attributes1182)))
 (define-inline (field-or-method?::bool obj::obj) ((@ isa? __object) obj (@ field-or-method jas_classfile)))
 (define (field-or-method-nil::field-or-method) (class-nil (@ field-or-method jas_classfile)))
 (define-inline (field-or-method-attributes::obj o::field-or-method) (with-access::field-or-method o (attributes) attributes))
@@ -279,7 +279,7 @@
 (define-inline (field-or-method-flags-set! o::field-or-method v::obj) (with-access::field-or-method o (flags) (set! flags v)))
 
 ;; field
-(define-inline (make-field::field flags1212::obj name1213::bstring owner1214::obj usertype1215::obj type1216::obj pname1217::obj descriptor1218::obj pool1219::obj attributes1220::obj) (instantiate::field (flags flags1212) (name name1213) (owner owner1214) (usertype usertype1215) (type type1216) (pname pname1217) (descriptor descriptor1218) (pool pool1219) (attributes attributes1220)))
+(define-inline (make-field::field flags1164::obj name1165::bstring owner1166::obj usertype1167::obj type1168::obj pname1169::obj descriptor1170::obj pool1171::obj attributes1172::obj) (instantiate::field (flags flags1164) (name name1165) (owner owner1166) (usertype usertype1167) (type type1168) (pname pname1169) (descriptor descriptor1170) (pool pool1171) (attributes attributes1172)))
 (define-inline (field?::bool obj::obj) ((@ isa? __object) obj (@ field jas_classfile)))
 (define (field-nil::field) (class-nil (@ field jas_classfile)))
 (define-inline (field-attributes::obj o::field) (with-access::field o (attributes) attributes))
@@ -302,7 +302,7 @@
 (define-inline (field-flags-set! o::field v::obj) (with-access::field o (flags) (set! flags v)))
 
 ;; method
-(define-inline (make-method::method flags1202::obj name1203::bstring owner1204::obj usertype1205::obj type1206::obj pname1207::obj descriptor1208::obj pool1209::obj attributes1210::obj) (instantiate::method (flags flags1202) (name name1203) (owner owner1204) (usertype usertype1205) (type type1206) (pname pname1207) (descriptor descriptor1208) (pool pool1209) (attributes attributes1210)))
+(define-inline (make-method::method flags1154::obj name1155::bstring owner1156::obj usertype1157::obj type1158::obj pname1159::obj descriptor1160::obj pool1161::obj attributes1162::obj) (instantiate::method (flags flags1154) (name name1155) (owner owner1156) (usertype usertype1157) (type type1158) (pname pname1159) (descriptor descriptor1160) (pool pool1161) (attributes attributes1162)))
 (define-inline (method?::bool obj::obj) ((@ isa? __object) obj (@ method jas_classfile)))
 (define (method-nil::method) (class-nil (@ method jas_classfile)))
 (define-inline (method-attributes::obj o::method) (with-access::method o (attributes) attributes))
@@ -325,7 +325,7 @@
 (define-inline (method-flags-set! o::method v::obj) (with-access::method o (flags) (set! flags v)))
 
 ;; attribute
-(define-inline (make-attribute::attribute type1197::obj name1198::obj size1199::obj info1200::obj) (instantiate::attribute (type type1197) (name name1198) (size size1199) (info info1200)))
+(define-inline (make-attribute::attribute type1149::obj name1150::obj size1151::obj info1152::obj) (instantiate::attribute (type type1149) (name name1150) (size size1151) (info info1152)))
 (define-inline (attribute?::bool obj::obj) ((@ isa? __object) obj (@ attribute jas_classfile)))
 (define (attribute-nil::attribute) (class-nil (@ attribute jas_classfile)))
 (define-inline (attribute-info::obj o::attribute) (with-access::attribute o (info) info))
@@ -338,7 +338,7 @@
 (define-inline (attribute-type-set! o::attribute v::obj) (with-access::attribute o (type) (set! type v)))
 
 ;; classfile
-(define-inline (make-classfile::classfile current-method1184::obj globals1185::obj pool1186::obj pool-size1187::obj pooled-names1188::obj flags1189::obj me1190::obj super1191::obj interfaces1192::obj fields1193::obj methods1194::obj attributes1195::obj) (instantiate::classfile (current-method current-method1184) (globals globals1185) (pool pool1186) (pool-size pool-size1187) (pooled-names pooled-names1188) (flags flags1189) (me me1190) (super super1191) (interfaces interfaces1192) (fields fields1193) (methods methods1194) (attributes attributes1195)))
+(define-inline (make-classfile::classfile current-method1136::obj globals1137::obj pool1138::obj pool-size1139::obj pooled-names1140::obj flags1141::obj me1142::obj super1143::obj interfaces1144::obj fields1145::obj methods1146::obj attributes1147::obj) (instantiate::classfile (current-method current-method1136) (globals globals1137) (pool pool1138) (pool-size pool-size1139) (pooled-names pooled-names1140) (flags flags1141) (me me1142) (super super1143) (interfaces interfaces1144) (fields fields1145) (methods methods1146) (attributes attributes1147)))
 (define-inline (classfile?::bool obj::obj) ((@ isa? __object) obj (@ classfile jas_classfile)))
 (define (classfile-nil::classfile) (class-nil (@ classfile jas_classfile)))
 (define-inline (classfile-attributes::obj o::classfile) (with-access::classfile o (attributes) attributes))

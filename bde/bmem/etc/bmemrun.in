@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Sat Oct 13 08:43:44 2012 (serrano)                */
+#*    Last change :  Sat Oct 13 08:49:36 2012 (serrano)                */
 #*    Copyright   :  2003-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
@@ -32,7 +32,7 @@ while : ; do
       exit 0;;
 
     -u|-unsafe|--unsafe)
-      export BMEMUNSAFE=u;;
+      export BMEMUNSAFE=_u;;
 
     *)
       exe=$1;

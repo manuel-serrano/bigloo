@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 19 14:33:36 2005                          */
-;*    Last change :  Fri Feb  3 14:28:35 2012 (serrano)                */
+;*    Last change :  Mon Oct 15 08:12:08 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The initialization part of the AST                               */
@@ -40,9 +40,7 @@
 	    backend_init
 	    backend_c_emit
 	    backend_c_prototype
-	    backend_c_main
-	    cgen_cop
-	    cgen_cgen)
+	    backend_c_main)
    
    (export (ast-initializers::pair-nil)))
    

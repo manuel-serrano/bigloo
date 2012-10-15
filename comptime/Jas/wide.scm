@@ -58,7 +58,7 @@
        (cons cop (u2 (pool-method classfile (car args)))) )
       ((185) ; INVOKEINTERFACE
        (let ( (m (car args)) )
-        (with-access::fun (method-type m) (targs)
+        (with-access::JasFun (method-type m) (targs)
            (cons cop (append (u2 (pool-interface-method classfile m))
                              (list (+fx 1 (apply + (map type-size targs)))
                                    0) )))))
@@ -73,7 +73,7 @@
        (match-case args
 	  ((?beg ?end ?name ?type ?index)
 	   (list cop beg end (pool-name classfile name)
-		 (pool-name classfile (type-code type))
+		 (pool-name classfile (JasType-code type))
 		 index ))
 	  (else (jas-error classfile "bad localvar args" args)) ))
       (else (cons cop args)) ))

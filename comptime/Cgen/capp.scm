@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Thu Mar 17 14:58:44 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 15 08:07:34 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -49,7 +49,7 @@
 		      (fun (csetq-value fcop))
 		      (arg (csetq-value vcop)))))
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux))
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc  loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -68,7 +68,7 @@
 					    (variable faux)))
 				    (arg (csetq-value vcop))))))))))
 	    ((and (csetq? fcop) (eq? (varc-variable (csetq-var fcop)) faux))
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -87,7 +87,7 @@
 					    (loc loc)
 					    (variable vaux)))))))))))
 	    (else
-	     (instantiate::block
+	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
 			 (loc loc)
@@ -134,7 +134,7 @@
 				    (args (reverse! new-actuals))
 				    (strength strength)
 				    (type type)))
-			   (instantiate::block
+			   (instantiate::cblock
 			      (loc  loc)
 			      (body (instantiate::csequence
 				       (loc loc)
@@ -153,7 +153,7 @@
 						  (strength strength)
 						  (type type))))))))))
 		    (let ((cfun cop))
-		       (instantiate::block
+		       (instantiate::cblock
 			  (loc  loc)
 			  (body (instantiate::csequence
 				   (loc loc)
@@ -249,7 +249,7 @@
 		 ;; do it at the beginning of the lexical block that will bind
 		 ;; the actual parameter and that's it. nothing more.
 		 (let ((loc (app-loc node)))
-		    (instantiate::block
+		    (instantiate::cblock
 		       (loc  loc)
 		       (body (instantiate::csequence
 				(loc loc)
@@ -317,7 +317,7 @@
 		 ;; do it at the beginning of the lexical block that will bind
 		 ;; the actual parameter and that's it. nothing more.
 		 (let ((loc (app-loc node)))
-		    (instantiate::block
+		    (instantiate::cblock
 		       (loc  loc)
 		       (body (instantiate::csequence
 				(loc loc)

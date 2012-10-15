@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Sat Oct 13 08:44:45 2012 (serrano)                */
+/*    Last change :  Sat Oct 13 08:48:00 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -305,19 +305,20 @@ bmem_init_inner() {
    void *hdl;
    char bigloo_lib[ 1000 ];
    char gc_lib[ 1000 ];
-   char *safe = "_s";
+   char *bglsafe = "_s";
 
    /* Hello world */
    fprintf( stderr, "Bmem initialization...\n" );
    
    if( getenv( "BMEMUNSAFE" ) ) {
-      safe = getenv( "BMEMUNSAFE" );
+      bglsafe = getenv( "BMEMUNSAFE" );
    }
+   
    if( getenv( "BMEMLIBBIGLOO" ) ) {
       strcpy( bigloo_lib, getenv( "BMEMLIBBIGLOO" ) );
    } else {
-      sprintf( bigloo_lib, "%s/libbigloo_s-%s.%s",
-	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
+      sprintf( bigloo_lib, "%s/libbigloo%s-%s.%s",
+	       LIBRARY_DIRECTORY, bglsafe, BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }
 

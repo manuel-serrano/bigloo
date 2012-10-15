@@ -2,10 +2,10 @@
    (import type_type ast_var ast_node
 	   saw_defs )
    (export (block-ordering::pair-nil b::block))
-   (include "SawMill/blockorder.sch")
-   (static (wide-class done::block)
-	   (wide-class rdone::block)
-	   (wide-class dfs::block n::int) ))
+   (cond-expand ((not bigloo-class-generate) (include "SawMill/blockorder.sch")))
+   (static (wide-class SawDone::block)
+	   (wide-class SawRdone::block)
+	   (wide-class SawDfs::block n::int) ))
 
 (define *blockordering* 'reverse-dfs)
 
@@ -20,9 +20,9 @@
 (define (dfs-ordering::pair-nil b::block) ;(list block)
    (let ( (r '()) )
       (let dfs ( (b b) )
-	 (widen!::done b)
+	 (widen!::SawDone b)
 	 (set! r (cons b r))
-	 (for-each (lambda (s) (if (not (done? s)) (dfs s)))
+	 (for-each (lambda (s) (if (not (SawDone? s)) (dfs s)))
 		   (block-succs b) ))
       (reverse! r) ))
 
@@ -33,18 +33,18 @@
 (define (rdfs-ordering::pair-nil b::block) ;(list block)
    (let ( (r '()) )
       (define (visit b::block)
-	 (widen!::rdone b)
+	 (widen!::SawRdone b)
 	 (set! r (cons b r))
 	 ;; CARE elements of predecessors are always not done
-	 (for-each (lambda (s) (if (not (rdone? s)) (visit s)))
+	 (for-each (lambda (s) (if (not (SawRdone? s)) (visit s)))
 		   (predecessors b) ))
       ;; Grab blocks backward from exit points of the graph
-      (for-each (lambda (s) (if (not (rdone? s)) (visit s))) (find-exit b))
+      (for-each (lambda (s) (if (not (SawRdone? s)) (visit s))) (find-exit b))
       ;; Grab all blocks not visited (i.e. loops)
       (let dfs ( (b b) )
-	 (if (not (rdone? b)) (set! r (cons b r)))
-	 (widen!::done b)
-	 (for-each (lambda (s) (if (not (done? s)) (dfs s))) (block-succs b)) )
+	 (if (not (SawRdone? b)) (set! r (cons b r)))
+	 (widen!::SawDone b)
+	 (for-each (lambda (s) (if (not (SawDone? s)) (dfs s))) (block-succs b)) )
       ; put b in front and failures in back
       (let walk ( (l r) (prev '()) (lastfail '()) )
 	 (let ( (x (car l)) )
@@ -73,7 +73,7 @@
 (define (find-exit b::block) ;()
    (let ( (rets '()) (fails '()) (n 0) )
       (let dfs ( (b b) )
-	 (widen!::dfs b (n n))
+	 (widen!::SawDfs b (n n))
 	 (set! n (+fx n 1))
 	 ;; CARE bizzare un code mettait dans fails les blocks sans
 	 ;; predecesseurs.....
@@ -82,22 +82,22 @@
 		(if (rtl_return? fun)
 		    (set! rets (cons b rets))
 		    (set! fails (cons b fails)) )))
-	 (for-each (lambda (s) (if (not (dfs? s)) (dfs s))) (block-succs b)) )
+	 (for-each (lambda (s) (if (not (SawDfs? s)) (dfs s))) (block-succs b)) )
       (append rets fails) ))
 
 ;; 
 (define (predecessors b::block) ;()
-   (sort (filter (lambda (x) (not (rdone? x))) (block-preds b))
+   (sort (filter (lambda (x) (not (SawRdone? x))) (block-preds b))
 	 lengthuncolsucc<=? ))
 
 (define (lengthuncolsucc<=? b1 b2) ;()
    (let ( (n1 (lengthuncolsucc b1)) (n2 (lengthuncolsucc b2)) )
       (cond ((< n1 n2) #t)
 	    ((> n1 n2) #f)
-	    (else (> (dfs-n b1) (dfs-n b2))) )))
+	    (else (> (SawDfs-n b1) (SawDfs-n b2))) )))
 
 (define (lengthuncolsucc b::block) ;()
-   (length (filter (lambda (x) (not (rdone? x))) (block-succs b))) )
+   (length (filter (lambda (x) (not (SawRdone? x))) (block-succs b))) )
 
 ;;
 ;; Reverse Path Search Ordering
@@ -105,12 +105,12 @@
 (define (rpath-ordering::pair-nil b::block) ;(list block)
    (let ( (r '()) )
       (define (visit b::block)
-	 (widen!::rdone b)
+	 (widen!::SawRdone b)
 	 (set! r (cons b r))
 	 (let ( (l (predecessors b)) )
 	    (if (pair? l)
 		(begin 
-		   (if (rdone? (car l)) (error 'rpath "impossible" '()))
+		   (if (SawRdone? (car l)) (error 'rpath "impossible" '()))
 		   (visit (car l)) ))))
       ;; Grab blocks backward from exit points of the graph
       (let walk ( (l (find-end b)) )
@@ -145,7 +145,7 @@
 (define (find-end b::block) ;()
    (let ( (rets '()) (fails '()) (n 0) )
       (let dfs ( (b b) )
-	 (widen!::dfs b (n n))
+	 (widen!::SawDfs b (n n))
 	 (set! n (+fx n 1))
 	 ;; CARE bizzare un code mettait dans fails les blocks sans
 	 ;; predecesseurs.....
@@ -154,6 +154,6 @@
 		(if (rtl_return? fun)
 		    (set! rets (cons b rets))
 		    (set! fails (cons b fails)) )))
-	 (for-each (lambda (s) (if (not (dfs? s)) (dfs s))) (block-succs b)) )
+	 (for-each (lambda (s) (if (not (SawDfs? s)) (dfs s))) (block-succs b)) )
       (append rets fails) ))
 

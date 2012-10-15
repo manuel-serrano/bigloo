@@ -22,8 +22,8 @@
    (export (saw-cheader)
 	   (saw-cgen b::cvm v::global)
 	   (saw-cepilogue))
-   (include "SawC/code.sch")
-   (static (wide-class ireg::rtl_reg index)) )
+   (cond-expand ((not bigloo-class-generate) (include "SawC/code.sch")))
+   (static (wide-class SawCIreg::rtl_reg index)) )
 
 (define *comment* #f)
 (define *trace* #f)
@@ -112,8 +112,8 @@
 		(if (eq? id 'push-before!) (set! *haspushbefore* #t)) )))
       (define (expr->ireg e)
 	 (cond
-	    ((ireg? e))
-	    ((rtl_reg? e) (widen!::ireg e (index n))
+	    ((isa? e SawCIreg))
+	    ((rtl_reg? e) (widen!::SawCIreg e (index n))
 			  (set! n (+fx n 1))
 			  (set! regs (cons e regs)) )
 	    (else (check_fun (rtl_ins-fun e))
@@ -144,8 +144,8 @@
    (display (make-typed-declaration (rtl_reg-type reg) (reg_name reg))) )
 
 (define (reg_name reg) ;()
-   (string-append (if (ireg-var reg) "V" "R")
-		  (integer->string (ireg-index reg)) ))
+   (string-append (if (SawCIreg-var reg) "V" "R")
+		  (integer->string (SawCIreg-index reg)) ))
 
 (define (declare-regs l) ;()
    (for-each (lambda (r)
@@ -224,13 +224,13 @@
 			(cdr args) ))))
 
 (define (gen-reg reg) ;()
-   (if (ireg? reg)
+   (if (isa? reg SawCIreg)
        (gen-reg/dest reg)
        (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg)) ))
 
 (define (gen-reg/dest reg) ;()
-   (display (if (ireg-var reg) "V" "R"))
-   (display (ireg-index reg)) )
+   (display (if (SawCIreg-var reg) "V" "R"))
+   (display (SawCIreg-index reg)) )
 
 ;;
 ;; Special cases of gen-expr

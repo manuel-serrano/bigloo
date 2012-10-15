@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri May 11 12:18:42 2012 (serrano)                */
+;*    Last change :  Mon Oct 15 08:02:50 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -167,7 +167,8 @@
       (when *unsafe-library* (register-srfi! 'bigloo-unsafe-library))
       (when *unsafe-eval* (register-srfi! 'bigloo-unsafe-eval))
       (when *unsafe-version* (register-srfi! 'bigloo-unsafe-version))
-      
+      (when (eq? *pass* 'classgen) (register-srfi! 'bigloo-class-generate))
+
       ;; we install macros ...
       (install-initial-expander)
 
@@ -182,10 +183,6 @@
 	     (units    (profile module (produce-module! module))))
 
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
-
-	 ;; do it again because it might have been changed in a module option
-	 (when (eq? *pass* 'classgen)
-	    (register-srfi! 'bigloo-class-generate))
 
 	 ;; the prof initilization code
 	 (if (>=fx *profile-mode* 1)

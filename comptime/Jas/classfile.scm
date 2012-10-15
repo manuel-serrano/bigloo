@@ -1,18 +1,18 @@
 (module jas_classfile
    (import jas_lib)
-   (include "Jas/classfile.sch")
+   (cond-expand ((not bigloo-class-generate) (include "Jas/classfile.sch")))
    (export
-    (class type
+    (class JasType
        code::bstring
        (vect (default #f)) )
 
-    (class basic::type)
+    (class basic::JasType)
 
-    (class vect::type type::type)
+    (class vect::JasType type::JasType)
 
-    (class fun::type tret::type targs)
+    (class JasFun::JasType tret::JasType targs)
     
-    (class classe::type
+    (class classe::JasType
        flags                 ;; int
        name                  ;; qualified name "java.lang.Object"
        (pool (default #f)) ) ;; pool index to a class info
@@ -22,7 +22,7 @@
        name::bstring             ;; name of the field/method
        owner                     ;; user classe name
        usertype                  ;; symbolic type 
-       (type (default #f))       ;; type::type 
+       (type (default #f))       ;; type::JasType 
        (pname (default #f))      ;; pool index to a UTF8 unqualified name
        (descriptor (default #f)) ;; pool index to a UTF8 encoded type
        (pool (default #f))       ;; pool index to a field/method info
@@ -55,9 +55,9 @@
     (jas-error   ::classfile ::bstring ::obj)
     (jas-warning ::classfile ::bstring ::obj)
 
-    (as-type::type   ::classfile ::obj)
-    (as-funtype::fun ::classfile ::obj ::obj)
-    (type-size::int  ::type)
+    (as-type::JasType   ::classfile ::obj)
+    (as-funtype::JasFun ::classfile ::obj ::obj)
+    (type-size::int  ::JasType)
 
     (as-assign                  ::classfile ::symbol ::obj)
     (declared-class::classe     ::classfile ::symbol)
@@ -72,7 +72,7 @@
     (pool-double::int           ::classfile ::double)
     (pool-class::int            ::classfile ::classe)
     (pool-class-by-name::int    ::classfile ::symbol)
-    (pool-class-by-reftype::int ::classfile ::type)
+    (pool-class-by-reftype::int ::classfile ::JasType)
     (pool-string::int           ::classfile ::bstring)
     (pool-field::int            ::classfile ::field)
     (pool-method::int           ::classfile ::method)
@@ -106,10 +106,10 @@
 
 (define pourquoi_tant_de_haine (cdr (assq 'byte basic-encoded-type)))
 
-(type-vect-set! pourquoi_tant_de_haine
-		(instantiate::vect
-		       (code "[B")
-		       (type pourquoi_tant_de_haine) ))
+(JasType-vect-set! pourquoi_tant_de_haine
+   (instantiate::vect
+      (code "[B")
+      (type pourquoi_tant_de_haine) ))
 
 (define (as-type classfile typedecl)
    (define (declared-class? name)
@@ -130,7 +130,7 @@
 	  (else (jas-error classfile "bad type" typedecl)) ))))
 
 (define (get-vect-type type)
-   (with-access::type type (vect code)
+   (with-access::JasType type (vect code)
       (if vect
 	  vect
 	  (let ( (r (instantiate::vect
@@ -142,16 +142,16 @@
 (define (as-funtype classfile tret targs)
    (let ( (tret (as-type classfile tret))
 	  (targs (map (lambda (t) (as-type classfile t)) targs)) )
-      (instantiate::fun
+      (instantiate::JasFun
 	 (code (string-append "("
-			      (apply string-append (map type-code targs))
-			      ")" (type-code tret)))
+			      (apply string-append (map JasType-code targs))
+			      ")" (JasType-code tret)))
 	 (tret tret)
 	 (targs targs) )))
 
 
 (define (type-size type)
-   (let ( (code (type-code type)) )
+   (let ( (code (JasType-code type)) )
       (let ( (n (string-length code)) )
 	 (if (=fx n 1)
 	     (case (string-ref code 0)
@@ -279,7 +279,7 @@
 
 (define (pool-class-by-reftype classfile reftype)
    (if (vect? reftype)
-       (let ( (pname (pool-name classfile (type-code reftype))) )
+       (let ( (pname (pool-name classfile (JasType-code reftype))) )
 	  (pool-get! classfile 7 (list pname)) )
        (pool-class classfile reftype) ))
 
@@ -300,7 +300,7 @@
       (if pool
 	  pool
 	  (let* ( (pn (pool-name classfile name))
-		  (pt (pool-name classfile (type-code type)))
+		  (pt (pool-name classfile (JasType-code type)))
 		  (c  (pool-class-by-name classfile owner))
 		  (d (pool-get! classfile 12 (list pn pt)))
 		  (r (pool-get! classfile tag (list c d))) )
@@ -317,4 +317,4 @@
    (with-access::field-or-method fm (pool name type pname descriptor)
       (unless pool
 	 (set! pname (pool-name classfile name))
-	 (set! descriptor (pool-name classfile (type-code type))) )))
+	 (set! descriptor (pool-name classfile (JasType-code type))) )))

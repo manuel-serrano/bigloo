@@ -32,7 +32,7 @@
 		    ((179) n)
 		    ((181) (+fx n 1)) )))
 	     ((182 183 184 185) ;; INVOKE**
-	      (with-access::fun (method-type (car args)) (tret targs)
+	      (with-access::JasFun (method-type (car args)) (tret targs)
 		 (let ( (n (apply + (map type-size targs))) )
 		    (if (=fx cop 184) n (+fx n 1)) )))
 	     ((197) ;; MULTIANEWARRAY
@@ -62,7 +62,7 @@
 	     ((178 180) ;; GET[FIELD|STATIC]
 	      (type-size (field-type (car args))) )
 	     ((182 183 184 185) ;; INVOKE**
-	      (with-access::fun (method-type (car args)) (tret)
+	      (with-access::JasFun (method-type (car args)) (tret)
 		 (type-size tret) ))
 	     (else (jas-error classfile "bad cop for push" cop)) )
 	  n )))
