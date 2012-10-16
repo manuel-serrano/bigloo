@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Mon Oct 15 21:33:07 2012 (serrano)                */
+;*    Last change :  Tue Oct 16 07:48:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -235,10 +235,12 @@
 ;*    Open a timeouted file.                                           */
 ;*---------------------------------------------------------------------*/
 (define (open-file url o::alsamusic)
-   (with-access::alsamusic o (timeout)
-      (let ((pi (open-input-file url #f timeout)))
-	 (input-port-timeout-set! pi timeout)
-	 pi)))
+   (with-handler
+      (lambda (e) #f)
+      (with-access::alsamusic o (timeout)
+	 (let ((pi (open-input-file url #f timeout)))
+	    (input-port-timeout-set! pi timeout)
+	    pi))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-play ::alsamusic ...                                       */
@@ -303,9 +305,7 @@
 	      playlist::pair-nil notify::bool)
       (with-access::alsamusic o (%amutex inbuf %buffer onevent onerror
 				   mkthread %status)
-	 (let ((ip (with-handler
-		      (lambda (e) #f)
-		      (open-file url o))))
+	 (let ((ip (open-file url o)))
 	    (if (input-port? ip)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
@@ -321,7 +321,8 @@
 			    (with-handler
 			       (lambda (e)
 				  (exception-notify e)
-				  (onerror o e))
+				  (onerror o e)
+				  (sleep *error-sleep-duration*))
 			       (let loop ((buffer buffer)
 					  (playlist playlist))
 				  (unwind-protect
@@ -343,7 +344,8 @@
 		  (instantiate::&io-port-error
 		     (proc "music-play")
 		     (msg "Cannot open")
-		     (obj url)))))))
+		     (obj url)))
+	       (sleep *error-sleep-duration*)))))
    
    (define (play-url-mmap o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)

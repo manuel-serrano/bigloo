@@ -4,14 +4,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Fri Jun 29 19:19:04 2012 (serrano)                */
+#*    Last change :  Tue Oct 16 08:27:39 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
 #*=====================================================================*/
 
 # configuration and variables
-version=3.8d
+version=3.9a
 minor=
 
 bglprefix=/opt/bigloo
