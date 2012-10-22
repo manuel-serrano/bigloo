@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Fri Jun  1 16:14:39 2012 (serrano)                */
+#*    Last change :  Mon Oct 22 07:39:40 2012 (serrano)                */
 #*    Copyright   :  2001-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -13,8 +13,8 @@ include /users/serrano/prgm/project/bigloo/Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Official release (not necessarily the configured release)        */
 #*---------------------------------------------------------------------*/
-OFFICIALRELEASE	= 3.8c
-OFFICIALDATE	= Jun 2012
+OFFICIALRELEASE	= 3.9a
+OFFICIALDATE	= Oct 2012
 
 #*---------------------------------------------------------------------*/
 #*    Destination                                                      */

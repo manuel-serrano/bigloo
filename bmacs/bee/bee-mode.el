@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Apr 18 06:07:55 2011 (serrano)                */
+;*    Last change :  Sun Oct 21 10:00:14 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee mode declaration.                                        */
 ;*=====================================================================*/
@@ -93,7 +93,7 @@
     ;; Other atom delimiters
     (modify-syntax-entry ?\( "()  " local-syntax-table)
     (modify-syntax-entry ?\) ")(  " local-syntax-table)
-    (if (< bmacs-emacs-version 22)
+    (if (or t (< bmacs-emacs-version 22))
 	(modify-syntax-entry ?\; "<   " local-syntax-table)
       (modify-syntax-entry ?\; "< 2 " local-syntax-table))
     (modify-syntax-entry ?\" "\"    " local-syntax-table)
@@ -103,7 +103,7 @@
 
     ;; Special characters
     (modify-syntax-entry ?, "'   " local-syntax-table)
-    (if (< bmacs-emacs-version 22)
+    (if (or t (< bmacs-emacs-version 22))
 	(modify-syntax-entry ?# "'   " local-syntax-table)
       (modify-syntax-entry ?# "' 14b" local-syntax-table))
     (modify-syntax-entry ?\\ "\\   " local-syntax-table)

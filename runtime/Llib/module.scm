@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Sep 30 19:31:15 2011 (serrano)                */
-;*    Copyright   :  2009-11 Manuel Serrano                            */
+;*    Last change :  Fri Oct 19 08:13:11 2012 (serrano)                */
+;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */
@@ -171,7 +171,8 @@
 			     "access redefinition -- " module " ["
 			     (cdr cell) " " files "] for directory \"" abase
 			     "\"")
-		    (set-cdr! cell files)))))))
+		    ;; MS 19oct2012: care don't what to do here
+		    '(set-cdr! cell files)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-add-access! ...                                           */
