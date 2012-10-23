@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Sat Oct 13 07:36:11 2012 (serrano)                */
+;*    Last change :  Tue Oct 23 11:36:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -819,19 +819,13 @@
       ((null? l)
        #t)
       ((null? (cdr l))
-       (let loop ((l (car l))
-		  (lv #t))
-	  (if (null? l)
-	      lv
-	      (let ((nv (pred (car l))))
-		 (and nv (loop (cdr l) nv))))))
+       (let loop ((l (car l)))
+	  (or (null? l)
+	      (and (pred (car l)) (loop (cdr l))))))
       (else
-       (let loop ((l l)
-		  (lv #t))
-	  (if (null? (car l))
-	      lv
-	      (let ((nv (apply pred (map car l))))
-		 (and nv (loop (map cdr l) nv))))))))
+       (let loop ((l l))
+	  (or (null? (car l))
+	      (and (apply pred (map car l)) (loop (map cdr l))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    any ...                                                          */
@@ -844,14 +838,12 @@
        (let loop ((l (car l)))
 	  (if (null? l)
 	      #f
-	      (or (pred (car l))
-		  (loop (cdr l))))))
+	      (or (pred (car l)) (loop (cdr l))))))
       (else
        (let loop ((l l))
 	  (if (null? (car l))
 	      #f
-	      (or (apply pred (map car l))
-		  (loop (map cdr l))))))))
+	      (or (apply pred (map car l)) (loop (map cdr l))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find ...                                                         */

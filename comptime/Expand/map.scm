@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Sat Oct 13 08:40:45 2012 (serrano)                */
+;*    Last change :  Tue Oct 23 11:36:12 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
@@ -502,49 +502,44 @@
    (match-case x
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
-	      (lv    (mark-symbol-non-user! (gensym 'lv)))
 	      (lname (mark-symbol-non-user! (gensym 'every)))
 	      (loc   (find-location x))
 	      (loop  (if *unsafe-type*
-			 `(let ,lname ((,l ,list)
-				       (,lv #t))
+			 `(let ,lname ((,l ,list))
 			       (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
-				   ,lv
+				   #t
 				   (let ((nv (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))))
-				      (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l) nv)))))
+				      (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))))))
 			 `(let ,lname ((,l ,list))
 			       (cond
 				  (((@ null? __r4_pairs_and_lists_6_3) ,l)
 				   #t)
 				  (((@ pair? __r4_pairs_and_lists_6_3) ,l)
-				   (if (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
-				       (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))
-				       #f))
+				   (let ((nv (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))))
+				      (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))
 				  (else
 				   ,(list-expected "every" l loc)))))))
 	  (let ((res (e loop e)))
 	     (epairify! x res))))
       ((?- ?fun ?list)
        (let* ((l     (mark-symbol-non-user! (gensym 'l)))
-	      (lv    (mark-symbol-non-user! (gensym 'lv)))
 	      (lname (mark-symbol-non-user! (gensym 'every)))
 	      (lfun  (mark-symbol-non-user! (gensym 'fun)))
 	      (loc   (find-location x))
 	      (loop  `(let ((,lfun ,fun))
 			 ,(if *unsafe-type*
-			      `(let ,lname ((,l ,list)
-					    (,lv #t))
+			      `(let ,lname ((,l ,list))
 				    (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
-					,lv
+					#t
 					(let ((nv (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))))
-					   (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l) nv)))))
+					   (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l))))))
 			      `(let ,lname ((,l ,list))
 				    (cond
 				       (((@ null? __r4_pairs_and_lists_6_3) ,l)
 					#t)
 				       (((@ pair? __r4_pairs_and_lists_6_3) ,l)
 					(let ((nv (,lfun ((@ car __r4_pairs_and_lists_6_3) ,l))))
-					   (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l) nv))))
+					   (and nv (,lname ((@ cdr __r4_pairs_and_lists_6_3) ,l)))))
 				       (else
 					,(list-expected "every" l loc))))))))
 	  (let ((res (e loop e)))
