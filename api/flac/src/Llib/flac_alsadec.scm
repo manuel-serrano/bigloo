@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Sep 12 08:10:21 2012 (serrano)                */
+;*    Last change :  Tue Oct 23 07:30:07 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -20,11 +20,13 @@
    
    (import __flac_flac)
    
-   (extern (macro $flac-blit-string!::void
-	      (::string ::long ::string ::long ::long) "BGL_FLAC_BLIT_STRING")
-	   (macro $ref::byte
-	      (::string ::long) "BGL_FLAC_STRING_REF")
-	   (export flac-checksum-debug "bgl_flac_checksum_debug"))
+   (cond-expand
+      ((library alsa)
+       (extern (macro $flac-blit-string!::void
+		  (::string ::long ::string ::long ::long) "BGL_FLAC_BLIT_STRING")
+	       (macro $ref::byte
+		  (::string ::long) "BGL_FLAC_STRING_REF")
+	       (export flac-checksum-debug "bgl_flac_checksum_debug"))))
    
    (static (class flac-alsa::flac-decoder
 	      (%alsamusic (default #f))
