@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Mon Apr  2 09:54:30 2012 (serrano)                */
+;*    Last change :  Wed Oct 24 17:03:17 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -128,13 +128,13 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
 		 "\\|define-service\\|define-parameter\\|define-preferences"
 		 "\\|define-tag"
-		 "\\|define-command\\)[ ]+\\(\(.*\)\\|[^ \n]+\\)\\)[ \n]")
+		 "\\|define-command\\)[ ]+[^ ]+\\)[ \n]")
 	 1
 	 'font-lock-function-name-face)
    (list "\(\\(\\(?:module\\|interface\\)[ ]+[^ \n]+\\)[ \t\n]"
          1
 	 'ude-font-lock-face-1)
-   (list "\(\\(directives\\)"
+   (list "\(\\(directives\\|define\\)"
          1
 	 'ude-font-lock-face-1)
    (list "[']\\([^ ),[(#]\\([^ \n\t[()#]\\|]\\)*\\)"
@@ -157,7 +157,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'ude-font-lock-face-3)
    (cons "~\\|with-hop" 'ude-font-lock-face-8)
    (cons "[$][^( \t\n]*" 'ude-font-lock-face-10)
-   (list (concat "\(\\(let\\|let[*]\\|letrec[*]\\|co-instantiate\\|define"
+   (list (concat "\(\\(let\\|let[*]\\|letrec[*]\\|co-instantiate"
 		 "\\|let-values\\|let*-values"
 		 "\\|set[!]\\|with-access\\|instantiate\\|duplicate"
 		 "\\|widen[!]\\|shrink!\\|lambda\\|service\\|labels"
