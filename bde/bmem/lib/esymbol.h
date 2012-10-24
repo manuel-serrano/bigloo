@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:37:24 2003                          */
-/*    Last change :  Fri Apr 25 10:02:53 2003 (serrano)                */
-/*    Copyright   :  2003 Manuel Serrano                               */
+/*    Last change :  Wed Oct 24 08:40:55 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Extended symbols                                                 */
 /*=====================================================================*/
@@ -16,6 +16,7 @@ typedef struct esymbol {
    struct  symbol symbol;
    void   *alloc_info;
    int     class_alloc; 
+   int     class_offset; 
    int     stamp;
 } esymbol_t;
 

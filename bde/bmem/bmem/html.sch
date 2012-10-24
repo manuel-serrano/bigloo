@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb  8 08:57:06 2003                          */
-;*    Last change :  Sat Feb 25 05:46:55 2006 (serrano)                */
-;*    Copyright   :  2003-06 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 11:19:37 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile-time HTML expansion. The purpose of this include file is */
 ;*    to avoid consing for calling HTML functions.                     */
@@ -177,12 +177,8 @@
 		      (list
 		       (html-tr
 			(list
-			 (html-td :align "left"
-				  :valign "top"
-				  ,margin)
-			 (html-td :align "left"
-				  :valign "top"
-				  (list ,@body))))))
+			 (html-td :align "left" :valign "top" ,margin)
+			 (html-td :align "left" :valign "top" (list ,@body))))))
 		    e)
 		 (e `(html-two-columns :id ,w (list ,margin ,@body)) e))))
 	 (else

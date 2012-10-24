@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Thu Aug 12 06:00:30 2010 (serrano)                */
-/*    Copyright   :  2003-10 Manuel Serrano                            */
+/*    Last change :  Wed Oct 24 10:13:21 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
 /*=====================================================================*/
@@ -81,7 +81,7 @@ gc_alloc_size_add( int size ) {
 /*---------------------------------------------------------------------*/
 static void
 GC_dump_gc( gc_info_t *i, FILE *f ) {
-   fprintf( f, "    (%lu %lu %lu %lu)\n",
+   fprintf( f, "    (%lu #l%lu #l%lu #l%lu)\n",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
 	    BMEMSIZE( i->heap_size ),

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 10:48:45 2003                          */
-;*    Last change :  Tue Nov 15 21:34:34 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 12:08:57 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualizing allocation classified by types                       */
 ;*=====================================================================*/
@@ -31,10 +31,10 @@
       (lambda (nb-types)
 	 (if (>fx nb-types (vector-length v))
 	     (begin
-		(set! v (make-vector nb-types 0))
+		(set! v (make-vector nb-types #l0))
 		v)
 	     (begin
-		(vector-fill! v 0)
+		(vector-fill! v #l0)
 		v)))))
 
 ;*---------------------------------------------------------------------*/
@@ -54,33 +54,32 @@
 						(let* ((t (car ti))
 						       (n (caddr ti))
 						       (o (vector-ref tvec t)))
-						   (vector-set! tvec t
-								(+fx o n))))
-					     (cdr gc)))
-				dtype)))
-		fun*)
+						   (vector-set! tvec t (+llong o n))))
+				      (cdr gc)))
+			 dtype)))
+	 fun*)
       ;; sort the types according to the allocation size
-      (let ((stypes (sort (filter (lambda (t) (>fx (cdr t) 0))
-				  (mapv (lambda (t i)
-					   (cons i t))
-					tvec))
-			  (lambda (t1 t2) (>fx (cdr t1) (cdr t2)))))
+      (let ((stypes (sort (filter (lambda (t) (>llong (cdr t) #l0))
+			     (mapv (lambda (t i)
+				      (cons i t))
+				tvec))
+		       (lambda (t1 t2) (>llong (cdr t1) (cdr t2)))))
 	    (tvec (make-type-vector nbtypes)))
 	 (for-each (lambda (t)
 		      (vector-set! tvec (car t) (cadr t)))
-		   types)
+	    types)
 	 (let ((type* (map (lambda (t)
 			      (list (car t) (cdr t) (vector-ref tvec (car t))))
-			   stypes)))
+			 stypes)))
 	    (html-table
-	     :width "100%"
-	     `(,(html-tr
-		 `(,(html-td
-		     :valign "top"
-		     (make-type-function-chart allsize type* gc* fun*))
-		   ,(html-td
-		     :valign "top"
-		     (make-type-gc-chart allsize type* gc* fun*))))))))))
+	       :width "100%"
+	       `(,(html-tr
+		     `(,(html-td
+			   :valign "top"
+			   (make-type-function-chart allsize type* gc* fun*))
+		       ,(html-td
+			   :valign "top"
+			   (make-type-gc-chart allsize type* gc* fun*))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-type-function-chart ...                                     */
@@ -88,28 +87,28 @@
 (define (make-type-function-chart allsize type* gc* fun*)
    (define (type->cell type)
       (let* ((tnum (car type))
-	     (tvalfl (exact->inexact (cadr type)))
+	     (tval (cadr type))
+	     (tvalfl (exact->inexact tval))
 	     (allsizefl (exact->inexact allsize))
 	     (operfl (/fl tvalfl allsizefl)))
 	 (map (lambda (f)
 		 (with-access::funinfo f (num ident)
 		    (let* ((size (funinfo-type-size f tnum))
-			   (sizefl (exact->inexact size))
-			   (rperfl (/fl sizefl tvalfl))
-			   (col (inexact->exact (* 100. operfl rperfl))))
-		       (list col
+			   (per (% size allsize)))
+		       (list per
 			  (string-append "function"
 			     (integer->string num))
-			  (format "~a: ~a (~a%)"
+			  (format "~a: ~a (~a% of ~a)"
 			     (function-ident-pp ident)
 			     (word->size size)
-			     (inexact->exact (*fl 100. rperfl)))))))
-	      fun*)))
+			     (%00 size allsize)
+			     (word->size tval))))))
+	    fun*)))
    (let* ((type* (filter (lambda (ty)
 			    (let* ((size (cadr ty))
 				   (size% (% size allsize)))
 			       (> size% 0)))
-			 type*))
+		    type*))
 	  (cell* (map type->cell type*))
 	  (row* (map (lambda (ty cells)
 			(let* ((size (cadr ty))
@@ -117,20 +116,27 @@
 			       (tnum (integer->string (car ty)))
 			       (id (string-append "type" tnum))
 			       (tdl (html-color-item
-				     id
-				     (type-ref (caddr ty))))
+				       id
+				       (type-ref (caddr ty))))
 			       (tds (html-td :class "size"
-					     :align "left"
-					     (format "~a% (~a)"
-						     size%
-						     (word->size size)))))
+				       :align "left"
+				       (format "~a% (~a)"
+					  size%
+					  (word->size size))))
+			       (cell% (apply + (map car cells)))
+			       (cells (append cells
+					 (list (list (- size% cell%)
+						  "function-1"
+						  (format "rest: ~a% of ~a"
+						     (- size% cell%)
+						     (word->size size)))))))
 			   (list (html-row-gauge cells tdl tds)
-				 (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
-		     type* cell*)))
+			      (html-tr (list (html-td :colspan 102 "&nbsp;"))))))
+		   type* cell*)))
       (html-profile (apply append row*)
-		    "type-function" "Type (functions)"
-		    '("type" "15%")
-		    '("memory" "20%"))))
+	 "type-function" "Type (functions)"
+	 '("type" "15%")
+	 '("memory" "20%"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-type-gc-chart ...                                           */
@@ -139,17 +145,17 @@
    (define (type->cell type)
       (let* ((tnum (car type))
 	     (allsizefl (exact->inexact allsize))
-	     (tsize 0))
+	     (tsize::llong #l0))
 	 (for-each (lambda (f)
-		      (set! tsize (+fx tsize (funinfo-type-size f tnum))))
+		      (set! tsize (+llong tsize (funinfo-type-size f tnum))))
 		   fun*)
 	 (map (lambda (gc)
 		 (let* ((n (car gc))
 			(sn (integer->string (+fx 1 n)))
-			(size 0))
+			(size::llong #l0))
 		    (for-each (lambda (f)
 				 (let ((s (funinfo-gc-type-size f tnum n)))
-				    (set! size (+fx size s))))
+				    (set! size (+llong size s))))
 			      fun*)
 		    (cond
 		       ((or (=fx tsize 0) (=fx size 0))
@@ -213,7 +219,6 @@
 ;*    bmem-type ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (bmem-type type css info gcmon funmon types)
-   (tprint "bmem-type : " (get-functions))
    (let* ((types (cdr types))
 	  (gc* (cdr gcmon))
 	  (fun* (get-functions))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Sun Oct 14 18:48:53 2012 (serrano)                */
+;*    Last change :  Tue Oct 23 18:25:55 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -335,12 +335,12 @@ of the start of the containing expression."
 (defun bee-module-indent-hook (indent-state point)
   (if (in-modulep state)
       (save-excursion
-	(if (= (1+ (cadr state)) (caddr state))
+	(if (= (1+ (cadr state)) (cadr (cdr state)))
 	    (progn
 	      (goto-char (cadr state))
 	      (+ (current-column) bee-body-indent))
 	  (progn
-	    (goto-char (caddr state))
+	    (goto-char (cadr (cdr state)))
 	    (current-column))))
     (save-excursion
       (goto-char (cadr state))

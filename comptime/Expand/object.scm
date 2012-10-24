@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Thu Mar 22 07:25:44 2012 (serrano)                */
+;*    Last change :  Tue Oct 23 19:45:06 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -253,7 +253,7 @@
 	 args slots)
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
-      `(let ((,tnew ,(make-private-sexp 'unsafe id init)))
+      `(let ((,tnew ,init))
 	  ;; actual fields
 	  ,@(filter-map (lambda (slot val)
 			   (unless (slot-virtual? slot)

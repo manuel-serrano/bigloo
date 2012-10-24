@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:11:09 2003                          */
-;*    Last change :  Fri Sep 16 15:57:38 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 11:53:58 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various facilities                                               */
 ;*=====================================================================*/
@@ -16,11 +16,12 @@
    (import  html
 	    bmem_param)
    (include "html.sch")
-   (export  (word->mb ::int)
-	    (word->kb::int ::int)
-	    (word->size::bstring ::int)
+   (export  (word->mb ::llong)
+	    (word->kb::llong ::llong)
+	    (word->size::bstring ::llong)
 	    (mapv::pair-nil ::procedure ::vector)
-	    (%::int ::int ::int)
+	    (%::int ::llong ::llong)
+	    (%00::bstring ::llong ::llong)
 	    (css-color::bstring ::int ::int ::int ::int)
 	    (html-row-gauge ::pair-nil ::obj ::obj)
 	    (html-profile ::pair-nil ::bstring ::bstring ::pair ::pair . ::obj)
@@ -31,19 +32,19 @@
 ;*    word->mb ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (word->mb val)
-   (/fl (exact->inexact (/fx (*fx 10 (word->kb val)) 1024)) 10.))
+   (/fl (exact->inexact (/llong (*llong #l100 (word->kb val)) 1024)) 100.))
 
 ;*---------------------------------------------------------------------*/
 ;*    word->kb ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (word->kb v)
-   (/fx v (/fx 1024 *sizeof-word*)))
+   (/llong v (/llong #l1024 *sizeof-word*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    word->size ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (word->size v)
-   (if (>fx v (/fx (* 1024 1024) *sizeof-word*))
+   (if (>llong v (/llong (*llong #l1024 #l1024) *sizeof-word*))
        (format "~aMB" (word->mb v))
        (format "~aKB" (word->kb v))))
        
@@ -62,11 +63,17 @@
 ;*    % ...                                                            */
 ;*---------------------------------------------------------------------*/
 (define (% v1 v2)
-   (let ((n (round (/ (* v1 100) v2))))
-      (cond
-	 ((inexact? n) (inexact->exact n))
-	 ((bignum? n) (bignum->fixnum n))
-	 (else n))))
+   (llong->fixnum (/llong (*llong v1 #l100) v2)))
+
+;*---------------------------------------------------------------------*/
+;*    %00 ...                                                          */
+;*---------------------------------------------------------------------*/
+(define (%00 v1 v2)
+   (let* ((% (/llong (*llong v1 #l10000) v2))
+	  (r (remainderllong % #l100)))
+      (if (=llong r 0)
+	  (format "~a" (/llong % #l100))
+	  (format "~a.~2,0d" (/llong % #l100) r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hsv->rgb ...                                                     */
@@ -166,14 +173,14 @@
 		     (sum 0))
 	     (if (null? cell*)
 		 (html-tr
-		  (cons tdl
-			(if (=fx total 100)
-			    (reverse! (cons tdr td*))
-			    (reverse! (cons* tdr
-					     (html-td :class "empty"
-						      :colspan (-fx 100 total)
-						      " ")
-					     td*)))))
+		    (cons tdl
+		       (if (=fx total 100)
+			   (reverse! (cons tdr td*))
+			   (reverse! (cons* tdr
+					(html-td :class "empty"
+					   :colspan (-fx 100 total)
+					   " ")
+					td*)))))
 		 (let* ((cell (car cell*))
 			(val (car cell))
 			(id (cadr cell))
@@ -235,47 +242,47 @@
 			(loop (+fx i 1) (cdr lst) (cons (car lst) r1) r2)))))
 	  (row* (apply map (lambda l
 			      (html-tr
-			       (apply append
-				      (map (lambda (v)
-					      (if v
-						  (list (html-td :class
-							   (format "sample ~a"
-							      (car v))
-								 " ")
-							(html-td (cadr v)))
-						  (list (html-td " ")
-							(html-td " "))))
-					   l))))
-		       line*))
+				 (apply append
+				    (map (lambda (v)
+					    (if v
+						(list (html-td :class
+							 (format "sample ~a"
+							    (car v))
+							 " ")
+						   (html-td (cadr v)))
+						(list (html-td " ")
+						   (html-td " "))))
+				       l))))
+		   line*))
 	  (cper (string-append
-		 (integer->string (-fx (/fx 100 nbcol) 3))
-		 "%"))
+		   (integer->string (-fx (/fx 100 nbcol) 3))
+		   "%"))
 	  (colgroup (apply
-		     append
-		     (vector->list
-		      (make-vector nbcol
-				   (list (html-colgroup :width "10px")
-					 (html-colgroup :width cper)))))))
+		       append
+		       (vector->list
+			  (make-vector nbcol
+			     (list (html-colgroup :width "10px")
+				(html-colgroup :width cper)))))))
       (html-div :class "profile"
-		(html-div :class "legend"
-			  (html-table :class class
-				      :caption caption
-				      :colgroup? colgroup
-				      :cellpadding "2px"
-				      :cellspacing "10px"
-				      :width width
-				      row*)))))
+	 (html-div :class "legend"
+	    (html-table :class class
+	       :caption caption
+	       :colgroup? colgroup
+	       :cellpadding "2px"
+	       :cellspacing "10px"
+	       :width width
+	       row*)))))
 			 
 ;*---------------------------------------------------------------------*/
 ;*    html-color-item ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (html-color-item id legend)
    (html-td :class "color-item"
-	    (html-table :class "color-item"
-			:colgroup? (list (html-colgroup :width "10px")
-					 (html-colgroup))
-			(list (html-tr
-			       (list (html-td :class id "&nbsp;")
-				     (html-td :class "legend"
-					      :align "left"
-					      legend)))))))
+      (html-table :class "color-item"
+	 :colgroup? (list (html-colgroup :width "10px")
+		       (html-colgroup))
+	 (list (html-tr
+		  (list (html-td :class id "&nbsp;")
+		     (html-td :class "legend"
+			:align "left"
+			legend)))))))

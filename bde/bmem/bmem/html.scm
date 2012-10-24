@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb  2 05:57:51 2003                          */
-;*    Last change :  Wed Nov 16 06:52:50 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 11:26:08 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Html generation                                                  */
 ;*=====================================================================*/
@@ -635,74 +635,74 @@
 ;*---------------------------------------------------------------------*/
 (define-method (out v::%html-table m::int)
    (with-access::%html-table v (id class title
-				      colgroup? thead? tfoot? tbody+ width
-				      border frame rules
-				      cellspacing cellpadding caption)
+				  colgroup? thead? tfoot? tbody+ width
+				  border frame rules
+				  cellspacing cellpadding caption)
       (with-markup "table"
-		   (make-attributes ("class" (string? class) class)
-				    ("id" (string? id) id)
-				    ("title" (string? title) title)
-				    ("width" width width)
-				    ("border" border border)
-				    ("frame" frame frame)
-				    ("rules" rules rules)
-				    ("cellspacing" cellspacing cellspacing)
-				    ("cellpadding" cellpadding cellpadding)
-				    ("caption" caption caption))
-		   m
-		   (if caption
-		       (with-oneline-markup "caption"
-					    '()
-					    (+fx m 1)
-					    (out caption (+fx m 2))))
-		   (cond
-		      ((not colgroup?)
-		       #unspecified)
-		      ((isa? colgroup? %html-colgroup)
-		       (out colgroup? (+fx m 1)))
-		      ((and (list? colgroup?)
-			    (every (lambda (c) (isa? c %html-colgroup))
-			       colgroup?))
-		       (out+ colgroup? (+fx m 1)))
-		      (else
-		       (error 'html "Illegal table colgroup" colgroup?)))
-		   (cond
-		      ((not thead?)
-		       #unspecified)
-		      ((isa? thead? %html-telement)
-		       (out thead? (+fx m 1)))
-		      ((and (list? thead?)
-			    (every (lambda (e) (isa? e %html-tr)) thead?))
-		       (with-markup "thead"
-				    '()
-				    (+fx m 1)
-				    (out+ thead? (+fx m 2))))
-		      ((isa? thead? %html-tr)
-		       (with-markup "thead"
-				    '()
-				    (+fx m 1)
-				    (out thead? (+fx m 2))))
-		      (else
-		       (error 'html "Illegal table head" thead?)))
-		   (cond
-		      ((isa? tbody+ %html-telement)
-		       (out tbody+ (+fx m 1)))
-		      ((every (lambda (e) (isa? e %html-tr)) tbody+)
-		       (out+ tbody+ (+fx m 1)))
-		      (else
-		       (error 'html "Illegal table body" tbody+)))
-		   (cond
-		      ((not tfoot?)
-		       #unspecified)
-		      ((isa? tfoot? %html-telement)
-		       (out tfoot? (+fx m 1)))
-		      ((and (list? tfoot?)
-			    (every (lambda (e) (isa? e %html-tr)) tfoot?))
-		       (out+ tfoot? (+fx m 1)))
-		      ((isa? tfoot? %html-tr)
-		       (out tfoot? (+fx m 1)))
-		      (else
-		       (error 'html "Illegal table foot" tfoot?))))))
+	 (make-attributes ("class" (string? class) class)
+	    ("id" (string? id) id)
+	    ("title" (string? title) title)
+	    ("width" width width)
+	    ("border" border border)
+	    ("frame" frame frame)
+	    ("rules" rules rules)
+	    ("cellspacing" cellspacing cellspacing)
+	    ("cellpadding" cellpadding cellpadding)
+	    ("caption" caption caption))
+	 m
+	 (if caption
+	     (with-oneline-markup "caption"
+		'()
+		(+fx m 1)
+		(out caption (+fx m 2))))
+	 (cond
+	    ((not colgroup?)
+	     #unspecified)
+	    ((isa? colgroup? %html-colgroup)
+	     (out colgroup? (+fx m 1)))
+	    ((and (list? colgroup?)
+		  (every (lambda (c) (isa? c %html-colgroup))
+		     colgroup?))
+	     (out+ colgroup? (+fx m 1)))
+	    (else
+	     (error 'html "Illegal table colgroup" colgroup?)))
+	 (cond
+	    ((not thead?)
+	     #unspecified)
+	    ((isa? thead? %html-telement)
+	     (out thead? (+fx m 1)))
+	    ((and (list? thead?)
+		  (every (lambda (e) (isa? e %html-tr)) thead?))
+	     (with-markup "thead"
+		'()
+		(+fx m 1)
+		(out+ thead? (+fx m 2))))
+	    ((isa? thead? %html-tr)
+	     (with-markup "thead"
+		'()
+		(+fx m 1)
+		(out thead? (+fx m 2))))
+	    (else
+	     (error 'html "Illegal table head" thead?)))
+	 (cond
+	    ((isa? tbody+ %html-telement)
+	     (out tbody+ (+fx m 1)))
+	    ((every (lambda (e) (isa? e %html-tr)) tbody+)
+	     (out+ tbody+ (+fx m 1)))
+	    (else
+	     (error 'html "Illegal table body" tbody+)))
+	 (cond
+	    ((not tfoot?)
+	     #unspecified)
+	    ((isa? tfoot? %html-telement)
+	     (out tfoot? (+fx m 1)))
+	    ((and (list? tfoot?)
+		  (every (lambda (e) (isa? e %html-tr)) tfoot?))
+	     (out+ tfoot? (+fx m 1)))
+	    ((isa? tfoot? %html-tr)
+	     (out tfoot? (+fx m 1)))
+	    (else
+	     (error 'html "Illegal table foot" tfoot?))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    out ::%html-telement ...                                         */
@@ -775,7 +775,7 @@
 				    ("align" (string? align) align)
 				    ("valign" (string? valign) valign)
 			 	    ("char" (char? char) (string char))
-				    ("width" (and (eq? kind 'col) (string? width)) width))))
+				    ("width" (string? width) width))))
 	 (match-case flow*
 	    (()
 	     (with-oneline-markup markup attr* m ""))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Jan 23 08:23:06 2012 (serrano)                */
+;*    Last change :  Tue Oct 23 21:16:57 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -29,6 +29,7 @@
 	    backend_backend
 	    module_module
 	    write_scheme)
+   (import tools_shape)
    (export  (classgen-walk)
 	    (classgen-predicate-anonymous ::tclass)
 	    (classgen-nil-anonymous ::tclass)
@@ -259,18 +260,33 @@
 			(type-name c))))
 	 `(,(make-typed-ident 'free-pragma tid)
 	   ,(string-append "((" tname
-	       ")BREF( GC_MALLOC ( sizeof(" sizeof ") )))"))))
-   
+	       ")BREF( GC_MALLOC( sizeof(" sizeof ") )))"))))
+
    (define (pragma-allocate id tid g)
       (let ((new (mark-symbol-non-user! (gensym 'new))))
 	 `(define-inline (,id)
-	     ,(unsafe 
-		`(let ((,(make-typed-ident new tid) ,(c-malloc tid)))
-		   (object-class-num-set! ,new
-		      ((@ class-num __object)
-		       (@ ,(global-id g) ,(global-module g))))
-		   (object-widening-set! ,new #f)
-		   ,new)))))
+	     ,(unsafe
+		(if (>=fx (bigloo-compiler-debug) 1)
+		    (let* ((env (gensym 'env))
+			   (tenv (make-typed-ident env 'dynamic-env))
+			   (aid (gensym 'alloc)))
+		       `(let ((,tenv (current-dynamic-env))
+			      (,aid ',(symbol-append '%allocate- tid)))
+			   (let ()
+			      ($env-push-trace ,env ,aid #f)
+			      (let ((,(make-typed-ident new tid) ,(c-malloc tid)))
+				 ($env-pop-trace ,env)
+				 (object-class-num-set! ,new
+				    ((@ class-num __object)
+				     (@ ,(global-id g) ,(global-module g))))
+				 (object-widening-set! ,new #f)
+				 ,new))))
+		    `(let ((,(make-typed-ident new tid) ,(c-malloc tid)))
+			(object-class-num-set! ,new
+			   ((@ class-num __object)
+			    (@ ,(global-id g) ,(global-module g))))
+			(object-widening-set! ,new #f)
+			,new))))))
    
    (define (nopragma-allocate id tid g)
       (let ((new (mark-symbol-non-user! (gensym 'new))))
@@ -322,7 +338,7 @@
 			(type-name w))))
 	 `(,(make-typed-ident 'free-pragma (type-id w))
 	   ,(string-append "((" tname
-	       ")BREF( GC_MALLOC ( sizeof(" sizeof ") )))"))))
+	       ")BREF( GC_MALLOC( sizeof(" sizeof ") )))"))))
    
    (define (nopragma-allocate w)
       (make-private-sexp 'new (type-id w)))

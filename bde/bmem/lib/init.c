@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Sat Oct 13 08:48:00 2012 (serrano)                */
+/*    Last change :  Wed Oct 24 09:33:05 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -37,6 +37,7 @@ extern void type_dump( FILE *f );
 int bmem_debug = 0;
 int bmem_thread = 0;
 pthread_key_t bmem_key;
+pthread_key_t bmem_key2;
 pthread_mutex_t bmem_mutex;
 
 /* garbage collector */
@@ -106,7 +107,6 @@ void *(*____scheduler_start)( void * );
 void *(*_____scheduler_start)( void *, void * );
 void *(*____scheduler_react)( void * );
 void *(*_____scheduler_react)( void *, void * );
-void *(*____bglthread_id_get)();
 void (*____bglthread_switch)( void *, void * );
 void (*____bglasync_scheduler_notify)( void * );
 
@@ -511,7 +511,6 @@ bglfth_setup_bmem() {
    ____bglthread_new_with_name = (void *(*)( void *, void * ))get_function( hdl, "bglthread_new_with_name" );
    ____scheduler_start = get_function( hdl, "BGl_schedulerzd2startz12zc0zz__ft_schedulerz00" );
    ____scheduler_react = get_function( hdl, "BGl_schedulerzd2reactz12zc0zz__ft_schedulerz00" );
-   ____bglthread_id_get = get_function( hdl, "bglthread_id_get" );
    ____bglthread_switch = (void (*)( void *, void * ))get_function( hdl, "bglthread_switch" );
    ____bglasync_scheduler_notify = (void (*)( void * ))get_function( hdl, "bglasync_scheduler_notify" );
    ____pthread_getspecific = get_function( hdl, "bglfth_pthread_getspecific" );
@@ -521,6 +520,11 @@ bglfth_setup_bmem() {
 
    if( ____pthread_key_create( &bmem_key, 0L ) ) {
       FAIL( IDENT, "Can't get thread key", "bmem_key" );
+      exit( -2 );
+   }
+
+   if( ____pthread_key_create( &bmem_key2, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key2" );
       exit( -2 );
    }
 

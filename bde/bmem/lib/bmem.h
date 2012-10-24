@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Thu Oct 11 17:50:34 2012 (serrano)                */
+/*    Last change :  Wed Oct 24 09:33:09 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -70,11 +70,11 @@ extern void *unknown_ident;
 extern void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 extern void *bgl_make_input_port_symbol;
 extern unsigned long gc_number;
-extern int get_alloc_type();
-extern void set_alloc_type();
+extern void set_alloc_type( int, int );
 extern unsigned long ante_bgl_init_dsz;
 
 extern pthread_key_t bmem_key;
+extern pthread_key_t bmem_key2;
 extern pthread_mutex_t bmem_mutex;
 
 extern void mark_function( void *, long, long, long, int, int, long );
@@ -155,7 +155,6 @@ extern void *(*____bgl_seconds_format )( long, void * );
 
 extern void *(*____scheduler_start)( void * );
 extern void *(*____scheduler_react)( void * );
-extern void *(*____bglthread_id_get )();
 extern void (*____bglthread_switch)( void *, void * );
 extern void (*____bglasync_scheduler_notify)( void * );
 
@@ -194,8 +193,8 @@ extern pa_pair_t *pa_assq( void *, pa_pair_t * );
 /*---------------------------------------------------------------------*/
 /*    Trace                                                            */
 /*---------------------------------------------------------------------*/
-extern void *bgl_debug_trace_top();
-extern char *bgl_debug_trace_top_name();
+extern void *bgl_debug_trace_top( int );
+extern char *bgl_debug_trace_top_name( int );
 extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Wed Feb  1 10:48:38 2012 (serrano)                */
+/*    Last change :  Wed Oct 24 08:41:53 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
@@ -11,7 +11,7 @@
 #include <bigloo.h>
 #include <esymbol.h>
 
-extern void set_alloc_type( int t );
+extern void set_alloc_type( int, int  );
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
@@ -29,7 +29,7 @@ static obj_t
 make_symbol( obj_t name ) {
    obj_t symbol;
 
-   set_alloc_type( SYMBOL_TYPE );
+   set_alloc_type( SYMBOL_TYPE, 0 );
    
    symbol = GC_MALLOC( ESYMBOL_SIZE );
 
@@ -44,6 +44,7 @@ make_symbol( obj_t name ) {
 
    ((esymbol_t *)(symbol))->alloc_info = 0;
    ((esymbol_t *)(symbol))->class_alloc = -1;
+   ((esymbol_t *)(symbol))->class_offset = 0;
    ((esymbol_t *)(symbol))->stamp = -3;
 
    return BREF( symbol );

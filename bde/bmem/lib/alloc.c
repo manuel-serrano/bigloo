@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Thu Oct 11 17:50:48 2012 (serrano)                */
+/*    Last change :  Wed Oct 24 11:43:24 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -24,6 +24,7 @@ extern void gc_alloc_size_add( int size );
 static pa_pair_t *all_functions = 0;
 static int stamp = 1;
 static int alloc_type = -1;
+static int alloc_type_offset = 0;
 static long max_stack_size = 100000;
 unsigned long ante_bgl_init_dsz = 0;
 
@@ -39,11 +40,13 @@ static int types_number = 0;
 /*    set_alloc_type ...                                               */
 /*---------------------------------------------------------------------*/
 void
-set_alloc_type( int t ) {
+set_alloc_type( int t, int o ) {
    if( bmem_thread ) {
       ____pthread_setspecific( bmem_key, (void *)t );
+      ____pthread_setspecific( bmem_key2, (void *)o );
    } else {
       alloc_type = t;
+      alloc_type_offset = o;
    }
 }
 
@@ -51,12 +54,25 @@ set_alloc_type( int t ) {
 /*    int                                                              */
 /*    get_alloc_type ...                                               */
 /*---------------------------------------------------------------------*/
-int
+static int
 get_alloc_type() {
    if( bmem_thread ) {
       return (int)____pthread_getspecific( bmem_key );
    } else {
       return alloc_type;
+   }
+}
+    
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    get_alloc_type_offset ...                                        */
+/*---------------------------------------------------------------------*/
+static int
+get_alloc_type_offset() {
+   if( bmem_thread ) {
+      return (int)____pthread_getspecific( bmem_key2 );
+   } else {
+      return alloc_type_offset;
    }
 }
     
@@ -101,7 +117,7 @@ void
 alloc_dump_type( pa_pair_t *i, FILE *f ) {
    type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR( i );
    
-   fprintf( f, "\n          (%ld %ld %ld)", (long)PA_CAR( i ),
+   fprintf( f, "\n          (%ld #l%ld #l%ld)", (long)PA_CAR( i ),
 	    tai->num, BMEMSIZE( tai->size ) );
 }
 
@@ -111,7 +127,7 @@ alloc_dump_type( pa_pair_t *i, FILE *f ) {
 /*---------------------------------------------------------------------*/
 void
 alloc_dump( fun_alloc_info_t *i, FILE *f ) {
-   fprintf( f, "      (%lu %lu %lu\n", i->gc_num,
+   fprintf( f, "      (%lu #l%lu #l%lu\n", i->gc_num,
 	    BMEMSIZE( i->dsize ), BMEMSIZE( i->isize ) );
    fprintf( f, "        (dtype" );
    for_each( (void (*)(void *, void *))alloc_dump_type, i->dtypes, f );
@@ -310,11 +326,11 @@ obj_t
 make_pair( obj_t car, obj_t cdr ) {
    obj_t pair;
 
-   set_alloc_type( PAIR_TYPE_NUM );
+   set_alloc_type( PAIR_TYPE_NUM, 0 );
 
    gc_alloc_size_add( PAIR_SIZE );
 
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  PAIR_SIZE, 0,
 		  PAIR_TYPE_NUM, -1,
@@ -329,7 +345,7 @@ make_pair( obj_t car, obj_t cdr ) {
    pair->pair_t.car = car;
    pair->pair_t.cdr = cdr;
    
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
    return BPAIR( pair );
 }
 
@@ -340,11 +356,11 @@ make_pair( obj_t car, obj_t cdr ) {
 obj_t
 make_cell( obj_t val ) {
    obj_t cell;
-   set_alloc_type( CELL_TYPE_NUM );
+   set_alloc_type( CELL_TYPE_NUM, 0 );
 
    gc_alloc_size_add( CELL_SIZE );
 
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  CELL_SIZE, 0,
 		  CELL_TYPE_NUM, -1,
@@ -357,7 +373,7 @@ make_cell( obj_t val ) {
 #endif
    cell->cell_t.val = val;
    
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
    return BCELL( cell );
 }
 
@@ -368,11 +384,11 @@ make_cell( obj_t val ) {
 obj_t
 make_real( double d ) {
    obj_t a_real;
-   set_alloc_type( REAL_TYPE_NUM );
+   set_alloc_type( REAL_TYPE_NUM, 0 );
 
    gc_alloc_size_add( REAL_SIZE );
 
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  REAL_SIZE, 0,
 		  REAL_TYPE_NUM, -1,
@@ -386,7 +402,7 @@ make_real( double d ) {
 #endif
    a_real->real_t.real = d;
 	
-   set_alloc_type( -1 );
+   set_alloc_type( -1,0  );
    return BREAL( a_real );   
 }
 
@@ -398,11 +414,11 @@ obj_t
 make_belong( long l ) {
    obj_t a_elong;
    
-   set_alloc_type( ELONG_TYPE_NUM );
+   set_alloc_type( ELONG_TYPE_NUM, 0 );
 
    gc_alloc_size_add( ELONG_SIZE );
 
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  ELONG_SIZE, 0,
 		  ELONG_TYPE_NUM, -1,
@@ -414,7 +430,7 @@ make_belong( long l ) {
    a_elong->elong_t.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
    a_elong->elong_t.elong = l;
 	
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
    return BREF( a_elong );
 }
 
@@ -426,11 +442,11 @@ obj_t
 make_bllong( BGL_LONGLONG_T l ) {
    obj_t a_llong;
 
-   set_alloc_type( LLONG_TYPE_NUM );
+   set_alloc_type( LLONG_TYPE_NUM, 0 );
 
    gc_alloc_size_add( LLONG_SIZE );
 
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  LLONG_SIZE, 0,
 		  LLONG_TYPE_NUM, -1,
@@ -442,7 +458,7 @@ make_bllong( BGL_LONGLONG_T l ) {
    a_llong->llong_t.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
    a_llong->llong_t.llong = l;
 	
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
    return BREF( a_llong );
 }
 
@@ -452,23 +468,26 @@ make_bllong( BGL_LONGLONG_T l ) {
 /*---------------------------------------------------------------------*/
 static void
 GC_malloc_find_type( int lb, int unknown ) {
-   void *top = bgl_debug_trace_top();
+   void *top = bgl_debug_trace_top( get_alloc_type_offset() );
 
    if( SYMBOLP( top ) ) {
       int ty = ((esymbol_t *)CREF( top ))->class_alloc;
+      int to = ((esymbol_t *)CREF( top ))->class_offset;
 
-      set_alloc_type( ty == -1 ? unknown : ty );
+      set_alloc_type( ty == -1 ? unknown : ty, to );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
-	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug=10) GC_malloc(%d): %s type=%d\n",
-		  lb, bgl_debug_trace_top_name(), get_alloc_type() );
+	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): %s ty=%d type=%d\n",
+		  lb,
+		  bgl_debug_trace_top_name( get_alloc_type_offset() ),
+		  ty, get_alloc_type() );
       }
 #endif
    } else {
-      set_alloc_type( unknown );
+      set_alloc_type( unknown, 0 );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
-	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug=10) GC_malloc(%d): ???? type=%d\n",
+	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): ???? type=%d\n",
 		  lb, get_alloc_type() );
       }
 #endif
@@ -489,16 +508,18 @@ GC_malloc( size_t lb ) {
 #if BMEMDEBUG
    if( bmem_debug ) {
       fprintf( stderr, "GC_malloc(%zu): %s %d\n",
-	       lb, bgl_debug_trace_top_name(), get_alloc_type() );
+	       lb,
+	       bgl_debug_trace_top_name( get_alloc_type_offset() ),
+	       get_alloc_type() );
    }
 #endif
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  lb, 0,
 		  get_alloc_type(), -1,
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
 
    return ____GC_malloc( lb );
 }
@@ -511,21 +532,23 @@ obj_t
 GC_realloc( obj_t old, size_t lb ) {
    gc_alloc_size_add( lb );
 
-   set_alloc_type( UNKNOWN_REALLOC_TYPE_NUM );
+   set_alloc_type( UNKNOWN_REALLOC_TYPE_NUM, 0 );
 
 #if BMEMDEBUG
    if( bmem_debug ) {
       fprintf( stderr, "GC_realloc(%zu): top=%s type=%d\n",
-	       lb, bgl_debug_trace_top_name(), get_alloc_type() );
+	       lb,
+	       bgl_debug_trace_top_name( get_alloc_type_offset() ),
+	       get_alloc_type() );
    }
 #endif
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  lb, 0,
 		  UNKNOWN_TYPE_NUM, -1,
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
 
    return ____GC_realloc( old, lb );
 }
@@ -544,16 +567,18 @@ GC_malloc_atomic( size_t lb ) {
 #if BMEMDEBUG
    if( bmem_debug ) {
       fprintf( stderr, "GC_malloc_atomic(%zu): top=%s type=%d\n",
-	       lb, bgl_debug_trace_top_name(), get_alloc_type() );
+	       lb,
+	       bgl_debug_trace_top_name( get_alloc_type_offset() ),
+	       get_alloc_type() );
    }
 #endif
-   mark_function( bgl_debug_trace_top(),
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
 		  gc_number,
 		  lb, 0,
 		  get_alloc_type(), -1,
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
-   set_alloc_type( -1 );
+   set_alloc_type( -1, 0 );
 
    return ____GC_malloc_atomic( lb );
 }
@@ -607,18 +632,15 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
    fflush( stderr );
    declare_type( tnum, cname );
 
-   sprintf( tmp, "make-%s", cname );
-   alloc = string_to_symbol( tmp );
-   ((esymbol_t *)(CREF(alloc)))->class_alloc = tnum;
-
    sprintf( tmp, "%%allocate-%s", cname );
    alloc = string_to_symbol( tmp );
-
    ((esymbol_t *)(CREF(alloc)))->class_alloc = tnum;
+   ((esymbol_t *)(CREF(alloc)))->class_offset = 1;
 
    sprintf( tmp, "widening-%s", cname );
    alloc = string_to_symbol( tmp );
    ((esymbol_t *)(CREF(alloc)))->class_alloc = tnum;
+   ((esymbol_t *)(CREF(alloc)))->class_offset = 1;
 
    class = ____register_class( name, super, abstract, creator, allocate,
 			       nil, predicate,
@@ -630,26 +652,13 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
    return class;
 }
 
-/* {*---------------------------------------------------------------------*} */
-/* {*    obj_t                                                            *} */
-/* {*    bgl_file_to_input_port ...                                       *} */
-/* {*---------------------------------------------------------------------*} */
-/* obj_t                                                               */
-/* bgl_file_to_input_port( FILE *file ) {                              */
-/*    obj_t buffer = ____make_string_sans_fill( 8192 );                */
-/*                                                                     */
-/*    return ____bgl_file_to_buffered_input_port( string_to_bstring( "file" ), */
-/* 					       file,                   */
-/* 					       buffer );               */
-/* }                                                                   */
-
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_init_dynamic_env ...                                         */
 /*---------------------------------------------------------------------*/
 void
 bgl_init_dynamic_env() {
-   set_alloc_type( _DYNAMIC_ENV_TYPE_NUM );
+   set_alloc_type( _DYNAMIC_ENV_TYPE_NUM, 0 );
    ____bgl_init_dynamic_env();
 }
 
@@ -658,7 +667,7 @@ bgl_init_dynamic_env() {
 /*---------------------------------------------------------------------*/
 #define WRAPPER( ident, tnum, proto, call ) \
 obj_t ident proto { \
-   set_alloc_type( tnum ); \
+   set_alloc_type( tnum, 0 );  \
    return ____##ident call ; \
 }
 
@@ -670,7 +679,7 @@ obj_t ident proto { \
    int lvl = bmem_debug; \
    obj_t res; \
    bmem_debug = level; \
-   set_alloc_type( tnum ); \
+   set_alloc_type( tnum, 0 ); \
    fprintf( stderr, "***WRAPPER_DEBUG: " #ident " type=%d\n", get_alloc_type() ); \
    res = ____##ident call ; \
    bmem_debug = lvl; \
@@ -684,7 +693,7 @@ obj_t ident proto { \
 typeres ident proto { \
    typeres res; \
    BGL_PUSH_TRACE( ident##_symbol, BFALSE ); \
-   set_alloc_type( tnum ); \
+   set_alloc_type( tnum, 0 ); \
    res = ____##ident call ; \
    BGL_POP_TRACE(); \
    return res; \
@@ -696,9 +705,9 @@ typeres ident proto { \
 #define WRAPPER2( ident, tnum1, tnum2, proto, call ) \
 obj_t ident proto { \
    obj_t aux; \
-   set_alloc_type( tnum1 ); \
+   set_alloc_type( tnum1, 0 ); \
    aux = ____##ident call ; \
-   set_alloc_type( tnum2 ); \
+   set_alloc_type( tnum2, 0 ); \
    return aux; \
 }
 
@@ -709,9 +718,9 @@ obj_t ident proto { \
 obj_t ident proto { \
    obj_t aux; \
    BGL_PUSH_TRACE( ident##_symbol, BFALSE ); \
-   set_alloc_type( tnum1 ); \
+   set_alloc_type( tnum1, 0 ); \
    aux = ____##ident call ; \
-   set_alloc_type( tnum2 ); \
+   set_alloc_type( tnum2, 0 ); \
    BGL_POP_TRACE(); \
    return aux; \
 }
@@ -721,7 +730,7 @@ obj_t ident proto { \
 /*---------------------------------------------------------------------*/
 #define WRAPPER3( type, ident, tnum, proto, call ) \
 type ident proto { \
-   set_alloc_type( tnum ); \
+   set_alloc_type( tnum, 0 );  \
    return ____##ident call ; \
 }
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Tue Nov 15 21:34:03 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 10:19:16 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
 ;*=====================================================================*/
@@ -26,7 +26,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-gc-tables gcmon fun* types)
    (let* ((gc* (cdr gcmon))
-	  (maxhsize (apply max (map caddr gc*)))
+	  (maxhsize::llong (apply maxllong (map caddr gc*)))
 	  (nbtypes (+fx 1 (apply max (map car (cdr types)))))
 	  (tvec (make-vector nbtypes)))
       (for-each (lambda (t)
@@ -45,7 +45,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-gc-function-table ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (make-gc-function-table maxhsize::int gc*::pair-nil fun*::pair-nil)
+(define (make-gc-function-table maxhsize::llong gc*::pair-nil fun*::pair-nil)
    (define (gc->cell gc)
       (let* ((n (car gc))
 	     (hsize (caddr gc))
@@ -57,10 +57,10 @@
 			       (let* ((fgc (funinfo-find-gc f n))
 				      (size (if (pair? fgc)
 						(cadr fgc)
-						0))
+						#l0))
 				      (nf num)
 				      (id (format "function~a" nf)))
-				  (set! sum (+fx sum size))
+				  (set! sum (+llong sum size))
 				  (set! per (+fx per (% size maxhsize)))
 				  (list (% size maxhsize)
 				     id
@@ -69,18 +69,18 @@
 					(word->size size)
 					(% size asize))))))
 			 fun*)))
-	 (if (>=fx (absfx (-fx asize sum)) 1024)
+	 (if (>=llong (absllong (-llong asize sum)) #l1024)
 	     (warning "make-gc-function-table"
 		      "incorrect allocation size --"
 		      " GC=" n " sum=" sum " alloc=" asize
-		      " delta=" (-fx asize sum)))
+		      " delta=" (-llong asize sum)))
 	 (append cell*
 		 (list (list (-fx (% hsize maxhsize) per)
 			     "gc0"
 			     (format "heap size: ~a"
 				     (word->size (caddr gc))))))))
    (let* ((gc* (filter (lambda (gc)
-			  (>fx (cadr gc) 0))
+			  (>llong (cadr gc) 0))
 		       gc*))
 	  (allsize (apply + (map cadr gc*)))
 	  (cell* (map gc->cell gc*))
@@ -116,7 +116,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-gc-type-table ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (make-gc-type-table maxhsize::int gc*::pair-nil fun*::pair-nil
+(define (make-gc-type-table maxhsize::llong gc*::pair-nil fun*::pair-nil
 			    nbtypes tvecnames)
    (define (gc->cell gc)
       (let ((n (car gc))
@@ -124,7 +124,7 @@
 	    (hsize (caddr gc))
 	    (asize (cadr gc))
 	    (per 0)
-	    (sum 0))
+	    (sum #l0))
 	 (define (mark-function! f)
 	    (let* ((dtype (with-access::funinfo f (dtype) dtype))
 		   (dtypegc (assq n dtype)))
@@ -132,11 +132,11 @@
 		   (for-each (lambda (dt)
 				(let ((n (car dt))
 				      (s (caddr dt)))
-				   (set! sum (+fx s sum))
+				   (set! sum (+llong s sum))
 				   (vector-set! tvec
-						n
-						(+fx s (vector-ref tvec n)))))
-			     (cdr dtypegc)))))
+				      n
+				      (+llong s (vector-ref tvec n)))))
+		      (cdr dtypegc)))))
 	 (for-each mark-function! fun*)
 	 (let ((cell* (mapv (lambda (t i)
 			       (let ((id (format "type~a" i))
@@ -154,7 +154,7 @@
 				(format "heap size: ~a"
 					(word->size (caddr gc)))))))))
    (let* ((gc* (filter (lambda (gc)
-			  (>fx (cadr gc) 0))
+			  (>llong (cadr gc) #l0))
 		       gc*))
 	  (allsize (apply + (map cadr gc*)))
 	  (cell* (map gc->cell gc*))

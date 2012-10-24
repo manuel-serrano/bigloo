@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Tue Nov 15 21:23:25 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 12:10:26 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
 ;*    from a monitor file.                                             */
@@ -170,7 +170,7 @@
       ;; fetch the word size
       (let ((c (assq 'sizeof-word (cdr info))))
 	 (if (pair? c)
-	     (set! *sizeof-word* (cadr c))))
+	     (set! *sizeof-word* (fixnum->llong (cadr c)))))
       ;; store all the functions
       (for-each add-function! (cdr funmon))
       (let ((doc (cond
@@ -386,35 +386,31 @@
    (define (gc-css gcmon)
       (let loop ((i (length gcmon))
 		 (res '()))
-	 (if (>=fx i 0)
-	     (let* ((selector (string-append "div.profile td.gc"
-					     (integer->string i)))
-		    (color (if (=fx i 0)
-			       "#ddf"
-			       (css-color i 117 128 162)))
-		    (entry `(,selector background: ,color
-				       cursor: help)))
-		(loop (-fx i 1)
-		      (cons entry res)))
+	 (if (>=fx i -1)
+	     (let* ((selector (format "div.profile td.gc~a" i))
+		    (color (case i
+			      ((-1) "#ccc")
+			      ((0) "#ddf")
+			      (else (css-color i 117 128 162))))
+		    (entry `(,selector background: ,color cursor: help)))
+		(loop (-fx i 1) (cons entry res)))
 	     (reverse! res))))
    (define (function-css fun)
-      (map (lambda (f)
-	      (with-access::funinfo f (num)
-		 (let* ((selector (string-append "div.profile td.function"
-				     (integer->string num)))
-			(color (css-color num 143 255 128)))
-		    `(,selector background: ,color
-			cursor: help))))
-	   fun))
+      (cons `("div.profile td.function-1" background: "#ccc" cursor: help)
+	 (map (lambda (f)
+		 (with-access::funinfo f (num)
+		    (let* ((selector (format "div.profile td.function~a" num))
+			   (color (css-color num 143 255 128)))
+		       `(,selector background: ,color cursor: help))))
+	    fun)))
    (define (type-css types)
-      (map (lambda (t)
-	      (let* ((i (car t))
-		     (selector (string-append "div.profile td.type"
-					      (integer->string i)))
-		     (color (css-color i #xff 0 0)))
-		 `(,selector background: ,color
-			     cursor: help)))
-	   types))
+      (cons `("div.profile td.type-1" background: "#ccc" cursor: help)
+	 (map (lambda (t)
+		 (let* ((i (car t))
+			(selector (format "div.profile td.type~a" i))
+			(color (css-color i 200 40 80)))
+		    `(,selector background: ,color cursor: help)))
+	    types)))
    (list->css
     (append (gc-css (cdr gcmon))
 	    (function-css function)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:06:40 2003                          */
-;*    Last change :  Tue Nov 15 21:33:08 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Wed Oct 24 12:01:30 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Display function allocations                                     */
 ;*=====================================================================*/
@@ -22,8 +22,8 @@
 	       (ident::symbol read-only)
 	       (use::bool (default #f))
 	       (num::int read-only)
-	       (dsize::int read-only)
-	       (isize::int read-only)
+	       (dsize::llong read-only)
+	       (isize::llong read-only)
 	       (gc*::pair-nil read-only)
 	       (dtype::pair-nil read-only)
 	       (itype::pair-nil read-only))
@@ -31,8 +31,8 @@
 	    (get-functions::pair-nil)
 	    (add-function! ::pair)
 	    (funinfo-find-gc ::funinfo ::int)
-	    (funinfo-type-size ::funinfo ::int)
-	    (funinfo-gc-type-size ::funinfo ::int ::int)
+	    (funinfo-type-size::llong ::funinfo ::int)
+	    (funinfo-gc-type-size::llong ::funinfo ::int ::int)
 	    (make-function-tables fun* gcmon types)
 	    (bmem-function ::bstring ::obj ::obj
 			   ::pair-nil ::pair-nil ::pair-nil)))
@@ -91,11 +91,11 @@
 ;*---------------------------------------------------------------------*/
 (define (funinfo-type-size fi num)
    (with-access::funinfo fi (dtype)
-      (let ((s 0))
+      (let ((s #l0))
 	 (for-each (lambda (gc)
 		      (let ((c (assq num (cdr gc))))
 			 (if (pair? c)
-			     (set! s (+fx s (caddr c))))))
+			     (set! s (+llong s (caddr c))))))
 		   dtype)
 	 s)))
 
@@ -109,8 +109,8 @@
 	     (let ((c (assq num (cdr gc))))
 		(if (pair? c)
 		    (caddr c)
-		    0))
-	     0))))
+		    #l0))
+	     #l0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-tables ...                                         */
@@ -120,7 +120,7 @@
 	  (allsum (let ((sum 0))
 		     (for-each (lambda (f)
 				  (define (sum-type ti)
-				     (set! sum (+fx sum (cadr ti))))
+				     (set! sum (+llong sum (cadr ti))))
 				  (for-each (lambda (gc)
 					       (for-each sum-type (cdr gc)))
 				     (with-access::funinfo f (dtype)
@@ -157,44 +157,43 @@
 	    (make-function-gc-chart allsize fun*
 				    (lambda (f)
 				       (with-access::funinfo f (isize dsize)
-					  (+fx isize dsize)))
+					  (+llong isize dsize)))
 				    (lambda (g)
-				       (+fx (cadr g) (caddr g)))
+				       (+llong (cadr g) (caddr g)))
 				    "function-gc-cumulative"
 				    "Cumulative allocations (gc)")))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-gc-chart ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (make-function-gc-chart allsize::int fun*::pair-nil
+(define (make-function-gc-chart allsize::llong fun*::pair-nil
 				funsize::procedure fungcsize::procedure
 				class::bstring caption::bstring)
-   (let* ((fun* (filter (lambda (f)
-			   (let* ((size (funsize f))
-				  (size% (% size allsize)))
-			      (> size% 0)))
-			fun*))
-	  (fun* (sort fun*
-		      (lambda (f1 f2)
-			 (>fx (funsize f1) (funsize f2)))))
+   (let* ((fun* (sort (filter (lambda (f)
+				 (let* ((size (funsize f))
+					(size% (% size allsize)))
+				    (> size% 0)))
+			 fun*)
+		   (lambda (f1 f2)
+		      (>llong (funsize f1) (funsize f2)))))
 	  (cell* (map (lambda (f)
 			 ;; mark the function as used (for the legend)
-			 (with-access::funinfo f (use gc*)
+			 (with-access::funinfo f (use gc* ident)
 			    (set! use #t)
 			    (let ((fsize (funsize f)))
 			       (map (lambda (gc)
-				       (let* ((n (integer->string
-						    (+fx 1 (car gc))))
+				       (let* ((n (+fx 1 (car gc)))
 					      (gcsize (fungcsize gc))
-					      (rsize (% gcsize fsize))
+					      (rsize (%00 gcsize fsize))
 					      (per (% gcsize allsize))
-					      (id (string-append "gc" n)))
+					      (id (format "gc~a" n)))
 					  (list per
 					     id 
-					     (format "gc ~a: ~a (~a%)"
+					     (format "gc ~a: ~a (~a% of ~a)"
 						n
 						(word->size gcsize)
-						rsize))))
+						rsize
+						(word->size fsize)))))
 				  gc*))))
 		      fun*))
 	  (row* (map (lambda (f cells)
@@ -209,7 +208,14 @@
 					  :align "left"
 					  (format "~a% (~a)"
 					     size%
-					     (word->size size)))))
+					     (word->size size))))
+				  (cell% (apply + (map car cells)))
+				  (cells (append cells
+					    (list (list (- size% cell%)
+						     "gc-1"
+						     (format "rest: ~a% of ~a"
+							(- size% cell%)
+							(word->size size)))))))
 			      (list (html-row-gauge cells tdl tds)
 				 (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
 		     fun* cell*)))
@@ -222,11 +228,9 @@
 ;*    make-function-type-mem-table ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-function-type-mem-table fun* allsize nbtypes tvec)
-   (html-table
-      :width "100%"
+   (html-table :width "100%"
       `(,(html-tr
-	    `(,(html-td
-		  :valign "top"
+	    `(,(html-td :valign "top" :width "50%"
 		  (make-function-type-mem-chart allsize fun*
 		     (lambda (f) (with-access::funinfo f (dsize) dsize))
 		     (lambda (f) (with-access::funinfo f (dtype) dtype))
@@ -234,12 +238,11 @@
 		     "Direct allocations (size)"
 		     nbtypes
 		     tvec))
-	      ,(html-td
-		  :valign "top"
+	      ,(html-td :valign "top" :width "50%"
 		  (make-function-type-mem-chart allsize fun*
 		     (lambda (f)
 			(with-access::funinfo f (isize dsize)
-			   (+fx isize dsize)))
+			   (+llong isize dsize)))
 		     (lambda (f)
 			(with-access::funinfo f (itype dtype)
 			   (map (lambda (i d)
@@ -254,11 +257,9 @@
 ;*    make-function-type-occ-table ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (make-function-type-occ-table fun* allsize nbtypes tvec)
-   (html-table
-      :width "100%"
+   (html-table :width "100%"
       `(,(html-tr
-	    `(,(html-td
-		  :valign "top"
+	    `(,(html-td :valign "top"
 		  (make-function-type-occ-chart allsize fun*
 		     (lambda (f) (with-access::funinfo f (dsize) dsize))
 		     (lambda (f) (with-access::funinfo f (dtype) dtype))
@@ -266,8 +267,7 @@
 		     "Direct allocations (occurrence)"
 		     nbtypes
 		     tvec))
-	      ,(html-td
-		  :valign "top"
+	      ,(html-td :valign "top"
 		  (make-function-type-occ-chart
 		     allsize fun*
 		     (lambda (f)
@@ -286,10 +286,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-mem-chart ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (make-function-type-mem-chart allsize::int fun*::pair-nil
+(define (make-function-type-mem-chart allsize::llong fun*::pair-nil
 				      funsize::procedure funtypes::procedure
 				      class::bstring caption::bstring
 				      nb-types::int tvecnames::vector)
+   
    (define (fun->cell f)
       ;; mark the function used (for the legend)
       (with-access::funinfo f (use)
@@ -297,42 +298,43 @@
       (let* ((size (funsize f))
 	     (size% (exact->inexact (% size allsize)))
 	     (tvec (make-type-vector nb-types))
-	     (at 0)
-	     (sum 0))
+	     (at::llong #l0)
+	     (sum::llong #l0))
 	 (define (mark-type! ti)
 	    (let ((t (car ti))
 		  (n (caddr ti)))
-	       (set! sum (+fx sum n))
-	       (vector-set! tvec t (+fx (vector-ref tvec t) n))
-	       (set! at (+fx at n))))
+	       (set! sum (+llong sum n))
+	       (vector-set! tvec t (+llong (vector-ref tvec t) n))
+	       (set! at (+llong at n))))
 	 ;; mark all allocated types
 	 (for-each (lambda (gc) (for-each mark-type! (cdr gc))) (funtypes f))
-	 (set! at (exact->inexact at))
 	 ;; construct the cells
-	 (mapv (if (= at 0)
+	 (mapv (if (=llong at #l0)
 		   (lambda (t i)
 		      (list 0 "type0" "0 (0%)"))
 		   (lambda (t i)
-		      (let ((tr (/fl (exact->inexact t) at))
-			    (tp (if (>fx sum 0)
-				    (% t sum)
-				    0)))
-			 (list (inexact->exact (* tr size%))
-			       (string-append "type"
-					      (integer->string i))
-			       (format "~a: ~a (~a%)" 
-				       (vector-ref tvecnames i)
-				       (word->size t)
-				       tp)))))
-	       tvec)))
+		      (let ((tp (if (>llong sum #l0)
+				    (%00 t sum)
+				    0))
+			    (per (% t allsize)))
+			 (list per
+			    (string-append "type"
+			       (integer->string i))
+			    (format "~a: ~a (~a% of ~a)" 
+			       (vector-ref tvecnames i)
+			       (word->size t)
+			       tp
+			       (word->size sum))))))
+	    tvec)))
+   
    (let* ((fun* (filter (lambda (f)
 			   (let* ((size (funsize f))
 				  (size% (% size allsize)))
 			      (>fx size% 0)))
-			fun*))
+		   fun*))
 	  (fun* (sort fun*
-		      (lambda (f1 f2)
-			 (>fx (funsize f1) (funsize f2)))))
+		   (lambda (f1 f2)
+		      (>llong (funsize f1) (funsize f2)))))
 	  (cell* (map fun->cell fun*))
 	  (r (map (lambda (f cells)
 		     (with-access::funinfo f (num ident)
@@ -347,19 +349,26 @@
 				       :align "left"
 				       (format "~a% (~a)"
 					  size%
-					  (word->size size)))))
+					  (word->size size))))
+			       (cell% (apply + (map car cells)))
+			       (cells (append cells
+					 (list (list (- size% cell%)
+						  "type-1"
+						  (format "rest: ~a% of ~a"
+						     (- size% cell%)
+						     (word->size size)))))))
 			   (list (html-row-gauge cells tdl tds)
 			      (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
-		  fun* cell*)))
+		fun* cell*)))
       (html-profile (apply append r)
-		    class caption
-		    '("functions" "20%")
-		    '("memory" "15%"))))
+	 class caption
+	 '("functions" "20%")
+	 '("memory" "15%"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-occ-chart ...                                 */
 ;*---------------------------------------------------------------------*/
-(define (make-function-type-occ-chart allsize::int fun*::pair-nil
+(define (make-function-type-occ-chart allsize::llong fun*::pair-nil
 				      funsize::procedure funtypes::procedure
 				      class::bstring caption::bstring
 				      nb-types::int tvecnames::vector)
@@ -368,30 +377,29 @@
       (with-access::funinfo f (use)
 	 (set! use #t))
       (let* ((tvec (make-type-vector nb-types))
-	     (at 0)
-	     (sum 0))
+	     (at::llong #l0)
+	     (sum::llong #l0))
 	 (define (mark-type! ti)
 	    (let ((t (car ti))
 		  (n (cadr ti)))
-	       (set! sum (+fx sum n))
-	       (vector-set! tvec t (+fx (vector-ref tvec t) n))
-	       (set! at (+fx at n))))
+	       (set! sum (+llong sum n))
+	       (vector-set! tvec t (+llong (vector-ref tvec t) n))
+	       (set! at (+llong at n))))
 	 ;; mark all allocated types
 	 (for-each (lambda (gc) (for-each mark-type! (cdr gc))) (funtypes f))
-	 (set! at (exact->inexact at))
 	 (let ((size% (exact->inexact (% sum allsize))))
 	    ;; construct the cells
 	    (list f
 		  sum
-		  (mapv (if (= at 0)
+		  (mapv (if (=llong at #l0)
 			    (lambda (t i)
 			       (list 0 "type0" "0 (0%)"))
 			    (lambda (t i)
-			       (let ((tr (/fl (exact->inexact t) at))
-				     (tp (if (>fx sum 0)
-					     (% t sum)
+			       (let ((per (% t allsize))
+				     (tp (if (>llong sum #l0)
+					     (%00 t sum)
 					     0)))
-				  (list (inexact->exact (* tr size%))
+				  (list per 
 					(string-append "type"
 						       (integer->string i))
 					(format "~a: ~a (~a%)" 
@@ -405,7 +413,7 @@
 		    cell*))
 	  (cell* (sort cell*
 		    (lambda (c1 c2)
-		       (>fx (cadr c1) (cadr c2)))))
+		       (>llong (cadr c1) (cadr c2)))))
 	  (r (map (lambda (cells)
 		     (let ((f (car cells)))
 			(with-access::funinfo f (num ident)
