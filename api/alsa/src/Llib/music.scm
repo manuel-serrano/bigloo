@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Oct 16 07:48:35 2012 (serrano)                */
+;*    Last change :  Thu Oct 25 08:20:18 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -475,7 +475,7 @@
 	       (set! %decoder #f)
 	       (pcm-reset! o)
 	       ;; signal if someone waiting for the music player
-	       (condition-variable-signal! %acondv)))))
+	       (condition-variable-broadcast! %acondv)))))
    
    (define (resume-from-pause o)
       (with-access::alsamusic o (%decoder)
@@ -484,7 +484,7 @@
 	       (mutex-lock! %dmutex)
 	       (when %!dpause
 		  (set! %!dpause #f)
-		  (condition-variable-signal! %dcondv))
+		  (condition-variable-broadcast! %dcondv))
 	       (mutex-unlock! %dmutex)
 	       #t))))
    
@@ -565,7 +565,7 @@
       (mutex-lock! %dmutex)
       (set! %!dpause #f)
       (set! %!dabort #t)
-      (condition-variable-signal! %dcondv)
+      (condition-variable-broadcast! %dcondv)
       (mutex-unlock! %dmutex)
       (when (>=fx (alsa-debug) 1)
 	 (debug (current-microseconds) "\n"))))
@@ -589,7 +589,7 @@
       (if %!dpause
 	  (begin
 	     (set! %!dpause #f)
-	     (condition-variable-signal! %dcondv))
+	     (condition-variable-broadcast! %dcondv))
 	  (set! %!dpause #t))
       (mutex-unlock! %dmutex)))
 

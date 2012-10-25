@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Wed Oct 24 17:03:17 2012 (serrano)                */
+;*    Last change :  Wed Oct 24 21:04:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -121,20 +121,39 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 ;; bee fontification
 (defcustom bee-font-lock-keywords
   (list
-   (list (concat "^\(\\(\\(?:define[*]?\\|define-inline"
+;*    (list (concat "^\(\\(\\(?:define[*]?\\|define-inline"            */
+;* 		 "\\|define-struct\\|define-record-type\\|define-record" */
+;* 		 "\\|define-macro\\|define-generic\\|define-method"    */
+;* 		 "\\|define-syntax\\|define-expander"                  */
+;* 		 "\\|define-class\\|define-abstract-class\\|define-final-class" */
+;* 		 "\\|define-service\\|define-parameter\\|define-preferences" */
+;* 		 "\\|define-tag"                                       */
+;* 		 "\\|define-command\\)[ ]+[^ ]+\\)[ \n]")              */
+;* 	 1                                                             */
+;* 	 'font-lock-function-name-face)                                */
+   (cons (concat "\\(?:define\\|define-inline"
 		 "\\|define-struct\\|define-record-type\\|define-record"
 		 "\\|define-macro\\|define-generic\\|define-method"
 		 "\\|define-syntax\\|define-expander"
 		 "\\|define-class\\|define-abstract-class\\|define-final-class"
 		 "\\|define-service\\|define-parameter\\|define-preferences"
 		 "\\|define-tag"
-		 "\\|define-command\\)[ ]+[^ ]+\\)[ \n]")
+		 "\\|define-command\\)[ ]")
+	 'font-lock-function-name-face)
+   (list (concat "^\(\\(?:define\\|define-inline"
+		 "\\|define-struct\\|define-record-type\\|define-record"
+		 "\\|define-macro\\|define-generic\\|define-method"
+		 "\\|define-syntax\\|define-expander"
+		 "\\|define-class\\|define-abstract-class\\|define-final-class"
+		 "\\|define-service\\|define-parameter\\|define-preferences"
+		 "\\|define-tag"
+		 "\\|define-command\\)[ ]\(?\\([^ \t\n]+\\)")
 	 1
 	 'font-lock-function-name-face)
    (list "\(\\(\\(?:module\\|interface\\)[ ]+[^ \n]+\\)[ \t\n]"
          1
 	 'ude-font-lock-face-1)
-   (list "\(\\(directives\\|define\\)"
+   (list "\(\\(directives\\)"
          1
 	 'ude-font-lock-face-1)
    (list "[']\\([^ ),[(#]\\([^ \n\t[()#]\\|]\\)*\\)"
