@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Sep 26 22:07:03 2012 (serrano)                */
+/*    Last change :  Sun Oct 28 19:03:18 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -560,6 +560,40 @@ typedef union scmobj {
       union scmobj *data;
    } weakptr_t;
 
+   struct bgl_class {
+      header_t header;
+      /* class name */
+      union scmobj *name;
+      /* allocation functions */
+      union scmobj *alloc_fun;
+      union scmobj *new_fun;
+      /* class hash number */
+      long hash;
+      /* nil instance */
+      union scmobj *nil_fun;
+      union scmobj *nil;
+      /* user class constructor */
+      union scmobj *constructor;
+      /* the class virtual getters and setters */
+      union scmobj *virtual_fields;
+      union scmobj *shrink;
+      /* class fields */
+      union scmobj *direct_fields;
+      union scmobj *all_fields;
+      /* the module defining the class */
+      union scmobj *module;
+      /* a unique index number */
+      long index;
+      /* depth in the inheritance tree */
+      long depth;
+      /* eval private data */
+      union scmobj *evdata;
+      /* the class inheritance */
+      union scmobj *super;
+      union scmobj *subclasses;
+      union scmobj *ancestor0;
+   } class_t;
+
    /* Thread dynamic environment */
    struct bgl_dynamic_env {
       header_t header;
@@ -692,6 +726,7 @@ typedef struct BgL_objectz00_bgl {
 #define BIGNUM_TYPE                 43
 #define DATAGRAM_SOCKET_TYPE        44
 #define REGEXP_TYPE                 45
+#define CLASS_TYPE                  46
 /* OBJECT must be the last defined type because new classes   */
 /* will be allocated TYPE number starting at OBJECT_TYPE + 1. */
 #define OBJECT_TYPE                 100
@@ -2387,12 +2422,12 @@ extern bool_t BXNEGATIVE( obj_t );
 #   define STRUCTP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_STRUCTURE)))
 #endif
 
-#define STRUCT_KEY( c )        STRUCT( c ).key
+#define STRUCT_KEY( c ) STRUCT( c ).key
 #define STRUCT_KEY_SET( c, k ) (STRUCT_KEY( c ) = k, BUNSPEC)
 
 #define STRUCT_LENGTH( c ) STRUCT( c ).length
    
-#define STRUCT_REF( c, i )    (&(STRUCT(c).obj0))[ i ]
+#define STRUCT_REF( c, i ) (&(STRUCT(c).obj0))[ i ]
 #define STRUCT_SET( c, i, o ) (STRUCT_REF( c, i ) = o, BUNSPEC)
 
 /*---------------------------------------------------------------------*/
@@ -2450,11 +2485,11 @@ extern bool_t BXNEGATIVE( obj_t );
 
 #define TVECTOR( tv ) CREF( tv )->tvector_t
 
-#define TVECTOR_ID( tv )             TVECTOR( tv ).id
-#define TVECTOR_ID_SET( tv, _id_ )   (TVECTOR_ID( tv ) = _id_, BUNSPEC)
+#define TVECTOR_ID( tv ) TVECTOR( tv ).id
+#define TVECTOR_ID_SET( tv, _id_ ) (TVECTOR_ID( tv ) = _id_, BUNSPEC)
 
-#define TVECTOR_LENGTH( tv )         TVECTOR( tv ).length
-#define TVECTOR_DESCR( tv )          TVECTOR( tv ).descr
+#define TVECTOR_LENGTH( tv ) TVECTOR( tv ).length
+#define TVECTOR_DESCR( tv ) TVECTOR( tv ).descr
 #define TVECTOR_DESCR_SET( tv, _d_ ) (TVECTOR_DESCR( tv ) = _d_, BUNSPEC)
 
 #define TVECTOR_REF( it, tv, o ) \
@@ -2587,9 +2622,9 @@ struct befored {
 /*---------------------------------------------------------------------*/
 /*    The interperter locations                                        */
 /*---------------------------------------------------------------------*/
-#define __EVMEANING_ADDRESS( x )        \
+#define __EVMEANING_ADDRESS( x ) \
    BREF( &(x) )
-#define __EVMEANING_ADDRESS_REF( x )    \
+#define __EVMEANING_ADDRESS_REF( x ) \
    (*((obj_t *)CREF( x )))
 #define __EVMEANING_ADDRESS_SET( x, y ) \
    (__EVMEANING_ADDRESS_REF( x ) = (obj_t)y, BUNSPEC)
@@ -2620,47 +2655,96 @@ struct befored {
 #define BGL_OBJECT_CLASS_NUM_SET( _1, _2 ) \
    (((obj_t)CREF(_1))->header = MAKE_HEADER( _2, 0 ), BUNSPEC)
    
-#define BGL_OBJECT_WIDENING( _obj )          \
+#define BGL_OBJECT_WIDENING( _obj ) \
    (((object_bglt)(CREF(_obj)))->widening)
 
 #define BGL_OBJECT_WIDENING_SET( _obj, _str ) \
    (((((object_bglt)(CREF(_obj)))->widening) = _str), BUNSPEC)
 
 /*---------------------------------------------------------------------*/
+/*    Classes                                                          */
+/*---------------------------------------------------------------------*/
+#define BGL_CLASSP( o ) (POINTERP( o ) && (TYPE( o ) == CLASS_TYPE))
+
+#define BGL_CLASS_SIZE (sizeof( struct bgl_class ) )
+#define BGL_CLASS( f ) (CREF( f )->class_t)
+   
+#define BGL_CLASS_NAME( f ) (BGL_CLASS( f ).name)
+   
+#define BGL_CLASS_INDEX( f ) (BGL_CLASS( f ).index)
+   
+#define BGL_CLASS_DEPTH( f ) (BGL_CLASS( f ).depth)
+   
+#define BGL_CLASS_SUPER( f ) (BGL_CLASS( f ).super)
+#define BGL_CLASS_ANCESTORS( f ) (BGL_CLASS( f ).ancestors)
+#define BGL_CLASS_ANCESTORS_REF( f, i ) (&(BGL_CLASS( f ).ancestor0))[ i ]
+   
+#define BGL_CLASS_SUBCLASSES( f ) (BGL_CLASS( f ).subclasses)
+#define BGL_CLASS_SUBCLASSES_SET( f, v ) (BGL_CLASS_SUBCLASSES( f ) = v)
+   
+#define BGL_CLASS_DIRECT_FIELDS( f ) (BGL_CLASS( f ).direct_fields)
+#define BGL_CLASS_DIRECT_FIELDS_SET( f, v ) (BGL_CLASS_DIRECT_FIELDS( f ) = v)
+   
+#define BGL_CLASS_ALL_FIELDS( f ) (BGL_CLASS( f ).all_fields)
+#define BGL_CLASS_ALL_FIELDS_SET( f, v ) (BGL_CLASS_ALL_FIELDS( f ) = v)
+   
+#define BGL_CLASS_VIRTUAL_FIELDS( f ) (BGL_CLASS( f ).virtual_fields)
+   
+#define BGL_CLASS_MODULE( f ) (BGL_CLASS( f ).module)
+   
+#define BGL_CLASS_ALLOC_FUN( f ) (BGL_CLASS( f ).alloc_fun)
+
+#define BGL_CLASS_HASH( f ) (BGL_CLASS( f ).hash)
+   
+#define BGL_CLASS_NEW_FUN( f ) (BGL_CLASS( f ).new_fun)
+   
+#define BGL_CLASS_NIL_FUN( f ) (BGL_CLASS( f ).nil_fun)
+   
+#define BGL_CLASS_NIL( f ) (BGL_CLASS( f ).nil)
+#define BGL_CLASS_NIL_SET( f, v ) (BGL_CLASS_NIL( f ) = v)
+   
+#define BGL_CLASS_CONSTRUCTOR( f ) (BGL_CLASS( f ).constructor)
+   
+#define BGL_CLASS_SHRINK( f ) (BGL_CLASS( f ).shrink)
+   
+#define BGL_CLASS_EVDATA( f ) (BGL_CLASS( f ).evdata)   
+#define BGL_CLASS_EVDATA_SET( f, o ) (BGL_CLASS_EVDATA( f ) = o)
+   
+/*---------------------------------------------------------------------*/
 /*    Process handling                                                 */
 /*---------------------------------------------------------------------*/
-#define PROCESSP( o )            (POINTERP( o ) && (TYPE( o ) == PROCESS_TYPE))
-#define PROCESS_SIZE             (sizeof( struct process ))
-#define PROCESS( o )             (CREF( o )->process_t)
-#define PROCESS_PID( o )         (PROCESS( o ).pid)
-#define PROCESS_INPUT_PORT( o )  (PROCESS( o ).stream[ 0 ])
+#define PROCESSP( o ) (POINTERP( o ) && (TYPE( o ) == PROCESS_TYPE))
+#define PROCESS_SIZE (sizeof( struct process ))
+#define PROCESS( o ) (CREF( o )->process_t)
+#define PROCESS_PID( o ) (PROCESS( o ).pid)
+#define PROCESS_INPUT_PORT( o ) (PROCESS( o ).stream[ 0 ])
 #define PROCESS_OUTPUT_PORT( o ) (PROCESS( o ).stream[ 1 ])
-#define PROCESS_ERROR_PORT( o )  (PROCESS( o ).stream[ 2 ])
+#define PROCESS_ERROR_PORT( o ) (PROCESS( o ).stream[ 2 ])
 
 /*---------------------------------------------------------------------*/
 /*    Socket handling                                                  */
 /*---------------------------------------------------------------------*/
-#define SOCKETP( o )             (POINTERP( o ) && (TYPE( o ) == SOCKET_TYPE))
-#define SOCKET_SIZE              (sizeof( struct socket ))
-#define SOCKET( o )              (CREF( o )->socket_t)
-#define SOCKET_HOSTNAME( o )     bgl_socket_hostname( o )
-#define SOCKET_HOSTIP( o )       (SOCKET( o ).hostip)
-#define SOCKET_PORT( o )         (SOCKET( o ).portnum)
-#define SOCKET_DOWNP( o )        (SOCKET( o ).fd == -1)
+#define SOCKETP( o ) (POINTERP( o ) && (TYPE( o ) == SOCKET_TYPE))
+#define SOCKET_SIZE (sizeof( struct socket ))
+#define SOCKET( o ) (CREF( o )->socket_t)
+#define SOCKET_HOSTNAME( o ) bgl_socket_hostname( o )
+#define SOCKET_HOSTIP( o ) (SOCKET( o ).hostip)
+#define SOCKET_PORT( o ) (SOCKET( o ).portnum)
+#define SOCKET_DOWNP( o ) (SOCKET( o ).fd == -1)
    
-#define SOCKET_INPUT( o )						\
-   (INPUT_PORTP( SOCKET( o ).input) ?					\
-    (SOCKET( o ).input)							\
-    : C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,				\
-			"socket-input",					\
-			"socket servers have no port",			\
+#define SOCKET_INPUT( o ) \
+   (INPUT_PORTP( SOCKET( o ).input) ? \
+    (SOCKET( o ).input) \
+    : C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, \
+			"socket-input", \
+			"socket servers have no port", \
 			o ))
-#define SOCKET_OUTPUT( o )						\
-   (OUTPUT_PORTP( SOCKET( o ).output ) ?				\
-    (SOCKET( o ).output)						\
-    : C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,				\
-			"socket-output",				\
-			"socket servers have no port",			\
+#define SOCKET_OUTPUT( o ) \
+   (OUTPUT_PORTP( SOCKET( o ).output ) ? \
+    (SOCKET( o ).output) \
+    : C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, \
+			"socket-output", \
+			"socket servers have no port", \
 			o ))
    
 #define BGL_SOCKET_SERVER 22
@@ -2774,7 +2858,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 
 #define BGL_MUTEX_NAME( o ) BGL_MUTEX( o ).name
 #define BGL_CONDVAR_NAME( o ) BGL_CONDVAR( o ).name
-   
+
 /*---------------------------------------------------------------------*/
 /*    Foreign management                                               */
 /*---------------------------------------------------------------------*/
@@ -3026,6 +3110,13 @@ BGL_RUNTIME_DECL bool_t (*bgl_condvar_broadcast)( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_open_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DECL obj_t bgl_string_to_mmap( obj_t, bool_t, bool_t );
 BGL_RUNTIME_DECL obj_t bgl_close_mmap( obj_t );
+   
+BGL_RUNTIME_DECL obj_t bgl_make_class( obj_t, obj_t, long,
+				       obj_t, obj_t,
+				       obj_t, long,
+				       obj_t, obj_t,
+				       obj_t, obj_t, obj_t, obj_t, obj_t,
+				       long, obj_t );
    
 #if !HAVE_MMAP   
 BGL_RUNTIME_DECL unsigned char bgl_mmap_nommap_ref( obj_t, long );

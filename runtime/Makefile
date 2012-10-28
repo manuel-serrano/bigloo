@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Sep 15 07:54:57 2012 (serrano)                */
+#*    Last change :  Sun Oct 28 10:28:44 2012 (serrano)                */
 #*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -101,7 +101,8 @@ CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   cwriter capply cstruct csystem ccontrol ceval chash \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
-                  cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregexp
+                  cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregexp \
+                  cobject
 
 C_CLIB		= $(CLIB:%=Clib/%.c)
 
@@ -155,7 +156,7 @@ JLIB		= foreign buffer configure stackwriter\
                   s8vector u8vector s16vector u16vector \
                   s32vector u32vector s64vector u64vector \
                   f32vector f64vector \
-                  weakptr regexp \
+                  weakptr regexp bclass \
 	          $(JDK_LIBS)
 
 JLIB_SRC	= $(JLIB:%=%.java)

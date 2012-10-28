@@ -48,7 +48,7 @@
 	       (pair-nil      . obj)
 	       (void*         . obj)
 	       (tvector       . obj)
-	       (class         . obj)
+	       (class         . class)
 	       (class-field   . obj)
 	       ; Not here in mklib mode
 ;	       (object        . object)

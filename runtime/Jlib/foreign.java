@@ -56,6 +56,11 @@ public final class foreign
 	 System.out.println(msg);
       }
 
+   public static void print(byte[] msg)
+      {
+	 print( new String( msg ) );
+      }
+
    public static void oprint(Object msg)
       {
 	 System.out.println("OPRINT = " + msg);
@@ -3640,6 +3645,199 @@ public final class foreign
       {
 	 return o;
       }
+
+   ////
+   // CLASS
+   ////
+   public static boolean BGL_CLASSP(Object o)
+      {
+	 return (o instanceof bclass);
+      }
+
+   public static Object bgl_make_class( symbol name, symbol module, int num,
+					Object bsuper, Object sub,
+					procedure alloc, int hash,
+					Object[] fd, Object[] allfd,
+					Object constr, Object[] virt,
+					Object nw, procedure nil,
+					Object shrink,
+					int depth,
+					Object evdata ) {
+      return new bclass( name, module, num,
+			 bsuper, sub,
+			 alloc, hash,
+			 fd, allfd,
+			 constr, virt, nw,
+			 nil, shrink,
+			 depth,
+			 evdata );
+   }
+
+   public static symbol BGL_CLASS_NAME( bclass c ) {
+      return c.name;
+   }
+   public static symbol BGL_CLASS_NAME( Object c ) {
+      return BGL_CLASS_NAME( (bclass)c );
+   }
+
+   public static int BGL_CLASS_INDEX( bclass c ) {
+      return c.index;
+   }
+   public static int BGL_CLASS_INDEX( Object c ) {
+      return BGL_CLASS_INDEX( (bclass)c );
+   }
+
+   public static int BGL_CLASS_DEPTH( bclass c ) {
+      return c.depth;
+   }
+   public static int BGL_CLASS_DEPTH( Object c ) {
+      return BGL_CLASS_DEPTH( (bclass)c);
+   }
+
+   public static Object BGL_CLASS_SUPER( bclass c ) {
+      return c.bsuper;
+   }
+   public static Object BGL_CLASS_SUPER( Object c ) {
+      return BGL_CLASS_SUPER( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_ANCESTORS_REF( bclass c, int i ) {
+      return c.ancestors[ i ];
+   }
+   public static Object BGL_CLASS_ANCESTORS_REF( Object c, int i ) {
+      return BGL_CLASS_ANCESTORS_REF( (bclass)c, i );
+   }
+
+   public static Object BGL_CLASS_SUBCLASSES( bclass c ) {
+      return c.subclasses;
+   }
+   public static Object BGL_CLASS_SUBCLASSES( Object c ) {
+      return BGL_CLASS_SUBCLASSES( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_SUBCLASSES_SET( bclass c, Object sc ) {
+      c.subclasses = sc;
+      return c;
+   }
+   public static Object BGL_CLASS_SUBCLASSES_SET( Object c, Object sc ) {
+      return BGL_CLASS_SUBCLASSES_SET( (bclass)c, sc );
+   }
+
+   public static Object BGL_CLASS_NIL( bclass c ) {
+      return c.nil;
+   }
+   public static Object BGL_CLASS_NIL( Object c ) {
+      return BGL_CLASS_NIL( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_NIL_SET( bclass c, Object nil ) {
+      c.nil = nil;
+      return c;
+   }
+   public static Object BGL_CLASS_NIL_SET( Object c, Object nil ) {
+      return BGL_CLASS_NIL_SET( (bclass)c, nil );
+   }
+
+   public static symbol BGL_CLASS_MODULE( bclass c ) {
+      return c.module;
+   }
+   public static symbol BGL_CLASS_MODULE( Object c ) {
+      return BGL_CLASS_MODULE( (bclass)c );
+   }
+
+   public static procedure BGL_CLASS_ALLOC_FUN( bclass c ) {
+      return c.alloc_fun;
+   }
+   public static procedure BGL_CLASS_ALLOC_FUN( Object c ) {
+      return BGL_CLASS_ALLOC_FUN( (bclass) c );
+   }
+
+   public static int BGL_CLASS_HASH( bclass c ) {
+      return c.hash;
+   }
+   public static int BGL_CLASS_HASH( Object c ) {
+      return BGL_CLASS_HASH( (bclass)c );
+   }
+
+   public static procedure BGL_CLASS_NEW_FUN( bclass c ) {
+      return (procedure)c.new_fun;
+   }
+   public static procedure BGL_CLASS_NEW_FUN( Object c ) {
+      return BGL_CLASS_NEW_FUN( (bclass)c );
+   }
+
+   public static procedure BGL_CLASS_NIL_FUN( bclass c ) {
+      return c.nil_fun;
+   }
+   public static procedure BGL_CLASS_NIL_FUN( Object c ) {
+      return BGL_CLASS_NIL_FUN( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_CONSTRUCTOR( bclass c ) {
+      return c.constructor;
+   }
+   public static Object BGL_CLASS_CONSTRUCTOR( Object c ) {
+      return BGL_CLASS_CONSTRUCTOR( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_SHRINK( bclass c ) {
+      return c.shrink;
+   }
+   public static Object BGL_CLASS_SHRINK( Object c ) {
+      return BGL_CLASS_SHRINK( (bclass)c );
+   }
+
+   public static Object[] BGL_CLASS_VIRTUAL_FIELDS( bclass c ) {
+      return c.virtual_fields;
+   }
+   public static Object[] BGL_CLASS_VIRTUAL_FIELDS( Object c ) {
+      return BGL_CLASS_VIRTUAL_FIELDS( (bclass)c );
+   }
+
+   public static Object[] BGL_CLASS_DIRECT_FIELDS( bclass c ) {
+      return c.direct_fields;
+   }
+   public static Object[] BGL_CLASS_DIRECT_FIELDS( Object c ) {
+      return BGL_CLASS_DIRECT_FIELDS( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_DIRECT_FIELDS_SET( bclass c, Object[] df ) {
+      c.direct_fields = df;
+      return c;
+   }
+   public static Object BGL_CLASS_DIRECT_FIELDS_SET( Object c, Object[] df ) {
+      return BGL_CLASS_DIRECT_FIELDS_SET( (bclass)c, df );
+   }
+
+   public static Object[] BGL_CLASS_ALL_FIELDS( bclass c ) {
+      return c.all_fields;
+   }
+   public static Object[] BGL_CLASS_ALL_FIELDS( Object c ) {
+      return BGL_CLASS_ALL_FIELDS( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_ALL_FIELDS_SET( bclass c, Object[] df ) {
+      c.all_fields = df;
+      return c;
+   }
+   public static Object BGL_CLASS_ALL_FIELDS_SET( Object c, Object[] df ) {
+      return BGL_CLASS_ALL_FIELDS_SET( (bclass)c, df );
+   }
+
+   public static Object BGL_CLASS_EVDATA( bclass c ) {
+      return c.evdata;
+   }
+   public static Object BGL_CLASS_EVDATA( Object c ) {
+      return BGL_CLASS_EVDATA( (bclass)c );
+   }
+
+   public static Object BGL_CLASS_EVDATA_SET( bclass c, Object d ) {
+      c.evdata = d;
+      return d;
+   }
+   public static Object BGL_CLASS_EVDATA_SET( Object c, Object d ) {
+      return BGL_CLASS_EVDATA_SET( (bclass)c, d );
+   }
 
    //////
    // PROCEDURE

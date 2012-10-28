@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr 26 15:32:04 1995                          */
-;*    Last change :  Fri Dec  9 07:55:32 2011 (serrano)                */
+;*    Last change :  Sun Oct 28 13:03:17 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module is only used to define all the interpeter primops.   */
 ;*=====================================================================*/
@@ -59,7 +59,6 @@
 	    __kmp
 	    __srfi4
 	    __aes
-;* 	    __rsa                                                      */
 	    __url
 	    __http
 	    __ftp

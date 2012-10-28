@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon Oct 15 09:42:34 2012 (serrano)                */
+;*    Last change :  Sun Oct 28 19:14:46 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -60,27 +60,144 @@
 	    ($bigloo-generic-mutex::mutex "bigloo_generic_mutex")
 	    (%object-hashnumber::int (::obj) "bgl_obj_hash_number")
 	    ($make-generic::procedure (::procedure) "bgl_make_generic")
+
+	    (macro $make-class::class (::symbol ::symbol ::long
+					 ::obj ::pair-nil
+					 ::procedure ::long
+					 ::vector ::vector
+					 ::obj ::vector
+					 ::obj ::procedure
+					 ::obj ::long
+					 ::obj)
+		   "bgl_make_class")
+	    (macro $classp::bool (::obj)
+		   "BGL_CLASSP")
+	    (macro $class-name::symbol (::class)
+		   "BGL_CLASS_NAME")
+	    (macro $class-index::long (::class)
+		   "BGL_CLASS_INDEX")
+	    (macro $class-depth::long (::class)
+		   "BGL_CLASS_DEPTH")
+	    (macro $class-super::obj (::class)
+		   "BGL_CLASS_SUPER")
+	    (macro $class-ancestors-ref::class (::class ::long)
+		   "BGL_CLASS_ANCESTORS_REF")
+	    (macro $class-subclasses::pair-nil (::class)
+		   "BGL_CLASS_SUBCLASSES")
+	    (macro $class-subclasses-set!::obj (::class ::pair-nil)
+		   "BGL_CLASS_SUBCLASSES_SET")
+	    (macro $class-nil::obj (::class)
+		   "BGL_CLASS_NIL")
+	    (macro $class-nil-set!::obj (::class ::obj)
+		   "BGL_CLASS_NIL_SET")
+	    (macro $class-module::symbol (::class)
+		   "BGL_CLASS_MODULE")
+	    (macro $class-alloc-fun::procedure (::class)
+		   "BGL_CLASS_ALLOC_FUN")
+	    (macro $class-hash::long (::class)
+		   "BGL_CLASS_HASH")
+	    (macro $class-new-fun::procedure (::class)
+		   "BGL_CLASS_NEW_FUN")
+	    (macro $class-nil-fun::procedure (::class)
+		   "BGL_CLASS_NIL_FUN")
+	    (macro $class-constructor::obj (::class)
+		   "BGL_CLASS_CONSTRUCTOR")
+	    (macro $class-shrink::obj (::class)
+		   "BGL_CLASS_SHRINK")
+	    (macro $class-virtual-fields::vector (::class)
+		   "BGL_CLASS_VIRTUAL_FIELDS")
+	    (macro $class-direct-fields::vector (::class)
+		   "BGL_CLASS_DIRECT_FIELDS")
+	    (macro $class-direct-fields-set!::obj (::class ::vector)
+		   "BGL_CLASS_DIRECT_FIELDS_SET")
+	    (macro $class-all-fields::vector (::class)
+		   "BGL_CLASS_ALL_FIELDS")
+	    (macro $class-all-fields-set!::obj (::class ::vector)
+		   "BGL_CLASS_ALL_FIELDS_SET")
+	    (macro $class-evdata::obj (::class)
+		   "BGL_CLASS_EVDATA")
+	    (macro $class-evdata-set!::obj (::class ::obj)
+		   "BGL_CLASS_EVDATA_SET")
+
 	    (export bigloo-types-number "bgl_types_number"))
 
    (java    (class foreign
 	       (field static $bigloo-generic-mutex::mutex
-		      "bigloo_generic_mutex")
+		  "bigloo_generic_mutex")
 	       (field static %object-type-number::long
-		      "OBJECT_TYPE")
+		  "OBJECT_TYPE")
 	       (method static object-widening::obj (::object)
-		       "BGL_OBJECT_WIDENING")
+		  "BGL_OBJECT_WIDENING")
 	       (method static object-widening-set!::obj (::object ::obj)
-		       "BGL_OBJECT_WIDENING_SET")
+		  "BGL_OBJECT_WIDENING_SET")
 	       (method static %object?::bool (::obj)
-		       "BGL_OBJECTP")
+		  "BGL_OBJECTP")
 	       (method static %object-class-num::long (::object)
-		       "BGL_OBJECT_CLASS_NUM")
+		  "BGL_OBJECT_CLASS_NUM")
 	       (method static %object-class-num-set!::obj (::object ::long)
-		       "BGL_OBJECT_CLASS_NUM_SET")
+		  "BGL_OBJECT_CLASS_NUM_SET")
 	       (method static $make-generic::procedure (::procedure)
-		       "bgl_make_generic")
+		  "bgl_make_generic")
 	       (method static %object-hashnumber::int (::obj)
-		       "bgl_obj_hash_number")))
+		  "bgl_obj_hash_number")
+	       
+	       (method static $make-class::class (::symbol ::symbol ::long
+						    ::obj ::pair-nil
+						    ::procedure ::long
+						    ::vector ::vector
+						    ::obj ::vector
+						    ::obj ::procedure
+						    ::obj ::long
+						    ::obj)
+		  "bgl_make_class")
+	       (method static $classp::bool (::obj)
+		  "BGL_CLASSP")
+	       (method static $class-name::symbol (::class)
+		  "BGL_CLASS_NAME")
+	       (method static $class-index::long (::class)
+		  "BGL_CLASS_INDEX")
+	       (method static $class-depth::long (::class)
+		  "BGL_CLASS_DEPTH")
+	       (method static $class-super::obj (::class)
+		  "BGL_CLASS_SUPER")
+	       (method static $class-ancestors-ref::class (::class ::long)
+		  "BGL_CLASS_ANCESTORS_REF")
+	       (method static $class-subclasses::pair-nil (::class)
+		  "BGL_CLASS_SUBCLASSES")
+	       (method static $class-subclasses-set!::obj (::class ::pair-nil)
+		  "BGL_CLASS_SUBCLASSES_SET")
+	       (method static $class-nil::obj (::class)
+		  "BGL_CLASS_NIL")
+	       (method static $class-nil-set!::obj (::class ::obj)
+		  "BGL_CLASS_NIL_SET")
+	       (method static $class-module::symbol (::class)
+		  "BGL_CLASS_MODULE")
+	       (method static $class-alloc-fun::procedure (::class)
+		  "BGL_CLASS_ALLOC_FUN")
+	       (method static $class-hash::long (::class)
+		  "BGL_CLASS_HASH")
+	       (method static $class-new-fun::procedure (::class)
+		  "BGL_CLASS_NEW_FUN")
+	       (method static $class-nil-fun::procedure (::class)
+		  "BGL_CLASS_NIL_FUN")
+	       (method static $class-constructor::obj (::class)
+		  "BGL_CLASS_CONSTRUCTOR")
+	       (method static $class-shrink::obj (::class)
+		  "BGL_CLASS_SHRINK")
+	       (method static $class-virtual-fields::vector (::class)
+		  "BGL_CLASS_VIRTUAL_FIELDS")
+	       (method static $class-direct-fields::vector (::class)
+		  "BGL_CLASS_DIRECT_FIELDS")
+	       (method static $class-direct-fields-set!::obj (::class ::vector)
+		  "BGL_CLASS_DIRECT_FIELDS_SET")
+	       (method static $class-all-fields::vector (::class)
+		  "BGL_CLASS_ALL_FIELDS")
+	       (method static $class-all-fields-set!::obj (::class ::vector)
+		  "BGL_CLASS_ALL_FIELDS_SET")
+	       (method static $class-evdata::obj (::class)
+		  "BGL_CLASS_EVDATA")
+	       (method static $class-evdata-set!::obj (::class ::obj)
+		  "BGL_CLASS_EVDATA_SET")))
 
    (export  (class object::object)
 	    (class &condition)
@@ -187,7 +304,7 @@
 	    
 	    (allocate-instance::object ::symbol)
 	    (inline wide-object?::bool ::object)
-	    (inline class-virtual::vector ::vector)
+	    (inline class-virtual::vector ::class)
 	    (call-virtual-getter ::object ::int)
 	    (call-virtual-setter ::object ::int ::obj)
 	    (call-next-virtual-getter ::obj ::object ::int)
@@ -265,64 +382,26 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-class ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define (make-class name::symbol module::symbol num::long min::long
-	   super::obj sub::pair-nil max
-	   alloc ha
+(define (make-class name::symbol module::symbol num::long
+	   super::obj sub::pair-nil 
+	   alloc::procedure ha::long
 	   fd::vector allfd::vector
-	   constr virt new nil shrink depth::long ancestors::vector
+	   constr::obj virt::vector
+	   new::obj nil::procedure
+	   shrink::obj depth::long
 	   evdata)
-   (let ((v ($create-vector-uncollectable 21)))
-      ;; the class name
-      (vector-set-ur! v 0 name)
-      ;; the class number
-      (vector-set-ur! v 1 num)
-      ;; the min-number in the class inheritance tree
-      (vector-set-ur! v 2 min)
-      ;; the unique super class
-      (vector-set-ur! v 3 super)
-      ;; the subclasses
-      (vector-set-ur! v 4 sub)
-      ;; the max-num in the class inheritance tree
-      (vector-set-ur! v 5 max)
-      ;; the class allocator
-      (vector-set-ur! v 6 alloc)
-      ;; the class hashing function
-      (vector-set-ur! v 7 ha)
-      ;; the class fields
-      (vector-set-ur! v 8 fd)
-      ;; the class constructor
-      (vector-set-ur! v 9 constr)
-      ;; the class virtual getter and setter
-      (vector-set-ur! v 10 virt)
-      ;; the function that creates instances
-      (vector-set-ur! v 11 new)
-      ;; the function that return the NIL object
-      (vector-set-ur! v 12 nil)
-      ;; the class shrink
-      (vector-set-ur! v 13 shrink)
-      ;; field used when declaring a class within eval
-      (vector-set-ur! v 14 evdata)
-      ;; all the fields
-      (vector-set-ur! v 15 allfd)
-      ;; class module
-      (vector-set-ur! v 16 module)
-      ;; nil instance
-      (vector-set-ur! v 17 #f)
-      ;; the class depth
-      (vector-set-ur! v 18 depth)
-      ;; the class ancestors
-      (vector-set-ur! v 19 ancestors)
-      ;;  a stamp to implement class?
-      (vector-set-ur! v 20 *class-key*)
-      v))
+   ($make-class name module num 
+      super sub
+      alloc ha
+      fd allfd
+      constr virt new nil shrink depth
+      evdata))
 
 ;*---------------------------------------------------------------------*/
 ;*    class? ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (class? obj)
-   (and (vector? obj)
-	(=fx (vector-length obj) 21)
-	(eq? (vector-ref-ur obj 20) *class-key*)))
+   ($classp obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-exists ...                                                 */
@@ -352,61 +431,37 @@
 ;*    class-name ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-name class)
-   (vector-ref-ur class 0))
+   ($class-name class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-module ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-module class)
-   (vector-ref-ur class 16))
+   ($class-module class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-num ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (class-num class)
-   (vector-ref-ur class 1))
-
-;*---------------------------------------------------------------------*/
-;*    class-min-num ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (class-min-num class)
-   (vector-ref-ur class 2))
-
-;*---------------------------------------------------------------------*/
-;*    class-min-num-set! ...                                           */
-;*---------------------------------------------------------------------*/
-(define-inline (class-min-num-set! class v)
-   (vector-set-ur! class 2 v))
-
-;*---------------------------------------------------------------------*/
-;*    class-max-num ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (class-max-num class)
-   (vector-ref-ur class 5))
-
-;*---------------------------------------------------------------------*/
-;*    class-max-num-set! ...                                           */
-;*---------------------------------------------------------------------*/
-(define-inline (class-max-num-set! class v)
-   (vector-set-ur! class 5 v))
+   ($class-index class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-virtual ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (class-virtual class)
-   (vector-ref-ur class 10))
+   ($class-virtual-fields class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-evdata ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-evdata class)
-   (vector-ref-ur class 14))
+   ($class-evdata class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-evdata-set! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (class-evdata-set! class data)
-   (vector-set-ur! class 14 data))
+   ($class-evdata-set! class data))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-evfields-set! ...                                          */
@@ -419,20 +474,20 @@
        (error "class-evfields-set!" "Fields already set" class))
       (else
        (let ((sfields (class-all-fields (class-super class))))
-	  (vector-set-ur! class 8 fields)
-	  (vector-set-ur! class 15 (vector-append sfields fields))))))
+	  ($class-direct-fields-set! class fields)
+	  ($class-all-fields-set! class (vector-append sfields fields))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-fields ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (class-fields class)
-   (vector-ref-ur class 8))
+   ($class-direct-fields class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-all-fields ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (class-all-fields class)
-   (vector-ref-ur class 15))
+   ($class-all-fields class))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-class-field ...                                             */
@@ -527,19 +582,19 @@
 ;*    class-super ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (class-super class)
-   (vector-ref-ur class 3))
+   ($class-super class))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-depth ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (class-depth class)
-   (vector-ref-ur class 18))
+   ($class-depth class))
 		     
 ;*---------------------------------------------------------------------*/
-;*    class-ancestors ...                                              */
+;*    class-ancestors-ref ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (class-ancestors class)
-   (vector-ref-ur class 19))
+(define (class-ancestors-ref class cdepth::long)
+   ($class-ancestors-ref class cdepth))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-abstract? ...                                              */
@@ -557,55 +612,54 @@
 ;*    class-subclasses ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (class-subclasses class)
-   (vector-ref-ur class 4))
+   ($class-subclasses class))
 		     
 ;*---------------------------------------------------------------------*/
 ;*    class-subclasses-set! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (class-subclasses-set! class sub)
-   (vector-set-ur! class 4 sub))
+   ($class-subclasses-set! class sub))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-allocator ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (class-allocator class)
    (if (class? class)
-       (vector-ref-ur class 6)
+       ($class-alloc-fun class)
        (bigloo-type-error "class-allocator" "class" class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-hash ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (class-hash class)
-   (vector-ref-ur class 7))
+   ($class-hash class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-constructor ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (class-constructor class)
-   (vector-ref-ur class 9))
+   ($class-constructor class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-creator ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (class-creator class)
-   (vector-ref-ur class 11))
+   ($class-new-fun class))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-nil-init! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (class-nil-init! class)
-   (let ((proc (vector-ref-ur class 12)))
-      ;; no nil value is represented by #t
+   (let ((proc ($class-nil-fun class)))
       (if (class-wide? class)
 	  (let* ((super (class-super class))
 		 (o ((class-allocator super)))
 		 (wo ((class-allocator class) o)))
-	     (vector-set-ur! class 17 wo)
+	     ($class-nil-set! class wo)
 	     (proc wo)
 	     wo)
 	  (let ((o ((class-allocator class))))
-	     (vector-set-ur! class 17 o)
+	     ($class-nil-set! class o)
 	     (proc o)
 	     o))))
 
@@ -616,10 +670,10 @@
    (cond-expand
       (bigloo-unsafe-type
        ;;; disable type checking
-       (or (vector-ref-ur class 17) (class-nil-init! class)))
+       (or ($class-nil class) (class-nil-init! class)))
       (else
        (if (class? class)
-	   (or (vector-ref-ur class 17) (class-nil-init! class))
+	   (or ($class-nil class) (class-nil-init! class))
 	   (bigloo-type-error "class-nil" "class" class)))))
 
 ;*---------------------------------------------------------------------*/
@@ -627,7 +681,7 @@
 ;*---------------------------------------------------------------------*/
 (define (class-shrink class)
    (if (class? class)
-       (vector-ref-ur class 13)
+       ($class-shrink class)
        (bigloo-type-error "class-shrink" "class" class)))
 
 ;*---------------------------------------------------------------------*/
@@ -865,16 +919,11 @@
 	 (let* ((num   (+fx %object-type-number *nb-classes*))
 		(depth (if (class? super)
 			   (+fx (class-depth super) 1)
-			   1))
-		(ancestors (if (class? super)
-			       (extend-vector (class-ancestors super) super 1)
-			       ($make-vector-uncollectable 1 super)))
+			   0))
 		(class (make-class name module
 			  num
-			  -1
 			  super
 			  '()
-			  -1
 			  allocator
 			  hash
 			  plain
@@ -887,23 +936,12 @@
 			  nil
 			  shrink
 			  depth
-			  ancestors
 			  #f)))
 	    ;; we set the sub field of the super class
 	    (when (class? super)
 	       ;; add the class to its super subclasses list
 	       (class-subclasses-set!
 		  super (cons class (class-subclasses super))))
-	    (cond-expand
-	       (ABANDONNED-RENUMBERING
-		(if (class? super)
-		    (begin
-		       (class-hierarchy-numbering! class super))
-		    (begin
-		       (class-min-num-set! class 1)
-		       (class-max-num-set! class 1))))
-	       (else
-		#f))
 	    ;; we add the class in the *classes* vector (we declare the class)
 	    (vector-set! *classes* *nb-classes* class)
 	    ;; we increment the global class number
@@ -923,7 +961,7 @@
 		      (vector-set! vec num (cdr virtual))))
 		(vector->list virtuals))
       vec)
-   
+
    (if (not (class? super))
        (let* ((len (vector-length virtuals))
 	      (vec (make-vector len)))
@@ -1160,127 +1198,9 @@
 	      (let ((odepth (class-depth oclass))
 		    (cdepth (class-depth class)))
 		 (if (<fx cdepth odepth)
-		     (eq? (vector-ref-ur (class-ancestors oclass) cdepth) class)
+		     (eq? (class-ancestors-ref oclass cdepth) class)
 		     #f))))
        #f))
-
-(cond-expand
-   (ABANDONNED-RENUMBERING
-(define (isa? obj class)
-   ;; This version has been abonned since bigloo3.8d because it is not
-   ;; thread safe. It requires a mutex to protect against parallel renumbering
-   (if (object? obj)
-       ;; it is an object, we check if OBJ inherits of CLASS
-       (let ((oclass (object-class obj)))
-	  (if (eq? oclass class)
-	      #t
-	      (if (class? class)
-		  (let ((omin (class-min-num oclass))
-			(cmin (class-min-num class))
-			(cmax (class-max-num class)))
-		     (if (>=fx omin cmin)
-			 (<=fx omin cmax)
-			 #f))
-		  #f)))
-       ;; not even a class instance
-       #f))
-))
-
-;*---------------------------------------------------------------------*/
-;*    class-hierarchy-numbering! ...                                   */
-;*    -------------------------------------------------------------    */
-;*    We tried to avoid as much as possible complete tree traversal.   */
-;*---------------------------------------------------------------------*/
-(cond-expand
-   (ABANDONNED-RENUMBERING
-(define (class-hierarchy-numbering! class super)
-   ;; class hierarchy number has been abonned since bigloo3.8d,
-   ;; see isa? above
-   (let* ((super-min (class-min-num super))
-	  (super-max (class-max-num super))
-	  (subclasses (class-subclasses super))
-	  (new-num::long (if (null? (cdr subclasses))
-		       (+fx 1 (class-min-num super))
-		       (+fx 1 (class-max-num (cadr subclasses))))))
-      ;; test the validity of the class number
-      (when (<fx new-num 0)
-	 (error "class-hierarchy-numbering"
-		"Cannot allocate fresh positive number for class"
-		(class-name class)))
-      ;; we set the class type
-      (class-min-num-set! class new-num)
-      (class-max-num-set! class new-num)
-      (when (>fx new-num super-max)
-	 ;; we have to re-number a part of the tree
-	 (class-hierarchy-up-renumber! super))))
-))
-
-;*---------------------------------------------------------------------*/
-;*    class-hierarchy-up-renumber ...                                  */
-;*---------------------------------------------------------------------*/
-(cond-expand
-   (ABANDONNED-RENUMBERING
-(define (class-hierarchy-up-renumber!-ABANDONNED class)
-   ;; we increment the max number for the current class
-   (let* ((old-num (class-max-num class))
-	  (new-num (cond
-		      ((>fx old-num (/fx (maxvalfx) 2))
-		       (+fx 10 old-num))
-		      ((>fx old-num (/fx (maxvalfx) 4))
-		       (+fx 100 old-num))
-		      ((<fx (-fx old-num (class-min-num class)) 512)
-		       (+fx old-num 1024))
-		      (else
-		       (*fx old-num 2))))
-	  (super (class-super class)))
-      (when (<fx new-num 0)
-	 (error "class-hierarchy-up-renumber!"
-		"Cannot renumber class hierarchy"
-		(class-name class)))
-      (class-max-num-set! class new-num)
-      ;; we propagate this to its super classes and sisters
-      (if (class? super)
-	  (let loop ((sisters (class-subclasses super))
-		     (old-sisters '()))
-	     ;; we have to collect its older sisters
-	     (cond
-		((or (null? sisters) (eq? (car sisters) class))
-		 ;; we have to renumber its older sisters
-		 (let liip ((old-sisters old-sisters)
-			    (sister-num (+fx new-num 1)))
-		    (if (null? old-sisters)
-			;; we are done, we loop using the super class, only
-			;; if we have introduced a new unbound super class
-			;; max-number
-			(if (>fx (class-max-num (car (class-subclasses super)))
-				 (class-max-num super))
-			    (class-hierarchy-up-renumber! super))
-			(liip (cdr old-sisters)
-			      (class-hierarchy-down-renumber! (car old-sisters)
-							      sister-num)))))
-		(else
-		 (loop (cdr sisters)
-		       (cons (car sisters) old-sisters))))))))
-))
-
-;*---------------------------------------------------------------------*/
-;*    class-hierarchy-down-renumber! ...                               */
-;*---------------------------------------------------------------------*/
-(cond-expand
-   (ABANDONNED-RENUMBERING
-(define (class-hierarchy-down-renumber!-ABANDONNED class num)
-   ;; we set the min number for the class and we walk thru its children
-   (class-min-num-set! class num)
-   (let liip ((classes (reverse (class-subclasses class)))
-	      (max-num num))
-      (if (null? classes)
-	  (begin
-	     (class-max-num-set! class max-num)
-	     (+fx 1 max-num))
-	  (liip (cdr classes)
-	     (class-hierarchy-down-renumber!
-		(car classes) (+fx 1 max-num))))))
-))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ...                                               */

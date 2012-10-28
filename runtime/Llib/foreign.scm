@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  5 16:50:26 1995                          */
-;*    Last change :  Tue Mar 11 15:50:48 2008 (serrano)                */
+;*    Last change :  Sun Oct 28 12:46:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign object management.                                   */
 ;*    -------------------------------------------------------------    */
@@ -62,7 +62,9 @@
 	       (method static $make-string-ptr-null::string ()
 		       "MAKE_STRING_PTR_NULL")
 	       (method static $make-void*-null::void* ()
-		       "MAKE_VOID_STAR_NULL")))
+		       "MAKE_VOID_STAR_NULL")
+	       (method static foreign-print::void (::string)
+		       "print")))
 	          
    (export  (inline foreign?::bool ::obj)
 	    (inline foreign-eq?::bool ::obj ::obj)
