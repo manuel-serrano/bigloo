@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Tue Oct 23 18:25:55 2012 (serrano)                */
+;*    Last change :  Thu Oct 25 18:28:49 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -642,7 +642,7 @@ of the start of the containing expression."
 ;*    Bee indent forms                                                 */
 ;*---------------------------------------------------------------------*/
 (defvar cond-regexp
-  "\\(cond\\|case\\|match-case\\|args-parse\\|cond-expand\\|string-case\\|match-lambda\\|syntax-rule\\)[\t\n ]")
+  "\\(cond\\|case\\|match-case\\|args-parse\\|cond-expand\\|string-case\\|match-lambda\\|syntax-rule\\|regular-grammar\\)[\t\n ]")
 
 ;; basic forms
 (put 'begin                     'bee-indent-hook 0)

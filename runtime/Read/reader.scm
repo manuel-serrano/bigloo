@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Wed Apr 18 21:05:51 2012 (serrano)                */
+;*    Last change :  Thu Oct 25 18:30:25 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -338,7 +338,7 @@
       ;; foreign strings of char
       ((: "\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
        (the-escape-substring 1 (-fx (the-length) 1) #f))
-
+      
       ;; ucs2 strings
       ((: "u\"" (* (or (out #a000 #\\ #\") (: #\\ all))) "\"")
        (let ((str (the-escape-substring 2 (-fx (the-length) 1) #f)))
@@ -376,13 +376,13 @@
 	      beof)
 	     (else
 	      (read-error "Illegal identifier"
-			  (string-append "#" (symbol->string symbol))
-			  (the-port))))))
+		 (string-append "#" (symbol->string symbol))
+		 (the-port))))))
       
       ;; constants
       ((: "<" (= 4 (or digit (uncase (in ("AF"))))) ">")
        (make-cnst (string->integer (the-substring 1 5) 16)))
-
+      
       ;; SRFI-10 reader macros
       ((: ",")
        (let ((f (read (the-port))))
@@ -439,14 +439,14 @@
       
       ;; multi-line comment (SRFI-30)
       ("#|"
-	 (read-multi-line-comment (the-port))
-	 (ignore))
+       (read-multi-line-comment (the-port))
+       (ignore))
       
       ;; #; expression comments
       ("#;"
-	 (begin
-	    (ignore)
-	    (ignore)))
+       (begin
+	  (ignore)
+	  (ignore)))
       
       ;; srfi-22 support
       ((bol (: "#!" #\space (or digit letter special (in "|,'`")) (* all)))
@@ -506,17 +506,17 @@
        (the-flonum))
       
       ("+nan.0"
-	 $nan)
+       $nan)
       ("+inf.0"
-	 $infinity)
+       $infinity)
       ("-inf.0"
-	 (negfl $infinity))
+       (negfl $infinity))
       
       ;; doted pairs
       ("."
-	 (if (<=fx par-open 0)
-	     (read-error "Illegal token" #\. (the-port))
-	     *dotted-mark*))
+       (if (<=fx par-open 0)
+	   (read-error "Illegal token" #\. (the-port))
+	   *dotted-mark*))
       
       ;; booleans
       ((: "#" (uncase #\t))
@@ -533,15 +533,15 @@
       
       ;; identifiers
       (field
-	 (if (eq? *identifier-syntax* 'bigloo)
-	     (cons/loc '->
-		(map! string->symbol (string-split (the-string) "."))
-		(input-port-name (the-port))
-		(input-port-position (the-port)))
-	     (the-symbol)))
+       (if (eq? *identifier-syntax* 'bigloo)
+	   (cons/loc '->
+	      (map! string->symbol (string-split (the-string) "."))
+	      (input-port-name (the-port))
+	      (input-port-position (the-port)))
+	   (the-symbol)))
       (id
-	 ;; this rule has to be placed after the rule matching the `.' char
-	 (the-symbol))
+       ;; this rule has to be placed after the rule matching the `.' char
+       (the-symbol))
       ((: "|" (* (or (out #a000 #\\ #\|) (: #\\ all))) "|")
        (if (=fx (the-length) 2)
 	   (string->symbol "")
@@ -549,13 +549,13 @@
       
       ;; quotations 
       ("'"
-	 (read-quote 'quote (the-port) ignore posp))
+       (read-quote 'quote (the-port) ignore posp))
       ("`"
-	 (read-quote 'quasiquote (the-port) ignore posp))
+       (read-quote 'quasiquote (the-port) ignore posp))
       (","
-	 (read-quote 'unquote (the-port) ignore posp))
+       (read-quote 'unquote (the-port) ignore posp))
       (",@"
-	 (read-quote 'unquote-splicing (the-port) ignore posp))
+       (read-quote 'unquote-splicing (the-port) ignore posp))
       
       ;; lists
       ((in "([")
@@ -584,12 +584,12 @@
       
       ;; vectors
       ("#("
-	 ;; we increment the number of open parenthesis
-	 (set! par-open (+fx 1 par-open))
-	 (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
-			    par-poses))
-	 (list->vector
-	    (reverse! (collect-up-to ignore "vector" (the-port) posp))))
+       ;; we increment the number of open parenthesis
+       (set! par-open (+fx 1 par-open))
+       (set! par-poses (cons (-fx (input-port-position (the-port)) 1)
+			  par-poses))
+       (list->vector
+	  (reverse! (collect-up-to ignore "vector" (the-port) posp))))
       
       ;; typed homogeneous vectors
       ((: "#" letterid "(")
@@ -656,34 +656,34 @@
       
       ;; structures
       ("#{"
-	 ;; then, we compute the structure
-	 ;; we increment the number of open parenthesis
-	 (set! bra-open (+fx 1 bra-open))
-	 (set! bra-poses (cons (-fx (input-port-position (the-port)) 1)
-			    bra-poses))
-	 (let* ((l (reverse! (collect-up-to ignore "structure" (the-port) posp)))
-		(len (length l))
-		(r (make-struct (car l) (-fx len 1) #unspecified)))
-	    (let loop ((i 0)
-		       (l (cdr l)))
-	       (when (pair? l)
-		  (struct-set! r i (car l))
-		  (loop (+fx i 1) (cdr l))))
-	    r))
+       ;; then, we compute the structure
+       ;; we increment the number of open parenthesis
+       (set! bra-open (+fx 1 bra-open))
+       (set! bra-poses (cons (-fx (input-port-position (the-port)) 1)
+			  bra-poses))
+       (let* ((l (reverse! (collect-up-to ignore "structure" (the-port) posp)))
+	      (len (length l))
+	      (r (make-struct (car l) (-fx len 1) #unspecified)))
+	  (let loop ((i 0)
+		     (l (cdr l)))
+	     (when (pair? l)
+		(struct-set! r i (car l))
+		(loop (+fx i 1) (cdr l))))
+	  r))
       ("}"
-	 (set! bra-open (-fx bra-open 1))
-	 (if (<fx bra-open 0)
-	     (begin
-		(warning/location (input-port-name (the-port))
-		   (input-port-last-token-position (the-port))
-		   'read
-		   "Superfluous closing bracket `"
-		   (the-string))
-		(set! bra-open 0)
-		(ignore))
-	     (begin
-		(set! bra-poses (cdr bra-poses))
-		*end-of-list*)))
+       (set! bra-open (-fx bra-open 1))
+       (if (<fx bra-open 0)
+	   (begin
+	      (warning/location (input-port-name (the-port))
+		 (input-port-last-token-position (the-port))
+		 'read
+		 "Superfluous closing bracket `"
+		 (the-string))
+	      (set! bra-open 0)
+	      (ignore))
+	   (begin
+	      (set! bra-poses (cdr bra-poses))
+	      *end-of-list*)))
       
       ;; cyclic target mark
       ((: #\# (+ digit) "=")
@@ -705,7 +705,7 @@
       
       ;; special tokens
       ("#"
-	 (read/rp *sharp-grammar* (the-port)))
+       (read/rp *sharp-grammar* (the-port)))
       
       ;; error or eof
       (else
