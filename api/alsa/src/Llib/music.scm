@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Oct 25 08:20:18 2012 (serrano)                */
+;*    Last change :  Tue Oct 30 19:40:41 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -236,7 +236,10 @@
 ;*---------------------------------------------------------------------*/
 (define (open-file url o::alsamusic)
    (with-handler
-      (lambda (e) #f)
+      (lambda (e)
+	 (tprint "OPEN-FILE-ERROR...")
+	 (exception-notify e)
+	 #f)
       (with-access::alsamusic o (timeout)
 	 (let ((pi (open-input-file url #f timeout)))
 	    (input-port-timeout-set! pi timeout)
@@ -371,7 +374,7 @@
 		(onerror o
 		   (instantiate::&io-port-error
 		      (proc "music-play")
-		      (msg "Cannot open")
+		      (msg "Cannot open mmap")
 		      (obj url)))))))
    
    (define (play-url-next o d::alsadecoder url::bstring playlist)

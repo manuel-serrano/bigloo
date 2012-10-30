@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Oct 28 19:14:46 2012 (serrano)                */
+;*    Last change :  Tue Oct 30 18:57:14 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1191,6 +1191,23 @@
 ;*    The constant-time and thread-safe implementation of is-a?        */
 ;*---------------------------------------------------------------------*/
 (define (isa? obj class)
+   (if (object? obj)
+       (let ((oclass (object-class obj)))
+	  (if (eq? oclass class)
+	      #t
+	      (let ((odepth (class-depth oclass))
+		    (cdepth (class-depth class)))
+		 (if (<fx cdepth odepth)
+		     (eq? (class-ancestors-ref oclass cdepth) class)
+		     #f))))
+       #f))
+
+;*---------------------------------------------------------------------*/
+;*    %isa/cdepth? ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    The constant-time and thread-safe implementation of is-a?        */
+;*---------------------------------------------------------------------*/
+(define (%isa/cdepth? obj class cdepth)
    (if (object? obj)
        (let ((oclass (object-class obj)))
 	  (if (eq? oclass class)

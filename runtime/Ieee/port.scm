@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Sep 26 22:13:47 2012 (serrano)                */
+;*    Last change :  Tue Oct 30 09:11:47 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -903,7 +903,7 @@
    (multiple-value-bind (protocol login host port abspath)
       (url-sans-protocol-parse string "http")
       (let loop ((ip #f)
-		 (header '((user-agent: "Mozilla/5.0"))))
+		 (header '((user-agent: "Mozilla/5.0") (Connection: close))))
 	 (let* ((sock (http :host host
 			 :port port
 			 :login login
