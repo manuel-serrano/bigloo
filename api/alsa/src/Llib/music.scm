@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Oct 30 19:40:41 2012 (serrano)                */
+;*    Last change :  Wed Oct 31 21:43:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -237,12 +237,12 @@
 (define (open-file url o::alsamusic)
    (with-handler
       (lambda (e)
-	 (tprint "OPEN-FILE-ERROR...")
 	 (exception-notify e)
 	 #f)
       (with-access::alsamusic o (timeout)
 	 (let ((pi (open-input-file url #f timeout)))
-	    (input-port-timeout-set! pi timeout)
+	    (when (input-port? pi)
+	       (input-port-timeout-set! pi timeout))
 	    pi))))
 
 ;*---------------------------------------------------------------------*/
@@ -340,15 +340,15 @@
 		      (with-access::musicstatus %status (playlistid)
 			 (onevent o 'playlist playlistid)))
 		   (alsadecoder-reset! d)
-		   (alsadecoder-decode d o buffer)))
-	    (with-access::alsamusic o (onerror %amutex)
-	       (mutex-unlock! %amutex)
-	       (onerror o
-		  (instantiate::&io-port-error
-		     (proc "music-play")
-		     (msg "Cannot open")
-		     (obj url)))
-	       (sleep *error-sleep-duration*)))))
+		   (alsadecoder-decode d o buffer))
+		(with-access::alsamusic o (onerror %amutex)
+		   (mutex-unlock! %amutex)
+		   (onerror o
+		      (instantiate::&io-port-error
+			 (proc "music-play")
+			 (msg "Cannot open")
+			 (obj url)))
+		   (sleep *error-sleep-duration*))))))
    
    (define (play-url-mmap o d::alsadecoder url::bstring
 	      playlist::pair-nil notify::bool)
@@ -491,7 +491,7 @@
 	       (mutex-unlock! %dmutex)
 	       #t))))
    
-   (with-access::alsamusic o (%amutex %status onerror)
+   (with-access::alsamusic o (%amutex %status)
       (with-lock %amutex
 	 (lambda ()
 	    (cond
