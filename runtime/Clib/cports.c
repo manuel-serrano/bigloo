@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Oct 15 10:23:12 2012 (serrano)                */
+/*    Last change :  Mon Nov  5 19:02:11 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1500,6 +1500,18 @@ bgl_input_string_seek( obj_t port, long pos ) {
    }
 }
 
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_file_to_input_port ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_file_to_input_port( FILE *file ) {
+   obj_t buffer = make_string_sans_fill( default_io_bufsiz );
+   obj_t kindof = (file == stdin ? KINDOF_CONSOLE : KINDOF_FILE);
+   obj_t name = string_to_bstring( file == stdin ? "stdin" : "file" );
+
+   return bgl_make_input_port( name, file, kindof, buffer );
+}
 
 /*---------------------------------------------------------------------*/
 /*    bgl_open_input_string ...                                        */

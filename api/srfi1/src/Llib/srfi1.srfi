@@ -835,8 +835,21 @@
       (let recur ((seed seed))
 	(if (p seed) '()
 	    (cons (f seed) (recur (g seed)))))))
-      
 
+; real fold-left (ala Haskell & OCaml)
+(define (fold-left kons knil lis1 . lists)
+  (check-arg procedure? kons fold-left)
+  (if (pair? lists)
+      (let lp ((lists (cons lis1 lists)) (ans knil))	; N-ary case
+	(receive (cars cdrs) (%cars+cdrs lists)
+	  (if (null? cars) ans ; Done.
+	      (lp cdrs (apply kons ans cars)))))
+	    
+      (let lp ((lis lis1) (ans knil))			; Fast path
+	(if (null-list? lis) ans
+	    (lp (cdr lis) (kons ans (car lis)))))))
+
+; fold-left with flipped args (kept for compatibility purposes)
 (define (fold kons knil lis1 . lists)
   (check-arg procedure? kons fold)
   (if (pair? lists)
@@ -875,6 +888,25 @@
       (let recur ((lis lis1))				; Fast path
 	(if (null-list? lis) zero (f lis (recur (cdr lis)))))))
 
+; Correct pair-fold-left now
+(define (pair-fold-left f zero lis1 . lists)
+  (check-arg procedure? f pair-fold-left)
+  (if (pair? lists)
+      (let lp ((lists (cons lis1 lists))
+	       (rlists (list-tabulate (+ 1 (length lists)) (lambda x '())))
+	       (ans zero))	; N-ary case
+	(receive (cars cdrs) (%cars+cdrs lists)
+	  (if (null? cars) ans ; Done.
+	      (let ((rlists (map! (lambda (x y) (append! y (list x))) cars rlists)))
+		 (lp cdrs rlists (apply f ans rlists)))
+	      )))
+	    
+      (let lp ((lis lis1) (rlis '()) (ans zero))	; Fast path
+	(if (null-list? lis) ans
+	    (let ((rlis (append! rlis (list (car lis)))))
+		   (lp (cdr lis) rlis (f ans rlis)))))
+      ))
+
 (define (pair-fold f zero lis1 . lists)
   (check-arg procedure? f pair-fold)
   (if (pair? lists)
@@ -896,6 +928,12 @@
   (check-arg procedure? f reduce)
   (if (null-list? lis) ridentity
       (fold f (car lis) (cdr lis))))
+
+; use fold-left rather than fold...
+(define (reduce-left f lidentity lis)
+  (check-arg procedure? f reduce-left)
+  (if (null-list? lis) lidentity
+      (fold-left f (car lis) (cdr lis))))
 
 (define (reduce-right f ridentity lis)
   (check-arg procedure? f reduce-right)

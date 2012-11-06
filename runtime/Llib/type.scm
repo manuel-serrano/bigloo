@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Dec  7 11:04:12 2011 (serrano)                */
+;*    Last change :  Mon Nov  5 18:58:47 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -892,7 +892,7 @@
        (method static $output-port->file::file (::output-port) "OUTPUT_PORT_TO_FILE")
        (method static $file->output-port::output-port (::file) "FILE_TO_OUTPUT_PORT")
 
-       (method static $file->input-port::input-port (::file) "file_to_input_port")
+       (method static $file->input-port::input-port (::file) "bgl_file_to_input_port")
 
        (method static $binary-port->file::file (::binary-port) "BINARY_PORT_TO_FILE")
 

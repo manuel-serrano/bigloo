@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Oct 31 21:43:35 2012 (serrano)                */
+;*    Last change :  Mon Nov  5 15:41:57 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -630,7 +630,7 @@
 	 (set! %eof #t)
 	 (condition-variable-broadcast! %bcondv)
 	 (mutex-unlock! %bmutex)
-	 (when (>=fx (alsa-debug) 2)
+	 (when (>=fx (alsa-debug) 1)
 	    (debug (current-microseconds) "\n")))
 
       (define (inc-head! i)
