@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Fri Aug 24 05:58:42 2012 (serrano)                */
+;*    Last change :  Tue Nov  6 11:10:11 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -34,7 +34,8 @@
 	    __r4_output_6_10_3
 	    __r4_ports_6_10_1
 
-	    __evenv)
+	    __evenv
+	    __bignum)
 
    (extern  (macro c-symbol?::bool (::obj) "SYMBOLP")
 	    (c-string->symbol::symbol (::string) "string_to_symbol")

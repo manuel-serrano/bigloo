@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Mon Oct 22 10:28:28 2012 (serrano)                */
+;*    Last change :  Tue Nov  6 09:31:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee mode declaration.                                        */
 ;*=====================================================================*/
@@ -147,6 +147,8 @@
   (setq paragraph-separate paragraph-start)
   (make-local-variable 'paragraph-ignore-fill-prefix)
   (setq paragraph-ignore-fill-prefix t)
+;*   (make-local-variable 'fill-paragraph-function)                    */
+;*   (setq fill-paragraph-function bee-fill-paragraph-function)        */
   (make-local-variable 'indent-line-function)
   (setq indent-line-function 'bee-indent-line)
   (make-local-variable 'comment-start)

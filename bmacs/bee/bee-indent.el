@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Thu Oct 25 18:28:49 2012 (serrano)                */
+;*    Last change :  Tue Nov  6 09:30:51 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -58,6 +58,12 @@
     (set-process-sentinel bee-external-indent-process
 			  'bee-external-indent-sentinel))))
 
+;* {*---------------------------------------------------------------------*} */
+;* {*    bee-fill-paragraph-function ...                                  *} */
+;* {*---------------------------------------------------------------------*} */
+;* (defun bee-fill-paragraph-function (justify)                        */
+;*   'todo)                                                            */
+;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    bee-comment-indent ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -351,7 +357,8 @@ of the start of the containing expression."
 ;*---------------------------------------------------------------------*/
 (defun bee-indent-brace-p (state)
   (or (and (integerp (car (nthcdr 1 state)))
-	   (eq (char-after (car (nthcdr 1 state))) ?{))
+	   (let ((c (char-after (car (nthcdr 1 state)))))
+	     (or (eq c ?{) (and (eq c ?[) (eq bee-indent-mode 'hop)))))
       (let ((op (car (nthcdr 9 state))))
 	(and (consp op)
 	     (let ((po (reverse op))

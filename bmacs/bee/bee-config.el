@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Wed Oct 24 21:04:09 2012 (serrano)                */
+;*    Last change :  Tue Nov  6 09:18:26 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -90,6 +90,11 @@
   "*Force special indentation for quoted lists and vectors"
   :group 'bee
   :type 'boolean)
+
+(defcustom bee-indent-mode 'hop
+  "*Force special indentation for quoted lists and vectors"
+  :group 'bee
+  :type '(choice (const scheme) (const hop)))
 
 (defcustom bee-indent-style 'left
   "*Force special indentation for quoted lists and vectors"
