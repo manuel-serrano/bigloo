@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Sep 26 21:55:19 2012 (serrano)                */
+/*    Last change :  Wed Nov  7 08:44:33 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -216,6 +216,22 @@ socket_timeout_error( obj_t hostname, int port ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    socket_hostname ...                                              */
+/*---------------------------------------------------------------------*/
+static char *
+socket_hostname( obj_t hostname ) {
+   char *name = BSTRING_TO_STRING( hostname );
+
+   if( *name = 0 ) {
+      /* a local socket */
+      return name + 1;
+   } else {
+      return name;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    client_socket_error ...                                          */
 /*---------------------------------------------------------------------*/
@@ -228,9 +244,9 @@ client_socket_error( char *proc, obj_t hostname, int port, char *msg, int err ) 
    sprintf( buffer1, "%s (%d)", strerror( err ), err );
 
    if( port >= 0 ) {
-      sprintf( buffer2, "%s:%d", BSTRING_TO_STRING( hostname ), port );
+      sprintf( buffer2, "%s:%d", socket_hostname( hostname ), port );
    } else {
-      strcpy( buffer2, BSTRING_TO_STRING( hostname ) );
+      strcpy( buffer2, socket_hostname( hostname ) );
    }
 
    socket_error( proc, buffer1, string_to_bstring( buffer2 ) );
