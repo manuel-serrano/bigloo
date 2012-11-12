@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Sat Oct 13 07:34:47 2012 (serrano)                */
+;*    Last change :  Mon Nov 12 09:37:26 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
@@ -83,6 +83,9 @@
 		 (exp (if (pair? aux) `(let ,aux ,rec) rec)))
 	     (e exp e))))
 
+   (define (make-binding var val x)
+      (evepairify (list var val) x))
+   
    (define (expand-let-simple bindings body x e)
       (let loop ((bindings bindings)
 		 (nbindings '())
@@ -93,11 +96,11 @@
 	     (match-case (car bindings)
 		((and (? symbol?) ?var)
 		 (loop (cdr bindings)
-		       (cons (list var #unspecified) nbindings)
+		       (cons (make-binding var #unspecified bindings) nbindings)
 		       (cons var ebdgs)))
 		(((and (? symbol?) ?var) ?val)
 		 (loop (cdr bindings)
-		       (cons (list var (e val e)) nbindings)
+		       (cons (make-binding var (e val e) (car bindings)) nbindings)
 		       (cons var ebdgs)))
 		(else
 		 (error "let" "Illegal binding form" x))))))
@@ -118,6 +121,10 @@
 ;*    expand-eval-let* ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (expand-eval-let* x e)
+   
+   (define (make-binding var val x)
+      (evepairify (list var val) x))
+   
    (let* ((e (eval-begin-expander e))
 	  (res (match-case x
 		  ((?- () . (and ?body (not ())))
@@ -133,7 +140,8 @@
 				ebdgs (expand-progn body) e #f)))
 			 ((not (pair? (car bindings)))
 			  (loop (cdr bindings)
-				(cons (list (car bindings) #unspecified)
+				(cons (make-binding (car bindings) #unspecified
+					 bindings)
 				      nbindings)
 				(cons (car bindings) ebdgs)))
 			 ((or (not (pair? (cdar bindings)))
@@ -141,12 +149,13 @@
 			  (error "let*" "Illegal bindings form" x))
 			 (else
 			  (loop (cdr bindings)
-				(cons (list (caar bindings)
-					    (%with-lexical
-					     ebdgs
-					     (expand-progn (cdar bindings))
-					     e
-					     #f))
+				(cons (make-binding (caar bindings)
+					 (%with-lexical
+					    ebdgs
+					    (expand-progn (cdar bindings))
+					    e
+					    #f)
+					 (car bindings))
 				      nbindings)
 				(cons (caar bindings) ebdgs))))))
 		  (else

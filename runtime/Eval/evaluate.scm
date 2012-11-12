@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sun Oct 28 13:00:00 2012 (serrano)                */
+;*    Last change :  Mon Nov 12 09:37:07 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -380,15 +380,19 @@
 				  (name (car i))
 				  (type (cdr i)) )))
 		       binds)) )
-	  (instantiate::ev_let
-	     (vars vars)
-	     (vals (map (lambda (b) (uconv (cadr b))) binds))
-	     (body (conv-begin body (append vars locals) globals tail? where loc #f)) )))
+	  (let ( (bloc (get-location binds loc)) )
+	     (instantiate::ev_let
+		(vars vars)
+		(vals (map (lambda (b)
+			      (let ( (loc (get-location b bloc)) )
+				 (uconv/loc (cadr b) loc) ))
+			 binds))
+		(body (conv-begin body (append vars locals) globals tail? where loc #f)) ))))
       ((let* ?binds . ?body)
        (define (conv-vals l vars locals loc)
 	  (if (null? l)
 	      '()
-	      (let ( (loc (get-location l loc)) )
+	      (let ( (loc (get-location (car l) loc)) )
 		 (cons (conv (cadar l) locals globals #f where loc #f)
 		       (conv-vals (cdr l) (cdr vars) (cons (car vars) locals) loc) ))))
        (let ( (vars (map (lambda (b)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Oct 15 09:54:10 2012 (serrano)                */
+;*    Last change :  Mon Nov 12 08:51:56 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -527,7 +527,7 @@
       (let loop ((i 0))
 	 (cond
 	    ((=fx i len)
-	     (error #f
+	     (expand-error name
 		(format "Illegal ~a, field unknown \"~a\"" form name)
 		sexp))
 	    ((eq? (class-field-name (vector-ref fields i)) name)
@@ -580,7 +580,7 @@
 		(else
 		 (error (car s) "Illegal form" x)))))
 	 (else
-	  (error #f "Illegal with-access" x)))))
+	  (expand-error "with-access" "Illegal with-access" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-access-expander ...                                         */
