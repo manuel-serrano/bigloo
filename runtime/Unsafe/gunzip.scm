@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Mon Nov 14 16:23:25 2011 (serrano)                */
-;*    Copyright   :  2006-11 Manuel Serrano                            */
+;*    Last change :  Tue Nov 13 09:21:40 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
 ;*    -------------------------------------------------------------    */
@@ -1126,7 +1126,7 @@
 ;*---------------------------------------------------------------------*/
 (define (open-input-inflate-file name #!optional (bufinfo #t) (timeout 1000000))
    (let ((p (open-input-file name bufinfo))
-	 (b (get-port-buffer 'open-input-deflate-file #t c-default-io-bufsiz)))
+	 (b (get-port-buffer "open-input-deflate-file" #t c-default-io-bufsiz)))
       (and (input-port? p)
 	   (let ((pi (port->inflate-port p b)))
 	      (input-port-close-hook-set! pi (lambda (v) (close-input-port p)))

@@ -37,6 +37,7 @@ The section @ref{Files} describes functions for handling files.
 @deffn {library procedure} call-with-input-file string proc
 @deffnx {bigloo procedure} call-with-input-string string proc
 @deffnx {library procedure} call-with-output-file string proc
+@deffnx {library procedure} call-with-append-file string proc
 @deffnx {library procedure} call-with-output-string proc
 These two procedures call @var{proc} with one argument, a port obtained
 by opening @var{string}.
@@ -152,6 +153,7 @@ character of the input port.
 @deffnx {optional procedure} with-input-from-string string thunk
 @deffnx {optional procedure} with-input-from-procedure procedure thunk
 @deffnx {optional procedure} with-output-to-file string thunk
+@deffnx {optional procedure} with-append-to-file string thunk
 @deffnx {bigloo procedure} with-error-to-file string thunk
 @deffnx {bigloo procedure} with-output-to-string thunk
 @deffnx {bigloo procedure} with-output-to-procedure procedure thunk

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Fri Jun 22 17:29:00 2012 (serrano)                */
+;*    Last change :  Tue Nov 13 09:21:29 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -324,8 +324,8 @@
 ;*---------------------------------------------------------------------*/
 (define (make-client-socket::socket host port #!key (domain 'inet) (inbuf #t) (outbuf #t) (timeout 0))
    (%socket-init!)
-   (let ((inbuf (get-port-buffer 'make-client-socket inbuf 512))
-	 (outbuf (get-port-buffer 'make-client-socket outbuf 1024)))
+   (let ((inbuf (get-port-buffer "make-client-socket" inbuf 512))
+	 (outbuf (get-port-buffer "make-client-socket" outbuf 1024)))
       (case domain
 	 ((inet)
 	  ($make-client-socket host port timeout inbuf outbuf))
@@ -347,8 +347,8 @@
 ;*    socket-accept ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (socket-accept socket::socket #!key (inbuf #t) (outbuf #t) (errp #t))
-   (let ((inbuf (get-port-buffer 'socket-accept inbuf 512))
-	 (outbuf (get-port-buffer 'socket-accept outbuf 1024)))
+   (let ((inbuf (get-port-buffer "socket-accept" inbuf 512))
+	 (outbuf (get-port-buffer "socket-accept" outbuf 1024)))
       ($socket-accept socket errp inbuf outbuf)))
 
 ;*---------------------------------------------------------------------*/
@@ -362,14 +362,14 @@
       (set! inbufs (make-vector (vector-length result)))
       (let loop ((i 0))
 	 (when (<fx i (vector-length result))
-	    (let ((buf (get-port-buffer 'socket-accept-many #t 512)))
+	    (let ((buf (get-port-buffer "socket-accept-many" #t 512)))
 	       (vector-set! inbufs i buf)
 	       (loop (+fx i 1))))))
    (unless (vector? outbufs)
       (set! outbufs (make-vector (vector-length result)))
       (let loop ((i 0))
 	 (when (<fx i (vector-length result))
-	    (let ((buf (get-port-buffer 'socket-accept-many #t 512)))
+	    (let ((buf (get-port-buffer "socket-accept-many" #t 512)))
 	       (vector-set! outbufs i buf)
 	       (loop (+fx i 1))))))
    (cond-expand

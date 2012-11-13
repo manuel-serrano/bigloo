@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Oct 30 09:11:47 2012 (serrano)                */
+;*    Last change :  Tue Nov 13 09:22:01 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -367,6 +367,7 @@
    (export  (call-with-input-file ::bstring ::procedure)
 	    (call-with-input-string ::bstring ::procedure)
 	    (call-with-output-file ::bstring ::procedure)
+	    (call-with-append-file ::bstring ::procedure)
 	    (call-with-output-string::bstring ::procedure)
 	    
 	    (inline input-port? ::obj)
@@ -387,6 +388,7 @@
 	    (with-input-from-port ::input-port ::procedure)
 	    (with-input-from-procedure ::procedure ::procedure)
 	    (with-output-to-file ::bstring ::procedure)
+	    (with-append-to-file ::bstring ::procedure)
 	    (with-output-to-string::bstring ::procedure)
 	    (with-error-to-string::bstring ::procedure)
 	    (with-output-to-port ::output-port ::procedure)
@@ -466,7 +468,7 @@
 	    (input-port-protocol prototcol)
 	    (input-port-protocol-set! protocol open)
 
-	    (get-port-buffer::bstring ::symbol ::obj ::int))
+	    (get-port-buffer::bstring ::obj ::obj ::int))
    
    (pragma  (c-input-port? (predicate-of input-port) nesting)
 	    (c-output-port? (predicate-of output-port) nesting)
@@ -484,7 +486,7 @@
 	     (proc port)
 	     (close-input-port port))
 	  (error/errno $errno-io-port-error
-		       'call-with-input-file "can't open file" string))))
+	     "call-with-input-file" "can't open file" string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-with-input-string ...                                       */
@@ -506,7 +508,19 @@
 	     (proc port)
 	     (close-output-port port))
 	  (error/errno $errno-io-port-error
-		       'call-with-output-file "can't open file" string))))
+	     "call-with-output-file" "can't open file" string))))
+
+;*---------------------------------------------------------------------*/
+;*    call-with-append-file ...                                        */
+;*---------------------------------------------------------------------*/
+(define (call-with-append-file string proc) 
+   (let ((port (append-output-file string)))
+      (if (output-port? port)
+	  (unwind-protect
+	     (proc port)
+	     (close-output-port port))
+	  (error/errno $errno-io-port-error
+	     "call-with-append-file" "can't open file" string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-with-output-string ...                                      */
@@ -582,7 +596,7 @@
 (define-inline (input-port-reopen! port::input-port)
    (if (not ($input-port-reopen! port))
        (error/errno
-	  $errno-io-port-error 'input-port-reopen! "Cannot reopen port" port)))
+	  $errno-io-port-error "input-port-reopen!" "Cannot reopen port" port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn input-port-clone!! ...                                    */
@@ -606,7 +620,7 @@
 		   (c-current-input-port-set! denv old-input-port)
 		   (close-input-port port))))
 	  (error/errno $errno-io-port-error
-		       'with-input-from-file "can't open file" string))))
+	     "with-input-from-file" "can't open file" string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-input-from-string@ ...                               */
@@ -650,7 +664,7 @@
 		(begin
 		   (c-current-input-port-set! denv old-input-port)
 		   (close-input-port port))))
-	  (error 'with-input-from-procedure "can't open procedure" proc))))
+	  (error "with-input-from-procedure" "can't open procedure" proc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-output-to-file ...                                          */
@@ -668,7 +682,25 @@
 		   (c-current-output-port-set! denv old-output-port)
 		   (close-output-port port))))
 	  (error/errno $errno-io-port-error
-		       'with-output-to-file "can't open file" string))))
+	     "with-output-to-file" "can't open file" string))))
+
+;*---------------------------------------------------------------------*/
+;*    with-append-to-file ...                                          */
+;*---------------------------------------------------------------------*/
+(define (with-append-to-file string thunk)
+   (let ((port (append-output-file string)))
+      (if (output-port? port)
+	  (let* ((denv ($current-dynamic-env))
+		 (old-output-port (c-current-output-port denv)))
+	     (unwind-protect
+		(begin
+		   (c-current-output-port-set! denv port)
+		   (thunk))
+		(begin
+		   (c-current-output-port-set! denv old-output-port)
+		   (close-output-port port))))
+	  (error/errno $errno-io-port-error
+	     "with-output-to-file" "can't open file" string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn with-output-to-port@ ...                                  */
@@ -790,7 +822,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    *input-port-protocols-mutex* ...                                 */
 ;*---------------------------------------------------------------------*/
-(define *input-port-protocols-mutex* (make-mutex 'input-port-protocols))
+(define *input-port-protocols-mutex* (make-mutex "input-port-protocols"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *input-port-protocols* ...                                       */
@@ -873,14 +905,14 @@
 ;*    %open-input-pipe ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (%open-input-pipe string bufinfo tmt)
-   (let ((buf (get-port-buffer 'open-input-pipe bufinfo 1024)))
+   (let ((buf (get-port-buffer "open-input-pipe" bufinfo 1024)))
       ($open-input-pipe string buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %open-input-resource ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (%open-input-resource file bufinfo tmt)
-   (let ((buf (get-port-buffer 'open-input-file bufinfo c-default-io-bufsiz)))
+   (let ((buf (get-port-buffer "open-input-file" bufinfo c-default-io-bufsiz)))
       ($open-input-resource file buf)))
 
 ;*---------------------------------------------------------------------*/
@@ -954,7 +986,7 @@
 ;*    actual length of the constant.                                   */
 ;*---------------------------------------------------------------------*/
 (define (open-input-file string #!optional (bufinfo #t) (timeout 5000000))
-   (let ((buffer (get-port-buffer 'open-input-file bufinfo c-default-io-bufsiz)))
+   (let ((buffer (get-port-buffer "open-input-file" bufinfo c-default-io-bufsiz)))
       (let loop ((protos *input-port-protocols*))
 	 (if (null? protos)
 	     ;; a plain file
@@ -975,9 +1007,9 @@
 (define (open-input-string string #!optional (start 0))
    (cond
       ((<fx start 0)
-       (error 'open-input-string "Illegal start offset" start))
+       (error "open-input-string" "Illegal start offset" start))
       ((>fx start (string-length string))
-       (error 'open-input-string "Start offset out of bounds" start))
+       (error "open-input-string" "Start offset out of bounds" start))
       (else
        ($open-input-string string start))))
 
@@ -991,14 +1023,14 @@
 ;*    open-input-procedure ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (open-input-procedure proc #!optional (bufinfo #t))
-   (let ((buf (get-port-buffer 'open-input-procedure bufinfo 1024)))
+   (let ((buf (get-port-buffer "open-input-procedure" bufinfo 1024)))
       ($open-input-procedure proc buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-gzip-port ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (open-input-gzip-port in::input-port #!optional (bufinfo #t))
-   (let ((buf (get-port-buffer 'open-input-gzip-port bufinfo c-default-io-bufsiz)))
+   (let ((buf (get-port-buffer "open-input-gzip-port" bufinfo c-default-io-bufsiz)))
       (port->gzip-port in buf)))
 
 ;*---------------------------------------------------------------------*/
@@ -1023,51 +1055,51 @@
 ;*    open-output-file ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (open-output-file string #!optional (bufinfo #t))
-   (let ((buf (get-port-buffer 'open-output-file bufinfo c-default-io-bufsiz)))
+   (let ((buf (get-port-buffer "open-output-file" bufinfo c-default-io-bufsiz)))
       ($open-output-file string buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    append-output-file ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (append-output-file string #!optional (bufinfo #t))
-   (let ((buf (get-port-buffer 'append-output-file bufinfo c-default-io-bufsiz)))
+   (let ((buf (get-port-buffer "append-output-file" bufinfo c-default-io-bufsiz)))
       ($append-output-file string buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-output-string ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (open-output-string #!optional (bufinfo #t))
-   (let ((buf (get-port-buffer 'append-output-file bufinfo 128)))
+   (let ((buf (get-port-buffer "open-output-file" bufinfo 128)))
       ($open-output-string buf)))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-output-procedure ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (open-output-procedure proc
-			       #!optional
-			       (flush::procedure (lambda () #f))
-			       (bufinfo #t)
-			       (close::procedure (lambda () #f)))
+	   #!optional
+	   (flush::procedure (lambda () #f))
+	   (bufinfo #t)
+	   (close::procedure (lambda () #f)))
    (cond
       ((not (correct-arity? proc 1))
        (error/errno $errno-io-port-error
-		    'open-output-procedure
-		    "Illegal write procedure"
-		    proc))
+	  "open-output-procedure"
+	  "Illegal write procedure"
+	  proc))
       ((or (not (procedure? flush))
 	   (not (correct-arity? flush 0)))
        (error/errno $errno-io-port-error
-		    'open-output-procedure
-		    "Illegal flush procedure"
-		    flush))
+	  "open-output-procedure"
+	  "Illegal flush procedure"
+	  flush))
       ((or (not (procedure? close))
 	   (not (correct-arity? close 0)))
        (error/errno $errno-io-port-error
-		    'open-output-procedure
-		    "Illegal close procedure"
-		    flush))
+	  "open-output-procedure"
+	  "Illegal close procedure"
+	  flush))
       (else
-       (let ((buf (get-port-buffer 'append-output-file bufinfo 128)))
+       (let ((buf (get-port-buffer "open-output-procedure" bufinfo 128)))
 	  ($open-output-procedure proc flush close buf)))))
 
 ;*---------------------------------------------------------------------*/
@@ -1168,9 +1200,7 @@
 (define-inline (set-output-port-position! port::output-port pos::long)
    (if (not (c-set-output-port-position! port pos))
        (error/errno $errno-io-port-error
-		    'set-output-port-position!
-		    "Cannot seek port"
-		    port)))
+	    "set-output-port-position!" "Cannot seek port" port)))
    
 ;*---------------------------------------------------------------------*/
 ;*    output-port-position ...                                         */
@@ -1202,9 +1232,7 @@
 (define (output-port-close-hook-set! port proc)
    (if (not (and (procedure? proc) (correct-arity? proc 1)))
        (error/errno $errno-io-port-error
-		    'output-port-close-hook-set!
-		    "Illegal hook"
-		    proc)
+	  "output-port-close-hook-set!" "Illegal hook" proc)
        (begin
 	  (c-output-port-chook-set! port proc)
 	  proc)))
@@ -1221,9 +1249,7 @@
 (define (output-port-flush-hook-set! port proc)
    (if (and (procedure? proc) (not (correct-arity? proc 2)))
        (error/errno $errno-io-port-error
-		    'output-port-flush-hook-set!
-		    "Illegal hook"
-		    proc)
+	  "output-port-flush-hook-set!" "Illegal hook" proc)
        (begin
 	  ($output-port-fhook-set! port proc)
 	  proc)))
@@ -1253,9 +1279,7 @@
 (define (input-port-close-hook-set! port proc)
    (if (not (and (procedure? proc) (correct-arity? proc 1)))
        (error/errno $errno-io-port-error
-		    'input-port-close-hook-set!
-		    "Illegal hook"
-		    proc)
+	  "input-port-close-hook-set!" "Illegal hook" proc)
        (begin
 	  ($input-port-chook-set! port proc)
 	  proc)))
@@ -1272,9 +1296,7 @@
 (define (input-port-seek-set! port proc)
    (if (not (and (procedure? proc) (correct-arity? proc 2)))
        (error/errno $errno-io-port-error
-	  'input-port-seek-set!
-	  "Illegal seek procedure"
-	  proc)
+	  "input-port-seek-set!" "Illegal seek procedure" proc)
        (begin
 	  ($input-port-useek-set! port proc)
 	  proc)))
