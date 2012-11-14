@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Sep 12 09:05:57 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:42:17 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -246,17 +246,17 @@
 ;*    avahi-gc-mark! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (avahi-gc-mark! obj)
-   (mutex-lock! *avahi-gc-mutex*)
-   (set! *avahi-gc-roots* (cons obj *avahi-gc-roots*))
-   (mutex-unlock! *avahi-gc-mutex*))
+   (with-lock-uw *avahi-gc-mutex*
+      (lambda ()
+	 (set! *avahi-gc-roots* (cons obj *avahi-gc-roots*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-gc-unmark! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (avahi-gc-unmark! o)
-   (mutex-lock! *avahi-gc-mutex*)
-   (set! *avahi-gc-roots* (delete! o *avahi-gc-roots*))
-   (mutex-unlock! *avahi-gc-mutex*))
+   (with-lock-uw *avahi-gc-mutex*
+      (lambda ()
+	 (set! *avahi-gc-roots* (delete! o *avahi-gc-roots*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %avahi-thread-init! ...                                          */
@@ -266,22 +266,24 @@
       ;; the thread in charge of executing all callbacks
       (let ((lk (make-mutex))
 	    (cv (make-condition-variable)))
-      (set! *avahi-thread*
-	 (instantiate::pthread
-	    (name "avahi")
-	    (body (lambda ()
-		     (mutex-lock! lk)
-		     (condition-variable-signal! cv)
-		     (mutex-unlock! lk)
-		     (let loop ()
-			(mutex-lock! *avahi-mutex*)
-			(condition-variable-wait! *avahi-condv* *avahi-mutex*)
-			(mutex-unlock! *avahi-mutex*)
-			($avahi-invoke-callbacks)
-			(loop))))))
-      (mutex-lock! lk)
-      (thread-start! *avahi-thread*)
-      (condition-variable-wait! cv lk))))
+	 (set! *avahi-thread*
+	    (instantiate::pthread
+	       (name "avahi")
+	       (body (lambda ()
+			(with-lock-uw lk
+			   (lambda ()
+			      (condition-variable-signal! cv)))
+			(let loop ()
+			   (with-lock-uw *avahi-mutex*
+			      (lambda ()
+				 (condition-variable-wait!
+				    *avahi-condv* *avahi-mutex*)))
+			   ($avahi-invoke-callbacks)
+			   (loop))))))
+	 (with-lock-uw lk
+	    (lambda ()
+	       (thread-start! *avahi-thread*)
+	       (condition-variable-wait! cv lk))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    avahi-init ::avahi-object ...                                    */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:52:58 2005                          */
-;*    Last change :  Fri Oct  5 07:54:36 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 19:00:01 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS parsing                                                      */
@@ -504,10 +504,11 @@
 		 (with-access::css-media o (ruleset*)
 		    (loop ruleset*))))
 	     (loop (cdr l)))))
-   
-   (mutex-lock! css-mutex)
-   (loop os)
-   (mutex-unlock! css-mutex)
+
+   (with-lock-uw css-mutex
+      (lambda ()
+	 (loop os)))
+
    os)
 
 ;*---------------------------------------------------------------------*/

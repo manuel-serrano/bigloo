@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Fri Nov 25 20:11:03 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Wed Nov 14 19:01:01 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
 ;*=====================================================================*/
@@ -72,30 +72,28 @@
 ;*    cache-get ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (cache-get host port)
-   (mutex-lock! cache-mutex)
-   (if (and (socket? cache-socket)
-	    (not (socket-down? cache-socket))
-	    (=fx cache-port port)
-	    (string=? cache-host host))
-       (let ((socket cache-socket))
-	  (set! cache-socket #f)
-	  (mutex-unlock! cache-mutex)
-	  socket)
-       (begin
-	  (mutex-unlock! cache-mutex)
-	  #f)))
+   (with-lock-uw cache-mutex
+      (lambda ()
+	 (if (and (socket? cache-socket)
+		  (not (socket-down? cache-socket))
+		  (=fx cache-port port)
+		  (string=? cache-host host))
+	     (let ((socket cache-socket))
+		(set! cache-socket #f)
+		socket)
+	     #f))))
        
 ;*---------------------------------------------------------------------*/
 ;*    cache-offer ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (cache-offer host port socket)
-   (mutex-lock! cache-mutex)
-   (when (socket? cache-socket)
-      (socket-close cache-socket))
-   (set! cache-host host)
-   (set! cache-port port)
-   (set! cache-socket socket)
-   (mutex-unlock! cache-mutex))
+   (with-lock-uw cache-mutex
+      (lambda ()
+	 (when (socket? cache-socket)
+	    (socket-close cache-socket))
+	 (set! cache-host host)
+	 (set! cache-port port)
+	 (set! cache-socket socket))))
 
 ;*---------------------------------------------------------------------*/
 ;*    webdav-propfind ...                                              */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Wed Jan 25 17:41:25 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:51:00 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
@@ -63,9 +63,9 @@
 (define-method (music-close o::mplayer)
    (with-access::mplayer o (%mutex %close)
       (call-next-method)
-      (mutex-lock! %mutex)
-      (set! %close #t)
-      (mutex-unlock! %mutex)))
+      (with-lock-uw %mutex
+	 (lambda ()
+	    (set! %close #t)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::mplayer ...                                      */
@@ -200,15 +200,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::mplayer)
    (with-access::mplayer o (%user-state %mutex %status %process onstate)
-      (mutex-lock! %mutex)
-      (when (eq? %user-state 'play)
-	 (musicproc-exec o #f "get_time_pos"))
-      (mutex-unlock! %mutex)
+      (with-lock-uw %mutex
+	 (lambda ()
+	    (when (eq? %user-state 'play)
+	       (musicproc-exec o #f "get_time_pos"))))
       (call-next-method)
       (with-access::musicstatus %status (state)
-	 (mutex-lock! %mutex)
-	 (set! state %user-state)
-	 (mutex-unlock! %mutex)
+	 (with-lock-uw %mutex
+	    (lambda ()
+	       (set! state %user-state)))
 	 (onstate o %status))))
 
 ;*---------------------------------------------------------------------*/

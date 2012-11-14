@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Thu Mar 29 09:42:54 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:49:06 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -399,7 +399,8 @@
 (define-method (music-status mpc::mpc)
    (with-access::mpc mpc (%mutex %playid %status)
       (when (mutex-lock! %mutex 1000)
-	 (music-update-status-sans-lock! mpc %status))
+	 (music-update-status-sans-lock! mpc %status)
+	 (mutex-unlock! %mutex))
       %status))
    
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Tue Oct 23 07:30:07 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:42:26 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -271,9 +271,8 @@
 	       (when (>=fx (flac-debug) 2)
 		  (debug "--> FLAC_DECODER, broadcast not-full "
 		     url " " p "%" " " (current-microseconds) "..."))
-	       (mutex-lock! %bmutex)
-	       (condition-variable-broadcast! %bcondv)
-	       (mutex-unlock! %bmutex)
+	       (with-lock-uw %bmutex
+		  (lambda () (condition-variable-broadcast! %bcondv)))
 	       (when (>=fx (flac-debug) 2)
 		  (debug (current-microseconds) "\n")))
 	    
@@ -320,24 +319,20 @@
 		       (i 0))
 	       (cond
 		  (%!dpause
+		   (onstate am 'pause)
 		   ;;; the decoder is asked to pause
 		   (with-access::alsamusic am (%status)
 		      (with-access::musicstatus %status (songpos)
 			 (set! songpos
 			    (alsadecoder-position %decoder %buffer))))
-		   (mutex-lock! %dmutex)
-		   (if %!dpause
-		       (let liip ()
-			  (mutex-unlock! %dmutex)
-			  (onstate am 'pause)
-			  (mutex-lock! %dmutex)
-			  (condition-variable-wait! %dcondv %dmutex)
-			  (if %!dpause
-			      (liip)
-			      (begin
-				 (mutex-unlock! %dmutex)
-				 (onstate am 'play)
-				 (loop size i))))))
+		   (with-lock-uw %dmutex
+		      (lambda ()
+			 (let liip ()
+			    (when %!dpause
+			       (condition-variable-wait! %dcondv %dmutex)
+			       (liip)))))
+		   (onstate am 'play)
+		   (loop size i))
 		  (%!dabort
 		   ;;; the decoder is asked to abort
 		   -1)
@@ -352,20 +347,21 @@
 			  (when (>=fx (flac-debug) 1)
 			     (debug "<-- FLAC_DECODER, wait not-empty " url
 				" " (current-microseconds) "..."))
-			  (mutex-lock! %bmutex)
-			  (when (>=fx (flac-debug) 1)
-			     (debug "empty=" %empty " eof=" %eof "..."))
 			  (let liip ()
-			     ;; wait until the buffer is filled
-			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
-				(with-access::alsamusic am (%status)
-				   (with-access::musicstatus %status (buffering)
-				      (set! buffering
-					 (buffer-percentage-filled))))
-				(onstate am 'buffering)
-				(condition-variable-wait! %bcondv %bmutex)
-				(liip)))
-			  (mutex-unlock! %bmutex)
+			     (with-access::alsamusic am (%status)
+				(with-access::musicstatus %status (buffering)
+				   (set! buffering
+				      (buffer-percentage-filled))))
+			     (onstate am 'buffering)
+			     (with-lock-uw %bmutex
+				;; wait until the buffer is filled
+				(lambda ()
+				   (unless (or (not %empty)
+					       %eof
+					       %!dabort
+					       (buffer-filled?))
+				      (condition-variable-wait! %bcondv %bmutex)
+				      (liip)))))
 			  (when (>=fx (flac-debug) 1)
 			     (debug (current-microseconds) "\n"))
 			  (onstate am 'play)

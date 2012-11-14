@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 16:06:35 2007                          */
-;*    Last change :  Fri Nov 18 18:23:01 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Wed Nov 14 14:30:34 2012 (serrano)                */
+;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstObject wrapper                                                */
 ;*=====================================================================*/
@@ -216,22 +216,22 @@
 ;*    closure-gcmark! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (closure-gcmark! proc)
-   (mutex-lock! *gcmark-mutex*)
-   (set! *gcmark-closure* (cons proc *gcmark-closure*))
-   (when (> (bigloo-debug) (gst-debug-level))
-      (with-lock *gst-object-debug-mutex*
-	 (lambda ()
-	    (tprint "closure-gcmark: " (length *gcmark-closure*)))))
-   (mutex-unlock! *gcmark-mutex*))
+   (with-lock *gcmark-mutex*
+      (lambda ()
+	 (set! *gcmark-closure* (cons proc *gcmark-closure*))
+	 (when (> (bigloo-debug) (gst-debug-level))
+	    (with-lock *gst-object-debug-mutex*
+	       (lambda ()
+		  (tprint "closure-gcmark: " (length *gcmark-closure*))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    closure-gcunmark! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (closure-gcunmark! proc)
-   (mutex-lock! *gcmark-mutex*)
-   (set! *gcmark-closure* (remq! proc *gcmark-closure*))
-   (when (> (bigloo-debug) (gst-debug-level))
-      (with-lock *gst-object-debug-mutex*
-	 (lambda ()
-	    (tprint "closure-gcunmark: " (length *gcmark-closure*)))))
-   (mutex-unlock! *gcmark-mutex*))
+   (with-lock *gcmark-mutex*
+      (lambda ()
+	 (set! *gcmark-closure* (remq! proc *gcmark-closure*))
+	 (when (> (bigloo-debug) (gst-debug-level))
+	    (with-lock *gst-object-debug-mutex*
+	       (lambda ()
+		  (tprint "closure-gcunmark: " (length *gcmark-closure*))))))))

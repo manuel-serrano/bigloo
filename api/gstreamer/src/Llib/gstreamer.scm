@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Thu Jan 19 10:02:34 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:47:32 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of GSTREAMER applications.                      */
@@ -107,11 +107,12 @@
 	       (instantiate::pthread
 		  (name "gst")
 		  (body (lambda ()
-			   (mutex-lock! *gst-mutex*)
-			   (let loop ()
-			      (condition-variable-wait! *gst-condv* *gst-mutex*)
-			      ($gst-invoke-callbacks)
-			      (loop))))))
+			   (with-lock-uw *gst-mutex*
+			      (lambda ()
+				 (let loop ()
+				    (condition-variable-wait! *gst-condv* *gst-mutex*)
+				    ($gst-invoke-callbacks)
+				    (loop))))))))
 	 (thread-start! *gst-thread*))))
 
 ;*---------------------------------------------------------------------*/

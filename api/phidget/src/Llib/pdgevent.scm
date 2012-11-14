@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 21 15:52:42 2010                          */
-;*    Last change :  Wed Apr  4 10:19:18 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:51:57 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Phidget listener machinery (complex because of Phidget           */
@@ -110,14 +110,15 @@
    (unless (isa? *phidget-thread* thread)
       ;; the thread in charge of executing all callbacks
       (set! *phidget-thread*
-	    (instantiate::pthread
-	       (body (lambda ()
-			(mutex-lock! *phidget-mutex*)
-			(let loop ()
-			   (condition-variable-wait!
-			    *phidget-condv* *phidget-mutex*)
-			   ($pdg-invoke-callbacks)
-			   (loop))))))
+	 (instantiate::pthread
+	    (body (lambda ()
+		     (with-lock *phidget-mutex*
+			(lambda ()
+			   (let loop ()
+			      (condition-variable-wait!
+				 *phidget-condv* *phidget-mutex*)
+			      ($pdg-invoke-callbacks)
+			      (loop))))))))
       (thread-start! *phidget-thread*)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 14 10:26:04 2008                          */
-;*    Last change :  Tue Nov 15 19:15:19 2011 (serrano)                */
-;*    Copyright   :  2008-11 Manuel Serrano                            */
+;*    Last change :  Wed Nov 14 18:45:44 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    gst-launch implemented with the Bigloo GSTREAMER binding.        */
 ;*    -------------------------------------------------------------    */
@@ -35,11 +35,11 @@
           (define (,id)
              ,vid)
           (define (,(symbol-append id '-set!) v)
-             (mutex-lock! *parameter-mutex*)
-             ,(if (pair? setter)
-                  `(set! ,vid (,(car setter) v))
-                  `(set! ,vid v))
-             (mutex-unlock! *parameter-mutex*)
+	     (with-lock-uw *parameter-mutex*
+		(lambda ()
+		   ,(if (pair? setter)
+			`(set! ,vid (,(car setter) v))
+			`(set! ,vid v))))
              v))))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Thu Nov 17 08:27:55 2011 (serrano)                */
-;*    Copyright   :  2004-11 Manuel Serrano                            */
+;*    Last change :  Wed Nov 14 18:41:09 2012 (serrano)                */
+;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -203,6 +203,7 @@
 	    (inline mutex-unlock!::obj ::mutex)
 	    (inline mutex-state ::mutex)
 	    (with-lock ::mutex ::procedure)
+	    (inline with-lock-uw ::mutex ::procedure)
    
 	    ;; condition variable
 	    (inline condition-variable?::bool ::obj)
@@ -576,10 +577,18 @@
 ;*    with-lock ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (with-lock mutex thunk)
-   (mutex-lock! mutex)
+   ($mutex-lock mutex)
    (unwind-protect
       (thunk)
-      (mutex-unlock! mutex)))
+      ($mutex-unlock mutex)))
+
+;*---------------------------------------------------------------------*/
+;*    with-lock-uw ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (with-lock-uw mutex thunk)
+   ($mutex-lock mutex)
+   (let ((res (thunk)))
+      ($mutex-unlock mutex)))
 
 ;*---------------------------------------------------------------------*/
 ;*    condition-variable? ...                                          */

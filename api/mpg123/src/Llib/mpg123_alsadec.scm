@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Thu Aug 30 08:25:57 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:42:35 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -183,9 +183,9 @@
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug "--> MPG123_DECODER, broadcast not-full "
 			url " " (current-microseconds) "..."))
-		  (mutex-lock! %bmutex)
-		  (condition-variable-broadcast! %bcondv)
-		  (mutex-unlock! %bmutex)
+		  (with-lock-uw %bmutex
+		     (lambda ()
+			(condition-variable-broadcast! %bcondv)))
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug (current-microseconds) "\n"))))
 
@@ -203,19 +203,15 @@
 		   ;;; the decoder is asked to pause
 		   (with-access::musicstatus %status (songpos)
 		      (set! songpos (alsadecoder-position dec buffer)))
-		   (mutex-lock! %dmutex)
-		   (let liip ()
-		      (if %!dpause
-			  (begin
-			     (mutex-unlock! %dmutex)
-			     (onstate am 'pause)
-			     (mutex-lock! %dmutex)
-			     (condition-variable-wait! %dcondv %dmutex)
-			     (liip))
-			  (begin
-			     (mutex-unlock! %dmutex)
-			     (onstate am 'play)
-			     (loop)))))
+		   (onstate am 'pause)
+		   (with-lock-uw %dmutex
+		      (lambda ()
+			 (let liip ()
+			    (when %!dpause
+			       (condition-variable-wait! %dcondv %dmutex)
+			       (liip)))))
+		   (onstate am 'play)
+		   (loop))
 		  (%!dabort
 		   ;;; the decoder is asked to abort
 		   (onstate am 'stop))
@@ -230,20 +226,21 @@
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug "<-- MPG123_DECODER, wait not-empty " url " "
 				(current-microseconds) "..."))
-			  (mutex-lock! %bmutex)
-			  (when (>=fx (mpg123-debug) 1)
-			     (debug "empty=" %empty " eof=" %eof "..."))
 			  (let liip ()
-			     ;; wait until the buffer is filled
-			     (unless (or (not %empty) %eof %!dabort (buffer-filled?))
-				(with-access::alsamusic am (%status)
-				   (with-access::musicstatus %status (buffering)
-				      (set! buffering
-					 (buffer-percentage-filled))))
-				(onstate am 'buffering)
-				(condition-variable-wait! %bcondv %bmutex)
-				(liip)))
-			  (mutex-unlock! %bmutex)
+			     (with-access::alsamusic am (%status)
+				(with-access::musicstatus %status (buffering)
+				   (set! buffering
+				      (buffer-percentage-filled))))
+			     (onstate am 'buffering)
+			     (with-lock-uw %bmutex
+				(lambda ()
+				   ;; wait until the buffer is filled
+				   (unless (or (not %empty)
+					       %eof
+					       %!dabort
+					       (buffer-filled?))
+				      (condition-variable-wait! %bcondv %bmutex)
+				      (liip)))))
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug (current-microseconds) "\n"))
 			  (onstate am 'play)

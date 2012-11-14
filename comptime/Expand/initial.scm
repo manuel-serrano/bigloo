@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat Oct 13 08:31:36 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:41:39 2012 (serrano)                */
 ;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -1009,12 +1009,27 @@
 	 (match-case x
 	    ((with-lock (and (? symbol?) ?var) (lambda () . ?body))
 	     (e `(unwind-protect
-		    (begin (mutex-lock! ,var) ,@body)
-		    (mutex-unlock! ,var))
+		    (begin ($mutex-lock ,var) ,@body)
+		    ($mutex-unlock ,var))
 		e))
 	    ((with-lock ?lock (and ?proc (lambda () . ?body)))
 	     (let ((var (gensym 'lock)))
 		(e `(let ((,var ,lock)) (with-lock ,var ,proc)) e)))
+	    (else
+	     (map (lambda (x) (e x e)) x)))))
+
+   ;; with-lock-uw
+   (install-O-comptime-expander 'with-lock-uw
+      (lambda (x::obj e::procedure)
+	 (match-case x
+	    ((with-lock-uw (and (? symbol?) ?var) (lambda () . ?body))
+	     (e `(unwind-protect
+		    (begin ($mutex-lock ,var) ,@body)
+		    ($mutex-unlock ,var))
+		e))
+	    ((with-lock-uw ?lock (and ?proc (lambda () . ?body)))
+	     (let ((var (gensym 'lock)))
+		(e `(let ((,var ,lock)) (with-lock-uw ,var ,proc)) e)))
 	    (else
 	     (map (lambda (x) (e x e)) x)))))
 

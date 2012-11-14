@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Fri Jan 27 19:10:26 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 18:46:53 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -449,12 +449,12 @@
 		      (onstate o %status))
 		     ((gst-message-eos? msg)
 		      ;; end of stream
-		      (mutex-lock! %mutex)
-		      (set! state 'ended)
-		      (set! songpos 0)
-		      (set! %meta '())
-		      (set! meta #f)
-		      (mutex-unlock! %mutex)
+		      (with-lock-uw %mutex
+			 (lambda ()
+			    (set! state 'ended)
+			    (set! songpos 0)
+			    (set! %meta '())
+			    (set! meta #f)))
 		      (onstate o %status))
 		     ((gst-message-state-changed? msg)
 		      ;; state changed
