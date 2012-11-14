@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed Nov 14 18:41:09 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 19:47:41 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -203,6 +203,7 @@
 	    (inline mutex-unlock!::obj ::mutex)
 	    (inline mutex-state ::mutex)
 	    (with-lock ::mutex ::procedure)
+	    (with-timed-lock ::mutex ::int ::procedure)
 	    (inline with-lock-uw ::mutex ::procedure)
    
 	    ;; condition variable
@@ -581,6 +582,15 @@
    (unwind-protect
       (thunk)
       ($mutex-unlock mutex)))
+
+;*---------------------------------------------------------------------*/
+;*    with-timed-lock ...                                              */
+;*---------------------------------------------------------------------*/
+(define (with-timed-lock mutex timeout thunk)
+   (when (mutex-lock! mutex timeout)
+      (unwind-protect
+	 (thunk)
+	 (mutex-unlock! mutex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-lock-uw ...                                                 */

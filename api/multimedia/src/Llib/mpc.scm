@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Wed Nov 14 18:49:06 2012 (serrano)                */
+;*    Last change :  Wed Nov 14 20:53:58 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -29,28 +29,6 @@
 	      (%socket (default #f))
 	      (%playid::int (default -1))
 	      (%mmutex::mutex (default (make-mutex "mpd"))))))
-
-#;(define-expander with-lock
-   (lambda (x e)
-      (match-case x
-	 ((?- ?mutex ?proc)
-	  (match-case (cer x)
-	     ((at ?name ?pos)
-	      (e `(unwind-protect
-		     (begin
-			(tprint ">>> with-lock(mpc.scm): " ,mutex "=" (mutex-state ,mutex) " pos: " ,pos " " (current-thread))
-			((@ with-lock  __thread) ,mutex ,proc))
-		     (tprint "<<< with-lock: " ,mutex "=" (mutex-state ,mutex) " pos: " ,pos  " " (current-thread)))
-		 e)))))))
-
-;*---------------------------------------------------------------------*/
-;*    with-timed-lock ...                                              */
-;*---------------------------------------------------------------------*/
-(define (with-timed-lock mutex thunk)
-   (when (mutex-lock! mutex 1000)
-      (unwind-protect
-	 (thunk)
-	 (mutex-unlock! mutex))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-locked? ...                                                */
@@ -368,7 +346,7 @@
 (define-method (music-playlist-add! mpc::mpc s)
    (call-next-method)
    (with-access::mpc mpc (%mutex prefix)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (let ((s (if (and (string? prefix) (substring-at? s prefix 0))
 			 (substring s (string-length prefix) (string-length s))
@@ -380,7 +358,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-delete! mpc::mpc n)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc (string-append "delete " (integer->string n)) ok-parser)))))
 
@@ -389,7 +367,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-clear! mpc::mpc)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc "clear" ok-parser)))))
 
@@ -398,9 +376,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-status mpc::mpc)
    (with-access::mpc mpc (%mutex %playid %status)
-      (when (mutex-lock! %mutex 1000)
-	 (music-update-status-sans-lock! mpc %status)
-	 (mutex-unlock! %mutex))
+      (with-timed-lock %mutex 1000
+	 (lambda ()
+	    (music-update-status-sans-lock! mpc %status)))
       %status))
    
 ;*---------------------------------------------------------------------*/
@@ -686,7 +664,7 @@
 		      (loop (cons l ser))))))))
    
    (with-access::mpc mpc (%mutex %status)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (with-handler
 	       (lambda (e)
@@ -747,7 +725,7 @@
 		      (loop tm))))))))
    
    (with-access::mpc mpc (%mutex %status)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (with-handler
 	       (lambda (e)
@@ -776,7 +754,7 @@
 	    (read/rp mpc-meta-grammar ip))))
    
    (with-access::mpc mpc (%mutex %status)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (with-handler
 	       (lambda (e)
@@ -789,39 +767,73 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-play mpc::mpc . song)
    (with-access::mpc mpc (%mutex %playid %status onstate onevent)
-      (when (mutex-lock! %mutex 1000)
-	 (set! %playid (+fx 1 %playid))
-	 (let ((cmd (if (null? song) "play" (format "play ~a" (car song)))))
-	    (mpc-cmd mpc cmd ok-parser)
-	    (let ((id %playid))
-	       (mutex-unlock! %mutex)
-	       (with-access::musicstatus %status (state songid playlistid)
+      (let ((cmd (if (null? song) "play" (format "play ~a" (car song)))))
+	 (with-access::musicstatus %status (state songid playlistid)
+	    (let ((id #f))
+	       (with-timed-lock %mutex 1000
+		  (lambda ()
+		     (set! %playid (+fx 1 %playid))
+		     (mpc-cmd mpc cmd ok-parser)
+		     (set! id %playid)))
+	       (when id
 		  (onevent mpc 'playlist playlistid)
 		  (let loop ()
-		     (when (mutex-lock! %mutex 1000)
-			(when (=fx %playid id)
-			   (let ((s state)
-				 (i songid))
-			      (music-update-status-sans-lock! mpc %status)
-			      (when (eq? state 'play)
-				 (mutex-unlock! %mutex)
-				 (cond
-				    ((not (eq? s 'play))
-				     (onstate mpc state))
-				    ((not (=fx i songid))
-				     (set! state 'ended)
-				     (onstate mpc state)))
-				 (sleep 1000000)
-				 (loop))))))
-		  (mutex-unlock! %mutex)
-		  (onstate mpc state)))))))
+		     (let ((s #f)
+			   (i #f))
+			(if (with-timed-lock %mutex 1000
+			       (lambda ()
+				  (when (=fx %playid id)
+				     (set! s state)
+				     (set! i songid)
+				     (music-update-status-sans-lock!
+					mpc %status)
+				     (eq? state 'play))))
+			    (begin
+			       (cond
+				  ((not (eq? s 'play))
+				   (onstate mpc state))
+				  ((not (=fx i songid))
+				   (set! state 'ended)
+				   (onstate mpc state)))
+			       (sleep 1000000)
+			       (loop))))
+		     (onstate mpc state))))))))
+
+;* (define-method (music-play mpc::mpc . song)                         */
+;*    (with-access::mpc mpc (%mutex %playid %status onstate onevent)   */
+;*       (when (mutex-lock! %mutex 1000)                               */
+;*          (set! %playid (+fx 1 %playid))                             */
+;*          (let ((cmd (if (null? song) "play" (format "play ~a" (car song))))) */
+;*             (mpc-cmd mpc cmd ok-parser)                             */
+;*             (let ((id %playid))                                     */
+;*                (mutex-unlock! %mutex)                               */
+;*                (with-access::musicstatus %status (state songid playlistid) */
+;*                   (onevent mpc 'playlist playlistid)                */
+;*                   (let loop ()                                      */
+;*                      (when (mutex-lock! %mutex 1000)                */
+;*                         (when (=fx %playid id)                      */
+;*                            (let ((s state)                          */
+;*                                  (i songid))                        */
+;*                               (music-update-status-sans-lock! mpc %status) */
+;*                               (when (eq? state 'play)               */
+;*                                  (mutex-unlock! %mutex)             */
+;*                                  (cond                              */
+;*                                     ((not (eq? s 'play))            */
+;*                                      (onstate mpc state))           */
+;*                                     ((not (=fx i songid))           */
+;*                                      (set! state 'ended)            */
+;*                                      (onstate mpc state)))          */
+;*                                  (sleep 1000000)                    */
+;*                                  (loop))))))                        */
+;*                   (mutex-unlock! %mutex)                            */
+;*                   (onstate mpc state)))))))                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::mpc ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek mpc::mpc ntime::obj . nsong)
    (with-access::mpc mpc (%mutex %status)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (with-handler
 	       (lambda (e)
@@ -840,7 +852,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop mpc::mpc)
    (with-access::mpc mpc (%mutex %status onstate)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc "stop" ok-parser)
 	    (mpc-cmd mpc "clearerror" ok-parser)
@@ -854,7 +866,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause mpc::mpc)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc "pause" ok-parser)))))
 
@@ -863,7 +875,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-next mpc::mpc)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc "next" ok-parser)))))
 
@@ -872,7 +884,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-prev mpc::mpc)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc "previous" ok-parser)))))
 
@@ -881,7 +893,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-crossfade mpc::mpc sec::int)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (let ((cmd (string-append "crossfade " (integer->string sec))))
 	       (mpc-cmd mpc cmd ok-parser))))))
@@ -891,7 +903,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-random-set! mpc::mpc flag::bool)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc (if "random 1" "random 0") ok-parser)))))
 
@@ -900,7 +912,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-repeat-set! mpc::mpc flag::bool)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc (if "repeat 1" "repeat 0") ok-parser)))))
 
@@ -942,7 +954,7 @@
 		      (loop tm))))))))
    
    (with-access::mpc mpc (%mutex %status)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (with-handler
 	       (lambda (e)
@@ -955,7 +967,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! mpc::mpc vol)
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (let ((cmd (string-append "setvol " (integer->string vol))))
 	       (mpc-cmd mpc cmd ok-parser))))))
@@ -977,7 +989,7 @@
 		     (else (loop r))))))))
    
    (with-access::mpc mpc (%mutex)
-      (with-timed-lock %mutex
+      (with-timed-lock %mutex 1000
 	 (lambda ()
 	    (mpc-cmd mpc "decoders" decoder-parser)))))
 
