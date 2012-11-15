@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Tue Nov 13 09:22:01 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 07:18:41 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -843,19 +843,17 @@
 ;*    input-port-protocols ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (input-port-protocols)
-   (mutex-lock! *input-port-protocols-mutex*)
-   ;; returns a copy of the currently in used protocols
-   (let ((res (reverse! (reverse *input-port-protocols*))))
-      (mutex-unlock! *input-port-protocols-mutex*)
-      res))
+   (with-lock-uw *input-port-protocols-mutex*
+      (lambda ()
+	 (reverse! (reverse *input-port-protocols*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-protocol ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (input-port-protocol prototcol)
-   (mutex-lock! *input-port-protocols-mutex*)
-   (let ((cell (assoc prototcol *input-port-protocols*)))
-      (mutex-unlock! *input-port-protocols-mutex*)
+   (let ((cell (with-lock-uw *input-port-protocols-mutex*
+		  (lambda ()
+		     (assoc prototcol *input-port-protocols*)))))
       (if (pair? cell)
 	  (cdr cell)
 	  #f)))
@@ -864,17 +862,17 @@
 ;*    input-port-protocol-set! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (input-port-protocol-set! protocol open)
-   (mutex-lock! *input-port-protocols-mutex*)
-   (unless (and (procedure? open) (correct-arity? open 3))
-      (error "input-port-protocol-set!"
-	 "Illegal open procedure for protocol"
-	 protocol))
-   (let ((c (assoc protocol *input-port-protocols*)))
-      (if (pair? c)
-	  (set-cdr! c open)
-	  (set! *input-port-protocols*
-		(cons (cons protocol open) *input-port-protocols*))))
-   (mutex-unlock! *input-port-protocols-mutex*)
+   (with-lock-uw *input-port-protocols-mutex*
+      (lambda ()
+	 (unless (and (procedure? open) (correct-arity? open 3))
+	    (error "input-port-protocol-set!"
+	       "Illegal open procedure for protocol"
+	       protocol))
+	 (let ((c (assoc protocol *input-port-protocols*)))
+	    (if (pair? c)
+		(set-cdr! c open)
+		(set! *input-port-protocols*
+		   (cons (cons protocol open) *input-port-protocols*))))))
    open)
 
 ;*---------------------------------------------------------------------*/

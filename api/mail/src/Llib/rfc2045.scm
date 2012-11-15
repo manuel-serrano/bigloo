@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Oct  4 11:19:13 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 11:38:23 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
@@ -263,6 +263,9 @@
 	      (sty (string-downcase! (read/rp token-grammar (the-port))))
 	      (parameters (read/rp parameter-grammar (the-port))))
 	  (list (string->symbol ty) (string->symbol sty) parameters)))
+      ((: "=?" (+ (out #\?)) "?" (in ("azAZ")) "?")
+       ;; rfc2047 header to be skipped
+       (ignore))
       (else
        (parse-error 'mime-content-type-decode
 		    "Illegal token"
@@ -422,9 +425,13 @@
 					       (begin
 						  (when (>fx (bigloo-warning) 0)
 						     (display "*** WARNING:multipart"
-							      (current-error-port))
-						     (display " Illegal mimetype, assuming text/plain\n"
-							      (current-error-port)))
+							(current-error-port))
+						     (display " Illegal mimetype \""
+							(current-error-port))
+						     (display (cdr c)
+							(current-error-port))
+						     (display "\", assuming text/plain\n"
+							(current-error-port)))
 						  '(text plain))
 					       (raise e)))
 					(mime-content-type-decode (cdr c)))

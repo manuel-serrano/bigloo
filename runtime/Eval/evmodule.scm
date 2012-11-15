@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Oct 13 07:34:23 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 12:05:53 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -157,29 +157,29 @@
 ;*    make-evmodule ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (make-evmodule id path loc)
-   (mutex-lock! *modules-mutex*)
-   (let* ((env (make-hashtable 100 #unspecified eq?))
-	  (mactable (make-hashtable 64))
-	  (mod (%evmodule make-%evmodule id path env '() mactable '())))
-      (if (not (hashtable? *modules-table*))
-	  (begin
-	     (set! *modules-table* (make-hashtable 100))
-	     (hashtable-put! *modules-table* id mod))
-	  (let ((old (hashtable-get *modules-table* id)))
-	     (if old
-		 (begin
-		    (hashtable-update! *modules-table* id (lambda (v) mod) mod)
-		    (unless (string=? (%evmodule-path old) path)
-		       (let ((msg (string-append "Module redefinition `"
-						 (symbol->string id)
-						 "'. Previous \""
-						 (%evmodule-path old)
-						 "\", new (ignored) \""
-						 path "\"")))
-			  (warning/loc loc msg))))
-		 (hashtable-put! *modules-table* id mod))))
-      (mutex-unlock! *modules-mutex*)
-      mod))
+   (with-lock-uw *modules-mutex*
+      (lambda ()
+	 (let* ((env (make-hashtable 100 #unspecified eq?))
+		(mactable (make-hashtable 64))
+		(mod (%evmodule make-%evmodule id path env '() mactable '())))
+	    (if (not (hashtable? *modules-table*))
+		(begin
+		   (set! *modules-table* (make-hashtable 100))
+		   (hashtable-put! *modules-table* id mod))
+		(let ((old (hashtable-get *modules-table* id)))
+		   (if old
+		       (begin
+			  (hashtable-update! *modules-table* id (lambda (v) mod) mod)
+			  (unless (string=? (%evmodule-path old) path)
+			     (let ((msg (string-append "Module redefinition `"
+					   (symbol->string id)
+					   "'. Previous \""
+					   (%evmodule-path old)
+					   "\", new (ignored) \""
+					   path "\"")))
+				(warning/loc loc msg))))
+		       (hashtable-put! *modules-table* id mod))))
+	    mod))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-module ...                                                  */
@@ -466,29 +466,28 @@
 ;*    evmodule-loadq ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-loadq file)
-   (define (loadq-with-cv path cv)
-      (let ((cell (cons path cv)))
-         (unwind-protect
-            (begin
-               (set! *loading-list* (cons cell *loading-list*))
-               (mutex-unlock! *loadq-mutex*)
-               (loadq path))
-            (begin
-               (mutex-lock! *loadq-mutex*)
-               (set! *loading-list* (remq! cell *loading-list*))
-               (condition-variable-signal! cv)
-               (mutex-unlock! *loadq-mutex*)))))
-   (let ((path (file-name-unix-canonicalize file)))
-      (mutex-lock! *loadq-mutex*)
-      (let ((c (assoc path *loading-list*)))
-         ;; is the path currently being loaded
-         (if (pair? c)
-             ;; yes it is
-             (let ((cv (cdr c)))
-                (condition-variable-wait! cv *loadq-mutex*)
-                (loadq-with-cv path cv))
-             ;; not it is not
-             (loadq-with-cv path (make-condition-variable (gensym 'loadq)))))))
+   (let* ((path (file-name-unix-canonicalize file))
+	  (cv (make-condition-variable (gensym 'loadq)))
+	  (cell (cons path cv)))
+      (let loop ()
+	 (with-lock-uw *loadq-mutex*
+	    (lambda ()
+	       (let ((c (assoc path *loading-list*)))
+		  ;; is the path currently being loaded
+		  (if (pair? c)
+		      ;; yes it is
+		      (begin
+			 ;; wait for the load to complete
+			 (condition-variable-wait! (cdr c) *loadq-mutex*)
+			 (loop))
+		      ;; not it is not
+		      (set! *loading-list* (cons cell *loading-list*)))))))
+      (unwind-protect
+	 (loadq path)
+	 (with-lock-uw *loadq-mutex*
+	    (lambda ()
+	       (set! *loading-list* (remq! cell *loading-list*))
+	       (condition-variable-signal! cv))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-import! ...                                             */

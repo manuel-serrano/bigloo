@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Tue Dec 20 17:37:27 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Thu Nov 15 08:01:18 2012 (serrano)                */
+;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
 ;*=====================================================================*/
@@ -174,35 +174,33 @@
 ;*    %with-trace ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (%with-trace lvl lbl thunk)
-   (mutex-lock! (trace-mutex))
    (let* ((al (trace-alist))
 	  (ol (trace-alist-get al 'margin-level)))
       (trace-alist-set! al 'margin-level lvl)
       (if (>=fx (bigloo-debug) lvl)
-	  (with-output-to-port (trace-port)
-	     (lambda ()
-		(let* ((d (trace-alist-get al 'depth))
-		       (om (trace-alist-get al 'margin))
-		       (ma (trace-color d "  |")))
-		   (display (trace-alist-get al 'margin))
-		   (display (if (=fx d 0)
-				(trace-color d "+ " lbl)
-				(trace-color d "--+ " lbl)))
-		   (newline)
-		   (trace-alist-set! al 'depth (+fx d 1))
-		   (trace-alist-set! al 'margin (string-append om ma))
-		   (mutex-unlock! (trace-mutex))
-		   (unwind-protect
-		      (thunk)
-		      (begin
-			 (trace-alist-set! al 'depth d)
-			 (trace-alist-set! al 'margin om)
-			 (trace-alist-set! al 'margin-level ol))))))
-	  (begin
-	     (mutex-unlock! (trace-mutex))
+	  (let* ((d (trace-alist-get al 'depth))
+		 (om (trace-alist-get al 'margin))
+		 (ma (trace-color d "  |")))
+	     (with-lock-uw (trace-mutex)
+		(lambda ()
+		   (with-output-to-port (trace-port)
+		      (lambda ()
+			 (display (trace-alist-get al 'margin))
+			 (display (if (=fx d 0)
+				      (trace-color d "+ " lbl)
+				      (trace-color d "--+ " lbl)))
+			 (newline)))))
+	     (trace-alist-set! al 'depth (+fx d 1))
+	     (trace-alist-set! al 'margin (string-append om ma))
 	     (unwind-protect
 		(thunk)
-		(trace-alist-set! al 'margin-level ol))))))
+		(begin
+		   (trace-alist-set! al 'depth d)
+		   (trace-alist-set! al 'margin om)
+		   (trace-alist-set! al 'margin-level ol))))
+	  (unwind-protect
+	     (thunk)
+	     (trace-alist-set! al 'margin-level ol)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    example                                                          */

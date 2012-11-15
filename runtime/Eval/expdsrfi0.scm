@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue Apr 17 07:47:35 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 07:28:00 2012 (serrano)                */
 ;*    Copyright   :  2001-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -146,17 +146,17 @@
 ;*    register-eval-srfi! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (register-eval-srfi! srfi::symbol)
-   (mutex-lock! *srfi-mutex*)
-   (set! *srfi-eval-list* (cons srfi *srfi-eval-list*))
-   (mutex-unlock! *srfi-mutex*))
+   (with-lock-uw *srfi-mutex*
+      (lambda ()
+	 (set! *srfi-eval-list* (cons srfi *srfi-eval-list*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-compile-srfi! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (register-compile-srfi! srfi::symbol)
-   (mutex-lock! *srfi-mutex*)
-   (set! *srfi-compile-list* (cons srfi *srfi-compile-list*))
-   (mutex-unlock! *srfi-mutex*))
+   (with-lock-uw *srfi-mutex*
+      (lambda ()
+	 (set! *srfi-compile-list* (cons srfi *srfi-compile-list*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-srfi! ...                                               */
@@ -181,19 +181,17 @@
 ;*    compile-srfi? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (compile-srfi? srfi)
-   (mutex-lock! *srfi-mutex*)
-   (let ((v (memq srfi *srfi-compile-list*)))
-      (mutex-unlock! *srfi-mutex*)
-      v))
+   (with-lock-uw *srfi-mutex*
+      (lambda ()
+	 (memq srfi *srfi-compile-list*))))
    
 ;*---------------------------------------------------------------------*/
 ;*    eval-srfi? ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (eval-srfi? srfi)
-   (mutex-lock! *srfi-mutex*)
-   (let ((v (memq srfi *srfi-eval-list*)))
-      (mutex-unlock! *srfi-mutex*)
-      v))
+   (with-lock-uw *srfi-mutex*
+      (lambda ()
+	 (memq srfi *srfi-eval-list*))))
    
 ;*---------------------------------------------------------------------*/
 ;*    expand-cond-exapnd ...                                           */

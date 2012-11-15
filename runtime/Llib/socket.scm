@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Tue Nov 13 09:21:29 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 07:56:07 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -246,18 +246,18 @@
 ;*    %socket-init! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (%socket-init!)
-   (mutex-lock! *socket-mutex*)
-   (unless *socket-initialized*
-      (set! *socket-initialized* #t)
-      (cond-expand (bigloo-c 
-		    (c-socket-startup)
-		    (register-exit-function! (lambda (x) 
-						(c-socket-cleanup)
-						x))
-		    #unspecified)
-		   (else
-		    #unspecified)))
-   (mutex-unlock! *socket-mutex*))
+   (with-lock-uw *socket-mutex*
+      (lambda ()
+	 (unless *socket-initialized*
+	    (set! *socket-initialized* #t)
+	    (cond-expand (bigloo-c 
+			  (c-socket-startup)
+			  (register-exit-function! (lambda (x) 
+						      (c-socket-cleanup)
+						      x))
+			  #unspecified)
+			 (else
+			  #unspecified))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket? ...                                                      */

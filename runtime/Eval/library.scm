@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Tue Apr 17 07:48:13 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 07:26:56 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -116,37 +116,37 @@
 ;*    declare-library! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (declare-library! id
-			  #!key
-			  (version (bigloo-config 'release-number))
-			  (basename (symbol->string id))
-			  dlopen-init
-			  module-init module-eval
-			  class-init class-eval
-			  init
-			  eval
-			  (srfi '()))
-   (mutex-lock! *library-mutex*)
-   (unless (memq id *libraries*)
-      (set! *libraries*
-	    (cons (cons id
+	   #!key
+	   (version (bigloo-config 'release-number))
+	   (basename (symbol->string id))
+	   dlopen-init
+	   module-init module-eval
+	   class-init class-eval
+	   init
+	   eval
+	   (srfi '()))
+   (with-lock-uw *library-mutex*
+      (lambda ()
+	 (unless (memq id *libraries*)
+	    (set! *libraries*
+	       (cons (cons id
 			(libinfo id basename version
-				 (when dlopen-init
-				    (format "~a_~a"
-					    dlopen-init
-					    (eval-library-suffix)))
-				 (when dlopen-init
-				    (format "~a_e~a"
-					    dlopen-init
-					    (eval-library-suffix)))
-				 module-init module-eval
-				 class-init class-eval
-				 init eval srfi))
+			   (when dlopen-init
+			      (format "~a_~a"
+				 dlopen-init
+				 (eval-library-suffix)))
+			   (when dlopen-init
+			      (format "~a_e~a"
+				 dlopen-init
+				 (eval-library-suffix)))
+			   module-init module-eval
+			   class-init class-eval
+			   init eval srfi))
 		  *libraries*))
-      (for-each (lambda (s)
-		   (register-srfi! s)
-		   (register-eval-srfi! s))
-		srfi))
-   (mutex-unlock! *library-mutex*))
+	    (for-each (lambda (s)
+			 (register-srfi! s)
+			 (register-eval-srfi! s))
+	       srfi)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-info ...                                                 */
@@ -186,23 +186,23 @@
 		(error 'library-translation-table-add!
 		       "Illegal argument"
 		       opt)))))
-      (mutex-lock! *library-mutex*)
-      (set! *libraries*
-	    (cons (cons name
+      (with-lock-uw *library-mutex*
+	 (lambda ()
+	    (set! *libraries*
+	       (cons (cons name
 			(libinfo name translation version
-				 (when dlopen-init
-				    (string-append (mangle dlopen-init)
-						   "_"
-						   (eval-library-suffix)))
-				 (when dlopen-init
-				    (string-append (mangle dlopen-init)
-						   "_e"
-						   (eval-library-suffix)))
-				 #f #f
-				 #f #f
-				 #f #f #f))
-		  *libraries*))
-      (mutex-unlock! *library-mutex*)))
+			   (when dlopen-init
+			      (string-append (mangle dlopen-init)
+				 "_"
+				 (eval-library-suffix)))
+			   (when dlopen-init
+			      (string-append (mangle dlopen-init)
+				 "_e"
+				 (eval-library-suffix)))
+			   #f #f
+			   #f #f
+			   #f #f #f))
+		  *libraries*))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-init-file ...                                            */
@@ -267,18 +267,17 @@
 ;*    library-loaded? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (library-loaded? lib)
-   (mutex-lock! *library-mutex*)
-   (let ((r (memq lib *loaded-libraries*)))
-      (mutex-unlock! *library-mutex*)
-      r))
+   (with-lock-uw *library-mutex*
+      (lambda ()
+	 (memq lib *loaded-libraries*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-mark-loaded! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (library-mark-loaded! lib)
-   (mutex-lock! *library-mutex*)
-   (set! *loaded-libraries* (cons lib *loaded-libraries*))
-   (mutex-unlock! *library-mutex*)
+   (with-lock-uw *library-mutex*
+      (lambda ()
+	 (set! *loaded-libraries* (cons lib *loaded-libraries*))))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

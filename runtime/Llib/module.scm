@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Oct 19 08:13:11 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 07:55:30 2012 (serrano)                */
 ;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
@@ -178,9 +178,9 @@
 ;*    module-add-access! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module-add-access! module files abase)
-   (mutex-lock! modules-mutex)
-   (module-add-access-inner! module files abase)
-   (mutex-unlock! modules-mutex))
+   (with-lock-uw modules-mutex
+      (lambda ()
+	 (module-add-access-inner! module files abase))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-read-access-file ...                                      */
@@ -204,18 +204,18 @@
 	 ((not (string? f)) f)
 	 ((or (string=? f "") (char=? (string-ref f 0) (file-separator))) f)
 	 (else (make-file-name abase f))))
-   
-   (mutex-lock! modules-mutex)
-   (call-with-input-file name
-      (lambda (port)
-	 (let ((abase (dirname name)))
-	    (for-each (lambda (access)
-			 (let ((info (if (string=? abase ".")
-					 (cdr access)
-					 (map! (lambda (f)
-						  (relative-path f abase))
-					       (cdr access)))))
-			    (module-add-access-inner! (car access) info abase)))
-		      (module-read-access-file port)))))
-   (mutex-unlock! modules-mutex))
+
+   (with-lock-uw modules-mutex
+      (lambda ()
+	 (call-with-input-file name
+	    (lambda (port)
+	       (let ((abase (dirname name)))
+		  (for-each (lambda (access)
+			       (let ((info (if (string=? abase ".")
+					       (cdr access)
+					       (map! (lambda (f)
+							(relative-path f abase))
+						  (cdr access)))))
+				  (module-add-access-inner! (car access) info abase)))
+		     (module-read-access-file port))))))))
 

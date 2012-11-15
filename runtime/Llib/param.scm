@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Sat Oct 13 07:35:04 2012 (serrano)                */
+;*    Last change :  Thu Nov 15 07:16:06 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
@@ -112,11 +112,11 @@
 	  (define (,id)
 	     ,vid)
 	  (define (,(symbol-append id '-set!) v)
-	     (mutex-lock! *parameter-mutex*)
-	     ,(if (pair? setter)
-		  `(set! ,vid (,(car setter) v))
-		  `(set! ,vid v))
-	     (mutex-unlock! *parameter-mutex*)
+	     (with-lock-uw *parameter-mutex*
+		(lambda ()
+		   ,(if (pair? setter)
+			`(set! ,vid (,(car setter) v))
+			`(set! ,vid v))))
 	     v))))
 
 ;*---------------------------------------------------------------------*/
