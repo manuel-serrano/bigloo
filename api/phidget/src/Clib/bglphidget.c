@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep 21 12:08:37 2010                          */
-/*    Last change :  Wed Apr  4 13:05:45 2012 (serrano)                */
+/*    Last change :  Thu Nov 15 12:41:52 2012 (serrano)                */
 /*    Copyright   :  2010-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper for the widget library                            */
@@ -489,7 +489,7 @@ bgl_stepperinput_handler( CPhidgetStepperHandle id, void *ptr, int index, int is
 
 /*---------------------------------------------------------------------*/
 /*    static int                                                       */
-/*    bgl_steppervelocity_handler ...                                   */
+/*    bgl_steppervelocity_handler ...                                  */
 /*---------------------------------------------------------------------*/
 static int
 bgl_steppervelocity_handler( CPhidgetStepperHandle id, void *ptr, int index, double velocity ) {
@@ -509,7 +509,7 @@ bgl_steppervelocity_handler( CPhidgetStepperHandle id, void *ptr, int index, dou
 
 /*---------------------------------------------------------------------*/
 /*    static int                                                       */
-/*    bgl_stepperposition_handler ...                                   */
+/*    bgl_stepperposition_handler ...                                  */
 /*---------------------------------------------------------------------*/
 static int
 bgl_stepperposition_handler( CPhidgetStepperHandle id, void *ptr, int index, BGL_LONGLONG_T position ) {
