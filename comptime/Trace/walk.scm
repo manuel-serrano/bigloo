@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Thu Dec 22 15:09:32 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 16 19:14:46 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -148,6 +148,15 @@
 	  node)))
 
 ;*---------------------------------------------------------------------*/
+;*    find-last-node ::sync ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (find-last-node node::sync)
+   (with-access::sync node (mutex nodes)
+      (if (pair? nodes)
+	  (find-last-node (car (last-pair nodes)))
+	  mutex)))
+
+;*---------------------------------------------------------------------*/
 ;*    find-last-node ::app ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (find-last-node node::app)
@@ -273,6 +282,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::sequence stack)
    (trace-node*! (sequence-nodes node) stack)
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    trace-node ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (trace-node node::sync stack)
+   (with-access::sync node (mutex nodes)
+      (trace-node mutex stack)
+      (trace-node*! nodes stack))
    node)
 
 ;*---------------------------------------------------------------------*/
