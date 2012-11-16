@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Tue Mar 20 08:36:56 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 16:38:58 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -253,6 +253,11 @@
 	   (final-class box-set!::node
 	      var::var
 	      value::node)
+
+	   ;; synchronization
+	   (final-class sync::node
+	      (mutex::node read-only)
+	      (nodes::pair-nil read-only))
 	   
 	   (strict-node-type::type ::type ::type)
 	   (generic node-walk ::node ::procedure)))

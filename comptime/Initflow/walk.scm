@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Sat Oct 13 07:39:36 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 16:56:39 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
@@ -147,6 +147,15 @@
 	     is
 	     (let ((i (initflow-node (car nodes) e)))
 		(loop (cdr nodes) (append i is)))))))
+
+      
+;*---------------------------------------------------------------------*/
+;*    initflow-node ::sync ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (initflow-node node::sync e)
+   (with-access::sync node (mutex nodes)
+      (initflow-node mutex e)
+      (initflow-node* nodes e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-node ::app ...                                          */
@@ -295,4 +304,3 @@
 (define-method (initflow-node node::jump-ex-it e)
    (with-access::jump-ex-it node (exit value)
       (initflow-node* (list exit value) e)))
-      

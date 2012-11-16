@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Dec  2 09:24:19 2011 (serrano)                */
-#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Nov 16 16:49:46 2012 (serrano)                */
+#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -288,6 +288,11 @@ EFFECT_FILE	= effect walk cgraph spread feffect
 
 EFFECT_OBJ	= $(EFFECT_FILE:%=Effect/%.o)
 
+#*--- sync ------------------------------------------------------------*/
+SYNC_FILE	= walk
+
+SYNC_OBJ	= $(SYNC_FILE:%=Sync/%.o)
+
 #*--- object ----------------------------------------------------------*/
 OBJECT_FILE	= class generic method getter \
                   java_access \
@@ -330,7 +335,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ)
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

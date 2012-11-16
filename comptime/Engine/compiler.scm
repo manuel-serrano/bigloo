@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Oct 15 08:02:50 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 16:50:09 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -56,6 +56,7 @@
 	    beta_walk
 	    inline_walk
 	    effect_walk
+	    sync_walk
 	    callcc_walk
 	    fail_walk
 	    abound_walk
@@ -277,6 +278,12 @@
 	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)
+
+	    ;; the synchronize expansion
+	    (set! ast (profile sync (sync-walk! ast)))
+	    (stop-on-pass 'sync (lambda () (write-ast ast)))
+	    (check-sharing "sync" ast)
+	    (check-type "sync" ast #f #f)
 	    
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))

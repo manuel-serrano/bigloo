@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Oct 25 20:53:32 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 16:49:04 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -837,6 +837,8 @@
        (set! *pass* 'effect))
       (("-effect+" (help "Stop after the 2nd effect stage"))
        (set! *pass* 'effect+))
+      (("-sync" (help "Stop after the sync stage"))
+       (set! *pass* 'sync))
       (("-reduce" (help "Stop after the reduction opt. stage"))
        (set! *pass* 'reduce))
       (("-reduce+" (help "Stop after the 2nd reduction opt. stage"))
