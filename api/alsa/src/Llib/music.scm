@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Wed Nov 14 16:40:03 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 13:51:48 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -43,7 +43,7 @@
 	       (%playlist::pair-nil (default '()))
 	       (%aready::bool (default #t))
 	       (%amutex::mutex read-only (default (make-mutex)))
-	       (%!playid::int (default -1))
+	       (%!pid::int (default -1))
 	       (%acondv::condvar read-only (default (make-condition-variable)))
 	       (%error::obj (default #f)))
 
@@ -106,7 +106,7 @@
 ;*    alsa-debug-file ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (alsa-debug-file)
-   #f)
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    *error-sleep-duration* ...                                       */
@@ -250,13 +250,14 @@
 	    (find (lambda (d) (alsadecoder-can-play-type? d mime))
 	       decoders))))
    
-   (define (update-song-status! o n)
+   (define (update-song-status! o n pid)
       (with-access::alsamusic o (%status onstate onvolume)
-	 (with-access::musicstatus %status (state song songpos songid songlength playlistid volume)
+	 (with-access::musicstatus %status (state song songpos songid songlength playlistid volume playlistid)
+	    (set! playlistid pid)
 	    (set! songpos 0)
 	    (set! songlength 0)
 	    (set! song n)
-	    (set! songid (+fx (* 100 playlistid) n))
+	    (set! songid (+fx (* 100 pid) n))
 	    (set! state 'play)
 	    (onstate o %status)
 	    (onvolume o volume))))
@@ -274,226 +275,239 @@
 		  (alsa-snd-pcm-drop pcm))
 	       (alsa-snd-pcm-cleanup pcm)))))
    
-   (define (prepare-next-buffer o buffer playlist::pair-nil)
-      (when (pair? playlist)
-	 (with-access::alsaportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
-	    (with-access::alsamusic o (%amutex %nextbuffer %status)
-	       (synchronize %amutex
-		  (unless %nextbuffer
-		     (let* ((url (car playlist))
-			    (ip (open-file url o)))
-			(when (input-port? ip)
-			   (let ((buf (instantiate::alsaportbuffer
-					 (url url)
-					 (port ip)
-					 (%inlen %inlen)
-					 (%inbuf %inbuf)
-					 (%inbufp %inbufp)
-					 (%head %head)
-					 (%tail %tail)
-					 (%nexttail %head))))
-			      (set! %nextbuffer buf)
-			      buf)))))))))
+   (define (prepare-next-buffer o buffer url::bstring)
+      (with-handler
+	 (lambda (e)
+	    ;; ignore that error becase if we cannot open
+	    ;; the URL this will be detected again in the
+	    ;; next open-file that will occur in the main
+	    ;; play-url function
+	    #f))
+      (with-access::alsaportbuffer buffer (%head %tail %inlen %inbuf %inbufp)
+	 (with-access::alsamusic o (%amutex %nextbuffer %status)
+	    (synchronize %amutex
+	       (unless %nextbuffer
+		  (let ((ip (open-file url o)))
+		     (when (input-port? ip)
+			(let ((buf (instantiate::alsaportbuffer
+				      (url url)
+				      (port ip)
+				      (%inlen %inlen)
+				      (%inbuf %inbuf)
+				      (%inbufp %inbufp)
+				      (%head %head)
+				      (%tail %tail)
+				      (%nexttail %head))))
+			   (set! %nextbuffer buf)
+			   buf))))))))
    
-   (define (play-url-port o d::alsadecoder url::bstring
-	      playlist::pair-nil notify::bool)
-      (with-access::alsamusic o (%amutex inbuf %buffer onevent onerror
-				   mkthread %status)
-	 (let ((ip (open-file url o)))
-	    (if (input-port? ip)
+   (define (open-port-buffer o::alsamusic d::alsadecoder url::bstring next::pair-nil)
+      (let ((ip (open-file url o)))
+	 (if (input-port? ip)
+	     (with-access::alsamusic o (%amutex inbuf %buffer onerror mkthread)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
 				 (port ip)
 				 (%inlen (string-length inbuf))
 				 (%inbuf inbuf)
 				 (%inbufp inbuf))))
-		   (set! %buffer buffer)
-		   (mutex-unlock! %amutex)
 		   (thread-start!
 		      (mkthread
 			 (lambda ()
-			    (with-handler
-			       (lambda (e)
-				  (exception-notify e)
-				  (onerror o e)
-				  (sleep *error-sleep-duration*))
-			       (let loop ((buffer buffer)
-					  (playlist playlist))
-				  (unwind-protect
-				     (alsabuffer-fill! buffer o)
-				     (close-input-port ip))
-				  ;; next song
-				  (let ((nbuffer (prepare-next-buffer o buffer (cdr playlist))))
+			    (let loop ((buffer buffer)
+				       (next next))
+			       ;; start filling that buffer
+			       (alsabuffer-fill! buffer o)
+			       ;; next song
+			       (when (pair? next)
+				  (let* ((url (car next))
+					 (nbuffer (prepare-next-buffer o buffer url)))
 				     (when (isa? nbuffer alsabuffer)
-					(loop nbuffer (cdr playlist)))))))
+					(loop nbuffer (cdr next)))))))
 			 "alsamusic-buffer"))
-		   (when notify
-		      (with-access::musicstatus %status (playlistid)
-			 (onevent o 'playlist playlistid)))
-		   (alsadecoder-reset! d)
-		   (alsadecoder-decode d o buffer))
-		(with-access::alsamusic o (onerror %amutex)
-		   (mutex-unlock! %amutex)
-		   (onerror o
-		      (instantiate::&io-port-error
-			 (proc "music-play")
-			 (msg "Cannot open")
-			 (obj url)))
-		   (sleep *error-sleep-duration*))))))
-   
-   (define (play-url-mmap o d::alsadecoder url::bstring
-	      playlist::pair-nil notify::bool)
+		   buffer))
+	     (raise
+		(instantiate::&io-port-error
+		   (proc "music-play")
+		   (msg "Cannot open")
+		   (obj url))))))
+      
+   (define (open-mmap-buffer o::alsamusic d::alsadecoder url::bstring)
       (let ((mmap (open-mmap url :read #t :write #f)))
 	 (if (mmap? mmap)
-	     (with-access::alsamusic o (%amutex inbuf %buffer onevent %status)
-		(let ((buffer (instantiate::alsammapbuffer
-				 (url url)
-				 (mmap mmap)
-				 (%inlen (elong->fixnum (mmap-length mmap)))
-				 (%inbufp (mmap->string mmap)))))
-		   (set! %buffer buffer)
-		   (mutex-unlock! %amutex)
-		   (alsabuffer-fill! buffer o)
-		   (when notify
-		      (with-access::musicstatus %status (playlistid)
-			 (onevent o 'playlist playlistid)))
-		   (alsadecoder-reset! d)
-		   (alsadecoder-decode d o buffer)
-		   (close-mmap mmap)))
-	     (with-access::alsamusic o (onerror %amutex)
-		(mutex-unlock! %amutex)
-		(onerror o
-		   (instantiate::&io-port-error
-		      (proc "music-play")
-		      (msg "Cannot open mmap")
-		      (obj url)))))))
+	     (let ((buffer (instantiate::alsammapbuffer
+			      (url url)
+			      (mmap mmap)
+			      (%inlen (elong->fixnum (mmap-length mmap)))
+			      (%inbufp (mmap->string mmap)))))
+		(alsabuffer-fill! buffer o)
+		buffer)
+	     (raise
+		(instantiate::&io-port-error
+		   (proc "music-play")
+		   (msg "Cannot open mmap")
+		   (obj url))))))
    
-   (define (play-url-next o d::alsadecoder url::bstring playlist)
-      (with-access::alsamusic o (%amutex %buffer %nextbuffer)
-	 (with-access::alsaportbuffer %nextbuffer (%nexttail %tail %head)
-	    (set! %tail %nexttail))
-	 (set! %buffer %nextbuffer)
-	 (set! %nextbuffer #f)
-	 (mutex-unlock! %amutex)
-	 (alsadecoder-reset! d)
-	 (alsadecoder-decode d o %buffer)))
+   (define (next-port-buffer o::alsamusic url)
+      (with-access::alsamusic o (%amutex %nextbuffer)
+	 (synchronize %amutex
+	    (when (isa? %nextbuffer alsaportbuffer)
+	       (with-access::alsaportbuffer %nextbuffer ((u url) %nexttail %tail)
+		  (if (eq? u url)
+		      (let ((buf %nextbuffer))
+			 (set! %tail %nexttail)
+			 (set! %nextbuffer #f)
+			 buf)
+		      (begin
+			 (alsabuffer-abort! %nextbuffer)
+			 #f)))))))
    
-   (define (next-buffer? url)
-      (with-access::alsamusic o (%nextbuffer)
-	 (when (isa? %nextbuffer alsabuffer)
-	    (with-access::alsabuffer %nextbuffer ((u url))
-	       (or (eq? u url)
-		   (begin
-		      (alsabuffer-abort! %nextbuffer)
-		      #f))))))
+   (define (open-buffer o::alsamusic d::alsadecoder urls::pair)
+      (let ((url::bstring (car urls)))
+	 (cond
+	    ((next-port-buffer o url)
+	     =>
+	     (lambda (b) b))
+	    ((and (file-exists? url) (not (alsa-debug-file)))
+	     (open-mmap-buffer o d url))
+	    (else
+	     (open-port-buffer o d url (cdr urls))))))
+
+   (define (play-error o::alsamusic e::&error)
+      (with-access::alsamusic o (%amutex onerror %error %status)
+	 (synchronize %amutex
+	    (with-access::musicstatus %status (state)
+	       (set! state 'error)
+	       (set! %error e)))
+	 (onerror o e)
+	 (sleep *error-sleep-duration*)))
    
-   (define (play-url o::alsamusic d::alsadecoder url::bstring playlist notify)
-      (cond
-	 ((next-buffer? url)
-	  (play-url-next o d url playlist))
-	 ((and (file-exists? url) (not (alsa-debug-file)))
-	  (play-url-mmap o d url playlist notify))
-	 (else
-	  (play-url-port o d url playlist notify))))
+   (define (play-url o::alsamusic d::alsadecoder n::int urls::pair pid::int notify::bool)
+      (let ((buffer (open-buffer o d urls)))
+	 (with-access::alsamusic o (%amutex %!pid %buffer %decoder)
+	    (synchronize %amutex
+	       (set! %buffer buffer)
+	       (set! %decoder d)
+	       (set! %!pid pid)
+	       (update-song-status! o n pid))
+	    (when notify
+	       (with-access::alsamusic o (%status onevent)
+		  (with-access::musicstatus %status (playlistid)
+		     (onevent o 'playlist playlistid)))))
+	 (unwind-protect
+	    (begin
+	       (alsadecoder-reset! d)
+	       (alsadecoder-decode d o buffer))
+	    (alsabuffer-close buffer))))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!playid onerror %decoder %status %error)
-	 (let ((playid %!playid))
+      (with-access::alsamusic o (%amutex %!pid onerror %decoder %status %error)
+	 (let ((pid %!pid))
 	    (let loop ((l urls)
 		       (n n)
 		       (notify #t))
-	       (cond
-		  ((not (eq? playid %!playid))
-		   ;; the playlist has changed
-		   #unspecified)
-		  ((pair? l)
-		   ;; still stuff to be played
-		   (let* ((url (car l))
-			  (decoder (find-decoder o url)))
-		      (if decoder
-			  (begin
-			     (set! %decoder decoder)
-			     (update-song-status! o n)
-			     ;; play-url unlocks %amutex
-			     (with-handler
-				(lambda (e)
-				   (when (>=fx (alsa-debug) 1)
-				      (debug "!!! ALSA ERROR.1: " url
-					 " " (current-microseconds) " " e "\n")
-				      (exception-notify e))
-				   (synchronize-unsafe %amutex
-				      (with-access::musicstatus %status (state)
-					 (set! state 'error))
-				      (set! %error e))
-				   (onerror o e)
-				   (sleep *error-sleep-duration*))
-				(set! %error #f)
-				(play-url o decoder url l notify))
-			     (mutex-lock! %amutex)
-			     (when %error
-				(sleep *error-sleep-duration*))
-			     (loop (cdr l) (+fx 1 n) #f))
-			  (begin
-			     (mutex-unlock! %amutex)
-			     (onerror o
-				(instantiate::&io-parse-error
-				   (proc "music-play")
-				   (msg "Illegal music format")
-				   (obj url)))
-			     (mutex-lock! %amutex)))))
-		  (else
-		   ;; done with this playlist
-		   (set! playlist-ended-id playid)))))))
-   
-   (define (play-playlist n)
-      ;; start playing the playlist
-      (with-access::alsamusic o (%playlist %aready %!playid)
-	 (unwind-protect
+	       (with-handler
+		  (lambda (e)
+		     (when (> (alsa-debug) 0)
+			(exception-notify e))
+		     (play-error o e)
+		     (loop (cdr l) (+fx n 1) #f))
+		  (let ((action (synchronize %amutex
+				   (cond
+				      ((not (eq? pid %!pid))
+				       ;; the playlist has changed
+				       'invalidated)
+				      ((null? l)
+				       ;; the playlist is exhausted
+				       'ended)
+				      ((find-decoder o (car l))
+				       ;; find a decoder for the file
+				       =>
+				       (lambda (d) d))
+				      (else
+				       ;; don't know how to play this file
+				       (raise
+					  (instantiate::&io-parse-error
+					     (proc "music-play")
+					     (msg "Illegal music format")
+					     (obj (car l)))))))))
+		     (cond
+			((isa? action alsadecoder)
+			 ;; a decoder has been found, let's play
+			 (play-url o action n l pid notify)
+			 (loop (cdr l) (+fx n 1) #f))
+			((eq? action 'ended)
+			 ;; playlist exhausted
+			 (set! playlist-ended-id pid))
+			((eq? action 'invalidated)
+			 ;; playlist invalidated, nothing to do
+			 #unspecified)
+			(else
+			 (raise
+			    (instantiate::&error
+			       (proc "music-play")
+			       (msg "Internal error")
+			       (obj action)))))))))))
+
+   (define (wait-playlist n)
+      (with-access::alsamusic o (%amutex %playlist %aready %!pid)
+	 (synchronize %amutex
 	    (let ((playlist %playlist))
 	       (when (and (>=fx n 0) (<fx n (length playlist)))
 		  ;; init alsa pcm
 		  (pcm-init o)
 		  ;; wait the the music player to be ready
-		  (set! %!playid (+fx 1 %!playid))
-		  (let ((playid %!playid))
+		  (set! %!pid (+fx 1 %!pid))
+		  (let ((playid %!pid))
 		     (alsamusic-wait-ready! o)
-		     (when (=fx %!playid playid)
+		     (when (=fx %!pid playid)
 			(set! %aready #f)
 			;; play the list of urls
-			(play-urls (list-tail playlist n) n)))))
-	    (with-access::alsamusic o (%buffer %decoder %acondv)
-	       ;; reset the player state
-	       (set! %aready #t)
-	       (set! %buffer #f)
-	       (set! %decoder #f)
-	       (pcm-reset! o)
-	       ;; signal if someone waiting for the music player
-	       (condition-variable-broadcast! %acondv)))))
+			(list-tail playlist n))))))))
+   
+   (define (play-playlist n)
+      ;; wait for the player to be ready to play that playlist
+      (let ((pl (wait-playlist n)))
+	 (when (pair? pl)
+	    ;; we got a playlist let's play it
+	    (unwind-protect
+	       (play-urls pl n)
+	       (with-access::alsamusic o (%buffer %decoder %aready %amutex %acondv)
+		  (synchronize %amutex
+		     ;; reset the player state
+		     (set! %aready #t)
+		     (set! %buffer #f)
+		     (set! %decoder #f)
+		     (pcm-reset! o)
+		     ;; signal if someone waiting for the music player
+		     (condition-variable-broadcast! %acondv)))))))
    
    (define (resume-from-pause o)
-      (with-access::alsamusic o (%decoder)
-	 (when (isa? %decoder alsadecoder)
-	    (with-access::alsadecoder %decoder (%dmutex %dcondv %!dpause)
-	       (synchronize-unsafe %dmutex
-		  (when %!dpause
-		     (set! %!dpause #f)
-		     (condition-variable-broadcast! %dcondv)))
-	       #t))))
+      (with-access::alsamusic o (%decoder %amutex)
+	 (synchronize %amutex
+	    (when (isa? %decoder alsadecoder)
+	       (with-access::alsadecoder %decoder (%dmutex %dcondv %!dpause)
+		  (synchronize %dmutex
+		     (when %!dpause
+			(set! %!dpause #f)
+			(condition-variable-broadcast! %dcondv)))
+		  #t)))))
    
    (with-access::alsamusic o (%amutex %status)
-      (synchronize %amutex
-	 (cond
-	    ((pair? s)
-	     ;; play the playing from a user index
-	     (unless (integer? (car s))
-		(bigloo-type-error "music-play ::alsamusic" 'int (car s)))
-	     (play-playlist (car s)))
-	    ((resume-from-pause o)
-	     #unspecified)
-	    (else
-	     ;; play the playlist from the current position
-	     (with-access::musicstatus %status (song)
-		(play-playlist song)))))
+      
+      (cond
+	 ((pair? s)
+	  ;; play the playing from a user index
+	  (unless (integer? (car s))
+	     (bigloo-type-error "music-play ::alsamusic" 'int (car s)))
+	  (play-playlist (car s)))
+	 ((resume-from-pause o)
+	  #unspecified)
+	 (else
+	  ;; play the playlist from the current position
+	  (with-access::musicstatus %status (song)
+	     (play-playlist song))))
+      
       (when playlist-ended-id
 	 (with-access::alsamusic o (onevent)
 	    (onevent o 'ended playlist-ended-id)))))
@@ -502,9 +516,9 @@
 ;*    music-stop ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::alsamusic)
-   (with-access::alsamusic o (%amutex onstate %status %!playid)
+   (with-access::alsamusic o (%amutex onstate %status %!pid)
       (synchronize %amutex
-	 (set! %!playid (+fx 1 %!playid))
+	 (set! %!pid (+fx 1 %!pid))
 	 (alsamusic-wait-ready! o))))
 
 ;*---------------------------------------------------------------------*/
@@ -536,7 +550,7 @@
       (when (>=fx (alsa-debug) 1)
 	 (debug "--> ALSA: broadcast abort " url
 	    " " (current-microseconds) "..."))
-      (synchronize-unsafe %bmutex
+      (synchronize %bmutex
 	 (set! %empty #t)
 	 (set! %eof #t)
 	 (condition-variable-broadcast! %bcondv))
@@ -551,7 +565,7 @@
       (when (>=fx (alsa-debug) 1)
 	 (debug "--> ALSA: signal decoder abort "
 	    (current-microseconds) "..."))
-      (synchronize-unsafe %dmutex
+      (synchronize %dmutex
 	 (set! %!dpause #f)
 	 (set! %!dabort #t)
 	 (condition-variable-broadcast! %dcondv))
@@ -572,7 +586,7 @@
 ;*---------------------------------------------------------------------*/
 (define (alsadecoder-pause d::alsadecoder)
    (with-access::alsadecoder d (%dmutex %dcondv %!dpause)
-      (synchronize-unsafe %dmutex
+      (synchronize %dmutex
 	 (if %!dpause
 	     (begin
 		(set! %!dpause #f)
@@ -609,7 +623,7 @@
 	 (when (>=fx (alsa-debug) 1)
 	    (debug "--> ALSA: broadcast eof " url " "
 	       (current-microseconds) "..."))
-	 (synchronize-unsafe %bmutex
+	 (synchronize %bmutex
 	    (set! %eof #t)
 	    (condition-variable-broadcast! %bcondv))
 	 (when (>=fx (alsa-debug) 1)
@@ -625,7 +639,7 @@
 	       (when (>=fx (alsa-debug) 3)
 		  (debug "--> ALSA: broadcast not-empty " url
 		     " " (current-microseconds) "..."))
-	       (synchronize-unsafe %bmutex
+	       (synchronize %bmutex
 		  (set! %empty #f)
 		  (condition-variable-broadcast! %bcondv))
 	       (when (>=fx (alsa-debug) 3)
@@ -642,7 +656,7 @@
 	    (set-eof!)
 	    (with-access::alsamusic o (onerror %status %error %amutex)
 	       (onerror o e)
-	       (synchronize-unsafe %amutex
+	       (synchronize %amutex
 		  (set! %error e))))
 	 (let loop ()
 	    (cond
@@ -663,7 +677,7 @@
 		(when (>=fx (alsa-debug) 2)
 		   (debug "<-- ALSA: wait not-full " url
 		      " " (current-microseconds) "..."))
-		(synchronize-unsafe %bmutex
+		(synchronize %bmutex
 		   (when (and (=fx %head %tail) (not %empty))
 		      (condition-variable-wait! %bcondv %bmutex)))
 		(when (>=fx (alsa-debug) 2)
@@ -733,7 +747,7 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (alsadecoder-reset! o::alsadecoder)
    (with-access::alsadecoder o (%dmutex %!dpause %!dabort)
-      (synchronize-unsafe %dmutex
+      (synchronize %dmutex
 	 (set! %!dpause #f)
 	 (set! %!dabort #f))
       #f))
@@ -769,6 +783,25 @@
 (define-method (alsabuffer-stream o::alsammapbuffer)
    (with-access::alsammapbuffer o (mmap)
       mmap))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-close ::alsabuffer ...                                */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-close o::alsabuffer))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-close ::alsaportbuffer ...                            */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-close o::alsaportbuffer)
+   (with-access::alsaportbuffer o (port)
+      (close-input-port port)))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-close ::alsammapbuffer ...                            */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-close o::alsammapbuffer)
+   (with-access::alsammapbuffer o (mmap)
+      (close-mmap mmap)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-length ::alsabuffer ...                               */
@@ -825,7 +858,7 @@
       ;; only ports that support seek have a position length
       (when (>fx (input-port-length port) 0)
 	 (unless %eof
-	    (synchronize-unsafe %bmutex
+	    (synchronize %bmutex
 	       ;; mark the seek position
 	       (set! %empty #t)
 	       (set! %seek (if (llong? offset) (llong->fixnum offset) offset))

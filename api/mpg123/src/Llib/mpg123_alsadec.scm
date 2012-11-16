@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Nov 14 18:42:35 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 12:03:33 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -226,21 +226,19 @@
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug "<-- MPG123_DECODER, wait not-empty " url " "
 				(current-microseconds) "..."))
-			  (let liip ()
-			     (with-access::alsamusic am (%status)
-				(with-access::musicstatus %status (buffering)
-				   (set! buffering
-				      (buffer-percentage-filled))))
-			     (onstate am 'buffering)
-			     (with-lock-uw %bmutex
-				(lambda ()
-				   ;; wait until the buffer is filled
-				   (unless (or (not %empty)
-					       %eof
-					       %!dabort
-					       (buffer-filled?))
-				      (condition-variable-wait! %bcondv %bmutex)
-				      (liip)))))
+			  (with-access::alsamusic am (%status)
+			     (with-access::musicstatus %status (buffering)
+				(set! buffering
+				   (buffer-percentage-filled))))
+			  (onstate am 'buffering)
+			  (with-lock-uw %bmutex
+			     (lambda ()
+				;; wait until the buffer is filled
+				(unless (or (not %empty)
+					    %eof
+					    %!dabort
+					    (buffer-filled?))
+				   (condition-variable-wait! %bcondv %bmutex))))
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug (current-microseconds) "\n"))
 			  (onstate am 'play)

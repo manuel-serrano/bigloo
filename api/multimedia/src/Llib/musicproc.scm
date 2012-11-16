@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Fri Jan 27 19:10:09 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 07:58:27 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MUSICPROC abstract class for "external" music players        */
@@ -43,8 +43,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-exec ...                                               */
-;*    -------------------------------------------------------------    */
-;*    The mutex must already be locked.                                */
 ;*---------------------------------------------------------------------*/
 (define (musicproc-exec o::musicproc wait command #!optional arg)
    
@@ -58,31 +56,35 @@
 		  (display arg p))
 	       (newline p)
 	       (flush-output-port p)))))
+
+   (define (parse)
+      (with-handler
+	 (lambda (e)
+	    (exception-notify e))
+	 (musicproc-parse o)))
    
    (with-access::musicproc o (%process %pmutex %pcondv %inexec)
       (if (not wait)
 	  (exec o)
-	  (begin
-	     (mutex-lock! %pmutex)
-	     (if %inexec
-		 (begin
-		    (exec o)
-		    (let loop ()
-		       (when %inexec
-			  (condition-variable-wait! %pcondv %pmutex)
-			  (loop))))
-		 (begin
-		    (set! %inexec #t)
-		    (exec o)
-		    (mutex-unlock! %pmutex)
-		    (with-handler
-		       (lambda (e)
-			  (exception-notify e))
-		       (musicproc-parse o))
-		    (mutex-lock! %pmutex)
-		    (set! %inexec #f)
-		    (condition-variable-broadcast! %pcondv)))
-	     (mutex-unlock! %pmutex)))))
+	  (unless (with-lock-uw %pmutex
+		     (lambda ()
+			(if %inexec
+			    (begin
+			       (exec o)
+			       (let loop ()
+				  (when %inexec
+				     (condition-variable-wait! %pcondv %pmutex)
+				     (loop)))
+			       #t)
+			    (begin
+			       (set! %inexec #t)
+			       (exec o)
+			       #f))))
+	     (parse)
+	     (with-lock-uw %pmutex
+		(lambda ()
+		   (set! %inexec #f)
+		   (condition-variable-broadcast! %pcondv)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-start ...                                              */
@@ -234,12 +236,6 @@
 			       (loop (+fx i 1) #f)))))))))))
    
 ;*---------------------------------------------------------------------*/
-;*    playlist-load-paused! ...                                        */
-;*---------------------------------------------------------------------*/
-(define (playlist-load-paused! o i)
-   (playlist-load-inner! o i musicproc-loadpaused))
-
-;*---------------------------------------------------------------------*/
 ;*    playlist-load! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (playlist-load! o i)
@@ -276,6 +272,10 @@
 ;*    music-seek ::musicproc ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek o::musicproc pos . s)
+   
+   (define (playlist-load-paused! o i)
+      (playlist-load-inner! o i musicproc-loadpaused))
+   
    (with-access::musicproc o (%mutex %process %command-seek-format %command-pause %user-state)
       (with-lock %mutex
 	 (lambda ()

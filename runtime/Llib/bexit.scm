@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Mar 29 11:30:20 2011 (serrano)                */
+;*    Last change :  Fri Nov 16 15:37:13 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -49,6 +49,12 @@
 	    (macro exitd-user?::bool (::obj) "EXITD_USERP")
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
 	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
+	    (macro $exitd-mutex0::obj (::exit) "EXITD_MUTEX0")
+	    (macro $exitd-mutex0-set!::void (::exit ::obj) "EXITD_MUTEX0_SET")
+	    (macro $exitd-mutex1::obj (::exit) "EXITD_MUTEX1")
+	    (macro $exitd-mutex1-set!::void (::exit ::obj) "EXITD_MUTEX1_SET")
+	    (macro $exitd-mutexn::obj (::exit) "EXITD_MUTEXN")
+	    (macro $exitd-mutexn-set!::void (::exit ::obj) "EXITD_MUTEXN_SET")
 	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
@@ -81,13 +87,21 @@
 	       (method static $set-exitd-top!::obj (::obj)
 		       "BGL_EXITD_TOP_SET")
 	       (method static $get-exitd-val::obj ()
-		       "BGL_EXITD_VAL")))
+		       "BGL_EXITD_VAL")
+	       (method static $exitd-mutex0::obj (::exit) "EXITD_MUTEX0")
+	       (method static $exitd-mutex0-set!::void (::exit ::obj) "EXITD_MUTEX0_SET")
+	       (method static $exitd-mutex1::obj (::exit) "EXITD_MUTEX1")
+	       (method static $exitd-mutex1-set!::void (::exit ::obj) "EXITD_MUTEX1_SET")
+	       (method static $exitd-mutexn::obj (::exit) "EXITD_MUTEXN")
+	       (method static $exitd-mutexn-set!::void (::exit ::obj) "EXITD_MUTEXN_SET")))
    
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
-	    (default-uncaught-exception-handler ::obj)))
+	    (default-uncaught-exception-handler ::obj)
+	    (exitd-push-mutex! ::obj)
+	    (exitd-pop-mutex! ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    val-from-exit? ...                                               */
@@ -138,6 +152,7 @@
 			 default-uncaught-exception-handler)
 		     val)))
 	     (begin
+		(exitd-unlock-mutexes! exitd-top)
 		(pop-exit!)
 		(cond  
 		   ((and (eq? exitd-top exitd) 
@@ -159,6 +174,52 @@
 		   (else
 		    (loop))))))))
 
+;*---------------------------------------------------------------------*/
+;*    exitd-unlock-mutexes! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (exitd-unlock-mutexes! exitd)
+   (when ($exitd-mutex0 exitd)
+      ;; (tprint "unlock0 " ($exitd-mutex0 exitd))
+      (mutex-unlock! ($exitd-mutex0 exitd)))
+   (when ($exitd-mutex1 exitd)
+      ;; (tprint "unlock1 " ($exitd-mutex1 exitd))
+      (mutex-unlock! ($exitd-mutex0 exitd)))
+   (when (pair? ($exitd-mutexn exitd))
+      (tprint "unlockn")
+      (for-each mutex-unlock! ($exitd-mutexn exitd))))
+   
+;*---------------------------------------------------------------------*/
+;*    exitd-push-mutex! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (exitd-push-mutex! m)
+   (let ((exitd ($get-exitd-top)))
+      (cond
+	 ((not ($exitd-mutex0 exitd))
+	  ;; (tprint "push0 " m)
+	  ($exitd-mutex0-set! exitd m))
+	 ((not ($exitd-mutex1 exitd))
+	  ;; (tprint "push1 " m)
+	  ($exitd-mutex1-set! exitd m))
+	 (else
+	  (tprint "pushn " m)
+	  ($exitd-mutexn-set! exitd (cons m ($exitd-mutexn exitd)))))))
+
+;*---------------------------------------------------------------------*/
+;*    exitd-pop-mutex! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (exitd-pop-mutex! m)
+   (let ((exitd ($get-exitd-top)))
+      (cond
+	 ((eq? ($exitd-mutex0 exitd) m)
+	  ;; (tprint "pop0 " m) 
+	  ($exitd-mutex0-set! exitd #f))
+	 ((eq? ($exitd-mutex1 exitd) m)
+	  ;; (tprint "pop1 " m)
+	  ($exitd-mutex1-set! exitd #f))
+	 (else
+	  (tprint "popn " m)
+	  ($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd)))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Wed Nov 14 18:28:26 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 15:33:59 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -541,9 +541,14 @@
    (lambda (x e)
       (match-case x
 	 ((synchronize (and (? symbol?) ?var) . ?body)
-	  (let ((nx  `(unwind-protect
-			 (begin (,mutex-lock ,var) ,@body)
-			 (,mutex-unlock ,var))))
+	  (let* ((tmp (gensym 'tmp))
+		 (nx  `(begin
+			  (,mutex-lock ,var)
+			  (exitd-push-mutex! ,var)
+			  (let ((,tmp (begin ,@body)))
+			     (exitd-pop-mutex! ,var)
+			     (,mutex-unlock ,var)
+			     ,tmp))))
 	     (e (evepairify nx x) e)))
 	 ((synchronize-unsafe (and (? symbol?) ?var) . ?body)
 	  (let ((tmp (gensym 'tmp)))

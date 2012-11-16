@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Nov 14 18:42:26 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 12:02:20 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -320,6 +320,7 @@
 	       (cond
 		  (%!dpause
 		   (onstate am 'pause)
+		   (tprint "PAUSE...")
 		   ;;; the decoder is asked to pause
 		   (with-access::alsamusic am (%status)
 		      (with-access::musicstatus %status (songpos)
@@ -347,21 +348,19 @@
 			  (when (>=fx (flac-debug) 1)
 			     (debug "<-- FLAC_DECODER, wait not-empty " url
 				" " (current-microseconds) "..."))
-			  (let liip ()
-			     (with-access::alsamusic am (%status)
-				(with-access::musicstatus %status (buffering)
-				   (set! buffering
-				      (buffer-percentage-filled))))
-			     (onstate am 'buffering)
-			     (with-lock-uw %bmutex
-				;; wait until the buffer is filled
-				(lambda ()
-				   (unless (or (not %empty)
-					       %eof
-					       %!dabort
-					       (buffer-filled?))
-				      (condition-variable-wait! %bcondv %bmutex)
-				      (liip)))))
+			  (with-access::alsamusic am (%status)
+			     (with-access::musicstatus %status (buffering)
+				(set! buffering
+				   (buffer-percentage-filled))))
+			  (onstate am 'buffering)
+			  (with-lock-uw %bmutex
+			     ;; wait until the buffer is filled
+			     (lambda ()
+				(unless (or (not %empty)
+					    %eof
+					    %!dabort
+					    (buffer-filled?))
+				   (condition-variable-wait! %bcondv %bmutex))))
 			  (when (>=fx (flac-debug) 1)
 			     (debug (current-microseconds) "\n"))
 			  (onstate am 'play)

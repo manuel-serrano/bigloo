@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Wed Nov 14 20:53:58 2012 (serrano)                */
+;*    Last change :  Fri Nov 16 08:00:51 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -798,35 +798,6 @@
 			       (sleep 1000000)
 			       (loop))))
 		     (onstate mpc state))))))))
-
-;* (define-method (music-play mpc::mpc . song)                         */
-;*    (with-access::mpc mpc (%mutex %playid %status onstate onevent)   */
-;*       (when (mutex-lock! %mutex 1000)                               */
-;*          (set! %playid (+fx 1 %playid))                             */
-;*          (let ((cmd (if (null? song) "play" (format "play ~a" (car song))))) */
-;*             (mpc-cmd mpc cmd ok-parser)                             */
-;*             (let ((id %playid))                                     */
-;*                (mutex-unlock! %mutex)                               */
-;*                (with-access::musicstatus %status (state songid playlistid) */
-;*                   (onevent mpc 'playlist playlistid)                */
-;*                   (let loop ()                                      */
-;*                      (when (mutex-lock! %mutex 1000)                */
-;*                         (when (=fx %playid id)                      */
-;*                            (let ((s state)                          */
-;*                                  (i songid))                        */
-;*                               (music-update-status-sans-lock! mpc %status) */
-;*                               (when (eq? state 'play)               */
-;*                                  (mutex-unlock! %mutex)             */
-;*                                  (cond                              */
-;*                                     ((not (eq? s 'play))            */
-;*                                      (onstate mpc state))           */
-;*                                     ((not (=fx i songid))           */
-;*                                      (set! state 'ended)            */
-;*                                      (onstate mpc state)))          */
-;*                                  (sleep 1000000)                    */
-;*                                  (loop))))))                        */
-;*                   (mutex-unlock! %mutex)                            */
-;*                   (onstate mpc state)))))))                         */
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::mpc ...                                             */

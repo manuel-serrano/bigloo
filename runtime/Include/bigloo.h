@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Oct 28 19:03:18 2012 (serrano)                */
+/*    Last change :  Fri Nov 16 15:36:41 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2560,6 +2560,11 @@ struct exitd {
    void *exit;
    long userp;
    obj_t stamp;
+   /* locked mutexes */
+   union scmobj *mutex0;
+   union scmobj *mutex1;
+   union scmobj *mutexn;
+   /* linking */
    struct bgl_dframe *top_of_frame;
    struct exitd *prev;
 };
@@ -2572,6 +2577,9 @@ struct exitd {
    struct exitd exitd; \
    exitd.exit  = _xit; \
    exitd.userp = _ser; \
+   exitd.mutex0 = BFALSE; \
+   exitd.mutex1 = BFALSE; \
+   exitd.mutexn = BNIL; \
    exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
    exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
    exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
@@ -2598,6 +2606,24 @@ struct exitd {
 
 #define EXITD_STAMP( ptr ) \
    (((struct exitd *)(ptr))->stamp)
+
+#define EXITD_MUTEX0( ptr ) \
+   (((struct exitd *)(ptr))->mutex0)
+
+#define EXITD_MUTEX0_SET( ptr, m ) \
+   ((((struct exitd *)(ptr))->mutex0) = (m))
+
+#define EXITD_MUTEX1( ptr ) \
+   (((struct exitd *)(ptr))->mutex1)
+
+#define EXITD_MUTEX1_SET( ptr, m ) \
+   ((((struct exitd *)(ptr))->mutex1) = (m))
+
+#define EXITD_MUTEXN( ptr ) \
+   (((struct exitd *)(ptr))->mutexn)
+
+#define EXITD_MUTEXN_SET( ptr, m ) \
+   ((((struct exitd *)(ptr))->mutexn) = (m))
 
 #define BGL_EXITD_BOTTOMP( extd ) \
    ((extd) == 0L)

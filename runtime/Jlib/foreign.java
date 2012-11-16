@@ -4219,6 +4219,36 @@ public final class foreign
 	 return bint.BZERO;
       }
 
+   public static Object EXITD_MUTEX0(exit o)
+      {
+	 return o.mutex0;
+      }
+
+   public static void EXITD_MUTEX0_SET(exit o, Object m)
+      {
+	 o.mutex0 = m;
+      }
+
+   public static Object EXITD_MUTEX1(exit o)
+      {
+	 return o.mutex1;
+      }
+
+   public static void EXITD_MUTEX1_SET(exit o, Object m)
+      {
+	 o.mutex1 = m;
+      }
+
+   public static Object EXITD_MUTEXN(exit o)
+      {
+	 return o.mutexn;
+      }
+
+   public static void EXITD_MUTEXN_SET(exit o, Object m)
+      {
+	 o.mutexn = m;
+      }
+
    public static Object jumpexit(Object excep, Object value)
       {
 	 //print("** jump " + excep + " " + value);
