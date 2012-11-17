@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri May  4 08:48:05 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 08:15:34 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
@@ -75,6 +75,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::sequence)
    (with-access::sequence node (nodes)
+      (node-cond*! nodes)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-cond! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (node-cond! node::sync)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (node-cond! mutex))
       (node-cond*! nodes)
       node))
 

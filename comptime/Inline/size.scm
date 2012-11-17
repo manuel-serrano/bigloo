@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Mon Nov 14 17:05:07 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:59:49 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	    "Inline/size.sch")
    
    (static  (wide-class sized-sequence::sequence (size::long read-only))
+	    (wide-class sized-sync::sync (size::long read-only))
 	    (wide-class sized-select::select (size::long read-only))
 	    (wide-class sized-let-fun::let-fun (size::long read-only))
 	    (wide-class sized-let-var::let-var (size::long read-only)))
@@ -64,6 +65,24 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-size node::sized-sequence)
    (sized-sequence-size node))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::sync ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sync)
+   (let loop ((nodes (sync-nodes node))
+	      (size  (+ 1 (node-size (sync-mutex node)))))
+      (if (null? nodes)
+	  (begin
+	     (widen!::sized-sync node (size size))
+	     size)
+	  (loop (cdr nodes) (+fx size (node-size (car nodes)))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::sized-sync ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::sized-sync)
+   (sized-sync-size node))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-size ::app ...                                              */

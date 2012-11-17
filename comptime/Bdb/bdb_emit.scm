@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Bdb/emit.scm                */
+;*    serrano/prgm/project/bigloo/comptime/Bdb/bdb_emit.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Wed Sep 17 05:27:30 2008 (serrano)                */
-;*    Copyright   :  1992-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:16:06 2012 (serrano)                */
+;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -211,6 +211,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (bdb! node::sequence)
    (with-access::sequence node (nodes)
+      (bdb*! nodes)))
+
+;*---------------------------------------------------------------------*/
+;*    bdb! ::sync ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-method (bdb! node::sync)
+   (with-access::sync node (mutex nodes)
+      (bdb! mutex)
       (bdb*! nodes)))
 
 ;*---------------------------------------------------------------------*/

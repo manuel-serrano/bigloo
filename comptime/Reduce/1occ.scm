@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Thu Nov 10 16:56:20 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:09:40 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -102,6 +102,16 @@
 (define-method (node-1occ! node::sequence 1-exp*)
    (with-access::sequence node (nodes)
       (values (node-1occ*! nodes 1-exp*) node)))
+
+;*---------------------------------------------------------------------*/
+;*    node-1occ! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (node-1occ! node::sync 1-exp*)
+   (with-access::sync node (nodes mutex)
+      (multiple-value-bind (reset nmutex)
+	 (node-1occ! mutex 1-exp*)
+	 (set! mutex nmutex)
+	 (values (or (node-1occ*! nodes 1-exp*) reset) node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::app-ly ...                                          */

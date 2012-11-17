@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Tue Mar 20 08:38:27 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:04:10 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -75,6 +75,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (hrtype-node! node::sequence)
    (with-access::sequence node (nodes)
+      (hrtype-node*! nodes))
+   (call-next-method))
+
+;*---------------------------------------------------------------------*/
+;*    hrtype-node! ::sync ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (hrtype-node! node::sync)
+   (with-access::sync node (mutex nodes)
+      (hrtype-node! mutex)
       (hrtype-node*! nodes))
    (call-next-method))
 

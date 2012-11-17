@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Mon Nov 21 14:21:39 2011 (serrano)                */
+;*    Last change :  Sat Nov 17 07:00:16 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -160,6 +160,15 @@
    (duplicate::sequence node
       (loc (get-inline-location node))
       (nodes (map do-alphatize (sequence-nodes node)))))
+
+;*---------------------------------------------------------------------*/
+;*    do-alphatize ::sync ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (do-alphatize node::sync)
+   (duplicate::sync node
+      (loc (get-inline-location node))
+      (mutex (do-alphatize (sync-mutex node)))
+      (nodes (map do-alphatize (sync-nodes node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::app ...                                           */

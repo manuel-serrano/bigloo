@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:02:16 1996                          */
-;*    Last change :  Tue May 20 16:51:39 2003 (serrano)                */
-;*    Copyright   :  1996-2003 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:51:37 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The escape property computation                                  */
 ;*=====================================================================*/
@@ -109,6 +109,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (escape! node::sequence o)
    (escape*! (sequence-nodes node) o))
+
+;*---------------------------------------------------------------------*/
+;*    escape! ::sync ...                                               */
+;*---------------------------------------------------------------------*/
+(define-method (escape! node::sync o)
+   (escape! (sync-mutex node) o)
+   (escape*! (sync-nodes node) o))
 
 ;*---------------------------------------------------------------------*/
 ;*    escape! ::app ...                                                */

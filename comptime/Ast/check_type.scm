@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Thu May  5 09:39:22 2011 (serrano)                */
-;*    Copyright   :  2000-11 Manuel Serrano                            */
+;*    Last change :  Sat Nov 17 07:01:42 2012 (serrano)                */
+;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -146,6 +146,20 @@
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::sequence)
    (with-access::sequence node (nodes type)
+      (if (pair? nodes)
+	  (begin
+	     (for-each check-node-type nodes)
+	     (unless (subtype? (node-type (car (last-pair nodes))) type)
+		(err node (node-type (car (last-pair nodes))) type)))
+	  (unless (eqtype? type *unspec*)
+	     (err node type *unspec*)))))
+
+;*---------------------------------------------------------------------*/
+;*    check-node-type ::sync ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (check-node-type node::sync)
+   (with-access::sync node (mutex nodes type)
+      (check-node-type mutex)
       (if (pair? nodes)
 	  (begin
 	     (for-each check-node-type nodes)

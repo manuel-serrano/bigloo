@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Sat Oct 13 07:36:52 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:45:17 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -99,6 +99,17 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::sequence env)
    (let loop ((node* (sequence-nodes node))
+	      (env env))
+      (if (null? node*)
+	  env
+	  (loop (cdr node*) (dataflow-node! (car node*) env)))))
+
+;*---------------------------------------------------------------------*/
+;*    dataflow-node! ::sync ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (dataflow-node! node::sync env)
+   (dataflow-node! (sync-mutex node) env)
+   (let loop ((node* (sync-nodes node))
 	      (env env))
       (if (null? node*)
 	  env
@@ -431,6 +442,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (abort? node::sequence)
    (any abort? (sequence-nodes node)))
+
+;*---------------------------------------------------------------------*/
+;*    abort? ::sync ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (abort? node::sync)
+   (or (abort? (sync-mutex node)) (any abort? (sync-nodes node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::let-var ...                                             */

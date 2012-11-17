@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Sat Jul 30 07:06:39 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:01:41 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.
 ;*    -------------------------------------------------------------    */
@@ -201,6 +201,23 @@
 	  A
 	  (let liip ((nds nodes)
 		     (A A))
+	     (if (null? (cdr nds))
+		 (node-A (car nds) host k A)
+		 (liip (cdr nds)
+		       (node-A (car nds)
+			       host
+			       (cons (get-new-kont) (get-type (car nds)))
+			       A)))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-A ::sync ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (node-A node::sync host k A)
+   (with-access::sync node (nodes mutex) 
+      (if (null? nodes)
+	  (node-A mutex host k A)
+	  (let liip ((nds nodes)
+		     (A (node-A mutex host k A)))
 	     (if (null? (cdr nds))
 		 (node-A (car nds) host k A)
 		 (liip (cdr nds)

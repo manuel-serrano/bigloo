@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Fri Feb  3 16:15:47 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:54:43 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -189,6 +189,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::sequence integrator)
    (with-access::sequence node (nodes)
+      (glo*! nodes integrator)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    glo! ::sync ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-method (glo! node::sync integrator)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (glo! mutex integrator))
       (glo*! nodes integrator)
       node))
 

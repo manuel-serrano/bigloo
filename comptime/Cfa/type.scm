@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sat Oct 13 07:39:00 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:28:46 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -235,6 +235,19 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sequence)
    (with-access::sequence node (type nodes)
+      (type-node*! nodes)
+      (when (eq? type *_*)
+	 (if (pair? nodes)
+	     (set! type (get-type (car (last-pair nodes))))
+	     (set! type *unspec*)))
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::sync)
+   (with-access::sync node (type nodes mutex)
+      (set! mutex (type-node! mutex))
       (type-node*! nodes)
       (when (eq? type *_*)
 	 (if (pair? nodes)

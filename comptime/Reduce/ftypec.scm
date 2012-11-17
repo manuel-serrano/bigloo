@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Mar  7 18:14:37 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 08:17:16 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -81,6 +81,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::sequence stack)
    (with-access::sequence node (nodes)
+      (node-typec*! nodes stack)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-typec! ::sync ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-typec! node::sync stack)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (node-typec! mutex stack))
       (node-typec*! nodes stack)
       node))
 

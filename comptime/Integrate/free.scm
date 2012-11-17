@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo2.3/comptime/Integrate/free.scm       */
+;*    serrano/prgm/project/bigloo/comptime/Integrate/free.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Thu Jul 13 11:24:48 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:02:57 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -137,6 +137,13 @@
 (define-method (node-free node::sequence free)
    (with-access::sequence node (nodes)
       (node-free* nodes free)))
+
+;*---------------------------------------------------------------------*/
+;*    node-free ::sync ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-free node::sync free)
+   (with-access::sync node (nodes mutex)
+      (node-free* nodes (node-free mutex free))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-free ::app ...                                              */

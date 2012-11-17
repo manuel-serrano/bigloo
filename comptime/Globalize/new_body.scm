@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/new-body.scm      */
+;*    serrano/prgm/project/bigloo/comptime/Globalize/new_body.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 30 09:25:08 1995                          */
-;*    Last change :  Tue Oct  3 09:00:02 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:54:04 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    For each globalized function, we set its new body.               */
 ;*=====================================================================*/
@@ -167,6 +167,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (rem! node::sequence owner current)
    (with-access::sequence node (nodes)
+      (rem*! nodes owner current)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    rem! ::sync ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-method (rem! node::sync owner current)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (rem! mutex owner current))
       (rem*! nodes owner current)
       node))
 

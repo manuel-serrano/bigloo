@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 26 08:14:23 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:16:02 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -87,6 +87,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::sequence)
    (with-access::sequence node (nodes)
+      (node-copy*! nodes)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-copy! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (node-copy! node::sync)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (node-copy! mutex))
       (node-copy*! nodes)
       node))
 

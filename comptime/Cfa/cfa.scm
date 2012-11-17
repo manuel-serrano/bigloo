@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Sat Aug 25 06:40:04 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:25:23 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -128,6 +128,18 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::sequence)
    (with-access::sequence node (nodes)
+      (let loop ((n nodes)
+		 (approx #unspecified))
+	 (if (null? n)
+	     approx
+	     (loop (cdr n) (cfa! (car n)))))))
+
+;*---------------------------------------------------------------------*/
+;*    cfa! ::sync ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-method (cfa! node::sync)
+   (with-access::sync node (nodes mutex)
+      (cfa! mutex)
       (let loop ((n nodes)
 		 (approx #unspecified))
 	 (if (null? n)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Fri Feb  3 14:35:32 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:28:07 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -325,6 +325,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::sequence)
    (with-access::sequence node (nodes)
+      (patch*! nodes)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    patch! ::sync ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (patch! node::sync)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (patch! mutex))
       (patch*! nodes)
       node))
 

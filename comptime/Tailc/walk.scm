@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Mon Nov 14 17:47:29 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:21:07 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `tail-call' pass.                                            */
 ;*=====================================================================*/
@@ -120,6 +120,12 @@
       (if (null? nodes)
 	  tails
 	  (get-tail-calls (car (last-pair nodes)) host tails))))
+
+;*---------------------------------------------------------------------*/
+;*    get-tail-calls ::sync ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (get-tail-calls node::sync host tails)
+   tails)
 
 ;*---------------------------------------------------------------------*/
 ;*    get-tail-calls ::app ...                                         */

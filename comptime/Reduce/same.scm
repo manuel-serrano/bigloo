@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 12:54:32 1996                          */
-;*    Last change :  Tue Oct 13 12:05:44 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:23:38 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The comparison of two nodes.                                     */
 ;*=====================================================================*/
@@ -69,6 +69,17 @@
 	(eq? (node-type node) (node-type node2))
 	(same-node*? (sequence-nodes node)
 		     (sequence-nodes node2)
+		     alias)))
+
+;*---------------------------------------------------------------------*/
+;*    same-node? ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (same-node? node::sync node2::node alias)
+   (and (sync? node2)
+	(eq? (node-type node) (node-type node2))
+	(same-node? (sync-mutex node) (sync-mutex node2) alias)
+	(same-node*? (sync-nodes node)
+		     (sync-nodes node2)
 		     alias)))
 
 ;*---------------------------------------------------------------------*/

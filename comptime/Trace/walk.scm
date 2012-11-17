@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Nov 16 19:14:46 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 08:22:55 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -289,7 +289,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::sync stack)
    (with-access::sync node (mutex nodes)
-      (trace-node mutex stack)
+      (set! mutex (trace-node mutex stack))
       (trace-node*! nodes stack))
    node)
 
@@ -448,6 +448,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (toplevel-trace-node node::sequence)
    (toplevel-trace-node*! (sequence-nodes node))
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    toplevel-trace-node ::sync ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (toplevel-trace-node node::sync)
+   (sync-mutex-set! node (toplevel-trace-node (sync-mutex node)))
+   (toplevel-trace-node*! (sync-nodes node))
    node)
 
 ;*---------------------------------------------------------------------*/

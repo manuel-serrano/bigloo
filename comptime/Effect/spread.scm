@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 11:36:01 1996                          */
-;*    Last change :  Tue Oct 18 15:31:09 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:49:45 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We spread the computed side-effect properties                    */
 ;*=====================================================================*/
@@ -36,6 +36,14 @@
    (let ((res (spread-side-effect*! (sequence-nodes node))))
       (sequence-side-effect-set! node res)
       res))
+
+;*---------------------------------------------------------------------*/
+;*    spread-side-effect! ::sync ...                                   */
+;*---------------------------------------------------------------------*/
+(define-method (spread-side-effect! node::sync)
+   (spread-side-effect! (sync-mutex node))
+   (spread-side-effect*! (sync-nodes node))
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    spread-side-effect! ::app ...                                    */

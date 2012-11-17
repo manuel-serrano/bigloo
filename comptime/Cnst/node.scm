@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Mon Nov 14 17:08:42 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:30:09 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -116,6 +116,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cnst! node::sequence)
    (with-access::sequence node (nodes)
+      (cnst*! nodes)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    cnst! ::sync ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-method (cnst! node::sync)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (cnst! mutex))
       (cnst*! nodes)
       node))
 

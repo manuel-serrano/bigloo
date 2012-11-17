@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Sat Oct 13 07:40:23 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 08:19:18 2012 (serrano)                */
 ;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
@@ -316,6 +316,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::sequence)
    (with-access::sequence node (nodes)
+      (node-beta*! nodes)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-beta! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (node-beta! node::sync)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (node-beta! mutex))
       (node-beta*! nodes)
       node))
 

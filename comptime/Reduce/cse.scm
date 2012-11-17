@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 26 08:14:32 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:16:51 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -87,6 +87,16 @@
 (define-method (node-cse! node::sequence stack)
    (with-access::sequence node (nodes)
       (values (node-cse*! nodes stack) node)))
+
+;*---------------------------------------------------------------------*/
+;*    node-cse! ::sync ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node-cse! node::sync stack)
+   (with-access::sync node (nodes mutex)
+      (multiple-value-bind (reset nmutex)
+	 (node-cse! mutex stack)
+	 (set! mutex nmutex)
+	 (values (or (node-cse*! nodes stack) reset) node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cse! ::app-ly ...                                           */

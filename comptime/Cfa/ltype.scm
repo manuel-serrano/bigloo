@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sat Aug 25 09:23:14 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:26:28 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election for light closures.                                */
@@ -154,6 +154,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sequence)
    (with-access::sequence node (nodes)
+      (type-node*! nodes)))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::sync)
+   (with-access::sync node (nodes mutex)
+      (type-node! mutex)
       (type-node*! nodes)))
 
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo2.3/comptime/Inline/loop.scm          */
+;*    serrano/prgm/project/bigloo/comptime/Inline/loop.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 11 09:27:29 1996                          */
-;*    Last change :  Thu Jul 13 11:12:05 2000 (serrano)                */
-;*    Copyright   :  1996-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:56:45 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The loop unrolling module.                                       */
 ;*=====================================================================*/
@@ -60,6 +60,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (find-let-fun? node::sequence)
    (find-let-fun?* (sequence-nodes node)))
+
+;*---------------------------------------------------------------------*/
+;*    find-let-fun? ::sync ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (find-let-fun? node::sync)
+   (or (find-let-fun? (sync-mutex node))
+       (find-let-fun?* (sync-nodes node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-let-fun? ::app ...                                          */
@@ -224,6 +231,15 @@
 ;*---------------------------------------------------------------------*/
 (define-method (nest-loop! node::sequence var nester)
    (with-access::sequence node (nodes)
+      (nest-loop!* nodes var nester)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    nest-loop! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (nest-loop! node::sync var nester)
+   (with-access::sync node (nodes mutex)
+      (set! mutex (nest-loop! mutex var nester))
       (nest-loop!* nodes var nester)
       node))
 

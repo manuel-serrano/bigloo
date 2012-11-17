@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Mon Apr 30 08:36:52 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:55:53 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -99,6 +99,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::sequence kfactor stack)
    (inline-node*! (sequence-nodes node) kfactor stack)
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    inline-node ::sync ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (inline-node node::sync kfactor stack)
+   (sync-mutex-set! node (inline-node (sync-mutex node) kfactor stack))
+   (inline-node*! (sync-nodes node) kfactor stack)
    node)
 
 ;*---------------------------------------------------------------------*/

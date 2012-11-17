@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Nov  5 13:26:10 2004 (serrano)                */
-;*    Copyright   :  1995-2004 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:50:53 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
 ;*    -------------------------------------------------------------    */
@@ -81,6 +81,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (fail-node! node::sequence)
    (fail-node*! (sequence-nodes node))
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    fail-node! ::sync ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (fail-node! node::sync)
+   (sync-mutex-set! node (fail-node! node))
+   (fail-node*! (sync-nodes node))
    node)
 
 ;*---------------------------------------------------------------------*/

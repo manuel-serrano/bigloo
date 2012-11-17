@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Fri Nov 16 17:04:43 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:23:20 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */

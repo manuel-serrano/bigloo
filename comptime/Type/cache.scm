@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Fri Nov 18 07:25:05 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:33:08 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
 ;*=====================================================================*/
@@ -52,6 +52,7 @@
 	   *procedure-el*
 	   *exit*
 	   *foreign*
+	   *mutex*
 	   *_*
 	   (get-default-type::type)
 	   (set-default-type! ::type)
@@ -106,6 +107,7 @@
 			     (find-type 'class)
 			     #f))
    (set! *foreign*       (use-type! 'foreign #f))
+   (set! *mutex*         (use-type! 'mutex #f))
    (set! *_*             (use-type! '_ #f))
    (set! *default-type* *_*))
 
@@ -150,6 +152,7 @@
 (define *object*        'no-type-yet)
 (define *class*         'no-type-yet)
 (define *foreign*       'no-type-yet)
+(define *mutex*         'no-type-yet)
 (define *_*             'no-type-yet)
 (define *default-type*  'no-type-yet)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Nov 16 16:50:09 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 08:53:17 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -279,12 +279,6 @@
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)
 
-	    ;; the synchronize expansion
-	    (set! ast (profile sync (sync-walk! ast)))
-	    (stop-on-pass 'sync (lambda () (write-ast ast)))
-	    (check-sharing "sync" ast)
-	    (check-type "sync" ast #f #f)
-	    
 	    ;; we perform the inlining pass
 	    (set! ast (profile inline (inline-walk! ast 'all)))
 	    (stop-on-pass 'inline (lambda () (write-ast ast)))
@@ -420,6 +414,12 @@
 	    (check-sharing "reduce" ast)
 	    (check-type "reduce" ast #t #t)
 
+	    ;; the synchronize expansion
+	    (set! ast (profile sync (sync-walk! ast)))
+	    (stop-on-pass 'sync (lambda () (write-ast ast)))
+	    (check-sharing "sync" ast)
+	    (check-type "sync" ast #f #f)
+	    
 	    ;; the bdb initialization code
 	    (when (and (>fx *bdb-debug* 0)
 		       (memq 'bdb (backend-debug-support (the-backend))))

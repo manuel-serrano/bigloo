@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Thu Mar 24 09:42:24 2011 (serrano)                */
+;*    Last change :  Sat Nov 17 07:18:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -56,6 +56,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::sequence stack)
    (node-beta*! (sequence-nodes node) stack)
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    node-beta*! ::sync ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-beta! node::sync stack)
+   (sync-mutex-set! node (node-beta! (sync-mutex node) stack))
+   (node-beta*! (sync-nodes node) stack)
    node)
 
 ;*---------------------------------------------------------------------*/

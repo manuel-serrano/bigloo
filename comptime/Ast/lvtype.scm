@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Sat Aug 25 09:20:04 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:04:55 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -78,6 +78,16 @@
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::sequence)
    (with-access::sequence node (type nodes)
+      (lvtype-node*! nodes)
+      (when (eq? type *_*)
+	 (set! type (get-type node)))))
+
+;*---------------------------------------------------------------------*/
+;*    lvtype-node! ::sync ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (lvtype-node! node::sync)
+   (with-access::sync node (type mutex nodes)
+      (lvtype-node! mutex)
       (lvtype-node*! nodes)
       (when (eq? type *_*)
 	 (set! type (get-type node)))))

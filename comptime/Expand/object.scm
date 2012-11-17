@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Tue Oct 23 19:45:06 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 07:44:45 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
@@ -461,7 +461,7 @@
       ((?widen! ?obj . ?provided)
        (let ((class (type-of-id widen! (find-location x))))
 	  (if (and (tclass? class) (tclass-widening class))
-	      (replace! x (e (make-widening x class obj provided e) e))
+	      (replace! x (e (expand-widening x class obj provided e) e))
 	      (error widen!
 		 (format "Illegal class type \"~a\"" (type-id class))
 		 x))))
@@ -469,9 +469,9 @@
        (error "wident!" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
-;*    make-widening ...                                                */
+;*    expand-widening ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (make-widening form class o provided e)
+(define (expand-widening form class o provided e)
    (let* ((super (tclass-its-super class))
 	  (tid (type-id class))
 	  (sid (type-id super))

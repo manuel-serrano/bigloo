@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 25 15:52:39 1995                          */
-;*    Last change :  Thu Aug  9 07:11:12 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 08:02:20 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the `cto' property.                           */
 ;*=====================================================================*/
@@ -56,6 +56,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (set-cto! node::sequence local)
    (with-access::sequence node (nodes)
+      (for-each (lambda (node) (set-cto! node local)) nodes)))
+
+;*---------------------------------------------------------------------*/
+;*    set-cto! ::sync ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (set-cto! node::sync local)
+   (with-access::sync node (nodes mutex)
+      (set-cto! mutex local)
       (for-each (lambda (node) (set-cto! node local)) nodes)))
 
 ;*---------------------------------------------------------------------*/

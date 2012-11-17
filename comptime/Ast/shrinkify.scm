@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Wed May  4 17:19:21 2011 (serrano)                */
+;*    Last change :  Sat Nov 17 07:06:32 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -71,6 +71,14 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
+;*    shrink-node*! ::sync ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (shrink-node! node::sync)
+   (shrink-node! (sync-mutex node))
+   (shrink-node*! (sync-nodes node))
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
 ;*    shrink-node! ::app ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (shrink-node! node::app)
@@ -80,7 +88,7 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    shrink-node! ::app-ly ...                                         */
+;*    shrink-node! ::app-ly ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (shrink-node! node::app-ly)
    (if (wide-object? node) (shrink! node))

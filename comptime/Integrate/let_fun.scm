@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 09:38:46 1995                          */
-;*    Last change :  Fri Feb  3 14:36:00 2012 (serrano)                */
+;*    Last change :  Sat Nov 17 08:03:41 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which remove displaced         */
@@ -151,6 +151,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (displace-let-fun-node! node::sequence hosts)
    (with-access::sequence node (nodes)
+      (for-each (lambda (node) (displace-let-fun-node! node hosts)) nodes)))
+
+;*---------------------------------------------------------------------*/
+;*    displace-let-fun-node! ::sync ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (displace-let-fun-node! node::sync hosts)
+   (with-access::sync node (nodes mutex)
+      (displace-let-fun-node! mutex hosts)
       (for-each (lambda (node) (displace-let-fun-node! node hosts)) nodes)))
 
 ;*---------------------------------------------------------------------*/

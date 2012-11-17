@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 15 10:55:41 1995                          */
-;*    Last change :  Mon Nov 14 17:50:51 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov 17 07:39:51 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the call-graph                                */
 ;*=====================================================================*/
@@ -43,6 +43,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (call-graph! node::sequence owner)
    (call-graph*! (sequence-nodes node) owner))
+
+;*---------------------------------------------------------------------*/
+;*    call-graph! ::sync ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (call-graph! node::sync owner)
+   (call-graph! (sync-mutex node) owner)
+   (call-graph*! (sync-nodes node) owner))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-graph! ::app ...                                            */

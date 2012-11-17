@@ -59,6 +59,11 @@
    (with-access::sequence e (nodes)
       (get* nodes r) ))
 
+;; 
+(define-method (get e::sync r) ; ()
+   (with-access::sync e (nodes mutex)
+      (get mutex (get* nodes r)) ))
+
 ;;
 (define-method (get e::conditional r) ; ()
    (with-access::conditional e (test true false)
