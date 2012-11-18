@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu Nov 15 07:19:04 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:54:20 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -388,10 +388,9 @@
 ;*    tprint ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (tprint port . obj)
-   (with-lock-uw tprint-mutex
-      (lambda ()
-	 (apply fprint port obj)
-	 (flush-output-port port))))
+   (synchronize tprint-mutex
+      (apply fprint port obj)
+      (flush-output-port port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fprint ...                                                       */

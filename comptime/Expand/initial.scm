@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Nov 14 18:41:39 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:50:24 2012 (serrano)                */
 ;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -1002,36 +1002,6 @@
     'mmap-ref
     (lambda (x::obj e::procedure)
        (bound-check x 'mmap-length '$mmap-bound-check? e)))
-
-   ;; with-lock
-   (install-O-comptime-expander 'with-lock
-      (lambda (x::obj e::procedure)
-	 (match-case x
-	    ((with-lock (and (? symbol?) ?var) (lambda () . ?body))
-	     (e `(unwind-protect
-		    (begin ($mutex-lock ,var) ,@body)
-		    ($mutex-unlock ,var))
-		e))
-	    ((with-lock ?lock (and ?proc (lambda () . ?body)))
-	     (let ((var (gensym 'lock)))
-		(e `(let ((,var ,lock)) (with-lock ,var ,proc)) e)))
-	    (else
-	     (map (lambda (x) (e x e)) x)))))
-
-   ;; with-lock-uw
-   (install-O-comptime-expander 'with-lock-uw
-      (lambda (x::obj e::procedure)
-	 (match-case x
-	    ((with-lock-uw (and (? symbol?) ?var) (lambda () . ?body))
-	     (e `(unwind-protect
-		    (begin ($mutex-lock ,var) ,@body)
-		    ($mutex-unlock ,var))
-		e))
-	    ((with-lock-uw ?lock (and ?proc (lambda () . ?body)))
-	     (let ((var (gensym 'lock)))
-		(e `(let ((,var ,lock)) (with-lock-uw ,var ,proc)) e)))
-	    (else
-	     (map (lambda (x) (e x e)) x)))))
 
    ;; pregexp
    (let ((pregexp-expander (lambda (x::obj e::procedure)

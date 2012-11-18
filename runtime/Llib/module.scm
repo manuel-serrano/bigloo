@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Sun Nov 18 13:57:36 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:55:40 2012 (serrano)                */
 ;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
@@ -176,9 +176,8 @@
 ;*    module-add-access! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (module-add-access! module files abase)
-   (with-lock-uw modules-mutex
-      (lambda ()
-	 (module-add-access-inner! module files abase))))
+   (synchronize modules-mutex
+      (module-add-access-inner! module files abase)))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-read-access-file ...                                      */
@@ -203,17 +202,17 @@
 	 ((or (string=? f "") (char=? (string-ref f 0) (file-separator))) f)
 	 (else (make-file-name abase f))))
 
-   (with-lock-uw modules-mutex
-      (lambda ()
-	 (call-with-input-file name
-	    (lambda (port)
-	       (let ((abase (dirname name)))
-		  (for-each (lambda (access)
-			       (let ((info (if (string=? abase ".")
-					       (cdr access)
-					       (map! (lambda (f)
-							(relative-path f abase))
-						  (cdr access)))))
-				  (module-add-access-inner! (car access) info abase)))
-		     (module-read-access-file port))))))))
+   (synchronize modules-mutex
+      (call-with-input-file name
+	 (lambda (port)
+	    (let ((abase (dirname name)))
+	       (for-each (lambda (access)
+			    (let ((info (if (string=? abase ".")
+					    (cdr access)
+					    (map! (lambda (f)
+						     (relative-path f abase))
+					       (cdr access)))))
+			       (module-add-access-inner! (car access) info abase)))
+		  (module-read-access-file port)))))))
+
 

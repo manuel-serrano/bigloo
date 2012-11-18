@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Nov 18 13:46:07 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:50:27 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -592,10 +592,8 @@
 ;*    with-lock ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (with-lock mutex thunk)
-   ($mutex-lock mutex)
-   (unwind-protect
-      (thunk)
-      ($mutex-unlock mutex)))
+   (synchronize mutex
+      (thunk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-timed-lock ...                                              */

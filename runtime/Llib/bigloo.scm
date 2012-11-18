@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sun Nov 18 13:47:55 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:55:22 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -593,13 +593,12 @@
 ;*    register-exit-function! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (register-exit-function! fun)
-   (with-lock-uw (bigloo-exit-mutex)
-      (lambda ()
-	 (if (not (correct-arity? fun 1))
-	     (error "bigloo-exit-register!"
-		"Wrong procedure arity"
-		fun)
-	     (set! *bigloo-exit-functions* (cons fun *bigloo-exit-functions*))))))
+   (synchronize (bigloo-exit-mutex)
+      (if (not (correct-arity? fun 1))
+	  (error "bigloo-exit-register!"
+	     "Wrong procedure arity"
+	     fun)
+	  (set! *bigloo-exit-functions* (cons fun *bigloo-exit-functions*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-exit-apply ...                                            */
@@ -608,19 +607,18 @@
    (let ((mut (if (mutex? (bigloo-exit-mutex))
 		  (bigloo-exit-mutex)
 		  (make-mutex 'bigloo-exit))))
-      (with-lock-uw mut
-	 (lambda ()
-	    (let loop ((val val))
-	       (let ((val (if (integer? val)
-			      val
-			      0)))
-		  (if (pair? *bigloo-exit-functions*)
-		      (let ((fun (car *bigloo-exit-functions*)))
-			 (set! *bigloo-exit-functions*
-			    (cdr *bigloo-exit-functions*))
-			 (let ((nval (fun val)))
-			    (loop (if (integer? nval) nval val))))
-		      val)))))))
+      (synchronize mut
+	 (let loop ((val val))
+	    (let ((val (if (integer? val)
+			   val
+			   0)))
+	       (if (pair? *bigloo-exit-functions*)
+		   (let ((fun (car *bigloo-exit-functions*)))
+		      (set! *bigloo-exit-functions*
+			 (cdr *bigloo-exit-functions*))
+		      (let ((nval (fun val)))
+			 (loop (if (integer? nval) nval val))))
+		   val))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    time ...                                                         */

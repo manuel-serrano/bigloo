@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Thu Nov 15 08:01:18 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:52:28 2012 (serrano)                */
 ;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -181,15 +181,14 @@
 	  (let* ((d (trace-alist-get al 'depth))
 		 (om (trace-alist-get al 'margin))
 		 (ma (trace-color d "  |")))
-	     (with-lock-uw (trace-mutex)
-		(lambda ()
-		   (with-output-to-port (trace-port)
-		      (lambda ()
-			 (display (trace-alist-get al 'margin))
-			 (display (if (=fx d 0)
-				      (trace-color d "+ " lbl)
-				      (trace-color d "--+ " lbl)))
-			 (newline)))))
+	     (synchronize (trace-mutex)
+		(with-output-to-port (trace-port)
+		   (lambda ()
+		      (display (trace-alist-get al 'margin))
+		      (display (if (=fx d 0)
+				   (trace-color d "+ " lbl)
+				   (trace-color d "--+ " lbl)))
+		      (newline))))
 	     (trace-alist-set! al 'depth (+fx d 1))
 	     (trace-alist-set! al 'margin (string-append om ma))
 	     (unwind-protect
