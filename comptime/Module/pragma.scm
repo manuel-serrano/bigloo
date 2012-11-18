@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Tue Nov 15 08:35:05 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 18 10:48:35 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -85,7 +85,7 @@
 			   (set-pragma-properties! global prop* clause))))
 		   (else
 		    (internal-error "pragma-finalizer"
-				    "Illegal `pragma' finalizer form"
+				    "Illegal \"pragma\" finalizer form"
 				    pragma))))
 	     *pragma-list*)
    (set! *pragma-list* '())
@@ -105,9 +105,9 @@
    (define (sfun-error p::bstring g::global)
       (if (not *all-export-mutable?*)
 	  (user-error (string-append "pragma(" p ")")
-		      "property is not concerning a function"
-		      (shape g)
-		      '())))
+	     "property is not concerning a function"
+	     (shape g)
+	     '())))
    (match-case prop
       ((? symbol?)
        (case prop
@@ -146,21 +146,27 @@
 	   (let ((val (global-value global)))
 	      (if (cfun? val)
 		  (global-pragma-set! global
-				      (cons 'nesting					    (global-pragma global))))))
+		     (cons 'nesting (global-pragma global))))))
 	  ((args-safe)
 	   (let ((val (global-value global)))
 	      (if (cfun? val)
 		  (global-pragma-set! global
-				      (cons 'args-safe
-					    (global-pragma global))))))
+		     (cons 'args-safe
+			(global-pragma global))))))
+	  ((fail-safe)
+	   (let ((val (global-value global)))
+	      (if (or (sfun? val) (cfun? val))
+		  (global-pragma-set! global
+		     (cons 'fail-safe
+			(global-pragma global))))))
 	  (else
-	   (user-error "Parse error" "Illegal `pragma' form" clause '()))))
+	   (user-error "Parse error" "Illegal \"pragma\" form" clause '()))))
       (((and (? symbol?) ?key) . ?val)
        (case key
 	  ;; the predicate-of pragma
 	  ((predicate-of)
 	   (if (not (and (pair? val) (symbol? (car val))))
-	       (user-error "Parse error" "Illegal `predicate-of' pragma" prop)
+	       (user-error "Parse error" "Illegal \"predicate-of\" pragma" prop)
 	       (let ((type  (use-type! (car val) (find-location prop)))
 		     (value (global-value global)))
 		  (if (not (fun? value))
@@ -179,10 +185,10 @@
 		  (sfun-error "effect" global)
 		  (fun-effect-set! value (parse-effect prop)))))
 	  (else
-	   (user-error "Parse error" "Illegal `pragma' form" prop '()))))
+	   (user-error "Parse error" "Illegal \"pragma\" form" prop '()))))
       (else
        (user-error "Parse error"
-		   "Illegal `pragma' form"
-		   (if (pair? prop) prop clause)
-		   '()))))
+	  "Illegal \"pragma\" form"
+	  (if (pair? prop) prop clause)
+	  '()))))
 	 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Mon Nov 12 09:37:07 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:33:09 2012 (serrano)                */
 ;*    Copyright   :  2010-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -467,6 +467,10 @@
       ((with-handler ?h . ?body)
        (instantiate::ev_with-handler
 	  (handler (uconv h))
+	  (body (conv-begin body locals globals #f where loc #f)) ))
+      ((synchronize ?m . ?body)
+       (instantiate::ev_synchronize
+	  (mutex (uconv m))
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((lambda ?formals ?body)
        (conv-lambda formals body (symbol-append '\@ where)) )

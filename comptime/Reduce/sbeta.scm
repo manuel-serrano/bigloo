@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Sat Nov 17 08:19:18 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 11:12:46 2012 (serrano)                */
 ;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
@@ -45,7 +45,7 @@
 ;*    reduce-beta! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (reduce-beta! globals)
-   (verbose 2 #"      Simple beta reduction  ")
+   (verbose 2 #"      simple beta reduction  ")
    ;; we have to recompute the occurrences because both `copy-propagation
    ;; and `cse' have changed the number of occurrence (in two directions).
    (occur-var globals)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Sat Oct 13 07:52:43 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:31:09 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
@@ -107,6 +107,10 @@
 (define-method (fsize::int e::ev_with-handler n::int);
    (with-access::ev_with-handler e (handler body)
       (max (fsize handler n) (fsize body n)) ))
+
+(define-method (fsize::int e::ev_synchronize n::int);
+   (with-access::ev_synchronize e (mutex body)
+      (max (fsize mutex n) (fsize body n)) ))
 
 (define-method (fsize::int e::ev_let n::int);
    (with-access::ev_let e (vals body)
@@ -223,6 +227,12 @@
       (set! body (search-letrec body))
       e ))
 
+(define-method (search-letrec e::ev_synchronize);
+   (with-access::ev_synchronize e (mutex body)
+      (set! mutex (search-letrec mutex))
+      (set! body (search-letrec body))
+      e ))
+
 (define-method (search-letrec e::ev_binder);
    (with-access::ev_binder e (vars vals body)
       (search-letrec* vals)
@@ -336,6 +346,12 @@
       (set! body (subst_goto body vars lbls))
       e ))
 
+(define-method (subst_goto e::ev_synchronize vars lbls);
+   (with-access::ev_synchronize e (mutex body)
+      (set! mutex (subst_goto mutex vars lbls))
+      (set! body (subst_goto body vars lbls))
+      e ))
+
 (define-method (subst_goto e::ev_binder vars lbls);
    (with-access::ev_binder e (vals body)
       (subst_goto* vals vars lbls)
@@ -421,6 +437,10 @@
    (with-access::ev_with-handler e (handler body)
       (and (not (hasvar? handler v)) (not (hasvar? body v))) ))
 
+(define-method (tailpos e::ev_synchronize v::ev_var);
+   (with-access::ev_synchronize e (mutex body)
+      (and (not (hasvar? mutex v)) (not (hasvar? body v))) ))
+
 (define-method (tailpos e::ev_let v::ev_var);
    (with-access::ev_let e (vars vals body)
       (and (every (lambda (e) (not (hasvar? e v))) vals)
@@ -499,6 +519,10 @@
 (define-method (hasvar? e::ev_with-handler v::ev_var);
    (with-access::ev_with-handler e (handler body)
       (or (hasvar? handler v) (hasvar? body v)) ))
+
+(define-method (hasvar? e::ev_synchronize v::ev_var);
+   (with-access::ev_synchronize e (mutex body)
+      (or (hasvar? mutex v) (hasvar? body v)) ))
 
 (define-method (hasvar? e::ev_binder v::ev_var);
    (with-access::ev_binder e (vals body)

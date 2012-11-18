@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:40:08 2011                          */
-;*    Last change :  Tue Apr 17 07:49:11 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:27:04 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute free/closed variable for the lambda-based evaluator      */
@@ -169,6 +169,11 @@
 (define-method (avar e::ev_with-handler local abs);
    (with-access::ev_with-handler e (handler body)
       (avar handler local abs)
+      (avar body local abs) ))
+
+(define-method (avar e::ev_synchronize local abs);
+   (with-access::ev_synchronize e (mutex body)
+      (avar mutex local abs)
       (avar body local abs) ))
 
 (define-method (avar e::ev_let local abs);

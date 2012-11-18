@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Nov 18 08:42:41 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 10:27:10 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -462,6 +462,10 @@
        (set! *optim-initflow?* #t))
       (("-fno-initflow" (help "Disable init flow"))
        (set! *optim-initflow?* #f))
+      (("-fsync-failsafe" (help "Enable failsafe synchronize optimization"))
+       (set! *optim-sync-failsafe?* #t))
+      (("-fno-sync-failsafe" (help "Disable failsafe synchronize optimization"))
+       (set! *optim-sync-failsafe?* #f))
       ;; O macro
       (("-fO-macro" (help "Enable Optimization macro (default)"))
        (set! *optim-O-macro?* #t))

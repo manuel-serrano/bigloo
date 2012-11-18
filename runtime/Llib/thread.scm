@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed Nov 14 19:47:41 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 11:34:59 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -216,7 +216,14 @@
 	    (inline condition-variable-broadcast!::bool ::condvar))
 
    (pragma  ($current-dynamic-env nesting)
-            ($dynamic-env? (predicate-of dynamic-env))))
+            ($dynamic-env? (predicate-of dynamic-env))
+	    ($mutex-state fail-safe)
+	    ($mutex-lock fail-safe)
+	    ($mutex-unlock fail-safe)
+	    ($condvar-broadcast! fail-safe)
+	    ($condvar-signal! fail-safe)
+	    ($condvar-wait! fail-safe)
+	    ($condvar-timed-wait! fail-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-env? ...                                                 */

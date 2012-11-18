@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Mon Nov 12 08:51:56 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 10:11:50 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -398,28 +398,29 @@
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
       `(let ((,new ,(e init e)))
-	  ;; actual fields
-	  ,@(vector-filter-map
-	       (lambda (field val)
-		  (unless (class-field-virtual? field)
-		     (let ((v (e (cdr val) e)))
-			`(,(class-field-mutator field) ,new ,v))))
-	       fields args)
-	  ;; constructor
-	  ,(let ((constr (find-class-constructor class)))
-	      (when constr
-		 (e `(,constr ,new) e)))
-	  ;; virtual fields
-	  ,@(vector-filter-map
-	       (lambda (field val)
-		  (when (and (class-field-virtual? field)
-			     (class-field-mutable? field)
-			     (car val))
-		     (let ((v (e (cdr val) e)))
-			`(,(class-field-mutator field) ,new ,v))))
-	       fields args)
-	  ;; return the new instance
-	  ,new)))
+	  (begin
+	     ;; actual fields
+	     ,@(vector-filter-map
+		  (lambda (field val)
+		     (unless (class-field-virtual? field)
+			(let ((v (e (cdr val) e)))
+			   `(,(class-field-mutator field) ,new ,v))))
+		  fields args)
+	     ;; constructor
+	     ,(let ((constr (find-class-constructor class)))
+		 (when constr
+		    (e `(,constr ,new) e)))
+	     ;; virtual fields
+	     ,@(vector-filter-map
+		  (lambda (field val)
+		     (when (and (class-field-virtual? field)
+				(class-field-mutable? field)
+				(car val))
+			(let ((v (e (cdr val) e)))
+			   `(,(class-field-mutator field) ,new ,v))))
+		  fields args)
+	     ;; return the new instance
+	     ,new))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-filter-map ...                                            */
@@ -497,27 +498,28 @@
       ;; first the actual fields, second the virtual fields
       `(let ((,dupvar ,(e duplicated e))
 	     (,new ,(e `(,(class-allocator class)) e)))
-	  ;; actual fields
-	  ,@(vector-filter-map
-	       (lambda (field val)
-		  (unless (class-field-virtual? field)
-		     (let ((v (e (cdr val) e)))
-			`(,(class-field-mutator field) ,new ,v))))
-	       fields args)
-	  ;; constructor
-	  ,(let ((constr (find-class-constructor class)))
-	      (when constr
-		 (e `(,constr ,new) e)))
-	  ;; virtual fields
-	  ,@(vector-filter-map
-	       (lambda (field val)
-		  (when (and (class-field-virtual? field)
-			     (class-field-mutable? field))
-		     (let ((v (e (cdr val) e)))
-			`(,(class-field-mutator field) ,new ,v))))
-	       fields args)
-	  ;; return the new instance
-	  ,new)))
+	  (begin
+	     ;; actual fields
+	     ,@(vector-filter-map
+		  (lambda (field val)
+		     (unless (class-field-virtual? field)
+			(let ((v (e (cdr val) e)))
+			   `(,(class-field-mutator field) ,new ,v))))
+		  fields args)
+	     ;; constructor
+	     ,(let ((constr (find-class-constructor class)))
+		 (when constr
+		    (e `(,constr ,new) e)))
+	     ;; virtual fields
+	     ,@(vector-filter-map
+		  (lambda (field val)
+		     (when (and (class-field-virtual? field)
+				(class-field-mutable? field))
+			(let ((v (e (cdr val) e)))
+			   `(,(class-field-mutator field) ,new ,v))))
+		  fields args)
+	     ;; return the new instance
+	     ,new))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-field-offset ...                                            */

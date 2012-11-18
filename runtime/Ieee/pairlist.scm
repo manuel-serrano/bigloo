@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Tue Oct 23 17:45:55 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 11:36:56 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -168,24 +168,24 @@
 	    (delete-duplicates::pair-nil ::pair-nil #!optional (eq equal?))
 	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
    
-   (pragma  ($cons args-safe)
-	    ($null? (predicate-of nil) no-cfa-top nesting args-safe (effect))
+   (pragma  ($cons args-safe fail-safe)
+	    ($null? (predicate-of nil) no-cfa-top nesting args-safe fail-safe (effect))
 	    (null? (predicate-of nil) no-cfa-top nesting)
 	    (pair-or-null? (predicate-of pair-nil) no-cfa-top nesting (effect))
-	    ($pair? (predicate-of pair) no-cfa-top nesting (effect))
+	    ($pair? (predicate-of pair) no-cfa-top nesting fail-safe (effect))
 	    (pair? (predicate-of pair) no-cfa-top nesting)
 ;* 	    (list? (predicate-of list) side-effect-free no-cfa-top nesting) */
-	    ($car side-effect-free no-cfa-top nesting args-safe
+	    ($car side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (car))))
-	    ($set-car! (effect (write (car))))
+	    ($set-car! fail-safe (effect (write (car))))
 	    (car side-effect-free no-cfa-top nesting)
-	    ($cdr side-effect-free no-cfa-top nesting args-safe
+	    ($cdr side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (cdr))))
-	    ($set-cdr! (effect (write (cdr))))
+	    ($set-cdr! fail-safe (effect (write (cdr))))
 	    (cdr side-effect-free no-cfa-top nesting)
-	    ($cer side-effect-free no-cfa-top nesting args-safe
+	    ($cer side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (cer))))
-	    ($set-cer! (effect (write (cer))))
+	    ($set-cer! fail-safe (effect (write (cer))))
 	    (cer side-effect-free no-cfa-top nesting)
 	    (length side-effect-free no-cfa-top nesting
 		    (effect (read (car cdr))))

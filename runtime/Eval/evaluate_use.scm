@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:47:50 2011                          */
-;*    Last change :  Mon Sep 17 11:04:52 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:32:02 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the vars used by an expression                           */
@@ -108,6 +108,10 @@
 (define-method (use e::ev_with-handler done);
    (with-access::ev_with-handler e (handler body)
       (use handler (use body done)) ))
+
+(define-method (use e::ev_synchronize done);
+   (with-access::ev_synchronize e (mutex body)
+      (use mutex (use body done)) ))
 
 (define-method (use e::ev_binder done);
    (with-access::ev_binder e (vals body)

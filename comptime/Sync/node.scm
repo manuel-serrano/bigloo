@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Sun Nov 18 08:58:08 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 10:24:32 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -82,8 +82,6 @@
    (define (app expr loc)
       (application->node expr '() loc 'value))
 
-   (tprint "SYNC->SEQUENCE: " (node->sexp node))
-   
    (with-access::sync node (loc nodes mutex type)
       (init-sync! loc)
       (let* ((tmp (make-local-svar (gensym 'tmp) type))
@@ -91,7 +89,7 @@
 	     (push (app `(,mpush ,mutex) loc))
 	     (pop (app `(,mpop ,mutex) loc))
 	     (unlock (app `(,mulock ,mutex) loc))
-	     (fsafe (failsafe? node))
+	     (fsafe (failsafe-sync? node))
 	     (vref (instantiate::var
 		      (loc loc)
 		      (type type)

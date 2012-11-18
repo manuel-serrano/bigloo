@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Fri Nov 26 18:57:03 2010 (serrano)                */
+;*    Last change :  Sun Nov 18 10:47:12 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -27,19 +27,19 @@
    (if (not (backend-pragma-support (the-backend)))
        (begin
 	  (user-warning/location loc
-				 "pragma"
-				 "Pragma ignored with this back-end"
-				 exp)
+	     "pragma"
+	     "Pragma ignored with this back-end"
+	     exp)
 	  (sexp->node #unspecified stack loc site))
        (match-case exp
 	  ((?- (and (? string?) ?format) . ?values)
 	   (let ((max-index (get-max-index format))
-		 (loc       (find-location/loc exp loc)))
+		 (loc (find-location/loc exp loc)))
 	      (if (not (=fx max-index (length values)))
 		  (error-sexp->node
-		   "Wrong number of arguments in `pragma' form"
-		   exp
-		   loc)
+		     "Wrong number of arguments in `pragma' form"
+		     exp
+		     loc)
 		  (let loop ((exps values)
 			     (nodes '()))
 		     (if (null? exps)
@@ -51,14 +51,14 @@
 			    (side-effect (not free))
 			    (effect effect))
 			 (loop (cdr exps)
-			       (cons
-				(sexp->node (car exps)
-					    stack
-					    (find-location/loc (car exps) loc)
-					    (if free 'value 'set!))
-				nodes)))))))
+			    (cons
+			       (sexp->node (car exps)
+				  stack
+				  (find-location/loc (car exps) loc)
+				  (if free 'value 'set!))
+			       nodes)))))))
 	  (else
-	   (error-sexp->node "Illegal `pragma' form" exp loc)))))
+	   (error-sexp->node "Illegal \"pragma\" form" exp loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-max-index ...                                                */

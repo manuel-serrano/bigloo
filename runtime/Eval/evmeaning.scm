@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Tue Apr 17 07:46:13 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 10:13:13 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -764,6 +764,12 @@
 		   (with-handler ehandler (evmeaning body stack denv)))
 		  (else
 		   (evarity-error loc "with-handler" 1 ($procedure-arity ehandler))))))
+	   ((bounce (code stack denv) (175))
+	    ;; synchronize
+	    (let* ((mutex (evcode-ref code 0))
+		   (body (evcode-ref code 1)))
+	       (synchronize (evmeaning mutex stack denv)
+		  (evmeaning body stack denv))))
 	   ((131)
 	    ;; tailcall 0
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))

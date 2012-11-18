@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Nov 17 08:15:34 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 13:05:27 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
@@ -18,7 +18,9 @@
 	    tools_speek
 	    tools_error
 	    type_type
+	    type_cache
 	    ast_var
+	    ast_env
 	    ast_node)
    (export  (reduce-conditional! globals)))
 
@@ -27,6 +29,7 @@
 ;*---------------------------------------------------------------------*/
 (define (reduce-conditional! globals)
    (verbose 2 #"      conditional expression ")
+   (init-cond-cache!)
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
 		       (node (sfun-body fun))) 
@@ -34,7 +37,29 @@
 		   #unspecified))
 	     globals)
    (verbose 2 "(reduced: " *cond-reduced* #\) #\newline)
+   (reset-cond-cache!)
    globals)
+
+
+;*---------------------------------------------------------------------*/
+;*    cache ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *$eq* #f)
+(define *$=fx* #f)
+
+;*---------------------------------------------------------------------*/
+;*    init-cond-cache! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (init-cond-cache!)
+   (set! *$eq* (find-global 'c-eq? 'foreign))
+   (set! *$=fx* (find-global 'c-=fx 'foreign)))
+
+;*---------------------------------------------------------------------*/
+;*    reset-cond-cache! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (reset-cond-cache!)
+   (set! *$eq* #f)
+   (set! *$=fx* #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    Statitics ...                                                    */
@@ -91,9 +116,36 @@
 ;*    node-cond! ::app ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::app)
-   (with-access::app node (args)
+   
+   (define (eq-atom? n1 n2)
+      (cond
+	 ((and (atom? n1) (atom? n2))
+	  (if (eq? (atom-value n1) (atom-value n2)) 'true 'false))
+	 ((and (var? n1) (var? n2))
+	  (if (eq? (var-variable n1) (var-variable n2)) 'true #f))
+	 (else
+	  #f)))
+   
+   (define (trivial-app node::app)
+      (with-access::app node (fun args loc type)
+	 (when (and (or (eq? type *bool*) (eq? type *obj*))
+		    (every (lambda (n) (or (atom? n) (var? n))) args))
+	    (cond
+	       ((eq? (var-variable fun) *$eq*)
+		(eq-atom? (car args) (cadr args)))
+	       ((eq? (var-variable fun) *$=fx*)
+		(eq-atom? (car args) (cadr args)))
+	       (else
+		#f)))))
+   
+   (with-access::app node (args loc type)
       (node-cond*! args)
-      node))
+      (let ((triv (trivial-app node)))
+	 (if (not triv)
+	     node
+	     (instantiate::atom
+		(type type)
+		(value (eq? triv 'true)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cond! ::app-ly ...                                          */
@@ -143,17 +195,17 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::conditional)
    (with-access::conditional node (test true false)
-       (set! test (node-cond! test))
-       (set! true (node-cond! true))
-       (set! false (node-cond! false))
-       (if (atom? test)
-	   (begin
-	      (set! *cond-reduced* (+fx 1 *cond-reduced*))
-	      (trace (reduce 2) "Je reduis le cond: " (shape node) #\Newline)
-	      (if (atom-value test)
-		  true
-		  false))
-	   node)))
+      (set! test (node-cond! test))
+      (set! true (node-cond! true))
+      (set! false (node-cond! false))
+      (if (atom? test)
+	  (begin
+	     (set! *cond-reduced* (+fx 1 *cond-reduced*))
+	     (trace (reduce 2) "Je reduis le cond: " (shape node) #\Newline)
+	     (if (atom-value test)
+		 true
+		 false))
+	  node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cond! ::fail ...                                            */

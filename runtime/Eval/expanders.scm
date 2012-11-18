@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sun Nov 18 08:22:55 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:43:40 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -266,11 +266,6 @@
    (install-compiler-expander 'with-trace (make-expand-with-trace 'compiler))
    (install-compiler-expander 'trace-item (make-expand-trace-item 'compiler))
 
-   (unless (getenv "BGLSYNC")
-      (let ((expd (make-synchronize-expander '$mutex-lock '$mutex-unlock)))
-	 (install-compiler-expander 'synchronize expd)
-	 (install-compiler-expander 'synchronize-unsafe expd)))
-
 ;*---------------------------------------------------------------------*/
 ;*    Interpreter macros                                               */
 ;*---------------------------------------------------------------------*/
@@ -426,11 +421,6 @@
       (install-eval-expander 'define-abstract-class e)
       (install-eval-expander 'define-final-class e))
 
-   ;; synchronize
-   (let ((expd (make-synchronize-expander 'mutex-lock! 'mutex-unlock!)))
-      (install-eval-expander 'synchronize expd)
-      (install-eval-expander 'synchronize-unsafe expd))
-   
    ;; trace
    (install-eval-expander 'when-trace (make-expand-when-trace 'eval))
    (install-eval-expander 'with-trace (make-expand-with-trace 'eval))
@@ -534,38 +524,6 @@
 	  (evepairify (e result e) x)))
       (else
        (expand-error "let" "Illegal `and-let*' form" x))))
-
-;*---------------------------------------------------------------------*/
-;*    make-synchronize-expander ...                                    */
-;*---------------------------------------------------------------------*/
-(define (make-synchronize-expander mutex-lock mutex-unlock)
-   (lambda (x e)
-      (tprint "EXPAND synchronize")
-      (match-case x
-	 ((synchronize (and (? symbol?) ?var) . ?body)
-	  (let* ((tmp (gensym 'tmp))
-		 (nx  `(begin
-			  (,mutex-lock ,var)
-			  (exitd-push-mutex! ,var)
-			  (let ((,tmp (begin ,@body)))
-			     (exitd-pop-mutex! ,var)
-			     (,mutex-unlock ,var)
-			     ,tmp))))
-	     (e (evepairify nx x) e)))
-	 ((synchronize-unsafe (and (? symbol?) ?var) . ?body)
-	  (let ((tmp (gensym 'tmp)))
-	     (let ((nx  `(begin
-			    (,mutex-lock ,var)
-			    (let ((,tmp (begin ,@body)))
-			       (,mutex-unlock ,var)
-			       ,tmp))))
-		(e (evepairify nx x) e))))
-	 ((?op ?lock . ?body)
-	  (let ((l (gensym 'lock)))
-	     (let ((nx `(let ((,l ,lock)) ,(evepairify `(,op ,l ,@body) x))))
-		(e (evepairify nx x) e))))
-	 (else
-	  (map (lambda (x) (e x e)) x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    Force the install of the expanders                               */

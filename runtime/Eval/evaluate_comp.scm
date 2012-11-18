@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sun Oct 28 12:55:15 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:29:19 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -528,6 +528,15 @@
 	      (let ( (h (EVC handler)) )
 		 (let ( (saved-bp bp) )
 		    (prog1 (with-handler h (EVC body))
+			   (vector-set! s 0 saved-bp) )))))))
+
+(define-method (comp e::ev_synchronize stk);
+   (with-access::ev_synchronize e (mutex body)
+      (let ( (mutex (comp mutex stk)) (body (comp body stk)) )
+	 (EVA '(control synchronize) ()
+	      (let ( (m (EVC mutex)) )
+		 (let ( (saved-bp bp) )
+		    (prog1 (synchronize m (EVC body))
 			   (vector-set! s 0 saved-bp) )))))))
 
 ;;

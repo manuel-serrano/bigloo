@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Sat Oct 13 07:34:17 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 10:12:21 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -95,11 +95,11 @@
        (cond
 	  ((symbol? atom)
 	   (evcompile-ref (variable loc atom env genv) genv loc lkp))
-	  ((or (vector? atom) (struct? atom))
-	   (evcompile-error loc
-			    "eval"
-			    "Illegal expression (should be quoted)"
-			    exp))
+;* 	  ((or (vector? atom) (struct? atom))                          */
+;* 	   (evcompile-error loc                                        */
+;* 			    "eval"                                     */
+;* 			    "Illegal expression (should be quoted)"    */
+;* 			    exp))                                      */
 	  ((and (procedure? atom) (not lkp))
 	   (evcompile-error loc
 			    "eval"
@@ -215,38 +215,50 @@
 	   (evcompile-error (get-location exp loc) "set!" "Illegal form" exp))))
       ((bind-exit ?escape ?body)
        (let ((loc (get-location exp loc)))
-	  (evcompile-bind-exit (evcompile `(lambda ,escape ,body)
-					  env genv (car escape)
-					  #f
-					  (get-location body loc)
-					  lkp #f)
-			       loc)))
+	  (evcompile-bind-exit
+	     (evcompile `(lambda ,escape ,body)
+		env genv (car escape)
+		#f
+		(get-location body loc)
+		lkp #f)
+	     loc)))
       ((unwind-protect ?body . ?protect)
        (let ((loc (get-location exp loc)))
-	  (evcompile-unwind-protect (evcompile body env
-					       genv where #f
-					       (get-location body loc)
-					       lkp #f)
-				    (evcompile-begin protect env genv
-						     where #f
-						     (get-location protect loc)
-						     lkp
-						     #f)
-				    loc)))
+	  (evcompile-unwind-protect
+	     (evcompile body env
+		genv where #f
+		(get-location body loc)
+		lkp #f)
+	     (evcompile-begin protect env genv
+		where #f
+		(get-location protect loc)
+		lkp #f)
+	     loc)))
       ((with-handler ?handler . ?body)
        (let ((loc (get-location exp loc)))
-	  (evcompile-with-handler (evcompile handler env
-					     genv where #f
-					     (get-location handler loc)
-					     lkp #f)
-				  (evcompile-begin body env genv
-						   where #f
-						   (get-location body loc)
-						   lkp
-						   #f)
-				  loc)))
+	  (evcompile-with-handler
+	     (evcompile handler env
+		genv where #f
+		(get-location handler loc)
+		lkp #f)
+	     (evcompile-begin body env genv
+		where #f
+		(get-location body loc)
+		lkp #f)
+	     loc)))
+      ((synchronize ?mutex . ?body)
+       (let ((loc (get-location exp loc)))
+	  (evcompile-synchronize
+	     (evcompile mutex env
+		genv where #f
+		(get-location mutex loc)
+		lkp #f)
+	     (evcompile-begin body env genv
+		where #f
+		(get-location body loc)
+		lkp #f)
+	     loc)))
      ((lambda ?formals ?body)
-      ;;(tprint "where=" where " " `(lambda ,formals ,body))
       (let* ((loc (get-location exp loc))
 	     (scm-formals (dsssl-formals->scheme-typed-formals
 			   formals
@@ -471,6 +483,12 @@
 ;*---------------------------------------------------------------------*/
 (define (evcompile-with-handler handler body loc)
    (evcode 71 loc handler body))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-synchronize ...                                        */
+;*---------------------------------------------------------------------*/
+(define (evcompile-synchronize mutex body loc)
+   (evcode 175 loc mutex body))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-compiled-application ...                               */

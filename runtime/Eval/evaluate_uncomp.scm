@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:46:26 2011                          */
-;*    Last change :  Tue Apr 17 07:49:31 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 09:31:39 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    AST back to list                                                 */
@@ -122,6 +122,10 @@
 (define-method (uncomp e::ev_with-handler);
    (with-access::ev_with-handler e (handler body)
       `(with-handler ,(uncomp handler) ,(uncomp body)) ))
+
+(define-method (uncomp e::ev_synchronize);
+   (with-access::ev_synchronize e (mutex body)
+      `(synchronize ,(uncomp mutex) ,(uncomp body)) ))
 
 (define-method (uncomp e::ev_let);
    (with-access::ev_let e (vars vals body)
