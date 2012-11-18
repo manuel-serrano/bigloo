@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 18 14:00:18 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:21:57 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -855,34 +855,33 @@
 ;*---------------------------------------------------------------------*/
 (define (generic-memory-statistics)
    ;; return the overall memory space required by generic functions
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (let loop ((g 0)
-		    (size 0))
-	    (if (=fx g *nb-generics*)
-		`((generic ,*nb-generics*)
-		  (class ,*nb-classes*)
-		  (mtable-size ,size)
-		  (method-array-size ,(vector-length
-					 (generic-method-array
-					    (vector-ref-ur *generics* 0))))
-		  (generic-bucket-size ,(bigloo-generic-bucket-size))
-		  (max-class ,*nb-classes-max*)
-		  (max-generic ,*nb-generics-max*))
-		(let* ((gen (vector-ref-ur *generics* g))
-		       (dbuck (generic-default-bucket gen))
-		       (dz 0)
-		       (sz (apply + (map (lambda (b)
-					    (cond
-					       ((eq? b dbuck)
-						(set! dz (*fx (vector-length b) 4))
-						0)
-					       (else
-						(*fx 4 (vector-length b)))))
-					 (vector->list (generic-method-array gen)))))
-		       (bz (*fx 4 (vector-length (generic-method-array gen)))))
-		   (loop (+fx g 1)
-			 (+fx size (+fx (+fx bz dz) sz)))))))))
+   (synchronize $bigloo-generic-mutex
+      (let loop ((g 0)
+		 (size 0))
+	 (if (=fx g *nb-generics*)
+	     `((generic ,*nb-generics*)
+	       (class ,*nb-classes*)
+	       (mtable-size ,size)
+	       (method-array-size ,(vector-length
+				      (generic-method-array
+					 (vector-ref-ur *generics* 0))))
+	       (generic-bucket-size ,(bigloo-generic-bucket-size))
+	       (max-class ,*nb-classes-max*)
+	       (max-generic ,*nb-generics-max*))
+	     (let* ((gen (vector-ref-ur *generics* g))
+		    (dbuck (generic-default-bucket gen))
+		    (dz 0)
+		    (sz (apply + (map (lambda (b)
+					 (cond
+					    ((eq? b dbuck)
+					     (set! dz (*fx (vector-length b) 4))
+					     0)
+					    (else
+					     (*fx 4 (vector-length b)))))
+				    (vector->list (generic-method-array gen)))))
+		    (bz (*fx 4 (vector-length (generic-method-array gen)))))
+		(loop (+fx g 1)
+		   (+fx size (+fx (+fx bz dz) sz))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    generics-add-class! ...                                          */

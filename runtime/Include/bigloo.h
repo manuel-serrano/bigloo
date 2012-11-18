@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 16 15:36:41 2012 (serrano)                */
+/*    Last change :  Sun Nov 18 14:27:18 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -610,6 +610,7 @@ typedef union scmobj {
       char *stack_bottom;
       union scmobj *exit_value;
       struct exitd *exitd_top;
+      struct exitd *exitd_bottom;
       union scmobj *exitd_stamp;
       struct befored *befored_top;
       union scmobj *exitd_val;
@@ -630,7 +631,6 @@ typedef union scmobj {
       /* thread lexical stack */
       union scmobj *lexical_stack;
       /* eval parameter */
-/*       union scmobj *bytecode;                                       */
       union scmobj *evstate;
       union scmobj *module;
       union scmobj *abase;
@@ -1289,6 +1289,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_EXIT_TRACES_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).exit_traces = (_1), BUNSPEC)
    
+#define BGL_ENV_EXITD_BOTTOM( env ) \
+   (BGL_DYNAMIC_ENV( env ).exitd_bottom)
+   
 #define BGL_ENV_EXITD_TOP( env ) \
    (BGL_DYNAMIC_ENV( env ).exitd_top)
 #define BGL_ENV_EXITD_TOP_SET( env, _1 ) \
@@ -1349,11 +1352,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ENV_LEXICAL_STACK_SET( env, _l ) \
   (BGL_DYNAMIC_ENV( env ).lexical_stack = (_l))
    
-/* #define BGL_ENV_BYTECODE( env ) \                                   */
-/*    (BGL_DYNAMIC_ENV( env ).bytecode)                                */
-/* #define BGL_ENV_BYTECODE_SET( env, _1 ) \                           */
-/*    (BGL_DYNAMIC_ENV( env ).bytecode = (_1), BUNSPEC)                */
-   
 #define BGL_ENV_EVSTATE( env ) \
    (BGL_DYNAMIC_ENV( env ).evstate)
 #define BGL_ENV_EVSTATE_SET( env, _1 ) \
@@ -1392,6 +1390,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    BGL_ENV_EXITD_TOP( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_EXITD_TOP_SET( _1 ) \
    BGL_ENV_EXITD_TOP_SET( BGL_CURRENT_DYNAMIC_ENV(), _1 )
+
+#define BGL_EXITD_BOTTOM() \
+   BGL_ENV_EXITD_BOTTOM( BGL_CURRENT_DYNAMIC_ENV() )
 
 #define BGL_EXITD_TOP_AS_OBJ() \
    ((obj_t)BGL_EXITD_TOP())
@@ -2626,7 +2627,7 @@ struct exitd {
    ((((struct exitd *)(ptr))->mutexn) = (m))
 
 #define BGL_EXITD_BOTTOMP( extd ) \
-   ((extd) == 0L)
+   ((extd) == BGL_ENV_EXITD_BOTTOM( BGL_CURRENT_DYNAMIC_ENV() ))
    
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */

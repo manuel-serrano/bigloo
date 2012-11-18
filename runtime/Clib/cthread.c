@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Thu Mar 22 15:36:25 2012 (serrano)                */
+/*    Last change :  Sun Nov 18 14:36:53 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -163,6 +163,22 @@ bgl_make_nil_condvar() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    struct exitd *                                                   */
+/*    make_exitd_bottom ...                                            */
+/*---------------------------------------------------------------------*/
+struct exitd *
+make_exitd_bottom() {
+   struct exitd *bottom =
+      (struct exitd *)GC_MALLOC_UNCOLLECTABLE( sizeof( struct exitd ) );
+
+   bottom->mutex0 = BFALSE;
+   bottom->mutex1 = BFALSE;
+   bottom->mutexn = BNIL;
+
+   return bottom;
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    make_dynamic_env ...                                             */
 /*---------------------------------------------------------------------*/
@@ -182,7 +198,8 @@ make_dynamic_env() {
    env->dynamic_env_t.current_display = BUNSPEC;
 
    env->dynamic_env_t.exit_value = BUNSPEC;
-   env->dynamic_env_t.exitd_top = 0L;
+   env->dynamic_env_t.exitd_bottom = make_exitd_bottom();
+   env->dynamic_env_t.exitd_top = env->dynamic_env_t.exitd_bottom;
    env->dynamic_env_t.exitd_val = MAKE_PAIR( BUNSPEC, BUNSPEC );
    SET_CAR( env->dynamic_env_t.exitd_val, MAKE_PAIR( BUNSPEC, BUNSPEC ) );
    env->dynamic_env_t.exitd_stamp = BINT( 0 );
@@ -213,7 +230,6 @@ make_dynamic_env() {
    env->dynamic_env_t.lexical_stack = BNIL;
  
    env->dynamic_env_t.evstate = BUNSPEC;
-/*    env->dynamic_env_t.bytecode = BUNSPEC;                           */
    env->dynamic_env_t.module = BUNSPEC;
    env->dynamic_env_t.abase = BUNSPEC;
 
