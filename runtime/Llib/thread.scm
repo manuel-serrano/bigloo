@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Nov 18 11:34:59 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 13:46:07 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -217,9 +217,16 @@
 
    (pragma  ($current-dynamic-env nesting)
             ($dynamic-env? (predicate-of dynamic-env))
+	    ($mutex? fail-safe)
+	    ($make-mutex fail-safe)
+	    ($mutex-name fail-safe)
 	    ($mutex-state fail-safe)
 	    ($mutex-lock fail-safe)
+	    ($mutex-timed-lock fail-safe)
 	    ($mutex-unlock fail-safe)
+	    ($condvar? fail-safe)
+	    ($make-condvar fail-safe)
+	    ($condvar-name fail-safe)
 	    ($condvar-broadcast! fail-safe)
 	    ($condvar-signal! fail-safe)
 	    ($condvar-wait! fail-safe)

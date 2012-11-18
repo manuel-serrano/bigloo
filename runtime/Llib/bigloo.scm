@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Nov 15 07:16:59 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 13:47:55 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -275,24 +275,25 @@
 	    (time::obj ::procedure)
 	    (bigloo-gc-verbose-set! ::bool))
 
-   (pragma  (c-procedure-light? nesting)
-	    (va-procedure? nesting)
-	    (procedure-arity nesting args-safe)
-	    ($procedure-arity nesting args-safe)
-	    (correct-arity? nesting args-safe)
-	    (make-fx-procedure no-cfa-top nesting args-safe)
-	    (make-va-procedure no-cfa-top nesting args-safe)
-	    (procedure-set! no-cfa-top nesting args-safe)
-	    (procedure-ref no-cfa-top side-effect-free nesting args-safe)
-	    (procedure-l-set! nesting args-safe)
-	    (procedure-l-ref nesting args-safe)
-	    (procedure-el-set! nesting args-safe)
-	    (procedure-el-ref nesting args-safe)
-	    (cell? (predicate-of cell) nesting)
-	    (cell-set! nesting args-safe)
-	    (cell-ref nesting  args-safe)
-	    (c-cnst? (predicate-of cnst) nesting)
-	    (c-opaque? (predicate-of opaque) nesting))
+   (pragma  (cnst-table-ref fail-safe)
+	    (c-procedure-light? nesting fail-safe)
+	    (va-procedure? nesting fail-safe)
+	    (procedure-arity nesting args-safe fail-safe)
+	    ($procedure-arity nesting args-safe fail-safe)
+	    (correct-arity? nesting args-safe fail-safe)
+	    (make-fx-procedure no-cfa-top nesting args-safe fail-safe)
+	    (make-va-procedure no-cfa-top nesting args-safe fail-safe)
+	    (procedure-set! no-cfa-top nesting args-safe fail-safe)
+	    (procedure-ref no-cfa-top side-effect-free nesting args-safe fail-safe)
+	    (procedure-l-set! nesting args-safe fail-safe)
+	    (procedure-l-ref nesting args-safe fail-safe)
+	    (procedure-el-set! nesting args-safe fail-safe)
+	    (procedure-el-ref nesting args-safe fail-safe)
+	    (cell? (predicate-of cell) nesting fail-safe)
+	    (cell-set! nesting args-safe fail-safe)
+	    (cell-ref nesting  args-safe fail-safe)
+	    (c-cnst? (predicate-of cnst) nesting fail-safe)
+	    (c-opaque? (predicate-of opaque) nesting fail-safe))
 
    (option  (set! *unsafe-version* #t)))
 

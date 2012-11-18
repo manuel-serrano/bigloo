@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Mon Nov 14 17:44:45 2011 (serrano)                */
+;*    Last change :  Sun Nov 18 13:38:19 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -95,7 +95,9 @@
 	      ;; the associated closure
 	      (the-closure (default #unspecified))
 	      ;; the effect of this function
-	      (effect (default #unspecified)))
+	      (effect (default #unspecified))
+	      ;; is this function failsafe (#t=yes, #f=no, else=unknown)
+	      (failsafe (default #unspecified)))
 
 	   (final-class sfun::fun
 	      ;; a property list

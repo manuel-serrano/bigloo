@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Tue Nov  6 11:10:11 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 13:49:41 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -103,23 +103,24 @@
 	    (symbol->keyword::keyword ::symbol)
 	    (keyword->symbol::symbol ::keyword))
    
-   (pragma  (c-symbol? (predicate-of symbol) no-cfa-top nesting)
-	    (symbol? side-effect-free nesting)
-	    (c-symbol->string args-safe)
+   (pragma  (c-symbol? (predicate-of symbol) no-cfa-top nesting fail-safe)
+	    (symbol? side-effect-free nesting fail-safe)
+	    (c-symbol->string args-safe fail-safe)
 	    (c-symbol-plist args-safe)
 	    (set-symbol-plist args-safe)
-	    (c-keyword->string args-safe)
+	    (c-keyword->string args-safe fail-safe)
 	    (c-keyword-plist args-safe)
 	    (set-keyword-plist args-safe)
 	    (cnst->integer args-safe)
-	    (c-string->symbol no-cfa-top nesting)
-	    (string->symbol no-cfa-top nesting)
-	    (string->symbol-ci no-cfa-top nesting)
-	    (getprop side-effect-free nesting)
-	    (c-keyword? (predicate-of keyword) no-cfa-top nesting)
-	    (keyword? side-effect-free nesting)
-	    (c-string->keyword no-cfa-top nesting)
-	    (string->keyword no-cfa-top nesting)))
+	    (c-string->symbol no-cfa-top nesting fail-safe)
+	    (string->symbol no-cfa-top nesting fail-safe)
+	    (string->symbol-ci no-cfa-top nesting fail-safe)
+	    (getprop side-effect-free nesting fail-safe)
+	    (c-keyword? (predicate-of keyword) no-cfa-top nesting fail-safe)
+	    (keyword? side-effect-free nesting fail-safe)
+	    (c-string->keyword no-cfa-top nesting fail-safe)
+	    (string->keyword no-cfa-top nesting fail-safe)
+	    (gensym fail-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol? ...                                                      */

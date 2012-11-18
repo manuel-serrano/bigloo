@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:49:33 2012                          */
-;*    Last change :  Sun Nov 18 11:07:07 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 13:53:32 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The property FAILSAFE for a node is true, IFF that node cannot   */
@@ -33,9 +33,10 @@
 	    ast_sexp
 	    ast_app
 	    ast_dump
+	    module_module
 	    effect_effect
 	    backend_cplib)
-   
+
    (export (failsafe-sync? ::sync)))
 
 ;*---------------------------------------------------------------------*/
@@ -91,11 +92,12 @@
 (define-method (failsafe? n::app)
    (with-access::app n (fun args)
       (let ((v (var-variable fun)))
+	 (tprint "APP=" (shape n) " " (typeof (variable-value v)))
 	 (if (failsafe-fun? (variable-value v) v)
 	     (every failsafe? args)
 	     (begin
 		(tprint "APP NOT FAILSAFE: " (shape n))
-		#t)))))
+		#f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe-fun? ::fun ...                                          */
@@ -104,12 +106,39 @@
    #f)
 
 ;*---------------------------------------------------------------------*/
+;*    failsafe-fun? ::sfun ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (failsafe-fun? fun::sfun var::variable)
+   (with-access::sfun fun (failsafe)
+      (cond
+	 ((boolean? failsafe)
+	  failsafe)
+	 ((and (global? var) (not (eq? (global-module var) *module*)))
+	  ;; an imported global, check the pragma annotation
+	  (with-access::global var (pragma)
+	     (set! failsafe (pair? (memq 'fail-safe pragma)))
+	     failsafe))
+	 (else
+	  (with-access::sfun fun (failsafe)
+	     (set! failsafe #f)
+	     (let ((fsafe (failsafe? (sfun-body fun))))
+		(set! failsafe fsafe)
+		fsafe))))))
+
+;*---------------------------------------------------------------------*/
 ;*    failsafe-fun? ::cfun ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (failsafe-fun? fun::cfun var::variable)
-   (when (global? var)
-      (with-access::global var (pragma)
-	 (pair? (memq 'fail-safe pragma)))))
+   (with-access::cfun fun (failsafe)
+      (cond
+	 ((boolean? failsafe)
+	  failsafe)
+	 ((global? var)
+	  (with-access::global var (pragma)
+	     (set! failsafe (pair? (memq 'fail-safe pragma)))
+	     failsafe))
+	 (else
+	  #f))))
    
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::extern ...                                           */
@@ -160,9 +189,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (failsafe? n::let-fun)
    (with-access::let-fun n (body locals)
-      (when (failsafe? body)
-	 (tprint "TODO")
-	 #f)))
+      ;; don't traverse the local functions, they will be scanned on demand
+      (failsafe? body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::let-var ...                                          */
