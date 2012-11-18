@@ -113,12 +113,11 @@
 	 (trace-item "mutex=" (trace-string mutex))
 	 (trace-item "cv=" (trace-string condvar))
 
-	 (with-lock-uw mutex
-	    (lambda ()
-	       (let loop ()
-		  (unless (eq? (%get-scheduler-token) ft)
-		     (condition-variable-wait! condvar mutex)
-		     (loop))))))))
+	 (synchronize mutex
+	    (let loop ()
+	       (unless (eq? (%get-scheduler-token) ft)
+		  (condition-variable-wait! condvar mutex)
+		  (loop)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-switch ...                                              */
@@ -129,11 +128,10 @@
       (trace-item "to=" (trace-string nt))
       
       (with-access::%pthread nt (mutex condvar)
-	 (with-lock-uw mutex
-	    (lambda ()
-	       (%set-scheduler-token! nt)
-	       (trace-item "signal! on " (trace-string condvar))
-	       (condition-variable-signal! condvar))))))
+	 (synchronize mutex
+	    (%set-scheduler-token! nt)
+	    (trace-item "signal! on " (trace-string condvar))
+	    (condition-variable-signal! condvar)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %pthread-enter-scheduler ...                                     */
