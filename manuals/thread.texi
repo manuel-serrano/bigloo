@@ -165,8 +165,8 @@ Thread locking mechanism is common to Fair Threads and Posix Threads.
 @deffnx {SRFI-18 function} mutex-specific @var{mutex}
 @deffnx {SRFI-18 function} mutex-specific-set! @var{mutex} @var{obj}
 @deffnx {SRFI-18 function} mutex-state @var{mutex}
-@deffnx {SRFI-18 function} mutex-lock! @var{mutex} [@var{timeout} [@var{thread}]]
-@deffnx {SRFI-18 function} mutex-unlock! @var{mutex}
+@deffnx {SRFI-18 function, deprecated} mutex-lock! @var{mutex} [@var{timeout} [@var{thread}]]
+@deffnx {SRFI-18 function, deprecated} mutex-unlock! @var{mutex}
 
 @smalllisp
 (let ((m (make-mutex)))
@@ -213,17 +213,32 @@ Thread locking mechanism is common to Fair Threads and Posix Threads.
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo function} with-lock mutex thunk
+@deffn {Bigloo form} synchronize mutex exp1 exp2 ...
+The function @var{synchronize} evaluates the expressions @var{exp1},
+@var{exp2}, etc. The mutex @var{mutex} is acquired and released before
+@var{exp1} gets evaluated.  Its value is the value of the evaluated
+expression. The form @code{synchronize} ensures that however the form
+returns, the mutex @var{mutex} is always unlocked.
+
+@smalllisp
+(synchronize mutex
+   (print "before read...")
+   (read p))
+@end smalllisp
+@end deffn
+
+@deffn {Bigloo function, deprecated} with-lock mutex thunk
+The form @code{with-lock} is similar to @code{synchronize} into which it
+is expanded. 
+
 The function @var{with-lock} evaluates the body of the @var{thunk}.
 The mutex @var{mutex} is acquired and released before @var{thunk} gets invoked.
 The function @var{with-lock} might be implemented as:
 
 @smalllisp
 (define (with-lock mutex thunk)
-   (mutex-lock! mutex)
-   (unwind-protect
-      (thunk)
-      (mutex-unlock! mutex)))
+   (synchronize mutex
+      (thunk)))
 @end smalllisp
 @end deffn
 
