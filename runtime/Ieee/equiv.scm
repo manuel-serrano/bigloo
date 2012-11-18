@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Wed Mar 30 08:30:56 2011 (serrano)                */
+;*    Last change :  Sun Nov 18 15:06:56 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -55,10 +55,10 @@
 	    (inline eq?::bool  ::obj ::obj)
 	    (equal?::bool ::obj ::obj))
    
-   (pragma  (eqv? side-effect-free nesting)
-	    (eq? side-effect-free nesting)
-	    (c-eq? side-effect-free no-cfa-top nesting args-safe)
-	    (equal? side-effect-free no-cfa-top nesting)))
+   (pragma  (eqv? side-effect-free nesting fail-safe)
+	    (eq? side-effect-free nesting fail-safe)
+	    (c-eq? side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    (equal? side-effect-free no-cfa-top nesting fail-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    eq? ...                                                          */

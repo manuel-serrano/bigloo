@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Wed Nov 14 18:51:00 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:05:35 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
@@ -63,9 +63,8 @@
 (define-method (music-close o::mplayer)
    (with-access::mplayer o (%mutex %close)
       (call-next-method)
-      (with-lock-uw %mutex
-	 (lambda ()
-	    (set! %close #t)))))
+      (synchronize %mutex
+	 (set! %close #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::mplayer ...                                      */
@@ -147,18 +146,17 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-meta o::mplayer)
    (with-access::mplayer o (%process %mutex)
-      (with-lock %mutex
-	 (lambda ()
-	    (if (and (process? %process) (process-alive? %process))
-		(let ((po (process-output-port %process))
-		      (pi (process-input-port %process)))
-		   `((path . ,(cmd-value "get_property path" "ANS_path=" po pi))
-		     (title . ,(cmd-string "get_meta_title" "ANS_META_TITLE=" po pi))
-		     (track . ,(cmd-integer "get_meta_track" "ANS_META_TRACK=" po pi))
-		     (year . ,(cmd-integer "get_meta_year" "ANS_META_YEAR=" po pi))
-		     (artist . ,(cmd-string "get_meta_artist" "ANS_META_ARTIST=" po pi))
-		     (album . ,(cmd-string "get_meta_album" "ANS_META_ALBUM=" po pi))
-		     (genre . ,(cmd-string "get_meta_genre" "ANS_META_GENRE=" po pi)))))))))
+      (synchronize %mutex
+	 (if (and (process? %process) (process-alive? %process))
+	     (let ((po (process-output-port %process))
+		   (pi (process-input-port %process)))
+		`((path . ,(cmd-value "get_property path" "ANS_path=" po pi))
+		  (title . ,(cmd-string "get_meta_title" "ANS_META_TITLE=" po pi))
+		  (track . ,(cmd-integer "get_meta_track" "ANS_META_TRACK=" po pi))
+		  (year . ,(cmd-integer "get_meta_year" "ANS_META_YEAR=" po pi))
+		  (artist . ,(cmd-string "get_meta_artist" "ANS_META_ARTIST=" po pi))
+		  (album . ,(cmd-string "get_meta_album" "ANS_META_ALBUM=" po pi))
+		  (genre . ,(cmd-string "get_meta_genre" "ANS_META_GENRE=" po pi))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-start ...                                              */
@@ -200,15 +198,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::mplayer)
    (with-access::mplayer o (%user-state %mutex %status %process onstate)
-      (with-lock-uw %mutex
-	 (lambda ()
-	    (when (eq? %user-state 'play)
-	       (musicproc-exec o #f "get_time_pos"))))
+      (synchronize %mutex
+	 (when (eq? %user-state 'play)
+	    (musicproc-exec o #f "get_time_pos")))
       (call-next-method)
       (with-access::musicstatus %status (state)
-	 (with-lock-uw %mutex
-	    (lambda ()
-	       (set! state %user-state)))
+	 (synchronize %mutex
+	    (set! state %user-state))
 	 (onstate o %status))))
 
 ;*---------------------------------------------------------------------*/

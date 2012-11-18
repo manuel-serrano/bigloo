@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 31 07:15:14 2008                          */
-;*    Last change :  Fri Nov 16 13:59:45 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:12:04 2012 (serrano)                */
 ;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a Gstreamer backend for the               */
@@ -61,62 +61,61 @@
 			       %audiomixer %audiosink
 			       %mutex)
       (call-next-method)
-      (with-lock %mutex
-	 (lambda ()
-	    ;; initialize the pipeline
-	    (unless (isa? %pipeline gst-element)
+      (synchronize %mutex
+	 ;; initialize the pipeline
+	 (unless (isa? %pipeline gst-element)
+	    (unless (isa? %audiosrc gst-element)
+	       (set! %audiosrc (gst-element-factory-make "bglportsrc"))
 	       (unless (isa? %audiosrc gst-element)
-		  (set! %audiosrc (gst-element-factory-make "bglportsrc"))
-		  (unless (isa? %audiosrc gst-element)
-		     (error "music-init ::gstmusic" "Cannot create audiosrc" o)))
+		  (error "music-init ::gstmusic" "Cannot create audiosrc" o)))
+	    (unless (isa? %audiosink gst-element)
+	       (let ((f (gst-element-factory-find "autoaudiosink")))
+		  (if (isa? f gst-element-factory)
+		      (set! %audiosink (gst-element-factory-create f))
+		      (set! %audiosink (find-best-ranked-audio-sink))))
 	       (unless (isa? %audiosink gst-element)
-		  (let ((f (gst-element-factory-find "autoaudiosink")))
-		     (if (isa? f gst-element-factory)
-			 (set! %audiosink (gst-element-factory-create f))
-			 (set! %audiosink (find-best-ranked-audio-sink))))
-		  (unless (isa? %audiosink gst-element)
-		     (error "music-init ::gstmusic" "Cannot create audiosink" o)))
+		  (error "music-init ::gstmusic" "Cannot create audiosink" o)))
+	    (unless (isa? %audiomixer gst-element)
+	       (let ((f (gst-element-factory-make "volume")))
+		  (set! %audiomixer (gst-element-factory-make "volume")))
 	       (unless (isa? %audiomixer gst-element)
-		  (let ((f (gst-element-factory-make "volume")))
-		     (set! %audiomixer (gst-element-factory-make "volume")))
-		  (unless (isa? %audiomixer gst-element)
-		     (error "music-init ::gstmusic" "Cannot create audiomixer" o)))
+		  (error "music-init ::gstmusic" "Cannot create audiomixer" o)))
+	    (unless (isa? %audiodecode gst-element)
+	       (set! %audiodecode (gst-element-factory-make "decodebin"))
 	       (unless (isa? %audiodecode gst-element)
-		  (set! %audiodecode (gst-element-factory-make "decodebin"))
-		  (unless (isa? %audiodecode gst-element)
-		     (error "music-init ::gstmusic" "Cannot create audiodecode" o)))
+		  (error "music-init ::gstmusic" "Cannot create audiodecode" o)))
+	    (unless (isa? %audioconvert gst-element)
+	       (set! %audioconvert (gst-element-factory-make "audioconvert"))
 	       (unless (isa? %audioconvert gst-element)
-		  (set! %audioconvert (gst-element-factory-make "audioconvert"))
-		  (unless (isa? %audioconvert gst-element)
-		     (error "music-init ::gstmusic" "Cannot create audioconvert" o)))
+		  (error "music-init ::gstmusic" "Cannot create audioconvert" o)))
+	    (unless (isa? %audioresample gst-element)
+	       (set! %audioresample (gst-element-factory-make "audioresample"))
 	       (unless (isa? %audioresample gst-element)
-		  (set! %audioresample (gst-element-factory-make "audioresample"))
-		  (unless (isa? %audioresample gst-element)
-		     (error "music-init ::gstmusic" "Cannot create audioresampler" o)))
-	       (set! %pipeline (instantiate::gst-pipeline))
-	       (unless (isa? %audioresample gst-element)
-		  (error "music-init ::gstmusic" "Cannot create pipeline" o))
-	       
-	       (gst-bin-add! %pipeline
-		  %audiosrc
-		  %audiodecode
-		  %audioconvert
-		  %audioresample
-		  %audiomixer
-		  %audiosink)
-	       
-	       (gst-element-link! %audiosrc
-		  %audiodecode)
-	       (gst-element-link! %audioconvert
-		  %audioresample
-		  %audiomixer
-		  %audiosink)
-	       
-	       (gst-object-connect! %audiodecode
-		  "pad-added"
-		  (lambda (el pad)
-		     (let ((p (gst-element-pad %audioconvert "sink")))
-			(gst-pad-link! pad p)))))))))
+		  (error "music-init ::gstmusic" "Cannot create audioresampler" o)))
+	    (set! %pipeline (instantiate::gst-pipeline))
+	    (unless (isa? %audioresample gst-element)
+	       (error "music-init ::gstmusic" "Cannot create pipeline" o))
+	    
+	    (gst-bin-add! %pipeline
+	       %audiosrc
+	       %audiodecode
+	       %audioconvert
+	       %audioresample
+	       %audiomixer
+	       %audiosink)
+	    
+	    (gst-element-link! %audiosrc
+	       %audiodecode)
+	    (gst-element-link! %audioconvert
+	       %audioresample
+	       %audiomixer
+	       %audiosink)
+	    
+	    (gst-object-connect! %audiodecode
+	       "pad-added"
+	       (lambda (el pad)
+		  (let ((p (gst-element-pad %audioconvert "sink")))
+		     (gst-pad-link! pad p))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-best-ranked-audio-sink ...                                  */
@@ -143,13 +142,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-close o::gstmusic)
    (with-access::gstmusic o (%pipeline %mutex)
-      (let ((closed (with-lock %mutex (lambda () (music-closed? o)))))
+      (let ((closed (synchronize %mutex (music-closed? o))))
 	 (unless closed
 	    (call-next-method)
-	    (with-lock %mutex
-	       (lambda ()
-		  (when (isa? %pipeline gst-element)
-		     (gst-element-state-set! %pipeline 'null))))))))
+	    (synchronize %mutex
+	       (when (isa? %pipeline gst-element)
+		  (gst-element-state-set! %pipeline 'null)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::gstmusic ...                                     */
@@ -177,38 +175,35 @@
 (define-method (music-playlist-add! gstmusic::gstmusic n)
    (call-next-method)
    (with-access::gstmusic gstmusic (%mutex %playlist %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (set! %playlist (append %playlist (list n)))
-	    (with-access::musicstatus %status (playlistid playlistlength)
-	       (set! playlistid (+fx 1 playlistid))
-	       (set! playlistlength (+fx 1 playlistlength)))))))
+      (synchronize %mutex
+	 (set! %playlist (append %playlist (list n)))
+	 (with-access::musicstatus %status (playlistid playlistlength)
+	    (set! playlistid (+fx 1 playlistid))
+	    (set! playlistlength (+fx 1 playlistlength))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-delete! ::gstmusic ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-delete! gstmusic::gstmusic n)
    (with-access::gstmusic gstmusic (%mutex %playlist %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (set! %playlist (delete! n %playlist string=?))
-	    (with-access::musicstatus %status (playlistid playlistlength)
-	       (when (and (>=fx n 0) (<fx n playlistlength))
-		  (set! %playlist (remq! (list-ref %playlist n) %playlist))
-		  (set! playlistid (+fx 1 playlistid))
-		  (set! playlistlength (length %playlist))))))))
+      (synchronize %mutex
+	 (set! %playlist (delete! n %playlist string=?))
+	 (with-access::musicstatus %status (playlistid playlistlength)
+	    (when (and (>=fx n 0) (<fx n playlistlength))
+	       (set! %playlist (remq! (list-ref %playlist n) %playlist))
+	       (set! playlistid (+fx 1 playlistid))
+	       (set! playlistlength (length %playlist)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-clear! ::gstmusic ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-clear! gstmusic::gstmusic)
    (with-access::gstmusic gstmusic (%mutex %playlist %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (set! %playlist '())
-	    (with-access::musicstatus %status (playlistlength song)
-	       (set! song 0)
-	       (set! playlistlength 0))))))
+      (synchronize %mutex
+	 (set! %playlist '())
+	 (with-access::musicstatus %status (playlistlength song)
+	    (set! song 0)
+	    (set! playlistlength 0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-song! ...                                                    */
@@ -367,12 +362,11 @@
 		      (onstate o %status))
 		     ((gst-message-eos? msg)
 		      ;; end of stream
-		      (with-lock-uw %mutex
-			 (lambda ()
-			    (set! state 'ended)
-			    (set! songpos 0)
-			    (set! %meta '())
-			    (set! meta #f)))
+		      (synchronize %mutex
+			 (set! state 'ended)
+			 (set! songpos 0)
+			 (set! %meta '())
+			 (set! meta #f))
 		      (onstate o %status))
 		     ((gst-message-state-changed? msg)
 		      ;; state changed
@@ -441,39 +435,36 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-seek o::gstmusic pos . song)
    (with-access::gstmusic o (%mutex %pipeline)
-      (with-lock %mutex
-	 (lambda ()
-	    (when (pair? song)
-	       (if (not (integer? (car song)))
-		   (bigloo-type-error "music-seek ::gstmusic" 'int (car song))
-		   (set-song! o (car song))))
-	    (when (isa? %pipeline gst-element)
-	       (gst-element-seek %pipeline
-		  (*llong (fixnum->llong pos) #l1000000000)))))))
+      (synchronize %mutex
+	 (when (pair? song)
+	    (if (not (integer? (car song)))
+		(bigloo-type-error "music-seek ::gstmusic" 'int (car song))
+		(set-song! o (car song))))
+	 (when (isa? %pipeline gst-element)
+	    (gst-element-seek %pipeline
+	       (*llong (fixnum->llong pos) #l1000000000))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::gstmusic ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::gstmusic)
    (with-access::gstmusic o (%mutex %pipeline)
-      (with-lock %mutex
-	 (lambda ()
-	    (when (isa? %pipeline gst-element)
-	       (gst-element-state-set! %pipeline 'null)
-	       (gst-element-state-set! %pipeline 'ready))))))
+      (synchronize %mutex
+	 (when (isa? %pipeline gst-element)
+	    (gst-element-state-set! %pipeline 'null)
+	    (gst-element-state-set! %pipeline 'ready)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::gstmusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::gstmusic)
    (with-access::gstmusic o (%mutex %pipeline %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (when (isa? %pipeline gst-element)
-	       (with-access::musicstatus %status (state)
-		  (if (eq? state 'pause)
-		      (gst-element-state-set! %pipeline 'playing)
-		      (gst-element-state-set! %pipeline 'paused))))))))
+      (synchronize %mutex
+	 (when (isa? %pipeline gst-element)
+	    (with-access::musicstatus %status (state)
+	       (if (eq? state 'pause)
+		   (gst-element-state-set! %pipeline 'playing)
+		   (gst-element-state-set! %pipeline 'paused)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-position ...                                               */
@@ -500,9 +491,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-song o::gstmusic)
    (with-access::gstmusic o (%mutex %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (with-access::musicstatus %status (song) song)))))
+      (synchronize %mutex
+	 (with-access::musicstatus %status (song) song))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-songpos ::gstmusic ...                                     */

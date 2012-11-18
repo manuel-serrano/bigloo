@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 16:06:35 2007                          */
-;*    Last change :  Wed Nov 14 14:30:34 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:02:12 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    GstObject wrapper                                                */
@@ -85,12 +85,11 @@
 ;*    %gst-object-init-debug ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (%gst-object-init-debug o)
-   (with-lock *gst-object-debug-mutex*
-      (lambda ()
-	 (set! *gst-object-debug-count* (+fx 1 *gst-object-debug-count*))
-	 (display "gst-object-init (" (current-error-port))
-	 (display *gst-object-debug-count* (current-error-port))
-	 (display "): " (current-error-port))))
+   (synchronize *gst-object-debug-mutex*
+      (set! *gst-object-debug-count* (+fx 1 *gst-object-debug-count*))
+      (display "gst-object-init (" (current-error-port))
+      (display *gst-object-debug-count* (current-error-port))
+      (display "): " (current-error-port)))
    (display (find-runtime-type o) (current-error-port))
    (pragma "fprintf( stderr, \" o=%p builtin=%p refcount=%d\", $1, ((BgL_gstzd2objectzd2_bglt)$1)->BgL_z42builtinz42, ((GObject *)(((BgL_gstzd2objectzd2_bglt)$1)->BgL_z42builtinz42))->ref_count )" o)
    (newline (current-error-port)))
@@ -100,12 +99,11 @@
 ;*---------------------------------------------------------------------*/
 (define (%gst-object-finalize-debug o)
    (when (> (bigloo-debug) (gst-debug-level))
-      (with-lock *gst-object-debug-mutex*
-	 (lambda ()
-	    (set! *gst-object-debug-count* (+fx -1 *gst-object-debug-count*))
-	    (display "gst-object-unref! (" (current-error-port))
-	    (display *gst-object-debug-count* (current-error-port))
-	    (display "): " (current-error-port))))
+      (synchronize *gst-object-debug-mutex*
+	 (set! *gst-object-debug-count* (+fx -1 *gst-object-debug-count*))
+	 (display "gst-object-unref! (" (current-error-port))
+	 (display *gst-object-debug-count* (current-error-port))
+	 (display "): " (current-error-port)))
       (display (find-runtime-type o) (current-error-port))
       (pragma "fprintf( stderr, \" o=%p builtin=%p refcount=%d -> %d\",
  $1, ((BgL_gstzd2objectzd2_bglt)$1)->BgL_z42builtinz42, ((GObject *)((BgL_gstzd2objectzd2_bglt)$1)->BgL_z42builtinz42)->ref_count, ((GObject *)((BgL_gstzd2objectzd2_bglt)$1)->BgL_z42builtinz42)->ref_count  -1 ), puts( \"\" )" o)
@@ -216,22 +214,18 @@
 ;*    closure-gcmark! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (closure-gcmark! proc)
-   (with-lock *gcmark-mutex*
-      (lambda ()
-	 (set! *gcmark-closure* (cons proc *gcmark-closure*))
-	 (when (> (bigloo-debug) (gst-debug-level))
-	    (with-lock *gst-object-debug-mutex*
-	       (lambda ()
-		  (tprint "closure-gcmark: " (length *gcmark-closure*))))))))
+   (synchronize *gcmark-mutex*
+      (set! *gcmark-closure* (cons proc *gcmark-closure*))
+      (when (> (bigloo-debug) (gst-debug-level))
+	 (synchronize *gst-object-debug-mutex*
+	    (tprint "closure-gcmark: " (length *gcmark-closure*))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    closure-gcunmark! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (closure-gcunmark! proc)
-   (with-lock *gcmark-mutex*
-      (lambda ()
-	 (set! *gcmark-closure* (remq! proc *gcmark-closure*))
-	 (when (> (bigloo-debug) (gst-debug-level))
-	    (with-lock *gst-object-debug-mutex*
-	       (lambda ()
-		  (tprint "closure-gcunmark: " (length *gcmark-closure*))))))))
+   (synchronize *gcmark-mutex*
+      (set! *gcmark-closure* (remq! proc *gcmark-closure*))
+      (when (> (bigloo-debug) (gst-debug-level))
+	 (synchronize *gst-object-debug-mutex*
+	    (tprint "closure-gcunmark: " (length *gcmark-closure*))))))

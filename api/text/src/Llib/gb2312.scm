@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep 29 13:56:53 2009                          */
-;*    Last change :  Wed Nov 14 18:59:29 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:09:20 2012 (serrano)                */
 ;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Guojia Biaozhun Chinese characters (aka cp936)                   */
@@ -31,19 +31,18 @@
 ;*    load-gb2312-tables! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (load-gb2312-tables!)
-   (with-lock gb2312-lock
-      (lambda ()
-	 (unless gb2312-table
-	    (let* ((name (make-file-path (bigloo-config 'library-directory)
-			    "text"
-			    "data"
-			    "gb2312.sch"))
-		   (p (open-input-file name)))
-	       (if (input-port? p)
-		   (unwind-protect
-		      (set! gb2312-table (read p))
-		      (close-input-port p))
-		   (error "gb2312" "file missing" name)))))))
+   (synchronize gb2312-lock
+      (unless gb2312-table
+	 (let* ((name (make-file-path (bigloo-config 'library-directory)
+			 "text"
+			 "data"
+			 "gb2312.sch"))
+		(p (open-input-file name)))
+	    (if (input-port? p)
+		(unwind-protect
+		   (set! gb2312-table (read p))
+		   (close-input-port p))
+		(error "gb2312" "file missing" name))))))
       
 ;*---------------------------------------------------------------------*/
 ;*    gb2312->ucs2 ...                                                 */

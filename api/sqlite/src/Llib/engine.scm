@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
-;*    Last change :  Wed Nov 14 18:58:25 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:11:09 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
@@ -43,25 +43,24 @@
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-create-table obj builtin table-name columns constraints)
    (with-access::$sqltiny builtin (mutex)
-      (with-lock mutex
-	 (lambda ()
-	    (when (sqltiny-get-table builtin table-name)
-	       (raise
-		  (instantiate::&error
-		     (proc "create-table")
-		     (msg (format "SQL error: table ~s already exists" table-name))
-		     (obj obj))))
-	    (let ((tbl (instantiate::$sqltiny-table
-			  (name table-name)
-			  (constraints constraints)))
-		  (cols (cons (instantiate::$sqltiny-column
-				 (name "rowid")
-				 (type 'INTEGER)
-				 (default -1))
-			   (list-copy (sort-columns columns)))))
-	       (table-set-columns! obj tbl cols columns)
-	       (with-access::$sqltiny builtin (tables)
-		  (set! tables (cons tbl tables))))))
+      (synchronize mutex
+	 (when (sqltiny-get-table builtin table-name)
+	    (raise
+	       (instantiate::&error
+		  (proc "create-table")
+		  (msg (format "SQL error: table ~s already exists" table-name))
+		  (obj obj))))
+	 (let ((tbl (instantiate::$sqltiny-table
+		       (name table-name)
+		       (constraints constraints)))
+	       (cols (cons (instantiate::$sqltiny-column
+			      (name "rowid")
+			      (type 'INTEGER)
+			      (default -1))
+			(list-copy (sort-columns columns)))))
+	    (table-set-columns! obj tbl cols columns)
+	    (with-access::$sqltiny builtin (tables)
+	       (set! tables (cons tbl tables)))))
       (sqltiny-insert obj builtin
 	 "sqlite_master"
 	 '("name" "type")
@@ -218,21 +217,20 @@
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-drop-table obj builtin table-name if-exists)
    (with-access::$sqltiny builtin (mutex)
-      (with-lock mutex
-	 (lambda ()
-	    (let ((tbl (sqltiny-get-table builtin table-name)))
-	       (if (not (isa? tbl $sqltiny-table))
-		   (unless if-exists
-		      (raise
-			 (instantiate::&error
-			    (proc "sqltiny-drop-table")
-			    (msg (format "SQL error: no such table: ~a" table-name))
-			    (obj obj))))
-		   (begin
-		      (with-access::$sqltiny builtin (tables sync)
-			 (set! tables (remq! tbl tables))
-			 (unless (eq? sync 'ondemand)
-			    (%sqltiny-flush obj builtin))))))))
+      (synchronize mutex
+	 (let ((tbl (sqltiny-get-table builtin table-name)))
+	    (if (not (isa? tbl $sqltiny-table))
+		(unless if-exists
+		   (raise
+		      (instantiate::&error
+			 (proc "sqltiny-drop-table")
+			 (msg (format "SQL error: no such table: ~a" table-name))
+			 (obj obj))))
+		(begin
+		   (with-access::$sqltiny builtin (tables sync)
+		      (set! tables (remq! tbl tables))
+		      (unless (eq? sync 'ondemand)
+			 (%sqltiny-flush obj builtin)))))))
       (sqltiny-delete obj builtin
 	 "sqlite_master"
 	 `(binary = ,table-name (colref "*" "name")))))
@@ -313,19 +311,18 @@
 		    (columns (cdr columns)))
 	    (cond
 	       ((null? cols)
-		(with-lock mutex
-		   (lambda ()
-		      (when (keycheck obj row rows replacep)
-			 (set! rowid (+fx 1 rowid))
-			 (vector-set! row 0 rowid)
-			 (let ((last (cons row '())))
-			    (if (pair? last-row-pair)
-				(set-cdr! last-row-pair last)
-				(set! rows last))
-			    (set! last-row-pair last)))
-		      (unless (eq? (with-access::$sqltiny builtin (sync) sync)
-				 'ondemand)
-			 (%sqltiny-flush obj builtin)))))
+		(synchronize mutex
+		   (when (keycheck obj row rows replacep)
+		      (set! rowid (+fx 1 rowid))
+		      (vector-set! row 0 rowid)
+		      (let ((last (cons row '())))
+			 (if (pair? last-row-pair)
+			     (set-cdr! last-row-pair last)
+			     (set! rows last))
+			 (set! last-row-pair last)))
+		   (unless (eq? (with-access::$sqltiny builtin (sync) sync)
+			      'ondemand)
+		      (%sqltiny-flush obj builtin))))
 	       ((null? columns)
 		(when (pair? cols)
 		   (raise
@@ -360,32 +357,30 @@
 ;*    Transaction are not implemented yet. No db lock is aquired yet.  */
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-begin-transaction! obj builtin)
-   (with-lock *sqltiny-mutex*
-      (lambda ()
-	 (with-access::$sqltiny builtin (transaction mutex)
-	    (if transaction
-		(raise
-		   (instantiate::&error
-		      (proc "sqltiny-begin-transaction!")
-		      (msg (format "SQL error: cannot start a transaction within a transaction"))
-		      (obj obj)))
-		(set! transaction #t)))))
+   (synchronize *sqltiny-mutex*
+      (with-access::$sqltiny builtin (transaction mutex)
+	 (if transaction
+	     (raise
+		(instantiate::&error
+		   (proc "sqltiny-begin-transaction!")
+		   (msg (format "SQL error: cannot start a transaction within a transaction"))
+		   (obj obj)))
+	     (set! transaction #t))))
    #f)
 		     
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-end-transaction! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-end-transaction! obj builtin)
-   (with-lock *sqltiny-mutex*
-      (lambda ()
-	 (with-access::$sqltiny builtin (transaction mutex)
-	    (if (not transaction)
-		(raise
-		   (instantiate::&error
-		      (proc "sqltiny-end-transaction!")
-		      (msg (format "SQL error: cannot commit - no transaction is active"))
-		      (obj obj)))
-		(set! transaction #f)))))
+   (synchronize *sqltiny-mutex*
+      (with-access::$sqltiny builtin (transaction mutex)
+	 (if (not transaction)
+	     (raise
+		(instantiate::&error
+		   (proc "sqltiny-end-transaction!")
+		   (msg (format "SQL error: cannot commit - no transaction is active"))
+		   (obj obj)))
+	     (set! transaction #f))))
    #f)
 
 ;*---------------------------------------------------------------------*/
@@ -419,9 +414,8 @@
 	 rows)
       (with-access::$sqltiny builtin (sync mutex)
 	 (unless (eq? sync 'ondemand)
-	    (with-lock-uw mutex
-	       (lambda ()
-		  (%sqltiny-flush obj builtin)))))
+	    (synchronize mutex
+	       (%sqltiny-flush obj builtin))))
       '()))
 
 ;*---------------------------------------------------------------------*/
@@ -992,45 +986,44 @@
 	 (glock (with-access::$sqltiny builtin (mutex) mutex)))
       (unless tbl
 	 (raise
-	  (instantiate::&error
-	     (proc "sqltiny-delete")
-	     (msg (format "SQL error: no such table: ~a" table-name))
-	     (obj obj))))
+	    (instantiate::&error
+	       (proc "sqltiny-delete")
+	       (msg (format "SQL error: no such table: ~a" table-name))
+	       (obj obj))))
       
       (let* ((env (list (cons table-name tbl)))
 	     (pred (compile-expr where-expr env obj builtin)))
-	 (with-lock glock
-	    (lambda ()
-	       (let* ((r (prod (map (lambda (b)
-				       (with-access::$sqltiny-table (cdr b) (rows)
-					  rows))
-				  env)))
-		      (rows (filter! pred r)))
-		  (with-access::$sqltiny-table tbl ((table-rows rows) last-row-pair)
-		     (let loop ((trows table-rows)
-				(drows rows)
-				(prev '()))
-			(cond
-			   ((pair? drows)
-			    (let ((rowid (vector-ref (caar drows) 0)))
-			       (if (=fx rowid (vector-ref (car trows) 0))
-				   (if (null? prev)
-				       (begin
-					  (set! table-rows (cdr trows))
-					  (loop (cdr trows) (cdr drows) '()))
-				       (begin
-					  (set-cdr! prev (cdr trows))
-					  (loop (cdr trows) (cdr drows) prev)))
-				   (loop (cdr trows)
-				      drows
-				      trows))))
-			   ((pair? prev)
-			    (when (null? (cdr prev)) (set! last-row-pair prev)))
-			   ((null? table-rows)
-			    (set! last-row-pair '()))
-			   (else
-			    (assert () (eq? last-row-pair
-					  (last-pair table-rows))))))))
+	 (synchronize glock
+	    (let* ((r (prod (map (lambda (b)
+				    (with-access::$sqltiny-table (cdr b) (rows)
+				       rows))
+			       env)))
+		   (rows (filter! pred r)))
+	       (with-access::$sqltiny-table tbl ((table-rows rows) last-row-pair)
+		  (let loop ((trows table-rows)
+			     (drows rows)
+			     (prev '()))
+		     (cond
+			((pair? drows)
+			 (let ((rowid (vector-ref (caar drows) 0)))
+			    (if (=fx rowid (vector-ref (car trows) 0))
+				(if (null? prev)
+				    (begin
+				       (set! table-rows (cdr trows))
+				       (loop (cdr trows) (cdr drows) '()))
+				    (begin
+				       (set-cdr! prev (cdr trows))
+				       (loop (cdr trows) (cdr drows) prev)))
+				(loop (cdr trows)
+				   drows
+				   trows))))
+			((pair? prev)
+			 (when (null? (cdr prev)) (set! last-row-pair prev)))
+			((null? table-rows)
+			 (set! last-row-pair '()))
+			(else
+			 (assert () (eq? last-row-pair
+				       (last-pair table-rows)))))))
 	       (with-access::$sqltiny builtin (sync)
 		  (unless (eq? sync 'ondemand)
 		     (%sqltiny-flush obj builtin)))))
@@ -1075,26 +1068,24 @@
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-vacuum obj builtin)
    (with-access::$sqltiny builtin (path mutex)
-      (with-lock mutex
-	 (lambda ()
-	    (%sqltiny-flush obj builtin)))))
+      (synchronize mutex
+	 (%sqltiny-flush obj builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-alter ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (sqltiny-alter obj builtin table-name proc)
    (with-access::$sqltiny builtin (mutex sync)
-      (with-lock mutex
-	 (lambda ()
-	    (let ((tbl (sqltiny-get-table builtin table-name)))
-	       (unless tbl
-		  (raise
-		     (instantiate::&error
-			(proc "create-table")
-			(msg (format "SQL error: no such table: ~s" table-name))
-			(obj obj))))
-	       (proc obj builtin tbl)
-	       (unless (eq? sync 'ondemand) (%sqltiny-flush obj builtin)))))))
+      (synchronize mutex
+	 (let ((tbl (sqltiny-get-table builtin table-name)))
+	    (unless tbl
+	       (raise
+		  (instantiate::&error
+		     (proc "create-table")
+		     (msg (format "SQL error: no such table: ~s" table-name))
+		     (obj obj))))
+	    (proc obj builtin tbl)
+	    (unless (eq? sync 'ondemand) (%sqltiny-flush obj builtin))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqltiny-add-column! ...                                          */

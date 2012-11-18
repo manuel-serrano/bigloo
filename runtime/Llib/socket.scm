@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sun Nov 18 14:56:19 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:10:25 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -228,13 +228,13 @@
 	    (inline datagram-socket-option-set! ::datagram-socket ::keyword ::obj)
 	    (datagram-socket-output-port::output-port ::datagram-socket))
    
-   (pragma  (c-socket? nesting)
-	    (c-socket-hostname nesting)
-	    (c-socket-hostip nesting)
-	    (c-socket-down? nesting)
-	    (c-socket-port-number nesting)
-	    (c-socket-input nesting)
-	    (c-socket-output nesting)))
+   (pragma  (c-socket? nesting fail-safe)
+	    (c-socket-hostname nesting fail-safe)
+	    (c-socket-hostip nesting fail-safe)
+	    (c-socket-down? nesting fail-safe)
+	    (c-socket-port-number nesting fail-safe)
+	    (c-socket-input nesting fail-safe)
+	    (c-socket-output nesting fail-safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *socket-initialized* ...                                         */

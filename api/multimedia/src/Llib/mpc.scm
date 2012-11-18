@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 16:23:00 2005                          */
-;*    Last change :  Fri Nov 16 08:00:51 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:04:55 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPC implementation                                               */
@@ -256,22 +256,20 @@
 (define-method (music-close mpc::mpc)
    ;; close the associated socket
    (with-access::mpc mpc (%socket %closed %mutex)
-      (let ((doclose (with-lock %mutex
-			(lambda ()
-			   (unless (music-closed? mpc)
-			      ;; mark that we are closed
-			      (set! %closed #t)
-			      #t)))))
+      (let ((doclose (synchronize %mutex
+			(unless (music-closed? mpc)
+			   ;; mark that we are closed
+			   (set! %closed #t)
+			   #t))))
 	 (when doclose
 	    (call-next-method)
-	    (with-lock %mutex
-	       (lambda ()
-		  (when (socket? %socket)
-		     ;; tell the the server that we are down
-		     (exec mpc "close")
-		     ;; close the socket
-		     (socket-close %socket)
-		     (set! %socket #f))))))))
+	    (synchronize %mutex
+	       (when (socket? %socket)
+		  ;; tell the the server that we are down
+		  (exec mpc "close")
+		  ;; close the socket
+		  (socket-close %socket)
+		  (set! %socket #f)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::mpc ...                                          */
@@ -285,11 +283,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-reset! mpc::mpc)
    (with-access::mpc mpc (%socket %mutex)
-      (with-lock %mutex
-	 (lambda ()
-	    (when (socket? %socket)
-	       (socket-close %socket)
-	       (set! %socket #f))))))
+      (synchronize %mutex
+	 (when (socket? %socket)
+	    (socket-close %socket)
+	    (set! %socket #f)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-get ::mpc ...                                     */
@@ -332,13 +329,12 @@
 		      (loop (cons l ser))))))))
 
    (with-access::mpc mpc (%mutex %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (with-handler
-	       (lambda (e)
-		  (set-error! mpc %status e)
-		  '())
-	       (mpc-cmd mpc "playlist" playlist-parser))))))
+      (synchronize %mutex
+	 (with-handler
+	    (lambda (e)
+	       (set-error! mpc %status e)
+	       '())
+	    (mpc-cmd mpc "playlist" playlist-parser)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-add! ::mpc ...                                    */

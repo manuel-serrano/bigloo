@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 15 15:05:11 2007                          */
-;*    Last change :  Wed Nov 14 19:01:01 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:09:58 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WebDAV client side support.                                      */
@@ -72,28 +72,26 @@
 ;*    cache-get ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (cache-get host port)
-   (with-lock-uw cache-mutex
-      (lambda ()
-	 (if (and (socket? cache-socket)
-		  (not (socket-down? cache-socket))
-		  (=fx cache-port port)
-		  (string=? cache-host host))
-	     (let ((socket cache-socket))
-		(set! cache-socket #f)
-		socket)
-	     #f))))
+   (synchronize cache-mutex
+      (if (and (socket? cache-socket)
+	       (not (socket-down? cache-socket))
+	       (=fx cache-port port)
+	       (string=? cache-host host))
+	  (let ((socket cache-socket))
+	     (set! cache-socket #f)
+	     socket)
+	  #f)))
        
 ;*---------------------------------------------------------------------*/
 ;*    cache-offer ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (cache-offer host port socket)
-   (with-lock-uw cache-mutex
-      (lambda ()
-	 (when (socket? cache-socket)
-	    (socket-close cache-socket))
-	 (set! cache-host host)
-	 (set! cache-port port)
-	 (set! cache-socket socket))))
+   (synchronize cache-mutex
+      (when (socket? cache-socket)
+	 (socket-close cache-socket))
+      (set! cache-host host)
+      (set! cache-port port)
+      (set! cache-socket socket)))
 
 ;*---------------------------------------------------------------------*/
 ;*    webdav-propfind ...                                              */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 13 10:40:52 2006                          */
-;*    Last change :  Wed Feb 14 15:04:51 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Last change :  Sun Nov 18 15:07:59 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Pkglib misc                                                      */
 ;*=====================================================================*/
@@ -42,10 +42,9 @@
 ;*---------------------------------------------------------------------*/
 (define (pkglib-verb level . args)
    (when (>=fx (pkglib-verbose) level)
-      (with-lock *verb-mutex*
-	 (lambda ()
-	    (for-each display args)
-	    (flush-output-port (current-output-port))))))
+      (synchronize *verb-mutex*
+	 (for-each display args)
+	 (flush-output-port (current-output-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pkglib-color ...                                                 */

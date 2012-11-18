@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Nov 16 12:02:20 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:59:50 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -271,8 +271,8 @@
 	       (when (>=fx (flac-debug) 2)
 		  (debug "--> FLAC_DECODER, broadcast not-full "
 		     url " " p "%" " " (current-microseconds) "..."))
-	       (with-lock-uw %bmutex
-		  (lambda () (condition-variable-broadcast! %bcondv)))
+	       (synchronize %bmutex
+		  (condition-variable-broadcast! %bcondv))
 	       (when (>=fx (flac-debug) 2)
 		  (debug (current-microseconds) "\n")))
 	    
@@ -326,12 +326,11 @@
 		      (with-access::musicstatus %status (songpos)
 			 (set! songpos
 			    (alsadecoder-position %decoder %buffer))))
-		   (with-lock-uw %dmutex
-		      (lambda ()
-			 (let liip ()
-			    (when %!dpause
-			       (condition-variable-wait! %dcondv %dmutex)
-			       (liip)))))
+		   (synchronize %dmutex
+		      (let liip ()
+			 (when %!dpause
+			    (condition-variable-wait! %dcondv %dmutex)
+			    (liip))))
 		   (onstate am 'play)
 		   (loop size i))
 		  (%!dabort
@@ -353,14 +352,13 @@
 				(set! buffering
 				   (buffer-percentage-filled))))
 			  (onstate am 'buffering)
-			  (with-lock-uw %bmutex
+			  (synchronize %bmutex
 			     ;; wait until the buffer is filled
-			     (lambda ()
-				(unless (or (not %empty)
-					    %eof
-					    %!dabort
-					    (buffer-filled?))
-				   (condition-variable-wait! %bcondv %bmutex))))
+			     (unless (or (not %empty)
+					 %eof
+					 %!dabort
+					 (buffer-filled?))
+				(condition-variable-wait! %bcondv %bmutex)))
 			  (when (>=fx (flac-debug) 1)
 			     (debug (current-microseconds) "\n"))
 			  (onstate am 'play)

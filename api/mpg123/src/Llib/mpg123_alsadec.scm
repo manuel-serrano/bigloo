@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Fri Nov 16 12:03:33 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:04:26 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -183,9 +183,8 @@
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug "--> MPG123_DECODER, broadcast not-full "
 			url " " (current-microseconds) "..."))
-		  (with-lock-uw %bmutex
-		     (lambda ()
-			(condition-variable-broadcast! %bcondv)))
+		  (synchronize %bmutex
+		     (condition-variable-broadcast! %bcondv))
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug (current-microseconds) "\n"))))
 
@@ -204,12 +203,11 @@
 		   (with-access::musicstatus %status (songpos)
 		      (set! songpos (alsadecoder-position dec buffer)))
 		   (onstate am 'pause)
-		   (with-lock-uw %dmutex
-		      (lambda ()
-			 (let liip ()
-			    (when %!dpause
-			       (condition-variable-wait! %dcondv %dmutex)
-			       (liip)))))
+		   (synchronize %dmutex
+		      (let liip ()
+			 (when %!dpause
+			    (condition-variable-wait! %dcondv %dmutex)
+			    (liip))))
 		   (onstate am 'play)
 		   (loop))
 		  (%!dabort
@@ -231,14 +229,13 @@
 				(set! buffering
 				   (buffer-percentage-filled))))
 			  (onstate am 'buffering)
-			  (with-lock-uw %bmutex
-			     (lambda ()
-				;; wait until the buffer is filled
-				(unless (or (not %empty)
-					    %eof
-					    %!dabort
-					    (buffer-filled?))
-				   (condition-variable-wait! %bcondv %bmutex))))
+			  (synchronize %bmutex
+			     ;; wait until the buffer is filled
+			     (unless (or (not %empty)
+					 %eof
+					 %!dabort
+					 (buffer-filled?))
+				(condition-variable-wait! %bcondv %bmutex)))
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug (current-microseconds) "\n"))
 			  (onstate am 'play)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Wed Nov 14 18:52:17 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:07:42 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of PHIDGET applications.                        */
@@ -38,14 +38,13 @@
 ;*    phidget-init! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (phidget-init!)
-   (with-lock phidget-lock
-      (lambda ()
-	 (unless phidget-initializedp
-	    (set! phidget-initializedp #t)
-	    (bigloo-configuration-add-entry!
-	       'phidget-version $configure-phidget-version)
-	    ($pdg-init!)
-	    (%phidget-thread-init!)))))
+   (synchronize phidget-lock
+      (unless phidget-initializedp
+	 (set! phidget-initializedp #t)
+	 (bigloo-configuration-add-entry!
+	    'phidget-version $configure-phidget-version)
+	 ($pdg-init!)
+	 (%phidget-thread-init!))))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-version ...                                              */

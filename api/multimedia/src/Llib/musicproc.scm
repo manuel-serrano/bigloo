@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Fri Nov 16 07:58:27 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 15:06:37 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MUSICPROC abstract class for "external" music players        */
@@ -66,25 +66,23 @@
    (with-access::musicproc o (%process %pmutex %pcondv %inexec)
       (if (not wait)
 	  (exec o)
-	  (unless (with-lock-uw %pmutex
-		     (lambda ()
-			(if %inexec
-			    (begin
-			       (exec o)
-			       (let loop ()
-				  (when %inexec
-				     (condition-variable-wait! %pcondv %pmutex)
-				     (loop)))
-			       #t)
-			    (begin
-			       (set! %inexec #t)
-			       (exec o)
-			       #f))))
+	  (unless (synchronize %pmutex
+		     (if %inexec
+			 (begin
+			    (exec o)
+			    (let loop ()
+			       (when %inexec
+				  (condition-variable-wait! %pcondv %pmutex)
+				  (loop)))
+			    #t)
+			 (begin
+			    (set! %inexec #t)
+			    (exec o)
+			    #f)))
 	     (parse)
-	     (with-lock-uw %pmutex
-		(lambda ()
-		   (set! %inexec #f)
-		   (condition-variable-broadcast! %pcondv)))))))
+	     (synchronize %pmutex
+		(set! %inexec #f)
+		(condition-variable-broadcast! %pcondv))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-start ...                                              */
@@ -113,15 +111,14 @@
 (define-method (music-close o::musicproc)
    (with-access::musicproc o (%mutex %process)
       ;; abort the event loop
-      (with-lock %mutex
-	 (lambda ()
-	    (when %process
-	       ;; quit the process
-	       (musicproc-exec o #f "quit")
-	       ;; kill the process
-	       (when (and (process? %process) (process-alive? %process))
-		  (process-kill %process))
-	       (set! %process #f))))))
+      (synchronize %mutex
+	 (when %process
+	    ;; quit the process
+	    (musicproc-exec o #f "quit")
+	    ;; kill the process
+	    (when (and (process? %process) (process-alive? %process))
+	       (process-kill %process))
+	    (set! %process #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::musicproc ...                                    */
@@ -149,38 +146,35 @@
 (define-method (music-playlist-add! o::musicproc s)
    (call-next-method)
    (with-access::musicproc o (%mutex %playlist %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (set! %playlist (append! %playlist (list s)))
-	    (with-access::musicstatus %status (playlistid playlistlength)
-	       (set! playlistid (+fx 1 playlistid))
-	       (set! playlistlength (+fx 1 playlistlength)))))))
+      (synchronize %mutex
+	 (set! %playlist (append! %playlist (list s)))
+	 (with-access::musicstatus %status (playlistid playlistlength)
+	    (set! playlistid (+fx 1 playlistid))
+	    (set! playlistlength (+fx 1 playlistlength))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-delete! ::musicproc ...                           */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-delete! o::musicproc n)
    (with-access::musicproc o (%mutex %playlist %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (with-access::musicstatus %status (playlistid playlistlength)
-	       (when (and (>=fx n 0) (<fx n playlistlength))
-		  (set! %playlist (remq! (list-ref %playlist n) %playlist))
-		  (set! playlistid (+fx 1 playlistid))
-		  (set! playlistlength (length %playlist))))))))
+      (synchronize %mutex
+	 (with-access::musicstatus %status (playlistid playlistlength)
+	    (when (and (>=fx n 0) (<fx n playlistlength))
+	       (set! %playlist (remq! (list-ref %playlist n) %playlist))
+	       (set! playlistid (+fx 1 playlistid))
+	       (set! playlistlength (length %playlist)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-clear! ::musicproc ...                            */
 ;*---------------------------------------------------------------------*/
 (define-method (music-playlist-clear! o::musicproc)
    (with-access::musicproc o (%mutex %playlist %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (set! %playlist '())
-	    (with-access::musicstatus %status (playlistlength song songid)
-	       (set! song 0)
-	       (set! songid 0)
-	       (set! playlistlength 0))))))
+      (synchronize %mutex
+	 (set! %playlist '())
+	 (with-access::musicstatus %status (playlistlength song songid)
+	    (set! song 0)
+	    (set! songid 0)
+	    (set! playlistlength 0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-loadpaused ::musicproc ...                             */
@@ -250,23 +244,22 @@
    (with-access::musicproc o (%mutex %process %user-state %status
 				%command-pause %command-stop)
       (with-access::musicstatus %status (song playlistlength)
-	 (with-lock %mutex
-	    (lambda ()
-	       (cond
-		  ((pair? s)
-		   (unless (integer? (car s))
-		      (bigloo-type-error '|music-play ::musicproc| 'int (car s)))
-		   (set! %user-state 'play)
-		   (musicproc-connect! o)
-		   (playlist-load! o (car s)))
-		  ((eq? %user-state 'pause)
-		   (musicproc-connect! o)
-		   (musicproc-exec o #f %command-pause)
-		   (set! %user-state 'play))
-		  ((and (>=fx song 0) (<fx song playlistlength))
-		   (set! %user-state 'play)
-		   (musicproc-connect! o)
-		   (playlist-load! o song))))))))
+	 (synchronize %mutex
+	    (cond
+	       ((pair? s)
+		(unless (integer? (car s))
+		   (bigloo-type-error '|music-play ::musicproc| 'int (car s)))
+		(set! %user-state 'play)
+		(musicproc-connect! o)
+		(playlist-load! o (car s)))
+	       ((eq? %user-state 'pause)
+		(musicproc-connect! o)
+		(musicproc-exec o #f %command-pause)
+		(set! %user-state 'play))
+	       ((and (>=fx song 0) (<fx song playlistlength))
+		(set! %user-state 'play)
+		(musicproc-connect! o)
+		(playlist-load! o song)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-seek ::musicproc ...                                       */
@@ -277,42 +270,39 @@
       (playlist-load-inner! o i musicproc-loadpaused))
    
    (with-access::musicproc o (%mutex %process %command-seek-format %command-pause %user-state)
-      (with-lock %mutex
-	 (lambda ()
-	    (musicproc-connect! o)
-	    (if (pair? s)
-		(if (not (integer? (car s)))
-		    (bigloo-type-error '|music-seek ::musicproc| 'int (car s))
-		    (begin
-		       (playlist-load-paused! o (car s))
-		       (musicproc-exec o #f (format %command-seek-format pos))
-		       (musicproc-exec o #f %command-pause)))
-		(musicproc-exec o #f (format %command-seek-format pos)))
-	    (set! %user-state 'play)))))
+      (synchronize %mutex
+	 (musicproc-connect! o)
+	 (if (pair? s)
+	     (if (not (integer? (car s)))
+		 (bigloo-type-error '|music-seek ::musicproc| 'int (car s))
+		 (begin
+		    (playlist-load-paused! o (car s))
+		    (musicproc-exec o #f (format %command-seek-format pos))
+		    (musicproc-exec o #f %command-pause)))
+	     (musicproc-exec o #f (format %command-seek-format pos)))
+	 (set! %user-state 'play))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-stop ::musicproc ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::musicproc)
    (with-access::musicproc o (%mutex %process %command-stop %user-state)
-      (with-lock %mutex
-	 (lambda ()
-	    (musicproc-connect! o)
-	    (musicproc-exec o #t %command-stop)
-	    (set! %user-state 'stop)))))
+      (synchronize %mutex
+	 (musicproc-connect! o)
+	 (musicproc-exec o #t %command-stop)
+	 (set! %user-state 'stop))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-pause ::musicproc ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (music-pause o::musicproc)
    (with-access::musicproc o (%mutex %process %command-pause %user-state)
-      (with-lock %mutex
-	 (lambda ()
-	    (if (eq? %user-state 'pause)
-		(set! %user-state 'play)
-		(set! %user-state 'pause))
-	    (musicproc-connect! o)
-	    (musicproc-exec o #f %command-pause)))))
+      (synchronize %mutex
+	 (if (eq? %user-state 'pause)
+	     (set! %user-state 'play)
+	     (set! %user-state 'pause))
+	 (musicproc-connect! o)
+	 (musicproc-exec o #f %command-pause))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-next ::musicproc ...                                       */
@@ -320,13 +310,12 @@
 (define-method (music-next o::musicproc)
    (with-access::musicproc o (%mutex %process %command-stop %user-state %status)
       (with-access::musicstatus %status (song playlistlength)
-	 (with-lock %mutex
-	    (lambda ()
-	       (unless (>=fx song (-fx playlistlength 1))
-		  (musicproc-connect! o)
-		  (musicproc-exec o #t %command-stop)
-		  (set! %user-state 'play)
-		  (playlist-load! o (+fx 1 song))))))))
+	 (synchronize %mutex
+	    (unless (>=fx song (-fx playlistlength 1))
+	       (musicproc-connect! o)
+	       (musicproc-exec o #t %command-stop)
+	       (set! %user-state 'play)
+	       (playlist-load! o (+fx 1 song)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-prev ::musicproc ...                                       */
@@ -334,13 +323,12 @@
 (define-method (music-prev o::musicproc)
    (with-access::musicproc o (%mutex %process %command-stop %user-state %status)
       (with-access::musicstatus %status (song playlistlength)
-	 (with-lock %mutex
-	    (lambda ()
-	       (unless (or (<=fx song 0) (=fx playlistlength 0))
-		  (musicproc-connect! o)
-		  (musicproc-exec o #t %command-stop)
-		  (set! %user-state 'play)
-		  (playlist-load! o (-fx song 1))))))))
+	 (synchronize %mutex
+	    (unless (or (<=fx song 0) (=fx playlistlength 0))
+	       (musicproc-connect! o)
+	       (musicproc-exec o #t %command-stop)
+	       (set! %user-state 'play)
+	       (playlist-load! o (-fx song 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-crossfade ::musicproc ...                                  */
@@ -370,21 +358,19 @@
 (define-method (music-song o::musicproc)
    (with-access::musicproc o (%mutex %playlist %status)
       (with-access::musicstatus %status (song)
-	 (with-lock %mutex
-	    (lambda ()
-	       (if (pair? %playlist)
-		   song
-		   0))))))
+	 (synchronize %mutex
+	    (if (pair? %playlist)
+		song
+		0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-songpos ::musicproc ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (music-songpos o::musicproc)
    (with-access::musicproc o (%mutex %status)
-      (with-lock %mutex
-	 (lambda ()
-	    (with-access::musicstatus %status (songpos)
-	       songpos)))))
+      (synchronize %mutex
+	 (with-access::musicstatus %status (songpos)
+	    songpos))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-volume-get ::musicproc ...                                 */
@@ -399,12 +385,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! o::musicproc v)
    (with-access::musicproc o (%mutex %status %process %command-volume onvolume)
-      (with-lock %mutex
-	 (lambda ()
-	    (musicproc-connect! o)
-	    (musicproc-exec o #f %command-volume v)
-	    (with-access::musicstatus %status (volume)
-	       (set! volume v))))
+      (synchronize %mutex
+	 (musicproc-connect! o)
+	 (musicproc-exec o #f %command-volume v)
+	 (with-access::musicstatus %status (volume)
+	    (set! volume v)))
       (onvolume o v)
       v))
 
