@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 17:24:01 2002                          */
-;*    Last change :  Sat Oct 13 07:35:13 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:00:36 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Dorai Sitaram, Manuel Serrano             */
 ;*    -------------------------------------------------------------    */
 ;*    The implementation of R5Rs macros.                               */
@@ -66,7 +66,7 @@
 ;*---------------------------------------------------------------------*/
 (define (get-syntax-expander f)
    (let* ((id (hygiene-value f))
-	  (c (with-lock syntax-mutex (lambda () (assq id syntaxes)))))
+	  (c (synchronize syntax-mutex (assq id syntaxes))))
       (when (pair? c)
 	 (cdr c))))
 
@@ -74,9 +74,8 @@
 ;*    install-syntax-expander ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (install-syntax-expander keyword expander)
-   (with-lock syntax-mutex
-      (lambda ()
-	 (set! syntaxes (cons (cons keyword expander) syntaxes)))))
+   (synchronize syntax-mutex
+      (set! syntaxes (cons (cons keyword expander) syntaxes))))
 
 ;*---------------------------------------------------------------------*/
 ;*    init-syntax-expanders ...                                        */
@@ -85,132 +84,131 @@
    
    (define (define-syntax-expander id literals rules)
       (install-syntax-expander id (syntax-rules->expander id literals rules)))
-
-   (with-lock syntax-expanders-mutex
-      (lambda ()
-	 (unless syntaxes
-	    (set! syntaxes '())
-	    ;; quote
-	    (install-syntax-expander 'quote (lambda (x e) x))
-	    ;; cond
-	    (define-syntax-expander
-	       'cond '(else =>)
-	       '(((cond (else result1 result2 ...))
-		  (begin result1 result2 ...))
-		 ((cond (test => result))
-		  (let ((temp test))
-		     (if temp (result temp))))
-		 ((cond (test => result) clause1 clause2 ...)
-		  (let ((temp test))
-		     (if temp
-			 (result temp)
-			 (cond clause1 clause2 ...))))
-		 ((cond (test)) test)
-		 ((cond (test) clause1 clause2 ...)
-		  (let ((temp test))
-		     (if temp
-			 temp
-			 (cond clause1 clause2 ...))))
-		 ((cond (test result1 result2 ...))
-		  (if test (begin result1 result2 ...)))
-		 ((cond (test result1 result2 ...)
-			clause1 clause2 ...)
-		  (if test
-		      (begin result1 result2 ...)
-		      (cond clause1 clause2 ...)))))
-	    ;; case
-	    (define-syntax-expander
-	       'case '(else)
-	       '(((case (key ...)
-		     clauses ...)
-		  (let ((atom-key (key ...)))
-		     (case atom-key clauses ...)))
-		 ((case key
-		     (else result1 result2 ...))
-		  (begin result1 result2 ...))
-		 ((case key
-		     ((atoms ...) result1 result2 ...))
-		  (if (memv key '(atoms ...))
-		      (begin result1 result2 ...)))
-		 ((case key
-		     ((atoms ...) result1 result2 ...)
-		     clause clauses ...)
-		  (if (memv key '(atoms ...))
-		      (begin result1 result2 ...)
-		      (case key clause clauses ...)))))
-	    ;; let
-	    (define-syntax-expander
-	       'let '()
-	       '(((let ((name val) ...) body1 body2 ...)
-		  ((lambda (name ...) body1 body2 ...)
-		   val ...))
-		 ((let tag ((name val) ...) body1 body2 ...)
-		  ((letrec ((tag (lambda (name ...)
-				    body1 body2 ...)))
-		      tag)
-		   val ...))))
-	    ;; let*
-	    (define-syntax-expander
-	       'let* '()
-	       '(((let* () body1 body2 ...)
-		  (let () body1 body2 ...))
-		 ((let* ((name1 val1) (name2 val2) ...)
-		     body1 body2 ...)
-		  (let ((name1 val1))
-		     (let* ((name2 val2) ...)
-			body1 body2 ...)))))
-	    ;; letrec
-	    (define-syntax-expander
-	       'letrec '()
-	       '(((letrec ((var1 init1) ...) body ...)
-		  (letrec "generate temp names"
-		     (var1 ...)
-		     ()
-		     ((var1 init1) ...)
-		     body ...))
-		 ((letrec "generate temp names"
-		     ()
-		     (temp1 ...)
-		     ((var1 init1) ...)
-		     body ...)
-		  (let ((var1 #unspecified) ...)
-		     (let ((temp1 init1) ...)
-			(set! var1 temp1)
-			...
-			body ...)))
-		 ((letrec "generate temp names"
-		     (x y ...)
-		     (temp ...)
-		     ((var1 init1) ...)
-		     body ...)
-		  (letrec "generate temp names"
-		     (y ...)
-		     (newtemp temp ...)
-		     ((var1 init1) ...)
-		     body ...))))
-	    ;; do
-	    (define-syntax-expander
-	       'do '()
-	       '(((do ((var init step ...) ...)
-		      (test expr ...)
-		      command ...)
-		  (letrec
-			((loop
-			  (lambda (var ...)
-			     (if test
-				 (begin
-				    (if #f #f)
-				    expr ...)
-				 (begin
-				    command
-				    ...
-				    (loop (do "step" var step ...)
-					  ...))))))
-		     (loop init ...)))
-		 ((do "step" x)
-		  x)
-		 ((do "step" x y)
-		  y)))))))
+   
+   (synchronize syntax-expanders-mutex
+      (unless syntaxes
+	 (set! syntaxes '())
+	 ;; quote
+	 (install-syntax-expander 'quote (lambda (x e) x))
+	 ;; cond
+	 (define-syntax-expander
+	    'cond '(else =>)
+	    '(((cond (else result1 result2 ...))
+	       (begin result1 result2 ...))
+	      ((cond (test => result))
+	       (let ((temp test))
+		  (if temp (result temp))))
+	      ((cond (test => result) clause1 clause2 ...)
+	       (let ((temp test))
+		  (if temp
+		      (result temp)
+		      (cond clause1 clause2 ...))))
+	      ((cond (test)) test)
+	      ((cond (test) clause1 clause2 ...)
+	       (let ((temp test))
+		  (if temp
+		      temp
+		      (cond clause1 clause2 ...))))
+	      ((cond (test result1 result2 ...))
+	       (if test (begin result1 result2 ...)))
+	      ((cond (test result1 result2 ...)
+		     clause1 clause2 ...)
+	       (if test
+		   (begin result1 result2 ...)
+		   (cond clause1 clause2 ...)))))
+	 ;; case
+	 (define-syntax-expander
+	    'case '(else)
+	    '(((case (key ...)
+		  clauses ...)
+	       (let ((atom-key (key ...)))
+		  (case atom-key clauses ...)))
+	      ((case key
+		  (else result1 result2 ...))
+	       (begin result1 result2 ...))
+	      ((case key
+		  ((atoms ...) result1 result2 ...))
+	       (if (memv key '(atoms ...))
+		   (begin result1 result2 ...)))
+	      ((case key
+		  ((atoms ...) result1 result2 ...)
+		  clause clauses ...)
+	       (if (memv key '(atoms ...))
+		   (begin result1 result2 ...)
+		   (case key clause clauses ...)))))
+	 ;; let
+	 (define-syntax-expander
+	    'let '()
+	    '(((let ((name val) ...) body1 body2 ...)
+	       ((lambda (name ...) body1 body2 ...)
+		val ...))
+	      ((let tag ((name val) ...) body1 body2 ...)
+	       ((letrec ((tag (lambda (name ...)
+				 body1 body2 ...)))
+		   tag)
+		val ...))))
+	 ;; let*
+	 (define-syntax-expander
+	    'let* '()
+	    '(((let* () body1 body2 ...)
+	       (let () body1 body2 ...))
+	      ((let* ((name1 val1) (name2 val2) ...)
+		  body1 body2 ...)
+	       (let ((name1 val1))
+		  (let* ((name2 val2) ...)
+		     body1 body2 ...)))))
+	 ;; letrec
+	 (define-syntax-expander
+	    'letrec '()
+	    '(((letrec ((var1 init1) ...) body ...)
+	       (letrec "generate temp names"
+		  (var1 ...)
+		  ()
+		  ((var1 init1) ...)
+		  body ...))
+	      ((letrec "generate temp names"
+		  ()
+		  (temp1 ...)
+		  ((var1 init1) ...)
+		  body ...)
+	       (let ((var1 #unspecified) ...)
+		  (let ((temp1 init1) ...)
+		     (set! var1 temp1)
+		     ...
+		     body ...)))
+	      ((letrec "generate temp names"
+		  (x y ...)
+		  (temp ...)
+		  ((var1 init1) ...)
+		  body ...)
+	       (letrec "generate temp names"
+		  (y ...)
+		  (newtemp temp ...)
+		  ((var1 init1) ...)
+		  body ...))))
+	 ;; do
+	 (define-syntax-expander
+	    'do '()
+	    '(((do ((var init step ...) ...)
+		   (test expr ...)
+		   command ...)
+	       (letrec
+		     ((loop
+			 (lambda (var ...)
+			    (if test
+				(begin
+				   (if #f #f)
+				   expr ...)
+				(begin
+				   command
+				   ...
+				   (loop (do "step" var step ...)
+				      ...))))))
+		  (loop init ...)))
+	      ((do "step" x)
+	       x)
+	      ((do "step" x y)
+	       y))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    syntax-expand ...                                                */

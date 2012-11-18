@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Thu Nov 15 07:55:30 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 13:57:36 2012 (serrano)                */
 ;*    Copyright   :  2009-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
@@ -91,11 +91,10 @@
    %bigloo-module-resolver)
 
 (define (bigloo-module-resolver-set! resolve)
-   (with-lock modules-mutex
-      (lambda ()
-	 (if (and (procedure? resolve) (correct-arity? resolve 2))
-	     (set! %bigloo-module-resolver resolve)
-	     (error 'bigloo-module-resolver-set! "Illegal resolver" resolve)))))
+   (synchronize modules-mutex
+      (if (and (procedure? resolve) (correct-arity? resolve 2))
+	  (set! %bigloo-module-resolver resolve)
+	  (error 'bigloo-module-resolver-set! "Illegal resolver" resolve))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-default-resolver ...                                      */
@@ -104,23 +103,22 @@
 ;*    then try a filename whose name matches the module name.          */
 ;*---------------------------------------------------------------------*/
 (define (module-default-resolver mod::symbol abase)
-   (with-lock modules-mutex
-      (lambda ()
-	 (cond
-	    ((null? abase)
-	     (resolve-abase mod "."))
-	    ((string? abase)
-	     (resolve-abase mod abase))
-	    ((pair? abase)
-	     (let loop ((abase abase))
-		(if (pair? abase)
-		    (let ((resolve (resolve-abase mod (car abase))))
-		       (if (pair? resolve)
-			   resolve
-			   (loop (cdr abase))))
-		    '())))
-	    (else
-	     (resolve-abase* mod))))))
+   (synchronize modules-mutex
+      (cond
+	 ((null? abase)
+	  (resolve-abase mod "."))
+	 ((string? abase)
+	  (resolve-abase mod abase))
+	 ((pair? abase)
+	  (let loop ((abase abase))
+	     (if (pair? abase)
+		 (let ((resolve (resolve-abase mod (car abase))))
+		    (if (pair? resolve)
+			resolve
+			(loop (cdr abase))))
+		 '())))
+	 (else
+	  (resolve-abase* mod)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    resolve-abase* ...                                               */
