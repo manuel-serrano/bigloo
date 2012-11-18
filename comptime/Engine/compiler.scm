@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Nov 17 08:53:17 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 08:42:42 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -56,7 +56,6 @@
 	    beta_walk
 	    inline_walk
 	    effect_walk
-	    sync_walk
 	    callcc_walk
 	    fail_walk
 	    abound_walk
@@ -414,12 +413,6 @@
 	    (check-sharing "reduce" ast)
 	    (check-type "reduce" ast #t #t)
 
-	    ;; the synchronize expansion
-	    (set! ast (profile sync (sync-walk! ast)))
-	    (stop-on-pass 'sync (lambda () (write-ast ast)))
-	    (check-sharing "sync" ast)
-	    (check-type "sync" ast #f #f)
-	    
 	    ;; the bdb initialization code
 	    (when (and (>fx *bdb-debug* 0)
 		       (memq 'bdb (backend-debug-support (the-backend))))

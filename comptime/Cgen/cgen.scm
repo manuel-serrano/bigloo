@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Mon Oct 15 08:13:20 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 08:42:48 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -27,6 +27,10 @@
 	    ast_var
 	    ast_node
 	    ast_local
+	    ast_sexp
+	    ast_app
+	    ast_dump
+	    sync_node
 	    effect_effect
 	    cgen_cop
 	    cgen_emit-cop
@@ -297,6 +301,12 @@
 			   (loop (cdr exp)
 				 (cons (node->cop (car exp) *stop-kont*)
 				       new)))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node->cop ::sync ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::sync kont)
+   (node->cop (sync->sequence node) kont))
 
 ;*---------------------------------------------------------------------*/
 ;*    extern->cop ...                                                  */

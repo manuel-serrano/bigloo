@@ -6,6 +6,7 @@
 	   ast_var	;; local/global
 	   ast_node	;; node
 	   ast_env
+	   sync_node
 	   type_env
 	   tools_shape
 	   saw_defs
@@ -241,6 +242,10 @@
 (define-method (node->rtl::area e::sequence) ; ()
    (with-access::sequence e (nodes)
       (link* (map (lambda (e) (node->rtl e)) nodes)) ))
+
+;;
+(define-method (node->rtl::area e::sync) ; ()
+   (node->rtl (sync->sequence e)) )
 
 ;;
 (define-method (node->rtl::area e::conditional) ; ()

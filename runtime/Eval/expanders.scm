@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Fri Nov 16 15:33:59 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 08:22:55 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -141,6 +141,9 @@
    ;; quasiquote
    (install-expander 'quasiquote (lambda (x e) (e (quasiquotation 1 x) e)))
    
+   ;; module
+   (install-expander 'module (lambda (x e) x))
+   
    ;; define-macro  
    (install-expander 'define-macro (lambda (x e)
 				      (expand-define-macro x e)))
@@ -262,10 +265,11 @@
    (install-compiler-expander 'when-trace (make-expand-when-trace 'compiler))
    (install-compiler-expander 'with-trace (make-expand-with-trace 'compiler))
    (install-compiler-expander 'trace-item (make-expand-trace-item 'compiler))
-   
-   (let ((expd (make-synchronize-expander '$mutex-lock '$mutex-unlock)))
-      (install-compiler-expander 'synchronize expd)
-      (install-compiler-expander 'synchronize-unsafe expd))
+
+   (unless (getenv "BGLSYNC")
+      (let ((expd (make-synchronize-expander '$mutex-lock '$mutex-unlock)))
+	 (install-compiler-expander 'synchronize expd)
+	 (install-compiler-expander 'synchronize-unsafe expd)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Interpreter macros                                               */
@@ -328,9 +332,6 @@
 				 (expand-error "multiple-value-bind"
 					       "Illegal form"
 					       x)))))
-   ;; module
-   (install-eval-expander 'module (lambda (x e) x))
-   
    ;; if
    (install-eval-expander 'if expand-if)
    
@@ -539,6 +540,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-synchronize-expander mutex-lock mutex-unlock)
    (lambda (x e)
+      (tprint "EXPAND synchronize")
       (match-case x
 	 ((synchronize (and (? symbol?) ?var) . ?body)
 	  (let* ((tmp (gensym 'tmp))

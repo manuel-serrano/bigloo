@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Thu Mar 22 09:25:19 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 08:25:24 2012 (serrano)                */
 ;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
@@ -248,9 +248,11 @@
 		       ((get-compiler-expander id)
 			=>
 			(lambda (x) x))
-		       ((get-eval-expander id)
-			=>
-			(lambda (x) x))
+;* 		       ((get-eval-expander id)                         */
+;* 			=>                                             */
+;* 			(lambda (x)                                    */
+;* 			   (tprint "EVAL MAC: " id)                    */
+;* 			   x))                                         */
 		       (else
 			application-expander))))
                 (else

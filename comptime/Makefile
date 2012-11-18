@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Nov 16 16:49:46 2012 (serrano)                */
+#*    Last change :  Sun Nov 18 08:55:49 2012 (serrano)                */
 #*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -289,7 +289,7 @@ EFFECT_FILE	= effect walk cgraph spread feffect
 EFFECT_OBJ	= $(EFFECT_FILE:%=Effect/%.o)
 
 #*--- sync ------------------------------------------------------------*/
-SYNC_FILE	= walk
+SYNC_FILE	= node failsafe
 
 SYNC_OBJ	= $(SYNC_FILE:%=Sync/%.o)
 

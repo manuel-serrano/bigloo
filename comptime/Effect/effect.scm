@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 13:46:44 1995                          */
-;*    Last change :  Mon May 15 07:41:27 2000 (serrano)                */
-;*    Copyright   :  1995-2000 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 18 07:58:34 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The effect property                                              */
 ;*    -------------------------------------------------------------    */
@@ -94,6 +94,12 @@
 (define-method (side-effect? node::cast)
    (with-access::cast node (arg)
       (side-effect? arg)))
+
+;*---------------------------------------------------------------------*/
+;*    side-effect? ::sync ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (side-effect? node::sync)
+   #t)
 
 
 
