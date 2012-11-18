@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:49:33 2012                          */
-;*    Last change :  Sun Nov 18 15:26:20 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 19:12:58 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The property FAILSAFE for a node is true, IFF that node cannot   */
@@ -44,11 +44,8 @@
 ;*---------------------------------------------------------------------*/
 (define (failsafe-sync? n::sync)
    (when *optim-sync-failsafe?*
-      (let ((r
       (with-access::sync n (nodes)
 	 (every (lambda (n) (failsafe? n #f)) nodes))))
-	 (tprint "node=" (shape n) " -> failsafe=" r)
-	 r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::node ...                                             */
