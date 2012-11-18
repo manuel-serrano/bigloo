@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 18 14:21:57 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:29:39 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -901,53 +901,52 @@
 ;*    register-class! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (register-class! name module super hash creator allocator constructor nil shrink plain virtual)
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (initialize-objects!)
-	 (when (and super (not (class? super)))
-	    (error name "Illegal super-class for class" super))
-	 (when (=fx *nb-classes* *nb-classes-max*)
-	    (double-nb-classes!))
-	 (unless (vector? plain)
-	    (error "register-class!" "Fields not a vector" plain))
-	 (let ((k (class-exists name)))
-	    (when (class? k)
-	       (warning "register-class!" "Dangerous class redefinition: \"" name "@"
-		  module
-		  "\" (" name "@" (class-module k) ")")))
-	 (let* ((num   (+fx %object-type-number *nb-classes*))
-		(depth (if (class? super)
-			   (+fx (class-depth super) 1)
-			   0))
-		(class (make-class name module
-			  num
-			  super
-			  '()
-			  allocator
-			  hash
-			  plain
-			  (if (class? super)
-			      (vector-append (class-all-fields super) plain)
-			      plain)
-			  constructor
-			  (make-class-virtual-slots-vector super virtual)
-			  creator
-			  nil
-			  shrink
-			  depth
-			  #f)))
-	    ;; we set the sub field of the super class
-	    (when (class? super)
-	       ;; add the class to its super subclasses list
-	       (class-subclasses-set!
-		  super (cons class (class-subclasses super))))
-	    ;; we add the class in the *classes* vector (we declare the class)
-	    (vector-set! *classes* *nb-classes* class)
-	    ;; we increment the global class number
-	    (set! *nb-classes* (+fx *nb-classes* 1))
-	    ;; and we adjust the method arrays of all generic functions
-	    (generics-add-class! num (if (class? super) (class-num super) num))
-	    class))))
+   (synchronize $bigloo-generic-mutex
+      (initialize-objects!)
+      (when (and super (not (class? super)))
+	 (error name "Illegal super-class for class" super))
+      (when (=fx *nb-classes* *nb-classes-max*)
+	 (double-nb-classes!))
+      (unless (vector? plain)
+	 (error "register-class!" "Fields not a vector" plain))
+      (let ((k (class-exists name)))
+	 (when (class? k)
+	    (warning "register-class!" "Dangerous class redefinition: \"" name "@"
+	       module
+	       "\" (" name "@" (class-module k) ")")))
+      (let* ((num   (+fx %object-type-number *nb-classes*))
+	     (depth (if (class? super)
+			(+fx (class-depth super) 1)
+			0))
+	     (class (make-class name module
+		       num
+		       super
+		       '()
+		       allocator
+		       hash
+		       plain
+		       (if (class? super)
+			   (vector-append (class-all-fields super) plain)
+			   plain)
+		       constructor
+		       (make-class-virtual-slots-vector super virtual)
+		       creator
+		       nil
+		       shrink
+		       depth
+		       #f)))
+	 ;; we set the sub field of the super class
+	 (when (class? super)
+	    ;; add the class to its super subclasses list
+	    (class-subclasses-set!
+	       super (cons class (class-subclasses super))))
+	 ;; we add the class in the *classes* vector (we declare the class)
+	 (vector-set! *classes* *nb-classes* class)
+	 ;; we increment the global class number
+	 (set! *nb-classes* (+fx *nb-classes* 1))
+	 ;; and we adjust the method arrays of all generic functions
+	 (generics-add-class! num (if (class? super) (class-num super) num))
+	 class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-class-virtual-slots-vector ...                              */
@@ -1012,9 +1011,8 @@
 ;*    register-generic! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (register-generic! generic default class-min name)
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (register-generic-sans-lock! generic default name))))
+   (synchronize $bigloo-generic-mutex
+      (register-generic-sans-lock! generic default name)))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-generic-sans-lock! ...                                  */
@@ -1079,26 +1077,25 @@
 ;*    %add-method! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (%add-method! generic class method)
-   (with-lock $bigloo-generic-mutex
-      (lambda ()
-	 (unless (generic-registered? generic)
-	    ;; we check the installation of the generic in order to
-	    ;; allow cycle in module graph.
-	    (register-generic-sans-lock! generic #f ""))
-	 (let* ((method-array (generic-method-array generic))
-		(cnum (class-num class))
-		(previous (method-array-ref generic method-array cnum))
-		(def (generic-default generic)))
-	    (let loop ((clazz class))
-	       (let* ((cn (class-num clazz))
-		      (current (method-array-ref generic method-array cn)))
-		  (if (or (eq? current def) (eq? current previous))
-		      (begin
-			 ;; we add the method
-			 (method-array-set! generic method-array cn method)
-			 ;; and we recursively iterate on subclasses
-			 (for-each loop (class-subclasses clazz)))))))
-	 method)))
+   (synchronize $bigloo-generic-mutex
+      (unless (generic-registered? generic)
+	 ;; we check the installation of the generic in order to
+	 ;; allow cycle in module graph.
+	 (register-generic-sans-lock! generic #f ""))
+      (let* ((method-array (generic-method-array generic))
+	     (cnum (class-num class))
+	     (previous (method-array-ref generic method-array cnum))
+	     (def (generic-default generic)))
+	 (let loop ((clazz class))
+	    (let* ((cn (class-num clazz))
+		   (current (method-array-ref generic method-array cn)))
+	       (if (or (eq? current def) (eq? current previous))
+		   (begin
+		      ;; we add the method
+		      (method-array-set! generic method-array cn method)
+		      ;; and we recursively iterate on subclasses
+		      (for-each loop (class-subclasses clazz)))))))
+      method))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-add-method! ...                                          */

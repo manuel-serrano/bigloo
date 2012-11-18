@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:49:33 2012                          */
-;*    Last change :  Sun Nov 18 13:53:32 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:33:57 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The property FAILSAFE for a node is true, IFF that node cannot   */
@@ -44,14 +44,16 @@
 ;*---------------------------------------------------------------------*/
 (define (failsafe-sync? n::sync)
    (when *optim-sync-failsafe?*
+      (let ((r
       (with-access::sync n (nodes)
 	 (every failsafe? nodes))))
+	 (tprint "node=" (shape n) " -> failsafe=" r)
+	 r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::node ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (failsafe? n::node)
-   (tprint "FAILSAFE fails: " (node->sexp n))
    #f)
 
 ;*---------------------------------------------------------------------*/
@@ -92,12 +94,8 @@
 (define-method (failsafe? n::app)
    (with-access::app n (fun args)
       (let ((v (var-variable fun)))
-	 (tprint "APP=" (shape n) " " (typeof (variable-value v)))
-	 (if (failsafe-fun? (variable-value v) v)
-	     (every failsafe? args)
-	     (begin
-		(tprint "APP NOT FAILSAFE: " (shape n))
-		#f)))))
+	 (when (failsafe-fun? (variable-value v) v)
+	    (every failsafe? args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe-fun? ::fun ...                                          */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Thu Nov 15 07:26:56 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:40:09 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -125,28 +125,27 @@
 	   init
 	   eval
 	   (srfi '()))
-   (with-lock-uw *library-mutex*
-      (lambda ()
-	 (unless (memq id *libraries*)
-	    (set! *libraries*
-	       (cons (cons id
-			(libinfo id basename version
-			   (when dlopen-init
-			      (format "~a_~a"
-				 dlopen-init
-				 (eval-library-suffix)))
-			   (when dlopen-init
-			      (format "~a_e~a"
-				 dlopen-init
-				 (eval-library-suffix)))
-			   module-init module-eval
-			   class-init class-eval
-			   init eval srfi))
-		  *libraries*))
-	    (for-each (lambda (s)
-			 (register-srfi! s)
-			 (register-eval-srfi! s))
-	       srfi)))))
+   (synchronize *library-mutex*
+      (unless (memq id *libraries*)
+	 (set! *libraries*
+	    (cons (cons id
+		     (libinfo id basename version
+			(when dlopen-init
+			   (format "~a_~a"
+			      dlopen-init
+			      (eval-library-suffix)))
+			(when dlopen-init
+			   (format "~a_e~a"
+			      dlopen-init
+			      (eval-library-suffix)))
+			module-init module-eval
+			class-init class-eval
+			init eval srfi))
+	       *libraries*))
+	 (for-each (lambda (s)
+		      (register-srfi! s)
+		      (register-eval-srfi! s))
+	    srfi))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-info ...                                                 */
@@ -186,23 +185,22 @@
 		(error 'library-translation-table-add!
 		       "Illegal argument"
 		       opt)))))
-      (with-lock-uw *library-mutex*
-	 (lambda ()
-	    (set! *libraries*
-	       (cons (cons name
-			(libinfo name translation version
-			   (when dlopen-init
-			      (string-append (mangle dlopen-init)
-				 "_"
-				 (eval-library-suffix)))
-			   (when dlopen-init
-			      (string-append (mangle dlopen-init)
-				 "_e"
-				 (eval-library-suffix)))
-			   #f #f
-			   #f #f
-			   #f #f #f))
-		  *libraries*))))))
+      (synchronize *library-mutex*
+	 (set! *libraries*
+	    (cons (cons name
+		     (libinfo name translation version
+			(when dlopen-init
+			   (string-append (mangle dlopen-init)
+			      "_"
+			      (eval-library-suffix)))
+			(when dlopen-init
+			   (string-append (mangle dlopen-init)
+			      "_e"
+			      (eval-library-suffix)))
+			#f #f
+			#f #f
+			#f #f #f))
+	       *libraries*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-init-file ...                                            */
@@ -267,17 +265,15 @@
 ;*    library-loaded? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (library-loaded? lib)
-   (with-lock-uw *library-mutex*
-      (lambda ()
-	 (memq lib *loaded-libraries*))))
+   (synchronize *library-mutex*
+      (memq lib *loaded-libraries*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-mark-loaded! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (library-mark-loaded! lib)
-   (with-lock-uw *library-mutex*
-      (lambda ()
-	 (set! *loaded-libraries* (cons lib *loaded-libraries*))))
+   (synchronize *library-mutex*
+      (set! *loaded-libraries* (cons lib *loaded-libraries*)))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

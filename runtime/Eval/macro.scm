@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Thu Nov 15 07:25:59 2012 (serrano)                */
+;*    Last change :  Sun Nov 18 14:40:39 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -105,10 +105,9 @@
       ((not (procedure? expander))
        (error "install-eval-expander" "Illegal expander expander" expander))
       (else
-       (with-lock-uw *eval-macro-mutex*
-	  (lambda ()
-	     (put-macro! (or (module-macro-table) *eval-macro-table*)
-		keyword expander "eval"))))))
+       (synchronize *eval-macro-mutex*
+	  (put-macro! (or (module-macro-table) *eval-macro-table*)
+	     keyword expander "eval")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-compiler-expander ...                                    */
@@ -122,9 +121,8 @@
       ((not (procedure? expander))
        (error "install-eval-expander" "Illegal expander expander" expander))
       (else
-       (with-lock-uw *compiler-macro-mutex*
-	  (lambda ()
-	     (put-macro! *compiler-macro-table* keyword expander "compiler"))))))
+       (synchronize *compiler-macro-mutex*
+	  (put-macro! *compiler-macro-table* keyword expander "compiler")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-expander ...                                             */
@@ -141,11 +139,10 @@
 ;*    On recupere une macro pour l'interprete.                         */
 ;*---------------------------------------------------------------------*/
 (define (get-eval-expander keyword)
-   (with-lock-uw *eval-macro-mutex*
-      (lambda ()
-	 (let ((mtable (module-macro-table)))
-	    (or (and mtable (hashtable-get mtable keyword))
-		(hashtable-get *eval-macro-table* keyword))))))
+   (synchronize *eval-macro-mutex*
+      (let ((mtable (module-macro-table)))
+	 (or (and mtable (hashtable-get mtable keyword))
+	     (hashtable-get *eval-macro-table* keyword)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-compiler-expander ...                                        */
@@ -156,9 +153,8 @@
 ;*    the eval module macro.                                           */
 ;*---------------------------------------------------------------------*/
 (define (get-compiler-expander keyword)
-   (with-lock-uw *compiler-macro-mutex*
-      (lambda ()
-	 (hashtable-get *compiler-macro-table* keyword))))
+   (synchronize *compiler-macro-mutex*
+      (hashtable-get *compiler-macro-table* keyword)))
 
 
 
