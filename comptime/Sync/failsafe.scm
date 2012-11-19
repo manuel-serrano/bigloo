@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:49:33 2012                          */
-;*    Last change :  Sun Nov 18 19:12:58 2012 (serrano)                */
+;*    Last change :  Mon Nov 19 05:08:18 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    The property FAILSAFE for a node is true, IFF that node cannot   */
@@ -45,68 +45,68 @@
 (define (failsafe-sync? n::sync)
    (when *optim-sync-failsafe?*
       (with-access::sync n (nodes)
-	 (every (lambda (n) (failsafe? n #f)) nodes))))
+	 (every (lambda (n) (failsafe? n '())) nodes))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::node ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-generic (failsafe? n::node ctx)
+(define-generic (failsafe? n::node stk::pair-nil)
    #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::atom ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::atom ctx)
+(define-method (failsafe? n::atom stk)
    #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::var ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::var ctx)
+(define-method (failsafe? n::var stk)
    #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::kwote ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::kwote ctx)
+(define-method (failsafe? n::kwote stk)
    #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::sequence ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::sequence ctx)
+(define-method (failsafe? n::sequence stk)
    (with-access::sequence n (nodes)
-      (every (lambda (n) (failsafe? n ctx)) nodes)))
+      (every (lambda (n) (failsafe? n stk)) nodes)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::sync ctx)
+(define-method (failsafe? n::sync stk)
    (with-access::sync n (mutex nodes)
-      (and (failsafe? mutex ctx) (every (lambda (n) (failsafe? n ctx)) nodes))))
+      (and (failsafe? mutex stk) (every (lambda (n) (failsafe? n stk)) nodes))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::app ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::app ctx)
+(define-method (failsafe? n::app stk)
    (with-access::app n (fun args)
       (let ((v (var-variable fun)))
-	 (when (failsafe-fun? (variable-value v) v ctx)
-	    (every (lambda (n) (failsafe? n #f)) args)))))
+	 (when (failsafe-fun? (variable-value v) v stk)
+	    (every (lambda (n) (failsafe? n stk)) args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe-fun? ::fun ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-generic (failsafe-fun? fun::fun var::variable ctx)
+(define-generic (failsafe-fun? fun::fun var::variable stk)
    #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe-fun? ::sfun ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe-fun? fun::sfun var::variable ctx)
+(define-method (failsafe-fun? fun::sfun var::variable stk)
    (with-access::sfun fun (failsafe)
       (cond
-	 ((eq? var ctx)
+	 ((memq var stk)
 	  #t)
 	 ((boolean? failsafe)
 	  failsafe)
@@ -117,15 +117,15 @@
 	     failsafe))
 	 (else
 	  (with-access::sfun fun (failsafe)
-	     (set! failsafe #f)
-	     (let ((fsafe (failsafe? (sfun-body fun) var)))
-		(set! failsafe fsafe)
+	     (let ((fsafe (failsafe? (sfun-body fun) (cons var stk))))
+		;; mark the function only when the stack is empty
+		(when (null? stk) (set! failsafe fsafe))
 		fsafe))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe-fun? ::cfun ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe-fun? fun::cfun var::variable ctx)
+(define-method (failsafe-fun? fun::cfun var::variable stk)
    (with-access::cfun fun (failsafe)
       (cond
 	 ((boolean? failsafe)
@@ -140,80 +140,80 @@
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::extern ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::extern ctx)
+(define-method (failsafe? n::extern stk)
    (with-access::extern n (expr*)
-      (every (lambda (n) (failsafe? n ctx)) expr*)))
+      (every (lambda (n) (failsafe? n stk)) expr*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::pragma ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::pragma ctx)
+(define-method (failsafe? n::pragma stk)
    #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::cast ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::cast ctx)
+(define-method (failsafe? n::cast stk)
    (with-access::cast n (arg)
-      (failsafe? arg ctx)))
+      (failsafe? arg stk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::setq ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::setq ctx)
+(define-method (failsafe? n::setq stk)
    (with-access::setq n (value)
-      (failsafe? value ctx)))
+      (failsafe? value stk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::conditional ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::conditional ctx)
+(define-method (failsafe? n::conditional stk)
    (with-access::conditional n (test true false)
-      (and (failsafe? test ctx) (failsafe? true ctx) (failsafe? false ctx))))
+      (and (failsafe? test stk) (failsafe? true stk) (failsafe? false stk))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::select ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::select ctx)
+(define-method (failsafe? n::select stk)
    (with-access::select n (test clauses)
-      (when (failsafe? test ctx)
-	 (every (lambda (c) (failsafe? (cdr c) ctx)) clauses))))
+      (when (failsafe? test stk)
+	 (every (lambda (c) (failsafe? (cdr c) stk)) clauses))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::let-fun ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::let-fun ctx)
+(define-method (failsafe? n::let-fun stk)
    (with-access::let-fun n (body locals)
       ;; don't traverse the local functions, they will be scanned on demand
-      (failsafe? body ctx)))
+      (failsafe? body stk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::let-var ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::let-var ctx)
+(define-method (failsafe? n::let-var stk)
    (with-access::let-var n (body bindings)
-      (when (failsafe? body ctx)
-	 (every (lambda (b) (failsafe? (cdr b) ctx)) bindings))))
+      (when (failsafe? body stk)
+	 (every (lambda (b) (failsafe? (cdr b) stk)) bindings))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::make-box ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::make-box ctx)
+(define-method (failsafe? n::make-box stk)
    (with-access::make-box n (value)
-      (failsafe? value ctx)))
+      (failsafe? value stk)))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::box-ref ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::box-ref ctx)
+(define-method (failsafe? n::box-ref stk)
    #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::box-set! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::box-set! ctx)
+(define-method (failsafe? n::box-set! stk)
    (with-access::box-set! n (value)
-      (failsafe? value ctx)))
+      (failsafe? value stk)))
 
 
       
