@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Sat Nov 17 07:50:53 2012 (serrano)                */
+;*    Last change :  Mon Nov 19 19:21:54 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
@@ -18,6 +18,7 @@
 (module fail_walk
    (include "Engine/pass.sch"
 	    "Tools/location.sch"
+	    "Tools/trace.sch"
 	    "Ast/node.sch")
    (import  tools_shape
 	    tools_error
@@ -46,6 +47,7 @@
 ;*    fail-fun! ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (fail-fun! var)
+   (trace (fail 2) "fail-fun: " (shape var))
    (let* ((fun  (variable-value var))
 	  (body (sfun-body fun))
 	  (type (variable-type var)))
@@ -87,7 +89,7 @@
 ;*    fail-node! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (fail-node! node::sync)
-   (sync-mutex-set! node (fail-node! node))
+   (sync-mutex-set! node (fail-node! (sync-mutex node)))
    (fail-node*! (sync-nodes node))
    node)
 

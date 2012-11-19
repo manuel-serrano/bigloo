@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Sun Nov 18 11:36:56 2012 (serrano)                */
+;*    Last change :  Mon Nov 19 08:57:08 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -170,10 +170,10 @@
    
    (pragma  ($cons args-safe fail-safe)
 	    ($null? (predicate-of nil) no-cfa-top nesting args-safe fail-safe (effect))
-	    (null? (predicate-of nil) no-cfa-top nesting)
-	    (pair-or-null? (predicate-of pair-nil) no-cfa-top nesting (effect))
+	    (null? (predicate-of nil) no-cfa-top nesting fail-safe)
+	    (pair-or-null? (predicate-of pair-nil) no-cfa-top nesting (effect) fail-safe)
 	    ($pair? (predicate-of pair) no-cfa-top nesting fail-safe (effect))
-	    (pair? (predicate-of pair) no-cfa-top nesting)
+	    (pair? (predicate-of pair) no-cfa-top nesting fail-safe)
 ;* 	    (list? (predicate-of list) side-effect-free no-cfa-top nesting) */
 	    ($car side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (car))))
@@ -186,13 +186,13 @@
 	    ($cer side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (cer))))
 	    ($set-cer! fail-safe (effect (write (cer))))
-	    (cer side-effect-free no-cfa-top nesting)
+	    (cer side-effect-free no-cfa-top nesting fail-safe)
 	    (length side-effect-free no-cfa-top nesting
 		    (effect (read (car cdr))))
-	    (append-2 side-effect-free nesting)
-	    (eappend-2 side-effect-free nesting)
-	    (append side-effect-free nesting)
-	    (eappend side-effect-free nesting)
+	    (append-2 side-effect-free nesting fail-safe)
+	    (eappend-2 side-effect-free nesting fail-safe)
+	    (append side-effect-free nesting fail-safe)
+	    (eappend side-effect-free nesting fail-safe)
 	    (reverse side-effect-free nesting)
 	    (ereverse side-effect-free nesting)
 	    (take side-effect-free nesting)
