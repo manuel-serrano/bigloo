@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Sun Nov 18 13:38:19 2012 (serrano)                */
+;*    Last change :  Tue Nov 20 14:44:27 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -68,7 +68,12 @@
 	      ;; that the variable is always initialized, #f means that
 	      ;; it is used before initialized, and #unspecified means that
 	      ;; the exact property is unknown
-	      (init::obj (default #unspecified)))
+	      (init::obj (default #unspecified))
+	      ;; an optional alias which is used for aliased imports
+	      ;;(alias (default #f))
+	      )
+	      
+		 
 
 	   (final-class local::variable
 	      ;; the local's identification key
