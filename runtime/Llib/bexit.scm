@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Fri Nov 16 15:37:13 2012 (serrano)                */
+;*    Last change :  Tue Nov 20 18:08:58 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -185,7 +185,7 @@
       ;; (tprint "unlock1 " ($exitd-mutex1 exitd))
       (mutex-unlock! ($exitd-mutex0 exitd)))
    (when (pair? ($exitd-mutexn exitd))
-      (tprint "unlockn")
+;*       (tprint "unlockn")                                            */
       (for-each mutex-unlock! ($exitd-mutexn exitd))))
    
 ;*---------------------------------------------------------------------*/
@@ -201,7 +201,7 @@
 	  ;; (tprint "push1 " m)
 	  ($exitd-mutex1-set! exitd m))
 	 (else
-	  (tprint "pushn " m)
+;* 	  (tprint "pushn " m)                                          */
 	  ($exitd-mutexn-set! exitd (cons m ($exitd-mutexn exitd)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -217,7 +217,7 @@
 	  ;; (tprint "pop1 " m)
 	  ($exitd-mutex1-set! exitd #f))
 	 (else
-	  (tprint "popn " m)
+;* 	  (tprint "popn " m)                                           */
 	  ($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd)))))))
    
 ;*---------------------------------------------------------------------*/

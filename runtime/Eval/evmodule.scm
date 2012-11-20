@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Tue Nov 20 14:26:56 2012 (serrano)                */
+;*    Last change :  Tue Nov 20 17:59:11 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -547,41 +547,90 @@
 ;*    evmodule-import ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-import mod clause loc)
+   
    (define (import-error arg)
       (evcompile-error loc "eval" "Illegal `import' clause" arg))
-   (define (import-clause s0)
-      
-      (let ((loc (or (get-source-location s0) loc))
-	    (abase (module-abase))
-	    (s (reverse s0)))
+   
+   (define (find-module-files clause)
+      (cond
+	 ((null? clause) '())
+	 ((string? (car clause)) clause)
+	 (else (find-module-files (cdr clause)))))
+
+   (define (find-module-imports clause)
+      (let ((l (find-tail symbol? clause)))
+	 (let loop ((lst clause)
+		    (res '()))
+	    (if (eq? lst l)
+		res
+		(if (alias-pair? (car lst))
+		    (loop (cdr lst) (cons (cadr (car lst)) res))
+		    (loop (cdr lst) (cons (car lst) res)))))))
+
+   (define (find-module-aliases clause)
+      (let ((l (find-tail symbol? clause)))
+	 (let loop ((lst clause)
+		    (res '()))
+	    (if (eq? lst l)
+		res
+		(if (alias-pair? (car lst))
+		    (loop (cdr lst) (cons (car lst) res))
+		    (loop (cdr lst) res))))))
+
+   (define (import-clause s)
+      (let ((loc (or (get-source-location s) loc))
+	    (abase (module-abase)))
 	 (unwind-protect
 	    (cond
 	       ((symbol? s)
 		(let ((path ((bigloo-module-resolver) s abase)))
 		   (evmodule-import! mod s path '() (module-abase) loc)))
-	       ((or (not (pair? s0))
-		    (not (list? s0))
-		    (not (or (symbol? (car s0)) (alias-pair? (car s0)))))
+	       ((or (not (pair? s))
+		    (not (list? s))
+		    (not (or (symbol? (car s)) (alias-pair? (car s)))))
 		(import-error s))
 	       (else
 		(let ((files (find-module-files s))
-		      (importmod (find symbol? s))
+		      (imod (find symbol? s))
 		      (imports (find-module-imports s))
 		      (aliases (find-module-aliases s)))
-		   (when (not (null? files))
-		      (module-add-access! importmod files (pwd)))
-		   (let ((path ((bigloo-module-resolver) importmod (pwd))))
-		      (evmodule-import! mod importmod path imports (module-abase) loc)
+		   (unless (null? files)
+		      (module-add-access! imod files (pwd)))
+		   (let ((path ((bigloo-module-resolver) imod (pwd))))
 		      (for-each (lambda (ap)
-				   (bind-alias! mod importmod
+				   (bind-alias! mod imod
 				      (car ap)
 				      (cadr ap)
 				      (or (get-source-location ap) loc)))
-			 aliases)))))
+			 aliases)
+		      (evmodule-import! mod imod path imports (module-abase) loc)))))
 	    (module-abase-set! abase))))
+   
    (if (not (list? clause))
        (import-error clause)
        (for-each import-clause (cdr clause))))
+
+;* (define (evmodule-import-old mod clause loc)                        */
+;*    (define (import-error arg)                                       */
+;*       (evcompile-error loc "eval" "Illegal `import' clause" arg))   */
+;*    (define (import-clause s)                                        */
+;*       (let ((loc (or (get-source-location s) loc))                  */
+;* 	    (abase (module-abase)))                                    */
+;* 	 (unwind-protect                                               */
+;* 	    (cond                                                      */
+;* 	       ((symbol? s)                                            */
+;* 		(let ((path ((bigloo-module-resolver) s abase)))       */
+;* 		   (evmodule-import! mod s path '() (module-abase) loc))) */
+;* 	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s)))) */
+;* 		(import-error s))                                      */
+;* 	       (else                                                   */
+;* 		(module-add-access! (car s) (cdr s) (pwd))             */
+;* 		(let ((path ((bigloo-module-resolver) (car s) (pwd)))) */
+;* 		   (evmodule-import! mod (car s) path '() (module-abase) loc)))) */
+;* 	    (module-abase-set! abase))))                               */
+;*    (if (not (list? clause))                                         */
+;*        (import-error clause)                                        */
+;*        (for-each import-clause (cdr clause))))                      */
 
 ;*---------------------------------------------------------------------*/
 ;*    bind-alias! ...                                                  */
@@ -599,40 +648,6 @@
    (match-case v
       (((? symbol?) (? symbol?)) #t)
       (else #f)))
-
-;*---------------------------------------------------------------------*/
-;*    find-module-files ...                                            */
-;*---------------------------------------------------------------------*/
-(define (find-module-files clause)
-   (let loop ((lst clause)
-	      (res '()))
-      (if (and (pair? lst) (string? (car lst)))
-	  (loop (cdr lst) (cons (car lst) res))
-	  res)))
-
-;*---------------------------------------------------------------------*/
-;*    find-module-imports ...                                          */
-;*---------------------------------------------------------------------*/
-(define (find-module-imports clause)
-   (let loop ((lst (cdr (find-tail symbol? clause)))
-	      (res '()))
-      (if (pair? lst)
-	  (if (alias-pair? (car lst))
-	      (loop (cdr lst) (cons (cadr (car lst) )res))
-	      (loop (cdr lst) (cons (car lst) res)))
-	  res)))
-
-;*---------------------------------------------------------------------*/
-;*    find-module-aliases ...                                          */
-;*---------------------------------------------------------------------*/
-(define (find-module-aliases clause)
-   (let loop ((lst (cdr (find-tail symbol? clause)))
-	      (res '()))
-      (if (pair? lst)
-	  (if (alias-pair? (car lst))
-	      (loop (cdr lst) (cons (car lst) res))
-	      (loop (cdr lst) res))
-	  res))) 
    
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-from! ...                                               */
@@ -754,7 +769,7 @@
 		       (evmodule-export mod clause loc #f))
 		      ((load)
 		       (evmodule-import mod clause loc)))))
-	     clauses))
+      clauses))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-step2 ...                                               */
