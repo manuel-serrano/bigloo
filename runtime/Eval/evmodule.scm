@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Tue Nov 20 10:29:56 2012 (serrano)                */
+;*    Last change :  Tue Nov 20 14:26:56 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -121,7 +121,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    %evmodule ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-struct %evmodule key id path env exports macros aliases extension)
+(define-struct %evmodule key id path env exports macros extension)
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule? ...                                                    */
@@ -160,9 +160,7 @@
    (synchronize *modules-mutex*
       (let* ((env (make-hashtable 100 #unspecified eq?))
 	     (mactable (make-hashtable 64))
-	     (aliastable (make-hashtable 8))
-	     (mod (%evmodule make-%evmodule id path env '()
-		     mactable aliastable '())))
+	     (mod (%evmodule make-%evmodule id path env '() mactable '())))
 	 (if (not (hashtable? *modules-table*))
 	     (begin
 		(set! *modules-table* (make-hashtable 100))
@@ -206,13 +204,34 @@
       (hashtable-get *modules-table* id)))
 
 ;*---------------------------------------------------------------------*/
+;*    evalias? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (evalias? v)
+   (and (eval-global? v) (=fx (eval-global-tag v) 6)))
+
+;*---------------------------------------------------------------------*/
+;*    evalias-module ...                                               */
+;*---------------------------------------------------------------------*/
+(define (evalias-module v)
+   (cond
+      ((evmodule? (eval-global-module v))
+       (eval-global-module v))
+      ((symbol? (eval-global-module v))
+       (let ((m (eval-find-module (eval-global-module v))))
+	  (eval-global-module-set! v m)
+	  m))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
 ;*    evmodule-find-global ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-find-global mod id)
    (if (evmodule? mod)
-       (let* ((a (hashtable-get (%evmodule-aliases mod) id))
-	      (aid (or a id)))
-	  (or (hashtable-get (%evmodule-env mod) aid) (eval-lookup aid)))
+       (let ((v (hashtable-get (%evmodule-env mod) id)))
+	  (if (evalias? v)
+	      (evmodule-find-global (evalias-module v) (eval-global-value v))
+	      (or (hashtable-get (%evmodule-env mod) id) (eval-lookup id))))
        (eval-lookup id)))
 
 ;*---------------------------------------------------------------------*/
@@ -423,10 +442,11 @@
    
    (let ((l '()))
       (define (global-check-unbound k g)
-	 (let ((tag (eval-global-tag g)))
-	    (when (and (eq? (eval-global-module g) mod)
-		       (or (=fx tag 3) (=fx tag 4)))
-	       (set! l (cons g l)))))
+	 (unless (evalias? g)
+	    (let ((tag (eval-global-tag g)))
+	       (when (and (eq? (eval-global-module g) mod)
+			  (or (=fx tag 3) (=fx tag 4)))
+		  (set! l (cons g l))))))
       (hashtable-for-each (%evmodule-env mod) global-check-unbound)
       (when (pair? l)
 	 (for-each (lambda (v)
@@ -541,9 +561,7 @@
 		   (evmodule-import! mod s path '() (module-abase) loc)))
 	       ((or (not (pair? s0))
 		    (not (list? s0))
-		    (not (or (symbol? (car s0))
-		           (alias-pair? (car s0))))
-		    )
+		    (not (or (symbol? (car s0)) (alias-pair? (car s0)))))
 		(import-error s))
 	       (else
 		(let ((files (find-module-files s))
@@ -555,55 +573,66 @@
 		   (let ((path ((bigloo-module-resolver) importmod (pwd))))
 		      (evmodule-import! mod importmod path imports (module-abase) loc)
 		      (for-each (lambda (ap)
-				   (add-alias! importmod
+				   (bind-alias! mod importmod
 				      (car ap)
-				      (cadr ap)))
+				      (cadr ap)
+				      (or (get-source-location ap) loc)))
 			 aliases)))))
 	    (module-abase-set! abase))))
    (if (not (list? clause))
        (import-error clause)
        (for-each import-clause (cdr clause))))
 
-(define (add-alias! mod orig alias)
-   (putprop! alias
-      'macro-alias-key
-      `(@ ,orig ,mod)))
+;*---------------------------------------------------------------------*/
+;*    bind-alias! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (bind-alias! mod imodname alias orig loc)
+   (let ((a (make-eval-global alias imodname loc)))
+      (eval-global-tag-set! a 6)
+      (set-eval-global-value! a orig)
+      (evmodule-bind-global! mod alias a loc)))
 
+;*---------------------------------------------------------------------*/
+;*    alias-pair? ...                                                  */
+;*---------------------------------------------------------------------*/
 (define (alias-pair? v)
-   (and (pair? v) (every symbol? v)))
+   (match-case v
+      (((? symbol?) (? symbol?)) #t)
+      (else #f)))
 
+;*---------------------------------------------------------------------*/
+;*    find-module-files ...                                            */
+;*---------------------------------------------------------------------*/
 (define (find-module-files clause)
    (let loop ((lst clause)
 	      (res '()))
-      (if (and (pair? lst)
-	       (string? (car lst)))
-	  (loop (cdr lst)
-	     (cons (car lst) res))
+      (if (and (pair? lst) (string? (car lst)))
+	  (loop (cdr lst) (cons (car lst) res))
 	  res)))
 
+;*---------------------------------------------------------------------*/
+;*    find-module-imports ...                                          */
+;*---------------------------------------------------------------------*/
 (define (find-module-imports clause)
    (let loop ((lst (cdr (find-tail symbol? clause)))
 	      (res '()))
       (if (pair? lst)
 	  (if (alias-pair? (car lst))
-	      (loop (cdr lst)
-		 (cons (caar lst) res))
-	      (loop (cdr lst)
-		 (cons (car lst)
-		    res)))
+	      (loop (cdr lst) (cons (cadr (car lst) )res))
+	      (loop (cdr lst) (cons (car lst) res)))
 	  res)))
 
-
+;*---------------------------------------------------------------------*/
+;*    find-module-aliases ...                                          */
+;*---------------------------------------------------------------------*/
 (define (find-module-aliases clause)
    (let loop ((lst (cdr (find-tail symbol? clause)))
 	      (res '()))
       (if (pair? lst)
 	  (if (alias-pair? (car lst))
-	      (loop (cdr lst)
-		 (cons (car lst) res))
-	      (loop (cdr lst)
-		 res))
-	  res)))   
+	      (loop (cdr lst) (cons (car lst) res))
+	      (loop (cdr lst) res))
+	  res))) 
    
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-from! ...                                               */

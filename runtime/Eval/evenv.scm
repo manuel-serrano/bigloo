@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Tue Apr 17 07:47:01 2012 (serrano)                */
+;*    Last change :  Tue Nov 20 14:25:52 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -65,6 +65,7 @@
 	    (inline eval-global-tag-set! ::vector ::int)
 	    (inline eval-global-name ::vector)
 	    (inline eval-global-module ::obj)
+	    (inline eval-global-module-set! ::vector ::obj)
 	    (inline eval-global-loc ::obj)
 	    (bind-eval-global! ::symbol ::vector)
 	    (eval-lookup ::symbol)
@@ -95,6 +96,7 @@
 ;*         3: evaluated uninitialized                                  */
 ;*         4: evaluated read-only uninitialized                        */
 ;*         5: evaluated read-only                                      */
+;*         6: an alias                                                 */
 ;*      - the variable name                                            */
 ;*      - the variable value                                           */
 ;*      - the variable module                                          */
@@ -214,6 +216,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (eval-global-module eval-global)
    (vector-ref-ur eval-global 3))
+
+;*---------------------------------------------------------------------*/
+;*    eval-global-module-set! ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (eval-global-module-set! eval-global m)
+   (vector-set-ur! eval-global 3 m))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-global-loc ...                                              */
