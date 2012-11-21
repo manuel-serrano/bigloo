@@ -196,6 +196,8 @@ An @var{import} is a list of the form:
                 | <module-name>
                 | (<module-name> <file-name> @dots{})
 <bind-name>   @expansion{} <r5rs-ident>
+                | <alias-name>
+<alias-name>  @expansion{} (<r5rs-ident> <r5rs-ident>)
 <module-name> @expansion{} <r5rs-ident>
 <file-name>   @expansion{} <string>
 @end smallexample
@@ -226,6 +228,9 @@ Here is an example of an import clause:
       @r{;; import the @code{fun1}, @code{fun2} and @code{fun3} bindings exported by}
       @r{;; the module @code{mod}:}
       (fun1 fun2 fun3 mod)       
+      @r{;; import the @code{fun4} bindings that will be known in this module}
+      @r{;; under the alias name @code{f}}
+      ((f fun4) mod)
       @r{;; import all @code{gee} bindings. the @code{gee} module}
       @r{;; is located in a file called @file{gee.scm}:}
       (gee "gee.scm")))

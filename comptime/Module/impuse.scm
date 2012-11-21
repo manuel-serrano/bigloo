@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Sat Oct 13 07:39:45 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 07:55:53 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -59,7 +59,7 @@
 	    (make-from-compiler)
 	    (get-imported-modules)
 	    (import-with-module! ::symbol loc)
-	    (import-parser ::symbol prototype . import-src)
+	    (import-parser ::symbol prototype alias . import-src)
 	    (initialize-imported-modules::pair-nil ::procedure)))
 
 ;*---------------------------------------------------------------------*/
@@ -87,7 +87,10 @@
       (id 'from)
       (producer impuse-producer)
       (consumer (lambda (module clause)
+		   (enter-function
+		      (string->symbol (format "module ~a" module)))
 		   (impuse-producer clause)
+		   (leave-function)
 		   '()))))
 
 ;*---------------------------------------------------------------------*/
@@ -114,10 +117,7 @@
 	  (for-each (lambda (proto) (impuse-parser proto mode clause)) protos))
 	 (else
 	  (user-error/location (find-location *module-clause*)
-			       "Parse error"
-			       (format "Illegal `~a' clause" mode)
-			       clause
-			       '())))))
+	     "Parse error" (format "Illegal \"~a\" clause" mode) clause '())))))
    
 ;*---------------------------------------------------------------------*/
 ;*    import-all-module ...                                            */
@@ -137,26 +137,30 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    import-1-module ...                                              */
+;*    -------------------------------------------------------------    */
+;*    The field "vars" of import instance is a list of pairs.          */
+;*    The CAR is the declared name of the binding and the CDR          */
+;*    the aliased named, used in alias import clauses.                 */
 ;*---------------------------------------------------------------------*/
-(define (import-1-module module::symbol var mode src)
+(define (import-1-module module::symbol var alias mode src)
    (let ((mi (hashtable-get *imports* module)))
       (if (import? mi)
 	  ;; patch the previous import
 	  (case (import-vars mi)
 	     ((with)
 	      (import-mode-set! mi mode)
-	      (import-vars-set! mi (list var)))
+	      (import-vars-set! mi (list (cons var alias))))
 	     ((all)
 	      'nothing)
 	     (else
-	      (import-vars-set! mi (cons var (import-vars mi)))))
+	      (import-vars-set! mi (cons (cons var alias) (import-vars mi)))))
 	  (let ((loc (find-location/loc src (find-location *module-clause*))))
 	     ;; register a new import
 	     (register-import!
 	      (instantiate::import
 		 (module module)
 		 (mode mode)
-		 (vars (list var))
+		 (vars (list (cons var alias)))
 		 (loc loc)
 		 (src src)))))))
 
@@ -182,15 +186,26 @@
 ;*    import ::= module-name                                           */
 ;*            |  (module-name "file-name" *)                           */
 ;*            |  (variable module-name)                                */
+;*            |  (variable module-name)                                */
 ;*            |  (variable module-name "file-name" *)                  */
+;*    variable ::= symbol                                              */
+;*            | (symbol symbol)                                        */
 ;*---------------------------------------------------------------------*/
 (define (impuse-parser prototype mode import-src)
    (trace (ast 2) "impuse-parser: " prototype " " mode #\Newline)
+   
    (define (err)
       (user-error "Parse error"
-		  (format "Illegal ~a clause" mode)
-		  prototype
-		  '()))
+	 (format "Illegal \"~a\" clause" mode) prototype '()))
+   
+   (define (alias? v)
+      (match-case v
+	 (((? symbol?) (? symbol?)) #t)
+	 (else #f)))
+   
+   (define (variable? v)
+      (or (symbol? v) (alias? v)))
+   
    (cond
       ((symbol? prototype)
        ;; module-name
@@ -212,12 +227,15 @@
 			;; (module-name "file-name"+)
 			(if (pair? files) (module-add-access! mod files "."))
 			(import-all-module mod mode prototype))
-		       ((every symbol? vars)
+		       ((every variable? vars)
 			;; (var1 var2 ... varN module-name "file-name"*)
-			(if (pair? files) (module-add-access! mod files "."))
+			(when (pair? files)
+			   (module-add-access! mod files "."))
 			(for-each (lambda (v)
-				     (import-1-module mod v mode prototype))
-				  vars))
+				     (if (alias? v)
+					 (import-1-module mod (cadr v) (car v) mode prototype)
+					 (import-1-module mod v #f mode prototype)))
+			   vars))
 		       (else
 			(err)))))
 		(else
@@ -276,16 +294,17 @@
    (define (initialize-module import)
       (with-access::import import ((mod module) checksum)
 	 (let* ((fun (get-init mod))
-		(var (import-parser mod `(,fun checksum::long from::string))))
+		(var (import-parser mod `(,fun checksum::long from::string) #f)))
 	    ;; module initializer can't be invoked
 	    ;; from eval. We mark this.
 	    (global-evaluable?-set! var #f)
 	    `((@ ,fun ,mod) ,checksum ,(symbol->string *module*)))))
    (define (trace-initialize-module import call)
       `(begin
-	  (pragma::void ,(format "bgl_init_module_debug_import(\"~a\", \"~a\")"
-				 (symbol->string (get-init *module*))
-				 (symbol->string (import-module import))))
+	  (pragma::void
+	     ,(format "bgl_init_module_debug_import(\"~a\", \"~a\")"
+		 (symbol->string (get-init *module*))
+		 (symbol->string (import-module import))))
 	  ,call))
    (let* ((calls (map initialize-module *imported-modules-in-unit*)))
       (if (and (>fx *debug-module* 0)
@@ -322,28 +341,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    import-parser ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (import-parser module::symbol prototype . import-src)
+(define (import-parser module::symbol prototype alias . import-src)
    (let ((proto (parse-prototype prototype))
-	 (src   (if (pair? import-src)
-		    (car import-src)
-		    #f)))
+	 (src (when (pair? import-src) (car import-src))))
       (if (not (pair? proto))
 	  (user-error/location (find-location *module-clause*)
-			       "Parse error"
-			       "Illegal prototype"
-			       prototype
-			       '())
+	     "Parse error" "Illegal prototype" prototype '())
 	  (case (car proto)
 	     ((sfun sifun sgfun)
-	      (declare-global-sfun! (cadr proto)
-				    (caddr proto)
-				    module
-				    'import
-				    (car proto)
-				    prototype
-				    src))
+	      (declare-global-sfun! (cadr proto) alias (caddr proto)
+		 module 'import (car proto) prototype src))
 	     ((svar)
-	      (declare-global-svar! (cadr proto) module	'import	prototype src))
+	      (declare-global-svar! (cadr proto) alias
+		 module 'import prototype src))
 	     ((class)
 	      (declare-class! (cdr proto) module 'import #f #f prototype src))
 	     ((abstract-class)
@@ -373,13 +383,8 @@
 	     (import-wanted import)
 	     (import-everything import))
 	 (look-for-inlines-and-macros inline
-				      macro
-				      syntax
-				      expander
-				      code
-				      (progn-tail-expressions decl)
-				      access
-				      module))))
+	    macro syntax expander
+	    code (progn-tail-expressions decl) access module))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-import! ...                                                 */
@@ -388,10 +393,7 @@
    (define (err obj)
       (import-decl-set! import 'error)
       (user-error/location (import-loc import)
-			   'import
-			   "Cannot find module"
-			   obj
-			   '()))
+	 'import "Cannot find module" obj '()))
    (define (errfile module file)
       (import-decl-set! import 'error)
       (user-error/location
@@ -446,7 +448,7 @@
 		 (expd '()))
 	 (if (null? provided)
 	     (values inline macro syntax expd)
-	     (let ((p (import-parser module (car provided) src)))
+	     (let ((p (import-parser module (car provided) #f src)))
 		(match-case p
 		   ((? global?)
 		    (let ((val (global-value p)))
@@ -489,74 +491,76 @@
 	     (values inline macro syntax expander))
 	    ((null? provided)
 	     (user-error/location (find-location *module-clause*)
-				  (import-module import)
-				  "Can't find export for these identifiers"
-				  wanted
-				  '()))
+		(import-module import)
+		"Can't find export for these identifiers"
+		(map car wanted)
+		'())
+	     (values '() '() '() '()))
 	    (else
 	     (let ((proto (parse-prototype (car provided))))
 		(if (pair? proto)
-		    (let ((id (fast-id-of-id (cadr proto)
-					     (find-location (car provided)))))
-		       (if (not (memq id wanted))
+		    (let* ((id (fast-id-of-id
+				  (cadr proto) (find-location (car provided))))
+			   (c (assq id wanted)))
+		       (if (not c)
 			   (loop (cdr provided)
-				 inline
-				 macro
-				 syntax
-				 expander
-				 wanted)
-			   (let ((p (import-parser module (car provided) src)))
+			      inline
+			      macro
+			      syntax
+			      expander
+			      wanted)
+			   (let ((p (import-parser module (car provided) (cdr c) src)))
 			      (match-case p
 				 ((? global?)
 				  (loop (cdr provided)
-					(cond
-					   ((eq? (car proto) 'sifun)
-					    (cons (cons id 'sifun) inline))
-					   (else
-					    inline))
-					macro
-					syntax
-					expander
-					(remq! id wanted)))
+				     (cond
+					((eq? (car proto) 'sifun)
+					 (cons (cons id 'sifun) inline))
+					(else
+					 inline))
+				     macro
+				     syntax
+				     expander
+				     (remq! c wanted)))
 				 ((? type?)
 				  (loop (cdr provided)
-					inline
-					macro
-					syntax
-					expander
-					(remq! id wanted)))
+				     inline
+				     macro
+				     syntax
+				     expander
+				     (remq! c wanted)))
 				 ((macro . ?mac)
 				  (loop (cdr provided)
-					inline
-					(cons mac macro)
-					syntax
-					expander
-					(remq! id wanted)))
+				     inline
+				     (cons mac macro)
+				     syntax
+				     expander
+				     (remq! c wanted)))
 				 ((syntax  . ?syn)
 				  (loop (cdr provided)
-					inline
-					macro
-					(cons syn syntax)
-					expander
-					(remq! id wanted)))
+				     inline
+				     macro
+				     (cons syn syntax)
+				     expander
+				     (remq! c wanted)))
 				 ((expander . ?exp)
 				  (loop (cdr provided)
-					inline
-					macro
-					syntax
-					(cons exp expander)
-					(remq! id wanted)))
+				     inline
+				     macro
+				     syntax
+				     (cons exp expander)
+				     (remq! c wanted)))
 				 (else
 				  (loop (cdr provided)
-					inline
-					macro
-					syntax
-					expander
-					(remq! id wanted)))))))
+				     inline
+				     macro
+				     syntax
+				     expander
+				     (remq! c wanted)))))))
 		    (loop (cdr provided)
-			  inline
-			  macro
-			  syntax
-			  expander
-			  wanted))))))))
+		       inline
+		       macro
+		       syntax
+		       expander
+		       wanted))))))))
 

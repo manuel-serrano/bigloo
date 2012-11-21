@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Nov 23 12:43:46 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 21 07:29:56 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -81,7 +81,7 @@
       ((class (and (? symbol?) ?class))
        (set! *eval-classes* (cons proto *eval-classes*)))
       ((import (and (? symbol?) ?var))
-       (declare-global-svar! var 'eval 'eval clause #f))
+       (declare-global-svar! var #f 'eval 'eval clause #f))
       ((library . ?libs)
        (for-each (lambda (lib)
 		    (if (not (symbol? lib))

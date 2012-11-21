@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 11:51:01 1996                          */
-;*    Last change :  Mon Feb 28 18:09:56 2005 (serrano)                */
-;*    Copyright   :  1996-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 21 05:37:12 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The main clause compilation.                                     */
 ;*=====================================================================*/
@@ -61,9 +61,7 @@
 	      (if (global? global)
 		  (if (not (correct-main? global))
 		      (user-error *module*
-				  "Illegal declaration of main function"
-				  main
-				  '()))
+			 "Illegal declaration of main function" main '()))
 		  (begin
 		     (if (and (>fx *bdb-debug* 0)
 			      (memq 'bdb
@@ -72,7 +70,7 @@
 			 (produce-module-clause! `(export (,main argv::pair))))
 		     (set! *main* (find-global/module main *module*))))))
 	  (else
-	   (user-error "Parse error" "Illegal main clause" clause '())))))
+	   (user-error "Parse error" "Illegal \"main\" clause" clause '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    main-consumer ...                                                */

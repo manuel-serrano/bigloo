@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Fri Oct  5 21:33:30 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 07:20:01 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
@@ -45,7 +45,7 @@
    (let* ((id (tclass-id class))
 	  (id-nil (symbol-append id '-nil))
 	  (tid-nil (make-typed-ident id-nil id)))
-      (import-parser module `(,tid-nil))))
+      (import-parser module `(,tid-nil) #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    gen-plain-class-nil ...                                          */

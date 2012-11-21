@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Thu Dec  1 18:59:38 2011 (serrano)                */
+;*    Last change :  Wed Nov 21 07:46:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -33,39 +33,18 @@
 	    (module-initialization-id module_module)
 	    module_module
 	    ast_local)
-   (export  (declare-global-sfun!::global  id::symbol
-					   args::obj
-					   module::symbol
-					   import::symbol
-					   class::symbol
-					   src::obj
-					   srci::obj)
-	    (declare-global-svar!::global  id::symbol
-					   module::symbol
-					   import::symbol
-					   src::obj
-					   srci)
-	    (declare-global-scnst!::global id::symbol
-					   module::symbol
-					   import::symbol
-					   node
-					   class::symbol
-					   loc)
-	    (declare-global-cfun!::global  id::symbol
-					   module::symbol
-					   name::bstring
-					   type-res::symbol
-					   type-args::obj
-					   infix?::bool
-					   macro::bool
-					   srce::obj
-					   srci)
-	    (declare-global-cvar!::global  id::symbol
-					   name::bstring
-					   type-id::symbol
-					   macro?::bool
-					   src::obj
-					   srci)))
+   (export  (declare-global-sfun!::global id::symbol alias::obj args::obj
+	       module::symbol import::symbol class::symbol
+	       src::obj srci::obj)
+	    (declare-global-svar!::global id::symbol alias::obj module::symbol
+	       import::symbol src::obj srci)
+	    (declare-global-scnst!::global id::symbol alias::obj module::symbol
+	       import::symbol node class::symbol loc)
+	    (declare-global-cfun!::global id::symbol alias::obj module::symbol
+	       name::bstring type-res::symbol type-args::obj infix?::bool
+	       macro::bool srce::obj srci)
+	    (declare-global-cvar!::global id::symbol alias::obj
+	       name::bstring type-id::symbol macro?::bool src::obj srci)))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-sfun! ...                                         */
@@ -74,21 +53,21 @@
 ;*    compiling module clauses. When a function is defined, this       */
 ;*    function is _not_used.                                           */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-sfun! id args module import class srce srci)
+(define (declare-global-sfun! id alias args module import class srce srci)
    (trace (ast 3) "declare-global-sfun!: "
 	  (shape id) " " (shape args) #\newline)
    (cond
       ((dsssl-optional-only-prototype? args)
-       (declare-global-opt-sfun! id args module import class srce srci))
+       (declare-global-opt-sfun! id alias args module import class srce srci))
       ((dsssl-key-only-prototype? args)
-       (declare-global-key-sfun! id args module import class srce srci))
+       (declare-global-key-sfun! id alias args module import class srce srci))
       (else
-       (declare-global-noopt-sfun!  id args module import class srce srci))))
+       (declare-global-noopt-sfun!  id alias args module import class srce srci))))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-dsssl-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-dsssl-sfun! opts keys id args module import class srce srci)
+(define (declare-global-dsssl-sfun! opts keys id alias args module import class srce srci)
    (let* ((arity (global-arity args))
 	  (export? (or (not (eq? import 'static))
 		       (and (memq 'bdb (backend-debug-support (the-backend)))
@@ -159,7 +138,7 @@
 		   (optionals opts)
 		   (keys keys)))
 	  (old (find-global id))
-	  (global (bind-global! id module sfun import srce)))
+	  (global (bind-global! id alias module sfun import srce)))
       (trace (ast 3) "*** declare-global-sfun!: srce: " srce #\Newline)
       (trace (ast 3) "*** declare-global-sfun!: loc: " (find-location srce)
 	     #\Newline)
@@ -179,21 +158,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-opt-sfun! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-opt-sfun! id args module import class srce srci)
+(define (declare-global-opt-sfun! id alias args module import class srce srci)
    (declare-global-dsssl-sfun! (dsssl-optionals args) '()
-			       id args module import class srce srci))
+      id alias args module import class srce srci))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-key-sfun! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-key-sfun! id args module import class srce srci)
+(define (declare-global-key-sfun! id alias args module import class srce srci)
    (declare-global-dsssl-sfun! '() (dsssl-keys args)
-			       id args module import class srce srci))
+      id alias args module import class srce srci))
 
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-noopt-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-noopt-sfun! id args module import class srce srci)
+(define (declare-global-noopt-sfun! id alias args module import class srce srci)
    (let* ((arity     (global-arity args))
 	  (args      (args*->args-list args))
 	  (export?   (or (not (eq? import 'static))
@@ -256,7 +235,7 @@
 			(dsssl-keywords (dsssl-formals args))
 			(class class)))
 	  (old       (find-global id))
-	  (global    (bind-global! id module sfun import srce)))
+	  (global    (bind-global! id alias module sfun import srce)))
       (trace (ast 3) "*** declare-global-sfun!: srce: " srce #\Newline)
       (trace (ast 3) "*** declare-global-sfun!: loc: " (find-location srce)
 	     #\Newline)
@@ -276,11 +255,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-svar! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-svar! id module import srce srci)
-   (let* ((loc       (find-location srce))
-	  (loci      (find-location/loc srci loc))
-	  (id-type   (parse-id/import-location id loc loci))
-	  (type      (let ((type (cdr id-type)))
+(define (declare-global-svar! id alias module import srce srci)
+   (let* ((loc (find-location srce))
+	  (loci (find-location/loc srci loc))
+	  (id-type (parse-id/import-location id loc loci))
+	  (type (let ((type (cdr id-type)))
 			;; we check that global exported variable are defined
 			;; without type or with the obj type.
 			(cond
@@ -297,15 +276,14 @@
 			    *obj*)
 			   (else
 			    type))))
-	  (import    (if (and (eq? import 'static)
+	  (import (if (and (eq? import 'static)
 			      (memq 'bdb (backend-debug-support (the-backend)))
 			      (>=fx *bdb-debug* 3))
 			 'export
 			 import))
-	  (id        (car id-type))
-	  (svar      (instantiate::svar))
-	  (old       (find-global id))
-	  (global    (bind-global! id module svar import srce)))
+	  (id (car id-type))
+	  (svar (instantiate::svar))
+	  (global (bind-global! id alias module svar import srce)))
       ;; we set the type of the variable
       (global-type-set! global type)
       ;; we now set the access slot
@@ -316,7 +294,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-scnst! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-scnst! id module import node class loc)
+(define (declare-global-scnst! id alias module import node class loc)
    (let* ((id-type   (parse-id id loc))
 	  (type      (let ((type (cdr id-type)))
 			;; we check that global exported variable are defined
@@ -332,7 +310,7 @@
 	  (scnst     (instantiate::scnst
 			(class class)
 			(node node)))
-	  (global    (bind-global! id module scnst import 'a-cnst)))
+	  (global    (bind-global! id alias module scnst import 'a-cnst)))
       ;; we set the type of the variable
       (global-type-set! global type)
       ;; we now set the access slot 
@@ -343,7 +321,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-cfun! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-cfun! id module name tres-id targs-id infix? macro? srce srci)
+(define (declare-global-cfun! id alias module name tres-id targs-id infix? macro? srce srci)
    (let* ((arity     (global-arity targs-id))
 	  (loc       (find-location srce))
 	  (loci      (find-location/loc srci loc))
@@ -355,7 +333,7 @@
 		 			(args-type type-args)
 					(macro? macro?)
 					(infix? infix?)))
-	  (global (bind-global! id module cfun 'foreign srce)))
+	  (global (bind-global! id alias module cfun 'foreign srce)))
       ;; we set the name of the global
       (global-name-set! global name)
       ;; we set the type of the variable
@@ -368,12 +346,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    declare-global-cvar! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (declare-global-cvar! id name type-id macro? srce srci)
+(define (declare-global-cvar! id alias name type-id macro? srce srci)
    (let* ((loc    (find-location srce))
 	  (loci   (find-location/loc srci loc))
 	  (type   (use-foreign-type/import-loc! type-id loc loci))
 	  (cvar   (instantiate::cvar (macro? macro?)))
-	  (global (bind-global! id 'foreign cvar 'foreign srce)))
+	  (global (bind-global! id alias 'foreign cvar 'foreign srce)))
       ;; we set the name of the global
       (global-name-set! global name)
       ;; we set the type of the variable

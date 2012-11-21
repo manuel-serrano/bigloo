@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Tue Mar 20 08:44:45 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 07:41:53 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
 	    (find-global ::symbol . <symbol>)
 	    (find-global/module ::symbol ::symbol)
 	    (get-global/module ::symbol ::symbol)
-	    (bind-global!::global   ::symbol ::symbol ::value ::symbol ::obj)
+	    (bind-global!::global ::symbol ::obj ::symbol ::value ::symbol ::obj)
 	    (unbind-global! ::symbol ::symbol)
 	    (for-each-global! ::procedure . env)
 	    (global-bucket-position ::symbol ::symbol)
@@ -333,10 +333,11 @@
 ;*       4- user library variables have a higher priority than system  */
 ;*          library variables.                                         */
 ;*---------------------------------------------------------------------*/
-(define (bind-global!::global id::symbol module::symbol
+(define (bind-global!::global id::symbol alias::obj module::symbol
 			      value::value import::symbol
 			      src::obj)
-   (let ((old (find-global id module)))
+   (let* ((ident (or alias id))
+	  (old (find-global ident module)))
       (if (global? old)
 	  (cond
 	     (*lib-mode*
@@ -346,14 +347,15 @@
 	      old)
 	     (else
 	      (error-rebind-global! old src)))
-	  (let ((bucket (hashtable-get *Genv* id))
+	  (let ((bucket (hashtable-get *Genv* ident))
 		(new (instantiate::global
 			(type *_*)
 			(module module)
 			(jvm-type-name (if (eq? import 'eval)
 					   "eval"
 					   (module->qualified-type module)))
-			(id id)
+			(id ident)
+			(alias (when alias id))
 			(value value)
 			(src src)
 			(user? #t)
@@ -361,7 +363,7 @@
 	     (cond
 		((or (not (pair? bucket)) (null? (cdr bucket)))
 		 ;; this is the firt time we see this identifier
-		 (hashtable-put! *Genv* id (list id new))
+		 (hashtable-put! *Genv* ident (list ident new))
 		 new)
 		(else
 		 (let* ((old* (cdr bucket))
@@ -370,13 +372,13 @@
 		    (cond
 		       ((eq? (global-module (car old*)) *module*)
 			;; hidden by a local variable
-			(if (and (not (eq? id mid)) (not *lib-mode*))
+			(if (and (not (eq? ident mid)) (not *lib-mode*))
 			    (warning-override-global! (car old*) new))
 			(set-cdr! (cdr bucket) (cons new (cddr bucket)))
 			new)
 		       (else
 			(let ((new* (cons new old*)))
-			   (if (and (not (eq? id mid)) (not *lib-mode*))
+			   (if (and (not (eq? ident mid)) (not *lib-mode*))
 			       (warning-override-global! new (car old*)))
 			   (set-cdr! bucket new*)
 			   new))))))))))

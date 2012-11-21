@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Sat Oct 13 07:37:16 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 07:30:22 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -323,7 +323,7 @@
 			  (cdr slot-id)))
 		(qc-id jname))
 	    (ensure-type-defined! t-id src)
-	    (let ((g (declare-global-cvar! l-id qc-id
+	    (let ((g (declare-global-cvar! l-id #f qc-id
 			(type-id t-id) reado? src #f)))
 	       (global-module-set! g (jclass-id class))
 	       (global-jvm-type-name-set! g (jclass-name class))

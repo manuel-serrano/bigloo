@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 11:16:50 1996                          */
-;*    Last change :  Thu Nov 17 05:45:29 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 21 07:20:11 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the class predicate                                      */
 ;*    -------------------------------------------------------------    */
@@ -101,7 +101,7 @@
 	      (super   (tclass-its-super class)))
 	  (if (tclass? super)
 	      ;; the module declaration
-	      (import-parser module `(,pred-id ::obj)))
+	      (import-parser module `(,pred-id ::obj) #f))
 	  ;; and we return no code in that particular situation
 	  '())))
 
@@ -146,6 +146,6 @@
 	      (pred-id (symbol-append id '?::bool))
 	      (super   (jclass-its-super class)))
 	  ;; the module declaration
-	  (import-parser module `(,pred-id ::obj))
+	  (import-parser module `(,pred-id ::obj) #f)
 	  ;; and we return no code in that particular situation
 	  '())))

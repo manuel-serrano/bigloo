@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Thu Dec  1 19:14:49 2011 (serrano)                */
+;*    Last change :  Wed Nov 21 07:26:26 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -94,20 +94,11 @@
 	  (old-global (find-global/module id module))
 	  (global     (cond
 			 ((not (global? old-global))
-			  (declare-global-sfun! id
-						args
-						module
-						import
-						class
-						src-exp
-						#f))
+			  (declare-global-sfun! id #f args module
+			     import class src-exp #f))
 			 (else
-			  (check-sfun-definition old-global
-						 type-res
-						 args
-						 locals
-						 class
-						 src-exp))))
+			  (check-sfun-definition old-global type-res
+			     args locals class src-exp))))
 	  (def-loc    (find-location src-exp)))
       (if (sfun? (global-value global))
 	  ;; if global-value is not an sfun then it means that
@@ -219,12 +210,8 @@
    (let* ((id-type    (parse-id id loc))
 	  (id-id      (car id-type))
 	  (old-global (find-global/module id-id module))
-	  (global     (declare-global-scnst! id
-					     module
-					     'static
-					     node
-					     class
-					     loc)))
+	  (global     (declare-global-scnst! id #f module
+			 'static node class loc)))
       ;; we set the removable field
       (remove-var-from! 'now global)
       ;; and we return the global
@@ -235,34 +222,29 @@
 ;*    def-global-svar! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (def-global-svar! id module src-exp rem)
-   (let* ((loc        (find-location src-exp))
-	  (id-type    (parse-id id loc))
-	  (id-id      (car id-type))
+   (let* ((loc (find-location src-exp))
+	  (id-type (parse-id id loc))
+	  (id-id (car id-type))
 	  (old-global (find-global/module id-id module))
-	  (import     (if (and (>=fx *bdb-debug* 3)
-			       (memq 'bdb (backend-debug-support (the-backend))))
-			  'export
-			  'static))
-	  (type       (let ((type (cdr id-type)))
-			 ;; we check that global exported variable are defined
-			 ;; without type or with the obj type.
-			 (if (not (eq? (type-class type) 'bigloo))
-			     (user-error id-id
-					 "Illegal type for global variable"
-					 (shape type))
-			     type)))
-	  (global     (cond
-			 ((not (global? old-global))
-			  (declare-global-svar! id
-						module
-						import
-						src-exp
-						#f))
-			 (else
-			  (check-svar-definition old-global
-						 type
-						 src-exp))))
-	  (def-loc    (find-location src-exp)))
+	  (import (if (and (>=fx *bdb-debug* 3)
+			   (memq 'bdb (backend-debug-support (the-backend))))
+		      'export
+		      'static))
+	  (type (let ((type (cdr id-type)))
+		   ;; we check that global exported variable are defined
+		   ;; without type or with the obj type.
+		   (if (not (eq? (type-class type) 'bigloo))
+		       (user-error id-id
+			  "Illegal type for global variable"
+			  (shape type))
+		       type)))
+	  (global (cond
+		     ((not (global? old-global))
+		      (declare-global-svar! id #f module
+			 import src-exp #f))
+		     (else
+		      (check-svar-definition old-global type src-exp))))
+	  (def-loc (find-location src-exp)))
       ;; we set the type of the variable
       (most-defined-type! global type)
       ;; we set the location

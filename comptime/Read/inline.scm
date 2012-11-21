@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 10:30:51 1994                          */
-;*    Last change :  Mon Nov 14 19:12:50 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 21 07:03:50 2012 (serrano)                */
+;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We scan files in order to find `inline' definitions.             */
 ;*=====================================================================*/
@@ -64,8 +64,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    look-for-definitions ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (look-for-definitions  inlines macros syntaxes expanders
-			       code exps fnames module port)
+(define (look-for-definitions inlines macros syntaxes expanders
+	   code exps fnames module port)
    (let loop ((inlines inlines)
 	      (macros macros)
 	      (syntaxes syntaxes)
@@ -76,52 +76,50 @@
       (multiple-value-bind (inlines macros syntaxes expanders)
 	 (look-for/exp inlines macros syntaxes expanders exp module)
 	 (cond
-	    ((and (null? inlines)
-		  (null? macros)
-		  (null? syntaxes)
-		  (null? expanders))
+	    ((and (null? inlines) (null? macros)
+		  (null? syntaxes) (null? expanders))
 	     'done)
 	    ((eof-object? exp)
 	     (if (null? fnames)
 		 (cond
 		    ((pair? macros)
 		     (user-error "import"
-				 "Can't find macro definition(s)"
-				 (map car macros)))
+			"Can't find macro definition(s)"
+			(map car macros)))
 		    ((pair? syntaxes)
 		     (user-error "import"
-				 "Can't find syntax definition(s)"
-				 (map car syntaxes)))
+			"Can't find syntax definition(s)"
+			(map car syntaxes)))
 		    ((pair? expanders)
 		     (user-error "import"
-				 "Can't find expander definition(s)"
-				 (map car expanders)))
+			"Can't find expander definition(s)"
+			(map car expanders)))
 		    (else
 		     (user-error "import"
-				 "Can't find inline/generic definition(s)"
-				 (map car inlines))))
+			"Can't find inline/generic definition(s)"
+			(map car inlines))))
 		 (let ((fname (find-file/path (car fnames) *load-path*)))
 		    (if (not (string? fname))
 			(user-error "import" "Can't find file" (car fnames))
 			(let ((port (open-inline-file fname)))
 			   (unwind-protect
 			      (loop inlines
-				    macros
-				    syntaxes
-				    expanders
-				    (compiler-read port #t)
-				    (cdr fnames)
-				    port)
+				 macros
+				 syntaxes
+				 expanders
+				 (compiler-read port #t)
+				 (cdr fnames)
+				 port)
 			      (if (input-port? port)
 				  (close-input-port port))))))))
 	    (else
 	     (loop inlines
-		   macros
-		   syntaxes
-		   expanders
-		   (compiler-read port #t)
-		   fnames
-		   port))))))
+		macros
+		syntaxes
+		expanders
+		(compiler-read port #t)
+		fnames
+		port))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    look-for/exp ...                                                 */

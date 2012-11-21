@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Fri May 11 16:17:27 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 07:19:51 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -142,7 +142,7 @@
    (let* ((loc (find-location src-def))
 	  (class-var (car cdef))
 	  (class-id (id-of-id class-var loc))
-	  (holder (import-parser module class-id))
+	  (holder (import-parser module class-id #f))
 	  (final? (eq? kind 'final))
 	  (wide (if (eq? kind 'wide) 'widening #f))
 	  (tclass (declare-class-type! cdef holder wide

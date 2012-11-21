@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Thu Mar 22 07:52:15 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 05:44:32 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
@@ -103,12 +103,13 @@
 ;*---------------------------------------------------------------------*/
 (define (do-module mclause name clauses)
    (let ((clauses (cons (early-with-clauses)
-			(if (symbol? *main*)
-			    (cons `(main ,*main*) clauses)
-			    clauses))))
+		     (if (symbol? *main*)
+			 (cons `(main ,*main*) clauses)
+			 clauses))))
       (if (not (legal-module-name? name))
 	  (user-error "Parse error" "Illegal module name" mclause)
 	  (begin
+	     (enter-function (string->symbol (format "module ~a" name)))
 	     (set! *module* name)
 	     (set! *module-clause* mclause)
 	     (set! *module-location* (if (epair? mclause)
@@ -123,7 +124,8 @@
 		(for-each produce-module-clause! clauses)
 		(set! *module-checksum* (checksum-module mclause))
 		(pass-postlude (finalize-clause-compilations)
-			       additional-heap-restore-globals!))))))
+		   leave-function
+		   additional-heap-restore-globals!))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    produce-library-clauses ...                                      */
@@ -233,10 +235,7 @@
 ;*---------------------------------------------------------------------*/
 (define (find-clause-producer keyword clause)
    (define (unknown-clause-producer values)
-      (user-error "Parse error"
-		  "Unknown module clause"
-		  clause
-		  '()))
+      (user-error "Parse error" "Unknown module clause" clause '()))
    (let loop ((cc *clause-compilers*))
       (cond
 	 ((null? cc)
@@ -301,10 +300,7 @@
 ;*---------------------------------------------------------------------*/
 (define (find-clause-consumer keyword clause)
    (define (unknown-clause-consumer module values)
-      (user-error "Parse error"
-		  "Unknown module clause"
-		  clause
-		  '()))
+      (user-error "Parse error" "Unknown module clause" clause '()))
    (let loop ((cc *clause-compilers*))
       (cond
 	 ((null? cc)
@@ -332,10 +328,7 @@
 	  (else
 	   (module-checksum mclause *mco-include-path*))))
       (else
-       (user-error "Parse error"
-		   "Illegal module declaration"
-		   mclause
-		   '()))))
+       (user-error "Parse error" "Illegal module declaration" mclause '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-module ...                                                  */

@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (3.9b)
-;; Inria -- Sophia Antipolis     Sun Nov 18 13:18:57 CET 2012 
+;; Inria -- Sophia Antipolis     Tue Nov 20 19:34:36 CET 2012 
 ;; (bigloo.new -classgen Ast/var.scm)
 ;; ==========================================================
 
@@ -18,7 +18,7 @@
 ;; variable
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-variable::variable id1261::symbol name1262::obj type1263::type value1264::value access1265::obj fast-alpha1266::obj removable1267::obj occurrence1268::long occurrencew1269::long user?1270::bool)
+    (inline make-variable::variable id1264::symbol name1265::obj type1266::type value1267::value access1268::obj fast-alpha1269::obj removable1270::obj occurrence1271::long occurrencew1272::long user?1273::bool)
     (inline variable?::bool ::obj)
     (variable-nil::variable)
     (inline variable-user?::bool ::variable)
@@ -44,9 +44,11 @@
 ;; global
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-global::global id1241::symbol name1242::obj type1243::type value1244::value access1245::obj fast-alpha1246::obj removable1247::obj occurrence1248::long occurrencew1249::long user?1250::bool module1251::symbol import1252::obj evaluable?1253::bool eval?1254::bool library1255::obj pragma1256::obj src1257::obj jvm-type-name1258::bstring init1259::obj)
+    (inline make-global::global id1243::symbol name1244::obj type1245::type value1246::value access1247::obj fast-alpha1248::obj removable1249::obj occurrence1250::long occurrencew1251::long user?1252::bool module1253::symbol import1254::obj evaluable?1255::bool eval?1256::bool library1257::obj pragma1258::obj src1259::obj jvm-type-name1260::bstring init1261::obj alias1262::obj)
     (inline global?::bool ::obj)
     (global-nil::global)
+    (inline global-alias::obj ::global)
+    (inline global-alias-set! ::global ::obj)
     (inline global-init::obj ::global)
     (inline global-init-set! ::global ::obj)
     (inline global-jvm-type-name::bstring ::global)
@@ -88,7 +90,7 @@
 ;; local
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-local::local id1229::symbol name1230::obj type1231::type value1232::value access1233::obj fast-alpha1234::obj removable1235::obj occurrence1236::long occurrencew1237::long user?1238::bool key1239::long)
+    (inline make-local::local id1231::symbol name1232::obj type1233::type value1234::value access1235::obj fast-alpha1236::obj removable1237::obj occurrence1238::long occurrencew1239::long user?1240::bool key1241::long)
     (inline local?::bool ::obj)
     (local-nil::local)
     (inline local-key::long ::local)
@@ -115,7 +117,7 @@
 ;; fun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fun::fun arity1220::long side-effect1221::obj predicate-of1222::obj stack-allocator1223::obj top?1224::bool the-closure1225::obj effect1226::obj failsafe1227::obj)
+    (inline make-fun::fun arity1222::long side-effect1223::obj predicate-of1224::obj stack-allocator1225::obj top?1226::bool the-closure1227::obj effect1228::obj failsafe1229::obj)
     (inline fun?::bool ::obj)
     (fun-nil::fun)
     (inline fun-failsafe::obj ::fun)
@@ -137,7 +139,7 @@
 ;; sfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun::sfun arity1200::long side-effect1201::obj predicate-of1202::obj stack-allocator1203::obj top?1204::bool the-closure1205::obj effect1206::obj failsafe1207::obj property1208::obj args1209::obj args-name1210::obj body1211::obj class1212::obj dsssl-keywords1213::obj loc1214::obj optionals1215::obj keys1216::obj the-closure-global1217::obj strength1218::symbol)
+    (inline make-sfun::sfun arity1202::long side-effect1203::obj predicate-of1204::obj stack-allocator1205::obj top?1206::bool the-closure1207::obj effect1208::obj failsafe1209::obj property1210::obj args1211::obj args-name1212::obj body1213::obj class1214::obj dsssl-keywords1215::obj loc1216::obj optionals1217::obj keys1218::obj the-closure-global1219::obj strength1220::symbol)
     (inline sfun?::bool ::obj)
     (sfun-nil::sfun)
     (inline sfun-strength::symbol ::sfun)
@@ -178,7 +180,7 @@
 ;; cfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cfun::cfun arity1187::long side-effect1188::obj predicate-of1189::obj stack-allocator1190::obj top?1191::bool the-closure1192::obj effect1193::obj failsafe1194::obj args-type1195::obj macro?1196::bool infix?1197::bool method1198::pair-nil)
+    (inline make-cfun::cfun arity1188::long side-effect1189::obj predicate-of1190::obj stack-allocator1191::obj top?1192::bool the-closure1193::obj effect1194::obj failsafe1195::obj args-type1196::obj macro?1197::bool infix?1198::bool method1199::pair-nil)
     (inline cfun?::bool ::obj)
     (cfun-nil::cfun)
     (inline cfun-method::pair-nil ::cfun)
@@ -206,7 +208,7 @@
 ;; svar
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-svar::svar loc1185::obj)
+    (inline make-svar::svar loc1186::obj)
     (inline svar?::bool ::obj)
     (svar-nil::svar)
     (inline svar-loc::obj ::svar)
@@ -215,7 +217,7 @@
 ;; scnst
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-scnst::scnst node1181::obj class1182::obj loc1183::obj)
+    (inline make-scnst::scnst node1182::obj class1183::obj loc1184::obj)
     (inline scnst?::bool ::obj)
     (scnst-nil::scnst)
     (inline scnst-loc::obj ::scnst)
@@ -227,7 +229,7 @@
 ;; cvar
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cvar::cvar macro?1179::bool)
+    (inline make-cvar::cvar macro?1180::bool)
     (inline cvar?::bool ::obj)
     (cvar-nil::cvar)
     (inline cvar-macro?::bool ::cvar))))
@@ -235,7 +237,7 @@
 ;; sexit
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sexit::sexit handler1175::obj detached?1176::bool)
+    (inline make-sexit::sexit handler1177::obj detached?1178::bool)
     (inline sexit?::bool ::obj)
     (sexit-nil::sexit)
     (inline sexit-detached?::bool ::sexit)
@@ -246,7 +248,7 @@
 ;; feffect
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-feffect::feffect read1172::obj write1173::obj)
+    (inline make-feffect::feffect read1174::obj write1175::obj)
     (inline feffect?::bool ::obj)
     (feffect-nil::feffect)
     (inline feffect-write::obj ::feffect)
@@ -262,7 +264,7 @@
 (define (value-nil::value) (class-nil (@ value ast_var)))
 
 ;; variable
-(define-inline (make-variable::variable id1261::symbol name1262::obj type1263::type value1264::value access1265::obj fast-alpha1266::obj removable1267::obj occurrence1268::long occurrencew1269::long user?1270::bool) (instantiate::variable (id id1261) (name name1262) (type type1263) (value value1264) (access access1265) (fast-alpha fast-alpha1266) (removable removable1267) (occurrence occurrence1268) (occurrencew occurrencew1269) (user? user?1270)))
+(define-inline (make-variable::variable id1264::symbol name1265::obj type1266::type value1267::value access1268::obj fast-alpha1269::obj removable1270::obj occurrence1271::long occurrencew1272::long user?1273::bool) (instantiate::variable (id id1264) (name name1265) (type type1266) (value value1267) (access access1268) (fast-alpha fast-alpha1269) (removable removable1270) (occurrence occurrence1271) (occurrencew occurrencew1272) (user? user?1273)))
 (define-inline (variable?::bool obj::obj) ((@ isa? __object) obj (@ variable ast_var)))
 (define (variable-nil::variable) (class-nil (@ variable ast_var)))
 (define-inline (variable-user?::bool o::variable) (with-access::variable o (user?) user?))
@@ -287,9 +289,11 @@
 (define-inline (variable-id-set! o::variable v::symbol) (with-access::variable o (id) (set! id v)))
 
 ;; global
-(define-inline (make-global::global id1241::symbol name1242::obj type1243::type value1244::value access1245::obj fast-alpha1246::obj removable1247::obj occurrence1248::long occurrencew1249::long user?1250::bool module1251::symbol import1252::obj evaluable?1253::bool eval?1254::bool library1255::obj pragma1256::obj src1257::obj jvm-type-name1258::bstring init1259::obj) (instantiate::global (id id1241) (name name1242) (type type1243) (value value1244) (access access1245) (fast-alpha fast-alpha1246) (removable removable1247) (occurrence occurrence1248) (occurrencew occurrencew1249) (user? user?1250) (module module1251) (import import1252) (evaluable? evaluable?1253) (eval? eval?1254) (library library1255) (pragma pragma1256) (src src1257) (jvm-type-name jvm-type-name1258) (init init1259)))
+(define-inline (make-global::global id1243::symbol name1244::obj type1245::type value1246::value access1247::obj fast-alpha1248::obj removable1249::obj occurrence1250::long occurrencew1251::long user?1252::bool module1253::symbol import1254::obj evaluable?1255::bool eval?1256::bool library1257::obj pragma1258::obj src1259::obj jvm-type-name1260::bstring init1261::obj alias1262::obj) (instantiate::global (id id1243) (name name1244) (type type1245) (value value1246) (access access1247) (fast-alpha fast-alpha1248) (removable removable1249) (occurrence occurrence1250) (occurrencew occurrencew1251) (user? user?1252) (module module1253) (import import1254) (evaluable? evaluable?1255) (eval? eval?1256) (library library1257) (pragma pragma1258) (src src1259) (jvm-type-name jvm-type-name1260) (init init1261) (alias alias1262)))
 (define-inline (global?::bool obj::obj) ((@ isa? __object) obj (@ global ast_var)))
 (define (global-nil::global) (class-nil (@ global ast_var)))
+(define-inline (global-alias::obj o::global) (with-access::global o (alias) alias))
+(define-inline (global-alias-set! o::global v::obj) (with-access::global o (alias) (set! alias v)))
 (define-inline (global-init::obj o::global) (with-access::global o (init) init))
 (define-inline (global-init-set! o::global v::obj) (with-access::global o (init) (set! init v)))
 (define-inline (global-jvm-type-name::bstring o::global) (with-access::global o (jvm-type-name) jvm-type-name))
@@ -330,7 +334,7 @@
 (define-inline (global-id-set! o::global v::symbol) (with-access::global o (id) (set! id v)))
 
 ;; local
-(define-inline (make-local::local id1229::symbol name1230::obj type1231::type value1232::value access1233::obj fast-alpha1234::obj removable1235::obj occurrence1236::long occurrencew1237::long user?1238::bool key1239::long) (instantiate::local (id id1229) (name name1230) (type type1231) (value value1232) (access access1233) (fast-alpha fast-alpha1234) (removable removable1235) (occurrence occurrence1236) (occurrencew occurrencew1237) (user? user?1238) (key key1239)))
+(define-inline (make-local::local id1231::symbol name1232::obj type1233::type value1234::value access1235::obj fast-alpha1236::obj removable1237::obj occurrence1238::long occurrencew1239::long user?1240::bool key1241::long) (instantiate::local (id id1231) (name name1232) (type type1233) (value value1234) (access access1235) (fast-alpha fast-alpha1236) (removable removable1237) (occurrence occurrence1238) (occurrencew occurrencew1239) (user? user?1240) (key key1241)))
 (define-inline (local?::bool obj::obj) ((@ isa? __object) obj (@ local ast_var)))
 (define (local-nil::local) (class-nil (@ local ast_var)))
 (define-inline (local-key::long o::local) (with-access::local o (key) key))
@@ -357,7 +361,7 @@
 (define-inline (local-id-set! o::local v::symbol) (with-access::local o (id) (set! id v)))
 
 ;; fun
-(define-inline (make-fun::fun arity1220::long side-effect1221::obj predicate-of1222::obj stack-allocator1223::obj top?1224::bool the-closure1225::obj effect1226::obj failsafe1227::obj) (instantiate::fun (arity arity1220) (side-effect side-effect1221) (predicate-of predicate-of1222) (stack-allocator stack-allocator1223) (top? top?1224) (the-closure the-closure1225) (effect effect1226) (failsafe failsafe1227)))
+(define-inline (make-fun::fun arity1222::long side-effect1223::obj predicate-of1224::obj stack-allocator1225::obj top?1226::bool the-closure1227::obj effect1228::obj failsafe1229::obj) (instantiate::fun (arity arity1222) (side-effect side-effect1223) (predicate-of predicate-of1224) (stack-allocator stack-allocator1225) (top? top?1226) (the-closure the-closure1227) (effect effect1228) (failsafe failsafe1229)))
 (define-inline (fun?::bool obj::obj) ((@ isa? __object) obj (@ fun ast_var)))
 (define (fun-nil::fun) (class-nil (@ fun ast_var)))
 (define-inline (fun-failsafe::obj o::fun) (with-access::fun o (failsafe) failsafe))
@@ -378,7 +382,7 @@
 (define-inline (fun-arity-set! o::fun v::long) (with-access::fun o (arity) (set! arity v)))
 
 ;; sfun
-(define-inline (make-sfun::sfun arity1200::long side-effect1201::obj predicate-of1202::obj stack-allocator1203::obj top?1204::bool the-closure1205::obj effect1206::obj failsafe1207::obj property1208::obj args1209::obj args-name1210::obj body1211::obj class1212::obj dsssl-keywords1213::obj loc1214::obj optionals1215::obj keys1216::obj the-closure-global1217::obj strength1218::symbol) (instantiate::sfun (arity arity1200) (side-effect side-effect1201) (predicate-of predicate-of1202) (stack-allocator stack-allocator1203) (top? top?1204) (the-closure the-closure1205) (effect effect1206) (failsafe failsafe1207) (property property1208) (args args1209) (args-name args-name1210) (body body1211) (class class1212) (dsssl-keywords dsssl-keywords1213) (loc loc1214) (optionals optionals1215) (keys keys1216) (the-closure-global the-closure-global1217) (strength strength1218)))
+(define-inline (make-sfun::sfun arity1202::long side-effect1203::obj predicate-of1204::obj stack-allocator1205::obj top?1206::bool the-closure1207::obj effect1208::obj failsafe1209::obj property1210::obj args1211::obj args-name1212::obj body1213::obj class1214::obj dsssl-keywords1215::obj loc1216::obj optionals1217::obj keys1218::obj the-closure-global1219::obj strength1220::symbol) (instantiate::sfun (arity arity1202) (side-effect side-effect1203) (predicate-of predicate-of1204) (stack-allocator stack-allocator1205) (top? top?1206) (the-closure the-closure1207) (effect effect1208) (failsafe failsafe1209) (property property1210) (args args1211) (args-name args-name1212) (body body1213) (class class1214) (dsssl-keywords dsssl-keywords1215) (loc loc1216) (optionals optionals1217) (keys keys1218) (the-closure-global the-closure-global1219) (strength strength1220)))
 (define-inline (sfun?::bool obj::obj) ((@ isa? __object) obj (@ sfun ast_var)))
 (define (sfun-nil::sfun) (class-nil (@ sfun ast_var)))
 (define-inline (sfun-strength::symbol o::sfun) (with-access::sfun o (strength) strength))
@@ -421,7 +425,7 @@
 (define-inline (sfun-arity-set! o::sfun v::long) (with-access::sfun o (arity) (set! arity v)))
 
 ;; cfun
-(define-inline (make-cfun::cfun arity1187::long side-effect1188::obj predicate-of1189::obj stack-allocator1190::obj top?1191::bool the-closure1192::obj effect1193::obj failsafe1194::obj args-type1195::obj macro?1196::bool infix?1197::bool method1198::pair-nil) (instantiate::cfun (arity arity1187) (side-effect side-effect1188) (predicate-of predicate-of1189) (stack-allocator stack-allocator1190) (top? top?1191) (the-closure the-closure1192) (effect effect1193) (failsafe failsafe1194) (args-type args-type1195) (macro? macro?1196) (infix? infix?1197) (method method1198)))
+(define-inline (make-cfun::cfun arity1188::long side-effect1189::obj predicate-of1190::obj stack-allocator1191::obj top?1192::bool the-closure1193::obj effect1194::obj failsafe1195::obj args-type1196::obj macro?1197::bool infix?1198::bool method1199::pair-nil) (instantiate::cfun (arity arity1188) (side-effect side-effect1189) (predicate-of predicate-of1190) (stack-allocator stack-allocator1191) (top? top?1192) (the-closure the-closure1193) (effect effect1194) (failsafe failsafe1195) (args-type args-type1196) (macro? macro?1197) (infix? infix?1198) (method method1199)))
 (define-inline (cfun?::bool obj::obj) ((@ isa? __object) obj (@ cfun ast_var)))
 (define (cfun-nil::cfun) (class-nil (@ cfun ast_var)))
 (define-inline (cfun-method::pair-nil o::cfun) (with-access::cfun o (method) method))
@@ -450,14 +454,14 @@
 (define-inline (cfun-arity-set! o::cfun v::long) (with-access::cfun o (arity) (set! arity v)))
 
 ;; svar
-(define-inline (make-svar::svar loc1185::obj) (instantiate::svar (loc loc1185)))
+(define-inline (make-svar::svar loc1186::obj) (instantiate::svar (loc loc1186)))
 (define-inline (svar?::bool obj::obj) ((@ isa? __object) obj (@ svar ast_var)))
 (define (svar-nil::svar) (class-nil (@ svar ast_var)))
 (define-inline (svar-loc::obj o::svar) (with-access::svar o (loc) loc))
 (define-inline (svar-loc-set! o::svar v::obj) (with-access::svar o (loc) (set! loc v)))
 
 ;; scnst
-(define-inline (make-scnst::scnst node1181::obj class1182::obj loc1183::obj) (instantiate::scnst (node node1181) (class class1182) (loc loc1183)))
+(define-inline (make-scnst::scnst node1182::obj class1183::obj loc1184::obj) (instantiate::scnst (node node1182) (class class1183) (loc loc1184)))
 (define-inline (scnst?::bool obj::obj) ((@ isa? __object) obj (@ scnst ast_var)))
 (define (scnst-nil::scnst) (class-nil (@ scnst ast_var)))
 (define-inline (scnst-loc::obj o::scnst) (with-access::scnst o (loc) loc))
@@ -468,14 +472,14 @@
 (define-inline (scnst-node-set! o::scnst v::obj) (with-access::scnst o (node) (set! node v)))
 
 ;; cvar
-(define-inline (make-cvar::cvar macro?1179::bool) (instantiate::cvar (macro? macro?1179)))
+(define-inline (make-cvar::cvar macro?1180::bool) (instantiate::cvar (macro? macro?1180)))
 (define-inline (cvar?::bool obj::obj) ((@ isa? __object) obj (@ cvar ast_var)))
 (define (cvar-nil::cvar) (class-nil (@ cvar ast_var)))
 (define-inline (cvar-macro?::bool o::cvar) (with-access::cvar o (macro?) macro?))
 (define-inline (cvar-macro?-set! o::cvar v::bool) (with-access::cvar o (macro?) (set! macro? v)))
 
 ;; sexit
-(define-inline (make-sexit::sexit handler1175::obj detached?1176::bool) (instantiate::sexit (handler handler1175) (detached? detached?1176)))
+(define-inline (make-sexit::sexit handler1177::obj detached?1178::bool) (instantiate::sexit (handler handler1177) (detached? detached?1178)))
 (define-inline (sexit?::bool obj::obj) ((@ isa? __object) obj (@ sexit ast_var)))
 (define (sexit-nil::sexit) (class-nil (@ sexit ast_var)))
 (define-inline (sexit-detached?::bool o::sexit) (with-access::sexit o (detached?) detached?))
@@ -484,7 +488,7 @@
 (define-inline (sexit-handler-set! o::sexit v::obj) (with-access::sexit o (handler) (set! handler v)))
 
 ;; feffect
-(define-inline (make-feffect::feffect read1172::obj write1173::obj) (instantiate::feffect (read read1172) (write write1173)))
+(define-inline (make-feffect::feffect read1174::obj write1175::obj) (instantiate::feffect (read read1174) (write write1175)))
 (define-inline (feffect?::bool obj::obj) ((@ isa? __object) obj (@ feffect ast_var)))
 (define (feffect-nil::feffect) (class-nil (@ feffect ast_var)))
 (define-inline (feffect-write::obj o::feffect) (with-access::feffect o (write) write))

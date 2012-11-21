@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 10:58:45 1996                          */
-;*    Last change :  Sun Jan 25 14:32:56 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 21 07:29:46 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The static clauses compilation.                                  */
 ;*=====================================================================*/
@@ -59,13 +59,9 @@
 	  '())
 	 (else
 	  (user-error/location (find-location *module-clause*)
-			       "Parse error"
-			       (string-append
-				"Illegal `"
-				(string-downcase (symbol->string mode))
-				"' clause")
-			       clause
-			       '())))))
+	     (format "Parse error \"~a\" clause"
+		(string-downcase (symbol->string mode)))
+	     clause '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    export-consumer ...                                              */
@@ -76,10 +72,7 @@
        protos)
       (else
        (user-error/location (find-location *module-clause*)
-			    "Parse error"
-			    "Illegal `export' clause"
-			    clause
-			    '()))))
+	  "Parse error" "Illegal \"export\" clause" clause '()))))
    
 ;*---------------------------------------------------------------------*/
 ;*    statexp-parser ...                                               */
@@ -88,55 +81,36 @@
    (let ((proto (parse-prototype prototype)))
       (if (not (pair? proto))
 	  (user-error/location (find-location *module-clause*)
-			       "Parse error"
-			       "Illegal prototype"
-			       prototype
-			       '())
+	     "Parse error" "Illegal prototype" prototype '())
 	  (case (car proto)
 	     ((sfun sifun sgfun)
-	      (to-be-define! (declare-global-sfun! (cadr proto)
-						   (caddr proto)
-						   *module*
-						   import
-						   (car proto)
-						   prototype
-						   #f)))
+	      (to-be-define!
+		 (declare-global-sfun! (cadr proto) #f (caddr proto) *module*
+		    import (car proto) prototype #f)))
 	     ((svar)
-	      (to-be-define! (declare-global-svar! (cadr proto)
-						   *module*
-						   import
-						   prototype
-						   #f)))
+	      (to-be-define!
+		 (declare-global-svar! (cadr proto) #f *module*
+		    import prototype #f)))
 	     ((class)
-	      (to-be-declare! (delay (declare-class! (cdr proto)
-						     *module*
-						     import
-						     #f
-						     #f
-						     prototype
-						     #f))))
+	      (to-be-declare!
+		 (delay
+		    (declare-class! (cdr proto) *module* import
+		       #f #f prototype #f))))
 	     ((abstract-class)
-	      (to-be-declare! (delay (declare-class! (cdr proto)
-						     *module*
-						     import
-						     #f
-						     #t
-						     prototype
-						     #f))))
+	      (to-be-declare!
+		 (delay
+		    (declare-class! (cdr proto) *module* import
+		       #f #t prototype #f))))
 	     ((final-class)
-	      (to-be-declare! (delay (declare-class! (cdr proto)
-						     *module*
-						     import
-						     #t
-						     #f
-						     prototype
-						     #f))))
+	      (to-be-declare!
+		 (delay
+		    (declare-class! (cdr proto) *module* import
+		       #t #f prototype #f))))
 	     ((wide-class)
-	      (to-be-declare! (delay (declare-wide-class! (cdr proto)
-							  *module*
-							  import
-							  prototype
-							  #f))))
+	      (to-be-declare!
+		 (delay
+		    (declare-wide-class! (cdr proto) *module* import
+		       prototype #f))))
 	     ((define-macro)
 	      (eval proto))
 	     ((macro)

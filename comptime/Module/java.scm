@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 16:05:33 2000                          */
-;*    Last change :  Sat Oct 13 07:39:57 2012 (serrano)                */
+;*    Last change :  Wed Nov 21 07:30:08 2012 (serrano)                */
 ;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Java module clause handling.                                 */
@@ -415,7 +415,7 @@
    (let* ((pid (parse-id id (find-location src)))
 	  (ln (car pid))
 	  (tid (type-id (cdr pid))))
-      (let ((g (declare-global-cfun! ln module jname tid args #f #f src #f)))
+      (let ((g (declare-global-cfun! ln #f module jname tid args #f #f src #f)))
 	 (cfun-method-set! (global-value g) modifiers)
 	 (global-jvm-type-name-set! g kname)
 	 g)))

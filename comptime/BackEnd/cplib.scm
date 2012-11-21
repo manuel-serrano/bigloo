@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Tue Nov 20 14:46:16 2012 (serrano)                */
+;*    Last change :  Tue Nov 20 18:23:03 2012 (serrano)                */
 ;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -155,15 +155,14 @@
 	  name
 	  (let ((n (cond
 		      ((global? variable)
-		       (with-access::global variable (id module)
-			  (bigloo-module-mangle (symbol->string id)
+		       (with-access::global variable (id module alias)
+			  (bigloo-module-mangle (symbol->string (or alias id))
 			     (symbol->string module))))
 		      ((local? variable)
 		       (with-access::local variable (id key)
-			  (bigloo-mangle (string-append
-					    (symbol->string id)
-					    "_"
-					    (integer->string key)))))
+			  (bigloo-mangle
+			     (string-append
+				(symbol->string id) "_" (integer->string key)))))
 		      (else
 		       (internal-error "set-variable-name!"
 			  "Unknown variable sort"
