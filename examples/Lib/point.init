@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 19 12:52:33 1998                          */
-;*    Last change :  Mon Jun 11 07:39:00 2007 (serrano)                */
+;*    Last change :  Thu Nov 22 17:23:18 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The initialization file for the point library                    */
 ;*=====================================================================*/
@@ -12,10 +12,10 @@
 ;*    The mapping from the Bigloo name to the actual OS lib.           */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'point
-                  :srfi '(point)
-                  :version "1.0"
-                  :module-init 'point
-                  :eval-init '__make-point-lib)
+   :srfi '(point)
+   :version "1.0"
+   :module-init 'point
+   :module-eval '__make-point-lib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Additional path                                                  */

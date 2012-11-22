@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sat Dec 19 12:58:58 1998                          */
-#*    Last change :  Mon Jun  7 17:28:52 2010 (serrano)                */
-#*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Nov 22 17:21:43 2012 (serrano)                */
+#*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the point library                          */
 #*=====================================================================*/
@@ -52,7 +52,7 @@ all: heap lib example
 
 heap: point.heap
 
-point.heap: point.sch scm-point.scm
+point.heap: point.sch scm_point.scm
 	$(BIGLOO) $(BHEAPFLAGS) make_lib.scm -addheap point.heap
 
 lib: lib_u lib.a
@@ -69,7 +69,7 @@ olib:
 olib_u:
 	mkdir olib_u
 
-olib_u/scm-point.o olib/scm-point.o: scm-point.scm
+olib_u/scm_point.o olib/scm_point.o: scm_point.scm
 	$(BIGLOO) $(BSAFEFLAGS) $(<F) -o $*.o -c
 
 olib_u/point.o olib/point.o: point.c
@@ -83,7 +83,7 @@ example: heap lib
 
 clean:
 	@- $(RM) -f point.heap
-	@- $(RM) -f point.sch scm-point.c
+	@- $(RM) -f point.sch scm_point.c
 	@- $(RM) -fr olib olib_u
 	@- $(RM) -f example example.c example.o
 	@- $(RM) -f libpoint_s-$(LIBVERSION).a libpoint_u-$(LIBVERSION).a

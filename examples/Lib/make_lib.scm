@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 19 13:01:37 1998                          */
-;*    Last change :  Mon Apr 21 09:11:00 2008 (serrano)                */
+;*    Last change :  Thu Nov 22 17:21:55 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The file to make the point heap.                                 */
 ;*=====================================================================*/
@@ -13,6 +13,6 @@
 ;*---------------------------------------------------------------------*/
 (module __make-point-lib
 
-   (import (point "scm-point.scm"))
+   (import (point "scm_point.scm"))
 
    (eval (export-all)))
