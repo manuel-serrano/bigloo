@@ -151,7 +151,7 @@
 ;*    find-last-node ::sync ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (find-last-node node::sync)
-   (with-access::sync node (mutex nodes)
+   (with-access::sync node (mutex prelock nodes)
       (if (pair? nodes)
 	  (find-last-node (car (last-pair nodes)))
 	  mutex)))
@@ -288,8 +288,9 @@
 ;*    trace-node ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::sync stack)
-   (with-access::sync node (mutex nodes)
+   (with-access::sync node (mutex prelock nodes)
       (set! mutex (trace-node mutex stack))
+      (set! prelock (trace-node prelock stack))
       (trace-node*! nodes stack))
    node)
 
@@ -455,6 +456,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (toplevel-trace-node node::sync)
    (sync-mutex-set! node (toplevel-trace-node (sync-mutex node)))
+   (sync-prelock-set! node (toplevel-trace-node (sync-prelock node)))
    (toplevel-trace-node*! (sync-nodes node))
    node)
 

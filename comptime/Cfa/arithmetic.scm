@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Sat Nov 17 07:24:09 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:23:29 2012 (serrano)                */
 ;*    Copyright   :  2000-12 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
@@ -111,8 +111,9 @@
 ;*    cleanup-node! ::sync ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (cleanup-node! node::sync)
-   (with-access::sync node (nodes mutex type)
+   (with-access::sync node (nodes mutex prelock type)
       (cleanup-node! mutex)
+      (cleanup-node! prelock)
       (when (pair? nodes)
 	 (for-each cleanup-node! nodes)
 	 (when (eq? type *_*)

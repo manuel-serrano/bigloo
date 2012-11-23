@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Sat Nov 17 07:01:04 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:16:45 2012 (serrano)                */
 ;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -99,6 +99,7 @@
 (define-method (check-node-sharing node::sync context)
    (call-next-method)
    (check-node-sharing (sync-mutex node) node)
+   (check-node-sharing (sync-prelock node) node)
    (check-node-sharing* (sync-nodes node) node))
 
 ;*---------------------------------------------------------------------*/

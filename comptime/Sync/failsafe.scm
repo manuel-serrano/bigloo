@@ -82,8 +82,10 @@
 ;*    failsafe? ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (failsafe? n::sync stk)
-   (with-access::sync n (mutex nodes)
-      (and (failsafe? mutex stk) (every (lambda (n) (failsafe? n stk)) nodes))))
+   (with-access::sync n (mutex prelock nodes)
+      (and (failsafe? mutex stk)
+	   (failsafe? prelock stk)
+	   (every (lambda (n) (failsafe? n stk)) nodes))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::app ...                                              */

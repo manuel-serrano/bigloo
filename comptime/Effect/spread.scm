@@ -42,6 +42,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::sync)
    (spread-side-effect! (sync-mutex node))
+   (spread-side-effect! (sync-prelock node))
    (spread-side-effect*! (sync-nodes node))
    #t)
 

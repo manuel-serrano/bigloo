@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Nov 18 14:29:39 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:04:15 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1152,8 +1152,8 @@
 	  (generic-default generic)
 	  (let ((obj-super-class-num (class-num super)))
 	     (let ((method (method-array-ref generic
-					     (generic-method-array generic)
-					     obj-super-class-num)))
+			      (generic-method-array generic)
+			      obj-super-class-num)))
 		(if method
 		    method
 		    (let ((new-super (class-super super)))
@@ -1168,8 +1168,8 @@
 	  (cons #f #f)
 	  (let ((obj-super-class-num (class-num class)))
 	     (let ((method (method-array-ref generic
-					     (generic-method-array generic)
-					     obj-super-class-num)))
+			      (generic-method-array generic)
+			      obj-super-class-num)))
 		(if method
 		    (cons class method)
 		    (loop (class-super class))))))))

@@ -157,8 +157,9 @@
 ;*    displace-let-fun-node! ::sync ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (displace-let-fun-node! node::sync hosts)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (displace-let-fun-node! mutex hosts)
+      (displace-let-fun-node! prelock hosts)
       (for-each (lambda (node) (displace-let-fun-node! node hosts)) nodes)))
 
 ;*---------------------------------------------------------------------*/

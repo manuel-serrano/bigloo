@@ -107,8 +107,9 @@
 ;*    node-cond! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::sync)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (node-cond! mutex))
+      (set! prelock (node-cond! prelock))
       (node-cond*! nodes)
       node))
 

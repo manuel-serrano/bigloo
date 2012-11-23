@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Sat Nov 17 07:27:41 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:24:38 2012 (serrano)                */
 ;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
@@ -368,8 +368,9 @@
 ;*    patch! ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::sync)
-   (with-access::sync node (type nodes mutex)
+   (with-access::sync node (type nodes mutex prelock)
       (set! mutex (patch! mutex))
+      (set! prelock (patch! prelock))
       (patch*! nodes)
       (when (eq? type *obj*)
 	 (set! type *_*)

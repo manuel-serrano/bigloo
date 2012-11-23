@@ -115,6 +115,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (escape! node::sync o)
    (escape! (sync-mutex node) o)
+   (escape! (sync-prelock node) o)
    (escape*! (sync-nodes node) o))
 
 ;*---------------------------------------------------------------------*/

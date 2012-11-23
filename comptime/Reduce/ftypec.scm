@@ -88,8 +88,9 @@
 ;*    node-typec! ::sync ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::sync stack)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (node-typec! mutex stack))
+      (set! prelock (node-typec! prelock stack))
       (node-typec*! nodes stack)
       node))
 

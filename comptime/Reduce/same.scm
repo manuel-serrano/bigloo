@@ -67,9 +67,7 @@
 (define-method (same-node? node::sequence node2::node alias)
    (and (sequence? node2)
 	(eq? (node-type node) (node-type node2))
-	(same-node*? (sequence-nodes node)
-		     (sequence-nodes node2)
-		     alias)))
+	(same-node*? (sequence-nodes node) (sequence-nodes node2) alias)))
 
 ;*---------------------------------------------------------------------*/
 ;*    same-node? ::sync ...                                            */
@@ -78,9 +76,8 @@
    (and (sync? node2)
 	(eq? (node-type node) (node-type node2))
 	(same-node? (sync-mutex node) (sync-mutex node2) alias)
-	(same-node*? (sync-nodes node)
-		     (sync-nodes node2)
-		     alias)))
+	(same-node? (sync-prelock node) (sync-prelock node2) alias)
+	(same-node*? (sync-nodes node) (sync-nodes node2) alias)))
 
 ;*---------------------------------------------------------------------*/
 ;*    same-node? ::app-ly ...                                          */

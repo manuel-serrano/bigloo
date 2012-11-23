@@ -102,8 +102,9 @@
 ;*    node-typec! ::sync ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::sync)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (node-typec! mutex))
+      (set! prelock (node-typec! prelock))
       (node-typec*! nodes)
       node))
 

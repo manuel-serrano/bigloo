@@ -323,8 +323,9 @@
 ;*    node-beta! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::sync)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (node-beta! mutex))
+      (set! prelock (node-beta! prelock))
       (node-beta*! nodes)
       node))
 

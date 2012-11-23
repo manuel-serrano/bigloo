@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Sat Nov 17 07:00:16 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:16:18 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -168,6 +168,7 @@
    (duplicate::sync node
       (loc (get-inline-location node))
       (mutex (do-alphatize (sync-mutex node)))
+      (prelock (do-alphatize (sync-prelock node)))
       (nodes (map do-alphatize (sync-nodes node)))))
 
 ;*---------------------------------------------------------------------*/

@@ -49,6 +49,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (call-graph! node::sync owner)
    (call-graph! (sync-mutex node) owner)
+   (call-graph! (sync-prelock node) owner)
    (call-graph*! (sync-nodes node) owner))
 
 ;*---------------------------------------------------------------------*/

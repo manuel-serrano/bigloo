@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Sat Nov 17 07:59:49 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:15:45 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
@@ -71,7 +71,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-size node::sync)
    (let loop ((nodes (sync-nodes node))
-	      (size  (+ 1 (node-size (sync-mutex node)))))
+	      (size  (+ 1 (node-size (sync-mutex node))
+			(node-size (sync-prelock node)))))
       (if (null? nodes)
 	  (begin
 	     (widen!::sized-sync node (size size))

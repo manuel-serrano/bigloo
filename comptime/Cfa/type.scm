@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sat Nov 17 07:28:46 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:24:59 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -246,8 +246,9 @@
 ;*    type-node! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sync)
-   (with-access::sync node (type nodes mutex)
+   (with-access::sync node (type nodes mutex prelock)
       (set! mutex (type-node! mutex))
+      (set! prelock (type-node! prelock))
       (type-node*! nodes)
       (when (eq? type *_*)
 	 (if (pair? nodes)

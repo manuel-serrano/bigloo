@@ -107,11 +107,14 @@
 ;*    node-1occ! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-1occ! node::sync 1-exp*)
-   (with-access::sync node (nodes mutex)
-      (multiple-value-bind (reset nmutex)
+   (with-access::sync node (nodes mutex prelock)
+      (multiple-value-bind (resetm nmutex)
 	 (node-1occ! mutex 1-exp*)
 	 (set! mutex nmutex)
-	 (values (or (node-1occ*! nodes 1-exp*) reset) node))))
+	 (multiple-value-bind (resetp nprelock)
+	    (node-1occ! prelock 1-exp*)
+	    (set! prelock nprelock)
+	    (values (or (node-1occ*! nodes 1-exp*) resetm resetp) node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::app-ly ...                                          */

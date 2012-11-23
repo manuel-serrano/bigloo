@@ -109,6 +109,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::sync env)
    (dataflow-node! (sync-mutex node) env)
+   (dataflow-node! (sync-prelock node) env)
    (let loop ((node* (sync-nodes node))
 	      (env env))
       (if (null? node*)
@@ -447,7 +448,9 @@
 ;*    abort? ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (abort? node::sync)
-   (or (abort? (sync-mutex node)) (any abort? (sync-nodes node))))
+   (or (abort? (sync-mutex node))
+       (abort? (sync-prelock node))
+       (any abort? (sync-nodes node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    abort? ::let-var ...                                             */

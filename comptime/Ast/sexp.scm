@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Nov 16 16:43:01 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:06:49 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -746,6 +746,7 @@
 	  (loc loc)
 	  (type *_*)
 	  (mutex (sexp->node mutex stack loc 'value))
+	  (prelock (sexp->node #unspecified stack loc 'value))
 	  (nodes (sexp*->node body stack loc site)))
        (let* ((v (mark-symbol-non-user! (gensym 'mutex)))
 	      (var (make-typed-ident v 'mutex))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Sat Nov 17 07:16:06 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:22:33 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
@@ -217,8 +217,9 @@
 ;*    bdb! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (bdb! node::sync)
-   (with-access::sync node (mutex nodes)
+   (with-access::sync node (mutex prelock nodes)
       (bdb! mutex)
+      (bdb! prelock)
       (bdb*! nodes)))
 
 ;*---------------------------------------------------------------------*/

@@ -61,8 +61,8 @@
 
 ;; 
 (define-method (get e::sync r) ; ()
-   (with-access::sync e (nodes mutex)
-      (get mutex (get* nodes r)) ))
+   (with-access::sync e (nodes prelock mutex)
+      (get prelock (get mutex (get* nodes r))) ))
 
 ;;
 (define-method (get e::conditional r) ; ()

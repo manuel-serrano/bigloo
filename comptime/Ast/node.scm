@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Tue Nov 20 18:20:10 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:20:49 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -257,7 +257,7 @@
 	   ;; synchronization
 	   (final-class sync::node
 	      mutex::node
-	      (prelock::obj read-only (default #f))
+	      prelock::node
 	      (nodes::pair-nil read-only))
 	   
 	   (strict-node-type::type ::type ::type)
@@ -304,6 +304,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-walk node::sync proc::procedure)
    (node-walk (sync-mutex node) proc)
+   (node-walk (sync-prelock node) proc)
    (node-walk* (sync-nodes node) proc)
    (proc node))
 

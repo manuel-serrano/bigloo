@@ -197,8 +197,9 @@
 ;*    glo! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::sync integrator)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (glo! mutex integrator))
+      (set! prelock (glo! prelock integrator))
       (glo*! nodes integrator)
       node))
 

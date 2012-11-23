@@ -98,7 +98,9 @@
 ;*    E ::sync ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (E node::sync caller g)
-   (E* (sync-nodes node) caller (E (sync-mutex node) caller g)))
+   (E* (sync-nodes node) caller
+      (E (sync-prelock node) caller
+	 (E (sync-mutex node) caller g))))
 
 ;*---------------------------------------------------------------------*/
 ;*    E ::app ...                                                      */

@@ -106,6 +106,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::sync kfactor stack)
    (sync-mutex-set! node (inline-node (sync-mutex node) kfactor stack))
+   (sync-prelock-set! node (inline-node (sync-prelock node) kfactor stack))
    (inline-node*! (sync-nodes node) kfactor stack)
    node)
 

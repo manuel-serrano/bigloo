@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Nov 16 19:15:38 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 10:22:45 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for Bdb we have to turn all _ type into obj type. */
@@ -67,8 +67,9 @@
 ;*    spread-obj-node! ::sync ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (spread-obj-node! node::sync)
-   (with-access::sync node (mutex nodes)
+   (with-access::sync node (mutex prelock nodes)
       (spread-obj-node! mutex)
+      (spread-obj-node! prelock)
       (spread-obj-node*! nodes)))
 
 ;*---------------------------------------------------------------------*/

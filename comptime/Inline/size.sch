@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
 ;; Bigloo (3.9b)
-;; Inria -- Sophia Antipolis     Sat Nov 17 07:56:49 CET 2012 
+;; Inria -- Sophia Antipolis     Fri Nov 23 09:35:17 CET 2012 
 ;; (bigloo -classgen Inline/size.scm)
 ;; ==========================================================
 
@@ -11,7 +11,7 @@
 ;; sized-sequence
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-sized-sequence::sized-sequence loc1194::obj type1195::type side-effect1196::obj key1197::obj nodes1198::obj unsafe1199::bool size1200::long)
+    (inline make-sized-sequence::sized-sequence loc1201::obj type1202::type side-effect1204::obj key1205::obj nodes1206::obj unsafe1207::bool size1208::long)
     (inline sized-sequence?::bool ::obj)
     (sized-sequence-nil::sized-sequence)
     (inline sized-sequence-size::long ::sized-sequence)
@@ -28,11 +28,13 @@
 ;; sized-sync
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-sized-sync::sized-sync loc1188::obj type1189::type mutex1190::node nodes1191::pair-nil size1192::long)
+    (inline make-sized-sync::sized-sync loc1194::obj type1195::type mutex1196::node prelock1197::node nodes1198::pair-nil size1199::long)
     (inline sized-sync?::bool ::obj)
     (sized-sync-nil::sized-sync)
     (inline sized-sync-size::long ::sized-sync)
     (inline sized-sync-nodes::pair-nil ::sized-sync)
+    (inline sized-sync-prelock::node ::sized-sync)
+    (inline sized-sync-prelock-set! ::sized-sync ::node)
     (inline sized-sync-mutex::node ::sized-sync)
     (inline sized-sync-mutex-set! ::sized-sync ::node)
     (inline sized-sync-type::type ::sized-sync)
@@ -42,7 +44,7 @@
 ;; sized-select
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-sized-select::sized-select loc1178::obj type1179::type side-effect1180::obj key1181::obj test1183::node clauses1184::obj item-type1185::type size1186::long)
+    (inline make-sized-select::sized-select loc1185::obj type1186::type side-effect1187::obj key1188::obj test1189::node clauses1190::obj item-type1191::type size1192::long)
     (inline sized-select?::bool ::obj)
     (sized-select-nil::sized-select)
     (inline sized-select-size::long ::sized-select)
@@ -61,7 +63,7 @@
 ;; sized-let-fun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-sized-let-fun::sized-let-fun loc1170::obj type1171::type side-effect1172::obj key1173::obj locals1174::obj body1175::node size1176::long)
+    (inline make-sized-let-fun::sized-let-fun loc1175::obj type1176::type side-effect1177::obj key1178::obj locals1179::obj body1180::node size1181::long)
     (inline sized-let-fun?::bool ::obj)
     (sized-let-fun-nil::sized-let-fun)
     (inline sized-let-fun-size::long ::sized-let-fun)
@@ -80,7 +82,7 @@
 ;; sized-let-var
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-sized-let-var::sized-let-var loc1161::obj type1162::type side-effect1163::obj key1164::obj bindings1165::obj body1166::node removable?1167::bool size1168::long)
+    (inline make-sized-let-var::sized-let-var loc1165::obj type1166::type side-effect1167::obj key1168::obj bindings1169::obj body1170::node removable?1171::bool size1172::long)
     (inline sized-let-var?::bool ::obj)
     (sized-let-var-nil::sized-let-var)
     (inline sized-let-var-size::long ::sized-let-var)
@@ -101,7 +103,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; sized-sequence
-(define-inline (make-sized-sequence::sized-sequence loc1194::obj type1195::type side-effect1196::obj key1197::obj nodes1198::obj unsafe1199::bool size1200::long) (instantiate::sized-sequence (loc loc1194) (type type1195) (side-effect side-effect1196) (key key1197) (nodes nodes1198) (unsafe unsafe1199) (size size1200)))
+(define-inline (make-sized-sequence::sized-sequence loc1201::obj type1202::type side-effect1204::obj key1205::obj nodes1206::obj unsafe1207::bool size1208::long) (instantiate::sized-sequence (loc loc1201) (type type1202) (side-effect side-effect1204) (key key1205) (nodes nodes1206) (unsafe unsafe1207) (size size1208)))
 (define-inline (sized-sequence?::bool obj::obj) ((@ isa? __object) obj (@ sized-sequence inline_size)))
 (define (sized-sequence-nil::sized-sequence) (class-nil (@ sized-sequence inline_size)))
 (define-inline (sized-sequence-size::long o::sized-sequence) (with-access::sized-sequence o (size) size))
@@ -120,13 +122,15 @@
 (define-inline (sized-sequence-loc-set! o::sized-sequence v::obj) (with-access::sized-sequence o (loc) (set! loc v)))
 
 ;; sized-sync
-(define-inline (make-sized-sync::sized-sync loc1188::obj type1189::type mutex1190::node nodes1191::pair-nil size1192::long) (instantiate::sized-sync (loc loc1188) (type type1189) (mutex mutex1190) (nodes nodes1191) (size size1192)))
+(define-inline (make-sized-sync::sized-sync loc1194::obj type1195::type mutex1196::node prelock1197::node nodes1198::pair-nil size1199::long) (instantiate::sized-sync (loc loc1194) (type type1195) (mutex mutex1196) (prelock prelock1197) (nodes nodes1198) (size size1199)))
 (define-inline (sized-sync?::bool obj::obj) ((@ isa? __object) obj (@ sized-sync inline_size)))
 (define (sized-sync-nil::sized-sync) (class-nil (@ sized-sync inline_size)))
 (define-inline (sized-sync-size::long o::sized-sync) (with-access::sized-sync o (size) size))
 (define-inline (sized-sync-size-set! o::sized-sync v::long) (with-access::sized-sync o (size) (set! size v)))
 (define-inline (sized-sync-nodes::pair-nil o::sized-sync) (with-access::sized-sync o (nodes) nodes))
 (define-inline (sized-sync-nodes-set! o::sized-sync v::pair-nil) (with-access::sized-sync o (nodes) (set! nodes v)))
+(define-inline (sized-sync-prelock::node o::sized-sync) (with-access::sized-sync o (prelock) prelock))
+(define-inline (sized-sync-prelock-set! o::sized-sync v::node) (with-access::sized-sync o (prelock) (set! prelock v)))
 (define-inline (sized-sync-mutex::node o::sized-sync) (with-access::sized-sync o (mutex) mutex))
 (define-inline (sized-sync-mutex-set! o::sized-sync v::node) (with-access::sized-sync o (mutex) (set! mutex v)))
 (define-inline (sized-sync-type::type o::sized-sync) (with-access::sized-sync o (type) type))
@@ -135,7 +139,7 @@
 (define-inline (sized-sync-loc-set! o::sized-sync v::obj) (with-access::sized-sync o (loc) (set! loc v)))
 
 ;; sized-select
-(define-inline (make-sized-select::sized-select loc1178::obj type1179::type side-effect1180::obj key1181::obj test1183::node clauses1184::obj item-type1185::type size1186::long) (instantiate::sized-select (loc loc1178) (type type1179) (side-effect side-effect1180) (key key1181) (test test1183) (clauses clauses1184) (item-type item-type1185) (size size1186)))
+(define-inline (make-sized-select::sized-select loc1185::obj type1186::type side-effect1187::obj key1188::obj test1189::node clauses1190::obj item-type1191::type size1192::long) (instantiate::sized-select (loc loc1185) (type type1186) (side-effect side-effect1187) (key key1188) (test test1189) (clauses clauses1190) (item-type item-type1191) (size size1192)))
 (define-inline (sized-select?::bool obj::obj) ((@ isa? __object) obj (@ sized-select inline_size)))
 (define (sized-select-nil::sized-select) (class-nil (@ sized-select inline_size)))
 (define-inline (sized-select-size::long o::sized-select) (with-access::sized-select o (size) size))
@@ -156,7 +160,7 @@
 (define-inline (sized-select-loc-set! o::sized-select v::obj) (with-access::sized-select o (loc) (set! loc v)))
 
 ;; sized-let-fun
-(define-inline (make-sized-let-fun::sized-let-fun loc1170::obj type1171::type side-effect1172::obj key1173::obj locals1174::obj body1175::node size1176::long) (instantiate::sized-let-fun (loc loc1170) (type type1171) (side-effect side-effect1172) (key key1173) (locals locals1174) (body body1175) (size size1176)))
+(define-inline (make-sized-let-fun::sized-let-fun loc1175::obj type1176::type side-effect1177::obj key1178::obj locals1179::obj body1180::node size1181::long) (instantiate::sized-let-fun (loc loc1175) (type type1176) (side-effect side-effect1177) (key key1178) (locals locals1179) (body body1180) (size size1181)))
 (define-inline (sized-let-fun?::bool obj::obj) ((@ isa? __object) obj (@ sized-let-fun inline_size)))
 (define (sized-let-fun-nil::sized-let-fun) (class-nil (@ sized-let-fun inline_size)))
 (define-inline (sized-let-fun-size::long o::sized-let-fun) (with-access::sized-let-fun o (size) size))
@@ -175,7 +179,7 @@
 (define-inline (sized-let-fun-loc-set! o::sized-let-fun v::obj) (with-access::sized-let-fun o (loc) (set! loc v)))
 
 ;; sized-let-var
-(define-inline (make-sized-let-var::sized-let-var loc1161::obj type1162::type side-effect1163::obj key1164::obj bindings1165::obj body1166::node removable?1167::bool size1168::long) (instantiate::sized-let-var (loc loc1161) (type type1162) (side-effect side-effect1163) (key key1164) (bindings bindings1165) (body body1166) (removable? removable?1167) (size size1168)))
+(define-inline (make-sized-let-var::sized-let-var loc1165::obj type1166::type side-effect1167::obj key1168::obj bindings1169::obj body1170::node removable?1171::bool size1172::long) (instantiate::sized-let-var (loc loc1165) (type type1166) (side-effect side-effect1167) (key key1168) (bindings bindings1169) (body body1170) (removable? removable?1171) (size size1172)))
 (define-inline (sized-let-var?::bool obj::obj) ((@ isa? __object) obj (@ sized-let-var inline_size)))
 (define (sized-let-var-nil::sized-let-var) (class-nil (@ sized-let-var inline_size)))
 (define-inline (sized-let-var-size::long o::sized-let-var) (with-access::sized-let-var o (size) size))

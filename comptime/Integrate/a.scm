@@ -213,18 +213,20 @@
 ;*    node-A ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::sync host k A)
-   (with-access::sync node (nodes mutex) 
+   (with-access::sync node (nodes mutex prelock) 
       (if (null? nodes)
-	  (node-A mutex host k A)
+	  (node-A prelock host k
+	     (node-A mutex host (cons (get-new-kont) *mutex*) A))
 	  (let liip ((nds nodes)
-		     (A (node-A mutex host k A)))
+		     (A (node-A prelock host (cons (get-new-kont) *obj*)
+			   (node-A mutex host (cons (get-new-kont) *mutex*) A))))
 	     (if (null? (cdr nds))
 		 (node-A (car nds) host k A)
 		 (liip (cdr nds)
-		       (node-A (car nds)
-			       host
-			       (cons (get-new-kont) (get-type (car nds)))
-			       A)))))))
+		    (node-A (car nds)
+		       host
+		       (cons (get-new-kont) (get-type (car nds)))
+		       A)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::app ...                                                 */

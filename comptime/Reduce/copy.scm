@@ -94,8 +94,9 @@
 ;*    node-copy! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::sync)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (node-copy! mutex))
+      (set! prelock (node-copy! prelock))
       (node-copy*! nodes)
       node))
 

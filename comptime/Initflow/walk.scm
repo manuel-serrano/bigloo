@@ -153,8 +153,9 @@
 ;*    initflow-node ::sync ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (initflow-node node::sync e)
-   (with-access::sync node (mutex nodes)
+   (with-access::sync node (mutex prelock nodes)
       (initflow-node mutex e)
+      (initflow-node prelock e)
       (initflow-node* nodes e)))
 
 ;*---------------------------------------------------------------------*/

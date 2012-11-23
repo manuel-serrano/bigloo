@@ -320,6 +320,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (body-effect! node::sync effect::feffect)
    (body-effect! (sync-mutex node) effect)
+   (body-effect! (sync-prelock node) effect)
    (body-effect*! (sync-nodes node) effect))
 
 ;*---------------------------------------------------------------------*/

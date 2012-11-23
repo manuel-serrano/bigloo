@@ -92,11 +92,14 @@
 ;*    node-cse! ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cse! node::sync stack)
-   (with-access::sync node (nodes mutex)
-      (multiple-value-bind (reset nmutex)
+   (with-access::sync node (nodes mutex prelock)
+      (multiple-value-bind (resetm nmutex)
 	 (node-cse! mutex stack)
 	 (set! mutex nmutex)
-	 (values (or (node-cse*! nodes stack) reset) node))))
+	 (multiple-value-bind (resetp nprelock)
+	    (node-cse! prelock stack)
+	    (set! prelock nprelock)
+	    (values (or (node-cse*! nodes stack) resetm resetp) node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cse! ::app-ly ...                                           */

@@ -237,6 +237,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (find-recursive-calls node::sync var)
    (append (find-recursive-calls (sync-mutex node) var)
+      (find-recursive-calls (sync-prelock node) var)
       (find-recursive-calls* (sync-nodes node) var)))
 
 ;*---------------------------------------------------------------------*/

@@ -66,6 +66,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (find-let-fun? node::sync)
    (or (find-let-fun? (sync-mutex node))
+       (find-let-fun? (sync-prelock node))
        (find-let-fun?* (sync-nodes node))))
 
 ;*---------------------------------------------------------------------*/
@@ -238,8 +239,9 @@
 ;*    nest-loop! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (nest-loop! node::sync var nester)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (nest-loop! mutex var nester))
+      (set! prelock (nest-loop! prelock var nester))
       (nest-loop!* nodes var nester)
       node))
 

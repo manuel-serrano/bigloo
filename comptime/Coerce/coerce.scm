@@ -141,8 +141,9 @@
 ;*    coerce! ::sync ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::sync caller to safe)
-   (with-access::sync node (type nodes mutex)
+   (with-access::sync node (type nodes mutex prelock)
       (set! mutex (coerce! mutex caller *mutex* safe))
+      (set! prelock (coerce! prelock caller *obj* safe))
       (let loop ((nodes nodes))
 	 (let ((n (car nodes)))
 	    (if (null? (cdr nodes))

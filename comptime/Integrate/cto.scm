@@ -62,8 +62,9 @@
 ;*    set-cto! ::sync ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (set-cto! node::sync local)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set-cto! mutex local)
+      (set-cto! prelock local)
       (for-each (lambda (node) (set-cto! node local)) nodes)))
 
 ;*---------------------------------------------------------------------*/

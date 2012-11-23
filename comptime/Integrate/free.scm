@@ -142,8 +142,8 @@
 ;*    node-free ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-free node::sync free)
-   (with-access::sync node (nodes mutex)
-      (node-free* nodes (node-free mutex free))))
+   (with-access::sync node (nodes mutex prelock)
+      (node-free* nodes (node-free prelock (node-free mutex free)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-free ::app ...                                              */
@@ -153,7 +153,7 @@
       (node-free* args free)))
  
 ;*---------------------------------------------------------------------*/
-;*    node-free ::app-ly ...                                            */
+;*    node-free ::app-ly ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-free node::app-ly free)
    (with-access::app-ly node (fun arg)

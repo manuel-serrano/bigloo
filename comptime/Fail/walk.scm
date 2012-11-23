@@ -90,6 +90,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (fail-node! node::sync)
    (sync-mutex-set! node (fail-node! (sync-mutex node)))
+   (sync-prelock-set! node (fail-node! (sync-prelock node)))
    (fail-node*! (sync-nodes node))
    node)
 

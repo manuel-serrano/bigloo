@@ -174,8 +174,9 @@
 ;*    rem! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (rem! node::sync owner current)
-   (with-access::sync node (nodes mutex)
+   (with-access::sync node (nodes mutex prelock)
       (set! mutex (rem! mutex owner current))
+      (set! prelock (rem! prelock owner current))
       (rem*! nodes owner current)
       node))
 
