@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Nov 18 15:38:45 2012 (serrano)                */
+;*    Last change :  Fri Nov 23 15:28:12 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -56,32 +56,36 @@
 	    (macro $make-mutex::mutex (::obj)
 		   "bgl_make_mutex")
 	    ($make-nil-mutex::mutex () "bgl_make_nil_mutex")
+;* 	    ($nothread-mutex-init!::mutex (::mutex)                    */
+;* 	       "bgl_nothread_mutex_init")                              */
 	    (macro $mutex-name::obj (::mutex)
 		   "BGL_MUTEX_NAME")
 	    (macro $mutex-lock::bool (::mutex)
-		   "bgl_mutex_lock")
+		   "BGL_MUTEX_LOCK")
 	    (macro $mutex-timed-lock::bool (::mutex ::long)
-		   "bgl_mutex_timed_lock")
+		   "BGL_MUTEX_TIMED_LOCK")
 	    (macro $mutex-unlock::bool (::mutex)
-		   "bgl_mutex_unlock")
+		   "BGL_MUTEX_UNLOCK")
 	    (macro $mutex-state::obj (::mutex)
-		   "bgl_mutex_state")
+		   "BGL_MUTEX_STATE")
 	    
 	    (macro $condvar?::bool (::obj)
 		   "BGL_CONDVARP")
 	    (macro $make-condvar::condvar (::obj)
 		   "bgl_make_condvar")
+;* 	    ($nothread-condvar-init!::condvar (::condvar)              */
+;* 	       "bgl_nothread_condvar_init")                            */
 	    ($make-nil-condvar::condvar () "bgl_make_nil_condvar")
 	    (macro $condvar-name::obj (::condvar)
 		   "BGL_CONDVAR_NAME")
 	    (macro $condvar-wait!::bool (::condvar ::mutex)
-		   "bgl_condvar_wait")
+		   "BGL_CONDVAR_WAIT")
 	    (macro $condvar-timed-wait!::bool (::condvar ::mutex ::long)
-		   "bgl_condvar_timed_wait")
+		   "BGL_CONDVAR_TIMED_WAIT")
 	    (macro $condvar-broadcast!::bool (::condvar)
-		   "bgl_condvar_broadcast")
+		   "BGL_CONDVAR_BROADCAST")
 	    (macro $condvar-signal!::bool (::condvar)
-		   "bgl_condvar_signal")
+		   "BGL_CONDVAR_SIGNAL")
 
 	    (macro $thread-parameters::obj ()
 		   "BGL_PARAMETERS")
@@ -172,6 +176,8 @@
 	    (default-thread-backend-set! ::thread-backend)
 	    (get-thread-backend ::bstring)
 	    (generic tb-make-thread::thread ::thread-backend ::procedure ::obj)
+	    (generic tb-mutex-initialize!::mutex ::thread-backend ::mutex)
+	    (generic tb-condvar-initialize!::condvar ::thread-backend ::condvar)
 	    (generic tb-current-thread::obj ::thread-backend)
 	    
 	    ;; thread
@@ -321,6 +327,16 @@
 ;*---------------------------------------------------------------------*/
 (define-method (tb-current-thread tb::nothread-backend)
    *nothread-current*)
+
+;*---------------------------------------------------------------------*/
+;*    tb-mutex-initialize! ::thread-backend ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (tb-mutex-initialize! tb::thread-backend mutex))
+
+;*---------------------------------------------------------------------*/
+;*    tb-condvar-initialize! ::thread-backend ...                      */
+;*---------------------------------------------------------------------*/
+(define-generic (tb-condvar-initialize! tb::thread-backend condvar))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ::thread ...                                      */

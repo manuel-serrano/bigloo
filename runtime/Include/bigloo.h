@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 20 18:08:42 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 16:04:25 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -527,12 +527,20 @@ typedef union scmobj {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
       void *mutex;               /* the actual mutex                   */
+      bool_t (*syslock)();       /*    - the system primtives          */
+      bool_t (*systimedlock)();  /*    ...                             */
+      bool_t (*sysunlock)();
+      union scmobj *(*sysstate)();
    } mutex_t;
    
    struct bgl_condvar {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
       void *condvar;             /* the actual condition variable      */
+      bool_t (*syswait)();       /*    - the system primitives         */
+      bool_t (*systimedwait)();  /*    ...                             */
+      bool_t (*syssignal)();
+      bool_t (*sysbroadcast)();
    } condvar_t;
 
    struct bgl_mmap {
@@ -2871,21 +2879,29 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 /*---------------------------------------------------------------------*/
 /*    Mutexes and condition variables                                  */
 /*---------------------------------------------------------------------*/
-#define MUTEXP( o ) (POINTERP( o ) && (TYPE( o ) == MUTEX_TYPE))
-#define CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
+#define BGL_MUTEXP( o ) (POINTERP( o ) && (TYPE( o ) == MUTEX_TYPE))
    
 #define BGL_MUTEX( o )  (CREF( o )->mutex_t)
-#define BGL_CONDVAR( o )  (CREF( o )->condvar_t)
-   
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
+
+#define BGL_MUTEX_LOCK( o ) (BGL_MUTEX( o ).syslock( o ))
+#define BGL_MUTEX_TIMED_LOCK( o, to ) (BGL_MUTEX( o ).systimedlock( o, to ))
+#define BGL_MUTEX_UNLOCK( o ) (BGL_MUTEX( o ).sysunlock( o ))
+#define BGL_MUTEX_STATE( o ) (BGL_MUTEX( o ).sysstate( o ))
+   
+#define BGL_MUTEX_NAME( o ) BGL_MUTEX( o ).name
+
+#define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
+#define BGL_CONDVAR( o )  (CREF( o )->condvar_t)
 #define BGL_CONDVAR_SIZE (sizeof( struct bgl_condvar ))
 
-#define BGL_MUTEXP( o ) (POINTERP( o ) && (TYPE( o ) == MUTEX_TYPE))
-#define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
-
-#define BGL_MUTEX_NAME( o ) BGL_MUTEX( o ).name
 #define BGL_CONDVAR_NAME( o ) BGL_CONDVAR( o ).name
-
+   
+#define BGL_CONDVAR_WAIT( o, cv ) (BGL_CONDVAR( o ).syswait( o, cv ))
+#define BGL_CONDVAR_TIMED_WAIT( o, cv, to ) (BGL_CONDVAR( o ).systimedwait( o, cv, to ))
+#define BGL_CONDVAR_BROADCAST( o ) (BGL_CONDVAR( o ).sysbroadcast( o ))
+#define BGL_CONDVAR_SIGNAL( o ) (BGL_CONDVAR( o ).syssignal( o ))
+   
 /*---------------------------------------------------------------------*/
 /*    Foreign management                                               */
 /*---------------------------------------------------------------------*/

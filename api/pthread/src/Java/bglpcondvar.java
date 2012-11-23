@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Fri May  4 21:11:52 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 17:38:07 2012 (serrano)                */
 /*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Condvar implementation                                           */
@@ -125,5 +125,9 @@ public class bglpcondvar extends bigloo.condvar {
    
    public boolean signal() {
       return cond_signal( false );
+   }
+
+   public static condvar bglpth_make_condvar( Object o ) {
+      return bigloo.foreign.bgl_make_condvar( o );
    }
 }

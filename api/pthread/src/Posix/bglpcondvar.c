@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Nov 23 09:29:33 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 17:37:22 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -27,29 +27,10 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_condvar_init_register( obj_t (*)( obj_t ) );
-BGL_RUNTIME_DECL void bgl_condvar_wait_register( bool_t (*)( obj_t, obj_t ) );
-BGL_RUNTIME_DECL void bgl_condvar_timed_wait_register( bool_t (*)( obj_t, obj_t, long ) );
-BGL_RUNTIME_DECL void bgl_condvar_signal_register( bool_t (*)( obj_t ) );
-BGL_RUNTIME_DECL void bgl_condvar_broadcast_register( bool_t (*)( obj_t ) );
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bglpth_condvar_init ...                                          */
-/*---------------------------------------------------------------------*/
-obj_t
-bglpth_condvar_init( obj_t cv ) {
-   bglpcondvar_t co = (bglpcondvar_t)GC_MALLOC( sizeof( struct bglpcondvar ) );
-
-   co->specific = BUNSPEC;
-   cv->condvar_t.condvar = co;
-
-   if( pthread_cond_init( &(co->pcondvar), 0L ) )
-      FAILURE( string_to_bstring( "make-condition-variable" ),
-	       string_to_bstring( "Cannot create condition-variable" ),
-	       string_to_bstring( strerror( errno ) ) );
-
-   return cv;
-}
+/* BGL_RUNTIME_DECL void bgl_condvar_wait_register( bool_t (*)( obj_t, obj_t ) ); */
+/* BGL_RUNTIME_DECL void bgl_condvar_timed_wait_register( bool_t (*)( obj_t, obj_t, long ) ); */
+/* BGL_RUNTIME_DECL void bgl_condvar_signal_register( bool_t (*)( obj_t ) ); */
+/* BGL_RUNTIME_DECL void bgl_condvar_broadcast_register( bool_t (*)( obj_t ) ); */
 
 /*---------------------------------------------------------------------*/
 /*    bool_t                                                           */
@@ -119,14 +100,53 @@ bglpth_condvar_broadcast( obj_t cv ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_condvar_init ...                                          */
+/*---------------------------------------------------------------------*/
+obj_t
+bglpth_condvar_init( obj_t cv ) {
+   bglpcondvar_t co = (bglpcondvar_t)GC_MALLOC( sizeof( struct bglpcondvar ) );
+
+   co->specific = BUNSPEC;
+
+   cv->condvar_t.syswait = &bglpth_condvar_wait;
+   cv->condvar_t.systimedwait = &bglpth_condvar_timed_wait;
+   cv->condvar_t.syssignal = &bglpth_condvar_signal;
+   cv->condvar_t.sysbroadcast = &bglpth_condvar_broadcast;
+      
+   cv->condvar_t.condvar = co;
+
+   if( pthread_cond_init( &(co->pcondvar), 0L ) )
+      FAILURE( string_to_bstring( "make-condition-variable" ),
+	       string_to_bstring( "Cannot create condition-variable" ),
+	       string_to_bstring( strerror( errno ) ) );
+
+   return cv;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_make_condvar ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bglpth_make_condvar( obj_t name ) {
+   obj_t m = CREF( bgl_make_condvar( name ) );
+
+   bglpth_condvar_init( m );
+
+   return BREF( m );
+}
+   
+/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_setup_condvar ...                                         */
 /*---------------------------------------------------------------------*/
 void
 bglpth_setup_condvar() {
    bgl_condvar_init_register( &bglpth_condvar_init );
-   bgl_condvar_wait_register( &bglpth_condvar_wait );
-   bgl_condvar_timed_wait_register( &bglpth_condvar_timed_wait );
-   bgl_condvar_signal_register( &bglpth_condvar_signal );
-   bgl_condvar_broadcast_register( &bglpth_condvar_broadcast );
+/*    bgl_condvar_wait_register( &bglpth_condvar_wait );               */
+/*    bgl_condvar_timed_wait_register( &bglpth_condvar_timed_wait );   */
+/*    bgl_condvar_signal_register( &bglpth_condvar_signal );           */
+/*    bgl_condvar_broadcast_register( &bglpth_condvar_broadcast );     */
 }

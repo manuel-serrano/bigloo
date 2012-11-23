@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sat May  5 07:55:51 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 17:36:07 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -34,10 +34,10 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_mutex_init_register( obj_t (*)(obj_t) );
-BGL_RUNTIME_DECL void bgl_mutex_lock_register( bool_t (*)(obj_t) );
-BGL_RUNTIME_DECL void bgl_mutex_timed_lock_register( bool_t (*)(obj_t, long) );
-BGL_RUNTIME_DECL void bgl_mutex_unlock_register( bool_t (*)(obj_t) );
-BGL_RUNTIME_DECL void bgl_mutex_state_register( obj_t (*)(obj_t) );
+/* BGL_RUNTIME_DECL void bgl_mutex_lock_register( bool_t (*)(obj_t) ); */
+/* BGL_RUNTIME_DECL void bgl_mutex_timed_lock_register( bool_t (*)(obj_t, long) ); */
+/* BGL_RUNTIME_DECL void bgl_mutex_unlock_register( bool_t (*)(obj_t) ); */
+/* BGL_RUNTIME_DECL void bgl_mutex_state_register( obj_t (*)(obj_t) ); */
 
 BGL_RUNTIME_DECL void bgl_sleep( long );
 
@@ -226,30 +226,6 @@ bglpth_mutex_state( obj_t m ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bglpth_mutex_init ...                                            */
-/*---------------------------------------------------------------------*/
-obj_t
-bglpth_mutex_init( obj_t m ) {
-   bglpmutex_t mut = (bglpmutex_t)GC_MALLOC( sizeof( struct bglpmutex ) );
-
-   mut->thread = 0L;
-   mut->locked = 0;
-   mut->specific = BUNSPEC;
-
-   m->mutex_t.mutex = mut;
-   if( pthread_mutex_init( &(mut->pmutex), 0L ) )
-      FAILURE( string_to_bstring( "make-mutex" ),
-	       string_to_bstring( "Cannot create mutex" ),
-	       string_to_bstring( strerror( errno ) ) );
-
-   mut->next = 0;
-   mut->prev = 0;
-   
-   return m;
-}
-
-/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_mutexes_abandon ...                                       */
 /*---------------------------------------------------------------------*/
@@ -359,14 +335,58 @@ bglpth_mutex_unlock( obj_t m ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_mutex_init ...                                            */
+/*---------------------------------------------------------------------*/
+obj_t
+bglpth_mutex_init( obj_t m ) {
+   bglpmutex_t mut = (bglpmutex_t)GC_MALLOC( sizeof( struct bglpmutex ) );
+
+   mut->thread = 0L;
+   mut->locked = 0;
+   mut->specific = BUNSPEC;
+
+   m->mutex_t.syslock = &bglpth_mutex_lock;
+   m->mutex_t.systimedlock = &bglpth_mutex_timed_lock;
+   m->mutex_t.sysunlock = &bglpth_mutex_unlock;
+   m->mutex_t.sysstate = &bglpth_mutex_state;
+
+   m->mutex_t.mutex = mut;
+   
+   if( pthread_mutex_init( &(mut->pmutex), 0L ) )
+      FAILURE( string_to_bstring( "make-mutex" ),
+	       string_to_bstring( "Cannot create mutex" ),
+	       string_to_bstring( strerror( errno ) ) );
+
+   mut->next = 0;
+   mut->prev = 0;
+   
+   return m;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_make_mutex ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bglpth_make_mutex( obj_t name ) {
+   obj_t m = CREF( bgl_make_mutex( name ) );
+
+   bglpth_mutex_init( m );
+
+   return BREF( m );
+}
+
+/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_setup_mutex ...                                           */
 /*---------------------------------------------------------------------*/
 void
 bglpth_setup_mutex() {
    bgl_mutex_init_register( &bglpth_mutex_init );
-   bgl_mutex_lock_register( &bglpth_mutex_lock );
-   bgl_mutex_timed_lock_register( &bglpth_mutex_timed_lock );
-   bgl_mutex_unlock_register( &bglpth_mutex_unlock );
-   bgl_mutex_state_register( &bglpth_mutex_state );
+/*    bgl_mutex_lock_register( &bglpth_mutex_lock );                   */
+/*    bgl_mutex_timed_lock_register( &bglpth_mutex_timed_lock );       */
+/*    bgl_mutex_unlock_register( &bglpth_mutex_unlock );               */
+/*    bgl_mutex_state_register( &bglpth_mutex_state );                 */
 }

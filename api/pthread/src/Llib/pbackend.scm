@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 24 06:42:48 2008                          */
-;*    Last change :  Fri Jul 17 17:33:29 2009 (serrano)                */
-;*    Copyright   :  2008-09 Manuel Serrano                            */
+;*    Last change :  Fri Nov 23 13:19:01 2012 (serrano)                */
+;*    Copyright   :  2008-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Posix thread backend                                         */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
 ;*---------------------------------------------------------------------*/
 (define (pthread-setup-backend!)
    (cond-expand
-      ((or bigloo-jvm bigloo-dotnet)
+      (bigloo-jvm
        ($pthread-setup)))
    (set! *pthread-backend* (instantiate::pthread-backend (name "pthread")))
    (default-thread-backend-set! *pthread-backend*)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  3 08:14:49 2004                          */
-;*    Last change :  Sat May  3 06:17:18 2008 (serrano)                */
-;*    Copyright   :  2004-08 Manuel Serrano                            */
+;*    Last change :  Fri Nov 23 17:33:03 2012 (serrano)                */
+;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Mutex implementation.                           */
 ;*=====================================================================*/
@@ -16,8 +16,15 @@
 
    (include "pmutex.sch")
    
-   (export (mutex-specific::obj ::mutex)
+   (export (make-pmutex #!optional (name (gensym 'mutex)))
+	   (mutex-specific::obj ::mutex)
 	   (mutex-specific-set!::obj ::mutex ::obj)))
+	   
+;*---------------------------------------------------------------------*/
+;*    make-pmutex ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (make-pmutex #!optional (name (gensym 'mutex)))
+   ($pmutex-make name))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-specific ...                                               */
@@ -31,4 +38,3 @@
 (define (mutex-specific-set! m v)
    ($pmutex-specific-set! m v)
    v)
-
