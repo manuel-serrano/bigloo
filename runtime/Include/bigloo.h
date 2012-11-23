@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 23 16:04:25 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 18:59:02 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3137,8 +3137,8 @@ BGL_RUNTIME_DECL obj_t bgl_write( obj_t, unsigned char *, size_t );
    
 BGL_RUNTIME_DECL obj_t bgl_make_date();
    
-BGL_RUNTIME_DECL obj_t bgl_make_mutex( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_condvar( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_make_mutex( obj_t );
    
 BGL_RUNTIME_DECL bool_t (*bgl_mutex_lock)( obj_t );
 BGL_RUNTIME_DECL bool_t (*bgl_mutex_timed_lock)( obj_t, long );

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Nov 23 17:10:20 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 19:24:13 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -96,21 +96,19 @@ REGISTER_FUNCTION( bgl_condvar_init, obj_t, (obj_t) )
 /* REGISTER_FUNCTION( bgl_condvar_broadcast, bool_t, (obj_t) )         */
 
 REGISTER_FUNCTION( bgl_multithread_dynamic_denv, obj_t, (void) );
-		   
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_make_mutex ...                                               */
+/*    bgl_create_mutex ...                                             */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-bgl_make_mutex( obj_t name ) {
+bgl_create_mutex( obj_t name ) {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE );
 
    m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
    m->mutex_t.name = name;
    m->mutex_t.mutex = 0L;
-
-   bgl_mutex_init( m );
 
    return BREF( m );
 }
@@ -121,12 +119,22 @@ bgl_make_mutex( obj_t name ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 bgl_mutex_init_default( obj_t m ) {
-   m->mutex_t.syslock = &bgl_act_default;
-   m->mutex_t.systimedlock = &bgl_act2long_default;
-   m->mutex_t.sysunlock = &bgl_act_default;
-   m->mutex_t.sysstate = &bgl_mutex_state_default;
+   BGL_MUTEX( m ).syslock = &bgl_act_default;
+   BGL_MUTEX( m ).systimedlock = &bgl_act2long_default;
+   BGL_MUTEX( m ).sysunlock = &bgl_act_default;
+   BGL_MUTEX( m ).sysstate = &bgl_mutex_state_default;
 
    return m;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_mutex ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_make_mutex( obj_t name ) {
+   return bgl_mutex_init( bgl_create_mutex( name ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -142,7 +150,37 @@ bgl_make_nil_mutex() {
    m->mutex_t.name = BUNSPEC;
    m->mutex_t.mutex = 0L;
 
-   return BREF( m );
+   return bgl_mutex_init( BREF( m ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_condvar_create ...                                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_create_condvar( obj_t name ) {
+   obj_t cv = GC_MALLOC( BGL_CONDVAR_SIZE );
+
+   cv->condvar_t.header = MAKE_HEADER( CONDVAR_TYPE, BGL_CONDVAR_SIZE );
+   cv->condvar_t.name = name;
+   cv->condvar_t.condvar = 0L;
+
+   return BREF( cv );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    bgl_condvar_init_default ...                                     */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_condvar_init_default( obj_t cv ) {
+   BGL_CONDVAR( cv ).syswait = &bgl_act2_default;
+   BGL_CONDVAR( cv ).systimedwait = &bgl_act3long_default;
+   BGL_CONDVAR( cv ).syssignal = &bgl_act_default;
+   BGL_CONDVAR( cv ).sysbroadcast = &bgl_act_default;
+
+   return cv;
 }
 
 /*---------------------------------------------------------------------*/
@@ -152,29 +190,7 @@ bgl_make_nil_mutex() {
 BGL_RUNTIME_DEF
 obj_t
 bgl_make_condvar( obj_t name ) {
-   obj_t cv = GC_MALLOC( BGL_CONDVAR_SIZE );
-
-   cv->condvar_t.header = MAKE_HEADER( CONDVAR_TYPE, BGL_CONDVAR_SIZE );
-   cv->condvar_t.name = name;
-   cv->condvar_t.condvar = 0L;
-
-   bgl_condvar_init( cv );
-
-   return BREF( cv );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    bgl_condvar_init_default ...                                     */
-/*---------------------------------------------------------------------*/
-static obj_t
-bgl_condvar_init_default( obj_t cv ) {
-   cv->condvar_t.syswait = &bgl_act2_default;
-   cv->condvar_t.systimedwait = &bgl_act3long_default;
-   cv->condvar_t.syssignal = &bgl_act_default;
-   cv->condvar_t.sysbroadcast = &bgl_act_default;
-
-   return cv;
+   return bgl_condvar_init( bgl_create_condvar( name ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -190,7 +206,7 @@ bgl_make_nil_condvar() {
    m->condvar_t.name = BUNSPEC;
    m->condvar_t.condvar = 0L;
 
-   return BREF( m );
+   return bgl_condvar_init( BREF( m ) );
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Nov 23 17:36:07 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 19:06:51 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -40,6 +40,7 @@ BGL_RUNTIME_DECL void bgl_mutex_init_register( obj_t (*)(obj_t) );
 /* BGL_RUNTIME_DECL void bgl_mutex_state_register( obj_t (*)(obj_t) ); */
 
 BGL_RUNTIME_DECL void bgl_sleep( long );
+BGL_RUNTIME_DECL obj_t bgl_create_mutex( obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    Mutex symbols                                                    */
@@ -346,12 +347,12 @@ bglpth_mutex_init( obj_t m ) {
    mut->locked = 0;
    mut->specific = BUNSPEC;
 
-   m->mutex_t.syslock = &bglpth_mutex_lock;
-   m->mutex_t.systimedlock = &bglpth_mutex_timed_lock;
-   m->mutex_t.sysunlock = &bglpth_mutex_unlock;
-   m->mutex_t.sysstate = &bglpth_mutex_state;
+   BGL_MUTEX( m ).syslock = &bglpth_mutex_lock;
+   BGL_MUTEX( m ).systimedlock = &bglpth_mutex_timed_lock;
+   BGL_MUTEX( m ).sysunlock = &bglpth_mutex_unlock;
+   BGL_MUTEX( m ).sysstate = &bglpth_mutex_state;
 
-   m->mutex_t.mutex = mut;
+   BGL_MUTEX( m ).mutex = mut;
    
    if( pthread_mutex_init( &(mut->pmutex), 0L ) )
       FAILURE( string_to_bstring( "make-mutex" ),
@@ -371,11 +372,7 @@ bglpth_mutex_init( obj_t m ) {
 BGL_RUNTIME_DEF
 obj_t
 bglpth_make_mutex( obj_t name ) {
-   obj_t m = CREF( bgl_make_mutex( name ) );
-
-   bglpth_mutex_init( m );
-
-   return BREF( m );
+   return bglpth_mutex_init( bgl_create_mutex( name ) );
 }
 
 /*---------------------------------------------------------------------*/

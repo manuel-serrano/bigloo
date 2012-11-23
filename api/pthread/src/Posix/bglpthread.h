@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Fri Nov 23 17:41:06 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 19:23:28 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
@@ -68,12 +68,12 @@ typedef struct bglpcondvar {
   (BGLPTH_MUTEX_SPECIFIC( m ) = (v))
 
 #define BGLPTH_MUTEX_BGLPMUTEX( o ) \
-   ((bglpmutex_t)((o)->mutex_t.mutex))
+   ((bglpmutex_t)(BGL_MUTEX( o ).mutex))
 #define BGLPTH_MUTEX_PMUTEX( o ) \
    (&(BGLPTH_MUTEX_BGLPMUTEX( o )->pmutex))
 
 #define BGLPTH_CONDVAR_BGLPCONDVAR( o ) \
-   ((bglpcondvar_t)((o)->condvar_t.condvar))
+   ((bglpcondvar_t)(BGL_CONDVAR( o ).condvar))
 #define BGLPTH_CONDVAR_PCONDVAR( o ) \
    (&(BGLPTH_CONDVAR_BGLPCONDVAR( o )->pcondvar))
 
