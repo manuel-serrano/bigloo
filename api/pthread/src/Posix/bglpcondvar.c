@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri May  4 08:26:18 2012 (serrano)                */
+/*    Last change :  Fri Nov 23 09:29:33 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -62,10 +62,10 @@ bglpth_condvar_wait( obj_t cv, obj_t m ) {
    bool_t res;
 
    bglpth_mutex_mark_unlocked( m, mut );
-   res = !pthread_cond_wait( BGLPTH_CONDVAR_PCONDVAR( cv ), &(mut->pmutex) );
-   if( res ) bglpth_mutex_mark_locked( m, mut, thread );
+   res = pthread_cond_wait( BGLPTH_CONDVAR_PCONDVAR( cv ), &(mut->pmutex) );
+   bglpth_mutex_mark_locked( m, mut, thread );
    
-   return res;
+   return !res;
 }
 
 /*---------------------------------------------------------------------*/
@@ -92,12 +92,12 @@ bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
 #endif
    
    bglpth_mutex_mark_unlocked( m, mut );
-   res = !pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
-				  &(mut->pmutex),
-				  &timeout );
-   if( res ) bglpth_mutex_mark_locked( m, mut, thread );
+   res = pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
+				 &(mut->pmutex),
+				 &timeout );
+   bglpth_mutex_mark_locked( m, mut, thread );
    
-   return res;
+   return !res;
 }
 
 /*---------------------------------------------------------------------*/
