@@ -138,7 +138,9 @@ to @code{#f}.
  to be initialized for eval. This defaults to @code{#f}.
 @item @code{init:} a function to be invoked when a library is loaded.
  This defaults to @code{#f}.
-@item @code{eval:} a function to be invoked when a library is loaded for
+@item @code{eval:} a function to be invoked when a library is loaded by
+ the interpreter. This defaults to @code{#f}.
+@item @code{eval:} a function to be invoked when a library is loaded by
  the interpreter. This defaults to @code{#f}.
 @end itemize
 

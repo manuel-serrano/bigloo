@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sun Nov 18 14:40:09 2012 (serrano)                */
+;*    Last change :  Sat Nov 24 17:43:44 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -53,15 +53,15 @@
 	    __r4_input_6_10_2)
 
    (export  (declare-library! id
-			      #!key
-			      (version (bigloo-config 'release-number))
-			      (basename (symbol->string id))
-			      dlopen-init
-			      module-init module-eval
-			      class-init class-eval
-			      init
-			      eval
-			      (srfi '()))
+	       #!key
+	       (version (bigloo-config 'release-number))
+	       (basename (symbol->string id))
+	       dlopen-init
+	       module-init module-eval
+	       class-init class-eval
+	       init
+	       eval
+	       (srfi '()))
 	    (library-init-file::bstring ::symbol)
 	    (library-info::obj ::symbol)
 	    (library-translation-table-add! ::symbol ::bstring . ::obj)
@@ -280,89 +280,94 @@
 ;*    library-load ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (library-load lib . path)
+   
+   (define (lib-load)
+      (cond
+	 ((string? lib)
+	  (dynamic-load lib))
+	 ((not (symbol? lib))
+	  (bigloo-type-error 'library-load "string or symbol" lib))
+	 ((library-loaded? lib)
+	  (library-info lib))
+	 (else
+	  (let* ((path (if (pair? path)
+			   path
+			   (let ((venv (getenv "BIGLOOLIB")))
+			      (if (not venv)
+				  (bigloo-library-path)
+				  (cons "." (unix-path->list venv))))))
+		 (init (find-file/path (library-init-file lib) path))
+		 (be (cond-expand
+			(bigloo-c 'bigloo-c)
+			(bigloo-jvm 'bigloo-jvm)
+			(bigloo-.net 'bigloo-.net))))
+	     (when init (loadq init))
+	     (let* ((info (library-info lib))
+		    (n (make-shared-lib-name
+			  (library-file-name lib "" be) be))
+		    (ns (make-shared-lib-name
+			   (library-file-name
+			      lib (string-append "_" (eval-library-suffix)) be)
+			   be))
+		    (ne (make-shared-lib-name
+			   (library-file-name
+			      lib (string-append "_e" (eval-library-suffix)) be)
+			   be))
+		    (rsc (let ((p (string-append "/resource/bigloo/"
+				     (symbol->string lib)
+				     "/make_lib.class")))
+			    ;; JVM supports fake file system in the JAR
+			    ;; file. In Bigloo it is a sub-directory of
+			    ;; /resource inside ressources, we always search
+			    ;; for a class named make_lib. This means that
+			    ;; all JVM libraries must be provided with
+			    ;; such a class.
+			    (and (file-exists? p) p)))
+		    (libs (find-file/path ns path))
+		    (libe (find-file/path ne path))
+		    (name (symbol->string lib))
+		    (init_s (and info (libinfo-init_s info)))
+		    (init_e (and info (libinfo-init_e info)))
+		    (module_s (and info
+				   (cond-expand
+				      (bigloo-c (libinfo-module_s info))
+				      (else (libinfo-class_s info)))))
+		    (module_e (and info
+				   (cond-expand
+				      (bigloo-c (libinfo-module_e info))
+				      (else (libinfo-class_e info))))))
+		(cond
+		   ((and (not (string? rsc)) (not (string? libs)))
+		    (error 'library-load
+		       (format "Can't find library `~a' (`~a')" lib ns)
+		       path))
+		   ((not (string? libe))
+		    (cond-expand
+		       ((not bigloo-jvm)
+			(evwarning
+			   #f
+			   "library-load"
+			   (format "Can't find _e library `~a' (`~a') in path "
+			      lib ne)
+			   path)))
+		    (if (string? libs)
+			(dynamic-load libs init_s module_s)
+			(dynamic-load rsc init_s module_s)))
+		   (else
+		    (if (string? libs)
+			(dynamic-load libs init_s module_s)
+			(dynamic-load rsc init_s module_s))
+		    (dynamic-load libe init_e module_e)))
+		(when (and info (libinfo-init info))
+		   (eval '((libinfo-init info))))
+		(when (and info (libinfo-eval info))
+		   (eval '((libinfo-eval info))))
+		info)))))
+   
    (let ((mod (eval-module)))
       ($eval-module-set! (interaction-environment))
       (unwind-protect
-	 (cond
-	    ((string? lib)
-	     (dynamic-load lib))
-	    ((not (symbol? lib))
-	     (bigloo-type-error 'library-load "string or symbol" lib))
-	    ((library-loaded? lib)
-	     #unspecified)
-	    (else
-	     (let* ((path (if (pair? path)
-			      path
-			      (let ((venv (getenv "BIGLOOLIB")))
-				 (if (not venv)
-				     (bigloo-library-path)
-				     (cons "." (unix-path->list venv))))))
-		    (init (find-file/path (library-init-file lib) path))
-		    (be (cond-expand
-			   (bigloo-c 'bigloo-c)
-			   (bigloo-jvm 'bigloo-jvm)
-			   (bigloo-.net 'bigloo-.net))))
-		(when init (loadq init))
-		(let* ((info (library-info lib))
-		       (n (make-shared-lib-name
-			   (library-file-name lib "" be) be))
-		       (ns (make-shared-lib-name
-			    (library-file-name
-			     lib (string-append "_" (eval-library-suffix)) be)
-			    be))
-		       (ne (make-shared-lib-name
-			    (library-file-name
-			     lib (string-append "_e" (eval-library-suffix)) be)
-			    be))
-		       (rsc (let ((p (string-append "/resource/bigloo/"
-						    (symbol->string lib)
-						    "/make_lib.class")))
-			       ;; JVM supports fake file system in the JAR
-			       ;; file. In Bigloo it is a sub-directory of
-			       ;; /resource inside ressources, we always search
-			       ;; for a class named make_lib. This means that
-			       ;; all JVM libraries must be provided with
-			       ;; such a class.
-			       (and (file-exists? p) p)))
-		       (libs (find-file/path ns path))
-		       (libe (find-file/path ne path))
-		       (name (symbol->string lib))
-		       (init_s (and info (libinfo-init_s info)))
-		       (init_e (and info (libinfo-init_e info)))
-		       (module_s (and info
-				      (cond-expand
-					 (bigloo-c (libinfo-module_s info))
-					 (else (libinfo-class_s info)))))
-		       (module_e (and info
-				      (cond-expand
-					 (bigloo-c (libinfo-module_e info))
-					 (else (libinfo-class_e info))))))
-		   (cond
-		      ((and (not (string? rsc)) (not (string? libs)))
-		       (error 'library-load
-			      (format "Can't find library `~a' (`~a')" lib ns)
-			      path))
-		      ((not (string? libe))
-		       (cond-expand
-			  ((not bigloo-jvm)
-			   (evwarning
-			    #f
-			    "library-load"
-			    (format "Can't find _e library `~a' (`~a') in path "
-				    lib ne)
-			    path)))
-		       (if (string? libs)
-			   (dynamic-load libs init_s module_s)
-			   (dynamic-load rsc init_s module_s)))
-		      (else
-		       (if (string? libs)
-			   (dynamic-load libs init_s module_s)
-			   (dynamic-load rsc init_s module_s))
-		       (dynamic-load libe init_e module_e)))
-		   (when (and info (libinfo-init info))
-		      (eval '((libinfo-init info))))
-		   (when (and info (libinfo-eval info))
-		      (eval '((libinfo-eval info))))))))
+	 (lib-load)
 	 ($eval-module-set! mod))))
 
 ;*---------------------------------------------------------------------*/

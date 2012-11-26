@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
 #   include <dirent.h>
 #   include <sys/time.h>
 #else
@@ -27,7 +27,7 @@
     !defined( _MSC_VER )
 #   include <unistd.h>
 #endif
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
 #  include <sys/file.h>
 #endif
 #include <bigloo.h>
@@ -1974,7 +1974,7 @@ bgl_directoryp( char *name ) {
 BGL_RUNTIME_DEF obj_t
 bgl_directory_to_list( char *name ) {
    obj_t res = BNIL;
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
    DIR *dir;
    struct dirent *dirent;
 
@@ -2020,7 +2020,7 @@ bgl_directory_to_list( char *name ) {
 BGL_RUNTIME_DEF obj_t
 bgl_directory_to_path_list( char *name, int len, char sep ) {
    obj_t res = BNIL;
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(_MINGW_VER)
    DIR *dir;
    struct dirent *dirent;
 

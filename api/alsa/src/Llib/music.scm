@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Nov 16 13:51:48 2012 (serrano)                */
+;*    Last change :  Sun Nov 25 17:44:12 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -516,7 +516,7 @@
 ;*    music-stop ::alsamusic ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (music-stop o::alsamusic)
-   (with-access::alsamusic o (%amutex onstate %status %!pid)
+   (with-access::alsamusic o (%amutex %status %!pid)
       (synchronize %amutex
 	 (set! %!pid (+fx 1 %!pid))
 	 (alsamusic-wait-ready! o))))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Nov  7 08:44:33 2012 (serrano)                */
+/*    Last change :  Mon Nov 26 09:46:26 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -84,8 +84,23 @@ typedef int socklen_t;
 #  include <net/if.h>
 #endif
 
+/*---------------------------------------------------------------------*/
+/*    DEBUG_SEGV                                                       */
+/*---------------------------------------------------------------------*/
+#if defined( DEBUG_SEGV )
+static FILE *debug_segv_file = 0;
 
-long opensocket;
+debug_init() {
+   debug_segv_file = fopen( "/tmp/LOG.socket-segv", "w" );
+}   
+
+debug_socket_segv( char *fun, unsigned char *ptr, int len ) {
+   fprintf( debug_segv_file, "%p,%d %d.%d.%d.%d\n", ptr, len,
+	    ptr[ 0 ], ptr[ 1 ], 
+	    ptr[ 2 ], ptr[ 3 ] );
+   fflush( debug_segv_file );
+}
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Imports ...                                                      */
@@ -188,6 +203,9 @@ bgl_init_socket() {
       tcp_quickack = string_to_keyword( "TCP_QUICKACK" );
       ip_multicast_ttl = string_to_keyword( "IP_MULTICAST_TTL" );
    }
+#if( defined( DEBUG_SEGV ) )
+   debug_init();
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -333,6 +351,12 @@ make_inet_array( char **src, int size ) {
    for( run = src; *run; run++ ) {
       char *d = (char *)GC_MALLOC_ATOMIC( size );
       char *s = *run;
+
+#if defined( DEBUG_SEGV ) 
+      fprintf( debug_segv_file, "make_init_array, memcpy atomic=%p size=%d\n", d );
+      debug_socket_segv( "make_inet_array", s, size );
+#endif
+      
       memcpy( d, s, size );
       *res++ = d;
    }
@@ -1212,7 +1236,17 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 
    /* Setup a connect address */
    memset( &server, 0, sizeof( server ) );
+   
+#if defined( DEBUG_SEGV )
+   fprintf( debug_segv_file, "bgl_make_client_socket, hp=%p", hp );
+   fflush( debug_segv_file );
+   fprintf( debug_segv_file, " name=%s src=%p len=%d\n", hp->h_name, hp->h_addr, hp->h_length );
+   fflush( debug_segv_file );
+   debug_socket_segv( "bgl_make_client", hp->h_addr, hp->h_length );
+#endif
+   
    memcpy( (char *)&(server.sin_addr), hp->h_addr, hp->h_length );
+   
    server.sin_family = AF_INET;
    server.sin_port = htons( port );
 

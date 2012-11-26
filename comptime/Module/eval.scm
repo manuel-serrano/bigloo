@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Nov 21 07:29:56 2012 (serrano)                */
+;*    Last change :  Sat Nov 24 17:19:58 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -209,7 +209,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    library_e ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    This function is in charge of initialization the _e library.     */
+;*    This function is in charge of initializing the _e library.       */
 ;*---------------------------------------------------------------------*/
 (define (library_e lib)
    (let ((info (get-library-info lib)))
