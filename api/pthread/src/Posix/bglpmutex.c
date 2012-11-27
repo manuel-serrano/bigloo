@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Nov 23 19:06:51 2012 (serrano)                */
+/*    Last change :  Tue Nov 27 08:08:38 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -27,20 +27,23 @@
 #  include <sys/timeb.h>
 #endif
 
-#define MUTEX_DEBUG 1
-#undef MUTEX_DEBUG
+/*---------------------------------------------------------------------*/
+/*    Strict SRFI-18 enables the full support of                       */
+/*    MUTEX-LOCK/MUTEX-UNLOCK. Without SRFI-18 support, mutex state    */
+/*    are not fully supported and mutexes and not automatically        */
+/*    released when their owning thread (i.e., the thread currently    */
+/*    locking them) terminate. This is useful for applications         */
+/*    using exclusively SYNCHRONIZE.                                   */
+/*---------------------------------------------------------------------*/
+#undef BGL_STRICT_SRFI18
+#define BGL_STRICT_SRFI18 1
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_mutex_init_register( obj_t (*)(obj_t) );
-/* BGL_RUNTIME_DECL void bgl_mutex_lock_register( bool_t (*)(obj_t) ); */
-/* BGL_RUNTIME_DECL void bgl_mutex_timed_lock_register( bool_t (*)(obj_t, long) ); */
-/* BGL_RUNTIME_DECL void bgl_mutex_unlock_register( bool_t (*)(obj_t) ); */
-/* BGL_RUNTIME_DECL void bgl_mutex_state_register( obj_t (*)(obj_t) ); */
-
-BGL_RUNTIME_DECL void bgl_sleep( long );
 BGL_RUNTIME_DECL obj_t bgl_create_mutex( obj_t );
+BGL_RUNTIME_DECL void bgl_sleep( long );
 
 /*---------------------------------------------------------------------*/
 /*    Mutex symbols                                                    */
@@ -71,6 +74,7 @@ bgl_mutex_symbols_init() {
 /*    while the GC is already allocating something (because of Unix    */
 /*    signals, for instance raised on process termination).            */
 /*---------------------------------------------------------------------*/
+#if( BGL_STRICT_SRFI18 )
 static void
 register_mutex( obj_t m, bglpthread_t thread ) {
    if( thread->mutexes ) {
@@ -79,11 +83,13 @@ register_mutex( obj_t m, bglpthread_t thread ) {
    }
    thread->mutexes = m;
 }
-   
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    unregister_mutex ...                                             */
 /*---------------------------------------------------------------------*/
+#if( BGL_STRICT_SRFI18 )
 static void
 unregister_mutex( obj_t m ) {
    bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
@@ -104,27 +110,9 @@ unregister_mutex( obj_t m ) {
       BGLPTH_MUTEX_BGLPMUTEX( next )->prev = prev;
    }
 
-#if( MUTEX_DEBUG )
-   if( mut->thread ) {
-      obj_t w = mut->thread->mutexes;
-
-      if( mut->thread ) {
-	 obj_t w = mut->thread->mutexes;
-	 while( w ) {
-	    obj_t n = BGLPTH_MUTEX_BGLPMUTEX( w )->next;
-
-	    if( w == m ) {
-	       fprintf( stderr, "  unregister_mutex mutex %p:%p in thread list thread=%p/%p\n", w, BGLPTH_MUTEX_BGLPMUTEX( w ), mut->thread );
-	    }
-
-	    w = n;
-	 }
-      }
-   }
-#endif
-   
    mut->thread = 0;
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -133,7 +121,9 @@ unregister_mutex( obj_t m ) {
 void
 bglpth_mutex_mark_unlocked( obj_t m, bglpmutex_t mut ) {
    /* unregister the mutex */
+#if( BGL_STRICT_SRFI18 )
    unregister_mutex( m );
+#endif
    
    /* mark the mutex has free */
    mut->locked = 0;
@@ -145,26 +135,6 @@ bglpth_mutex_mark_unlocked( obj_t m, bglpmutex_t mut ) {
 /*---------------------------------------------------------------------*/
 void
 bglpth_mutex_mark_locked( obj_t m, bglpmutex_t mut, bglpthread_t thread ) {
-#if( MUTEX_DEBUG )
-   if( mut->locked ) {
-      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p already locked\n",
-	       m, mut );
-
-   }
-   if( mut->thread ) {
-      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p owned/abandonned by thread (mark-thread=%p)\n",
-	       m, mut, mut->thread, thread );
-   }
-   if( mut->next ) {
-      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p next none nil\n",
-	       m, mut, mut->next );
-   }
-   if( mut->prev ) {
-      fprintf( stderr, "bglpth_mutex_mark_lock(%s:%d) mutex %p:%p prev none nil\n",
-	       m, mut, mut->prev );
-   }
-#endif
-
    if( mut->locked ) {
       if( mut->thread != thread ) {
 	 FAILURE( string_to_bstring( "mutex-lock" ),
@@ -176,29 +146,13 @@ bglpth_mutex_mark_locked( obj_t m, bglpmutex_t mut, bglpthread_t thread ) {
 
       if( mut->thread != thread ) {
 	 mut->thread = thread;
+#if( BGL_STRICT_SRFI18 )
 	 if( thread ) {
 	    register_mutex( m, thread );
 	 }
+#endif	 
       }
    }
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bglpth_mutex_unlock_sans_thread ...                              */
-/*---------------------------------------------------------------------*/
-static void
-bglpth_mutex_unlock_sans_thread( obj_t m ) {
-   bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
-   bglpthread_t thread = mut->thread;
-
-   /* mark the Bigloo state of the lock */
-   bglpth_mutex_mark_unlocked( m, mut );
-   /* assign the thread field to mark the abandoned mutex state */
-   mut->thread = thread;
-   
-   /* physically unlock it */
-   pthread_mutex_unlock( &(mut->pmutex) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -227,23 +181,41 @@ bglpth_mutex_state( obj_t m ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bglpth_mutex_unlock_sans_thread ...                              */
+/*---------------------------------------------------------------------*/
+#if( BGL_STRICT_SRFI18 )   
+static void
+bglpth_mutex_unlock_sans_thread( obj_t m ) {
+   bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+   bglpthread_t thread = mut->thread;
+
+   /* mark the Bigloo state of the lock */
+   bglpth_mutex_mark_unlocked( m, mut );
+   /* assign the thread field to mark the abandoned mutex state */
+   mut->thread = thread;
+   
+   /* physically unlock it */
+   pthread_mutex_unlock( &(mut->pmutex) );
+}
+#endif   
+
+/*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bglpth_mutexes_abandon ...                                       */
 /*---------------------------------------------------------------------*/
 void
 bglpth_mutexes_abandon( bglpthread_t thread ) {
+#if( BGL_STRICT_SRFI18 )   
    obj_t w = thread->mutexes;
 
    while( w ) {
       obj_t n = BGLPTH_MUTEX_BGLPMUTEX( w )->next;
       
-#if( MUTEX_DEBUG )
-      fprintf( stderr, "bglpth_mutexes_abandon w=%p:%p locked=%d thread=%p/%p\n", w, BGLPTH_MUTEX_BGLPMUTEX( w ), BGLPTH_MUTEX_BGLPMUTEX( w )->locked, BGLPTH_MUTEX_BGLPMUTEX( w )->thread, thread );
-#endif
-      
       bglpth_mutex_unlock_sans_thread( w );
       w = n;
    }
+#endif   
 }
    
 /*---------------------------------------------------------------------*/
@@ -382,8 +354,4 @@ bglpth_make_mutex( obj_t name ) {
 void
 bglpth_setup_mutex() {
    bgl_mutex_init_register( &bglpth_mutex_init );
-/*    bgl_mutex_lock_register( &bglpth_mutex_lock );                   */
-/*    bgl_mutex_timed_lock_register( &bglpth_mutex_timed_lock );       */
-/*    bgl_mutex_unlock_register( &bglpth_mutex_unlock );               */
-/*    bgl_mutex_state_register( &bglpth_mutex_state );                 */
 }

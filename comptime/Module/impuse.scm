@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Wed Nov 21 07:55:53 2012 (serrano)                */
+;*    Last change :  Tue Nov 27 11:47:20 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
@@ -46,6 +46,7 @@
 	       (number::long (default -1))
 	       (mode::symbol (default 'import))
 	       (vars (default '()))
+	       (aliases (default '()))
 	       (checksum (default #unspecified))
 	       (loc read-only)
 	       (src read-only)
@@ -138,7 +139,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    import-1-module ...                                              */
 ;*    -------------------------------------------------------------    */
-;*    The field "vars" of import instance is a list of pairs.          */
+;*    The field "vars" is a list of imported variables.                */
+;*    The field "alias" of import instance is a list of pairs.         */
 ;*    The CAR is the declared name of the binding and the CDR          */
 ;*    the aliased named, used in alias import clauses.                 */
 ;*---------------------------------------------------------------------*/
@@ -146,23 +148,30 @@
    (let ((mi (hashtable-get *imports* module)))
       (if (import? mi)
 	  ;; patch the previous import
-	  (case (import-vars mi)
-	     ((with)
-	      (import-mode-set! mi mode)
-	      (import-vars-set! mi (list (cons var alias))))
-	     ((all)
-	      'nothing)
-	     (else
-	      (import-vars-set! mi (cons (cons var alias) (import-vars mi)))))
-	  (let ((loc (find-location/loc src (find-location *module-clause*))))
-	     ;; register a new import
+	  (if alias
+	      ;; an alias, just add it to the alias list
+	      (import-aliases-set! mi
+		 (cons (cons var alias) (import-aliases mi)))
+	      (case (import-vars mi)
+		 ((with)
+		  (import-mode-set! mi mode)
+		  (import-vars-set! mi (list (cons var #f))))
+		 ((all)
+		  'nothing)
+		 (else
+		  (import-vars-set! mi
+		     (cons (cons var #f) (import-vars mi))))))
+	  ;; register a new import
+	  (let ((loc (find-location/loc
+			src (find-location *module-clause*))))
 	     (register-import!
-	      (instantiate::import
-		 (module module)
-		 (mode mode)
-		 (vars (list (cons var alias)))
-		 (loc loc)
-		 (src src)))))))
+		(instantiate::import
+		   (module module)
+		   (mode mode)
+		   (aliases (if alias (list (cons var alias)) '()))
+		   (vars (if alias '() (list (cons var #f))))
+		   (loc loc)
+		   (src src)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    import-with-module! ...                                          */
@@ -377,14 +386,22 @@
 ;*    import-module! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (import-module! import)
-   (with-access::import import (module vars decl access code)
-      (multiple-value-bind (inline macro syntax expander)
+   (with-access::import import (module vars aliases decl access code)
+      ;; the regular variables
+      (multiple-value-bind (inline macro syntax expander vars)
 	 (if (pair? vars)
-	     (import-wanted import)
+	     (import-wanted import vars)
 	     (import-everything import))
 	 (look-for-inlines-and-macros inline
 	    macro syntax expander
-	    code (progn-tail-expressions decl) access module))))
+	    code (progn-tail-expressions decl) access module))
+      ;; the aliases
+      (when (pair? aliases)
+	 (multiple-value-bind (inline macro syntax expander vars)
+	    (import-wanted import aliases)
+	    (look-for-inlines-and-macros inline
+	       macro syntax expander
+	       code (progn-tail-expressions decl) access module)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-import! ...                                                 */
@@ -475,8 +492,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    import-wanted ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (import-wanted import)
-   (with-access::import import (module provide src vars)
+(define (import-wanted import vars)
+   (with-access::import import (module provide src)
       (let loop ((provided provide)
 		 (inline '())
 		 (macro '())
@@ -499,64 +516,48 @@
 	    (else
 	     (let ((proto (parse-prototype (car provided))))
 		(if (pair? proto)
-		    (let* ((id (fast-id-of-id
-				  (cadr proto) (find-location (car provided))))
-			   (c (assq id wanted)))
-		       (if (not c)
-			   (loop (cdr provided)
-			      inline
-			      macro
-			      syntax
-			      expander
-			      wanted)
-			   (let ((p (import-parser module (car provided) (cdr c) src)))
-			      (match-case p
-				 ((? global?)
-				  (loop (cdr provided)
-				     (cond
-					((eq? (car proto) 'sifun)
-					 (cons (cons id 'sifun) inline))
-					(else
-					 inline))
-				     macro
-				     syntax
-				     expander
-				     (remq! c wanted)))
-				 ((? type?)
-				  (loop (cdr provided)
-				     inline
-				     macro
-				     syntax
-				     expander
-				     (remq! c wanted)))
-				 ((macro . ?mac)
-				  (loop (cdr provided)
-				     inline
-				     (cons mac macro)
-				     syntax
-				     expander
-				     (remq! c wanted)))
-				 ((syntax  . ?syn)
-				  (loop (cdr provided)
-				     inline
-				     macro
-				     (cons syn syntax)
-				     expander
-				     (remq! c wanted)))
-				 ((expander . ?exp)
-				  (loop (cdr provided)
-				     inline
-				     macro
-				     syntax
-				     (cons exp expander)
-				     (remq! c wanted)))
-				 (else
-				  (loop (cdr provided)
-				     inline
-				     macro
-				     syntax
-				     expander
-				     (remq! c wanted)))))))
+		    (let ((id (fast-id-of-id
+				 (cadr proto) (find-location (car provided)))))
+		       (let liip ((inline inline)
+				  (macro macro)
+				  (syntax syntax)
+				  (expander expander)
+				  (wanted wanted))
+			  (let ((c (assq id wanted)))
+			     (if (not c)
+				 (loop (cdr provided)
+				    inline macro syntax
+				    expander wanted)
+				 (let ((p (import-parser module (car provided) (cdr c) src)))
+				    (match-case p
+				       ((? global?)
+					(liip 
+					   (cond
+					      ((eq? (car proto) 'sifun)
+					       (cons (cons id 'sifun) inline))
+					      (else
+					       inline))
+					   macro syntax expander
+					   (remq! c wanted)))
+				       ((? type?)
+					(liip inline macro syntax expander
+					   (remq! c wanted)))
+				       ((macro . ?mac)
+					(liip inline
+					   (cons mac macro)
+					   syntax expander
+					   (remq! c wanted)))
+				       ((syntax  . ?syn)
+					(liip inline macro (cons syn syntax)
+					   expander
+					   (remq! c wanted)))
+				       ((expander . ?exp)
+					(liip inline macro syntax
+					   (cons exp expander)
+					   (remq! c wanted)))
+				       (else
+					(liip inline macro syntax expander
+					   (remq! c wanted)))))))))
 		    (loop (cdr provided)
 		       inline
 		       macro

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Sat Nov 17 07:52:14 2012 (serrano)                */
+;*    Last change :  Tue Nov 27 15:56:48 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
@@ -23,6 +23,7 @@
 	    ast_node
 	    ast_sexp
 	    ast_glo-def
+	    ast_env
 	    globalize_ginfo
 	    globalize_node
 	    engine_param
@@ -336,9 +337,24 @@
 ;*    the-global-closure ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (the-global-closure global::global loc)
+
+   (define (global-alias-closure g)
+      (with-access::global g (alias id module)
+	 (when alias
+	    (let ((ag (find-global alias module)))
+	       (when (global? ag)
+		  (the-global-closure ag loc))))))
+   
    (let ((closure (fun-the-closure (global-value global))))
-      (if (global? closure)
-	  closure
+      (cond
+	 ((global? closure)
+	  closure)
+	 ((global-alias-closure global)
+	  =>
+	  (lambda (g)
+	     (fun-the-closure-set! (global-value global) g)
+	     g))
+	 (else
 	  (let* ((gloclo   (make-global-closure global))
 		 (arity    (fun-arity (global-value global)))
 		 (make-clo (cond
@@ -365,8 +381,10 @@
 				       loc
 				       'value))
 		 (closure  (def-global-scnst! (symbol-append
-					       (global-id global)
-					       '-env::procedure)
+						 (if (global-alias global)
+						     (global-alias global)
+						     (global-id global))
+						 '-env::procedure)
 			      (global-module global)
 			      node
 			      (if (sfun? (global-value global))
@@ -376,7 +394,7 @@
 				     (else
 				      'sfun))
 				  'sfun)
-			      loc)))
+			      loc)))	     
 	     (global-library-set! closure (global-library global))
 	     (global-import-set! closure (global-import global))
 	     (fun-the-closure-set! (global-value global) closure)
@@ -388,7 +406,7 @@
 		    (shape closure) " l'ast: "
 		    (shape (scnst-node (global-value closure)))
 		    #\Newline)
-	     closure))))
+	     closure)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    the-local-closure ...                                            */

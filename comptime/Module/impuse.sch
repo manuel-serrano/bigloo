@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (3.7b)
-;; Inria -- Sophia Antipolis     Mon Nov 14 16:42:36 CET 2011 
-;; (bigloo.new -classgen Module/impuse.scm)
+;; Bigloo (3.9b)
+;; Inria -- Sophia Antipolis     Mon Nov 26 09:49:53 CET 2012 
+;; (bigloo -classgen Module/impuse.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; import
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-import::import module1130::symbol number1131::long mode1132::symbol vars1133::obj checksum1134::obj loc1135::obj src1136::obj decl1137::obj provide1138::pair-nil code1139::obj access1140::obj)
+    (inline make-import::import module1080::symbol number1081::long mode1082::symbol vars1083::obj aliases1084::obj checksum1085::obj loc1086::obj src1087::obj decl1088::obj provide1089::pair-nil code1090::obj access1091::obj)
     (inline import?::bool ::obj)
     (import-nil::import)
     (inline import-access::obj ::import)
@@ -26,6 +26,8 @@
     (inline import-loc::obj ::import)
     (inline import-checksum::obj ::import)
     (inline import-checksum-set! ::import ::obj)
+    (inline import-aliases::obj ::import)
+    (inline import-aliases-set! ::import ::obj)
     (inline import-vars::obj ::import)
     (inline import-vars-set! ::import ::obj)
     (inline import-mode::symbol ::import)
@@ -37,7 +39,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; import
-(define-inline (make-import::import module1130::symbol number1131::long mode1132::symbol vars1133::obj checksum1134::obj loc1135::obj src1136::obj decl1137::obj provide1138::pair-nil code1139::obj access1140::obj) (instantiate::import (module module1130) (number number1131) (mode mode1132) (vars vars1133) (checksum checksum1134) (loc loc1135) (src src1136) (decl decl1137) (provide provide1138) (code code1139) (access access1140)))
+(define-inline (make-import::import module1080::symbol number1081::long mode1082::symbol vars1083::obj aliases1084::obj checksum1085::obj loc1086::obj src1087::obj decl1088::obj provide1089::pair-nil code1090::obj access1091::obj) (instantiate::import (module module1080) (number number1081) (mode mode1082) (vars vars1083) (aliases aliases1084) (checksum checksum1085) (loc loc1086) (src src1087) (decl decl1088) (provide provide1089) (code code1090) (access access1091)))
 (define-inline (import?::bool obj::obj) ((@ isa? __object) obj (@ import module_impuse)))
 (define (import-nil::import) (class-nil (@ import module_impuse)))
 (define-inline (import-access::obj o::import) (with-access::import o (access) access))
@@ -54,6 +56,8 @@
 (define-inline (import-loc-set! o::import v::obj) (with-access::import o (loc) (set! loc v)))
 (define-inline (import-checksum::obj o::import) (with-access::import o (checksum) checksum))
 (define-inline (import-checksum-set! o::import v::obj) (with-access::import o (checksum) (set! checksum v)))
+(define-inline (import-aliases::obj o::import) (with-access::import o (aliases) aliases))
+(define-inline (import-aliases-set! o::import v::obj) (with-access::import o (aliases) (set! aliases v)))
 (define-inline (import-vars::obj o::import) (with-access::import o (vars) vars))
 (define-inline (import-vars-set! o::import v::obj) (with-access::import o (vars) (set! vars v)))
 (define-inline (import-mode::symbol o::import) (with-access::import o (mode) mode))

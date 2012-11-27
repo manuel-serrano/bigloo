@@ -6,10 +6,13 @@
 	   ast_var	;; local/global
 	   ast_node	;; node
 	   ast_env
+	   object_class
+	   object_slots
 	   sync_node
 	   type_env
 	   tools_shape
 	   saw_defs
+	   backend_cplib
 	   )
    (export (global->rtl::block var::global)
 	   (local->reg::rtl_reg var::local))
@@ -41,6 +44,18 @@
 			 (if (not (reversed? s)) (dfs s)) )
 		      (block-succs b) ))
 	 r )))
+
+(define (get-global::global var::global) ; ()
+   (with-access::global var (alias module)
+      (set-variable-name! var)
+      (if alias
+	  (let ((unalias (find-global alias module)))
+	     (if (global? unalias)
+		 (begin
+		    (set-variable-name! unalias)
+		    unalias)
+		 var))
+	  var)))
 
 ;* (define (mget-type e)                                               */
 ;*    (let ((t (get-type e)))                                          */
@@ -208,9 +223,9 @@
       (cond ((local? variable)
 	     (single e (instantiate::rtl_mov) (local->reg variable)) )
 	    ((sfun? (variable-value variable))
-	     (single e (instantiate::rtl_loadfun (var variable))) )
+	     (single e (instantiate::rtl_loadfun (var (get-global variable)))) )
 	    (else
-	     (single e (instantiate::rtl_loadg (var variable))) ))))
+	     (single e (instantiate::rtl_loadg (var (get-global variable)))) ))))
 
 ;;
 (define-method (node->rtl::area e::let-var) ; ()
@@ -234,7 +249,7 @@
    (with-access::setq e (var value)
       (with-access::var var (variable)
 	 (link (if (global? variable)
-		   (call e (instantiate::rtl_storeg (var variable)) value)
+		   (call e (instantiate::rtl_storeg (var (get-global variable))) value)
 		   (node->rtl/in value (local->reg variable)) )
 	       (single #f (instantiate::rtl_nop)) ))))
 
@@ -316,15 +331,16 @@
 	     (compile-label-call v args)
 	     (or (imperative? e v args)
 		 (if *reverse-call-argument*
-		     (rcall* e (instantiate::rtl_call (var v)) args)
-		     (call* e (instantiate::rtl_call (var v)) args) ))))))
+		     (rcall* e (instantiate::rtl_call (var (get-global v))) args)
+		     (call* e (instantiate::rtl_call (var (get-global v))) args) ))))))
 
 (define (imperative? e v::global args) ; args::(list node)
    (let ( (id (global-id v)) )
       (cond
 	 ((eq? id '__evmeaning_address)
 	  (call e
-		(instantiate::rtl_globalref (var (var-variable (car args))))) )
+		(instantiate::rtl_globalref
+		   (var (get-global (var-variable (car args)))))) )
 	 (else #f) )))
 
 ;;
@@ -344,7 +360,7 @@
 	 (case strength
 	    ((elight)
 	     ;; OUPS sometime arg1 != fun but fun is a GLOBAL fun !!!!!
-	     (call* e (instantiate::rtl_call (var (var-variable fun))) args) )
+	     (call* e (instantiate::rtl_call (var (get-global (var-variable fun)))) args) )
 	    ((light)
 	     ;; Forget fun which is always the first argument of args.
 	     (call* e

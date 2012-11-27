@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec  8 10:40:16 2003                          */
-;*    Last change :  Tue Nov 20 18:23:03 2012 (serrano)                */
+;*    Last change :  Tue Nov 27 11:23:48 2012 (serrano)                */
 ;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    BackEnd common facilities                                        */
@@ -136,11 +136,11 @@
    (let ((name (global-name var)))
       (if (string? name)
 	  name
-	  (let ((name (symbol->string (global-id var))))
+	  (let ((name (symbol->string (or (global-alias var) (global-id var)))))
 	     (global-name-set! var
-			       (if (bigloo-need-mangling? name)
-				   (bigloo-mangle name)
-				   name)))))
+		(if (bigloo-need-mangling? name)
+		    (bigloo-mangle name)
+		    name)))))
    ;; Patch the type for global vectors.
    (let ((value (global-value var)))
       (if (and (scnst? value) (eq? (scnst-class value) 'stvector))
@@ -165,7 +165,7 @@
 				(symbol->string id) "_" (integer->string key)))))
 		      (else
 		       (internal-error "set-variable-name!"
-			  "Unknown variable sort"
+			  "Unknown variable king"
 			  (shape variable))))))
 	     (set! name n)
 	     n))))

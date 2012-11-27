@@ -423,7 +423,7 @@
 	   ((static) '(private static))
 	   ((export) '(public static))
 	   (else (error "modifier" "unknown modifier" import)) )))
-   (with-access::global var (id module type name)
+   (with-access::global var (alias id module type name)
       (let ( (id (symbol-append 'm_ module '_ id)) )
 	 (declare-method me id (declare-module me module)
 			 (modifier var)
