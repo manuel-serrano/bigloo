@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Sun Jul 22 20:13:51 2012 (serrano)                */
+/*    Last change :  Wed Nov 28 10:13:05 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -35,11 +35,6 @@ string_to_bstring_len( char *c_string, int len ) {
 
    memcpy( dst, c_string, len );
    dst[ len ] = '\0';
-   
-/*    for( ; len > 0; len-- )                                          */
-/*       *dst++ = *c_string++;                                         */
-/*                                                                     */
-/*    *dst = '\0';                                                     */
    
    return BSTRING( string );
 }

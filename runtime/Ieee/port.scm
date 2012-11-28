@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sun Nov 18 14:55:06 2012 (serrano)                */
+;*    Last change :  Wed Nov 28 10:49:51 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -131,7 +131,7 @@
 	    (c-default-io-bufsiz::int "default_io_bufsiz")
 	    (c-reset-eof::bool (::obj) "reset_eof")
 	    (macro c-flush-output-port::obj (::output-port)
-		   "FLUSH_OUTPUT_PORT")
+		   "bgl_flush_output_port")
 	    (macro $reset-output-string-port::obj (::output-port)
 		   "bgl_reset_output_string_port")
 	    (macro $reset-output-port-error::obj (::output-port)

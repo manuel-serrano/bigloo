@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Nov  5 19:02:11 2012 (serrano)                */
+/*    Last change :  Wed Nov 28 11:18:58 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -228,9 +228,6 @@ static obj_t _stdin, _stdout, _stderr;
 /*---------------------------------------------------------------------*/
 /*    stdout-variables                                                 */
 /*---------------------------------------------------------------------*/
-static obj_t stdout_mutex = BUNSPEC;
-DEFINE_STRING( stdout_mutex_name, _2, "stdout-mutex", 12 );
-
 static size_t stdout_from = 0;
 
 /*---------------------------------------------------------------------*/
@@ -726,14 +723,11 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    output_flush ...                                                 */
-/*    -------------------------------------------------------------    */
-/*    Read automatically invokes a flush on stdout.                    */
-/*    In order to avoid locks during writes we need to handle the      */
-/*    flushes differently for stdout.                                  */
-/*    Invariant: stdout-buffer is already flushed up to stdout_from.   */
 /*---------------------------------------------------------------------*/
 obj_t
 output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err ) {
+   static obj_t mu;
+
    if( PORT( port ).kindof == KINDOF_CLOSED ) {
       return BFALSE;
    } else {
@@ -742,8 +736,6 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
       size_t cnt = OUTPUT_PORT( port ).cnt;
       long use = len - cnt;
       obj_t fhook = BGL_OUTPUT_PORT_FHOOK( port );
-
-      if( port == _stdout ) bgl_mutex_lock ( stdout_mutex );
 
       /* flush out the buffer, if needed */
       if( OUTPUT_PORT( port ).bufmode != BGL_IOEBF ) {
@@ -793,8 +785,6 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	    long n = syswrite( port, str, slen );
 	    
 	    if( n < 0 && err ) {
-	       if( port == _stdout ) bgl_mutex_unlock ( stdout_mutex );
-	       
 	       OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
 	       
 	       C_SYSTEM_FAILURE( bglwerror( errno ), "write/display",
@@ -803,8 +793,6 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	 }
       }
       
-      if( port == _stdout ) bgl_mutex_unlock ( stdout_mutex );
-
       return port;
    }
 }
@@ -816,10 +804,26 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 /*    There is no room for str, and cnt has not been decremented.      */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_output_flush( obj_t port, char *str, size_t slen ) {
-   return output_flush( port, str, slen, 0, 1 );
+bgl_output_flush( obj_t op, char *str, size_t slen ) {
+   return output_flush( op, str, slen, 0, 1 );
 }
 
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_flush_output_port ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_flush_output_port( obj_t op ) {
+   obj_t res;
+   
+   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   bgl_output_flush( op, 0, 0 );
+   res =  OUTPUT_PORT( op ).sysflush ? OUTPUT_PORT( op ).sysflush( op ) : BTRUE;
+   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+
+   return res;
+}
+   
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_write ...                                                    */
@@ -846,6 +850,21 @@ bgl_write( obj_t op, unsigned char *str, size_t sz ) {
    } else {
       return bgl_output_flush( op, str, sz );
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_write_with_lock ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_write_with_lock(  obj_t op, unsigned char *str, size_t sz ) {
+   obj_t res;
+   
+   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   res = bgl_write( op, str, sz );
+   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+
+   return res;
 }
 
 /*---------------------------------------------------------------------*/
@@ -886,6 +905,7 @@ bgl_make_output_port( obj_t name,
    new_output_port->output_port_t.fhook = BUNSPEC;
    new_output_port->output_port_t.flushbuf = BUNSPEC;
    new_output_port->output_port_t.err = 0;
+   new_output_port->output_port_t.mutex = bgl_make_mutex( name );
 
    new_output_port->output_port_t.bufmode = BGL_IOFBF;
    bgl_output_port_buffer_set( BREF( new_output_port ), buf );
@@ -1192,6 +1212,7 @@ bgl_close_output_port( obj_t port ) {
       }
 
       OUTPUT_PORT( port ).buf = BFALSE;
+      bgl_mutex_unlock( OUTPUT_PORT( port ).mutex );
 
       return res;
    }
@@ -1825,8 +1846,6 @@ bgl_init_io() {
 
    default_io_bufsiz = BUFSIZ * _SBFSIZ;
 
-   stdout_mutex = bgl_make_mutex( stdout_mutex_name );
-
    if( isatty( _FILENO( stdout ) ) ) {
       _stdout = bgl_make_output_port( string_to_bstring( "stdout" ),
 				      (void *)_FILENO( stdout ),
@@ -1850,7 +1869,7 @@ bgl_init_io() {
    _stderr = bgl_make_output_port( string_to_bstring( "stderr" ),
 				   (void *)_FILENO( stderr ),
 				   KINDOF_CONSOLE,
-				   make_string_sans_fill( 0 ), 
+				   make_string_sans_fill( 1 ), 
 				   bgl_syswrite,
 				   (long (*)())_LSEEK,
 				   _CLOSE );
