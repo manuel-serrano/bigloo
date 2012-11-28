@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Wed Nov 28 07:38:25 2012 (serrano)                */
+;*    Last change :  Wed Nov 28 16:22:37 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -179,16 +179,13 @@
 ;*---------------------------------------------------------------------*/
 (define (exitd-unlock-mutexes! exitd)
    (when ($exitd-mutex0 exitd)
-      ;; (tprint "unlock0 " ($exitd-mutex0 exitd))
-      (pragma "fprintf( stderr, \"     UNLOCK mutex0...\\n\" )")
+      ;; (pragma "fprintf( stderr, \"     UNLOCK mutex0...\\n\" )")
       (mutex-unlock! ($exitd-mutex0 exitd)))
    (when ($exitd-mutex1 exitd)
-      ;; (tprint "unlock1 " ($exitd-mutex1 exitd))
-      (pragma "fprintf( stderr, \"     UNLOCK mutex1...\\n\" )")
-      (mutex-unlock! ($exitd-mutex0 exitd)))
+      ;; (pragma "fprintf( stderr, \"     UNLOCK mutex1...\\n\" )")
+      (mutex-unlock! ($exitd-mutex1 exitd)))
    (when (pair? ($exitd-mutexn exitd))
-;*       (tprint "unlockn")                                            */
-      (pragma "fprintf( stderr, \"     UNLOCK mutexn...\\n\" )")
+      ;; (pragma "fprintf( stderr, \"     UNLOCK mutexn...\\n\" )")
       (for-each mutex-unlock! ($exitd-mutexn exitd))))
    
 ;*---------------------------------------------------------------------*/
