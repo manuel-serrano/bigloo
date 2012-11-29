@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Nov 26 09:46:26 2012 (serrano)                */
+/*    Last change :  Thu Nov 29 07:06:55 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -241,7 +241,7 @@ static char *
 socket_hostname( obj_t hostname ) {
    char *name = BSTRING_TO_STRING( hostname );
 
-   if( *name = 0 ) {
+   if( *name == 0 ) {
       /* a local socket */
       return name + 1;
    } else {
@@ -260,7 +260,7 @@ client_socket_error( char *proc, obj_t hostname, int port, char *msg, int err ) 
 
    if( msg ) sprintf( buffer1, "%s, ", msg );
    sprintf( buffer1, "%s (%d)", strerror( err ), err );
-
+   
    if( port >= 0 ) {
       sprintf( buffer2, "%s:%d", socket_hostname( hostname ), port );
    } else {

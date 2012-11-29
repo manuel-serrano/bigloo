@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  4 20:11:07 1999                          */
-#*    Last change :  Thu Aug 12 11:34:12 2010 (serrano)                */
-#*    Copyright   :  1999-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Nov 28 17:05:40 2012 (serrano)                */
+#*    Copyright   :  1999-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The bdb Makefile                                                 */
 #*=====================================================================*/
@@ -83,11 +83,9 @@ include ../Makefile.misc
 install:
 	if [ $(DESTDIR)$(BINDIR) != $(BOOTBINDIR) ]; then \
 	   cp $(BOOTBINDIR)/bdb $(DESTDIR)$(BINDIR) && \
-	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bdb && \
-	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
+	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bdb; \
         fi
-	if [ $(FILDIR) != $(BOOTLIBDIR) ]; then \
+	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
 	   cp $(BOOTLIBDIR)/bdb.heap $(LIBDIR)/$(FILDIR)/bdb.heap && \
            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bdb.heap || exit 1; \
         fi
