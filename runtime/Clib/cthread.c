@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Wed Nov 28 07:58:24 2012 (serrano)                */
+/*    Last change :  Thu Nov 29 16:57:24 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -84,16 +84,8 @@ REGISTER_FUNCTION( bgl_sigprocmask, int, (int, const sigset_t *, sigset_t *) )
 #endif
 							 
 REGISTER_FUNCTION( bgl_mutex_init, obj_t, (obj_t) )
-/* REGISTER_FUNCTION( bgl_mutex_lock, bool_t, (obj_t) )                */
-/* REGISTER_FUNCTION( bgl_mutex_timed_lock, bool_t, (obj_t, long) )    */
-/* REGISTER_FUNCTION( bgl_mutex_unlock, bool_t, (obj_t) )              */
-/* REGISTER_FUNCTION( bgl_mutex_state, obj_t, (obj_t) )                */
 
 REGISTER_FUNCTION( bgl_condvar_init, obj_t, (obj_t) )
-/* REGISTER_FUNCTION( bgl_condvar_wait, bool_t, (obj_t, obj_t) )       */
-/* REGISTER_FUNCTION( bgl_condvar_timed_wait, bool_t, (obj_t, obj_t, long) ) */
-/* REGISTER_FUNCTION( bgl_condvar_signal, bool_t, (obj_t) )            */
-/* REGISTER_FUNCTION( bgl_condvar_broadcast, bool_t, (obj_t) )         */
 
 REGISTER_FUNCTION( bgl_multithread_dynamic_denv, obj_t, (void) );
 
@@ -120,6 +112,7 @@ bgl_create_mutex( obj_t name ) {
 static obj_t
 bgl_mutex_init_default( obj_t m ) {
    BGL_MUTEX( m ).syslock = &bgl_act_default;
+   BGL_MUTEX( m ).syslockpre = &bgl_act2_default;
    BGL_MUTEX( m ).systimedlock = &bgl_act2long_default;
    BGL_MUTEX( m ).sysunlock = &bgl_act_default;
    BGL_MUTEX( m ).sysstate = &bgl_mutex_state_default;

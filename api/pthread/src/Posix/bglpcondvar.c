@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Nov 23 19:24:05 2012 (serrano)                */
+/*    Last change :  Thu Nov 29 16:50:23 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -27,10 +27,6 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_condvar_init_register( obj_t (*)( obj_t ) );
-/* BGL_RUNTIME_DECL void bgl_condvar_wait_register( bool_t (*)( obj_t, obj_t ) ); */
-/* BGL_RUNTIME_DECL void bgl_condvar_timed_wait_register( bool_t (*)( obj_t, obj_t, long ) ); */
-/* BGL_RUNTIME_DECL void bgl_condvar_signal_register( bool_t (*)( obj_t ) ); */
-/* BGL_RUNTIME_DECL void bgl_condvar_broadcast_register( bool_t (*)( obj_t ) ); */
 BGL_RUNTIME_DECL obj_t bgl_create_condvar( obj_t );
 
 /*---------------------------------------------------------------------*/
@@ -142,8 +138,4 @@ bglpth_make_condvar( obj_t name ) {
 void
 bglpth_setup_condvar() {
    bgl_condvar_init_register( &bglpth_condvar_init );
-/*    bgl_condvar_wait_register( &bglpth_condvar_wait );               */
-/*    bgl_condvar_timed_wait_register( &bglpth_condvar_timed_wait );   */
-/*    bgl_condvar_signal_register( &bglpth_condvar_signal );           */
-/*    bgl_condvar_broadcast_register( &bglpth_condvar_broadcast );     */
 }

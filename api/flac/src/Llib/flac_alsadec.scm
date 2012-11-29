@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sun Nov 18 14:59:50 2012 (serrano)                */
+;*    Last change :  Thu Nov 29 16:49:54 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -320,7 +320,6 @@
 	       (cond
 		  (%!dpause
 		   (onstate am 'pause)
-		   (tprint "PAUSE...")
 		   ;;; the decoder is asked to pause
 		   (with-access::alsamusic am (%status)
 		      (with-access::musicstatus %status (songpos)

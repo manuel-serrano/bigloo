@@ -3,13 +3,24 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Fri Nov 23 19:23:28 2012 (serrano)                */
+/*    Last change :  Thu Nov 29 14:50:44 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
 /*=====================================================================*/
 #include <pthread.h>
 #include <bigloo.h>
+
+/*---------------------------------------------------------------------*/
+/*    Strict SRFI-18 enables the full support of                       */
+/*    MUTEX-LOCK/MUTEX-UNLOCK. Without SRFI-18 support, mutex state    */
+/*    are not fully supported and mutexes and not automatically        */
+/*    released when their owning thread (i.e., the thread currently    */
+/*    locking them) terminate. This is useful for applications         */
+/*    using exclusively SYNCHRONIZE.                                   */
+/*---------------------------------------------------------------------*/
+#undef BGL_STRICT_SRFI18
+#define BGL_STRICT_SRFI18 1
 
 /*---------------------------------------------------------------------*/
 /*    bglpthread_t                                                     */
@@ -25,7 +36,9 @@ typedef struct bglpthread {
    obj_t specific;
    obj_t cleanup;
    int status;
+#if( BGL_STRICT_SRFI18 )   
    obj_t mutexes;
+#endif   
 } *bglpthread_t;
 
 /*---------------------------------------------------------------------*/
@@ -36,8 +49,10 @@ typedef struct bglpmutex {
    bglpthread_t thread;
    bool_t locked;
    obj_t specific;
+#if( BGL_STRICT_SRFI18 )   
    obj_t prev;
    obj_t next;
+#endif   
 } *bglpmutex_t;
 
 /*---------------------------------------------------------------------*/

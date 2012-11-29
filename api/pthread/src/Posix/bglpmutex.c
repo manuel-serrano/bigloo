@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Tue Nov 27 08:08:38 2012 (serrano)                */
+/*    Last change :  Thu Nov 29 14:50:30 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -26,17 +26,6 @@
 #ifdef _MSC_VER
 #  include <sys/timeb.h>
 #endif
-
-/*---------------------------------------------------------------------*/
-/*    Strict SRFI-18 enables the full support of                       */
-/*    MUTEX-LOCK/MUTEX-UNLOCK. Without SRFI-18 support, mutex state    */
-/*    are not fully supported and mutexes and not automatically        */
-/*    released when their owning thread (i.e., the thread currently    */
-/*    locking them) terminate. This is useful for applications         */
-/*    using exclusively SYNCHRONIZE.                                   */
-/*---------------------------------------------------------------------*/
-#undef BGL_STRICT_SRFI18
-#define BGL_STRICT_SRFI18 1
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -331,8 +320,10 @@ bglpth_mutex_init( obj_t m ) {
 	       string_to_bstring( "Cannot create mutex" ),
 	       string_to_bstring( strerror( errno ) ) );
 
+#if( BGL_STRICT_SRFI18 )
    mut->next = 0;
    mut->prev = 0;
+#endif
    
    return m;
 }
