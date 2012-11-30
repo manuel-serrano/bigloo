@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Sun Nov 18 10:24:32 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 09:12:47 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -45,6 +45,7 @@
 ;*    lock cache                                                       */
 ;*---------------------------------------------------------------------*/
 (define mlock #f)
+(define mlockprelock #f)
 (define mulock #f)
 (define mpush #f)
 (define mpop #f)
@@ -55,10 +56,12 @@
 (define (init-sync! loc)
    (unless mlock
       (set! mlock (sexp->node '$mutex-lock '() loc 'app))
+      (set! mlockprelock (sexp->node '$mutex-lock-prelock '() loc 'app))
       (set! mulock (sexp->node '$mutex-unlock '() loc 'app))
       (set! mpush (sexp->node '(@ exitd-push-mutex! __bexit) '() loc 'app))
       (set! mpop (sexp->node '(@ exitd-pop-mutex! __bexit) '() loc 'app))
       (set-variable-name! (var-variable mlock))
+      (set-variable-name! (var-variable mlockprelock))
       (set-variable-name! (var-variable mulock))
       (set-variable-name! (var-variable mpush))
       (set-variable-name! (var-variable mpop))))
@@ -66,26 +69,38 @@
 ;*---------------------------------------------------------------------*/
 ;*    sync->sequence ...                                               */
 ;*    -------------------------------------------------------------    */
-;*    This function performs the following expansion:                  */
-;*                                                                     */
-;*      (sync m body)                                                  */
-;*    =>                                                               */
-;*      (begin                                                         */
-;*         ($mutex-lock m)                                             */
-;*         ((@ exitd-push-mutex! __bexit) m)                           */
-;*         (let ((tmp body))                                           */
-;*    	      ((@ exitd-pop-mutex! __bexit) m)                         */
-;*    	      ($mutex-unlock m)))                                      */
+;*    This function performs the following expansions:                 */
+;*    1- if prelock is NIL:                                            */
+;*        (sync m body)                                                */
+;*      =>                                                             */
+;*        (begin                                                       */
+;*           ($mutex-lock m)                                           */
+;*           ((@ exitd-push-mutex! __bexit) m)                         */
+;*           (let ((tmp body))                                         */
+;*              ((@ exitd-pop-mutex! __bexit) m)                       */
+;*              ($mutex-unlock m)))                                    */
+;*    2- if prelock is not NIL:                                        */
+;*        (sync m prelock body)                                        */
+;*      =>                                                             */
+;*        (begin                                                       */
+;*           ($mutex-lock-prelock m prelock)                           */
+;*           ((@ exitd-push-mutex! __bexit) m)                         */
+;*           (let ((tmp body))                                         */
+;*              ((@ exitd-pop-mutex! __bexit) m)                       */
+;*              ($mutex-unlock m)))                                    */
 ;*---------------------------------------------------------------------*/
 (define (sync->sequence node::sync)
    
    (define (app expr loc)
       (application->node expr '() loc 'value))
 
-   (with-access::sync node (loc nodes mutex type)
+   (with-access::sync node (loc nodes mutex type prelock)
       (init-sync! loc)
+      (tprint "TYPEOF prelock=" (typeof prelock))
       (let* ((tmp (make-local-svar (gensym 'tmp) type))
-	     (lock (app `(,mlock ,mutex) loc))
+	     (lock (if (atom? prelock)
+		       (app `(,mlock ,mutex) loc)
+		       (app `(,mlockprelock ,mutex ,prelock) loc)))
 	     (push (app `(,mpush ,mutex) loc))
 	     (pop (app `(,mpop ,mutex) loc))
 	     (unlock (app `(,mulock ,mutex) loc))

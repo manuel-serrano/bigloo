@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Nov 23 10:06:49 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 09:19:54 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -508,8 +508,10 @@
       ((apply ?- ?-)
        (applycation->node exp stack loc site))
 ;*--- synchronize -----------------------------------------------------*/
+      ((synchronize ?mutex :prelock ?prelock . ?body)
+       (synchronize->node exp mutex prelock body stack (find-location/loc exp loc) site))
       ((synchronize ?mutex . ?body)
-       (synchronize->node exp mutex body stack (find-location/loc exp loc) site))
+       (synchronize->node exp mutex ''() body stack (find-location/loc exp loc) site))
 ;*--- private ---------------------------------------------------------*/
       ((#unspecified)
        (error-sexp->node
@@ -740,13 +742,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    synchronize->node ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (synchronize->node exp mutex body stack loc site)
+(define (synchronize->node exp mutex prelock body stack loc site)
    (if (symbol? mutex)
        (instantiate::sync
 	  (loc loc)
 	  (type *_*)
 	  (mutex (sexp->node mutex stack loc 'value))
-	  (prelock (sexp->node #unspecified stack loc 'value))
+	  (prelock (sexp->node prelock stack loc 'value))
 	  (nodes (sexp*->node body stack loc site)))
        (let* ((v (mark-symbol-non-user! (gensym 'mutex)))
 	      (var (make-typed-ident v 'mutex))

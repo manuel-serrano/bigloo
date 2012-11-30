@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:40:08 2011                          */
-;*    Last change :  Sun Nov 18 09:27:04 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 09:25:02 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute free/closed variable for the lambda-based evaluator      */
@@ -172,8 +172,9 @@
       (avar body local abs) ))
 
 (define-method (avar e::ev_synchronize local abs);
-   (with-access::ev_synchronize e (mutex body)
+   (with-access::ev_synchronize e (mutex body prelock)
       (avar mutex local abs)
+      (avar prelock local abs)
       (avar body local abs) ))
 
 (define-method (avar e::ev_let local abs);

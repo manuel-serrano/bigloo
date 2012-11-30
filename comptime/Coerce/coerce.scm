@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sat Nov 17 07:33:23 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 08:46:36 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -143,7 +143,7 @@
 (define-method (coerce! node::sync caller to safe)
    (with-access::sync node (type nodes mutex prelock)
       (set! mutex (coerce! mutex caller *mutex* safe))
-      (set! prelock (coerce! prelock caller *obj* safe))
+      (set! prelock (coerce! prelock caller *pair-nil* safe))
       (let loop ((nodes nodes))
 	 (let ((n (car nodes)))
 	    (if (null? (cdr nodes))

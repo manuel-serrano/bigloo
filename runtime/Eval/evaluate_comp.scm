@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sun Nov 18 09:29:19 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 09:32:34 2012 (serrano)                */
 ;*    Copyright   :  2011-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -531,13 +531,18 @@
 			   (vector-set! s 0 saved-bp) )))))))
 
 (define-method (comp e::ev_synchronize stk);
-   (with-access::ev_synchronize e (mutex body)
-      (let ( (mutex (comp mutex stk)) (body (comp body stk)) )
+   (with-access::ev_synchronize e (mutex prelock body)
+      (let ( (mutex (comp mutex stk))
+	     (prelock (comp prelock stk))
+	     (body (comp body stk)) )
 	 (EVA '(control synchronize) ()
 	      (let ( (m (EVC mutex)) )
-		 (let ( (saved-bp bp) )
-		    (prog1 (synchronize m (EVC body))
-			   (vector-set! s 0 saved-bp) )))))))
+		 (let ( (p (EVC prelock)) )
+		    (let ( (saved-bp bp) )
+		       (prog1 (if (pair? p)
+				  (synchronize m :prelock p (EVC body))
+				  (synchronize m (EVC body)))
+			  (vector-set! s 0 saved-bp) ))))))))
 
 ;;
 (define-struct label-tag)

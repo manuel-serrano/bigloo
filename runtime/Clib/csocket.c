@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Nov 29 07:06:55 2012 (serrano)                */
+/*    Last change :  Fri Nov 30 09:13:43 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -91,7 +91,24 @@ typedef int socklen_t;
 static FILE *debug_segv_file = 0;
 
 debug_init() {
-   debug_segv_file = fopen( "/tmp/LOG.socket-segv", "w" );
+   struct tm *t;
+   char *s;
+   long sec = time( 0 );
+   char path[ 1024 ];
+   extern char *executable_name;
+   extern char *rindex(const char *s, int c);
+   
+   char *i = rindex( executable_name, '/' );
+
+   if( !i ) i = executable_name; else i++;
+
+   sprintf( path, "/tmp/LOG.socket-segv.%s", i );
+   
+   t = gmtime( (time_t *)&sec );
+   s = asctime( t );
+   debug_segv_file = fopen( path, "w" );
+   
+   fprintf( debug_segv_file, "DEBUG_INIT: %s\n", asctime( t ) );
 }   
 
 debug_socket_segv( char *fun, unsigned char *ptr, int len ) {
@@ -181,15 +198,15 @@ static obj_t ip_multicast_ttl;
 void
 bgl_init_socket() {
    if( !VECTORP( hosttable ) ) {
+      hosttable = make_vector( 256, 0 );
+      addrtable = make_vector( 256, 0 );
+
       socket_mutex = bgl_make_mutex( socket_mutex_name );
       socket_condv = bgl_make_condvar( socket_condv_name );
       gethostby_mutex = bgl_make_mutex( gethostby_mutex_name );
       protoent_mutex = bgl_make_mutex( protoent_mutex_name );
-//      socket_port_mutex = bgl_make_mutex( socket_port_mutex_name );
+      socket_port_mutex = bgl_make_mutex( socket_port_mutex_name );
       
-      hosttable = make_vector( 256, 0 );
-      addrtable = make_vector( 256, 0 );
-
       so_keepalive = string_to_keyword( "SO_KEEPALIVE" );
       so_oobinline = string_to_keyword( "SO_OOBINLINE" );
       so_rcvbuf = string_to_keyword( "SO_RCVBUF" );
@@ -202,10 +219,11 @@ bgl_init_socket() {
       tcp_cork = string_to_keyword( "TCP_CORK" );
       tcp_quickack = string_to_keyword( "TCP_QUICKACK" );
       ip_multicast_ttl = string_to_keyword( "IP_MULTICAST_TTL" );
-   }
+      
 #if( defined( DEBUG_SEGV ) )
-   debug_init();
+      debug_init();
 #endif   
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -352,9 +370,11 @@ make_inet_array( char **src, int size ) {
       char *d = (char *)GC_MALLOC_ATOMIC( size );
       char *s = *run;
 
-#if defined( DEBUG_SEGV ) 
+#if defined( DEBUG_SEGV )
+      // bgl_mutex_lock( socket_port_mutex );
       fprintf( debug_segv_file, "make_init_array, memcpy atomic=%p size=%d\n", d );
       debug_socket_segv( "make_inet_array", s, size );
+      // bgl_mutex_unlock( socket_port_mutex );
 #endif
       
       memcpy( d, s, size );
@@ -1238,11 +1258,13 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    memset( &server, 0, sizeof( server ) );
    
 #if defined( DEBUG_SEGV )
+   // bgl_mutex_lock( socket_port_mutex );
    fprintf( debug_segv_file, "bgl_make_client_socket, hp=%p", hp );
    fflush( debug_segv_file );
    fprintf( debug_segv_file, " name=%s src=%p len=%d\n", hp->h_name, hp->h_addr, hp->h_length );
    fflush( debug_segv_file );
    debug_socket_segv( "bgl_make_client", hp->h_addr, hp->h_length );
+   // bgl_mutex_unlock( socket_port_mutex );
 #endif
    
    memcpy( (char *)&(server.sin_addr), hp->h_addr, hp->h_length );

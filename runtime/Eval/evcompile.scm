@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Sun Nov 18 10:12:21 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 09:31:47 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -240,6 +240,22 @@
 	     (evcompile handler env
 		genv where #f
 		(get-location handler loc)
+		lkp #f)
+	     (evcompile-begin body env genv
+		where #f
+		(get-location body loc)
+		lkp #f)
+	     loc)))
+      ((synchronize ?mutex :prelock ?prelock . ?body)
+       (let ((loc (get-location exp loc)))
+	  (evcompile-synchronize-prelock
+	     (evcompile mutex env
+		genv where #f
+		(get-location mutex loc)
+		lkp #f)
+	     (evcompile prelock env
+		genv where #f
+		(get-location mutex loc)
 		lkp #f)
 	     (evcompile-begin body env genv
 		where #f
@@ -489,6 +505,12 @@
 ;*---------------------------------------------------------------------*/
 (define (evcompile-synchronize mutex body loc)
    (evcode 175 loc mutex body))
+
+;*---------------------------------------------------------------------*/
+;*    evcompile-synchronize-prelock ...                                */
+;*---------------------------------------------------------------------*/
+(define (evcompile-synchronize-prelock mutex prelock body loc)
+   (evcode 176 loc mutex prelock body))
 
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-compiled-application ...                               */
