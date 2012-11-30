@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Wed Nov 14 18:42:42 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 13:17:13 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -226,7 +226,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|scheduler-terminate!\\>\\|scheduler-instant\\>"
 		 "\\|scheduler[?]\\>"
 		 "\\|make-scheduler\\>\\|current-thread\\>"
-		 "\\|make-asynchronous-signal\\>\\|with-lock\\(-uw\\)?\\|synchronize\\(-unsafe\\)?\\>\\)")
+		 "\\|make-asynchronous-signal\\>\\|with-lock\\(-uw\\)?\\|synchronize\\>\\)")
 	 1
 	 'ude-font-lock-face-8)
    (list (concat "\(\\(sqlite-format\\>\\|sqlite-eval\\>\\|sqlite-exec\\>"

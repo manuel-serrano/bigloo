@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Fri Nov 30 09:12:47 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 13:53:22 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -96,7 +96,6 @@
 
    (with-access::sync node (loc nodes mutex type prelock)
       (init-sync! loc)
-      (tprint "TYPEOF prelock=" (typeof prelock))
       (let* ((tmp (make-local-svar (gensym 'tmp) type))
 	     (lock (if (atom? prelock)
 		       (app `(,mlock ,mutex) loc)

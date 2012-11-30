@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Sun Nov 18 15:03:55 2012 (serrano)                */
+;*    Last change :  Fri Nov 30 14:36:38 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -851,6 +851,12 @@
 		   (with-access::folderinfo %selection-info (nextuid)
 		      nextuid))))))))
 
+;*---------------------------------------------------------------------*/
+;*    mailbox-message-copy! ::maildir ...                              */
+;*---------------------------------------------------------------------*/
+(define-method (mailbox-message-copy! m::maildir i::int s::bstring)
+   (mailbox-message-create! m s (mailbox-message m i)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    genfilename ...                                                  */
 ;*---------------------------------------------------------------------*/
