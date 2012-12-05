@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Nov 30 09:13:43 2012 (serrano)                */
+/*    Last change :  Wed Dec  5 12:58:35 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -493,6 +493,12 @@ bglhostent_fill_from_addrinfo( obj_t hostaddr, struct bglhostent *bhp, struct ad
    
    /* h_name */
    bhp->hp.h_name = make_string( BSTRING_TO_STRING( hostaddr ) );
+   
+#if DEBUG_CACHE_DNS
+   fprintf( stderr, "bglhostent_fill_from_addrinfo hostaddr=%s canonname=%s\n",
+	    BSTRING_TO_STRING( hostaddr ),
+	    ai->ai_canonname ? ai->ai_canonname : "_" );
+#endif       
 
    /* h_length */
    bhp->hp.h_length = sizeof( struct in_addr );
@@ -515,20 +521,24 @@ bglhostent_fill_from_addrinfo( obj_t hostaddr, struct bglhostent *bhp, struct ad
       struct addrinfo *run;
       char **l;
 
-      for( run = ai; run; run = run->ai_next, len++ );
+      for( run = ai; run; run = run->ai_next ) {
+	 /* currently, only support IPv4 address lookup */
+	 if( run->ai_family == AF_INET ) len++;
+      }
 
       l = (char **)GC_MALLOC( sizeof( char * ) * len + 1 );
       bhp->hp.h_addr_list = l;
 
       for( run = ai; run; run = run->ai_next ) {
-	 /* CARE, MS 19 jan 2009: I'm not sure of the cast into  */
-	 /* sockaddr_in and I'm not sure that the h_length       */
-	 /* corresponds to the length of sin_addr.               */
-	 void *d = GC_MALLOC_ATOMIC( bhp->hp.h_length );
-	 memcpy( (unsigned char *)d,
-		 (char *)&(((struct sockaddr_in *)(run->ai_addr))->sin_addr),
-		 bhp->hp.h_length );
-	 *l++ = d;
+	 if( run->ai_family == AF_INET ) {
+	    /* only handle IPv4 addresses (AF_INET). To handle IPv6 */
+	    /* as well, should cast into a struct sockaddr_in6 *    */
+	    void *d = GC_MALLOC_ATOMIC( bhp->hp.h_length );
+	    memcpy( (unsigned char *)d,
+		    (char *)&(((struct sockaddr_in *)(run->ai_addr))->sin_addr),
+		    bhp->hp.h_length );
+	    *l++ = d;
+	 }
       }
 
       *l = 0;
@@ -583,7 +593,6 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int canon ) {
    hints.ai_flags = canon ? AI_CANONNAME | AI_ADDRCONFIG : AI_ADDRCONFIG;
 
    if( !(v=getaddrinfo( BSTRING_TO_STRING( hostname ), 0L, &hints, &res)) ) {
-
       bglhostent_fill_from_addrinfo( hostname, bhp, res );
       freeaddrinfo( res );
    } else {
@@ -629,7 +638,7 @@ invalidate_hostbyname( obj_t hostname ) {
 /*                                                                     */
 /*    This function is thread-safe. It can be called simultaneously    */
 /*    by several threads. It returns a fresh data-structure so         */
-/*    client don't have to deploy a lock machinery for using it.       */
+/*    client don't have to deploy a locking machinery for using it.    */
 /*---------------------------------------------------------------------*/
 static struct hostent *
 bglhostbyname( obj_t hostname, int canon ) {

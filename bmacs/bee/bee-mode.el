@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:49:23 1998                          */
-;*    Last change :  Tue Nov  6 09:31:00 2012 (serrano)                */
+;*    Last change :  Mon Dec  3 16:04:40 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee mode declaration.                                        */
 ;*=====================================================================*/
@@ -71,6 +71,9 @@
     (modify-syntax-entry ?^ "w   " local-syntax-table)
     (modify-syntax-entry ?\\ "w   " local-syntax-table)
     (modify-syntax-entry ?. ".   " local-syntax-table)
+    (if (eq bee-identifier-syntax 'bigloo)
+	(modify-syntax-entry ?. "w   " local-syntax-table)
+      (modify-syntax-entry ?. ".   " local-syntax-table))
     (modify-syntax-entry ?_ "w   " local-syntax-table)
 
     ;; Whitespace

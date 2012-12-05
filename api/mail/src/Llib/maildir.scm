@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Fri Nov 30 14:36:38 2012 (serrano)                */
+;*    Last change :  Sun Dec  2 07:33:43 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -343,6 +343,26 @@
 		       (recent . ,recent)
 		       (messages . ,messages)
 		       (deleted . ,deleted)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    mailbox-folder-expunge! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (mailbox-folder-expunge! m::maildir s::bstring) 
+   (with-access::maildir m (%mutex)
+      (synchronize %mutex
+	 (let ((info (get-cached-folder-info
+			m s "mailbox-folder-status ::maildir")))
+	    (when (isa? info folderinfo)
+	       (with-access::folderinfo info (uids)
+		  (hashtable-for-each
+		     uids
+		     (lambda (k f)
+			(let ((s (string-index-right f #\,)))
+			   (when (string-index f #\D s)
+			      (let ((path (get-message-path "mailbox-folder-expunge! ::maildir" m k)))
+				 (delete-file path)))))))
+	       (invalidate-folderinfo! info)
+	       #unspecified)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    folder-info-valid? ...                                           */
@@ -855,7 +875,9 @@
 ;*    mailbox-message-copy! ::maildir ...                              */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-copy! m::maildir i::int s::bstring)
-   (mailbox-message-create! m s (mailbox-message m i)))
+   (let ((uid (mailbox-message-create! m s (mailbox-message m i))))
+      (mailbox-message-flags-set! m uid (mailbox-message-flags m i))
+      uid))
    
 ;*---------------------------------------------------------------------*/
 ;*    genfilename ...                                                  */

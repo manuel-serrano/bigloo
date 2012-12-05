@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Thu Apr  5 07:36:05 2012 (serrano)                */
+;*    Last change :  Tue Dec  4 13:45:57 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -237,8 +237,7 @@
       (album (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e65) #e30)))
       (year (string->integer (mmap-substring/len mm (-elong (mmap-length mm) #e35) #e4)))
       (comment (string-cut! (mmap-substring/len mm (-elong (mmap-length mm) #e31) #e4)))
-      (genre (case (mmap-ref mm (-elong (mmap-length mm) #e1))
-		(else "unknown")))))
+      (genre (tcon->genre (char->integer (mmap-ref mm (-elong (mmap-length mm) #e1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-id3v11 ...                                                   */
@@ -486,34 +485,42 @@
 	 (year (string->integer (id3v2-get-frame "TYE" frames "-1")))
 	 (recording (id3v2-get-frame "TRD" frames #f))
 	 (comment (id3v2-get-frame "COM" frames ""))
-	 (genre (id3v2-genre (id3v2-get-frame "TCO" frames "-")))
+	 (genre (id3v2-get-genre mm frames "TCO"))
 	 (track (string->integer (id3v2-get-frame "TRK" frames "-1")))
 	 (cd (id3v2-get-frame "MCI" frames #f)))))
+
+;*---------------------------------------------------------------------*/
+;*    id3v2-get-genre ...                                              */
+;*---------------------------------------------------------------------*/
+(define (id3v2-get-genre mm frames tag)
+   (let ((g (id3v2-get-frame tag frames #f)))
+      (if (string? g)
+	  (id3v2-genre g)
+	  "")))
+
+;*---------------------------------------------------------------------*/
+;*    tcon->genre ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (tcon->genre n)
+   (cond
+      ((<fx n 0) "unknown")
+      ((>=fx n (vector-length *id3v2-genres*)) "unknown")
+      (else (vector-ref *id3v2-genres* n))))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2-genre ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (id3v2-genre str)
-   
-   (define (number->genre n)
-      (cond
-	 ((<fx n 0)
-	  "unknown")
-	 ((>=fx n (vector-length *id3v2-genres*))
-	  "unknown")
-	 (else
-	  (vector-ref *id3v2-genres* n))))
-
    (if (string=? str "")
        "unknown"
        (string-case str
 	  ((: "(" (+ digit) ")")
 	   (let ((n (string->integer (the-substring 1 -1))))
-	      (number->genre n)))
+	      (tcon->genre n)))
 	  (else
 	   (let ((n (string->number str)))
 	      (if n
-		  (number->genre n)
+		  (tcon->genre n)
 		  str))))))
 
 ;*---------------------------------------------------------------------*/
@@ -547,7 +554,7 @@
 	 (recording (or (id3v2-get-frame "TDAT" frames #f)
 			(id3v2-get-frame "TRDA" frames #f)))
 	 (comment (id3v2-get-frame "COMM" frames ""))
-	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
+	 (genre (id3v2-get-genre mm frames "TCON"))
 	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
 	 (cd (id3v2-get-frame "MCDI" frames #f))
 	 (ufid (id3v2-get-frame "UFID" frames #f))
@@ -573,7 +580,7 @@
 	 (year (string->integer (id3v2-get-frame "TDRC" frames "-1")))
 	 (recording (id3v2-get-frame "TORY" frames #f))
 	 (comment (id3v2-get-frame "COMM" frames ""))
-	 (genre (id3v2-genre (id3v2-get-frame "TCON" frames "-")))
+	 (genre (id3v2-get-genre mm frames "TCON"))
 	 (track (string->integer (id3v2-get-frame "TRCK" frames "-1")))
 	 (cd (id3v2-get-frame "MCDI" frames #f))
 	 (ufid (id3v2-get-frame "UFID" frames #f))
@@ -590,6 +597,24 @@
    (mp3-musictag path))
 
 ;*---------------------------------------------------------------------*/
+;*    id3v1merge ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (id3v1merge mm i)
+   (with-access::id3 i (year genre track)
+      (if (and (>fx year 0) (>fx track 0) (not (string-null? genre)))
+	  i
+	  (let ((i1 (cond
+		       ((id3v1.1? mm) (mp3-id3v11 mm))
+		       ((id3v1? mm) (mp3-id3v1 mm))
+		       (else #f))))
+	     (when (isa? i1 id3)
+		(with-access::id3 i1 ((year1 year) (genre1 genre) (track1 track))
+		   (duplicate::id3 i
+		      (track (if (<=fx track 0) track1 track))
+		      (year (if (<=fx year 0) year1 year))
+		      (genre (if (string-null? genre) genre1 genre)))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    mp3-musictag ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (mp3-musictag path)
@@ -599,9 +624,9 @@
        (let ((mm (open-mmap path :write #f)))
 	  (unwind-protect
 	     (cond
-		((id3v2.4? mm) (mp3-id3v2.4 mm))
-		((id3v2.3? mm) (mp3-id3v2.3 mm))
-		((id3v2.2? mm) (mp3-id3v2.2 mm))
+		((id3v2.4? mm) (id3v1merge mm (mp3-id3v2.4 mm)))
+		((id3v2.3? mm) (id3v1merge mm (mp3-id3v2.3 mm)))
+		((id3v2.2? mm) (id3v1merge mm (mp3-id3v2.2 mm)))
 		((id3v1.1? mm) (mp3-id3v11 mm))
 		((id3v1? mm) (mp3-id3v1 mm))
 		(else #f))

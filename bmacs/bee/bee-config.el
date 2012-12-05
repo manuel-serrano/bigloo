@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Fri Nov 30 13:17:13 2012 (serrano)                */
+;*    Last change :  Mon Dec  3 16:13:05 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -122,6 +122,12 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
   "*The name of the bmake option to produce a library Makefile"
   :group 'bee
   :type 'string)
+
+;; bee-identifier-syntax
+(defcustom bee-identifier-syntax 'bigloo
+  "*The identifier syntax"
+  :group 'bee
+  :type '(choice (const bigloo) (const r5rs)))
 
 ;; bee fontification
 (defcustom bee-font-lock-keywords

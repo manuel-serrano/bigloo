@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sun Nov 18 15:10:25 2012 (serrano)                */
+;*    Last change :  Wed Dec  5 12:28:37 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -64,7 +64,7 @@
 	    (macro c-socket-server?::bool (::obj) "BGL_SOCKET_SERVERP")
 	    (macro c-socket-client?::bool (::obj) "BGL_SOCKET_CLIENTP")
 	    
-	    (c-host::bstring (::bstring) "bgl_host")
+	    ($host::bstring (::bstring) "bgl_host")
 	    ($hostinfo::pair-nil (::bstring) "bgl_hostinfo")
 	    
 	    ($gethostname::bstring () "bgl_gethostname")
@@ -136,7 +136,7 @@
 	       (method static c-socket-client?::bool (::obj)
 		  "BGL_SOCKET_CLIENTP")
 	       
-	       (method static c-host::bstring (::bstring)
+	       (method static $host::bstring (::bstring)
 		  "bgl_host")
 	       (method static $hostinfo::obj (::bstring)
 		  "bgl_hostinfo")
@@ -399,7 +399,7 @@
 (define-inline (host hostname)
    (begin
       (%socket-init!)
-      (c-host hostname)))
+      ($host hostname)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hostinfo ...                                                     */

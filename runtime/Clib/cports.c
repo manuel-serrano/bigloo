@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Nov 28 11:18:58 2012 (serrano)                */
+/*    Last change :  Wed Dec  5 13:17:24 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -96,6 +96,13 @@
 #  define _FSTAT( fd, buf ) fstat( fileno( fd ), buf )
 #  define _READ posix_read
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    C_OUTPUT_PORT_SYSTEM_FAILURE                                     */
+/*---------------------------------------------------------------------*/
+#define C_OUTPUT_PORT_SYSTEM_FAILURE( err, proc, msg, port ) \
+   bgl_mutex_unlock( OUTPUT_PORT( port ).mutex ); \
+   C_SYSTEM_FAILURE( err, proc, msg, port ) \
 
 /*---------------------------------------------------------------------*/
 /*    sendfile compatibility kit                                       */
@@ -472,14 +479,16 @@ loop:
 	 char buf[ 100 ];
 
 	 OUTPUT_PORT( port ).err = BGL_IO_TIMEOUT_ERROR;
-	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "write/timeout", buf, port );
+	 C_OUTPUT_PORT_SYSTEM_FAILURE(
+	    BGL_IO_TIMEOUT_ERROR, "write/timeout", buf, port );
       } else {
 	 if( errno == EINTR ) {
 	    goto loop;
 	 }
 	 
 	 OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
-	 C_SYSTEM_FAILURE( BGL_IO_WRITE_ERROR, "write/timeout", strerror( errno ), port );
+	 C_OUTPUT_PORT_SYSTEM_FAILURE(
+	    BGL_IO_WRITE_ERROR, "write/timeout", strerror( errno ), port );
       }
    } else {
       fprintf( stderr, "<<< posix_timed_write fd=%d n=%d", fd, n );
@@ -507,7 +516,8 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_WRITE_ERROR);
 
 	 OUTPUT_PORT( port ).err = e;
-	 C_SYSTEM_FAILURE( e, "write/timeout", strerror( errno ), port );
+	 C_OUTPUT_PORT_SYSTEM_FAILURE(
+	    e, "write/timeout", strerror( errno ), port );
       }
    }
 
@@ -687,7 +697,8 @@ strseek( void *port, long offset, int whence ) {
 	    continue; \
 	 } else if( err ) { \
 	    OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR; \
-	    C_SYSTEM_FAILURE( bglwerror( errno ), "write/display", strerror( errno ), port ); \
+	    C_OUTPUT_PORT_SYSTEM_FAILURE( \
+	       bglwerror( errno ), "write/display", strerror( errno ), port ); \
 	 } else { \
 	    break; \
 	 } \
@@ -704,8 +715,14 @@ strseek( void *port, long offset, int whence ) {
 /*---------------------------------------------------------------------*/
 static void
 invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
-   obj_t s = PROCEDURE_ENTRY( fhook )( fhook, port, BINT( slen ), BEOA );
+   obj_t s;
 
+   /* have to release the lock because if an error occurs while      */
+   /* invoking the user hook, the port mutex will be blocked forever */
+   bgl_mutex_unlock( OUTPUT_PORT( port ).mutex );
+   s = PROCEDURE_ENTRY( fhook )( fhook, port, BINT( slen ), BEOA );
+   bgl_mutex_lock( OUTPUT_PORT( port ).mutex );
+   
    if( STRINGP( s ) ) {
       flush_string( port, BSTRING_TO_STRING( s ), STRING_LENGTH( s ), err );
    } else {
@@ -786,9 +803,10 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	    
 	    if( n < 0 && err ) {
 	       OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
-	       
-	       C_SYSTEM_FAILURE( bglwerror( errno ), "write/display",
-				 strerror( errno ), port );
+
+	       C_OUTPUT_PORT_SYSTEM_FAILURE(
+		  bglwerror( errno ), "write/display",
+		  strerror( errno ), port );
 	    }
 	 }
       }
@@ -1137,10 +1155,8 @@ get_output_string( obj_t port ) {
       return string_to_bstring_len( BSTRING_TO_STRING( buf ),
 				    STRING_LENGTH( buf ) - cnt );
    } else {
-      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			"get-output-string",
-			"Not a string port",
-			port );
+      C_SYSTEM_FAILURE(
+	 BGL_IO_PORT_ERROR, "get-output-string", "Not a string port", port );
       return BUNSPEC;
    }
 }
@@ -1204,10 +1220,9 @@ bgl_close_output_port( obj_t port ) {
 	 if( PROCEDURE_ARITY( chook ) == 1 ) {
 	    PROCEDURE_ENTRY( chook )( chook, port, BEOA );
 	 } else {
-	    C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			      "close-output-port",
-			      "illegal close hook arity",
-			      chook );
+	    C_SYSTEM_FAILURE(
+	       BGL_IO_PORT_ERROR, "close-output-port",
+	       "illegal close hook arity", chook );
 	 }
       }
 
@@ -2289,6 +2304,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
        (PORT( ip ).kindof == KINDOF_GZIP) )
       return BFALSE;
       
+   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
    if( offset >= 0 ) bgl_input_port_seek( ip, offset );
 
    dsz = RGC_BUFFER_AVAILABLE( ip );
@@ -2314,6 +2330,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       inp.forward = inp.matchstop;
 
       if( w < ws ) {
+	 bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
 	 C_SYSTEM_FAILURE( bglerror( errno, 0 ),
 			   "send-chars",
 			   strerror( errno ),
@@ -2326,6 +2343,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 #ifdef DEBUG_SENDCHARS   
 	    fprintf( stderr, "bgl_sendchars.4: RETURN ws=%d\n", ws );
 #endif	       
+	    bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
 	    return BINT( ws );
 	 }
 
@@ -2359,6 +2377,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 	 n = 0;
       }
       if( n < 0 ) {
+	 bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
 	 C_SYSTEM_FAILURE( bglerror( errno, 0 ), 
 			   "send-chars",
 			   strerror( errno ),
@@ -2418,6 +2437,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
    
    inp.filepos += n + ws;
 
+   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   
    return BINT( n + ws );
 }
 
@@ -2444,9 +2465,11 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
       return BFALSE;
 #  endif
 
+   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
    bgl_output_flush( op, 0, 0 );
 
    if( !(in = open( BSTRING_TO_STRING( name ), O_RDONLY, OMOD )) ) {
+      bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"send-file",
 			strerror( errno ),
@@ -2455,6 +2478,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 
    if( sz == -1 ) {
       if( fstat( in, &sin ) ) {
+	 bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
 	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			   "send-file",
 			   strerror( errno ),
@@ -2467,6 +2491,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
    // fprintf( stderr, "bgl_sendfile(%s:%d) copyfile must be protected otherwise it  left its file opened on error\n", __FILE__, __LINE__ );
    /* care, copy file must be installed when the unwind-protect pbm is fixed */
    // n = copyfile( op, (void *)in, sz, (long (*)())&read );
+   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
    return BFALSE;
 #else
    if( sz != 0 ) {
@@ -2481,6 +2506,8 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 var errnum = errno;
 	 
 	 close( in );
+	 
+	 bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
 	 
 	 C_SYSTEM_FAILURE( bglerror( errnum, 0 ), "send-file",
 			   strerror( errnum ), MAKE_PAIR( name, op ) );
@@ -2504,6 +2531,8 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 	 if( n < 0 ) {
 	    close( in );
 	    
+	    bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+	    
 	    C_SYSTEM_FAILURE( bglerror( si.errnum, 0 ), "send-file",
 			      strerror( si.errnum ), MAKE_PAIR( name, op ) );
 	 }
@@ -2519,6 +2548,8 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 
    close( in );
    
+   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+
    return BINT( n );
 }
 
@@ -2528,24 +2559,30 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 /*---------------------------------------------------------------------*/
 static ssize_t
 strwrite( obj_t port, void *str, size_t count ) {
-   obj_t buf = OUTPUT_PORT( port ).buf;
-   long cnt = OUTPUT_PORT( port ).cnt;
-   long used = STRING_LENGTH( buf ) - cnt;
-   long nlen = (STRING_LENGTH( buf ) + count) * 2;
-   obj_t nbuf = make_string_sans_fill( nlen );
+   bgl_mutex_lock( OUTPUT_PORT( port ).mutex );
+
+   {
+      obj_t buf = OUTPUT_PORT( port ).buf;
+      long cnt = OUTPUT_PORT( port ).cnt;
+      long used = STRING_LENGTH( buf ) - cnt;
+      long nlen = (STRING_LENGTH( buf ) + count) * 2;
+      obj_t nbuf = make_string_sans_fill( nlen );
 
 #if DEBUG   
-   fprintf( stderr, "%s:%d>>> strwrite count=%d\n", __FILE__, __LINE__, count );
+      fprintf( stderr, "%s:%d>>> strwrite count=%d\n", __FILE__, __LINE__, count );
 #endif
 
-   memcpy( &STRING_REF( nbuf, 0 ), &STRING_REF( buf, 0 ), used );
-   memcpy( &STRING_REF( nbuf, used ), str, count );
+      memcpy( &STRING_REF( nbuf, 0 ), &STRING_REF( buf, 0 ), used );
+      memcpy( &STRING_REF( nbuf, used ), str, count );
 
-   OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( nbuf, used + count );
-   OUTPUT_PORT( port ).cnt = nlen - (used + count);
-   OUTPUT_PORT( port ).buf = nbuf;
+      OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( nbuf, used + count );
+      OUTPUT_PORT( port ).cnt = nlen - (used + count);
+      OUTPUT_PORT( port ).buf = nbuf;
 
-   return count;
+      bgl_mutex_unlock( OUTPUT_PORT( port ).mutex );
+   
+      return count;
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -2554,24 +2591,30 @@ strwrite( obj_t port, void *str, size_t count ) {
 /*---------------------------------------------------------------------*/
 static ssize_t
 procwrite( obj_t port, void *str, size_t sz ) {
-   obj_t proc = VECTOR_REF( PORT( port ).userdata, 0 );
-   obj_t buf = VECTOR_REF( PORT( port ).userdata, 1 );
-   int len = STRING_LENGTH( buf );
+   bgl_mutex_lock( OUTPUT_PORT( port ).mutex );
 
-   if( sz > len ) {
-      buf = make_string_sans_fill( sz + 1 );
-      len = sz + 1;
-      VECTOR_SET( PORT( port ).userdata, 1, buf );
-   }
+   {
+      obj_t proc = VECTOR_REF( PORT( port ).userdata, 0 );
+      obj_t buf = VECTOR_REF( PORT( port ).userdata, 1 );
+      int len = STRING_LENGTH( buf );
+
+      if( sz > len ) {
+	 buf = make_string_sans_fill( sz + 1 );
+	 len = sz + 1;
+	 VECTOR_SET( PORT( port ).userdata, 1, buf );
+      }
       
-   memcpy( &STRING_REF( buf, 0 ), str, sz );
-   STRING_SET( buf, sz, '\0' );
-   STRING_LENGTH( buf ) = sz;
+      memcpy( &STRING_REF( buf, 0 ), str, sz );
+      STRING_SET( buf, sz, '\0' );
+      STRING_LENGTH( buf ) = sz;
    
-   PROCEDURE_ENTRY( proc )( proc, buf, BEOA );
+      PROCEDURE_ENTRY( proc )( proc, buf, BEOA );
    
-   STRING_LENGTH( buf ) = len;
-   return sz;
+      STRING_LENGTH( buf ) = len;
+
+      bgl_mutex_lock( OUTPUT_PORT( port ).mutex );
+      return sz;
+   }
 }
 
 /*---------------------------------------------------------------------*/
