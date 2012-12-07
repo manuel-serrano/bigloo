@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Thu Nov 29 16:54:59 2012 (serrano)                */
+;*    Last change :  Fri Dec  7 15:10:09 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -56,8 +56,6 @@
 	    (macro $make-mutex::mutex (::obj)
 		   "bgl_make_mutex")
 	    ($make-nil-mutex::mutex () "bgl_make_nil_mutex")
-;* 	    ($nothread-mutex-init!::mutex (::mutex)                    */
-;* 	       "bgl_nothread_mutex_init")                              */
 	    (macro $mutex-name::obj (::mutex)
 		   "BGL_MUTEX_NAME")
 	    (macro $mutex-lock::bool (::mutex)
@@ -75,8 +73,6 @@
 		   "BGL_CONDVARP")
 	    (macro $make-condvar::condvar (::obj)
 		   "bgl_make_condvar")
-;* 	    ($nothread-condvar-init!::condvar (::condvar)              */
-;* 	       "bgl_nothread_condvar_init")                            */
 	    ($make-nil-condvar::condvar () "bgl_make_nil_condvar")
 	    (macro $condvar-name::obj (::condvar)
 		   "BGL_CONDVAR_NAME")

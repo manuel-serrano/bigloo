@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Wed Dec 12 17:35:02 2007 (serrano)                */
+/*    Last change :  Thu Dec  6 14:00:00 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -65,9 +65,9 @@ make_binary_port( char *name, FILE *file, bool_t io ) {
    binary_port = GC_MALLOC( BINARY_PORT_SIZE );
 
    binary_port->binary_port_t.header = MAKE_HEADER( BINARY_PORT_TYPE, 0 );
-   binary_port->binary_port_t.file   = file;
-   binary_port->binary_port_t.name   = string_to_bstring( name );
-   binary_port->binary_port_t.io     = (int)io;
+   binary_port->binary_port_t.file = file;
+   binary_port->binary_port_t.name = string_to_bstring( name );
+   binary_port->binary_port_t.io = (int)io;
 
    return BREF( binary_port );
 }

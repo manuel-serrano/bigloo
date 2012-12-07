@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 30 09:20:19 2012 (serrano)                */
+/*    Last change :  Fri Dec  7 15:34:41 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -339,8 +339,9 @@ typedef union scmobj {
    struct output_port {          /*  output_port:                      */
       struct port port;          /*    - a regular port                */
       union scmobj *buf;         /*    - the buffer as a bgl string    */
-      long cnt;                  /*    - the number of char left       */
+//      long cnt;                  /*    - the number of char left       */
       char *ptr;                 /*    - the next char position        */
+      char *end;                 /*    - the end of the buffer         */
       int bufmode;               /*    - the buffering mode            */
       ssize_t (*syswrite)();     /*    - the system write              */
       union scmobj *(*sysflush)();/*   - the system flush              */
@@ -1877,6 +1878,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_INT_EOFP( i ) \
    ((i) == EOF)
 
+#define BGL_OUTPUT_PORT_CNT( _p ) \
+   (OUTPUT_PORT( _p ).end - OUTPUT_PORT( _p ).ptr)
+   
 #define BGL_OUTPUT_PORT_FILEPOS( _p ) \
    (bgl_output_port_filepos( _p ))
    
@@ -1898,11 +1902,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_IOFBF 2 /* fully buffered */
 #define BGL_IOEBF 3 /* extensibe buffered */
 
-#define BGL_DISPLAY_STRING( o, op ) \
-   bgl_write_with_lock( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) )
-
-#define BGL_DISPLAY_SUBSTRING( o, start, end, op ) \
-   bgl_write_with_lock( op, &STRING_REF( o, start ), end - start )
+/* #define BGL_DISPLAY_STRING( o, op ) \                               */
+/*    bgl_write_with_lock( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) ) */
+/*                                                                     */
+/* #define BGL_DISPLAY_SUBSTRING( o, start, end, op ) \                */
+/*    bgl_write_with_lock( op, &STRING_REF( o, start ), end - start )  */
 
 /*---------------------------------------------------------------------*/
 /*    Les OUTPUT_STRING_PORTs                                          */
@@ -3126,12 +3130,13 @@ BGL_RUNTIME_DECL void bgl_input_port_buffer_set( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_reset_output_string_port( obj_t );
    
 BGL_RUNTIME_DECL obj_t bgl_display_string( obj_t, obj_t );
+BGL_RUNTIME_DECL obj_t bgl_display_substring( obj_t, long, long, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_display_symbol( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_display_fixnum( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_display_char( char, obj_t );
+   
 BGL_RUNTIME_DECL obj_t bgl_flush_output_port( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_write( obj_t, unsigned char *, size_t );
-BGL_RUNTIME_DECL obj_t bgl_write_with_lock( obj_t, unsigned char *, size_t );
    
 BGL_RUNTIME_DECL obj_t bgl_make_date();
    

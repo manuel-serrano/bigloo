@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Wed Nov 28 11:00:20 2012 (serrano)                */
+/*    Last change :  Fri Dec  7 15:31:59 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -44,9 +44,18 @@ static unsigned char *char_name[] = {
    "x", "y", "z", "{", "|", "}", "~", ""
 };
 
+#define CNT 1
+#undef CNT
+
+#if( defined( CNT ) )
+#  undef BGL_OUTPUT_PORT_CNT
+#  define BGL_OUTPUT_PORT_CNT( p ) OUTPUT_PORT( p ).cnt
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    PUTC ...                                                         */
 /*---------------------------------------------------------------------*/
+#if( defined( CNT ) )
 #define PUTC( op, c ) {						       \
    *OUTPUT_PORT( op ).ptr++ = c;				       \
    if( --OUTPUT_PORT( op ).cnt > 0 ) {				       \
@@ -56,13 +65,27 @@ static unsigned char *char_name[] = {
    } else {							       \
       bgl_output_flush( op, 0, 0 );				       \
    }								       \
- }								       \
+ }
+#else
+#define PUTC( op, c ) {					               \
+   if( OUTPUT_PORT( op ).ptr >= OUTPUT_PORT( op ).end ) {              \
+      bgl_output_flush_char( op, c );                                  \
+   } else {                                                            \
+      if( (c == '\n') && (OUTPUT_PORT( op ).bufmode == BGL_IOLBF) ) {  \
+         bgl_output_flush_char( op, c );                               \
+      } else {                                                         \
+         *OUTPUT_PORT( op ).ptr++ = c;				       \
+      }                                                                \
+   }                                                                   \
+ }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    PUTS ...                                                         */
 /*    -------------------------------------------------------------    */
 /*    This assumes than strings do not contain \n character.           */
 /*---------------------------------------------------------------------*/
+#if( defined( CNT ) )
 #define PUTS( op, str )						       \
    if( OUTPUT_PORT( op ).cnt >= (sizeof( str ) - 1) ) {		       \
       memcpy( OUTPUT_PORT( op ).ptr, str, (sizeof( str ) - 1) );       \
@@ -70,7 +93,16 @@ static unsigned char *char_name[] = {
       OUTPUT_PORT( op ).cnt -= (sizeof( str ) - 1);		       \
    } else {							       \
       bgl_output_flush( op, str, (sizeof( str ) - 1) );		       \
-   }								       \
+   }								       
+#else
+#define PUTS( op, s )						       \
+   if( OUTPUT_PORT( op ).ptr + (sizeof(s)-1) < OUTPUT_PORT( op ).end) {\
+      memcpy( OUTPUT_PORT( op ).ptr, s, (sizeof(s)-1) );               \
+      OUTPUT_PORT( op ).ptr += (sizeof(s)-1);		               \
+   } else {							       \
+      bgl_output_flush( op, s, (sizeof(s)-1) );	              	       \
+   } 
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    PRINTF ...                                                       */
@@ -81,27 +113,49 @@ static unsigned char *char_name[] = {
 #  define *_new = alloca( s )
 #endif
 
-#define PRINTF1( op, sz, fmt, arg0 )			    \
-   if( OUTPUT_PORT( op ).cnt > sz ) {			    \
-      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 );  \
-      OUTPUT_PORT( op ).ptr += n;			    \
-      OUTPUT_PORT( op ).cnt -= n;			    \
-   } else {						    \
-      char _new( __buf, sz  );				    \
-      int n = sprintf( __buf, fmt, arg0 );		    \
-      bgl_output_flush( op, __buf, n );			    \
+#if( defined( CNT ) ) 
+#define PRINTF1( op, sz, fmt, arg0 )			        \
+   if( OUTPUT_PORT( op ).cnt > sz ) {			        \
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 );      \
+      OUTPUT_PORT( op ).ptr += n;			        \
+      OUTPUT_PORT( op ).cnt -= n;			        \
+   } else {						        \
+      char _new( __buf, sz  );				        \
+      int n = sprintf( __buf, fmt, arg0 );		        \
+      bgl_output_flush( op, __buf, n );			        \
    }
 
-#define PRINTF2( op, sz, fmt, arg0, arg1 )				\
-   if( OUTPUT_PORT( op ).cnt > sz ) {					\
-      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1 );	\
-      OUTPUT_PORT( op ).ptr += n;					\
-      OUTPUT_PORT( op ).cnt -= n;					\
-   } else {								\
-      char _new( __buf, sz );						\
-      int n = sprintf( __buf, fmt, arg0, arg1 );                  	\
-      bgl_output_flush( op, __buf, n );					\
+#define PRINTF2( op, sz, fmt, arg0, arg1 )			\
+   if( OUTPUT_PORT( op ).cnt > sz ) {				\
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1 );\
+      OUTPUT_PORT( op ).ptr += n;				\
+      OUTPUT_PORT( op ).cnt -= n;				\
+   } else {							\
+      char _new( __buf, sz );					\
+      int n = sprintf( __buf, fmt, arg0, arg1 );                \
+      bgl_output_flush( op, __buf, n );				\
    }
+#else
+#define PRINTF1( op, sz, fmt, arg0 )			        \
+   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) {	                \
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 );      \
+      OUTPUT_PORT( op ).ptr += n;			        \
+   } else {						        \
+      char _new( __buf, sz  );				        \
+      int n = sprintf( __buf, fmt, arg0 );		        \
+      bgl_output_flush( op, __buf, n );			        \
+   }
+
+#define PRINTF2( op, sz, fmt, arg0, arg1 )			\
+   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) {                       \
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1 );\
+      OUTPUT_PORT( op ).ptr += n;				\
+   } else {							\
+      char _new( __buf, sz );					\
+      int n = sprintf( __buf, fmt, arg0, arg1 );                \
+      bgl_output_flush( op, __buf, n );				\
+   }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -111,10 +165,11 @@ BGL_RUNTIME_DEF
 obj_t
 bgl_display_substring( obj_t o, long start, long end, obj_t op ) {
    obj_t res;
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
    
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_LOCK( mutex );
    res = bgl_write( op, &STRING_REF( o, start ), end - start );
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
 
    return res;
 }
@@ -127,10 +182,11 @@ BGL_RUNTIME_DEF
 obj_t
 bgl_display_string( obj_t o, obj_t op ) {
    obj_t res;
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
    
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_LOCK( mutex );
    res = bgl_write( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) );
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
 
    return res;
 }
@@ -141,15 +197,17 @@ bgl_display_string( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_string( obj_t o, bool_t esc, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    if( esc ) PUTC( op, '#' );
    
    PUTC( op, '"' );
-   bgl_display_string( o, op );
+   bgl_write( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) );
    PUTC( op, '"' );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -161,11 +219,13 @@ bgl_write_string( obj_t o, bool_t esc, obj_t op ) {
 BGL_RUNTIME_DEF
 obj_t
 bgl_display_fixnum( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 32, "%ld", CINT( o ) );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -176,11 +236,13 @@ bgl_display_fixnum( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_display_elong( long o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 32, "%ld", o );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -191,11 +253,13 @@ bgl_display_elong( long o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_elong( long o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 32, "#e%ld", o );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -206,13 +270,7 @@ bgl_write_elong( long o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_display_llong( BGL_LONGLONG_T o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
-   
-   bgl_display_string( llong_to_string( o, 10 ), op );
-
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
-   
-   return op;
+   return bgl_display_string( llong_to_string( o, 10 ), op );
 }
 
 /*---------------------------------------------------------------------*/
@@ -221,12 +279,15 @@ bgl_display_llong( BGL_LONGLONG_T o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_llong( BGL_LONGLONG_T o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   obj_t s = llong_to_string( o, 10 );
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#l" );
-   bgl_display_string( llong_to_string( o, 10 ), op );
+   bgl_write( op, &STRING_REF( s, 0 ), STRING_LENGTH( s ) );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -237,13 +298,7 @@ bgl_write_llong( BGL_LONGLONG_T o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_display_bignum( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
-   
-   bgl_display_string( bgl_bignum_to_string( o, 10 ), op );
-
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
-   
-   return op;
+   return bgl_display_string( bgl_bignum_to_string( o, 10 ), op );
 }
  
 /*---------------------------------------------------------------------*/
@@ -252,12 +307,15 @@ bgl_display_bignum( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_bignum( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   obj_t s = bgl_bignum_to_string( o, 10 );
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#z" );
-   bgl_display_string( bgl_bignum_to_string( o, 10 ), op );
+   bgl_write( op, &STRING_REF( s, 0 ), STRING_LENGTH( s ) );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -268,11 +326,13 @@ bgl_write_bignum( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_display_char( char c, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+
+   BGL_MUTEX_LOCK( mutex );
    
    PUTC( op, c );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -283,9 +343,10 @@ bgl_display_char( char c, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_char( obj_t o, obj_t op ) {
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
    int c = CCHAR( o );
    
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_LOCK( mutex );
    
    if( (c > 0) && (c < 128) && char_name[ c ][ 0 ] ) {
       unsigned char *name = char_name[ c ];
@@ -300,7 +361,7 @@ bgl_write_char( obj_t o, obj_t op ) {
       PRINTF1( op, 4, "%03d", (unsigned char)(c) );
    }
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -311,11 +372,12 @@ bgl_write_char( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_ucs2( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 7, "#u%04x", CUCS2( o ) );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }   
@@ -329,9 +391,10 @@ bgl_display_ucs2( obj_t o, obj_t op ) {
    ucs2_t ch = CUCS2( o );
    
    if( UCS2_ISOLATIN1P( ch ) ) {
-      bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+      obj_t mutex = OUTPUT_PORT( op ).mutex;
+      BGL_MUTEX_LOCK( mutex );
       PUTC( op, ch );
-      bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+      BGL_MUTEX_UNLOCK( mutex );
    
       return op;
    } else
@@ -346,9 +409,10 @@ obj_t
 bgl_display_ucs2string( obj_t o, obj_t op ) {
    int len  = UCS2_STRING_LENGTH( o );
    ucs2_t *ucs2 = BUCS2_STRING_TO_UCS2_STRING( o );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
    int i;
    
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_LOCK( mutex );
    
    for( i = 0; i < len; i++ ) {
       ucs2_t ch = ucs2[ i ];
@@ -360,7 +424,7 @@ bgl_display_ucs2string( obj_t o, obj_t op ) {
 #endif
    }
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -371,13 +435,15 @@ bgl_display_ucs2string( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_utf8string( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#u\"" );
-   bgl_display_string( o, op );
+   bgl_write( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) );
    PUTC( op, '"' );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -388,11 +454,13 @@ bgl_write_utf8string( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_opaque( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF2( op, 40, "#<opaque:%ld:%08lx>", TYPE( o ), (unsigned long)o );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -403,11 +471,13 @@ bgl_write_opaque( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_cnst( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 8, "#<%04x>", (int)CCNST( o ) );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -418,7 +488,9 @@ bgl_write_cnst( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_procedure( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF2( op, 96,
 	    "#<procedure:%lx.%ld>",
@@ -427,7 +499,7 @@ bgl_write_procedure( obj_t o, obj_t op ) {
 	    (unsigned long)PROCEDURE_ENTRY( o ),
 	    (long)PROCEDURE( o ).arity );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -438,13 +510,15 @@ bgl_write_procedure( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_output_port( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 20 + STRING_LENGTH( PORT( o ).name ),
 	    "#<output_port:%s>",
 	    BSTRING_TO_STRING( PORT( o ).name ) );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -455,13 +529,15 @@ bgl_write_output_port( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_input_port( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<input_port:" );
    bgl_display_obj( PORT( o ).name, op );
    PRINTF1( op, 10, ".%ld>", (long)BGL_INPUT_PORT_BUFSIZ( o ) );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -472,14 +548,16 @@ bgl_write_input_port( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_binary_port( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF2( op, 40 + STRING_LENGTH( BINARY_PORT( o ).name ),
 	    "#<binary_%s_port:%s>",
 	    BINARY_PORT_INP( o ) ? "input" : "output",
 	    BSTRING_TO_STRING( BINARY_PORT( o ).name ) );
    
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -490,13 +568,15 @@ bgl_write_binary_port( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_foreign( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<foreign:" );
    bgl_display_obj( FOREIGN_ID( o ), op );
    PRINTF1( op, 16, ":%lx>", (long)FOREIGN_TO_COBJ( o ) );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -507,12 +587,14 @@ bgl_write_foreign( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_dynamic_env( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<dynamic-env:" );
    PRINTF1( op, 16, ":%p>", o );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -523,12 +605,14 @@ bgl_write_dynamic_env( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_process( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<process:" );
    PRINTF1( op, 20, "%d>", PROCESS_PID( o ) );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -539,7 +623,9 @@ bgl_write_process( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_socket( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    if( BGL_SOCKET_UNIXP( o ) ) {
       PRINTF1( op,
@@ -562,7 +648,7 @@ bgl_write_socket( obj_t o, obj_t op ) {
 	       SOCKET( o ).portnum );
    }
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -573,7 +659,9 @@ bgl_write_socket( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_datagram_socket( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF2( op,
 	    40 + (STRINGP( BGL_DATAGRAM_SOCKET( o ).hostname ) ?
@@ -585,7 +673,7 @@ bgl_write_datagram_socket( obj_t o, obj_t op ) {
 	    "localhost",
 	    BGL_DATAGRAM_SOCKET( o ).portnum );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -596,13 +684,15 @@ bgl_write_datagram_socket( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_regexp( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op,
 	    11 + STRING_LENGTH( BGL_REGEXP( o ).pat ),
 	    "#<regexp:%s>",
 	    BSTRING_TO_STRING( BGL_REGEXP( o ).pat ) );
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return o;
 }
@@ -613,13 +703,15 @@ bgl_write_regexp( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_mmap( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<mmap:" );
    bgl_display_obj( BGL_MMAP( o ).name, op );
    PRINTF1( op, 16, ":%ld>", (long)BGL_MMAP( o ).length );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -630,11 +722,13 @@ bgl_write_mmap( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_custom( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    CUSTOM_OUTPUT( o )( o, op );
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
@@ -645,7 +739,9 @@ bgl_write_custom( obj_t o, obj_t op ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_write_unknown( obj_t o, obj_t op ) {
-   bgl_mutex_lock( OUTPUT_PORT( op ).mutex );
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
    
    if( POINTERP( o ) ) {
       PRINTF2( op, 40, "#<???:%ld:%08lx>", TYPE( o ), (unsigned long)o );
@@ -653,7 +749,7 @@ bgl_write_unknown( obj_t o, obj_t op ) {
       PRINTF1( op, 40, "#<???:%08lx>", (unsigned long)o );
    }
 
-   bgl_mutex_unlock( OUTPUT_PORT( op ).mutex );
+   BGL_MUTEX_UNLOCK( mutex );
    
    return op;
 }
