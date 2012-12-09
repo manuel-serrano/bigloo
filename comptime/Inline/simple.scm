@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Wed Mar 30 08:47:25 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Dec  8 14:46:04 2012 (serrano)                */
+;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    tools_error
 	    inline_inline
 	    inline_size
+	    module_module
 	    ast_alphatize
 	    ast_sexp
 	    effect_effect
@@ -100,7 +101,10 @@
       (trace (inline+ 3) "J'alphatize: " (shape formals) " " (shape reductors)
 	     #\Newline
 	     "        sur le body: " (shape body) #\Newline)
-      (let ((alpha-body (alphatize formals reductors loc body)))
+      (let* ((iloc (and (global? callee)
+			(not (eq? (global-module callee) *module*))
+			loc))
+	     (alpha-body (alphatize formals reductors iloc body)))
 	 ;; we spread side effect for incoming inlines (such as
 	 ;; null? which is translated into $null?).
 	 (spread-side-effect! alpha-body)

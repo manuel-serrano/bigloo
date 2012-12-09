@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec  7 15:34:41 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 02:00:17 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -530,8 +530,9 @@ typedef union scmobj {
       union scmobj *name;        /* the name (debug)                   */
       void *mutex;               /* the actual mutex                   */
       bool_t (*syslock)();       /*    - the system primtives          */
-      bool_t (*syslockprelock)();/*    - the system primtives          */
-      bool_t (*systimedlock)();  /*    ...                             */
+      void (*sysmark)();         /*    - ...                           */
+      bool_t (*syslockprelock)();/*    - ...                           */
+      bool_t (*systimedlock)();  /*    - ...                           */
       bool_t (*sysunlock)();
       union scmobj *(*sysstate)();
    } mutex_t;
@@ -2885,6 +2886,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
 
 #define BGL_MUTEX_LOCK( o ) (BGL_MUTEX( o ).syslock( o ))
+#define BGL_MUTEX_MARK( o ) (BGL_MUTEX( o ).sysmark( o ))
 #define BGL_MUTEX_LOCK_PRELOCK( o, l ) (BGL_MUTEX( o ).syslockprelock( o, l ))
 #define BGL_MUTEX_TIMED_LOCK( o, to ) (BGL_MUTEX( o ).systimedlock( o, to ))
 #define BGL_MUTEX_UNLOCK( o ) (BGL_MUTEX( o ).sysunlock( o ))

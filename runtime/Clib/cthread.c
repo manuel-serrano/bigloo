@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Nov 30 08:23:53 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 02:02:34 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -112,6 +112,7 @@ bgl_create_mutex( obj_t name ) {
 static obj_t
 bgl_mutex_init_default( obj_t m ) {
    BGL_MUTEX( m ).syslock = &bgl_act_default;
+   BGL_MUTEX( m ).sysmark = (void (*)(obj_t))&bgl_act_default;
    BGL_MUTEX( m ).syslockprelock = &bgl_act2_default;
    BGL_MUTEX( m ).systimedlock = &bgl_act2long_default;
    BGL_MUTEX( m ).sysunlock = &bgl_act_default;

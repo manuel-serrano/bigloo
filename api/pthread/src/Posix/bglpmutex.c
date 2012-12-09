@@ -1,9 +1,9 @@
-/*=====================================================================*/
+ /*=====================================================================*/
 /*    .../prgm/project/bigloo/api/pthread/src/Posix/bglpmutex.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Thu Nov 29 14:50:30 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 02:11:43 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -115,7 +115,7 @@ bglpth_mutex_mark_unlocked( obj_t m, bglpmutex_t mut ) {
 #endif
    
    /* mark the mutex has free */
-   mut->locked = 0;
+   mut->marked = 0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -124,14 +124,14 @@ bglpth_mutex_mark_unlocked( obj_t m, bglpmutex_t mut ) {
 /*---------------------------------------------------------------------*/
 void
 bglpth_mutex_mark_locked( obj_t m, bglpmutex_t mut, bglpthread_t thread ) {
-   if( mut->locked ) {
+   if( mut->marked ) {
       if( mut->thread != thread ) {
 	 FAILURE( string_to_bstring( "mutex-lock" ),
 		  string_to_bstring( "mutex illegal locked" ),
 		  m );
       }
    } else {
-      mut->locked = 1;
+      mut->marked = 1;
 
       if( mut->thread != thread ) {
 	 mut->thread = thread;
@@ -181,8 +181,10 @@ bglpth_mutex_unlock_sans_thread( obj_t m ) {
 
    /* mark the Bigloo state of the lock */
    bglpth_mutex_mark_unlocked( m, mut );
+   
    /* assign the thread field to mark the abandoned mutex state */
    mut->thread = thread;
+   mut->marked = 0;
    
    /* physically unlock it */
    pthread_mutex_unlock( &(mut->pmutex) );
@@ -218,9 +220,20 @@ bglpth_mutex_lock( obj_t m ) {
    if( pthread_mutex_lock( &(mut->pmutex) ) ) {
       return 0;
    } else {
-      bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
+      mut->locked = 1;
       return 1;
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bglpth_mutex_mark ...                                            */
+/*---------------------------------------------------------------------*/
+void
+bglpth_mutex_mark( obj_t m ) {
+   bglpmutex_t mut = BGLPTH_MUTEX_BGLPMUTEX( m );
+   fprintf( stderr, "%s:%d bglpth_mutex_mark m=%p mut=%p\n", __FILE__, __LINE__, m, mut );
+   bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
 }
 
 /*---------------------------------------------------------------------*/
@@ -249,7 +262,7 @@ bglpth_mutex_timed_lock( obj_t m, long ms ) {
    if( pthread_mutex_timedlock( &(mut->pmutex), &timeout ) ) {
       return 0;
    } else {
-      bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
+      mut->locked = 1;
       return 1;
    }
 #else
@@ -262,7 +275,7 @@ bglpth_mutex_timed_lock( obj_t m, long ms ) {
    }
 
    if( !res  ) {
-      bglpth_mutex_mark_locked( m, mut, bglpth_current_pthread() );
+      mut->locked = 1;
    }
 
    return !res;
@@ -280,13 +293,15 @@ bglpth_mutex_unlock( obj_t m ) {
    if( mut->locked ) {
       /* unregister the mutex, must done when locked */
       bglpthread_t thread = mut->thread;
-      
-      bglpth_mutex_mark_unlocked( m, mut );
+
+      if( mut->marked ) bglpth_mutex_mark_unlocked( m, mut );
+      mut->locked = 0;
       
       /* physically unlock it */
       if( pthread_mutex_unlock( &(mut->pmutex) ) ) {
 	 /* unlock has failed, re-mark as locked */
 	 bglpth_mutex_mark_locked( m, mut, thread );
+	 mut->locked = 1;
 	 return 0;
       } else {
 	 return 1;
@@ -309,6 +324,7 @@ bglpth_mutex_init( obj_t m ) {
    mut->specific = BUNSPEC;
 
    BGL_MUTEX( m ).syslock = &bglpth_mutex_lock;
+   BGL_MUTEX( m ).sysmark = &bglpth_mutex_mark;
    BGL_MUTEX( m ).systimedlock = &bglpth_mutex_timed_lock;
    BGL_MUTEX( m ).sysunlock = &bglpth_mutex_unlock;
    BGL_MUTEX( m ).sysstate = &bglpth_mutex_state;

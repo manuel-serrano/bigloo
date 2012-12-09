@@ -6504,6 +6504,11 @@ public final class foreign
 	 return o.acquire_lock();
       }
    
+   public static void bgl_mutex_mark(mutex o)
+      {
+	 o.mark_lock();
+      }
+   
    public static boolean bgl_mutex_lock_prelock(mutex o, Object l)
       {
 	 return o.acquire_lock();

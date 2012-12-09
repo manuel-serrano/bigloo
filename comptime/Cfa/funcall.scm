@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sat Aug 25 07:00:37 2012 (serrano)                */
+;*    Last change :  Sat Dec  8 15:34:44 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -125,7 +125,7 @@
       (and (>=fx l mi) (<=fx l ma))))
 
 ;*---------------------------------------------------------------------*/
-;*    cfa-correct-arity ...                                            */
+;*    cfa-correct-arity? ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (cfa-correct-arity? fun args-approx)
    (let ((g (sfun-the-closure-global fun)))
@@ -151,6 +151,9 @@
       (cond 
 	 ((not (cfa-correct-arity? fun args-approx))
 	  ;; arity error
+	  (with-access::make-procedure-app alloc (X-T?)
+	     ;; mark that this function cannot be optimized
+	     (set! X-T? #f))
 	  (funcall-arity-error node v arity args-approx))
 	 ((or (global-optional? (sfun-the-closure-global fun))
 	      (global-key? (sfun-the-closure-global fun)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sat Nov 17 07:55:53 2012 (serrano)                */
+;*    Last change :  Sat Dec  8 14:27:06 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -40,10 +40,8 @@
 			sfun
 			(widen!::isfun sfun (original-body (sfun-body sfun)))))
 	  (o-body   (isfun-original-body isfun))
-	  (inl-body (if (inline-app? variable
-				     *kfactor*
-				     (+fx 1 (length (sfun-args sfun)))
-				     '())
+	  (inl-body (if (inline-app? variable *kfactor*
+			   (+fx 1 (length (sfun-args sfun))) '())
 			;; if at least one call to `variable' can be
 			;; inlined, we duplicate its body.
 			(begin
@@ -51,9 +49,8 @@
 				  "'s body" #\Newline)
 			   (alphatize '() '() #f o-body))
 			o-body)))
-      (sfun-body-set! sfun (inline-node inl-body
-					kfactor
-					(cons variable stack))) 
+      (sfun-body-set! sfun
+	 (inline-node inl-body kfactor (cons variable stack)))
       (trace inline
 	     "--- END SCANNING: " (shape variable) " ----" #\Newline)))
 

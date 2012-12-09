@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Thu Nov 29 14:50:44 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 00:09:50 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
@@ -48,6 +48,7 @@ typedef struct bglpmutex {
    pthread_mutex_t pmutex;
    bglpthread_t thread;
    bool_t locked;
+   bool_t marked;
    obj_t specific;
 #if( BGL_STRICT_SRFI18 )   
    obj_t prev;

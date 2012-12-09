@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Mon Oct  8 16:40:19 2012 (serrano)                */
+;*    Last change :  Fri Dec  7 16:02:27 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -355,7 +355,6 @@
 				     (or (merge-app-types! apps) cont)))))
 		  funcall-l)
 	       (when cont
-		  (tprint "LOOP....")
 		  (loop)))))))
 
 ;*---------------------------------------------------------------------*/

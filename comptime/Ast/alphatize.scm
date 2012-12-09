@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Nov 23 10:16:18 2012 (serrano)                */
+;*    Last change :  Sat Dec  8 14:46:55 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -71,18 +71,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-inline-location ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    This function controls how location are propagate inside inline  */
+;*    This function controls how location are propagated inside inline */
 ;*    body. The default behaviour is to propagate the location of the  */
 ;*    caller. To change this, simply inverse the order of the tests.   */
 ;*---------------------------------------------------------------------*/
 (define (get-inline-location node)
    (cond
-      ((location? *location*)
-       *location*)
-      ((location? (node-loc node))
-       (node-loc node))
-      (else
-       #f)))
+      ;; MS: 8dec2012, I think is get-inline-location is a bad idea
+      ;; ((location? *location*) *location*)
+      ((location? (node-loc node)) (node-loc node))
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ...                                                 */
@@ -413,7 +411,8 @@
 			  (old-body (sfun-body old-sfun))
 			  (new-body (alphatize (append old-locals old-args)
 					       (append new-locals new-args)
-					       (get-inline-location node)
+					       *location*
+;* 					       (get-inline-location node) */
 					       old-body))
 			  (new-sfun (duplicate::sfun old-sfun
 				       (args new-args)
@@ -427,7 +426,8 @@
 	 (locals new-locals)
 	 (body (alphatize old-locals
 			  new-locals
-			  (get-inline-location node)
+			  *location* 
+;* 			  (get-inline-location node)                   */
 			  (let-fun-body node))))))
 
 ;*---------------------------------------------------------------------*/
@@ -455,7 +455,8 @@
 	 (bindings new-bindings)
 	 (body (alphatize old-locals
 			  new-locals
-			  (get-inline-location node)
+			  *location* 
+;* 			  (get-inline-location node)                   */
 			  (let-var-body node))))))
 
 ;*---------------------------------------------------------------------*/
@@ -480,7 +481,8 @@
 		 (variable new-var)))
 	 (body (alphatize (list old-var)
 			  (list new-var)
-			  (get-inline-location node)
+			  *location*
+;* 			  (get-inline-location node)                   */
 			  old-body)))))
 
 ;*---------------------------------------------------------------------*/

@@ -36,6 +36,10 @@ public class mutex extends obj
       return true;
    }
    
+   public void mark_lock() {
+      ;
+   }
+   
    public boolean release_lock() {
       return true;
    }

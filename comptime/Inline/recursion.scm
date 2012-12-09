@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Sat Nov 17 07:57:30 2012 (serrano)                */
+;*    Last change :  Sat Dec  8 14:34:04 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
@@ -22,6 +22,7 @@
 	    ast_local
 	    ast_alphatize
 	    ast_sexp
+	    module_module
 	    tools_speek
 	    tools_shape
 	    tools_error
@@ -75,18 +76,21 @@
 			(sfun-body old-sfun)))
 	  (svg-calls-args (map (lambda (app) (app-args app)) rec-calls))
 	  (remove! (for-each remove-invariant-args! rec-calls))
+	  (iloc (and (global? variable)
+		     (not (eq? (global-module variable) *module*))
+		     (node-loc node)))
 	  (new-body (if (null? inv-args)
 			;; full substitution of the procedure and its arguments
 			(alphatize (cons variable old-args)
 			   (cons local substitute)
-			   (node-loc node)
+			   iloc
 			   old-body)
 			;; The arity of the inlined function differs from
 			;; the one of the initial function so we cannot replace
 			;; the old closure with the new one.
 			(alphatize-sans-closure (cons variable old-args)
 			   (cons local substitute)
-			   (node-loc node)
+			   iloc
 			   old-body
 			   variable)))
 	  (restore! (for-each (lambda (app args)
@@ -147,20 +151,22 @@
 ;*---------------------------------------------------------------------*/
 (define (plain-call variable node local new-call stack)
    (trace (inline 3)
-	  "    plain: " (shape node) #\Newline
-	  " new-call: " (shape new-call) #\Newline
-	  "    local: " (shape local) #\Newline
-	  " variable: " (shape variable) #\Newline)
+      "    plain: " (shape node) #\Newline
+      " new-call: " (shape new-call) #\Newline
+      "    local: " (shape local) #\Newline
+      " variable: " (shape variable) #\Newline)
    ;; we shrink the formals because we won't 
    ;; need anymore variant/invariant property.
    (shrink-args! variable)
    ;; the new node ...
-   (let ((loc (node-loc node)))
+   (let ((iloc (and (global? variable)
+		    (not (eq? (global-module variable) *module*))
+		    (node-loc node))))
       (instantiate::let-fun
-	 (loc loc)
+	 (loc (node-loc node))
 	 (type (node-type node))
 	 (locals (list local))
-	 (body (alphatize (list variable) (list local) loc new-call)))))
+	 (body (alphatize (list variable) (list local) iloc new-call)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unroll-call ...                                                  */
@@ -171,8 +177,10 @@
 	  "     call: " (shape call) #\Newline
 	  "    local: " (shape local) #\Newline
 	  " variable: " (shape variable) #\Newline)
-   (let* ((loc         (node-loc call))
-	  (new-call    (alphatize (list variable) (list local) loc call))
+   (let* ((iloc        (and (global? variable)
+			    (not (eq? (global-module variable) *module*))
+			    (node-loc call)))
+	  (new-call    (alphatize (list variable) (list local) iloc call))
 	  (old-body    (sfun-body (variable-value variable)))
 	  (new-body    (inline-app-simple new-call
 					  kfactor
@@ -190,7 +198,7 @@
 				local
 				(lambda (node)
 				   (instantiate::let-fun
-				      (loc loc)
+				      (loc (node-loc node))
 				      (type (node-type node))
 				      (body node)
 				      (locals (list local)))))

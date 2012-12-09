@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec  7 15:41:44 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 02:05:21 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1291,7 +1291,6 @@ bgl_close_output_port( obj_t port ) {
       }
 
       OUTPUT_PORT( port ).buf = BFALSE;
-      BGL_MUTEX_UNLOCK( OUTPUT_PORT( port ).mutex );
 
       return res;
    }
