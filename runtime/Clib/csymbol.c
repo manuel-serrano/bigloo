@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Wed Apr 18 16:09:07 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 15:22:55 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -81,7 +81,7 @@ bstring_to_symbol( obj_t name ) {
 
    hash_number = get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
    
-   bgl_mutex_lock( symbol_mutex );
+   BGL_MUTEX_LOCK( symbol_mutex );
    bucket = VECTOR_REF( c_symtab, hash_number );
    
    if( NULLP( bucket ) ) {
@@ -90,7 +90,7 @@ bstring_to_symbol( obj_t name ) {
 
       VECTOR_SET( c_symtab, hash_number, pair );
       
-      bgl_mutex_unlock( symbol_mutex );
+      BGL_MUTEX_UNLOCK( symbol_mutex );
       return symbol;
    } else {
       obj_t run = bucket, back = bucket;
@@ -102,7 +102,7 @@ bstring_to_symbol( obj_t name ) {
          back = run, run = CDR( run );
       
       if( !NULLP( run ) ) {
-	 bgl_mutex_unlock( symbol_mutex );
+	 BGL_MUTEX_UNLOCK( symbol_mutex );
          return CAR( run );
       }
       else {
@@ -111,7 +111,7 @@ bstring_to_symbol( obj_t name ) {
 	 
          SET_CDR( back, pair );
 
-	 bgl_mutex_unlock( symbol_mutex );
+	 BGL_MUTEX_UNLOCK( symbol_mutex );
          return symbol;
       }
    }
@@ -171,9 +171,9 @@ symbol_exists_p( char *name ) {
    int r;
    long hn = get_hash_power_number( name, SYMBOL_HASH_TABLE_SIZE_SHIFT );
 
-   bgl_mutex_lock( symbol_mutex );
+   BGL_MUTEX_LOCK( symbol_mutex );
    r = symbol_exists_sans_lock_p( name, hn );
-   bgl_mutex_unlock( symbol_mutex );
+   BGL_MUTEX_UNLOCK( symbol_mutex );
 
    return r;
 }
@@ -197,7 +197,7 @@ bgl_symbol_genname( obj_t o, char *name ) {
    if( n > 20 ) n = 20;
 
    strncpy( gn, name, 20 );
-   bgl_mutex_lock( symbol_mutex );
+   BGL_MUTEX_LOCK( symbol_mutex );
    
    while( 1 ) {
       sprintf( &gn[ n ], "%ld", ++gensym_counter );
@@ -215,7 +215,7 @@ bgl_symbol_genname( obj_t o, char *name ) {
    pair = MAKE_PAIR( o, VECTOR_REF( c_symtab, hn ) );
    VECTOR_SET( c_symtab, hn, pair );
    
-   bgl_mutex_unlock( symbol_mutex );
+   BGL_MUTEX_UNLOCK( symbol_mutex );
    
    return SYMBOL( o ).string;
 }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Dec  5 12:58:35 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 15:23:34 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -371,10 +371,10 @@ make_inet_array( char **src, int size ) {
       char *s = *run;
 
 #if defined( DEBUG_SEGV )
-      // bgl_mutex_lock( socket_port_mutex );
+      // BGL_MUTEX_LOCK( socket_port_mutex );
       fprintf( debug_segv_file, "make_init_array, memcpy atomic=%p size=%d\n", d );
       debug_socket_segv( "make_inet_array", s, size );
-      // bgl_mutex_unlock( socket_port_mutex );
+      // BGL_MUTEX_UNLOCK( socket_port_mutex );
 #endif
       
       memcpy( d, s, size );
@@ -574,10 +574,10 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int canon ) {
    struct hostent *hp;
    struct bglhostent *res;
    
-   bgl_mutex_lock( gethostby_mutex );
+   BGL_MUTEX_LOCK( gethostby_mutex );
    hp = gethostbyname( BSTRING_TO_STRING( hostname ) );
    bglhostent_fill_from_hostent( hostname, bhp, hp );
-   bgl_mutex_unlock( gethostby_mutex );
+   BGL_MUTEX_UNLOCK( gethostby_mutex );
 #else
    struct addrinfo hints;
    struct addrinfo *res;
@@ -615,14 +615,14 @@ invalidate_hostbyname( obj_t hostname ) {
       int key = get_hash_number( BSTRING_TO_STRING( hostname ) );
       struct bglhostent *bhp;
       
-      bgl_mutex_lock( socket_mutex );
+      BGL_MUTEX_LOCK( socket_mutex );
       
       bhp = (struct bglhostent *)VECTOR_REF( hosttable, key );
 
       if( bhp && bigloo_strcmp( bhp->hostaddr, hostname ) )
 	 VECTOR_SET( hosttable, key, 0 );
       
-      bgl_mutex_unlock( socket_mutex );
+      BGL_MUTEX_UNLOCK( socket_mutex );
       
       return;
    }
@@ -649,7 +649,7 @@ bglhostbyname( obj_t hostname, int canon ) {
       int key = get_hash_number( BSTRING_TO_STRING( hostname ) );
 
       /* acquire the global socket lock */
-      bgl_mutex_lock( socket_mutex );
+      BGL_MUTEX_LOCK( socket_mutex );
 
 retry_cache:
       
@@ -670,7 +670,7 @@ retry_cache:
 			__FILE__, __LINE__,
 			BSTRING_TO_STRING( hostname ), key );
 #endif	       
-	       bgl_mutex_unlock( socket_mutex );
+	       BGL_MUTEX_UNLOCK( socket_mutex );
 	       return 0L;
 
 	    case BGLHOSTENT_STATE_PENDING:
@@ -682,7 +682,7 @@ retry_cache:
 			__FILE__, __LINE__,
 			BSTRING_TO_STRING( hostname ), key );
 #endif	       
-	       bgl_condvar_wait( socket_condv, socket_mutex );
+	       BGL_CONDVAR_WAIT( socket_condv, socket_mutex );
 		  
 #if( DEBUG_CACHE_DNS )
 	       fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d RECEIVED\n",
@@ -697,7 +697,7 @@ retry_cache:
 			__FILE__, __LINE__,
 			BSTRING_TO_STRING( hostname ), key );
 #endif	       
-	       bgl_mutex_unlock( socket_mutex );
+	       BGL_MUTEX_UNLOCK( socket_mutex );
 	       return &(bhp->hp);
 	 }
       } else {
@@ -712,7 +712,7 @@ retry_cache:
 	 /* create the bglhostent entry with the request_pending mark */
 	 bhp = make_bglhostent( hostname, 0 );
 	 VECTOR_SET( hosttable, key, (obj_t)bhp );
-	 bgl_mutex_unlock( socket_mutex );
+	 BGL_MUTEX_UNLOCK( socket_mutex );
 
 	 /* make the actual DNS call */
 #if( DEBUG_CACHE_DNS )
@@ -728,10 +728,10 @@ retry_cache:
 		  BGLHOSTENT_STATE_OK );
 #endif	 
 	 /* store the address in the hashtable and notify */
-	 bgl_mutex_lock( socket_mutex );
+	 BGL_MUTEX_LOCK( socket_mutex );
 	 socket_condv_value = bhp;
-	 bgl_condvar_broadcast( socket_condv );
-	 bgl_mutex_unlock( socket_mutex );
+	 BGL_CONDVAR_BROADCAST( socket_condv );
+	 BGL_MUTEX_UNLOCK( socket_mutex );
 	 
 	 /* we still have to check if the entry in the table corresponds */
 	 /* to a sucess or a failure. In the latter case, returns 0.     */  
@@ -757,14 +757,14 @@ make_bglhostentbyaddr( obj_t hostaddr, struct sockaddr_in *sin ) {
    struct hostent *hp;
    struct bglhostent *res;
 
-   bgl_mutex_lock( gethostby_mutex );
+   BGL_MUTEX_LOCK( gethostby_mutex );
    hp = gethostbyaddr( (char *)&(sin->sin_addr),
 		       sizeof( sin->sin_addr ),
 		       AF_INET );
 
    res = make_bglhostent( hostaddr, hp );
 
-   bgl_mutex_unlock( gethostby_mutex );
+   BGL_MUTEX_UNLOCK( gethostby_mutex );
    return res;
 #else
    char host[ 80 ];
@@ -806,7 +806,7 @@ bglhostbyaddr( struct sockaddr_in *sin ) {
 					 sizeof( sin->sin_addr ) );
 
       /* acquire the global socket lock */
-      bgl_mutex_lock( socket_mutex );
+      BGL_MUTEX_LOCK( socket_mutex );
 
       bhp = (struct bglhostent *)VECTOR_REF( addrtable, key );
 
@@ -816,7 +816,7 @@ bglhostbyaddr( struct sockaddr_in *sin ) {
 		      (char *)&(sin->sin_addr),
 		      sizeof( sin->sin_addr ) )
 	  && ((time( 0 ) - bhp->exptime) <= 0) ) {
-	 bgl_mutex_unlock( socket_mutex );
+	 BGL_MUTEX_UNLOCK( socket_mutex );
 
 	 /* we still have to check if the entry in the table corresponds */
 	 /* to a sucess or a failure. In the latter case, returns 0.     */
@@ -824,12 +824,12 @@ bglhostbyaddr( struct sockaddr_in *sin ) {
       } else {
 	 obj_t hostaddr = string_to_bstring_len( (char *)&(sin->sin_addr),
 						 sizeof( sin->sin_addr ) );
-	 bgl_mutex_unlock( socket_mutex );
+	 BGL_MUTEX_UNLOCK( socket_mutex );
 	 if( bhp = make_bglhostentbyaddr( hostaddr, sin ) ) {
 	    
-	    bgl_mutex_lock( socket_mutex );
+	    BGL_MUTEX_LOCK( socket_mutex );
 	    VECTOR_SET( addrtable, key, (obj_t)bhp );
-	    bgl_mutex_unlock( socket_mutex );
+	    BGL_MUTEX_UNLOCK( socket_mutex );
 	    
 	    return &(bhp->hp);
 	 } else {
@@ -1267,13 +1267,13 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    memset( &server, 0, sizeof( server ) );
    
 #if defined( DEBUG_SEGV )
-   // bgl_mutex_lock( socket_port_mutex );
+   // BGL_MUTEX_LOCK( socket_port_mutex );
    fprintf( debug_segv_file, "bgl_make_client_socket, hp=%p", hp );
    fflush( debug_segv_file );
    fprintf( debug_segv_file, " name=%s src=%p len=%d\n", hp->h_name, hp->h_addr, hp->h_length );
    fflush( debug_segv_file );
    debug_socket_segv( "bgl_make_client", hp->h_addr, hp->h_length );
-   // bgl_mutex_unlock( socket_port_mutex );
+   // BGL_MUTEX_UNLOCK( socket_port_mutex );
 #endif
    
    memcpy( (char *)&(server.sin_addr), hp->h_addr, hp->h_length );
@@ -1880,14 +1880,14 @@ bgl_getprotoents() {
 #if BGL_HAVE_GETPROTOENT
    struct protoent *pe;
    
-   bgl_mutex_lock( protoent_mutex );
+   BGL_MUTEX_LOCK( protoent_mutex );
    setprotoent( 1 );
    
    while( pe = getprotoent() )
       res = MAKE_PAIR( protoent_to_obj( pe ), res );
    
    endprotoent();
-   bgl_mutex_unlock( protoent_mutex );
+   BGL_MUTEX_UNLOCK( protoent_mutex );
 #endif
    
    return res;

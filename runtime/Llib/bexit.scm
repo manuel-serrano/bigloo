@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Wed Nov 28 16:22:37 2012 (serrano)                */
+;*    Last change :  Mon Dec 10 00:11:09 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -59,6 +59,9 @@
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
 	    (macro $get-exitd-val::obj () "BGL_EXITD_VAL")
+
+	    (macro $exitd-push-mutex!::obj (::obj ::obj) "BGL_EXITD_PUSH_MUTEX")
+	    (macro $exitd-pop-mutex!::obj (::obj ::obj) "BGL_EXITD_POP_MUTEX")
 	    
 	    (export unwind-stack-until! "unwind_stack_until")
 	    (export unwind-stack-value? "unwind_stack_value_p")
@@ -100,8 +103,8 @@
 	    (unwind-until! exitd ::obj)
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
-	    (exitd-push-mutex! ::obj)
-	    (exitd-pop-mutex! ::obj)))
+	    (exitd-push-mutex! ::obj ::obj)
+	    (exitd-pop-mutex! ::obj ::obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    val-from-exit? ...                                               */
@@ -187,38 +190,42 @@
    (when (pair? ($exitd-mutexn exitd))
       ;; (pragma "fprintf( stderr, \"     UNLOCK mutexn...\\n\" )")
       (for-each mutex-unlock! ($exitd-mutexn exitd))))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    exitd-push-mutex! ...                                            */
+;*    -------------------------------------------------------------    */
+;*    This is the portable version of $EXITD-PUSH-MUTEX!. It is not    */
+;*    used by the C backend.                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-push-mutex! m)
-   (let ((exitd ($get-exitd-top)))
-      (cond
-	 ((not ($exitd-mutex0 exitd))
-	  ;; (tprint "push0 " m)
-	  ($exitd-mutex0-set! exitd m))
-	 ((not ($exitd-mutex1 exitd))
-	  ;; (tprint "push1 " m)
-	  ($exitd-mutex1-set! exitd m))
-	 (else
-;* 	  (tprint "pushn " m)                                          */
-	  ($exitd-mutexn-set! exitd (cons m ($exitd-mutexn exitd)))))))
+(define (exitd-push-mutex! exitd m)
+   (cond
+      ((not ($exitd-mutex0 exitd))
+       ;; (pragma "fprintf( stderr, \"push0 %p\\n\", $1 )"  m)
+       ($exitd-mutex0-set! exitd m))
+      ((not ($exitd-mutex1 exitd))
+       ;; (pragma "fprintf( stderr, \"push1 %p\\n\", $1 )"  m)
+       ($exitd-mutex1-set! exitd m))
+      (else
+       ;; (pragma "fprintf( stderr, \"pushN %p\\n\", $1 )"  m)
+       ($exitd-mutexn-set! exitd (cons m ($exitd-mutexn exitd))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-pop-mutex! ...                                             */
+;*    -------------------------------------------------------------    */
+;*    This is the portable version of $EXITD-POP-MUTEX!. It is not     */
+;*    used by the C backend.                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-pop-mutex! m)
-   (let ((exitd ($get-exitd-top)))
-      (cond
-	 ((eq? ($exitd-mutex0 exitd) m)
-	  ;; (tprint "pop0 " m) 
-	  ($exitd-mutex0-set! exitd #f))
-	 ((eq? ($exitd-mutex1 exitd) m)
-	  ;; (tprint "pop1 " m)
-	  ($exitd-mutex1-set! exitd #f))
-	 (else
-;* 	  (tprint "popn " m)                                           */
-	  ($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd)))))))
+(define (exitd-pop-mutex! exitd m)
+   (cond
+      ((eq? ($exitd-mutex0 exitd) m)
+       ;; (tprint "pop0 " m) 
+       ($exitd-mutex0-set! exitd #f))
+      ((eq? ($exitd-mutex1 exitd) m)
+       ;; (pragma "fprintf( stderr, \"pop1 %p\\n\", $1 )"  m)
+       ($exitd-mutex1-set! exitd #f))
+      (else
+       ;; (pragma "fprintf( stderr, \"popN %p\\n\", $1 )"  m)
+       ($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */

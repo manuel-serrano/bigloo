@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Mon Jul  2 19:20:42 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 15:22:00 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -94,7 +94,7 @@ signal_handler( int num ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_signal( int sig, obj_t obj ) {
-   bgl_mutex_lock( signal_mutex );
+   BGL_MUTEX_LOCK( signal_mutex );
 
    /* store the obj in the signal table */
    BGL_SIG_HANDLERS()[ sig ] = obj;
@@ -123,7 +123,7 @@ bgl_signal( int sig, obj_t obj ) {
       }
    }
    
-   bgl_mutex_unlock( signal_mutex );
+   BGL_MUTEX_UNLOCK( signal_mutex );
    
    return BUNSPEC;
 }
@@ -472,10 +472,10 @@ bgl_getpwnam( char *name ) {
    struct passwd *pw;
    obj_t res;
 
-   bgl_mutex_lock( getuid_mutex );
+   BGL_MUTEX_LOCK( getuid_mutex );
    pw = getpwnam( name );
    res = passwd2list( pw );
-   bgl_mutex_unlock( getuid_mutex );
+   BGL_MUTEX_UNLOCK( getuid_mutex );
 
    return res;
 #else
@@ -493,10 +493,10 @@ bgl_getpwuid( uid_t uid ) {
    struct passwd *pw;
    obj_t res;
    
-   bgl_mutex_lock( getuid_mutex );
+   BGL_MUTEX_LOCK( getuid_mutex );
    pw = getpwuid( uid );
    res = passwd2list( pw );
-   bgl_mutex_unlock( getuid_mutex );
+   BGL_MUTEX_UNLOCK( getuid_mutex );
 
    return res;
 #else

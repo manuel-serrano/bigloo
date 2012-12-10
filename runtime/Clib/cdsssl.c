@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Thu Oct 11 18:12:02 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 15:22:37 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -65,7 +65,7 @@ bstring_to_keyword( obj_t name ) {
 
    hash_number = get_hash_power_number( cname, KEYWORD_HASH_TABLE_SIZE_SHIFT );
 
-   bgl_mutex_lock( keyword_mutex );
+   BGL_MUTEX_LOCK( keyword_mutex );
    bucket = VECTOR_REF( c_keytab, hash_number );
    
    if( NULLP( bucket ) ) {
@@ -74,7 +74,7 @@ bstring_to_keyword( obj_t name ) {
       
       VECTOR_SET( c_keytab, hash_number, pair );
       
-      bgl_mutex_unlock( keyword_mutex );
+      BGL_MUTEX_UNLOCK( keyword_mutex );
       return keyword;
    } else {
       obj_t run = bucket, back = bucket;
@@ -85,7 +85,7 @@ bstring_to_keyword( obj_t name ) {
          back = run, run = CDR( run );
       
       if( !NULLP( run ) ) {
-	 bgl_mutex_unlock( keyword_mutex );
+	 BGL_MUTEX_UNLOCK( keyword_mutex );
          return CAR( run );
       }
       else {
@@ -94,7 +94,7 @@ bstring_to_keyword( obj_t name ) {
 	 
          SET_CDR( back, pair );
 
-	 bgl_mutex_unlock( keyword_mutex );
+	 BGL_MUTEX_UNLOCK( keyword_mutex );
          return keyword;
       }
    }

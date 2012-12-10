@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Fri Dec  3 18:43:35 2010 (serrano)                */
+/*    Last change :  Sun Dec  9 15:21:15 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -99,9 +99,9 @@ bgl_dload( char *filename, char *init_sym, char *init_mod ) {
    } else {
       p = MAKE_PAIR( string_to_bstring( filename ), handle );
 
-      bgl_mutex_lock( dload_mutex );
+      BGL_MUTEX_LOCK( dload_mutex );
       dload_list = MAKE_PAIR( p, dload_list );
-      bgl_mutex_unlock( dload_mutex );
+      BGL_MUTEX_UNLOCK( dload_mutex );
       
       if( *init_sym ) {
 	 int r = dload_init_call( handle, init_sym );
@@ -129,10 +129,10 @@ bgl_dunload( obj_t filename ) {
 
    obj_t p = dload_list;
 
-   bgl_mutex_lock( dload_mutex );
+   BGL_MUTEX_LOCK( dload_mutex );
    
    if ( NULLP( dload_list) ) {
-      bgl_mutex_unlock( dload_mutex );
+      BGL_MUTEX_UNLOCK( dload_mutex );
       return 0;
    }
    
@@ -140,7 +140,7 @@ bgl_dunload( obj_t filename ) {
       dload_list = CDR( dload_list );
       dlclose( CDR( CAR( p ) ) );
       
-      bgl_mutex_unlock( dload_mutex );
+      BGL_MUTEX_UNLOCK( dload_mutex );
       return 0;
    } else {
       obj_t r = CDR( p );
@@ -150,13 +150,13 @@ bgl_dunload( obj_t filename ) {
 	    SET_CDR( p, CDR( r ) );
 	    dlclose( CDR( CAR( r ) ) );
 	    
-	    bgl_mutex_unlock( dload_mutex );
+	    BGL_MUTEX_UNLOCK( dload_mutex );
 	    return 0;
 	 }
       }
    }
    
-   bgl_mutex_unlock( dload_mutex );
+   BGL_MUTEX_UNLOCK( dload_mutex );
 #endif   
    return 1;
 }

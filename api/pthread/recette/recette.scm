@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Tue Sep 11 09:16:51 2012 (serrano)                */
+;*    Last change :  Sun Dec  9 16:51:30 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
@@ -361,7 +361,7 @@
       (else
        (let ((res '()))
 	  (define (mutex-lock-recursively! mutex)
-	     (if (eq? (mutex-state mutex) (current-thread))
+	     (if (eq? (mutex-state mutex) 'locked)
 		 (let ((n (mutex-specific mutex)))
 		    (mutex-specific-set! mutex (+ n 1)))
 		 (begin
@@ -415,12 +415,12 @@
 			      (mutex-toggle m #t mutex-toggle)))))))
 	 (thread-join! th1)
 	 (mutex-state m)))
-   :result 'abandoned)
+   :result 'locked)
 
 ;*---------------------------------------------------------------------*/
-;*    mutex-lock2 ...                                                  */
+;*    mutex-timed-lock ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-test mutex-lock2
+(define-test mutex-timed-lock
    (begin
       (define m (make-mutex))
       (let* ((res #unspecified)
@@ -433,9 +433,9 @@
    :result #t)
 
 ;*---------------------------------------------------------------------*/
-;*    mutex-lock3 ...                                                  */
+;*    mutex-timed-lock2 ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-test mutex-lock3
+(define-test mutex-timed-lock2
    (begin
       (define m (make-mutex))
       (mutex-lock! m)

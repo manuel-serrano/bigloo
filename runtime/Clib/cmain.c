@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Sat Nov 20 05:57:50 2010 (serrano)                */
+/*    Last change :  Sun Dec  9 15:24:04 2012 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -89,14 +89,14 @@ bigloo_exit( obj_t val ) {
    int n;
    val = bigloo_exit_apply( val );
 
-   bgl_mutex_lock( bgl_exit_mutex() );
+   BGL_MUTEX_LOCK( bgl_exit_mutex() );
 
    bgl_end_io();
    
    n = (long)INTEGERP( val ) ? (long)CINT( val ) : 0;
    exit( n );
    
-   bgl_mutex_unlock( bgl_exit_mutex() );
+   BGL_MUTEX_UNLOCK( bgl_exit_mutex() );
    
    return val;
 }

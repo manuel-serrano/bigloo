@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Wed Sep 26 15:37:33 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 16:57:29 2012 (serrano)                */
 /*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -95,7 +95,7 @@ static void
 bgl_ssl_init() {
    static initialized = 0;
 
-   bgl_mutex_lock( bigloo_mutex );
+   BGL_MUTEX_LOCK( bigloo_mutex );
    
    if( !initialized ) {
       initialized = 1;
@@ -135,7 +135,7 @@ bgl_ssl_init() {
 #endif
    }
    
-   bgl_mutex_unlock( bigloo_mutex );
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
 }
 
 /*---------------------------------------------------------------------*/
@@ -195,13 +195,13 @@ static obj_t
 socket_close_hook( obj_t env, obj_t s ) {
    SSL *ssl = (SSL *)CAR( SOCKET( s ).userdata );
 
-   bgl_mutex_lock( ssl_mutex );
+   BGL_MUTEX_LOCK( ssl_mutex );
    
    SSL_shutdown( ssl );
    SSL_free( ssl );
    SOCKET( s ).userdata = BUNSPEC;
    
-   bgl_mutex_unlock( ssl_mutex );
+   BGL_MUTEX_UNLOCK( ssl_mutex );
    
    return s;
 }
@@ -265,7 +265,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    
    bgl_ssl_init();
 
-   bgl_mutex_lock( ssl_mutex );
+   BGL_MUTEX_LOCK( ssl_mutex );
    
    sbio = BIO_new_socket( SOCKET( s ).fd, BIO_NOCLOSE );
    if( !sbio ) {
@@ -362,7 +362,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    /* FIXME: is it possible we want a list of accepted certificates */
    /* we don't want to verify ? if yes how do we ask for them ?     */ 
    
-   bgl_mutex_unlock( ssl_mutex );
+   BGL_MUTEX_UNLOCK( ssl_mutex );
 
    if( (status = (accept ? SSL_accept( ssl ) : SSL_connect( ssl ))) <= 0 ) {
       int err = SSL_get_error( ssl, status );

@@ -3,24 +3,13 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Sun Dec  9 00:09:50 2012 (serrano)                */
+/*    Last change :  Mon Dec 10 03:37:28 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
 /*=====================================================================*/
 #include <pthread.h>
 #include <bigloo.h>
-
-/*---------------------------------------------------------------------*/
-/*    Strict SRFI-18 enables the full support of                       */
-/*    MUTEX-LOCK/MUTEX-UNLOCK. Without SRFI-18 support, mutex state    */
-/*    are not fully supported and mutexes and not automatically        */
-/*    released when their owning thread (i.e., the thread currently    */
-/*    locking them) terminate. This is useful for applications         */
-/*    using exclusively SYNCHRONIZE.                                   */
-/*---------------------------------------------------------------------*/
-#undef BGL_STRICT_SRFI18
-#define BGL_STRICT_SRFI18 1
 
 /*---------------------------------------------------------------------*/
 /*    bglpthread_t                                                     */
@@ -36,25 +25,28 @@ typedef struct bglpthread {
    obj_t specific;
    obj_t cleanup;
    int status;
-#if( BGL_STRICT_SRFI18 )   
-   obj_t mutexes;
-#endif   
 } *bglpthread_t;
 
 /*---------------------------------------------------------------------*/
 /*    bglpmutex_t                                                      */
 /*---------------------------------------------------------------------*/
 typedef struct bglpmutex {
+   /* the actual pmutex (must be first field) */
    pthread_mutex_t pmutex;
-   bglpthread_t thread;
-   bool_t locked;
-   bool_t marked;
+   /* the Bigloo mutex pointing to that mutex */
+   obj_t bmutex;           
    obj_t specific;
-#if( BGL_STRICT_SRFI18 )   
-   obj_t prev;
-   obj_t next;
-#endif   
 } *bglpmutex_t;
+
+/*---------------------------------------------------------------------*/
+/*    bglpspinlock_t                                                   */
+/*---------------------------------------------------------------------*/
+typedef struct bglpspinlock {
+   /* the actual pmutex (must be first field) */
+   pthread_spinlock_t pmutex;
+   /* the Bigloo mutex pointing to that mutex */
+   obj_t bmutex;           
+} *bglpspinlock_t;
 
 /*---------------------------------------------------------------------*/
 /*    bglpcondvar_t                                                    */
@@ -79,14 +71,9 @@ typedef struct bglpcondvar {
   ((((bglpthread_t)(t))->cleanup = (v)))
 
 #define BGLPTH_MUTEX_SPECIFIC( m ) \
-  (BGLPTH_MUTEX_BGLPMUTEX( m )->specific)
+   (((bglpmutex_t)(BGL_MUTEX_SYSMUTEX( m ) ))->specific)
 #define BGLPTH_MUTEX_SPECIFIC_SET( m, v ) \
-  (BGLPTH_MUTEX_SPECIFIC( m ) = (v))
-
-#define BGLPTH_MUTEX_BGLPMUTEX( o ) \
-   ((bglpmutex_t)(BGL_MUTEX( o ).mutex))
-#define BGLPTH_MUTEX_PMUTEX( o ) \
-   (&(BGLPTH_MUTEX_BGLPMUTEX( o )->pmutex))
+   ((((bglpmutex_t)(BGL_MUTEX_SYSMUTEX( m ) ))->specific) = (v))
 
 #define BGLPTH_CONDVAR_BGLPCONDVAR( o ) \
    ((bglpcondvar_t)(BGL_CONDVAR( o ).condvar))

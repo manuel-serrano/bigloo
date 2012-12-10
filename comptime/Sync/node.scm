@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Fri Nov 30 13:53:22 2012 (serrano)                */
+;*    Last change :  Mon Dec 10 00:02:23 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -35,11 +35,13 @@
 	    ast_sexp
 	    ast_app
 	    ast_dump
+	    backend_backend
+	    inline_app
 	    effect_effect
 	    backend_cplib
 	    sync_failsafe)
    
-   (export (sync->sequence::sequence ::sync)))
+   (export (sync->sequence::node ::sync)))
 
 ;*---------------------------------------------------------------------*/
 ;*    lock cache                                                       */
@@ -49,17 +51,25 @@
 (define mulock #f)
 (define mpush #f)
 (define mpop #f)
+(define getexitdtop #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    init-sync! ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (init-sync! loc)
    (unless mlock
+      (set! getexitdtop (sexp->node '$get-exitd-top '() loc 'app))
       (set! mlock (sexp->node '$mutex-lock '() loc 'app))
       (set! mlockprelock (sexp->node '$mutex-lock-prelock '() loc 'app))
       (set! mulock (sexp->node '$mutex-unlock '() loc 'app))
-      (set! mpush (sexp->node '(@ exitd-push-mutex! __bexit) '() loc 'app))
-      (set! mpop (sexp->node '(@ exitd-pop-mutex! __bexit) '() loc 'app))
+      (case (backend-language (the-backend))
+	 ((c)
+	  (set! mpush (sexp->node '$exitd-push-mutex! '() loc 'app))
+	  (set! mpop (sexp->node '$exitd-pop-mutex! '() loc 'app)))
+	 (else
+	  (set! mpush (sexp->node '(@ exitd-push-mutex! __bexit) '() loc 'app))
+	  (set! mpop (sexp->node '(@ exitd-pop-mutex! __bexit) '() loc 'app))))
+      (set-variable-name! (var-variable getexitdtop))
       (set-variable-name! (var-variable mlock))
       (set-variable-name! (var-variable mlockprelock))
       (set-variable-name! (var-variable mulock))
@@ -94,42 +104,83 @@
    (define (app expr loc)
       (application->node expr '() loc 'value))
 
-   (with-access::sync node (loc nodes mutex type prelock)
-      (init-sync! loc)
-      (let* ((tmp (make-local-svar (gensym 'tmp) type))
-	     (lock (if (atom? prelock)
-		       (app `(,mlock ,mutex) loc)
-		       (app `(,mlockprelock ,mutex ,prelock) loc)))
-	     (push (app `(,mpush ,mutex) loc))
-	     (pop (app `(,mpop ,mutex) loc))
-	     (unlock (app `(,mulock ,mutex) loc))
-	     (fsafe (failsafe-sync? node))
-	     (vref (instantiate::var
-		      (loc loc)
-		      (type type)
-		      (variable tmp)))
-	     (sbody (if (and (pair? nodes) (null? (cdr nodes)))
-			(car nodes)
-			(instantiate::sequence
+   (define (failsafe-sync->sequence node)
+      ;; no exception raised, avoid pushing/poping mutexes
+      (with-access::sync node (loc nodes mutex type prelock)
+	 (let* ((tmp (make-local-svar (gensym 'tmp) type))
+		(lock (if (atom? prelock)
+			  (app `(,mlock ,mutex) loc)
+			  (app `(,mlockprelock ,mutex ,prelock) loc)))
+		(unlock (app `(,mulock ,mutex) loc))
+		(vref (instantiate::var
+			 (loc loc)
+			 (type type)
+			 (variable tmp)))
+		(sbody (if (and (pair? nodes) (null? (cdr nodes)))
+			   (car nodes)
+			   (instantiate::sequence
+			      (loc loc)
+			      (type type)
+			      (nodes nodes))))
+		(lbody (instantiate::let-var
+			  (loc loc)
+			  (type type)
+			  (bindings (list (cons tmp sbody)))
+			  (body (instantiate::sequence
+				   (loc loc)
+				   (type type)
+				   (nodes (list unlock vref)))))))
+	    (instantiate::sequence
+	       (loc loc)
+	       (type type)
+	       (nodes (list lock lbody))))))
+   
+   (define (effect-sync->sequence node)
+      ;; exceptions potentially raised, slow path compilation
+      (with-access::sync node (loc nodes mutex type prelock)
+	 (let* ((tmp (make-local-svar (gensym 'tmp) type))
+		(top (make-local-svar (gensym 'top) *obj*))
+		(topref (instantiate::var
 			   (loc loc)
-			   (type type)
-			   (nodes nodes))))
-	     (lbody (instantiate::let-var
-		       (loc loc)
-		       (type type)
-		       (bindings (list (cons tmp sbody)))
-		       (body (instantiate::sequence
-				(loc loc)
-				(type type)
-				(nodes (if fsafe
-					   (list unlock vref)
-					   (list pop unlock vref))))))))
-	 (instantiate::sequence
-	    (loc loc)
-	    (type type)
-	    (nodes (if fsafe
-		       (list lock lbody)
-		       (list lock push lbody)))))))
-
-
-
+			   (type *obj*)
+			   (variable top)))
+		(gettop (app `(,getexitdtop) loc))
+		(lock (if (atom? prelock)
+			  (app `(,mlock ,mutex) loc)
+			  (app `(,mlockprelock ,mutex ,prelock) loc)))
+		(push (app `(,mpush ,topref ,mutex) loc))
+		(pop (app `(,mpop ,topref ,mutex) loc))
+		(unlock (app `(,mulock ,mutex) loc))
+		(vref (instantiate::var
+			 (loc loc)
+			 (type type)
+			 (variable tmp)))
+		(sbody (if (and (pair? nodes) (null? (cdr nodes)))
+			   (car nodes)
+			   (instantiate::sequence
+			      (loc loc)
+			      (type type)
+			      (nodes nodes))))
+		(lbody (instantiate::let-var
+			  (loc loc)
+			  (type type)
+			  (bindings (list (cons tmp sbody)))
+			  (body (instantiate::sequence
+				   (loc loc)
+				   (type type)
+				   (nodes (list pop unlock vref)))))))
+	    (instantiate::let-var
+	       (loc loc)
+	       (type type)
+	       (bindings (list (cons top gettop)))
+	       (body (instantiate::sequence
+			(loc loc)
+			(type type)
+			(nodes (list lock push lbody))))))))
+   
+   (with-access::sync node (loc)
+      (init-sync! loc))
+   
+   (if (failsafe-sync? node)
+       (failsafe-sync->sequence node)
+       (effect-sync->sequence node)))

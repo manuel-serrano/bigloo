@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Sun Dec  9 02:02:34 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 18:24:25 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -26,7 +26,7 @@ static obj_t bgl_condvar_init_default( obj_t o );
 static obj_t bgl_init_default( obj_t o ) { return o; }
 
 static void bgl_act0_default( void ) { return; }
-static bool_t bgl_act_default( obj_t o ) { return 1; }
+static int bgl_act_default( void *o ) { return 0; }
 static bool_t bgl_act2_default( obj_t o1, obj_t o2 ) { return 1; }
 static bool_t bgl_act2long_default( obj_t o1, long o2 ) { return 1; }
 static bool_t bgl_act3long_default( obj_t o1, obj_t o2, long o3 ) { return 1; }
@@ -54,22 +54,13 @@ int (*bgl_sigprocmask)( int, const sigset_t *, sigset_t * ) = &sigprocmask;
 #endif
 
 static obj_t (*bgl_mutex_init)( obj_t ) = &bgl_mutex_init_default;
+static obj_t (*bgl_spinlock_init)( obj_t ) = &bgl_mutex_init_default;
 static obj_t (*bgl_condvar_init)( obj_t ) = &bgl_condvar_init_default;
 
 BGL_RUNTIME_DEF void (*bgl_gc_start_blocking)( void ) = &bgl_act0_default;
 BGL_RUNTIME_DEF void (*bgl_gc_stop_blocking)( void ) = &bgl_act0_default;
 
 BGL_RUNTIME_DEF void *(*bgl_gc_do_blocking)( void (*fun)(), void * ) = &bgl_gc_do_blocking_default;
-
-BGL_RUNTIME_DEF bool_t (*bgl_mutex_lock)( obj_t ) = &bgl_act_default;
-BGL_RUNTIME_DEF bool_t (*bgl_mutex_timed_lock)( obj_t, long ) = &bgl_act2long_default;
-BGL_RUNTIME_DEF bool_t (*bgl_mutex_unlock)( obj_t ) = &bgl_act_default;
-BGL_RUNTIME_DEF obj_t (*bgl_mutex_state)( obj_t ) = &bgl_mutex_state_default;
-
-BGL_RUNTIME_DEF bool_t (*bgl_condvar_wait)( obj_t, obj_t ) = &bgl_act2_default;
-BGL_RUNTIME_DEF bool_t (*bgl_condvar_timed_wait)( obj_t, obj_t, long ) = &bgl_act3long_default;
-BGL_RUNTIME_DEF bool_t (*bgl_condvar_signal)( obj_t ) = &bgl_act_default;
-BGL_RUNTIME_DEF bool_t (*bgl_condvar_broadcast)( obj_t ) = &bgl_act_default;
 
 BGL_RUNTIME_DEF obj_t (*bgl_multithread_dynamic_denv)() = &denv_get;
 
@@ -84,9 +75,8 @@ REGISTER_FUNCTION( bgl_sigprocmask, int, (int, const sigset_t *, sigset_t *) )
 #endif
 							 
 REGISTER_FUNCTION( bgl_mutex_init, obj_t, (obj_t) )
-
+REGISTER_FUNCTION( bgl_spinlock_init, obj_t, (obj_t) )
 REGISTER_FUNCTION( bgl_condvar_init, obj_t, (obj_t) )
-
 REGISTER_FUNCTION( bgl_multithread_dynamic_denv, obj_t, (void) );
 
 /*---------------------------------------------------------------------*/
@@ -100,7 +90,7 @@ bgl_create_mutex( obj_t name ) {
 
    m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
    m->mutex_t.name = name;
-   m->mutex_t.mutex = 0L;
+   m->mutex_t.sysmutex = 0L;
 
    return BREF( m );
 }
@@ -112,7 +102,6 @@ bgl_create_mutex( obj_t name ) {
 static obj_t
 bgl_mutex_init_default( obj_t m ) {
    BGL_MUTEX( m ).syslock = &bgl_act_default;
-   BGL_MUTEX( m ).sysmark = (void (*)(obj_t))&bgl_act_default;
    BGL_MUTEX( m ).syslockprelock = &bgl_act2_default;
    BGL_MUTEX( m ).systimedlock = &bgl_act2long_default;
    BGL_MUTEX( m ).sysunlock = &bgl_act_default;
@@ -133,6 +122,16 @@ bgl_make_mutex( obj_t name ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
+/*    bgl_make_spinlock ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+bgl_make_spinlock( obj_t name ) {
+   return bgl_spinlock_init( bgl_create_mutex( name ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    bgl_make_nil_mutex ...                                           */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
@@ -142,7 +141,7 @@ bgl_make_nil_mutex() {
 
    m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
    m->mutex_t.name = BUNSPEC;
-   m->mutex_t.mutex = 0L;
+   m->mutex_t.sysmutex = 0L;
 
    return bgl_mutex_init( BREF( m ) );
 }

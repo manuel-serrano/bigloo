@@ -14,7 +14,7 @@
 ;*---------------------------------------------------------------------*/
 (declare-library! 'pthread
 		  :basename "bigloopthread"
-		  :srfi '(pthread srfi-18 @PTHREAD_TIMEDJOIN@)
+		  :srfi '(pthread @PTHREAD_TIMEDJOIN@)
 		  :module-init '__pth_thread
 		  :module-eval '__pth_makelib
 		  :class-init "bigloo.pthread.pthread"

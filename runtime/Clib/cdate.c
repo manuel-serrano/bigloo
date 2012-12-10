@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Wed Dec 24 08:22:38 2008 (serrano)                */
-/*    Copyright   :  2003-08 Manuel Serrano                            */
+/*    Last change :  Sun Dec  9 15:21:44 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
@@ -69,9 +69,9 @@ BGL_RUNTIME_DEF obj_t
 bgl_seconds_to_date( long sec ) {
    obj_t res;
 
-   bgl_mutex_lock( date_mutex );
+   BGL_MUTEX_LOCK( date_mutex );
    res = tm_to_date( localtime( (time_t *)&sec ) );
-   bgl_mutex_unlock( date_mutex );
+   BGL_MUTEX_UNLOCK( date_mutex );
    
    return res;
 }
@@ -177,10 +177,10 @@ bgl_seconds_to_string( long sec ) {
    char *s;
    obj_t res;
    
-   bgl_mutex_lock( date_mutex );
+   BGL_MUTEX_LOCK( date_mutex );
    s = ctime( (time_t *)&sec );
    res = string_to_bstring_len( s, strlen( s ) - 1 );
-   bgl_mutex_unlock( date_mutex );
+   BGL_MUTEX_UNLOCK( date_mutex );
    
    return res;
 }
@@ -197,9 +197,9 @@ bgl_seconds_format( long sec, obj_t fmt ) {
 
    buffer = (char *)GC_MALLOC_ATOMIC( len + 1 );
    
-   bgl_mutex_lock( date_mutex );
+   BGL_MUTEX_LOCK( date_mutex );
    p = localtime( (time_t *)&sec );
-   bgl_mutex_unlock( date_mutex );
+   BGL_MUTEX_UNLOCK( date_mutex );
    
    len = (int)strftime( buffer, len, BSTRING_TO_STRING( fmt ), p );
 

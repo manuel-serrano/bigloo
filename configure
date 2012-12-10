@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Oct 28 06:57:06 2012 (serrano)                */
+#*    Last change :  Sun Dec  9 17:50:38 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1660,6 +1660,11 @@ else
     pthreadtimedlock=`$autoconf pthreadlock --lib="$pthreadlibs"` || exit 1;
   fi
 
+  # pthread_mutex_timedlock
+  if [ "$pthreadlibs" != "no" ]; then
+    pthreadspinlock=`$autoconf pthreadspinlock --lib="$pthreadlibs"` || exit 1;
+  fi
+
   # pthread_timedjoin_np
   if [ "$pthreadlibs" != "no" ]; then
     pthreadtimedjoin=`$autoconf pthreadtimedjoin --lib="$pthreadlibs"` || exit 1;
@@ -2726,6 +2731,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@GC_HAVE_BLOCKING@|$gchaveblocking|" \
               -e "s|@GC_HAVE_DO_BLOCKING@|$gchavedoblocking|" \
               -e "s|@PTHREAD_HAVE_TIMEDLOCK@|$pthreadtimedlock|" \
+              -e "s|@PTHREAD_HAVE_SPINLOCK@|$pthreadspinlock|" \
               -e "s|@PTHREAD_HAVE_TIMEDJOIN@|$pthreadtimedjoin|" \
               -e "s|@BGL_PTHREAD_TERM_SIG@|$pthreadtermsig|" \
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \

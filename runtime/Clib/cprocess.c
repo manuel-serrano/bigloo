@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Wed Sep 26 14:58:11 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 15:21:31 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -238,7 +238,7 @@ c_unregister_process_with_lock( obj_t proc , int lock ) {
    int i;
 
   if( lock )
-    bgl_mutex_lock( process_mutex );
+    BGL_MUTEX_LOCK( process_mutex );
 
    for( i = 0; i < 3; i++ ) {
       obj_t p = PROCESS( proc ).stream[ i ];
@@ -264,7 +264,7 @@ c_unregister_process_with_lock( obj_t proc , int lock ) {
    PROCESS( proc ).index = -1;
 
    if( lock )
-     bgl_mutex_unlock( process_mutex );
+     BGL_MUTEX_UNLOCK( process_mutex );
 }
    
 /*---------------------------------------------------------------------*/
@@ -347,13 +347,13 @@ make_process() {
    a_proc->process_t.exited = 0;
 
    /* Enter this process in the process table */
-   bgl_mutex_lock( process_mutex );
+   BGL_MUTEX_LOCK( process_mutex );
    
    if( first_free_index == max_proc_num )
      purge_process_table();
    
    if( first_free_index == max_proc_num ) {
-      bgl_mutex_unlock( process_mutex );
+      BGL_MUTEX_UNLOCK( process_mutex );
       C_SYSTEM_FAILURE( BGL_PROCESS_EXCEPTION,
 			"make-process",
 			"too many processes",
@@ -367,7 +367,7 @@ make_process() {
 	     (proc_arr[ first_free_index ] != BUNSPEC) )
 	 first_free_index++;
       
-      bgl_mutex_unlock( process_mutex );
+      BGL_MUTEX_UNLOCK( process_mutex );
    }
 
    return BREF( a_proc );
@@ -1002,13 +1002,13 @@ c_process_list() {
    int   i;
    obj_t lst = BNIL;
 
-   bgl_mutex_lock( process_mutex );
+   BGL_MUTEX_LOCK( process_mutex );
    for( i = 0; i < max_proc_num; i++ ) {
       obj_t p = proc_arr[ i ];
       if( PROCESSP( p ) && c_process_alivep_with_lock( proc_arr[ i ], 0 ) )
         lst = MAKE_PAIR( p, lst );
    }
-   bgl_mutex_unlock( process_mutex );
+   BGL_MUTEX_UNLOCK( process_mutex );
    
    return lst;
 }

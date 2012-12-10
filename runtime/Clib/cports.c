@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sun Dec  9 02:05:21 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 18:29:22 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -976,7 +976,7 @@ bgl_make_output_port( obj_t name,
    new_output_port->output_port_t.fhook = BUNSPEC;
    new_output_port->output_port_t.flushbuf = BUNSPEC;
    new_output_port->output_port_t.err = 0;
-   new_output_port->output_port_t.mutex = bgl_make_mutex( name );
+   new_output_port->output_port_t.mutex = bgl_make_spinlock( name );
 
    new_output_port->output_port_t.bufmode = BGL_IOFBF;
    bgl_output_port_buffer_set( BREF( new_output_port ), buf );

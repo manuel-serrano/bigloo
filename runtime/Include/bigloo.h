@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Dec  9 02:00:17 2012 (serrano)                */
+/*    Last change :  Sun Dec  9 23:56:22 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -339,7 +339,6 @@ typedef union scmobj {
    struct output_port {          /*  output_port:                      */
       struct port port;          /*    - a regular port                */
       union scmobj *buf;         /*    - the buffer as a bgl string    */
-//      long cnt;                  /*    - the number of char left       */
       char *ptr;                 /*    - the next char position        */
       char *end;                 /*    - the end of the buffer         */
       int bufmode;               /*    - the buffering mode            */
@@ -528,12 +527,12 @@ typedef union scmobj {
    struct bgl_mutex {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
-      void *mutex;               /* the actual mutex                   */
-      bool_t (*syslock)();       /*    - the system primtives          */
-      void (*sysmark)();         /*    - ...                           */
-      bool_t (*syslockprelock)();/*    - ...                           */
-      bool_t (*systimedlock)();  /*    - ...                           */
-      bool_t (*sysunlock)();
+      void *sysmutex;            /* the actual mutex                   */
+      bool_t locked;             /* the locking state of the mutex     */
+      int (*syslock)();          /*    - the system primtives          */
+      int (*systimedlock)();     /*    - ...                           */
+      int (*sysunlock)();        /*    - ...                           */
+      int (*syslockprelock)();   /*    - ...                           */
       union scmobj *(*sysstate)();
    } mutex_t;
    
@@ -541,10 +540,10 @@ typedef union scmobj {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
       void *condvar;             /* the actual condition variable      */
-      bool_t (*syswait)();       /*    - the system primitives         */
-      bool_t (*systimedwait)();  /*    ...                             */
-      bool_t (*syssignal)();
-      bool_t (*sysbroadcast)();
+      int (*syswait)();          /*    - the system primitives         */
+      int (*systimedwait)();     /*    ...                             */
+      int (*syssignal)();
+      int (*sysbroadcast)();
    } condvar_t;
 
    struct bgl_mmap {
@@ -2637,7 +2636,17 @@ struct exitd {
 
 #define BGL_EXITD_BOTTOMP( extd ) \
    (((struct exitd *)(extd)) == BGL_ENV_EXITD_BOTTOM( BGL_CURRENT_DYNAMIC_ENV() ))
-   
+
+#define BGL_EXITD_PUSH_MUTEX( extd, m ) \
+   EXITD_MUTEX0( extd ) == BFALSE ? EXITD_MUTEX0_SET( extd, m ) : \
+   EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX1_SET( extd, m ) : \
+      EXITD_MUTEXN_SET( extd, make_pair( m, EXITD_MUTEXN( extd ) ) )
+
+#define BGL_EXITD_POP_MUTEX( extd, m ) \
+   EXITD_MUTEX0( extd ) == m ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
+   EXITD_MUTEX1( extd ) == m ? EXITD_MUTEX1_SET( extd, BFALSE ) : \
+      EXITD_MUTEXN_SET( extd, bgl_remq_bang( m, EXITD_MUTEXN( extd ) ) )
+
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */
 /*---------------------------------------------------------------------*/
@@ -2885,14 +2894,30 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_MUTEX( o )  (CREF( o )->mutex_t)
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
 
-#define BGL_MUTEX_LOCK( o ) (BGL_MUTEX( o ).syslock( o ))
-#define BGL_MUTEX_MARK( o ) (BGL_MUTEX( o ).sysmark( o ))
-#define BGL_MUTEX_LOCK_PRELOCK( o, l ) (BGL_MUTEX( o ).syslockprelock( o, l ))
-#define BGL_MUTEX_TIMED_LOCK( o, to ) (BGL_MUTEX( o ).systimedlock( o, to ))
-#define BGL_MUTEX_UNLOCK( o ) (BGL_MUTEX( o ).sysunlock( o ))
-#define BGL_MUTEX_STATE( o ) (BGL_MUTEX( o ).sysstate( o ))
+#define BGL_MUTEX_LOCK( o ) \
+   (!BGL_MUTEX( o ).syslock( BGL_MUTEX_SYSMUTEX( o ) ) ? \
+    (BGL_MUTEX_LOCKED( o ) = 1, 1) : 0)
+
+#define BGL_MUTEX_TIMED_LOCK( o, to ) \
+   (!BGL_MUTEX( o ).systimedlock( BGL_MUTEX_SYSMUTEX( o ), to ) ? \
+    (BGL_MUTEX_LOCKED( o ) = 1, 1) : 0)
+
+#define BGL_MUTEX_UNLOCK( o ) \
+   (BGL_MUTEX_LOCKED( o ) = 0, \
+    BGL_MUTEX( o ).sysunlock( BGL_MUTEX_SYSMUTEX( o ) ) ? \
+    BGL_MUTEX_LOCKED( o ) = 1, 0 : 1)
+   
+#define BGL_MUTEX_LOCK_PRELOCK( o, l ) \
+   (BGL_MUTEX( o ).syslockprelock( o, l ))
+
+//#define BGL_MUTEX_MARK( o ) (BGL_MUTEX( o ).sysmark( o ))
+
+#define BGL_MUTEX_STATE( o ) \
+   (BGL_MUTEX( o ).sysstate( BGL_MUTEX_SYSMUTEX( o ) ))
    
 #define BGL_MUTEX_NAME( o ) BGL_MUTEX( o ).name
+#define BGL_MUTEX_LOCKED( o ) BGL_MUTEX( o ).locked
+#define BGL_MUTEX_SYSMUTEX( o ) BGL_MUTEX( o ).sysmutex
 
 #define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
 #define BGL_CONDVAR( o )  (CREF( o )->condvar_t)
@@ -3144,6 +3169,7 @@ BGL_RUNTIME_DECL obj_t bgl_make_date();
    
 BGL_RUNTIME_DECL obj_t bgl_make_condvar( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_mutex( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_make_spinlock( obj_t );
    
 BGL_RUNTIME_DECL bool_t (*bgl_mutex_lock)( obj_t );
 BGL_RUNTIME_DECL bool_t (*bgl_mutex_timed_lock)( obj_t, long );

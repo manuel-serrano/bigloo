@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Mon Oct 15 08:07:34 2012 (serrano)                */
+;*    Last change :  Mon Dec 10 00:23:26 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
@@ -31,16 +31,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::app-ly ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::app-ly kont)
+(define-method (node->cop node::app-ly kont inpushexit)
    (trace (cgen 3) "(node->cop node::app-ly kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::app-ly node (fun arg loc)
       (let* ((value arg)
 	     (vaux  (make-local-svar/name 'aux *obj*))
-	     (vcop  (node->cop (node-setq vaux value) *id-kont*))
+	     (vcop  (node->cop (node-setq vaux value) *id-kont*  inpushexit))
 	     (fun   fun)
 	     (faux  (make-local-svar/name 'fun *procedure*))
-	     (fcop  (node->cop (node-setq faux fun) *id-kont*)))
+	     (fcop  (node->cop (node-setq faux fun) *id-kont* inpushexit)))
 	 (cond
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux)
 		  (csetq? fcop) (eq? (varc-variable (csetq-var fcop)) faux))
@@ -111,7 +111,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::funcall ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::funcall kont)
+(define-method (node->cop node::funcall kont inpushexit)
    (trace (cgen 3) "(node->cop node::funcall kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::funcall node (fun args strength loc type)
@@ -122,7 +122,7 @@
 	 (if (null? old-actuals)
 	     (let* ((type (get-type node))
 		    (aux (make-local-svar/name 'tmp type))
-		    (cop (node->cop (node-setq aux fun) *id-kont*)))
+		    (cop (node->cop (node-setq aux fun) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
 			 (var? fun)
 			 (eq? (varc-variable (csetq-var cop)) aux))
@@ -175,7 +175,7 @@
 					      (type type)))))))))))
 	     (let* ((a (car old-actuals))
 		    (aux (make-local-svar/name 'a (get-type a)))
-		    (cop (node->cop (node-setq aux a) *id-kont*)))
+		    (cop (node->cop (node-setq aux a) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
 			 (eq? (varc-variable (csetq-var cop)) aux))
 		    ;; the local is useless, we ignore it
@@ -195,7 +195,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::app ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::app kont)
+(define-method (node->cop node::app kont inpushexit)
    (trace (cgen 3) "(node->cop node::app kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::app node (fun)
@@ -203,26 +203,26 @@
 	 (if (and (global? var)
 		  (or (not (eq? var *the-global*))
 		      (not (eq? kont *return-kont*)))) 
-	     (node-non-tail-app->cop var node kont)
-	     (node-tail-app->cop var node kont)))))
+	     (node-non-tail-app->cop var node kont inpushexit)
+	     (node-tail-app->cop var node kont inpushexit)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-non-tail-app->cop ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (node-non-tail-app->cop var node kont)
+(define (node-non-tail-app->cop var::variable node kont inpushexit)
    (trace (cgen 2) "node-non-tail-app->cop: "
 	  (shape var) " " 
 	  (shape node) " "
 	  "kont: " kont
 	  #\Newline)
    (if (sfun? (variable-value var))
-       (node-sfun-non-tail-app->cop var node kont)
-       (node-cfun-non-tail-app->cop var node kont)))
+       (node-sfun-non-tail-app->cop var node kont inpushexit)
+       (node-cfun-non-tail-app->cop var node kont inpushexit)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-sfun-non-tail-app->cop ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (node-sfun-non-tail-app->cop var node kont)
+(define (node-sfun-non-tail-app->cop var::variable node kont inpushexit)
    (let* ((args      (sfun-args (variable-value var)))
 	  (args-type (map (lambda (x)
 			     (if (local? x)
@@ -242,7 +242,7 @@
 	     (if (null? auxs)
 		 (kont (instantiate::capp
 			  (loc (node-loc node))
-			  (fun (node->cop (app-fun node) *id-kont*))
+			  (fun (node->cop (app-fun node) *id-kont* inpushexit))
 			  (args (reverse! new-actuals))))
 		 ;; when this function call uses arguments we have to take
 		 ;; care where to emit soruce line information. We have to
@@ -264,9 +264,10 @@
 				  (kont (instantiate::capp
 					   (loc loc)
 					   (fun (node->cop (app-fun node)
-							   *id-kont*))
+						   *id-kont* inpushexit))
 					   (args (reverse! new-actuals)))))))))))
-	     (let ((cop (node->cop (node-setq aux (car old-actuals)) *id-kont*)))
+	     (let ((cop (node->cop (node-setq aux (car old-actuals))
+			   *id-kont* inpushexit)))
 		(if (useless? cop aux)
 		    (loop (cdr old-actuals)
 			  (cdr args-type)
@@ -287,76 +288,93 @@
 			     (cons cop exps)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    is-get-exitd-top? ...                                            */
+;*    -------------------------------------------------------------    */
+;*    Is the variable $get-exitd-top?                                  */
+;*---------------------------------------------------------------------*/
+(define (is-get-exitd-top? var)
+   (eq? (variable-id var) '$get-exitd-top))
+
+;*---------------------------------------------------------------------*/
 ;*    node-cfun-non-tail-app->cop ...                                  */
 ;*    -------------------------------------------------------------    */
 ;*    cfun differ from sfun because we have to take care to the        */
 ;*    n-ary functions.                                                 */
 ;*---------------------------------------------------------------------*/
-(define (node-cfun-non-tail-app->cop var node kont)
-   (let ((args-type (cfun-args-type (variable-value var)))
-	 (useless? (lambda (cop aux)
-		      (and (csetq? cop)
-			   (eq? (varc-variable (csetq-var cop)) aux)
-			   (or (global-args-safe? var)
-			       (catom? (csetq-value cop))
-			       (varc? (csetq-value cop)))))))
-      (let loop ((old-actuals  (app-args node))
-		 (args-type    args-type)
-		 (new-actuals  '())
-		 (aux          (make-local-svar/name 'aux *obj*))
-		 (auxs         '())
-		 (exps         '()))
-	 (if (null? old-actuals)
-	     (if (null? auxs)
-		 (kont (instantiate::capp
-			  (loc (node-loc node))
-			  (fun (node->cop (app-fun node) *id-kont*))
-			  (args (reverse! new-actuals))))
-		 ;; when this function call uses arguments we have to take
-		 ;; care where to emit source line information. We have to
-		 ;; do it at the beginning of the lexical block that will bind
-		 ;; the actual parameter and that's it. nothing more.
-		 (let ((loc (app-loc node)))
-		    (instantiate::cblock
-		       (loc  loc)
-		       (body (instantiate::csequence
-				(loc loc)
-				(cops
-				 (list
-		 		  (instantiate::local-var
-				     (loc  loc)
-				     (vars auxs))
-				  (instantiate::csequence
-				     (loc loc)
-				     (cops exps))
-				  (kont (instantiate::capp
-					   (loc loc)
-					   (fun (node->cop (app-fun node)
-							   *id-kont*))
-					   (args (reverse! new-actuals)))))))))))
-	     (let ((cop (node->cop (node-setq aux (car old-actuals)) *id-kont*)))
-		(if (useless? cop aux)
-		    (loop (cdr old-actuals)
-			  (if (null? (cdr args-type))
-			      args-type
-			      (cdr args-type))
-			  (cons (csetq-value cop) new-actuals)
-			  aux
-			  auxs
-			  exps)
-		    (begin
-		       (local-type-set! aux (car args-type))
-		       (loop (cdr old-actuals)
-			     (if (null? (cdr args-type))
-				 args-type
-				 (cdr args-type))
-			     (cons (instantiate::varc
-				      (loc (node-loc (car old-actuals)))
-				      (variable aux))
-				   new-actuals)
-			     (make-local-svar/name 'aux (car args-type))
-			     (cons aux auxs)
-			     (cons cop exps)))))))))
+(define (node-cfun-non-tail-app->cop var::variable node kont inpushexit)
+   (if (and inpushexit (is-get-exitd-top? var))
+       (begin
+	  (tprint "INPUSHEXIT")
+	  (kont (instantiate::cpragma
+		   (loc (node-loc node))
+		   (format "((obj_t)(&exitd))")
+		   (args '()))))
+       (let ((args-type (cfun-args-type (variable-value var)))
+	     (useless? (lambda (cop aux)
+			  (and (csetq? cop)
+			       (eq? (varc-variable (csetq-var cop)) aux)
+			       (or (global-args-safe? var)
+				   (catom? (csetq-value cop))
+				   (varc? (csetq-value cop)))))))
+	  (let loop ((old-actuals  (app-args node))
+		     (args-type    args-type)
+		     (new-actuals  '())
+		     (aux          (make-local-svar/name 'aux *obj*))
+		     (auxs         '())
+		     (exps         '()))
+	     (if (null? old-actuals)
+		 (if (null? auxs)
+		     (kont (instantiate::capp
+			      (loc (node-loc node))
+			      (fun (node->cop (app-fun node) *id-kont* inpushexit))
+			      (args (reverse! new-actuals))))
+		     ;; when this function call uses arguments we have to take
+		     ;; care where to emit source line information. We have to
+		     ;; do it at the beginning of the lexical block that will bind
+		     ;; the actual parameter and that's it. nothing more.
+		     (let ((loc (app-loc node)))
+			(instantiate::cblock
+			   (loc  loc)
+			   (body (instantiate::csequence
+				    (loc loc)
+				    (cops
+				       (list
+					  (instantiate::local-var
+					     (loc  loc)
+					     (vars auxs))
+					  (instantiate::csequence
+					     (loc loc)
+					     (cops exps))
+					  (kont (instantiate::capp
+						   (loc loc)
+						   (fun (node->cop (app-fun node)
+							   *id-kont*
+							   inpushexit))
+						   (args (reverse! new-actuals)))))))))))
+		 (let ((cop (node->cop (node-setq aux (car old-actuals))
+			       *id-kont* inpushexit)))
+		    (if (useless? cop aux)
+			(loop (cdr old-actuals)
+			   (if (null? (cdr args-type))
+			       args-type
+			       (cdr args-type))
+			   (cons (csetq-value cop) new-actuals)
+			   aux
+			   auxs
+			   exps)
+			(begin
+			   (local-type-set! aux (car args-type))
+			   (loop (cdr old-actuals)
+			      (if (null? (cdr args-type))
+				  args-type
+				  (cdr args-type))
+			      (cons (instantiate::varc
+				       (loc (node-loc (car old-actuals)))
+				       (variable aux))
+				 new-actuals)
+			      (make-local-svar/name 'aux (car args-type))
+			      (cons aux auxs)
+			      (cons cop exps))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-tail-app->cop ...                                           */
@@ -366,7 +384,7 @@
 ;*    already expanded, then we jump to the definition. Otherwise      */
 ;*    we expand its body and don't produce jump.                       */
 ;*---------------------------------------------------------------------*/
-(define (node-tail-app->cop var node kont)
+(define (node-tail-app->cop var node kont inpushexit)
    (trace (cgen 2) "node-tail-app->cop: "
 	  (shape var) " " 
 	  (shape node) " "
@@ -378,7 +396,7 @@
       (if (not (sfun/C-integrated (variable-value var)))
 	  (begin
 	     (sfun/C-integrated-set! (variable-value var) #t)
-	     (let ((body (node->cop (sfun-body (local-value var)) kont)))
+	     (let ((body (node->cop (sfun-body (local-value var)) kont inpushexit)))
 		(clabel-body-set! label body)
 		(if (null? args)
 		    label
@@ -391,9 +409,10 @@
 			      (cops (reverse! (cons label seq))))
 			   (loop (cdr formals)
 				 (cdr actuals)
-				 (cons (node->cop (node-setq (car formals)
-							     (car actuals))
-						  *stop-kont*)
+				 (cons (node->cop
+					  (node-setq
+					     (car formals) (car actuals))
+					  *stop-kont* inpushexit)
 				       seq)))))))
 	  ;; before branching, we create local variable to hold
 	  ;; new formal cops.
@@ -447,7 +466,7 @@
 				     (cdr actuals)
 				     (cons aux auxs)
 				     (cons (node->cop (node-setq aux act)
-						      *stop-kont*)
+					      *stop-kont* inpushexit)
 					   seq1)
 				     (cons
 				      (instantiate::stop

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Sun Nov 18 08:42:48 2012 (serrano)                */
+;*    Last change :  Mon Dec 10 00:21:44 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -41,7 +41,7 @@
 	    backend_cplib)
    (export  (cgen-function ::global)
 	    (node-setq::setq variable::variable value::node)
-	    (generic node->cop::cop ::node ::procedure)
+	    (generic node->cop::cop ::node ::procedure ::bool)
 	    (make-local-svar/name::local ::symbol ::type)
 	    (bdb-let-var::cop ::cop loc)
 	    *the-global*
@@ -71,7 +71,8 @@
 	     (cop  (node->cop (sfun-body sfun)
 			      (if (eq? (global-type global) *void*)
 				  *void-kont*
-				  *return-kont*))))
+				  *return-kont*)
+			      #f)))
 	 (reset-bdb-loc!)
 	 (newline *c-port*)
 	 (newline *c-port*)
@@ -224,12 +225,12 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-generic (node->cop::cop node::node kont::procedure))
+(define-generic (node->cop::cop node::node kont::procedure inpushexit::bool))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::atom kont)
+(define-method (node->cop node::atom kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::atom kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -241,7 +242,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::kwote kont)
+(define-method (node->cop node::kwote kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::kwote kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -250,7 +251,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::var kont)
+(define-method (node->cop node::var kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::var kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -265,7 +266,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::closure ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::closure kont)
+(define-method (node->cop node::closure kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::closure kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -274,7 +275,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::sequence ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::sequence kont)
+(define-method (node->cop node::sequence kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::sequence kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -285,87 +286,100 @@
 	     (kont (instantiate::nop
 		      (loc loc))))
 	    ((null? (cdr exp))
-	     (let ((cop (node->cop (car exp) kont)))
+	     (let ((cop (node->cop (car exp) kont inpushexit)))
 		(instantiate::stop (value cop))))
 	    (else
-	     (let loop ((exp exp)
-			(new '()))
-		(if (null? (cdr exp))
-		    (let ((cop (node->cop (car exp) kont)))
-		       (instantiate::csequence
-			  (loc  (cop-loc cop))
-			  (cops (reverse! (cons cop new)))))
-		    (begin
-		       (if (not (side-effect? (car exp)))
-			   (loop (cdr exp) new)
-			   (loop (cdr exp)
-				 (cons (node->cop (car exp) *stop-kont*)
-				       new)))))))))))
+	     (let ((inpushexit (or inpushexit (is-push-exit? (car exp)))))
+		(let loop ((exp exp)
+			   (new '()))
+		   (if (null? (cdr exp))
+		       (let ((cop (node->cop (car exp) kont inpushexit)))
+			  (instantiate::csequence
+			     (loc  (cop-loc cop))
+			     (cops (reverse! (cons cop new)))))
+		       (begin
+			  (if (not (side-effect? (car exp)))
+			      (loop (cdr exp) new)
+			      (loop (cdr exp)
+				 (cons (node->cop (car exp) *stop-kont* inpushexit)
+				    new))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    is-push-exit? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (is-push-exit? node::node)
+   (when (isa? node app)
+      (with-access::app node (fun)
+	 (let ((var (var-variable fun)))
+	    (when (global? var)
+	       (eq? (variable-id var) 'push-exit!))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::sync kont)
-   (node->cop (sync->sequence node) kont))
+(define-method (node->cop node::sync kont inpushexit)
+   (node->cop (sync->sequence node) kont inpushexit))
 
 ;*---------------------------------------------------------------------*/
 ;*    extern->cop ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (extern->cop format::bstring args-safe node::extern kont)
+(define (extern->cop format::bstring args-safe node::extern kont inpushexit)
    (trace (cgen 3)
 	  "(extern->cop node::extern kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::extern node (expr* loc)
       (node-args->cop expr*
-		      args-safe
-		      loc
-		      (lambda (new-args)
-			 (kont (instantiate::cpragma
-				  (loc loc)
-				  (format format)
-				  (args new-args)))))))
+	 args-safe
+	 loc
+	 (lambda (new-args)
+	    (kont (instantiate::cpragma
+		     (loc loc)
+		     (format format)
+		     (args new-args))))
+	 inpushexit)))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::pragma ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::pragma kont)
+(define-method (node->cop node::pragma kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::pragma kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::pragma node (format)
-      (extern->cop format #f node kont)))
+      (extern->cop format #f node kont inpushexit)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::private ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::private kont)
+(define-method (node->cop node::private kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::getfield kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::private node (c-format)
-      (extern->cop c-format #t node kont)))
+      (extern->cop c-format #t node kont inpushexit)))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::cast ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::cast kont)
+(define-method (node->cop node::cast kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::cast kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::cast node (arg type loc)
       (node-args->cop (list arg)
-		      #t
-		      loc
-		      (lambda (new-args)
-			 (kont (instantiate::ccast
-				  (type type)
-				  (loc loc)
-				  (arg (car new-args))))))))
+	 #t
+	 loc
+	 (lambda (new-args)
+	    (kont (instantiate::ccast
+		     (type type)
+		     (loc loc)
+		     (arg (car new-args)))))
+	 inpushexit)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::setq ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::setq kont)
+(define-method (node->cop node::setq kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::setq kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -375,24 +389,24 @@
 	     (kont (*void-kont* (instantiate::catom
 				   (loc loc)
 				   (value #unspecified))))
-	     (node->cop value (make-setq-kont var loc kont))))))
+	     (node->cop value (make-setq-kont var loc kont) inpushexit)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::conditional ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::conditional kont)
+(define-method (node->cop node::conditional kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::conditional kont): " (shape node) #\Newline
 	  "  loc: " (node-loc node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::conditional node (test true false loc)
       (let* ((aux   (make-local-svar/name 'test *bool*))
-	     (ctest (node->cop (node-setq aux test) *id-kont*)))
+	     (ctest (node->cop (node-setq aux test) *id-kont* inpushexit)))
 	 (if (and (csetq? ctest) (eq? (varc-variable (csetq-var ctest)) aux))
 	     (instantiate::cif
 		(test (csetq-value ctest))
-		(true (block-kont (node->cop true kont) loc))
-		(false (block-kont (node->cop false kont) loc))
+		(true (block-kont (node->cop true kont inpushexit) loc))
+		(false (block-kont (node->cop false kont inpushexit) loc))
 		(loc   loc))
 	     (instantiate::cblock
 		(loc loc)
@@ -409,42 +423,45 @@
 			 (test (instantiate::varc
 				  (variable aux)
 				  (loc loc)))
-			 (false (block-kont (node->cop false kont) loc))
-			 (true (block-kont (node->cop true kont) loc))
+			 (false (block-kont (node->cop false kont inpushexit)
+				   loc))
+			 (true (block-kont (node->cop true kont inpushexit)
+				  loc))
 			 (loc  loc)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::fail ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::fail kont)
+(define-method (node->cop node::fail kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::fail kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::fail node (proc msg obj loc)
       (node-args->cop (list proc msg obj)
-		      #f
-		      loc
-		      (lambda (new-args)
-			 (*fail-kont*
-			  (instantiate::cfail
-			     (loc loc)
-			     (proc (car new-args))
-			     (msg (cadr new-args))
-			     (obj (caddr new-args))))))))
+	 #f
+	 loc
+	 (lambda (new-args)
+	    (*fail-kont*
+	       (instantiate::cfail
+		  (loc loc)
+		  (proc (car new-args))
+		  (msg (cadr new-args))
+		  (obj (caddr new-args)))))
+	 inpushexit)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::select ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::select kont)
+(define-method (node->cop node::select kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::select kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::select node (clauses test item-type loc)
       (for-each (lambda (clause)
-		   (set-cdr! clause (node->cop (cdr clause) kont)))
+		   (set-cdr! clause (node->cop (cdr clause) kont inpushexit)))
 		clauses)
       (let ((aux  (make-local-svar/name 'aux item-type)))
-	 (let ((cop (node->cop (node-setq aux test) *id-kont*)))
+	 (let ((cop (node->cop (node-setq aux test) *id-kont* inpushexit)))
 	    (if (and (csetq? cop)
 		     (eq? (varc-variable (csetq-var cop)) aux))
 		(instantiate::cswitch
@@ -469,7 +486,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::let-fun ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::let-fun kont)
+(define-method (node->cop node::let-fun kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::let-fun kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -489,7 +506,7 @@
 		  (cops (list (instantiate::local-var
 				 (loc  loc)
 				 (vars all-formals))
-			      (node->cop body kont))))
+			      (node->cop body kont inpushexit))))
 	       loc)
 	      #f)
 	     (let ((local (car locals)))
@@ -506,7 +523,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::let-var ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::let-var kont)
+(define-method (node->cop node::let-var kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::let-var kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -516,9 +533,10 @@
 		      (vars (map car bindings))))
 	    (sets  (map (lambda (x)
 			   (set-variable-name! (car x))
-			   (node->cop (node-setq (car x) (cdr x)) *stop-kont*))
+			   (node->cop (node-setq (car x) (cdr x))
+			      *stop-kont* inpushexit))
 			bindings))
-	    (body  (let ((cop (node->cop body kont)))
+	    (body  (let ((cop (node->cop body kont inpushexit)))
 		      (instantiate::stop
 			 (value cop)))))
 	 (block-kont
@@ -542,7 +560,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::set-ex-it ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::set-ex-it kont)
+(define-method (node->cop node::set-ex-it kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::set-ex-it kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -569,7 +587,7 @@
 						(type *_*)
 						(format "BGL_EXIT_VALUE()")
 						(expr* '()))
-					     kont))
+					     kont inpushexit))
 		      (body (instantiate::csequence
 			       (loc loc)
 			       (cops
@@ -587,22 +605,22 @@
 					 (type-name (local-type exit)))
 					")jmpbuf"))
 				      (expr* '())))
-				  *id-kont*)
-				 (node->cop body kont))))))))))))
+				  *id-kont* inpushexit)
+				 (node->cop body kont inpushexit))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::jump-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::jump-ex-it kont)
+(define-method (node->cop node::jump-ex-it kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::jump-ex-it kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::jump-ex-it node (exit value loc)
       (let* ((vaux  (make-local-svar/name 'aux *obj*))
-	     (vcop  (node->cop (node-setq vaux value) *id-kont*))
+	     (vcop  (node->cop (node-setq vaux value) *id-kont* inpushexit))
 	     (exit  exit)
 	     (eaux  (make-local-svar/name 'exit *procedure*))
-	     (ecop  (node->cop (node-setq eaux exit) *id-kont*)))
+	     (ecop  (node->cop (node-setq eaux exit) *id-kont* inpushexit)))
 	 (cond
 	    ((and (csetq? vcop) (eq? (varc-variable (csetq-var vcop)) vaux)
 		  (csetq? ecop) (eq? (varc-variable (csetq-var ecop)) eaux))
@@ -671,7 +689,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::make-box ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::make-box kont)
+(define-method (node->cop node::make-box kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::make-box kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
@@ -680,9 +698,10 @@
 	  (node->cop value
 		     (lambda (v) (kont (instantiate::cmake-box
 					  (loc loc)
-					  (value v)))))
+					  (value v))))
+		      inpushexit)
 	  (let* ((aux  (make-local-svar/name 'cellval *obj*))
-		 (cval (node->cop (node-setq aux value) *id-kont*)))
+		 (cval (node->cop (node-setq aux value) *id-kont* inpushexit)))
 	     (instantiate::cblock
 		(loc loc)
 		(body (instantiate::csequence
@@ -702,31 +721,34 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::box-ref ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::box-ref kont)
+(define-method (node->cop node::box-ref kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::box-ref kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::box-ref node (var loc)
-      (kont (node->cop var (lambda (v) (instantiate::cbox-ref
-					  (loc loc)
-					  (var v)))))))
+      (kont (node->cop var
+	       (lambda (v) (instantiate::cbox-ref
+			      (loc loc)
+			      (var v)))
+	        inpushexit))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::box-set! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::box-set! kont)
+(define-method (node->cop node::box-set! kont inpushexit)
    (trace (cgen 3)
 	  "(node->cop node::box-set! kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::box-set! node (var value loc)
       (let ((v (var-variable var)))
 	 (node->cop value
-		    (lambda (vl) (kont (instantiate::cbox-set!
+	    (lambda (vl) (kont (instantiate::cbox-set!
+				  (loc loc)
+				  (var (instantiate::varc
 					  (loc loc)
-					  (var (instantiate::varc
-						  (loc loc)
-						  (variable v)))
-					  (value vl))))))))
+					  (variable v)))
+				  (value vl))))
+	     inpushexit))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setq ...                                                    */
@@ -762,7 +784,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node-args->cop ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (node-args->cop args args-safe loc kont)
+(define (node-args->cop args args-safe loc kont inpushexit)
    (let loop ((old-actuals  args)
 	      (new-actuals  '())
 	      (aux          (make-local-svar/name 'aux *obj*))
@@ -780,7 +802,8 @@
 				    (loc  loc))
 				 (instantiate::csequence (cops exps))
 				 (kont (reverse! new-actuals))))))))
-	  (let ((cop (node->cop (node-setq aux (car old-actuals)) *id-kont*)))
+	  (let ((cop (node->cop (node-setq aux (car old-actuals))
+			*id-kont* inpushexit)))
 	     (if (and (csetq? cop)
 		      (eq? (varc-variable (csetq-var cop)) aux)
 		      (or args-safe
