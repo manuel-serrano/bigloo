@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Mon Dec 10 00:23:26 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 09:26:40 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
@@ -303,12 +303,10 @@
 ;*---------------------------------------------------------------------*/
 (define (node-cfun-non-tail-app->cop var::variable node kont inpushexit)
    (if (and inpushexit (is-get-exitd-top? var))
-       (begin
-	  (tprint "INPUSHEXIT")
-	  (kont (instantiate::cpragma
-		   (loc (node-loc node))
-		   (format "((obj_t)(&exitd))")
-		   (args '()))))
+       (kont (instantiate::cpragma
+		(loc (node-loc node))
+		(format "((obj_t)(&exitd))")
+		(args '())))
        (let ((args-type (cfun-args-type (variable-value var)))
 	     (useless? (lambda (cop aux)
 			  (and (csetq? cop)

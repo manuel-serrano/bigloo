@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Sat Dec  8 14:46:55 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 09:49:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -213,7 +213,7 @@
 	 (args (map do-alphatize (funcall-args node))))
       (if (closure? fun)
 	  (sexp->node `(,(duplicate::var fun) ,@(cdr args))
-		      '() (node-loc node) 'app)
+	     '() (node-loc node) 'app)
 	  (duplicate::funcall node
 	     (loc (get-inline-location node))
 	     (fun fun)

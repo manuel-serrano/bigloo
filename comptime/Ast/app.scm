@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Sat Dec  8 13:48:10 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 09:34:44 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -97,6 +97,46 @@
 	    (else
 	     (and (or (atom? (car exp)) (var? (car exp)))
 		  (loop (cdr exp)))))))
+
+   (define (wrong-number-of-arguments exp loc fun args)
+      (let* ((var     (var-variable fun))
+	     (fun     (variable-value var))
+	     (nb-args (length args))
+	     (arity   (cond
+			 ((fun? fun)
+			  (fun-arity fun))
+			 (else
+			  -1)))
+	     (expect  (cond
+			 ((>=fx arity 0)
+			  (cond
+			     ((sfun-optional? fun)
+			      (string-append "["
+				 (number->string arity)
+				 ".."
+				 (number->string
+				    (+ arity
+				       (length (sfun-optionals fun))))
+				 "] args expected, "))
+			     ((sfun-key? fun)
+			      (string-append "["
+				 (number->string arity)
+				 ".."
+				 (number->string
+				    (+ arity
+				       (* 2 (length (sfun-keys fun)))))
+				 "] args expected, "))
+			     (else
+			      (string-append (number->string arity)
+				 " arg(s) expected, "))))
+			 (else
+			  (string-append (number->string (negfx (+fx arity 1)))
+			     " or more arg(s) expected, "))))
+	     (provide (string-append (number->string (length args)) " provided")))
+	 (error-sexp->node
+	    (string-append "Illegal application: " expect provide)
+	    (shape exp)
+	    loc)))
    
    (let* ((loc (find-location/loc exp loc))
 	  (err-nb *nb-error-on-pass*)
@@ -205,49 +245,6 @@
 		  0
 		  1))))))
 
-;*---------------------------------------------------------------------*/
-;*    wrong-number-of-arguments ...                                    */
-;*---------------------------------------------------------------------*/
-(define (wrong-number-of-arguments exp loc fun args)
-   (let* ((var     (var-variable fun))
-	  (fun     (variable-value var))
-	  (nb-args (length args))
-	  (arity   (cond
-		      ((fun? fun)
-		       (fun-arity fun))
-		      (else
-		       -1)))
-	  (expect  (cond
-		      ((>=fx arity 0)
-		       (cond
-			  ((sfun-optional? fun)
-			   (string-append "["
-					  (number->string arity)
-					  ".."
-					  (number->string
-					   (+ arity
-					      (length (sfun-optionals fun))))
-					  "] args expected, "))
-			  ((sfun-key? fun)
-			   (string-append "["
-					  (number->string arity)
-					  ".."
-					  (number->string
-					   (+ arity
-					      (* 2 (length (sfun-keys fun)))))
-					  "] args expected, "))
-			  (else
-			   (string-append (number->string arity)
-					  " arg(s) expected, "))))
-		      (else
-		       (string-append (number->string (negfx (+fx arity 1)))
-				      " or more arg(s) expected, "))))
-	  (provide (string-append (number->string (length args)) " provided")))
-      (error-sexp->node
-       (string-append "Illegal application: " expect provide)
-       (shape exp)
-       loc)))
-				   
 ;*---------------------------------------------------------------------*/
 ;*    make-app-node ...                                                */
 ;*---------------------------------------------------------------------*/

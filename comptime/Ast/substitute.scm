@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Nov 23 10:21:55 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 09:33:48 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -83,9 +83,7 @@
 	    ((atom? alpha)
 	     alpha)
 	    (else
-	     (internal-error "duplicate"
-			     "Illegal substitution"
-			     (shape node)))))))
+	     (internal-error "duplicate" "Illegal substitution" (shape node)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-substitute! ::kwote ...                                       */
@@ -148,15 +146,11 @@
 		      (fun? (variable-value (var-variable nfun)))))
 	     (if (correct-arity-app? (var-variable nfun)
 				     (cdr nargs))
-		 (make-app-node '()
-				loc
-				'funcall
-				nfun
-				(cdr nargs))
-		 (user-error/location loc
-				      "Illegal application"
-				      "wrong number of argument(s)"
-				      (shape node)))
+		 (make-app-node '() loc 'funcall nfun (cdr nargs))
+		 (user-error/location
+		    loc
+		    "Illegal application" "wrong number of argument(s)"
+		    (shape node)))
 	     (begin
 		(set! fun nfun)
 		(set! args nargs)

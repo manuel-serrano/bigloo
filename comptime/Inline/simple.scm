@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Sat Dec  8 14:46:04 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 09:38:29 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
@@ -59,10 +59,10 @@
 				 ;; variable
 				 (closure-variable a)
 				 (clone-local
-				  f
-				  (duplicate::svar (local-value f)))))
-			  formals
-			  actuals))
+				    f
+				    (duplicate::svar (local-value f)))))
+			formals
+			actuals))
 	  (bindings (let loop ((reductors reductors)
 			       (actuals   actuals)
 			       (res       '()))
@@ -71,16 +71,16 @@
 			   (reverse! res))
 			  ((and (closure? (car actuals))
 				(eq? (car reductors)
-				     (closure-variable (car actuals))))
+				   (closure-variable (car actuals))))
 			   (loop (cdr reductors)
-				 (cdr actuals)
-				 res))
+			      (cdr actuals)
+			      res))
 			  (else
 			   (loop (cdr reductors)
-				 (cdr actuals)
-				 (cons (cons (car reductors)
-					     (car actuals))
-				       res))))))
+			      (cdr actuals)
+			      (cons (cons (car reductors)
+				       (car actuals))
+				 res))))))
 	  (body (if (isfun? sfun)
 		    (isfun-original-body sfun)
 		    (sfun-body sfun)))
@@ -91,16 +91,16 @@
       ;; some verbing small ...
       (if (not (memq (sfun-class sfun) '(sifun sgfun)))
 	  (verbose 3 "         "
-		   (shape callee) " --> " (current-function)
-		   " (" msg #\)
-		   #\Newline))
+	     (shape callee) " --> " (current-function)
+	     " (" msg #\)
+	     #\Newline))
       ;; we compute the new body
       (trace (inline 3) "J'alphatize: " (shape formals) " " (shape reductors)
-	     #\Newline
-	     "        sur le body: " (shape body) #\Newline)
+	 #\Newline
+	 "        sur le body: " (shape body) #\Newline)
       (trace (inline+ 3) "J'alphatize: " (shape formals) " " (shape reductors)
-	     #\Newline
-	     "        sur le body: " (shape body) #\Newline)
+	 #\Newline
+	 "        sur le body: " (shape body) #\Newline)
       (let* ((iloc (and (global? callee)
 			(not (eq? (global-module callee) *module*))
 			loc))
@@ -108,20 +108,19 @@
 	 ;; we spread side effect for incoming inlines (such as
 	 ;; null? which is translated into $null?).
 	 (spread-side-effect! alpha-body)
-	 (let* ((inline-node (inline-node
-			      alpha-body new-kfactor (cons callee stack)))
-		(inline-body (instantiate::let-var
-				(loc loc)
-				(type (strict-node-type
-				       (node-type inline-node) type))
-				(side-effect (side-effect? alpha-body))
-				(bindings bindings)
-				(body inline-node))))
+	 (let* ((inode (inline-node alpha-body new-kfactor (cons callee stack)))
+		(ibody (instantiate::let-var
+			  (loc loc)
+			  (type (strict-node-type
+				   (node-type inode) type))
+			  (side-effect (side-effect? alpha-body))
+			  (bindings bindings)
+			  (body inode))))
 	    (for-each (lambda (reductor formal)
 			 (when (local? reductor)
 			    (local-user?-set! reductor (local-user? formal))))
-		      reductors
-		      formals)
+	       reductors
+	       formals)
 	    ;; if the result type of the inlined function is not *_* or
 	    ;; *obj* we use a local variable in order to ensure that the
 	    ;; type checking of the result will be implemented even after
@@ -129,13 +128,13 @@
  	    (if (or (eq? type *_*)
 		    (eq? type *obj*)
 		    (eq? type (node-type alpha-body)))
-		inline-body
+		ibody
 		(let ((var (make-local-svar (gensym 'res) type)))
 		   (instantiate::let-var
 		      (loc loc)
 		      (type type)
-		      (side-effect (side-effect? inline-body))
-		      (bindings (list (cons var inline-body)))
+		      (side-effect (side-effect? ibody))
+		      (bindings (list (cons var ibody)))
 		      (body (instantiate::var
 			       (loc loc)
 			       (type type)

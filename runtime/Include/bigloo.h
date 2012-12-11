@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Dec  9 23:56:22 2012 (serrano)                */
+/*    Last change :  Mon Dec 10 16:40:52 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2908,9 +2908,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
     BGL_MUTEX_LOCKED( o ) = 1, 0 : 1)
    
 #define BGL_MUTEX_LOCK_PRELOCK( o, l ) \
-   (BGL_MUTEX( o ).syslockprelock( o, l ))
-
-//#define BGL_MUTEX_MARK( o ) (BGL_MUTEX( o ).sysmark( o ))
+   (BGL_MUTEX( o ).syslockprelock( BGL_MUTEX_SYSMUTEX( o ), l ))
 
 #define BGL_MUTEX_STATE( o ) \
    (BGL_MUTEX( o ).sysstate( BGL_MUTEX_SYSMUTEX( o ) ))
