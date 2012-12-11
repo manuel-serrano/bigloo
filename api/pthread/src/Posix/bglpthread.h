@@ -3,13 +3,16 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Mon Dec 10 03:37:28 2012 (serrano)                */
+/*    Last change :  Tue Dec 11 16:17:14 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
 /*=====================================================================*/
 #include <pthread.h>
 #include <bigloo.h>
+
+#if( !defined( BGL_PTHREAD_H ) )
+#define BGL_PTHREAD_H 1
 
 /*---------------------------------------------------------------------*/
 /*    bglpthread_t                                                     */
@@ -89,12 +92,9 @@ typedef struct bglpcondvar {
 /*    Prototypes                                                       */
 /*---------------------------------------------------------------------*/
 extern obj_t bglpth_make_mutex( obj_t );
-extern bool_t bglpth_mutex_lock( obj_t );
-extern bool_t bglpth_mutex_unlock( obj_t );
-extern void bglpth_mutexes_unlock( bglpthread_t );
-extern void bglpth_mutex_mark_locked( obj_t, bglpmutex_t, bglpthread_t );
-extern void bglpth_mutex_mark_unlocked( obj_t, bglpmutex_t );
 
 extern obj_t bglpth_make_condvar( obj_t );
 
 extern bglpthread_t bglpth_current_pthread();
+
+#endif

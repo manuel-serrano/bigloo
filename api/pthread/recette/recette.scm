@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Sun Dec  9 16:51:30 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 19:01:28 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
@@ -393,7 +393,7 @@
 ;*---------------------------------------------------------------------*/
 (define-test mutex-state
    (mutex-state (make-mutex))
-   :result 'not-abandoned)
+   :result 'unlocked)
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-lock                                                       */

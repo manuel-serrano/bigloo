@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Tue Dec 11 09:38:29 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 18:03:20 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
@@ -104,7 +104,7 @@
       (let* ((iloc (and (global? callee)
 			(not (eq? (global-module callee) *module*))
 			loc))
-	     (alpha-body (alphatize formals reductors iloc body)))
+	     (alpha-body (alphatize formals reductors loc body)))
 	 ;; we spread side effect for incoming inlines (such as
 	 ;; null? which is translated into $null?).
 	 (spread-side-effect! alpha-body)

@@ -1,0 +1,30 @@
+;*=====================================================================*/
+;*    .../prgm/project/bigloo/api/srfi18/src/Misc/srfi18.init.in       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Sun Apr 20 18:23:31 2008 (serrano)                */
+;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The Srfi18 init file.                                            */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'srfi18
+		  :basename "bigloosrfi18"
+		  :srfi '(srfi-18 srfi18)
+		  :module-init '__srfi18_thread
+		  :module-eval '__srfi18_makelib
+		  :class-init "bigloo.srfi18.jthread"
+		  :class-eval "bigloo.jthread.make_lib")
+
+;*---------------------------------------------------------------------*/
+;*    Register the srfi                                                */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; setup
+    (set! *bigloo-libraries-c-setup*
+	  (cons "srfi18_setup" *bigloo-libraries-c-setup*))))

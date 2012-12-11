@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Fri Nov 23 10:20:05 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 17:38:33 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -138,8 +138,8 @@
    (node->sexp-hook node)
    (let ((top (shape-typed-node 'apply (shape (node-type node)))))
       (location-shape (node-loc node)
-		      `(,top ,(node->sexp (app-ly-fun node))
-			     ,(node->sexp (app-ly-arg node))))))
+	 `(,top ,(node->sexp (app-ly-fun node))
+	     ,(node->sexp (app-ly-arg node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::funcall ...                                         */
@@ -152,9 +152,9 @@
 		 (else 'funcall)))
 	  (top (shape-typed-node op (node-type node))))
       (location-shape (node-loc node)
-		      `(,top
-			,(node->sexp (funcall-fun node))
-			,@(map node->sexp (funcall-args node))))))
+	 `(,top
+	     ,(node->sexp (funcall-fun node))
+	     ,@(map node->sexp (funcall-args node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::pragma ...                                          */
@@ -175,9 +175,10 @@
 (define-method (node->sexp node::getfield)
    (node->sexp-hook node)
    (with-access::getfield node (fname ftype otype expr*)
-      `(,(shape-typed-node 'getfield (get-type node))
-	(,fname ,(type-id ftype))
-	,(type-id otype) ,(node->sexp (car expr*)))))
+      (location-shape (node-loc node)
+	 `(,(shape-typed-node 'getfield (get-type node))
+	   (,fname ,(type-id ftype))
+	   ,(type-id otype) ,(node->sexp (car expr*))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::setfield ...                                        */
@@ -185,8 +186,9 @@
 (define-method (node->sexp node::setfield)
    (node->sexp-hook node)
    (with-access::setfield node (fname ftype otype expr*)
-      `(setfield (,fname ,(type-id ftype))
-		 ,(type-id otype) ,@(map node->sexp expr*))))
+      (location-shape (node-loc node)
+	 `(setfield (,fname ,(type-id ftype))
+	     ,(type-id otype) ,@(map node->sexp expr*)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::new ...                                             */
@@ -194,7 +196,9 @@
 (define-method (node->sexp node::new)
    (node->sexp-hook node)
    (with-access::new node (expr* type)
-      `(,(shape-typed-node 'new type) (,(type-id type)) ,@(map node->sexp expr*))))
+      (location-shape (node-loc node)
+	 `(,(shape-typed-node 'new type)
+	   (,(type-id type)) ,@(map node->sexp expr*)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vlength ...                                         */
@@ -202,7 +206,8 @@
 (define-method (node->sexp node::vlength)
    (node->sexp-hook node)
    (with-access::vlength node (type expr*)
-      `(,(shape-typed-node 'vlength type) ,(node->sexp (car expr*)))))
+      (location-shape (node-loc node)
+	 `(,(shape-typed-node 'vlength type) ,(node->sexp (car expr*))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vref ...                                            */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Dec 11 09:49:00 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 18:03:02 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -41,8 +41,7 @@
 		(variable-fast-alpha-set! what by))
 	     what*
 	     by*)
-   (set! *location* loc)
-   (let ((res (do-alphatize node)))
+   (let ((res (do-alphatize node loc)))
       ;; we remove alpha-fast slots
       (for-each (lambda (what)
 		   (variable-fast-alpha-set! what #unspecified))
@@ -62,57 +61,50 @@
    (unwind-protect
       (alphatize what* by* loc node)
       (set! *no-alphatize-closure* #f)))
-   
-;*---------------------------------------------------------------------*/
-;*    *location* ...                                                   */
-;*---------------------------------------------------------------------*/
-(define *location* #f)
 
 ;*---------------------------------------------------------------------*/
-;*    get-inline-location ...                                          */
-;*    -------------------------------------------------------------    */
-;*    This function controls how location are propagated inside inline */
-;*    body. The default behaviour is to propagate the location of the  */
-;*    caller. To change this, simply inverse the order of the tests.   */
+;*    get-location ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (get-inline-location node)
-   (cond
-      ;; MS: 8dec2012, I think is get-inline-location is a bad idea
-      ;; ((location? *location*) *location*)
-      ((location? (node-loc node)) (node-loc node))
-      (else #f)))
+(define (get-location node loc)
+   (or (node-loc node) loc))
+
+;*---------------------------------------------------------------------*/
+;*    do-alphatize* ...                                                */
+;*---------------------------------------------------------------------*/
+(define (do-alphatize* nodes::pair-nil loc)
+   (map (lambda (node) (do-alphatize node loc)) nodes))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-generic (do-alphatize::node node::node))
+(define-generic (do-alphatize::node node::node loc))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::atom ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::atom)
+(define-method (do-alphatize node::atom loc)
    (duplicate::atom node
-      (loc (get-inline-location node))))
+      (loc (get-location node loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::var ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::var)
+(define-method (do-alphatize node::var loc)
    (let* ((var   (var-variable node))
 	  (alpha (variable-fast-alpha var)))
       (cond
 	 ((eq? alpha #unspecified)
 	  (use-variable! var (node-loc node) 'value)
-	  (duplicate::var node (loc (get-inline-location node))))
+	  (duplicate::var node (loc (get-location node loc))))
 	 ((variable? alpha)
 	  (use-variable! alpha (node-loc node) 'value)
 	  (if (fun? (variable-value alpha))
 	      (instantiate::closure
-		 (loc (get-inline-location node))
+		 (loc (get-location node loc))
 		 (type (strict-node-type *procedure* (variable-type alpha)))
 		 (variable alpha))
 	      (duplicate::var node
-		 (loc (get-inline-location node))
+		 (loc (get-location node loc))
 		 (variable alpha))))
 	 ((atom? alpha)
 	  (duplicate::atom alpha))
@@ -126,7 +118,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::closure ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::closure)
+(define-method (do-alphatize node::closure loc)
    (let ((var (var-variable node)))
       (if (eq? var *no-alphatize-closure*)
 	  node
@@ -134,11 +126,11 @@
 	     (cond
 		((eq? alpha #unspecified)
 		 (use-variable! var (node-loc node) 'value)
-		 (duplicate::closure node (loc (get-inline-location node))))
+		 (duplicate::closure node (loc (get-location node loc))))
 		((variable? alpha)
 		 (use-variable! alpha (node-loc node) 'value)
 		 (duplicate::closure node
-		    (loc (get-inline-location node))
+		    (loc (get-location node loc))
 		    (variable alpha)))
 		(else
 		 (internal-error "alphatize"
@@ -148,57 +140,57 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::kwote ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::kwote)
-   (duplicate::kwote node (loc (get-inline-location node))))
+(define-method (do-alphatize node::kwote loc)
+   (duplicate::kwote node (loc (get-location node loc))))
        
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::sequence ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::sequence)
+(define-method (do-alphatize node::sequence loc)
    (duplicate::sequence node
-      (loc (get-inline-location node))
-      (nodes (map do-alphatize (sequence-nodes node)))))
+      (loc (get-location node loc))
+      (nodes (do-alphatize* (sequence-nodes node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::sync ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::sync)
+(define-method (do-alphatize node::sync loc)
    (duplicate::sync node
-      (loc (get-inline-location node))
-      (mutex (do-alphatize (sync-mutex node)))
-      (prelock (do-alphatize (sync-prelock node)))
-      (nodes (map do-alphatize (sync-nodes node)))))
+      (loc (get-location node loc))
+      (mutex (do-alphatize (sync-mutex node) loc))
+      (prelock (do-alphatize (sync-prelock node) loc))
+      (nodes (do-alphatize* (sync-nodes node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::app ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::app)
+(define-method (do-alphatize node::app loc)
    ;; we have to enforce here a variable and not a closure (that
    ;; why the duplicate::var of the fun field).
    (duplicate::app node
-      (loc (get-inline-location node))
-      (fun (let ((var (do-alphatize (app-fun node))))
+      (loc (get-location node loc))
+      (fun (let ((var (do-alphatize (app-fun node) loc)))
 	      (if (closure? var)
 		  (duplicate::var var)
 		  var)))
-      (args (map do-alphatize (app-args node)))))
+      (args (do-alphatize* (app-args node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::app-ly ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::app-ly)
-   (let ((fun (do-alphatize (app-ly-fun node)))
-	 (arg (do-alphatize (app-ly-arg node))))
+(define-method (do-alphatize node::app-ly loc)
+   (let ((fun (do-alphatize (app-ly-fun node) loc))
+	 (arg (do-alphatize (app-ly-arg node) loc)))
       (if (and (closure? fun)
 	       (not (global-optional? (var-variable fun)))
 	       (not (global-key? (var-variable fun))))
 	  (known-app-ly->node '()
-			      (get-inline-location node)
+			      (get-location node loc)
 			      (duplicate::var fun)
 			      arg
 			      'value)
 	  (duplicate::app-ly node
-	     (loc (get-inline-location node))
+	     (loc (get-location node loc))
 	     (fun fun)
 	     (arg arg)))))
 
@@ -208,109 +200,109 @@
 ;*    When transforming a funcall into an app node we have to remove   */
 ;*    the extra argument which hold the closure.                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::funcall)
-   (let ((fun  (do-alphatize (funcall-fun node)))
-	 (args (map do-alphatize (funcall-args node))))
+(define-method (do-alphatize node::funcall loc)
+   (let ((fun  (do-alphatize (funcall-fun node) loc))
+	 (args (do-alphatize* (funcall-args node) loc)))
       (if (closure? fun)
 	  (sexp->node `(,(duplicate::var fun) ,@(cdr args))
 	     '() (node-loc node) 'app)
 	  (duplicate::funcall node
-	     (loc (get-inline-location node))
+	     (loc (get-location node loc))
 	     (fun fun)
 	     (args args)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::pragma ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::pragma)
+(define-method (do-alphatize node::pragma loc)
    (duplicate::pragma node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (pragma-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (pragma-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::cast-null ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::cast-null)
+(define-method (do-alphatize node::cast-null loc)
    (duplicate::cast-null node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (cast-null-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (cast-null-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::getfield ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::getfield)
+(define-method (do-alphatize node::getfield loc)
    (duplicate::getfield node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (getfield-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (getfield-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::setfield ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::setfield)
+(define-method (do-alphatize node::setfield loc)
    (duplicate::setfield node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (setfield-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (setfield-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::new ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::new)
+(define-method (do-alphatize node::new loc)
    (duplicate::new node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (new-expr* node))) ))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (new-expr* node) loc)) ))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::vlength ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::vlength)
+(define-method (do-alphatize node::vlength loc)
    (duplicate::vlength node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (vlength-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (vlength-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::vref ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::vref)
+(define-method (do-alphatize node::vref loc)
    (duplicate::vref node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (vref-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (vref-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::vset! ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::vset!)
+(define-method (do-alphatize node::vset! loc)
    (duplicate::vset! node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (vset!-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (vset!-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::valloc ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::valloc)
+(define-method (do-alphatize node::valloc loc)
    (duplicate::valloc node
-      (loc (get-inline-location node))
-      (expr* (map do-alphatize (valloc-expr* node)))))
+      (loc (get-location node loc))
+      (expr* (do-alphatize* (valloc-expr* node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::instanceof ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::instanceof)
+(define-method (do-alphatize node::instanceof loc)
    (duplicate::instanceof node
-      (expr* (list (do-alphatize (car (instanceof-expr* node)))))
-      (loc (get-inline-location node))))
+      (expr* (list (do-alphatize (car (instanceof-expr* node)) loc)))
+      (loc (get-location node loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::cast ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::cast)
+(define-method (do-alphatize node::cast loc)
    (duplicate::cast node
-      (loc (get-inline-location node))
-      (arg (do-alphatize (cast-arg node)))))
+      (loc (get-location node loc))
+      (arg (do-alphatize (cast-arg node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::setq ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::setq)
+(define-method (do-alphatize node::setq loc)
    (let* ((v     (setq-var node))
 	  (var   (var-variable v))
 	  (alpha (variable-fast-alpha var)))
@@ -318,17 +310,17 @@
 	 ((eq? alpha #unspecified)
 	  (use-variable! var (node-loc node) 'set!)
 	  (duplicate::setq node
-	     (loc (get-inline-location node))
-	     (var (duplicate::var v (loc (get-inline-location node))))
-	     (value (do-alphatize (setq-value node)))))
+	     (loc (get-location node loc))
+	     (var (duplicate::var v (loc (get-location node loc))))
+	     (value (do-alphatize (setq-value node) loc))))
 	 ((variable? alpha)
 	  (use-variable! alpha (node-loc node) 'set!)
 	  (duplicate::setq node
-	     (loc (get-inline-location node))
+	     (loc (get-location node loc))
 	     (var (duplicate::var v
-		     (loc (get-inline-location node))
+		     (loc (get-location node loc))
 		     (variable alpha)))
-	     (value (do-alphatize (setq-value node)))))
+	     (value (do-alphatize (setq-value node) loc))))
 	 (else
 	  (internal-error "alphatize"
 			  "Illegal alphatization (setq)"
@@ -337,64 +329,64 @@
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::conditional ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::conditional)
+(define-method (do-alphatize node::conditional loc)
    (duplicate::conditional node
-      (loc (get-inline-location node))
-      (test (do-alphatize (conditional-test node)))
-      (true (do-alphatize (conditional-true node)))
-      (false (do-alphatize (conditional-false node)))))
+      (loc (get-location node loc))
+      (test (do-alphatize (conditional-test node) loc))
+      (true (do-alphatize (conditional-true node) loc))
+      (false (do-alphatize (conditional-false node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::fail ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::fail)
+(define-method (do-alphatize node::fail loc)
    (duplicate::fail node
-      (loc (get-inline-location node))
-      (proc (do-alphatize (fail-proc node)))
-      (msg  (do-alphatize (fail-msg node)))
-      (obj  (do-alphatize (fail-obj node)))))
+      (loc (get-location node loc))
+      (proc (do-alphatize (fail-proc node) loc))
+      (msg  (do-alphatize (fail-msg node) loc))
+      (obj  (do-alphatize (fail-obj node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::select ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::select)
+(define-method (do-alphatize node::select loc)
    (duplicate::select node
-      (loc (get-inline-location node))
-      (test (do-alphatize (select-test node)))
+      (loc (get-location node loc))
+      (test (do-alphatize (select-test node) loc))
       (clauses (map (lambda (clause)
 		       (cons (car clause)
-			     (do-alphatize (cdr clause))))
+			     (do-alphatize (cdr clause) loc)))
 		    (select-clauses node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::make-box ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::make-box)
+(define-method (do-alphatize node::make-box loc)
    (duplicate::make-box node
-      (loc (get-inline-location node))
-      (value (do-alphatize (make-box-value node)))))
+      (loc (get-location node loc))
+      (value (do-alphatize (make-box-value node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::box-ref ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::box-ref)
+(define-method (do-alphatize node::box-ref loc)
    (duplicate::box-ref node
-      (loc (get-inline-location node))
-      (var (do-alphatize (box-ref-var node)))))
+      (loc (get-location node loc))
+      (var (do-alphatize (box-ref-var node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::box-set! ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::box-set!)
+(define-method (do-alphatize node::box-set! loc)
    (duplicate::box-set! node
-      (loc (get-inline-location node))
-      (var (do-alphatize (box-set!-var node)))
-      (value (do-alphatize (box-set!-value node)))))
+      (loc (get-location node loc))
+      (var (do-alphatize (box-set!-var node) loc))
+      (value (do-alphatize (box-set!-value node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::let-fun ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::let-fun)
+(define-method (do-alphatize node::let-fun loc)
    (let* ((old-locals (let-fun-locals node))
 	  (new-locals (map (lambda (l)
 			      (make-local-sfun (local-id l)
@@ -411,8 +403,7 @@
 			  (old-body (sfun-body old-sfun))
 			  (new-body (alphatize (append old-locals old-args)
 					       (append new-locals new-args)
-					       *location*
-;* 					       (get-inline-location node) */
+					       (get-location node loc)
 					       old-body))
 			  (new-sfun (duplicate::sfun old-sfun
 				       (args new-args)
@@ -422,18 +413,17 @@
 		old-locals
 		new-locals)
       (duplicate::let-fun node
-	 (loc (get-inline-location node))
+	 (loc (get-location node loc))
 	 (locals new-locals)
 	 (body (alphatize old-locals
 			  new-locals
-			  *location* 
-;* 			  (get-inline-location node)                   */
+			  (get-location node loc)
 			  (let-fun-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::let-var ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::let-var)
+(define-method (do-alphatize node::let-var loc)
    (let* ((old-locals   (map car (let-var-bindings node)))
 	  (new-locals   (map (lambda (l)
 				;; we can't use duplicate for locals because
@@ -447,22 +437,21 @@
 				   var))
 			     old-locals))
 	  (new-bindings (map (lambda (binding new-local)
-				(cons new-local (do-alphatize (cdr binding))))
+				(cons new-local (do-alphatize (cdr binding) loc)))
 			     (let-var-bindings node)
 			     new-locals)))
       (duplicate::let-var node
-	 (loc (get-inline-location node))
+	 (loc (get-location node loc))
 	 (bindings new-bindings)
 	 (body (alphatize old-locals
 			  new-locals
-			  *location* 
-;* 			  (get-inline-location node)                   */
+			  (get-location node loc)
 			  (let-var-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::set-ex-it ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::set-ex-it)
+(define-method (do-alphatize node::set-ex-it loc)
    (let* ((old-var    (var-variable (set-ex-it-var node)))
 	  (old-exit   (local-value old-var))
 	  (old-hdlg   (sexit-handler old-exit))
@@ -475,22 +464,21 @@
 	  (old-body   (set-ex-it-body node)))
       (local-user?-set! new-var (local-user? old-var))
       (duplicate::set-ex-it node
-	 (loc (get-inline-location node))
+	 (loc (get-location node loc))
 	 (var (duplicate::var (set-ex-it-var node)
-		 (loc (get-inline-location node))
+		 (loc (get-location node loc))
 		 (variable new-var)))
 	 (body (alphatize (list old-var)
 			  (list new-var)
-			  *location*
-;* 			  (get-inline-location node)                   */
+			  (get-location node loc)
 			  old-body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::jump-ex-it ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::jump-ex-it)
+(define-method (do-alphatize node::jump-ex-it loc)
    (duplicate::jump-ex-it node
-      (loc (get-inline-location node))
-      (exit (do-alphatize (jump-ex-it-exit node)))
-      (value (do-alphatize (jump-ex-it-value node)))))
+      (loc (get-location node loc))
+      (exit (do-alphatize (jump-ex-it-exit node) loc))
+      (value (do-alphatize (jump-ex-it-value node) loc))))
 

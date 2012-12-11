@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Dec  9 14:56:38 2012 (serrano)                */
+;*    Last change :  Tue Dec 11 15:42:42 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -60,8 +60,6 @@
 		   "BGL_MUTEX_NAME")
 	    (macro $mutex-lock::bool (::mutex)
 		   "BGL_MUTEX_LOCK")
-;* 	    (macro $mutex-mark::void (::mutex)                         */
-;* 		   "BGL_MUTEX_MARK")                                   */
 	    (macro $mutex-lock-prelock::bool (::mutex ::pair-nil)
 		   "BGL_MUTEX_LOCK_PRELOCK")
 	    (macro $mutex-timed-lock::bool (::mutex ::long)
@@ -113,8 +111,6 @@
 		       "BGL_MUTEX_NAME")
 	       (method static $mutex-lock::bool (::mutex)
 		       "bgl_mutex_lock")
-;* 	       (method static $mutex-mark::void (::mutex)              */
-;* 		       "bgl_mutex_mark")                               */
 	       (method static $mutex-lock-prelock::bool (::mutex ::pair-nil)
 		       "bgl_mutex_lock_prelock")
 	       (method static $mutex-timed-lock::bool (::mutex ::long)

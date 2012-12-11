@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Dec 10 11:24:49 2012 (serrano)                */
+/*    Last change :  Tue Dec 11 18:35:55 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -149,10 +149,10 @@ bglpth_thread_init( bglpthread_t self, char *stack_bottom ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void *                                                    */
+/*    void *                                                           */
 /*    bglpth_thread_run ...                                            */
 /*---------------------------------------------------------------------*/
-static void *
+void *
 bglpth_thread_run( void *arg ) {
    bglpthread_t self = (bglpthread_t)arg;
    obj_t thunk = self->thunk;

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Dec  9 17:50:38 2012 (serrano)                */
+#*    Last change :  Tue Dec 11 15:12:17 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi phidget csv"
+apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi phidget csv"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -738,14 +738,19 @@ while : ; do
       threadsupport=yes;
       addp=1;
       addf=1;
+      adds=1;
       for a in $apis; do
         case $a in
           pthread) addp=0;;
           fthread) addf=0;;
+          srfi18) adds=0;;
         esac;
       done
       if [ $addf = 1 ]; then
         apis="fthread $apis";
+      fi
+      if [ $adds = 1 ]; then
+        apis="srfi18 $apis";
       fi
       if [ $addp = 1 ]; then
         apis="pthread $apis";
@@ -756,7 +761,7 @@ while : ; do
       threadsupport=no;
       napis=;
       for a in $apis; do
-         if [ $a != "fthread" -a $a != "pthread" -a $a != "gstreamer" ]; then
+         if [ $a != "fthread" -a $a != "pthread" -a $a != "gstreamer" -a $a != "srfi18" ]; then
            if [ "$napis " = " " ]; then
              napis="$a";
            else
@@ -1078,6 +1083,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   sqlite_is_enabled=no
   dbus_is_enabled=no
   fthread_is_enabled=no
+  srfi18_is_enabled=no
   pthread_is_enabled=no
   srfi27_is_enabled=no
   crypto_is_enabled=no
@@ -1094,6 +1100,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       pkglib) pkglib_is_enabled="yes";;
       dbus) dbus_is_enabled="yes";;
       pthread) pthread_is_enabled="yes";;
+      srfi18) srfi18_is_enabled="yes";;
       fthread) fthread_is_enabled="yes";;
       crypto) crypto_is_enabled="yes";;
       openpgp) openpgp_is_enabled="yes";;
@@ -1120,6 +1127,14 @@ if [ "$action" != "bigloo_config_el" ]; then
   if [ $fthread_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
       echo "*** ERROR: fthread library requires pthread."
       echo "Either disable fthread or enable pthread."
+      echo
+      echo "Enabled apis: $apis"
+      exit 1
+  fi
+  
+  if [ $srfi18_is_enabled = "yes" -a $pthread_is_enabled = "no" ]; then
+      echo "*** ERROR: srfi18 library requires pthread."
+      echo "Either disable srfi18 or enable pthread."
       echo
       echo "Enabled apis: $apis"
       exit 1
@@ -3099,6 +3114,10 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
         | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
         >  api/fthread/src/Misc/fthread.init
+    cat api/srfi18/src/Misc/srfi18.init.in \
+        | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
+        | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
+        >  api/srfi18/src/Misc/srfi18.init
     cat api/pthread/src/Misc/pthread.init.in \
         | sed -e "s|@BIGLOOGC_PTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
@@ -3108,7 +3127,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   else
     napis=;
     for a in $apis; do
-      if [ "pthread" != "$a" -a "fthread" != "$a" -a "gstreamer" != "$a" ]; then
+      if [ "pthread" != "$a" -a "srfi18" != "$a" -a "fthread" != "$a" -a "gstreamer" != "$a" ]; then
         if [ "$napis " = " " ]; then
           napis="$a";
         else
