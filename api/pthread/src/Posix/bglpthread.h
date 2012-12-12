@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Tue Dec 11 16:17:14 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 11:40:46 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
@@ -44,12 +44,14 @@ typedef struct bglpmutex {
 /*---------------------------------------------------------------------*/
 /*    bglpspinlock_t                                                   */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_SPINLOCK )
 typedef struct bglpspinlock {
    /* the actual pmutex (must be first field) */
    pthread_spinlock_t pmutex;
    /* the Bigloo mutex pointing to that mutex */
    obj_t bmutex;           
 } *bglpspinlock_t;
+#endif      
 
 /*---------------------------------------------------------------------*/
 /*    bglpcondvar_t                                                    */
