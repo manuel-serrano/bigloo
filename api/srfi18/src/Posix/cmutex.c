@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 12 11:11:26 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 11:55:02 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -241,7 +241,6 @@ srfi18_mutex_timed_lock( void *m, long ms ) {
    }
 #else
    int res;
-   srfi18mutex_t mut = SRFI18_MUTEX_BGLPMUTEX( m );
    
    while( (res=(pthread_mutex_trylock( &(mut->mutex.pmutex) ) == EBUSY ))
 	  && (ms > 0) ) {
