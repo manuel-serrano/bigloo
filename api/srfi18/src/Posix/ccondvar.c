@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Tue Dec 11 20:51:11 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 11:10:18 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -36,17 +36,17 @@ BGL_RUNTIME_DECL obj_t bgl_create_condvar( obj_t );
 /*---------------------------------------------------------------------*/
 bool_t
 srfi18_condvar_wait( obj_t cv, obj_t m ) {
-   bglpmutex_t mut = BGL_MUTEX_SYSMUTEX( m );
+   bglpmutex_t mut = (bglpmutex_t)BGL_MUTEX_SYSMUTEX( m );
    srfi18mutex_t mut18 = (srfi18mutex_t)mut;
    srfi18thread_t thread = mut18->thread;
    bool_t res;
 
-   BGL_MUTEX_LOCKED( m ) = 0;
+   mut18->locked = 0;
    srfi18_mutex_mark_unlocked( mut18 );
    res = pthread_cond_wait( BGLPTH_CONDVAR_PCONDVAR( cv ), &(mut->pmutex) );
    
    srfi18_mutex_mark_locked( mut18, thread );
-   BGL_MUTEX_LOCKED( m ) = 1;
+   mut18->locked = 1;
    
    return !res;
 }
@@ -57,7 +57,7 @@ srfi18_condvar_wait( obj_t cv, obj_t m ) {
 /*---------------------------------------------------------------------*/
 bool_t
 srfi18_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
-   bglpmutex_t mut = BGL_MUTEX_SYSMUTEX( m );
+   bglpmutex_t mut = (bglpmutex_t)BGL_MUTEX_SYSMUTEX( m );
    srfi18mutex_t mut18 = (srfi18mutex_t)mut;
    srfi18thread_t thread = mut18->thread;
    struct timespec timeout;
@@ -75,13 +75,13 @@ srfi18_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    timeout.tv_nsec = (now.tv_usec * 1000) + ((ms % 1000) * 1000000);
 #endif
 
-   BGL_MUTEX_LOCKED( m ) = 0;
+   mut18->locked = 0;
    srfi18_mutex_mark_unlocked( mut18 );
    res = pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
 				 &(mut->pmutex),
 				 &timeout );
    srfi18_mutex_mark_locked( mut18, thread );
-   BGL_MUTEX_LOCKED( m ) = 1;
+   mut18->locked = 1;
    
    return !res;
 }

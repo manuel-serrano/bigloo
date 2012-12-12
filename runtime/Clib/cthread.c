@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Mon Dec 10 17:09:31 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 10:07:58 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -39,6 +39,8 @@ static void *bgl_gc_do_blocking_default( void (*fun)(), void *o2 ) {
 
 static obj_t bgl_mutex_state_default( obj_t mutex ) { return BUNSPEC; }
 
+static obj_t bgl_create_mutex_default( obj_t );
+
 /*---------------------------------------------------------------------*/
 /*    Single threaded dynamic environment ...                          */
 /*---------------------------------------------------------------------*/
@@ -57,6 +59,9 @@ static obj_t (*bgl_mutex_init)( obj_t ) = &bgl_mutex_init_default;
 static obj_t (*bgl_spinlock_init)( obj_t ) = &bgl_mutex_init_default;
 static obj_t (*bgl_condvar_init)( obj_t ) = &bgl_condvar_init_default;
 
+BGL_RUNTIME_DEF obj_t (*bgl_create_mutex)( obj_t ) = &bgl_create_mutex_default;
+BGL_RUNTIME_DEF obj_t (*bgl_create_spinlock)( obj_t ) = &bgl_create_mutex_default;
+
 BGL_RUNTIME_DEF void (*bgl_gc_start_blocking)( void ) = &bgl_act0_default;
 BGL_RUNTIME_DEF void (*bgl_gc_stop_blocking)( void ) = &bgl_act0_default;
 
@@ -73,19 +78,20 @@ BGL_RUNTIME_DEF obj_t (*bgl_multithread_dynamic_denv)() = &denv_get;
 #if HAVE_SIGPROCMASK							 
 REGISTER_FUNCTION( bgl_sigprocmask, int, (int, const sigset_t *, sigset_t *) )
 #endif
-							 
+
+REGISTER_FUNCTION( bgl_create_mutex, obj_t, (obj_t) )
+REGISTER_FUNCTION( bgl_create_spinlock, obj_t, (obj_t) )
 REGISTER_FUNCTION( bgl_mutex_init, obj_t, (obj_t) )
 REGISTER_FUNCTION( bgl_spinlock_init, obj_t, (obj_t) )
 REGISTER_FUNCTION( bgl_condvar_init, obj_t, (obj_t) )
 REGISTER_FUNCTION( bgl_multithread_dynamic_denv, obj_t, (void) );
 
 /*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
+/*    static obj_t                                                     */
 /*    bgl_create_mutex ...                                             */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
-obj_t
-bgl_create_mutex( obj_t name ) {
+static obj_t
+bgl_create_mutex_default( obj_t name ) {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE );
 
    m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );

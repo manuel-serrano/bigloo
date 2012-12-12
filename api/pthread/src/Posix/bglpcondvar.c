@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sun Dec  9 18:32:12 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 10:38:26 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -35,12 +35,10 @@ BGL_RUNTIME_DECL obj_t bgl_create_condvar( obj_t );
 /*---------------------------------------------------------------------*/
 bool_t
 bglpth_condvar_wait( obj_t cv, obj_t m ) {
-   bglpmutex_t mut = BGL_MUTEX_SYSMUTEX( m );
+   bglpmutex_t mut = (bglpmutex_t)BGL_MUTEX_SYSMUTEX( m );
    bool_t res;
 
-   BGL_MUTEX_LOCKED( m ) = 0;
    res = pthread_cond_wait( BGLPTH_CONDVAR_PCONDVAR( cv ), &(mut->pmutex) );
-   BGL_MUTEX_LOCKED( m ) = 1;
    
    return !res;
 }
@@ -67,11 +65,9 @@ bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    timeout.tv_nsec = (now.tv_usec * 1000) + ((ms % 1000) * 1000000);
 #endif
 
-   BGL_MUTEX_LOCKED( m ) = 0;
    res = pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
 				 &(mut->pmutex),
 				 &timeout );
-   BGL_MUTEX_LOCKED( m ) = 1;
    
    return !res;
 }

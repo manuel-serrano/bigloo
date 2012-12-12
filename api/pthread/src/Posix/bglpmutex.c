@@ -1,9 +1,9 @@
- /*=====================================================================*/
+/*=====================================================================*/
 /*    .../prgm/project/bigloo/api/pthread/src/Posix/bglpmutex.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Tue Dec 11 18:57:55 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 11:06:53 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -63,10 +63,28 @@ bglpth_mutex_state( void *m ) {
 
    bgl_mutex_symbols_init();
    
-   if( BGL_MUTEX_LOCKED( o ) ) {
+   if( pthread_mutex_trylock( m ) ) {
+      /* try lock failed, another thread owns that lock */
       return sym_locked;
    } else {
-      return sym_unlocked;
+      pthread_cond_t cv;
+      struct timespec timeout;
+      int r;
+      
+      pthread_mutex_unlock( m );
+      
+      timeout.tv_sec = 0;
+      timeout.tv_nsec = 0;
+      
+      pthread_cond_init( &cv, 0L );
+      
+      r = pthread_cond_timedwait( &cv, m, &timeout );
+      
+      if( ETIMEDOUT == r ) {
+	 return sym_locked;
+      } else {
+	 return sym_unlocked;
+      }
    }
 }
 
@@ -112,26 +130,36 @@ bglpth_mutex_timed_lock( void *m, long ms ) {
 /*    bglpth_mutex_init ...                                            */
 /*---------------------------------------------------------------------*/
 obj_t
-bglpth_mutex_init( obj_t m ) {
-   bglpmutex_t mut = (bglpmutex_t)GC_MALLOC( sizeof( struct bglpmutex ) );
-
-   mut->bmutex = m;
+bglpth_mutex_init( obj_t o ) {
+   pthread_mutexattr_t attr;
+   bglpmutex_t mut =
+#if( defined( BGL_INLINE_MUTEX ) )   
+      (bglpmutex_t)BGL_MUTEX_SYSMUTEX( o );
+#else   
+      (bglpmutex_t)GC_MALLOC( sizeof( struct bglpmutex ) );
+#endif
+   
+   mut->bmutex = o;
    mut->specific = BUNSPEC;
 
-   BGL_MUTEX( m ).syslock = &pthread_mutex_lock;
-   BGL_MUTEX( m ).systimedlock = &bglpth_mutex_timed_lock;
-   BGL_MUTEX( m ).sysunlock = &pthread_mutex_unlock;
-   BGL_MUTEX( m ).sysstate = &bglpth_mutex_state;
+   BGL_MUTEX( o ).syslock = &pthread_mutex_lock;
+   BGL_MUTEX( o ).systimedlock = &bglpth_mutex_timed_lock;
+   BGL_MUTEX( o ).sysunlock = &pthread_mutex_unlock;
+   BGL_MUTEX( o ).sysstate = &bglpth_mutex_state;
 
-   BGL_MUTEX_SYSMUTEX( m ) = mut;
-   BGL_MUTEX_LOCKED( m ) = 0;
+#if( !defined( BGL_INLINE_MUTEX ) )   
+   BGL_MUTEX_SYSMUTEX( o ) = mut;
+#endif   
 
-   if( pthread_mutex_init( &(mut->pmutex), 0L ) )
+   pthread_mutexattr_init( &attr );
+   pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
+   
+   if( pthread_mutex_init( &(mut->pmutex), &attr ) )
       FAILURE( string_to_bstring( "make-mutex" ),
 	       string_to_bstring( "Cannot create mutex" ),
 	       string_to_bstring( strerror( errno ) ) );
 
-   return m;
+   return o;
 }
 
 /*---------------------------------------------------------------------*/
@@ -139,31 +167,70 @@ bglpth_mutex_init( obj_t m ) {
 /*    bglpth_spinlock_init ...                                         */
 /*---------------------------------------------------------------------*/
 obj_t
-bglpth_spinlock_init( obj_t m ) {
+bglpth_spinlock_init( obj_t o ) {
 #if( BGL_HAVE_SPINLOCK )
-   bglpspinlock_t mut = (bglpspinlock_t)GC_MALLOC( sizeof( struct bglpspinlock ) );
+   bglpspinlock_t mut =
+#if( defined( BGL_INLINE_MUTEX ) )
+      (bglpspinlock_t)BGL_MUTEX_SYSMUTEX( o );
+      (bglpspinlock_t)GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpspinlock ) );
+#else      
+      (bglpspinlock_t)GC_MALLOC( sizeof( struct bglpspinlock ) );
+#endif      
 
-   mut->bmutex = m;
+   mut->bmutex = o;
 
-   BGL_MUTEX( m ).syslock = &pthread_spin_lock;
-   BGL_MUTEX( m ).sysunlock = &pthread_spin_unlock;
-   BGL_MUTEX( m ).systimedlock = 0;
-   BGL_MUTEX( m ).sysstate = 0;
+   BGL_MUTEX( o ).syslock = &pthread_spin_lock;
+   BGL_MUTEX( o ).sysunlock = &pthread_spin_unlock;
+   BGL_MUTEX( o ).systimedlock = 0;
+   BGL_MUTEX( o ).sysstate = 0;
 
-   BGL_MUTEX_SYSMUTEX( m ) = mut;
-   BGL_MUTEX_LOCKED( m ) = 0;
+#if( !defined( BGL_INLINE_MUTEX ) )   
+   BGL_MUTEX_SYSMUTEX( o ) = mut;
+#endif   
 
    if( pthread_spin_init( &(mut->pmutex), 0L ) )
       FAILURE( string_to_bstring( "make-mutex" ),
 	       string_to_bstring( "Cannot create mutex" ),
 	       string_to_bstring( strerror( errno ) ) );
 
-   return m;
+   return o;
 #else
-   return bglpth_mutex_init( m );
+   return bglpth_mutex_init( o );
 #endif
 }
 
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_create_mutex ...                                          */
+/*---------------------------------------------------------------------*/
+#if( defined( BGL_INLINE_MUTEX ) )   
+obj_t
+bglpth_create_mutex( obj_t name ) {
+   obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpmutex ) );
+
+   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex_t.name = name;
+
+   return BREF( m );
+}
+#endif
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bglpth_create_spinlock ...                                       */
+/*---------------------------------------------------------------------*/
+#if( defined( BGL_INLINE_MUTEX ) )   
+obj_t
+bglpth_create_spinlock( obj_t name ) {
+   obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpspinlock ) );
+
+   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex_t.name = name;
+
+   return BREF( m );
+}
+#endif
+   
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bglpth_make_mutex ...                                            */
@@ -171,7 +238,11 @@ bglpth_spinlock_init( obj_t m ) {
 BGL_RUNTIME_DEF
 obj_t
 bglpth_make_mutex( obj_t name ) {
+#if( defined( BGL_INLINE_MUTEX ) )   
+   return bglpth_mutex_init( bglpth_create_mutex( name ) );
+#else
    return bglpth_mutex_init( bgl_create_mutex( name ) );
+#endif
 }
 
 /*---------------------------------------------------------------------*/
@@ -181,4 +252,9 @@ bglpth_make_mutex( obj_t name ) {
 void
 bglpth_setup_mutex() {
    bgl_mutex_init_register( &bglpth_mutex_init );
+   
+#if( defined( BGL_INLINE_MUTEX ) )   
+   bgl_create_mutex_register( &bglpth_create_mutex );
+   bgl_create_spinlock_register( &bglpth_create_spinlock );
+#endif   
 }

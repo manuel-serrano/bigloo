@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Dec 10 16:40:52 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 10:40:06 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -527,23 +527,22 @@ typedef union scmobj {
    struct bgl_mutex {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
-      void *sysmutex;            /* the actual mutex                   */
-      bool_t locked;             /* the locking state of the mutex     */
       int (*syslock)();          /*    - the system primtives          */
       int (*systimedlock)();     /*    - ...                           */
       int (*sysunlock)();        /*    - ...                           */
       int (*syslockprelock)();   /*    - ...                           */
       union scmobj *(*sysstate)();
+      void *sysmutex;            /* the actual mutex                   */
    } mutex_t;
    
    struct bgl_condvar {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
-      void *condvar;             /* the actual condition variable      */
       int (*syswait)();          /*    - the system primitives         */
       int (*systimedwait)();     /*    ...                             */
-      int (*syssignal)();
-      int (*sysbroadcast)();
+      int (*syssignal)();        /*    ...                             */
+      int (*sysbroadcast)();     /*    ...                             */
+      void *condvar;             /* the actual condition variable      */
    } condvar_t;
 
    struct bgl_mmap {
@@ -2895,17 +2894,13 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
 
 #define BGL_MUTEX_LOCK( o ) \
-   (!BGL_MUTEX( o ).syslock( BGL_MUTEX_SYSMUTEX( o ) ) ? \
-    (BGL_MUTEX_LOCKED( o ) = 1, 1) : 0)
+   (!BGL_MUTEX( o ).syslock( BGL_MUTEX_SYSMUTEX( o ) ))
 
 #define BGL_MUTEX_TIMED_LOCK( o, to ) \
-   (!BGL_MUTEX( o ).systimedlock( BGL_MUTEX_SYSMUTEX( o ), to ) ? \
-    (BGL_MUTEX_LOCKED( o ) = 1, 1) : 0)
+   (!BGL_MUTEX( o ).systimedlock( BGL_MUTEX_SYSMUTEX( o ), to ))
 
 #define BGL_MUTEX_UNLOCK( o ) \
-   (BGL_MUTEX_LOCKED( o ) = 0, \
-    BGL_MUTEX( o ).sysunlock( BGL_MUTEX_SYSMUTEX( o ) ) ? \
-    BGL_MUTEX_LOCKED( o ) = 1, 0 : 1)
+   (!BGL_MUTEX( o ).sysunlock( BGL_MUTEX_SYSMUTEX( o ) ))
    
 #define BGL_MUTEX_LOCK_PRELOCK( o, l ) \
    (BGL_MUTEX( o ).syslockprelock( BGL_MUTEX_SYSMUTEX( o ), l ))
@@ -2914,14 +2909,18 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
    (BGL_MUTEX( o ).sysstate( BGL_MUTEX_SYSMUTEX( o ) ))
    
 #define BGL_MUTEX_NAME( o ) BGL_MUTEX( o ).name
-#define BGL_MUTEX_LOCKED( o ) BGL_MUTEX( o ).locked
-#define BGL_MUTEX_SYSMUTEX( o ) BGL_MUTEX( o ).sysmutex
 
+#if( defined( BGL_INLINE_MUTEX ) )   
+#   define BGL_MUTEX_SYSMUTEX( o ) &(BGL_MUTEX( o ).sysmutex)
+#else
+#   define BGL_MUTEX_SYSMUTEX( o ) BGL_MUTEX( o ).sysmutex
+#endif
+   
 #define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
-#define BGL_CONDVAR( o )  (CREF( o )->condvar_t)
+#define BGL_CONDVAR( o ) (CREF( o )->condvar_t)
 #define BGL_CONDVAR_SIZE (sizeof( struct bgl_condvar ))
 
-#define BGL_CONDVAR_NAME( o ) BGL_CONDVAR( o ).name
+#define BGL_CONDVAR_NAME( o ) (BGL_CONDVAR( o ).name)
    
 #define BGL_CONDVAR_WAIT( o, cv ) (BGL_CONDVAR( o ).syswait( o, cv ))
 #define BGL_CONDVAR_TIMED_WAIT( o, cv, to ) (BGL_CONDVAR( o ).systimedwait( o, cv, to ))

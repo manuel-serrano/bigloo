@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Tue Dec 11 16:20:42 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 11:03:28 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
@@ -27,9 +27,11 @@ typedef struct srfi18thread {
 /*    srfi18mutex_t                                                    */
 /*---------------------------------------------------------------------*/
 typedef struct srfi18mutex {
+   /* the pmutex (must be first field) */
    struct bglpmutex mutex;
    srfi18thread_t thread;
    bool_t marked;
+   bool_t locked;
    struct srfi18mutex *prev;
    struct srfi18mutex *next;
 } *srfi18mutex_t;
