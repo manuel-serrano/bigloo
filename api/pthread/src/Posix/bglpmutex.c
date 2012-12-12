@@ -3,11 +3,13 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 12 11:43:37 2012 (serrano)                */
+/*    Last change :  Wed Dec 12 14:41:42 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
+#define _GNU_SOURCE 500
+
 #ifdef  _MINGW_VER
 #  include <sys/timeb.h>
 #endif
@@ -131,7 +133,9 @@ bglpth_mutex_timed_lock( void *m, long ms ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bglpth_mutex_init( obj_t o ) {
+#if defined( BGL_HAVE_MUTEX_RECURSIVE )   
    pthread_mutexattr_t attr;
+#endif
    bglpmutex_t mut =
 #if( defined( BGL_INLINE_MUTEX ) )   
       (bglpmutex_t)BGL_MUTEX_SYSMUTEX( o );
@@ -147,14 +151,18 @@ bglpth_mutex_init( obj_t o ) {
    BGL_MUTEX( o ).sysunlock = &pthread_mutex_unlock;
    BGL_MUTEX( o ).sysstate = &bglpth_mutex_state;
 
-#if( !defined( BGL_INLINE_MUTEX ) )   
+#if !defined( BGL_INLINE_MUTEX )
    BGL_MUTEX_SYSMUTEX( o ) = mut;
 #endif   
 
+#if defined( BGL_HAVE_MUTEX_RECURSIVE ) 
    pthread_mutexattr_init( &attr );
    pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
-   
+
    if( pthread_mutex_init( &(mut->pmutex), &attr ) )
+#else
+   if( pthread_mutex_init( &(mut->pmutex), 0 ) )
+#endif      
       FAILURE( string_to_bstring( "make-mutex" ),
 	       string_to_bstring( "Cannot create mutex" ),
 	       string_to_bstring( strerror( errno ) ) );

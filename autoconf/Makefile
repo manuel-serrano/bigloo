@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Dec 11 10:18:25 2012 (serrano)                */
+#*    Last change :  Wed Dec 12 14:35:06 2012 (serrano)                */
 #*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -44,7 +44,7 @@ POPULATION	= Makefile \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \
                   thread pthread pthreadlock pthreadspinlock \
-                  pthreadtimedjoin pthreadlocalstorage \
+                  pthreadmutexrec pthreadtimedjoin pthreadlocalstorage \
                   processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
                   openssl openssl-dtls openssl-v2 openssl-v23 \
