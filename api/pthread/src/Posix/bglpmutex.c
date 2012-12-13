@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 12 14:41:42 2012 (serrano)                */
+/*    Last change :  Thu Dec 13 08:05:32 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -73,15 +73,15 @@ bglpth_mutex_state( void *m ) {
       struct timespec timeout;
       int r;
       
-      pthread_mutex_unlock( m );
-      
       timeout.tv_sec = 0;
       timeout.tv_nsec = 0;
       
       pthread_cond_init( &cv, 0L );
       
-      r = pthread_cond_timedwait( &cv, m, &timeout );
+      pthread_mutex_unlock( m );
       
+      r = pthread_cond_timedwait( &cv, m, &timeout );
+
       if( ETIMEDOUT == r ) {
 	 return sym_locked;
       } else {

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Dec 11 21:10:41 2012 (serrano)                */
+#*    Last change :  Thu Dec 13 07:59:15 2012 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -44,6 +44,8 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 
 # Additional pthread lib for C
 EXTRALIBS	= "$(PTHREADLIBS)"
+EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE)
+EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE)
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
