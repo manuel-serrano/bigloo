@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Fri Dec 14 19:16:56 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 19:55:59 2012 (serrano)                */
 /*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
@@ -39,7 +39,7 @@ typedef struct bglpmutex {
    /* the Bigloo mutex pointing to that mutex */
    obj_t bmutex;           
    obj_t specific;
-#if BGL_POSIX_CONDV_TIMEDWAIT
+#if !BGL_POSIX_CONDV_TIMEDWAIT
    int locked;
 #endif   
 } *bglpmutex_t;
