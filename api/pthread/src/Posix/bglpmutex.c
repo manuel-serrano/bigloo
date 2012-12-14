@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Thu Dec 13 09:16:22 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 19:23:36 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -61,20 +61,21 @@ bgl_mutex_symbols_init() {
 obj_t
 bglpth_mutex_state( void *m ) {
    bglpmutex_t mut = (bglpmutex_t)m;
-   obj_t o = mut->bmutex;
 
+#if BGL_POSIX_CONDV_TIMEDWAIT 
    bgl_mutex_symbols_init();
    
    if( pthread_mutex_trylock( m ) ) {
       /* try lock failed, another thread owns that lock */
       return sym_locked;
    } else {
+#  if BGL_HAVE_MUTEX_RECURSIVE
       pthread_cond_t cv;
       struct timespec timeout;
       int r;
       
       timeout.tv_sec = 0;
-      timeout.tv_nsec = 1;
+      timeout.tv_nsec = 0;
       
       pthread_cond_init( &cv, 0L );
       
@@ -87,7 +88,18 @@ bglpth_mutex_state( void *m ) {
       } else {
          return sym_unlocked;
       }
+#  else
+      return sym_unlocked;
+#  endif      
    }
+   
+#else
+   if( mut->locked > 0 ) {
+      return sym_locked;
+   } else {
+      return sym_unlocked;
+   }
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -101,20 +113,20 @@ bglpth_mutex_timed_lock( void *m, long ms ) {
 #if BGL_HAVE_MUTEX_TIMEDLOCK
    struct timespec timeout;
    bool_t res;
-#if defined( _MINGW_VER ) || defined( _MSC_VER )
+#  if defined( _MINGW_VER ) || defined( _MSC_VER )
    struct timeb tb;
    ftime( &tb );
    timeout.tv_sec = tb.time + (ms / 1000);
    timeout.tv_nsec = (tb.millitm * 1000000) + ((ms % 1000) * 100000); 
-#else
+#  else
    struct timeval now;
    gettimeofday( &now, 0 );
    timeout.tv_sec = now.tv_sec + (ms / 1000);
    timeout.tv_nsec = (now.tv_usec * 1000) + ((ms % 1000) * 100000);
    gettimeofday( &now, 0 );
-#endif
+#  endif
 
-   return pthread_mutex_timedlock( &(mut->pmutex), &timeout );
+   res = pthread_mutex_timedlock( &(mut->pmutex), &timeout );
 #else
    int res;
 
@@ -122,10 +134,54 @@ bglpth_mutex_timed_lock( void *m, long ms ) {
       ms -= 100;
       bgl_sleep( 100 * 1000 );
    }
-
-   return res;
 #endif
+   
+#if !BGL_POSIX_CONDV_TIMEDWAIT
+   if( !res )
+      mut->locked++;
+#endif
+   return res;
 }
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bglpth_mutex_lock ...                                            */
+/*---------------------------------------------------------------------*/
+#if !BGL_POSIX_CONDV_TIMEDWAIT
+static int
+bglpth_mutex_lock( void *m ) {
+   int r;
+   bglpmutex_t mut = (bglpmutex_t)m;
+
+   if( r = pthread_mutex_lock( m ) ) {
+      return r;
+   } else {
+      mut->locked++;
+      return 0;
+   }
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bglpth_mutex_unlock ...                                          */
+/*---------------------------------------------------------------------*/
+#if !BGL_POSIX_CONDV_TIMEDWAIT
+static int
+bglpth_mutex_unlock( void *m ) {
+   int r;
+   bglpmutex_t mut = (bglpmutex_t)m;
+
+   mut->locked--;
+   
+   if( r = pthread_mutex_unlock( m ) ) {
+      mut->locked++;
+      return r;
+   } else {
+      return 0;
+   }
+}
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -146,9 +202,14 @@ bglpth_mutex_init( obj_t o ) {
    mut->bmutex = o;
    mut->specific = BUNSPEC;
 
+#if BGL_POSIX_CONDV_TIMEDWAIT
    BGL_MUTEX( o ).syslock = &pthread_mutex_lock;
-   BGL_MUTEX( o ).systimedlock = &bglpth_mutex_timed_lock;
    BGL_MUTEX( o ).sysunlock = &pthread_mutex_unlock;
+#else   
+   BGL_MUTEX( o ).syslock = &bglpth_mutex_lock;
+   BGL_MUTEX( o ).sysunlock = &bglpth_mutex_unlock;
+#endif   
+   BGL_MUTEX( o ).systimedlock = &bglpth_mutex_timed_lock;
    BGL_MUTEX( o ).sysstate = &bglpth_mutex_state;
 
 #if !defined( BGL_INLINE_MUTEX )

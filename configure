@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 12 14:36:06 2012 (serrano)                */
+#*    Last change :  Fri Dec 14 19:05:24 2012 (serrano)                */
 #*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1685,6 +1685,11 @@ else
     pthreadmutexrec=`$autoconf pthreadmutexrec --lib="$pthreadlibs"` || exit 1;
   fi
 
+  # pthread_cond_timedwait
+  if [ "$pthreadlibs" != "no" ]; then
+    pthreadcondvtimedwait=`$autoconf pthreadcondvtimedwait --lib="$pthreadlibs"` || exit 1;
+  fi
+
   # pthread_timedjoin_np
   if [ "$pthreadlibs" != "no" ]; then
     pthreadtimedjoin=`$autoconf pthreadtimedjoin --lib="$pthreadlibs"` || exit 1;
@@ -2753,6 +2758,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@PTHREAD_HAVE_TIMEDLOCK@|$pthreadtimedlock|" \
               -e "s|@PTHREAD_HAVE_SPINLOCK@|$pthreadspinlock|" \
               -e "s|@PTHREAD_HAVE_MUTEX_RECURSIVE@|$pthreadmutexrec|" \
+              -e "s|@PTHREAD_POSIX_CONDV_TIMEDWAIT@|$pthreadcondvtimedwait|" \
               -e "s|@PTHREAD_HAVE_TIMEDJOIN@|$pthreadtimedjoin|" \
               -e "s|@BGL_PTHREAD_TERM_SIG@|$pthreadtermsig|" \
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \

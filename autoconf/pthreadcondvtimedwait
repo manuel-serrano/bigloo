@@ -1,0 +1,104 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/pthreadcondvtimedwait       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Dec 14 19:15:13 2012 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check if pthread_cond_timedwait posix compliance.                */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+pthreadlibs="-lpthread"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#define _GNU_SOURCE 500
+
+#include <pthread.h>
+#include <sched.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <time.h>
+#include <errno.h>
+
+main( int argc, char *argv[] ) {
+   pthread_mutex_t mutex;
+   pthread_mutexattr_t attr;
+   pthread_cond_t cv;
+   struct timespec timeout;
+
+   timeout.tv_sec = 0;
+   timeout.tv_nsec = 0;
+
+   pthread_mutexattr_init( &attr );
+   pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
+
+   pthread_mutex_init( &mutex, &attr );
+   pthread_cond_init( &cv, 0L );
+
+   if( pthread_cond_timedwait( &cv, &mutex, &timeout ) == ETIMEDOUT ) {
+      puts( "0" );
+   } else {
+      puts( "1" );
+   }
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+res=1;
+
+if eval "$BUILDSH $compile"; then
+  eval "$HOSTSH $aout"
+else
+  echo "0"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
