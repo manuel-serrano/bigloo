@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sun Dec  9 18:29:22 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 10:32:23 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -81,19 +81,23 @@
 /*    Default IO operations                                            */
 /*---------------------------------------------------------------------*/
 #if POSIX_FILE_OPS
+#  define _STREAM_TYPE BGL_STREAM_TYPE_FD
+#  define _FD int
 #  define _LSEEK lseek
 #  define _CLOSE close
 #  define _FILENO fileno
-#  define _FD int
+#  define _PORT_FD( p ) PORT_FD( p )
 #  define _CREAT( name, mod ) open( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mod )
 #  define _OPEN( name, flag, mod ) open( name, flag, mod )
 #  define _FSTAT fstat
 #  define _READ read
 #else
+#  define _STREAM_TYPE BGL_STREAM_TYPE_FILE
+#  define _FD FILE * 
 #  define _LSEEK posix_lseek
 #  define _CLOSE posix_close
 #  define _FILENO
-#  define _FD FILE * 
+#  define _PORT_FD( p ) fileno( PORT_FILE( p ) )
 #  define _CREAT( name, mod ) fopen( name, "wb" )
 #  define _OPEN( name, flag, mod ) fopen( name, "a+b" )
 #  define _FSTAT( fd, buf ) fstat( fileno( fd ), buf )
@@ -145,7 +149,7 @@ struct bgl_output_timeout {
 /*    compatibility kit ISO C / POSIX 2001.                            */
 /*---------------------------------------------------------------------*/
 static ssize_t posix_write( obj_t port, void *buf, size_t count ) {
-   return (ssize_t)fwrite( buf, 1, count, (FILE *)PORT( port ).stream );
+   return (ssize_t)fwrite( buf, 1, count, PORT_FILE( port ) );
 }
 
 static long posix_lseek( FILE *f, long offset, int whence ) {
@@ -310,9 +314,9 @@ bglerror( int err, int rw ) {
 ssize_t
 bgl_syswrite( obj_t port, const void *buf, size_t nbyte ) {
 #if POSIX_FILE_OPS
-   return write( (int)PORT( port ).stream, buf, nbyte );
+   return write( PORT_FD( port ), buf, nbyte );
 #else
-   return (ssize_t)fwrite( buf, 1, nbyte, (FILE *)PORT( port ).stream );
+   return (ssize_t)fwrite( buf, 1, nbyte, PORT_FILE( port ) );
 #endif   
 }
 
@@ -333,11 +337,11 @@ bgl_eof_read( obj_t port, char *ptr, long num ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_read( obj_t port, char *ptr, long num ) {
-   FILE *stream = PORT_STREAM( port );
+   FILE *file = PORT_FILE( port );
    long n;
 
  loop:
-   if( (n = _READ( fileno( stream ), ptr, num ) ) <= 0 ) {
+   if( (n = _READ( fileno( file ), ptr, num ) ) <= 0 ) {
       if( n == 0 ) {
 	 INPUT_PORT( port ).eof = 1;
       } else if( errno == EINTR ) {
@@ -357,7 +361,7 @@ bgl_read( obj_t port, char *ptr, long num ) {
 /*---------------------------------------------------------------------*/
 static long
 bgl_console_read( obj_t port, char *ptr, long num ) {
-   FILE *stream = PORT_STREAM( port );
+   FILE *file = PORT_FILE( port );
    char *buf = ptr;
    int c;
 
@@ -368,7 +372,7 @@ bgl_console_read( obj_t port, char *ptr, long num ) {
 
    /* now stdout is flushed out, read the charcters */
    while( num > 0 ) {
-      int c = getc( stream );
+      int c = getc( file );
 
       if( c == EOF ) {
 	 INPUT_PORT( port ).eof = 1;
@@ -466,7 +470,7 @@ timeout_set_port_blocking( char *fun, int fd, int bool ) {
 static long
 posix_timed_write( obj_t port, void *buf, size_t num ) {
    struct bgl_output_timeout *tmt = PORT( port ).timeout;
-   int fd = (int)PORT( port ).stream;
+   int fd = PORT_FD( port );
    fd_set writefds;
    long n;
    struct timeval tv = tmt->timeout;
@@ -513,7 +517,7 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
       return n;
    } else {
       fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s\n",
-	       (int)PORT( port ).stream, errno, strerror( errno ) );
+	       PORT_FD( port ), errno, strerror( errno ) );
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_WRITE_ERROR);
@@ -536,7 +540,7 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
 static long
 posix_timed_read( obj_t port, char *ptr, long num ) {
    struct bgl_input_timeout *tmt = PORT( port ).timeout;
-   int fd = fileno( (FILE *)PORT_STREAM( port ) );
+   int fd = fileno( PORT_FILE( port ) );
    fd_set readfds;
    long n;
    struct timeval tv = tmt->timeout;
@@ -752,7 +756,7 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
 obj_t
 output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err ) {
    static obj_t mu;
-
+   
    if( PORT( port ).kindof == KINDOF_CLOSED ) {
       return BFALSE;
    } else {
@@ -943,7 +947,8 @@ bgl_write_with_lock(  obj_t op, unsigned char *str, size_t sz ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_make_output_port( obj_t name,
-		      void *stream,
+		      bgl_stream_t stream,
+		      int stream_type,
 		      obj_t kindof,
 		      obj_t buf,
 		      ssize_t (*write)(),
@@ -965,6 +970,7 @@ bgl_make_output_port( obj_t name,
    
    new_output_port->port_t.name = name;
    new_output_port->port_t.stream = stream;
+   new_output_port->output_port_t.stream_type = stream_type;
    new_output_port->port_t.kindof = kindof;
    new_output_port->port_t.chook = BUNSPEC;
    new_output_port->port_t.userdata = BUNSPEC;
@@ -1019,6 +1025,7 @@ bgl_output_port_timeout_set( obj_t port, long timeout ) {
 	(PORT(port).kindof == KINDOF_PROCPIPE) ||
 	(PORT(port).kindof == KINDOF_CONSOLE) ||
 	(PORT(port).kindof == KINDOF_SOCKET)) ) {
+      int fd = PORT_FD( port );
 
       if( timeout == 0 ) {
 	 struct bgl_output_timeout *to = PORT( port ).timeout;
@@ -1027,9 +1034,7 @@ bgl_output_port_timeout_set( obj_t port, long timeout ) {
 	    OUTPUT_PORT( port ).syswrite = to->syswrite;
 	 }
 
-	 timeout_set_port_blocking( "output-port-timeout-set!",
-				    (int)PORT_STREAM( port ),
-				    1 );
+	 timeout_set_port_blocking( "output-port-timeout-set!", fd, 1 );
       } else {
 	 struct bgl_output_timeout *to;
 	 
@@ -1046,7 +1051,7 @@ bgl_output_port_timeout_set( obj_t port, long timeout ) {
 	    to->timeout.tv_sec = timeout / 1000000;
 	    to->timeout.tv_usec = timeout % 1000000;
 	    
-	    if( (int)PORT_STREAM( port ) == -1 ) {
+	    if( fd == -1 ) {
 	       C_SYSTEM_FAILURE( bglwerror( errno ),
 				 "output-port-timeout-set!",
 				 "Illegal output-port",
@@ -1057,9 +1062,7 @@ bgl_output_port_timeout_set( obj_t port, long timeout ) {
 	 }
 	 
 	 OUTPUT_PORT( port ).syswrite = &syswrite_with_timeout;
-	 timeout_set_port_blocking( "output-port-timeout-set!",
-				    (int)PORT_STREAM( port ),
-				    0 );
+	 timeout_set_port_blocking( "output-port-timeout-set!", fd, 0 );
 
 	 return 1;
       }
@@ -1076,7 +1079,8 @@ bgl_output_port_timeout_set( obj_t port, long timeout ) {
 BGL_RUNTIME_DEF obj_t
 bgl_file_to_output_port( FILE *f, obj_t buf ) {
    return bgl_make_output_port( string_to_bstring( "<c-port>" ),
-				(void *)_FILENO( f ),
+				(bgl_stream_t)_FILENO( f ),
+				_STREAM_TYPE,
 				KINDOF_FILE, 
 				buf, 
 				bgl_syswrite,
@@ -1101,7 +1105,8 @@ bgl_open_output_file( obj_t name, obj_t buf ) {
 
       setvbuf( file, 0, _IONBF, 0 );
 	       
-      return bgl_make_output_port( name, file,
+      return bgl_make_output_port( name, (bgl_stream_t)file,
+				   BGL_STREAM_TYPE_FILE,
 				   KINDOF_PIPE,
 				   buf,
 				   posix_write,
@@ -1123,7 +1128,8 @@ bgl_open_output_file( obj_t name, obj_t buf ) {
       if( (fd = _CREAT( cname, OMOD )) < 0 )
          return BFALSE;
       else
-	 return bgl_make_output_port( name, (void *)fd,
+	 return bgl_make_output_port( name, (bgl_stream_t)fd,
+				      _STREAM_TYPE,
 				      KINDOF_FILE,
 				      buf,
 				      bgl_syswrite,
@@ -1146,7 +1152,8 @@ bgl_append_output_file( obj_t name, obj_t buf ) {
 	 _CLOSE( fd );
 	 return BFALSE;
       } else {
-	 return bgl_make_output_port( name, (void *)fd,
+	 return bgl_make_output_port( name, (bgl_stream_t)fd,
+				      _STREAM_TYPE,
 				      KINDOF_FILE,
 				      buf, 
 				      bgl_syswrite,
@@ -1162,11 +1169,13 @@ bgl_append_output_file( obj_t name, obj_t buf ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_open_output_string( obj_t buf ) {
-   obj_t port = bgl_make_output_port( string_to_bstring( "string" ), 0L,
+   obj_t port = bgl_make_output_port( string_to_bstring( "string" ),
+				      (bgl_stream_t)0,
+				      BGL_STREAM_TYPE_CHANNEL,
 				      KINDOF_STRING,
 				      buf,
 				      strwrite, strseek, 0 );
-   PORT_STREAM( port ) = port;
+   PORT_CHANNEL( port ) = port;
    OUTPUT_PORT( port ).bufmode = BGL_IOEBF;
    OUTPUT_PORT( port ).sysflush = get_output_string;
 
@@ -1179,14 +1188,16 @@ bgl_open_output_string( obj_t buf ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_open_output_procedure( obj_t proc, obj_t flush, obj_t close, obj_t buf ) {
-   obj_t port = bgl_make_output_port( string_to_bstring( "procedure" ), 0L,
+   obj_t port = bgl_make_output_port( string_to_bstring( "procedure" ),
+				      (bgl_stream_t)0,
+				      BGL_STREAM_TYPE_CHANNEL,
 				      KINDOF_PROCEDURE,
 				      make_string_sans_fill( 0 ),
 				      procwrite, 0L, 0L );
    /* MS, 9 apri 2009: used to be create_vector( 5 )! */
    obj_t udata = create_vector( 4 );
    
-   PORT_STREAM( port ) = port;
+   PORT_CHANNEL( port ) = port;
    OUTPUT_PORT( port ).bufmode = BGL_IONB;
    OUTPUT_PORT( port ).sysflush = procflush;
    PORT( port ).sysclose = procclose;
@@ -1209,7 +1220,7 @@ get_output_string( obj_t port ) {
       obj_t buf = OUTPUT_PORT( port ).buf;
 #if( defined( CNT ) )
       int cnt = OUTPUT_PORT( port ).cnt;
-#else      
+#else
       int cnt = BGL_OUTPUT_PORT_CNT( port );
 #endif
 	 
@@ -1277,8 +1288,19 @@ bgl_close_output_port( obj_t port ) {
       
       PORT( port ).kindof = KINDOF_CLOSED;
       
-      if( PORT( port ).sysclose )
-	 PORT( port ).sysclose( PORT_STREAM( port ) );
+      if( PORT( port ).sysclose ) {
+	 switch( OUTPUT_PORT( port ).stream_type ) {
+	    case BGL_STREAM_TYPE_FD: 
+	       PORT( port ).sysclose( PORT_FD( port ) );
+	       break;
+	    case BGL_STREAM_TYPE_FILE: 
+	       PORT( port ).sysclose( PORT_FILE( port ) );
+	       break;
+	    case BGL_STREAM_TYPE_CHANNEL: 
+	       PORT( port ).sysclose( PORT_CHANNEL( port ) );
+	       break;
+	 }
+      }
 
       if( PROCEDUREP( chook ) ) {
 	 if( PROCEDURE_ARITY( chook ) == 1 ) {
@@ -1320,7 +1342,7 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
    new_input_port->port_t.header = MAKE_HEADER( INPUT_PORT_TYPE, 0 );
    new_input_port->port_t.kindof = kindof;
    new_input_port->port_t.name = name;
-   new_input_port->port_t.stream = file;
+   new_input_port->port_t.stream.file = file;
    new_input_port->port_t.timeout = 0L;
    new_input_port->port_t.chook = BUNSPEC;
    new_input_port->port_t.userdata = BUNSPEC;
@@ -1432,7 +1454,7 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 	 /* not reflect the change but it must however be forced to  */
 	 /* non blocking.                                            */
 	 timeout_set_port_blocking( "input-port-timeout-set!",
-				    fileno( (FILE *)PORT_STREAM( port ) ),
+				    fileno( PORT_FILE( port ) ),
 				    1 );
 
 	 return 0;
@@ -1451,7 +1473,7 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 	    to->timeout.tv_sec = timeout / 1000000;
 	    to->timeout.tv_usec = timeout % 1000000;
 	    
-	    if( (int)PORT_STREAM( port ) == -1 ) {
+	    if( (int)PORT_FILE( port ) == -1 ) {
 	       C_SYSTEM_FAILURE( bglrerror( errno ),
 				 "input-port-timeout-set!",
 				 "Illegal input-port",
@@ -1463,7 +1485,7 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 
 	 INPUT_PORT( port ).sysread = &sysread_with_timeout;
 	 timeout_set_port_blocking( "input-port-timeout-set!",
-				    fileno( (FILE *)PORT_STREAM( port ) ),
+				    fileno( PORT_FILE( port ) ),
 				    0);
 	 return 1;
       }
@@ -1513,7 +1535,7 @@ bgl_open_input_resource( obj_t name, obj_t buffer ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_input_file_seek( obj_t port, long pos ) {
-   if( fseek( PORT_STREAM( port ), pos, SEEK_SET ) == -1 ) {
+   if( fseek( PORT_FILE( port ), pos, SEEK_SET ) == -1 ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"set-input-port-position!",
 			strerror( errno ),
@@ -1672,7 +1694,7 @@ bgl_open_input_procedure( obj_t fun, obj_t buffer ) {
 					KINDOF_PROCEDURE,
 					buffer );
 
-      CREF( port )->port_t.stream = port;
+      CREF( port )->port_t.stream.channel = port;
       CREF( port )->port_t.name = fun;
       CREF( port )->input_procedure_port_t.pbuffer = BUNSPEC;
       CREF( port )->input_procedure_port_t.pbufpos = 0;
@@ -1697,7 +1719,7 @@ bgl_open_input_gzip_port( obj_t fun, obj_t in, obj_t buffer ) {
 					KINDOF_GZIP,
 					buffer );
 
-      CREF( port )->port_t.stream = port;
+      CREF( port )->port_t.stream.channel = port;
       CREF( port )->port_t.name = fun;
       CREF( port )->input_procedure_port_t.pbuffer = BUNSPEC;
       CREF( port )->input_procedure_port_t.pbufpos = 0;
@@ -1770,8 +1792,9 @@ bgl_close_input_port( obj_t port ) {
 	  (PORT( port ).kindof != KINDOF_CONSOLE) ) {
 	 obj_t chook = PORT_CHOOK( port );
 
-	 if( PORT( port ).sysclose )
-	    PORT( port ).sysclose( PORT_STREAM( port ) );
+	 if( PORT( port ).sysclose ) {
+	    PORT( port ).sysclose( PORT_FILE( port ) );
+	 }
 	 
 	 INPUT_PORT( port ).eof = 1;
       	 PORT( port ).kindof = KINDOF_CLOSED;
@@ -1819,7 +1842,16 @@ bgl_output_port_filepos( obj_t port ) {
    long (*sysseek)() = OUTPUT_PORT( port ).sysseek;
 
    if( sysseek ) {
-      return (long)sysseek( PORT_STREAM( port ), 0, SEEK_CUR );
+      switch( OUTPUT_PORT( port ).stream_type ) {
+	 case BGL_STREAM_TYPE_FD: 
+	    return (long)sysseek( PORT_FD( port ), 0, SEEK_CUR );
+	 case BGL_STREAM_TYPE_FILE: 
+	    return (long)sysseek( PORT_FILE( port ), 0, SEEK_CUR );
+	 case BGL_STREAM_TYPE_CHANNEL: 
+	    return (long)sysseek( PORT_CHANNEL( port ), 0, SEEK_CUR );
+	 default:
+	    return 0;
+      }
    } else {
       return 0;
    }
@@ -1834,7 +1866,16 @@ bgl_output_port_seek( obj_t port, long pos ) {
    long (*sysseek)() = OUTPUT_PORT( port ).sysseek;
 
    if( sysseek ) {
-      return sysseek( PORT_STREAM( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+      switch( OUTPUT_PORT( port ).stream_type ) {
+	 case BGL_STREAM_TYPE_FD: 
+	    return sysseek( PORT_FD( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+	 case BGL_STREAM_TYPE_FILE: 
+	    return sysseek( PORT_FILE( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+	 case BGL_STREAM_TYPE_CHANNEL: 
+	    return sysseek( PORT_CHANNEL( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+	 default:
+	    return BFALSE;
+      }
    } else {
       return BFALSE;
    }
@@ -1858,11 +1899,11 @@ bgl_input_port_reopen( obj_t port ) {
    
    nf = freopen( BSTRING_TO_STRING( PORT( port ).name ),
 		 "r",
-		 (FILE *)PORT_STREAM( port ) );
+		 PORT_FILE( port ) );
 
    if( !nf ) return BFALSE;
 
-   PORT_STREAM( port ) = nf;
+   PORT_FILE( port ) = nf;
       
    /* we use our own buffer */
    setvbuf( (FILE *)nf, NULL, _IONBF, 0 );
@@ -1926,7 +1967,8 @@ bgl_init_io() {
 
    if( isatty( _FILENO( stdout ) ) ) {
       _stdout = bgl_make_output_port( string_to_bstring( "stdout" ),
-				      (void *)_FILENO( stdout ),
+				      (bgl_stream_t)_FILENO( stdout ),
+				      _STREAM_TYPE,
 				      KINDOF_CONSOLE,
 				      make_string_sans_fill( 512 ),
 				      bgl_syswrite,
@@ -1937,7 +1979,8 @@ bgl_init_io() {
       OUTPUT_PORT( _stdout ).bufmode = BGL_IOLBF;
    } else {
       _stdout = bgl_make_output_port( string_to_bstring( "stdout" ),
-				      (void *)_FILENO( stdout ),
+				      (bgl_stream_t)_FILENO( stdout ),
+				      _STREAM_TYPE,
 				      KINDOF_FILE,
 				      make_string_sans_fill( 8192 ),
 				      bgl_syswrite,
@@ -1945,7 +1988,8 @@ bgl_init_io() {
 				      _CLOSE );
    }
    _stderr = bgl_make_output_port( string_to_bstring( "stderr" ),
-				   (void *)_FILENO( stderr ),
+				   (bgl_stream_t)_FILENO( stderr ),
+				   _STREAM_TYPE,
 				   KINDOF_CONSOLE,
 				   make_string_sans_fill( 1 ), 
 				   bgl_syswrite,
@@ -2360,7 +2404,7 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
    struct stat in;
    struct stat out;
    long n;
-   void *fd = PORT_STREAM( op );
+   bgl_stream_t fd = PORT( op ).stream;
 
    if( (PORT( op ).kindof == KINDOF_CLOSED) ||
        (PORT( ip ).kindof == KINDOF_CLOSED) ||
@@ -2417,14 +2461,14 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       /* to be checked before invoking the actual sendfile sys call  */
 #  if( BGL_SENDFILE_REQUIRE_INPUT_FILE )
       (inp.port.kindof != KINDOF_FILE)
-      || fstat( fileno( (FILE *)PORT_STREAM( ip ) ), &in )
+      || fstat( fileno( PORT_FILE( ip ) ), &in )
       || !S_ISREG( in.st_mode )
 #  else
       0
 #  endif
 #  if( BGL_SENDFILE_REQUIRE_OUTPUT_SOCKET )
       || (outp.port.kindof != KINDOF_SOCKET)
-      || _FSTAT( (int)PORT_STREAM( op ), &out )
+      || _FSTAT( _PORT_FD( op ), &out )
       || ((out.st_mode & S_IFSOCK) != S_IFSOCK)
 #  endif       
       || 0 ) {
@@ -2445,8 +2489,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 #if( BGL_GC_HAVE_BLOCKING )
 	 bgl_gc_start_blocking();
 
-	 n = BGL_SENDFILE( (int)PORT_STREAM( op ),
-			   fileno( (FILE *)PORT_STREAM( ip ) ),
+	 n = BGL_SENDFILE( PORT_FD( op ),
+			   fileno( PORT_FILE( ip ) ),
 			   0L,
 			   sz );
 	 
@@ -2454,8 +2498,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 #else
 #  if( BGL_GC_HAVE_DO_BLOCKING )
 	 struct sendfile_info_t si;
-	 si.out = (int)PORT_STREAM( op );
-	 si.in = fileno( (FILE *)(PORT_STREAM( ip ) ) );
+	 si.out = PORT_FD( op );
+	 si.in = fileno( PORT_FILE( ip ) );
 	 si.sz = sz;
 	 si.port = op;
 	 si.off = 0L;
@@ -2508,7 +2552,7 @@ fail:
 obj_t
 bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
    struct stat sin;
-   _FD fd = (_FD)PORT_STREAM( op );
+   int fd = PORT_FD( op );
    int n;
    int in;
 
@@ -2759,4 +2803,3 @@ bgl_password( char *prompt ) {
    
    return string_to_bstring_len( s, i );
 }
-

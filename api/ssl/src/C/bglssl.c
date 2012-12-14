@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun Dec  9 16:57:29 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 10:29:58 2012 (serrano)                */
 /*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -163,7 +163,7 @@ free_pkey( void* obj, void* pkey ) {
 static long
 sslread( obj_t port, char *ptr, long len ) {
    int r;
-   SSL *ssl = (SSL*)CAR(PORT( port ).userdata);
+   SSL *ssl = (SSL*)CAR( PORT( port ).userdata );
 
 loop:   
    if( (r = SSL_read( ssl, ptr, len )) <= 0 ) {
@@ -184,7 +184,7 @@ loop:
 /*---------------------------------------------------------------------*/
 ssize_t
 sslwrite( obj_t port, char *ptr, long len ) {
-   return SSL_write( (SSL *)PORT_STREAM( port ), ptr, len );
+   return SSL_write( (SSL *)PORT_CHANNEL( port ), ptr, len );
 }
 
 /*---------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ socket_close_hook( obj_t env, obj_t s ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 input_close_hook( obj_t env, obj_t ip ) {
-   fclose( (FILE *)PORT_STREAM( ip ) );
+   fclose( PORT_FILE( ip ) );
    
    return ip;
 }
@@ -223,7 +223,7 @@ input_close_hook( obj_t env, obj_t ip ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 output_close_hook( obj_t env, obj_t op ) {
-   close( (long)(PORT( op ).userdata) );
+   close( (int)(PORT( op ).userdata) );
    
    return op;
 }
@@ -452,9 +452,10 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    PORT( ip ).chook = ssl_input_close_hook;
    PORT( ip ).sysclose = 0L;
    INPUT_PORT( ip ).sysread = &sslread;
-
-   PORT( op ).userdata = PORT_STREAM( op );
-   PORT( op ).stream = (obj_t)ssl;
+   
+   PORT( op ).userdata = (void *)PORT_FD( op );
+   PORT( op ).stream.channel = (obj_t)ssl;
+   OUTPUT_PORT( op ).stream_type = BGL_STREAM_TYPE_CHANNEL;
    PORT( op ).sysclose = 0L;
    PORT( op ).chook = ssl_output_close_hook;
    OUTPUT_PORT( op ).syswrite = &sslwrite;

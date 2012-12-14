@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Sat Apr 21 06:05:06 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 09:28:43 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -504,7 +504,7 @@ bgl_rgc_charready( obj_t port ) {
 	 
       case (long)KINDOF_FILE:
 	 return ((INPUT_PORT( port ).forward) < INPUT_PORT( port ).bufpos)
-	    || (!feof( (FILE *)PORT( port ).stream )
+	    || (!feof( PORT_FILE( port ) )
 		&& !INPUT_PORT( port ).eof);
 	 
       case (long)KINDOF_PROCPIPE:
@@ -512,7 +512,7 @@ bgl_rgc_charready( obj_t port ) {
       case (long)KINDOF_CONSOLE:
       case (long)KINDOF_SOCKET:
 	 return ((INPUT_PORT( port ).forward) < INPUT_PORT( port ).bufpos)
-	    || file_charready( PORT( port ).stream );
+	    || file_charready( PORT_FILE( port ) );
 	 
       case (long)KINDOF_PROCEDURE:
       case (long)KINDOF_GZIP:

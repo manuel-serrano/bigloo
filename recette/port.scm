@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Sat Oct 13 07:52:05 2012 (serrano)                */
+;*    Last change :  Fri Dec 14 10:20:11 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -639,6 +639,7 @@
 			     (n 0)
 			     (fhook (lambda (p s) (set! n (+ s n)))))
 			 (output-port-flush-hook-set! p fhook)
+			 (flush-output-port p)
 			 (write "foo" p)
 			 (write "bar" p)
 			 (write '(1 2 3) p)

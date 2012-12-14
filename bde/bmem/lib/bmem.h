@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Wed Oct 24 09:33:09 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 10:48:08 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -117,7 +117,7 @@ extern void *(*____make_vector_uncollectable)( int, void * );
 extern void *(*____make_fx_procedure)( void *(*)(), int, int );
 extern void *(*____make_va_procedure)( void *(*)(), int, int );
 
-extern void *(*____bgl_make_output_port)( void *, void *, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
+extern void *(*____bgl_make_output_port)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
                                         
 extern void *(*____bgl_open_output_string)( void * );
 extern void *(*____bgl_output_port_timeout_set)( void *, long );

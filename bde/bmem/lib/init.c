@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Oct 24 09:33:05 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 10:49:43 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -12,9 +12,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-#include <bmem.h>
 
 #include <bigloo.h>
+#include <bmem.h>
+
 #include <esymbol.h>
 
 #include <dlfcn.h>
@@ -83,7 +84,7 @@ void *(*____make_fx_procedure)( void *(*)(), int, int );
 void *(*____make_va_procedure)( void *(*)(), int, int );
 
 /* output port */
-void *(*____bgl_make_output_port)( void *, void *, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
+void *(*____bgl_make_output_port)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
 void *(*____bgl_open_output_string)( void * );
 void *(*____bgl_output_port_timeout_set)( void *, long );
 
@@ -387,7 +388,7 @@ bmem_init_inner() {
    ____make_fx_procedure = get_function( hdl, "make_fx_procedure" );
    ____make_va_procedure = get_function( hdl, "make_va_procedure" );
    /* output port */
-   ____bgl_make_output_port = (void *(*)( void *, void *, void *, void *, ssize_t (*)(), long (*)(), int (*)() ))get_function( hdl, "bgl_make_output_port" );
+   ____bgl_make_output_port = (void *(*)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() ))get_function( hdl, "bgl_make_output_port" );
    ____bgl_open_output_string = (void *(*)( void * ))get_function( hdl, "bgl_open_output_string" );
    ____bgl_output_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_output_port_timeout_set" );
    

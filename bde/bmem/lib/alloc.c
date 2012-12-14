@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Oct 24 11:43:24 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 10:50:31 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -778,7 +778,7 @@ WRAPPER( make_fx_procedure, PROCEDURE_TYPE_NUM, (obj_t (*e)(), int a, int s), ((
 WRAPPER( make_va_procedure, PROCEDURE_TYPE_NUM, (obj_t (*e)(), int a, int s), ((void *(*)())e, a, s) )
 
 /* output port */
-WRAPPER( bgl_make_output_port, OUTPUT_PORT_TYPE_NUM, (obj_t n, void *d, obj_t t, obj_t b, ssize_t (*w)(), long (*s)(), int (*c)()), (n, d, t, b, w, s, c) )
+WRAPPER( bgl_make_output_port, OUTPUT_PORT_TYPE_NUM, (obj_t n, bgl_stream_t d, int y, obj_t t, obj_t b, ssize_t (*w)(), long (*s)(), int (*c)()), (n, d, y, t, b, w, s, c) )
 WRAPPER( bgl_open_output_string, OUTPUT_PORT_TYPE_NUM, (obj_t o), (o) )
 WRAPPER2( bgl_output_port_timeout_set, PORT_TIMEOUT_TYPE_NUM, -1, (void *o, long t), (o, t) )
 

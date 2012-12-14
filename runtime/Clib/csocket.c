@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sun Dec  9 15:23:34 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 09:30:17 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1201,7 +1201,8 @@ set_socket_io_ports( int s, obj_t sock, char *who, obj_t inb, obj_t outb ) {
    SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
 
    /* Create output port */
-   SOCKET( sock ).output = bgl_make_output_port( host, (void *)s,
+   SOCKET( sock ).output = bgl_make_output_port( host, (bgl_stream_t)s,
+						 BGL_STREAM_TYPE_FD,
 						 KINDOF_SOCKET,
 						 outb,
 						 bgl_syswrite,
@@ -2207,7 +2208,7 @@ bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
 /*---------------------------------------------------------------------*/
 static ssize_t
 datagram_socket_write( obj_t port, void *buf, size_t len ) {
-   obj_t s = (obj_t)PORT_STREAM( port );
+   obj_t s = (obj_t)PORT_CHANNEL( port );
    obj_t sock = (obj_t)s;
    int fd = BGL_DATAGRAM_SOCKET( sock ).fd;
    struct sockaddr *server = BGL_DATAGRAM_SOCKET( sock ).server;
@@ -2305,7 +2306,9 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    
    /* socket port */
    oport = bgl_make_output_port( a_socket->datagram_socket_t.hostip,
-				 (void *)a_socket, KINDOF_SOCKET,
+				 (bgl_stream_t)(void *)BREF( a_socket ),
+				 BGL_STREAM_TYPE_CHANNEL,
+				 KINDOF_SOCKET,
 				 make_string_sans_fill( 0 ),
 				 &datagram_socket_write,
 				 0L,

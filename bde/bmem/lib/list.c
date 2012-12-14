@@ -3,12 +3,13 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:52:54 2003                          */
-/*    Last change :  Mon May 19 10:02:25 2003 (serrano)                */
-/*    Copyright   :  2003 Manuel Serrano                               */
+/*    Last change :  Fri Dec 14 10:50:57 2012 (serrano)                */
+/*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Simple and naive list library                                    */
 /*=====================================================================*/
 #include <stdlib.h>
+#include <bigloo.h>
 #include <bmem.h>
 
 /*---------------------------------------------------------------------*/

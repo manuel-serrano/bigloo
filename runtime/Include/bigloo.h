@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec 12 10:40:06 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 10:05:06 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -248,6 +248,16 @@ struct bgl_dframe {              /*  Debug traces                      */
    struct bgl_dframe *link;
 };
 
+typedef union bgl_stream {                    
+   void *channel;
+   FILE *file;
+   int fd;
+} bgl_stream_t;
+
+#define BGL_STREAM_TYPE_FD 1
+#define BGL_STREAM_TYPE_FILE 2
+#define BGL_STREAM_TYPE_CHANNEL 3
+
 typedef union scmobj {
    int_t integer;                /*  Les entiers                       */
    
@@ -329,7 +339,7 @@ typedef union scmobj {
       header_t header;           /*                                    */
       union scmobj *kindof;      /*    - (console, file, pipe)         */
       union scmobj *name;        /*    - the name of file              */
-      void *stream;              /*    - the underlying descriptor     */
+      bgl_stream_t stream;       /*    - the underlying descriptor     */
       union scmobj *chook;       /*    - the close hook                */
       void *timeout;             /*    - a timeout structure           */
       void *userdata;            /*    - a user data (see SSL sockets) */
@@ -338,6 +348,7 @@ typedef union scmobj {
       
    struct output_port {          /*  output_port:                      */
       struct port port;          /*    - a regular port                */
+      int stream_type;           /*    - FD, FILE, or CHANNEL          */
       union scmobj *buf;         /*    - the buffer as a bgl string    */
       char *ptr;                 /*    - the next char position        */
       char *end;                 /*    - the end of the buffer         */
@@ -1850,7 +1861,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define PORT_CHOOK( o ) (PORT( o ).chook)
 #define PORT_CHOOK_SET( o, v ) ((PORT( o ).chook) = (v))
    
-#define PORT_STREAM( o ) (PORT( o ).stream)
+#define PORT_FILE( o ) (PORT( o ).stream.file)
+#define PORT_FD( o ) (PORT( o ).stream.fd)
+#define PORT_CHANNEL( o ) (PORT( o ).stream.channel)
 
 /*---------------------------------------------------------------------*/
 /*    Output-ports                                                     */
@@ -1899,7 +1912,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_IONB  0 /* unubuffered */
 #define BGL_IOLBF 1 /* line buffered */
 #define BGL_IOFBF 2 /* fully buffered */
-#define BGL_IOEBF 3 /* extensibe buffered */
+#define BGL_IOEBF 3 /* extensible buffered */
 
 /* #define BGL_DISPLAY_STRING( o, op ) \                               */
 /*    bgl_write_with_lock( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) ) */
@@ -3108,7 +3121,7 @@ BGL_RUNTIME_DECL obj_t bgl_reverse_bang( obj_t );
 BGL_RUNTIME_DECL long bgl_list_length( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_remq( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_remq_bang( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t bgl_make_output_port( obj_t, void *, obj_t, obj_t, ssize_t (*)(), long (*)(), int (*)() );
+BGL_RUNTIME_DECL obj_t bgl_make_output_port( obj_t, bgl_stream_t, int, obj_t, obj_t, ssize_t (*)(), long (*)(), int (*)() );
 BGL_RUNTIME_DECL void bgl_output_port_buffer_set( obj_t, obj_t );   
 BGL_RUNTIME_DECL obj_t bgl_close_output_port( obj_t );
 BGL_RUNTIME_DECL obj_t get_output_string( obj_t );
