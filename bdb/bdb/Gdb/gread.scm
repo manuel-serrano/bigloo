@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  9 08:43:03 2000                          */
-;*    Last change :  Fri Jun 16 17:24:04 2006 (serrano)                */
-;*    Copyright   :  2000-06 Manuel Serrano                            */
+;*    Last change :  Fri Dec 14 13:37:58 2012 (serrano)                */
+;*    Copyright   :  2000-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read GDB outputs.                                                */
 ;*=====================================================================*/
@@ -41,7 +41,7 @@
 ;*    input-port->file ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (input-port->file::file iport::input-port)
-   (pragma::file "PORT( $1 ).stream" iport))
+   (pragma::file "PORT_FILE( $1 )" iport))
 
 ;*---------------------------------------------------------------------*/
 ;*    getc ...                                                         */

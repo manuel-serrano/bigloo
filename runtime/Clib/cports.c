@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec 14 10:32:23 2012 (serrano)                */
+/*    Last change :  Fri Dec 14 12:13:28 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1473,7 +1473,7 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 	    to->timeout.tv_sec = timeout / 1000000;
 	    to->timeout.tv_usec = timeout % 1000000;
 	    
-	    if( (int)PORT_FILE( port ) == -1 ) {
+	    if( (int)fileno( PORT_FILE( port ) ) == -1 ) {
 	       C_SYSTEM_FAILURE( bglrerror( errno ),
 				 "input-port-timeout-set!",
 				 "Illegal input-port",
