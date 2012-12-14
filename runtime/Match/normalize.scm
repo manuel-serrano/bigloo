@@ -133,7 +133,7 @@
 ;    ( (any) (standardize-patterns e) ) ) )
 
 (define (standardize-pattern e)
-  (cond ((macro-pattern? e) (standardize-macro-pattern e))
+  (cond ((macro-pattern? e) => (lambda (p) (standardize-macro-pattern e p)))
         ((eq? e '?-) (standardize-sexp))
         ((term-variable? e) (standardize-term-variable e))
         ((hole-variable? e) (standardize-hole-variable e))
@@ -152,7 +152,7 @@
 
 (define (standardize-patterns e*)
   (if (pair? e*)
-      (cond ((macro-pattern? e*) (standardize-macro-pattern e*))
+      (cond ((macro-pattern? e*) => (lambda (p) (standardize-macro-pattern e* p)))
 	    ((eq? (car e*) '??-) (standardize-any (cdr e*)))
 	    ((eq? (car e*) '???-) (standardize-lispish-any (cdr e*)))
 	    ((lispish-segment-variable? (car e*))
@@ -317,8 +317,8 @@
       (lambda (r c) (c `(any) r))
       (standardize-any f*) ) )
 
-(define (standardize-macro-pattern e)
-  (apply (lookup r-macro-pattern (car e)) (cdr e)) )
+(define (standardize-macro-pattern e p)
+  (apply p (cdr e)) )
 
 ;;;--------------------------------------------------------------------*/
 ;;;   Macro-patterns                                                   */

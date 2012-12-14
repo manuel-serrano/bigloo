@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Thu Dec 13 08:05:39 2012 (serrano)                */
+;*    Last change :  Thu Dec 13 09:14:05 2012 (serrano)                */
 ;*    Copyright   :  2002-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */

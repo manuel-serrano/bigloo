@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 10 10:45:58 2007                          */
-;*    Last change :  Sun Nov 18 15:05:35 2012 (serrano)                */
+;*    Last change :  Thu Dec 13 19:25:21 2012 (serrano)                */
 ;*    Copyright   :  2007-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The MPLAYER Bigloo binding                                       */
@@ -156,7 +156,8 @@
 		  (year . ,(cmd-integer "get_meta_year" "ANS_META_YEAR=" po pi))
 		  (artist . ,(cmd-string "get_meta_artist" "ANS_META_ARTIST=" po pi))
 		  (album . ,(cmd-string "get_meta_album" "ANS_META_ALBUM=" po pi))
-		  (genre . ,(cmd-string "get_meta_genre" "ANS_META_GENRE=" po pi))))))))
+		  (genre . ,(cmd-string "get_meta_genre" "ANS_META_GENRE=" po pi))))
+	     '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    musicproc-start ...                                              */

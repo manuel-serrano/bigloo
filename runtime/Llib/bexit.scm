@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Mon Dec 10 00:11:09 2012 (serrano)                */
+;*    Last change :  Thu Dec 13 19:30:16 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -225,7 +225,10 @@
        ($exitd-mutex1-set! exitd #f))
       (else
        ;; (pragma "fprintf( stderr, \"popN %p\\n\", $1 )"  m)
-       ($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd))))))
+       ;; here, we don't need to check, we always have to remove the
+       ;; first element of the stack
+       ($exitd-mutexn-set! exitd ($exitd-mutexn exitd)))))
+       ;;($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */
