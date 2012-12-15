@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Dec 14 19:23:36 2012 (serrano)                */
+/*    Last change :  Sat Dec 15 07:34:54 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -62,8 +62,9 @@ obj_t
 bglpth_mutex_state( void *m ) {
    bglpmutex_t mut = (bglpmutex_t)m;
 
-#if BGL_POSIX_CONDV_TIMEDWAIT 
    bgl_mutex_symbols_init();
+   
+#if BGL_POSIX_CONDV_TIMEDWAIT 
    
    if( pthread_mutex_trylock( m ) ) {
       /* try lock failed, another thread owns that lock */
