@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sat Dec 15 07:34:54 2012 (serrano)                */
+/*    Last change :  Sat Dec 15 08:12:20 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -110,10 +110,11 @@ bglpth_mutex_state( void *m ) {
 bool_t
 bglpth_mutex_timed_lock( void *m, long ms ) {
    bglpmutex_t mut = (bglpmutex_t)m;
+   int res;
    
 #if BGL_HAVE_MUTEX_TIMEDLOCK
    struct timespec timeout;
-   bool_t res;
+
 #  if defined( _MINGW_VER ) || defined( _MSC_VER )
    struct timeb tb;
    ftime( &tb );
@@ -129,9 +130,8 @@ bglpth_mutex_timed_lock( void *m, long ms ) {
 
    res = pthread_mutex_timedlock( &(mut->pmutex), &timeout );
 #else
-   int res;
 
-   while( (res=(pthread_mutex_trylock( &mut ) == EBUSY )) && (ms > 0) ) {
+   while( (res=(pthread_mutex_trylock( &(mut->pmutex) ) == EBUSY )) && (ms > 0) ) {
       ms -= 100;
       bgl_sleep( 100 * 1000 );
    }
