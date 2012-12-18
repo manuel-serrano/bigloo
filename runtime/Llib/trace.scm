@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Sun Nov 18 14:52:28 2012 (serrano)                */
+;*    Last change :  Tue Dec 18 11:06:42 2012 (serrano)                */
 ;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -166,7 +166,7 @@
 	 (when (>=fx (bigloo-debug) (trace-alist-get al 'margin-level))
 	    (let ((p (trace-port)))
 	       (display (trace-alist-get al 'margin) p)
-	       (display (trace-color (-fx (trace-alist-get al 'depth) 1) "- "))
+	       (display (trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
 	       (for-each (lambda (a) (display-circle a p)) args)
 	       (newline p))))))
 
