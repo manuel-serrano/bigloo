@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Tue Oct 30 19:56:54 2012 (serrano)                */
+#*    Last change :  Wed Dec 19 21:01:45 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -106,6 +106,19 @@ if [ ! -f $basedir/makedeb.sh ]; then
   echo "exiting..." >&2;
 fi
 
+# check which ssl is available
+sudo apt-cache search 'libssl' | grep 0\.9\.8
+if [ $? = 0 ]
+  libssldepend=libssl0.9.8
+else
+  sudo apt-cache search 'libssl' | grep 1\.0\.0
+  if [ $? = 0 ]
+     libssldepend=libssl1.0.0
+  else
+     libssldepend=libssl
+  fi
+fi
+
 # configure debian files
 configure() {
   src=$1
@@ -116,6 +129,7 @@ configure() {
     | sed -e "s|@BGLPREFIX@|$bglprefix|g" \
     | sed -e "s|@BGLCONFIGUREOPT@|$bglconfigureopt|g" \
     | sed -e "s|@EXTRADEPEND@|$depend|g" \
+    | sed -e "s|@LIBSSLDEPEND@|$libssldepend|g" \
     | sed -e "s|@EXTRABUILDDEPEND@|$builddepend|g" \
     > $dest.tmp
   for l in $libs; do

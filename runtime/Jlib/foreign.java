@@ -6499,27 +6499,22 @@ public final class foreign
 	 return o.name;
       }
 
-   public static boolean bgl_mutex_lock(mutex o)
+   public static int bgl_mutex_lock(mutex o)
       {
 	 return o.acquire_lock();
       }
    
-//   public static void bgl_mutex_mark(mutex o)
-//      {
-//	 o.mark_lock();
-//      }
-   
-   public static boolean bgl_mutex_lock_prelock(mutex o, Object l)
+   public static int bgl_mutex_lock_prelock(mutex o, Object l)
       {
 	 return o.acquire_lock();
       }
    
-   public static boolean bgl_mutex_timed_lock(mutex o, int tmt)
+   public static int bgl_mutex_timed_lock(mutex o, int tmt)
       {
 	 return o.acquire_timed_lock(tmt);
       }
    
-   public static boolean bgl_mutex_unlock(mutex o)
+   public static int bgl_mutex_unlock(mutex o)
       {
 	 return o.release_lock();
       }

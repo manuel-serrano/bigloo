@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Sun Dec  9 15:21:44 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 09:08:01 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -29,7 +29,7 @@ DEFINE_STRING( date_mutex_name, _2, "date-mutex", 10 );
 void
 bgl_init_date() {
    if( date_mutex == BUNSPEC ) {
-      date_mutex = bgl_make_mutex( date_mutex_name );
+      date_mutex = bgl_make_spinlock( date_mutex_name );
    }
 }
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 13:37:30 2005                          */
-/*    Last change :  Fri Nov 23 17:38:18 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 10:40:02 2012 (serrano)                */
 /*    Copyright   :  2005-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Mutex implementation                                             */
@@ -57,7 +57,7 @@ public class bglpmutex extends bigloo.mutex {
       }
    }
 
-   public boolean acquire_lock( int ms ) {
+   public int acquire_lock( int ms ) {
       synchronized( this ) {
 	 Object th = bglpthread.current_thread();
       
@@ -65,7 +65,7 @@ public class bglpmutex extends bigloo.mutex {
 	    try {
 	       if( ms > 0 ) {
 		  wait( ms );
-		  if( thread != null && thread != th ) return false;
+		  if( thread != null && thread != th ) return 1;
 	       } else {
 		  wait();
 	       }
@@ -80,19 +80,19 @@ public class bglpmutex extends bigloo.mutex {
 	 thread = th;
 	 state = null;
 	 
-	 return true;
+	 return 0;
       }
    }
 
-   public boolean acquire_lock() {
+   public int acquire_lock() {
       return acquire_lock( 0 );
    }
    
-   public boolean acquire_timed_lock( int ms ) {
+   public int acquire_timed_lock( int ms ) {
       return acquire_lock( ms );
    }
 
-   public boolean release_lock() {
+   public int release_lock() {
       synchronized( this ) {
 	 Object th = bglpthread.current_thread();
 	 
@@ -108,7 +108,7 @@ public class bglpmutex extends bigloo.mutex {
 			 this );
 	 }
       }
-      return true;
+      return 0;
    }
 
    public static Object SPECIFIC( Object m ) {

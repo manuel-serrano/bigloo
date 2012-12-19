@@ -28,20 +28,16 @@ public class mutex extends obj
      p.write( "#<mutex>" );
    }
 
-   public boolean acquire_lock() {
-      return true;
+   public int acquire_lock() {
+      return 0;
    }
    
-   public boolean acquire_timed_lock( int ms ) {
-      return true;
+   public int acquire_timed_lock( int ms ) {
+      return 0;
    }
    
-   public void mark_lock() {
-      ;
-   }
-   
-   public boolean release_lock() {
-      return true;
+   public int release_lock() {
+      return 0;
    }
 
    public Object state() {

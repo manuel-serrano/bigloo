@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Tue Dec 11 15:42:42 2012 (serrano)                */
+;*    Last change :  Wed Dec 19 09:02:16 2012 (serrano)                */
 ;*    Copyright   :  2004-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -58,13 +58,13 @@
 	    ($make-nil-mutex::mutex () "bgl_make_nil_mutex")
 	    (macro $mutex-name::obj (::mutex)
 		   "BGL_MUTEX_NAME")
-	    (macro $mutex-lock::bool (::mutex)
+	    (macro $mutex-lock::int (::mutex)
 		   "BGL_MUTEX_LOCK")
-	    (macro $mutex-lock-prelock::bool (::mutex ::pair-nil)
+	    (macro $mutex-lock-prelock::int (::mutex ::pair-nil)
 		   "BGL_MUTEX_LOCK_PRELOCK")
-	    (macro $mutex-timed-lock::bool (::mutex ::long)
+	    (macro $mutex-timed-lock::int (::mutex ::long)
 		   "BGL_MUTEX_TIMED_LOCK")
-	    (macro $mutex-unlock::bool (::mutex)
+	    (macro $mutex-unlock::int (::mutex)
 		   "BGL_MUTEX_UNLOCK")
 	    (macro $mutex-state::obj (::mutex)
 		   "BGL_MUTEX_STATE")
@@ -109,13 +109,13 @@
 		       "bgl_make_nil_mutex")
 	       (method static $mutex-name::obj (::mutex)
 		       "BGL_MUTEX_NAME")
-	       (method static $mutex-lock::bool (::mutex)
+	       (method static $mutex-lock::int (::mutex)
 		       "bgl_mutex_lock")
-	       (method static $mutex-lock-prelock::bool (::mutex ::pair-nil)
+	       (method static $mutex-lock-prelock::int (::mutex ::pair-nil)
 		       "bgl_mutex_lock_prelock")
-	       (method static $mutex-timed-lock::bool (::mutex ::long)
+	       (method static $mutex-timed-lock::int (::mutex ::long)
 		       "bgl_mutex_timed_lock")
-	       (method static $mutex-unlock::bool (::mutex)
+	       (method static $mutex-unlock::int (::mutex)
 		       "bgl_mutex_unlock")
 	       (method static $mutex-state::obj (::mutex)
 		       "bgl_mutex_state")
@@ -588,14 +588,14 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (mutex-lock! m #!optional (timeout::long 0))
    (if (=fx timeout 0)
-       ($mutex-lock m)
-       ($mutex-timed-lock m timeout)))
+       (=fx ($mutex-lock m) 0)
+       (=fx ($mutex-timed-lock m timeout) 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-unlock! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (mutex-unlock! m)
-   ($mutex-unlock m))
+   (=fx ($mutex-unlock m) 0))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-state ...                                                  */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec 14 10:05:06 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 08:58:56 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -539,6 +539,7 @@ typedef union scmobj {
       header_t header;
       union scmobj *name;        /* the name (debug)                   */
       int (*syslock)();          /*    - the system primtives          */
+      int (*systrylock)();       /*    - ...                           */
       int (*systimedlock)();     /*    - ...                           */
       int (*sysunlock)();        /*    - ...                           */
       int (*syslockprelock)();   /*    - ...                           */
@@ -2907,13 +2908,16 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
 
 #define BGL_MUTEX_LOCK( o ) \
-   (!BGL_MUTEX( o ).syslock( BGL_MUTEX_SYSMUTEX( o ) ))
+   (BGL_MUTEX( o ).syslock( BGL_MUTEX_SYSMUTEX( o ) ))
+
+#define BGL_MUTEX_TRYLOCK( o ) \
+   (BGL_MUTEX( o ).systrylock( BGL_MUTEX_SYSMUTEX( o ) ))
 
 #define BGL_MUTEX_TIMED_LOCK( o, to ) \
-   (!BGL_MUTEX( o ).systimedlock( BGL_MUTEX_SYSMUTEX( o ), to ))
+   (BGL_MUTEX( o ).systimedlock( BGL_MUTEX_SYSMUTEX( o ), to ))
 
 #define BGL_MUTEX_UNLOCK( o ) \
-   (!BGL_MUTEX( o ).sysunlock( BGL_MUTEX_SYSMUTEX( o ) ))
+   (BGL_MUTEX( o ).sysunlock( BGL_MUTEX_SYSMUTEX( o ) ))
    
 #define BGL_MUTEX_LOCK_PRELOCK( o, l ) \
    (BGL_MUTEX( o ).syslockprelock( BGL_MUTEX_SYSMUTEX( o ), l ))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec 14 12:13:28 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 12:01:55 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1970,7 +1970,7 @@ bgl_init_io() {
 				      (bgl_stream_t)_FILENO( stdout ),
 				      _STREAM_TYPE,
 				      KINDOF_CONSOLE,
-				      make_string_sans_fill( 512 ),
+				      make_string_sans_fill( 0 ),
 				      bgl_syswrite,
 				      (long (*)())_LSEEK,
 				      _CLOSE );

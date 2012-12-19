@@ -13,7 +13,7 @@ Description: Bigloo core Libraries
 
 @IFSSL@ Package: libssl-bigloo
 @IFSSL@ Architecture: any
-@IFSSL@ Depends: libssl0.9.8, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
+@IFSSL@ Depends: @LIBSSLDEPEND@, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
 @IFSSL@ Description: Bigloo bindings for OpenSSL.
 
 @IFALSA@ Package: libalsa-bigloo

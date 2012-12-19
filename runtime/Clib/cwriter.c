@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Sun Dec  9 17:28:26 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 12:11:15 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -44,57 +44,33 @@ static unsigned char *char_name[] = {
    "x", "y", "z", "{", "|", "}", "~", ""
 };
 
-#define CNT 1
-#undef CNT
-
-#if( defined( CNT ) )
-#  undef BGL_OUTPUT_PORT_CNT
-#  define BGL_OUTPUT_PORT_CNT( p ) OUTPUT_PORT( p ).cnt
+/*---------------------------------------------------------------------*/
+/*    GCC branch prediction                                            */
+/*---------------------------------------------------------------------*/
+#if  __GNUC__ >= 3
+#  define IF_EXPECT( expr ) if( __builtin_expect( (expr), 1 ) )
+#  define IF_UNEXPECT( expr ) if( __builtin_expect( (expr), 0 ) )
+#else
+#  define IF_EXPECT( expr ) if( expr )
+#  define IF_UNEXPECT( expr ) if( expr )
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    PUTC ...                                                         */
 /*---------------------------------------------------------------------*/
-#if( defined( CNT ) )
-#define PUTC( op, c ) {						       \
-   *OUTPUT_PORT( op ).ptr++ = c;				       \
-   if( --OUTPUT_PORT( op ).cnt > 0 ) {				       \
-      if( (c == '\n') && (OUTPUT_PORT( op ).bufmode == BGL_IOLBF) ) {  \
-	 bgl_output_flush( op, 0, 0 );				       \
-      }								       \
-   } else {							       \
-      bgl_output_flush( op, 0, 0 );				       \
-   }								       \
- }
-#else
 #define PUTC( op, c ) {					               \
-   if( OUTPUT_PORT( op ).ptr >= OUTPUT_PORT( op ).end ) {              \
+   IF_UNEXPECT( OUTPUT_PORT( op ).ptr >= OUTPUT_PORT( op ).end ) {     \
       bgl_output_flush_char( op, c );                                  \
    } else {                                                            \
-      if( (c == '\n') && (OUTPUT_PORT( op ).bufmode == BGL_IOLBF) ) {  \
-         bgl_output_flush_char( op, c );                               \
-      } else {                                                         \
-         *OUTPUT_PORT( op ).ptr++ = c;				       \
-      }                                                                \
+      *OUTPUT_PORT( op ).ptr++ = c;				       \
    }                                                                   \
  }
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    PUTS ...                                                         */
 /*    -------------------------------------------------------------    */
 /*    This assumes than strings do not contain \n character.           */
 /*---------------------------------------------------------------------*/
-#if( defined( CNT ) )
-#define PUTS( op, str )						       \
-   if( OUTPUT_PORT( op ).cnt >= (sizeof( str ) - 1) ) {		       \
-      memcpy( OUTPUT_PORT( op ).ptr, str, (sizeof( str ) - 1) );       \
-      OUTPUT_PORT( op ).ptr += (sizeof( str ) - 1);		       \
-      OUTPUT_PORT( op ).cnt -= (sizeof( str ) - 1);		       \
-   } else {							       \
-      bgl_output_flush( op, str, (sizeof( str ) - 1) );		       \
-   }								       
-#else
 #define PUTS( op, s )						       \
    if( OUTPUT_PORT( op ).ptr + (sizeof(s)-1) < OUTPUT_PORT( op ).end) {\
       memcpy( OUTPUT_PORT( op ).ptr, s, (sizeof(s)-1) );               \
@@ -102,7 +78,6 @@ static unsigned char *char_name[] = {
    } else {							       \
       bgl_output_flush( op, s, (sizeof(s)-1) );	              	       \
    } 
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    PRINTF ...                                                       */
@@ -113,29 +88,6 @@ static unsigned char *char_name[] = {
 #  define *_new = alloca( s )
 #endif
 
-#if( defined( CNT ) ) 
-#define PRINTF1( op, sz, fmt, arg0 )			        \
-   if( OUTPUT_PORT( op ).cnt > sz ) {			        \
-      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 );      \
-      OUTPUT_PORT( op ).ptr += n;			        \
-      OUTPUT_PORT( op ).cnt -= n;			        \
-   } else {						        \
-      char _new( __buf, sz  );				        \
-      int n = sprintf( __buf, fmt, arg0 );		        \
-      bgl_output_flush( op, __buf, n );			        \
-   }
-
-#define PRINTF2( op, sz, fmt, arg0, arg1 )			\
-   if( OUTPUT_PORT( op ).cnt > sz ) {				\
-      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1 );\
-      OUTPUT_PORT( op ).ptr += n;				\
-      OUTPUT_PORT( op ).cnt -= n;				\
-   } else {							\
-      char _new( __buf, sz );					\
-      int n = sprintf( __buf, fmt, arg0, arg1 );                \
-      bgl_output_flush( op, __buf, n );				\
-   }
-#else
 #define PRINTF1( op, sz, fmt, arg0 )			        \
    if( BGL_OUTPUT_PORT_CNT( op ) > sz ) {	                \
       int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 );      \
@@ -155,7 +107,6 @@ static unsigned char *char_name[] = {
       int n = sprintf( __buf, fmt, arg0, arg1 );                \
       bgl_output_flush( op, __buf, n );				\
    }
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

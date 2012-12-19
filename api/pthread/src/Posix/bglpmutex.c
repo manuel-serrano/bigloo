@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sat Dec 15 08:12:20 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 10:39:15 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -165,6 +165,25 @@ bglpth_mutex_lock( void *m ) {
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
+/*    bglpth_mutex_trylock ...                                         */
+/*---------------------------------------------------------------------*/
+#if !BGL_POSIX_CONDV_TIMEDWAIT
+static int
+bglpth_mutex_trylock( void *m ) {
+   int r;
+   bglpmutex_t mut = (bglpmutex_t)m;
+
+   if( r = pthread_mutex_trylock( m ) ) {
+      return r;
+   } else {
+      mut->locked++;
+      return 0;
+   }
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
 /*    bglpth_mutex_unlock ...                                          */
 /*---------------------------------------------------------------------*/
 #if !BGL_POSIX_CONDV_TIMEDWAIT
@@ -205,9 +224,11 @@ bglpth_mutex_init( obj_t o ) {
 
 #if BGL_POSIX_CONDV_TIMEDWAIT
    BGL_MUTEX( o ).syslock = &pthread_mutex_lock;
+   BGL_MUTEX( o ).systrylock = &pthread_mutex_trylock;
    BGL_MUTEX( o ).sysunlock = &pthread_mutex_unlock;
 #else   
    BGL_MUTEX( o ).syslock = &bglpth_mutex_lock;
+   BGL_MUTEX( o ).systrylock = &bglpth_mutex_trylock;
    BGL_MUTEX( o ).sysunlock = &bglpth_mutex_unlock;
 #endif   
    BGL_MUTEX( o ).systimedlock = &bglpth_mutex_timed_lock;
@@ -249,6 +270,7 @@ bglpth_spinlock_init( obj_t o ) {
    mut->bmutex = o;
 
    BGL_MUTEX( o ).syslock = &pthread_spin_lock;
+   BGL_MUTEX( o ).systrylock = &pthread_spin_trylock;
    BGL_MUTEX( o ).sysunlock = &pthread_spin_unlock;
    BGL_MUTEX( o ).systimedlock = 0;
    BGL_MUTEX( o ).sysstate = 0;

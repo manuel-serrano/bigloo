@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Sun Dec  9 15:22:55 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 09:07:18 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -35,7 +35,7 @@ void
 bgl_init_symbol_table() {
    if( !VECTORP( c_symtab ) ) {
       c_symtab = make_vector( SYMBOL_HASH_TABLE_SIZE, BNIL );
-      symbol_mutex = bgl_make_mutex( symbol_mutex_name );
+      symbol_mutex = bgl_make_spinlock( symbol_mutex_name );
    }
 }
           

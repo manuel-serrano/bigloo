@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Fri Dec 14 09:25:23 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 09:09:51 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -101,7 +101,7 @@ bgl_init_process_table() {
    int i;
    char *env;
    
-   process_mutex = bgl_make_mutex( process_mutex_name );
+   process_mutex = bgl_make_spinlock( process_mutex_name );
 
    env = getenv( "BIGLOOLIVEPROCESS" );
    

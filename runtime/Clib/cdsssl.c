@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Sun Dec  9 15:22:37 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 09:09:00 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -33,7 +33,7 @@ DEFINE_STRING( keyword_mutex_name, _1, "keyword-mutex", 12 );
 void bgl_init_keyword_table() {
    if( !VECTORP( c_keytab ) ) {
       c_keytab = make_vector( KEYWORD_HASH_TABLE_SIZE, BNIL );
-      keyword_mutex = bgl_make_mutex( keyword_mutex_name );
+      keyword_mutex = bgl_make_spinlock( keyword_mutex_name );
    }
 }
            

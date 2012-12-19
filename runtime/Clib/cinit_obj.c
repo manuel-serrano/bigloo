@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Wed Oct 20 09:12:59 2010 (serrano)                */
-/*    Copyright   :  2002-10 Manuel Serrano                            */
+/*    Last change :  Wed Dec 19 09:09:19 2012 (serrano)                */
+/*    Copyright   :  2002-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -68,8 +68,8 @@ void bgl_init_objects() {
    bgl_init_date();
    bgl_init_bignum();
 
-   bigloo_mutex = bgl_make_mutex( bigloo_mutex_name );
-   bigloo_generic_mutex = bgl_make_mutex( bigloo_mutex_name );
+   bigloo_mutex = bgl_make_spinlock( bigloo_mutex_name );
+   bigloo_generic_mutex = bgl_make_spinlock( bigloo_mutex_name );
    quote = string_to_symbol( "QUOTE" );
 
    bigloo_nan = DOUBLE_TO_REAL( bgl_nan() );

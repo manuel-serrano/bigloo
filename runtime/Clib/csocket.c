@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Dec 14 09:30:17 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 09:11:34 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -166,8 +166,10 @@ DEFINE_STRING( socket_condv_name, _6, "socket-condv", 12 );
 static struct bglhostent *socket_condv_value = 0L;
 static obj_t gethostby_mutex = BUNSPEC;
 DEFINE_STRING( gethostby_mutex_name, _3, "socket-gethostby", 22 );
+#if defined( DEBUG_SEGV )
 static obj_t socket_port_mutex = BUNSPEC;
 DEFINE_STRING( socket_port_mutex_name, _4, "socket-port-mutex", 17 );
+#endif
 static obj_t protoent_mutex = BUNSPEC;
 DEFINE_STRING( protoent_mutex_name, _5, "protoent-mutex", 14 );
 
@@ -204,8 +206,10 @@ bgl_init_socket() {
       socket_mutex = bgl_make_mutex( socket_mutex_name );
       socket_condv = bgl_make_condvar( socket_condv_name );
       gethostby_mutex = bgl_make_mutex( gethostby_mutex_name );
-      protoent_mutex = bgl_make_mutex( protoent_mutex_name );
+      protoent_mutex = bgl_make_spinlock( protoent_mutex_name );
+#if defined( DEBUG_SEGV )
       socket_port_mutex = bgl_make_mutex( socket_port_mutex_name );
+#endif
       
       so_keepalive = string_to_keyword( "SO_KEEPALIVE" );
       so_oobinline = string_to_keyword( "SO_OOBINLINE" );

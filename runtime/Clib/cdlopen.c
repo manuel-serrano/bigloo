@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Sun Dec  9 15:21:15 2012 (serrano)                */
+/*    Last change :  Wed Dec 19 09:08:45 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -32,7 +32,7 @@ DEFINE_STRING( dload_mutex_name, _1, "dload-mutex", 12 );
 /*---------------------------------------------------------------------*/
 void
 bgl_init_dload() {
-   dload_mutex = bgl_make_mutex( dload_mutex_name );
+   dload_mutex = bgl_make_spinlock( dload_mutex_name );
 }
           
 /*---------------------------------------------------------------------*/
