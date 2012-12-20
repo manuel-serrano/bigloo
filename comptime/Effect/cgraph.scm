@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 15 10:55:41 1995                          */
-;*    Last change :  Sat Nov 17 07:39:51 2012 (serrano)                */
+;*    Last change :  Thu Dec 20 18:17:50 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the call-graph                                */
@@ -105,8 +105,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (call-graph! node::setq owner)
    (with-access::setq node (var value)
-      (if (or (local? owner) (global? (var-variable var)))
-	  (mark-side-effect! owner))
+      (when (or (local? owner) (global? (var-variable var)))
+	 (mark-side-effect! owner))
       (call-graph! var owner)
       (call-graph! value owner)))
 
@@ -195,8 +195,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (call-graph! node::box-set! owner)
    (with-access::box-set! node (var value)
-      (if (or (local? owner) (global? (var-variable var)))
-	  (mark-side-effect! owner))
+      (mark-side-effect! owner)
       (call-graph! var owner)
       (call-graph! value owner)))
 
@@ -278,6 +277,7 @@
 ;*    mark-side-effect! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (mark-side-effect! v::variable)
+   (trace (effect+ 2) "!!! mark-side-effect!(" (shape v) ")" #\Newline)
    (trace (effect 2) "!!! mark-side-effect!(" (shape v) ")" #\Newline)
    (let ((fun (variable-value v)))
       (cond

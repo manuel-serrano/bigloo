@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Fri Feb  3 14:33:08 2012 (serrano)                */
+;*    Last change :  Thu Dec 20 17:08:50 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
@@ -80,8 +80,7 @@
 	 ;; tvector optimization
 	 (let ((additional (profile tvect (vector->tvector! globals))))
 	    ;; we optimize closure allocations
-	    (unless (>fx *profile-mode* 0)
-	       (profile clo (closure-optimization! globals)))
+	    (profile clo (closure-optimization! globals))
 	    ;; type settings
 	    (profile type (type-settings! globals))
 	    ;; generic arithmetic specialization

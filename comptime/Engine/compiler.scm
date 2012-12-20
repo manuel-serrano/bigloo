@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Nov 18 08:42:42 2012 (serrano)                */
+;*    Last change :  Thu Dec 20 18:24:20 2012 (serrano)                */
 ;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -185,8 +185,8 @@
 	 (stop-on-pass 'dump-module (lambda () (dump-module module)))
 
 	 ;; the prof initilization code
-	 (if (>=fx *profile-mode* 1)
-	     (set! units (cons (make-prof-unit) units)))
+	 (when (>=fx *profile-mode* 1)
+	    (set! units (cons (make-prof-unit) units)))
 	    
 	 ;; we produce the mco file
 	 (if *module-checksum-object?*
@@ -272,8 +272,7 @@
 	    (check-type "callcc" ast #f #f)
 	    
 	    ;; the effect property computation
-	    (when *optim-unroll-loop?*
-	       (set! ast (profile effect (effect-walk! ast #f))))
+	    (set! ast (profile effect (effect-walk! ast #f)))
 	    (stop-on-pass 'effect (lambda () (write-ast ast)))
 	    (check-sharing "effect" ast)
 	    (check-type "effect" ast #f #f)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 31 08:56:22 1993                          */
-;*    Last change :  Mon Nov 19 19:21:10 2012 (serrano)                */
+;*    Last change :  Thu Dec 20 18:15:06 2012 (serrano)                */
 ;*    Copyright   :  1993-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The tracing macro.                                               */
@@ -20,7 +20,7 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (trace mask . forms)
    (let ((*debug-mode* #t))
-      (let ((*pass-names* '(ast heap inline inline+ cfa cc effect expand
+      (let ((*pass-names* '(ast heap inline inline+ cfa cc effect effect+ expand
 			    globalize integrate coerce cnst cgen reduce
 			    reduce- reduce+ recovery egen jvmas init
 			    make-add-heap make-heap fail)))
@@ -57,7 +57,7 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (on-trace mask . forms)
    (let ((*debug-mode* #t))
-      (let ((*pass-names* '(ast heap inline inline+ cfa cc effect expand
+      (let ((*pass-names* '(ast heap inline inline+ cfa cc effect effect+ expand
 			    globalize integrate coerce cnst cgen reduce
 			    reduce- reduce+ recovery egen jvmas init)))
 	 (if *debug-mode*

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:25:23 1995                          */
-;*    Last change :  Wed Mar 23 09:20:29 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec 20 18:16:08 2012 (serrano)                */
+;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the effect property.                          */
 ;*=====================================================================*/
@@ -35,6 +35,8 @@
    ;; we compute the inversed call-graph
    (trace effect "cgraph..." #\Newline)
    (for-each (lambda (global)
+		(trace effect+ "call-graph " (shape global) #\Newline)
+		(trace effect "call-graph " (shape global) #\Newline)
 		(fun-call-graph! global))
 	     globals)
    ;; then we iterate to mark all function/side-effect

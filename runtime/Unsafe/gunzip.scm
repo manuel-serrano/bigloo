@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Tue Nov 13 09:21:40 2012 (serrano)                */
+;*    Last change :  Thu Dec 20 18:27:12 2012 (serrano)                */
 ;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
@@ -334,6 +334,7 @@
 ;*    inflate ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (inflate-entry input-port slide)
+   
    ;; decompress an inflated entry
    ;; initialize window, bit buffer
    (define wsize (string-length slide))
@@ -349,15 +350,13 @@
    (define buffer (make-string 256))
    (define bufpos 256)
 
-
    (define i 0)
    
-   (define (GETBYTE)
+   (define (GETBYTE::long)
       (let ((grammar (regular-grammar ()
 			((in all #\Newline) (the-byte))
-			(else (gunzip-error "inflate"
-					    "premature end of file"
-					    input-port)))))
+			(else (gunzip-error
+				 "inflate" "premature end of file" input-port)))))
 	 (read/rp grammar input-port)))
 
    (define (NEEDBITS n)
@@ -617,8 +616,7 @@
 	    (set! e (minfx n (-fx wsize (maxfx d wp))))
 	    (set! n (-fx n e))
 	    (let liip ()
-	       (string-set!
-		slide wp (string-ref slide d))
+	       (string-set! slide wp (string-ref slide d))
 	       (set! wp (+fx wp 1))
 	       (set! d (+fx d 1))
 	       (set! e (-fx e 1))
@@ -643,8 +641,7 @@
 	    (set! e (minfx n (-fx wsize (maxfx d wp))))
 	    (set! n (-fx n e))
 	    (let liip2 ()
-	       (string-set!
-		slide wp (string-ref slide d))
+	       (string-set! slide wp (string-ref slide d))
 	       (set! wp (+fx wp 1))
 	       (set! d (+fx d 1))
 	       (set! e (-fx e 1))

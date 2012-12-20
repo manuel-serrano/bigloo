@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Tue Sep 18 18:21:08 2012 (serrano)                */
+;*    Last change :  Thu Dec 20 17:11:22 2012 (serrano)                */
 ;*    Copyright   :  2003-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -169,12 +169,12 @@
       
       ;; when compiling in bdb mode we have to emit the identifier
       ;; translation table.
-      (if (>fx *bdb-debug* 0)
-	  (emit-bdb-info globals *c-port*))
+      (when (>fx *bdb-debug* 0)
+	 (emit-bdb-info globals *c-port*))
       
       ;; when compiling for profile we emit identifier translation table
-      (if (>fx *profile-mode* 0)
-	  (emit-prof-info globals *c-port*))
+      (when (>fx *profile-mode* 0)
+	 (emit-prof-info globals *c-port*))
       
       ;; we print the C main...
       (if (and (or *main* (memq *pass* '(ld distrib)))
