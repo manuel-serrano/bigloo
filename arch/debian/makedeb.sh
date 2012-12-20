@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Dec 19 21:01:45 2012 (serrano)                */
+#*    Last change :  Thu Dec 20 06:49:58 2012 (serrano)                */
 #*    Copyright   :  2012 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -108,11 +108,11 @@ fi
 
 # check which ssl is available
 sudo apt-cache search 'libssl' | grep 0\.9\.8
-if [ $? = 0 ]
+if [ $? = 0 ]; then
   libssldepend=libssl0.9.8
 else
   sudo apt-cache search 'libssl' | grep 1\.0\.0
-  if [ $? = 0 ]
+  if [ $? = 0 ]; then
      libssldepend=libssl1.0.0
   else
      libssldepend=libssl
