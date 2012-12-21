@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Fri Dec 21 10:58:07 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 11:31:40 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -62,12 +62,15 @@
 
 	    (macro $exitd-push-mutex!::obj (::obj ::obj) "BGL_EXITD_PUSH_MUTEX")
 	    (macro $exitd-pop-mutex!::obj (::obj ::obj) "BGL_EXITD_POP_MUTEX")
-	    
+
+	    (export $exitd-mutex-profile "bgl_exitd_mutex_profile")
 	    (export unwind-stack-until! "unwind_stack_until")
 	    (export unwind-stack-value? "unwind_stack_value_p")
 
 	    (export default-uncaught-exception-handler "bgl_uncaught_exception_handler"))
 
+   (cond-expand (bigloo-c (export ($exitd-mutex-profile))))
+   
    (java    (class foreign
 	       (method static push-exit!::obj (::exit ::long)
 		       "PUSH_EXIT")
@@ -235,3 +238,13 @@
 ;*---------------------------------------------------------------------*/
 (define (default-uncaught-exception-handler val)
    (error 'unwind-until! "exit out of dynamic scope" val))
+
+;*---------------------------------------------------------------------*/
+;*    $exitd-mutex-profile                                             */
+;*    -------------------------------------------------------------    */
+;*    This C function is empty. This definition is a placeholder for   */
+;*    LD_PRELOAD dynamic libraries that can override it.               */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-c (define ($exitd-mutex-profile) #unspecified)))
+

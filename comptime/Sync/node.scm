@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Fri Dec 21 08:51:32 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 11:43:12 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -52,6 +52,7 @@
 (define mpush #f)
 (define mpop #f)
 (define getexitdtop #f)
+(define exitd-mutex-profile #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    init-sync! ...                                                   */
@@ -64,6 +65,10 @@
       (set! mulock (sexp->node '$mutex-unlock '() loc 'app))
       (case (backend-language (the-backend))
 	 ((c)
+	  (when *sync-profiling*
+	     (set! exitd-mutex-profile
+		(sexp->node '$exitd-mutex-profile '() loc 'app))
+	     (set-variable-name! (var-variable exitd-mutex-profile)))
 	  (set! mpush (sexp->node '$exitd-push-mutex! '() loc 'app))
 	  (set! mpop (sexp->node '$exitd-pop-mutex! '() loc 'app)))
 	 (else
@@ -103,6 +108,11 @@
    
    (define (app expr loc)
       (application->node expr '() loc 'value))
+
+   (define (profsync node loc)
+      (if (when exitd-mutex-profile)
+	  (list (app `(,exitd-mutex-profile) loc) node)
+	  (list node)))
 
    (define (failsafe-sync->sequence node)
       ;; (tprint "FAILSAFE synchronize " *src-files*)
@@ -178,7 +188,7 @@
 	       (body (instantiate::sequence
 			(loc loc)
 			(type type)
-			(nodes (list lock push lbody))))))))
+			(nodes (cons* lock push (profsync lbody loc)))))))))
    
    (with-access::sync node (loc)
       (init-sync! loc))
