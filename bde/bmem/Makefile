@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Fri Apr  8 07:33:03 2011 (serrano)                */
-#*    Copyright   :  2003-11 Manuel Serrano                            */
+#*    Last change :  Fri Dec 21 09:46:39 2012 (serrano)                */
+#*    Copyright   :  2003-12 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -88,7 +88,6 @@ $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
                $(EXTRALIBS) \
                $(LDFLAGS) \
                -o $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX))
-
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:

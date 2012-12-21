@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Dec 19 08:58:56 2012 (serrano)                */
+/*    Last change :  Fri Dec 21 10:58:28 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2658,7 +2658,7 @@ struct exitd {
 #define BGL_EXITD_POP_MUTEX( extd, m ) \
    EXITD_MUTEX0( extd ) == m ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
    EXITD_MUTEX1( extd ) == m ? EXITD_MUTEX1_SET( extd, BFALSE ) : \
-      EXITD_MUTEXN_SET( extd, bgl_remq_bang( m, EXITD_MUTEXN( extd ) ) )
+      EXITD_MUTEXN_SET( extd, CDR( EXITD_MUTEXN( extd ) ) )
 
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Mon Nov 19 08:57:08 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 08:19:53 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -174,7 +174,6 @@
 	    (pair-or-null? (predicate-of pair-nil) no-cfa-top nesting (effect) fail-safe)
 	    ($pair? (predicate-of pair) no-cfa-top nesting fail-safe (effect))
 	    (pair? (predicate-of pair) no-cfa-top nesting fail-safe)
-;* 	    (list? (predicate-of list) side-effect-free no-cfa-top nesting) */
 	    ($car side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (car))))
 	    ($set-car! fail-safe (effect (write (car))))

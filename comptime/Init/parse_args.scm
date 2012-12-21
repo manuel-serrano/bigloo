@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Nov 18 15:28:23 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 11:03:25 2012 (serrano)                */
 ;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -589,6 +589,8 @@
        (set! *compiler-debug* 2)
        (set! *jas-peephole* #f)
        (set! *bmem-profiling* #t))
+      (("-psync" (help "Compile files for synchronize profiling"))
+       (set! *sync-profiling* #t))
       
 ;*--- verbosity -------------------------------------------------------*/
       (section "Verbosity")

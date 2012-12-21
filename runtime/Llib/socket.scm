@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Wed Dec  5 12:28:37 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 08:29:52 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -60,7 +60,7 @@
 				       "bgl_socket_accept_many")
 	    (c-socket-local-addr::bstring (::socket) "socket_local_addr")
 	    (c-socket-shutdown::obj (::socket ::bool) "socket_shutdown")
-	    (c-socket-close::obj (::socket) "socket_close")
+	    ($socket-close::obj (::socket) "socket_close")
 	    (macro c-socket-server?::bool (::obj) "BGL_SOCKET_SERVERP")
 	    (macro c-socket-client?::bool (::obj) "BGL_SOCKET_CLIENTP")
 	    
@@ -129,7 +129,7 @@
 		  "socket_local_addr")
 	       (method static c-socket-shutdown::obj (::socket ::bool)
 		  "socket_shutdown")
-	       (method static c-socket-close::obj (::socket)
+	       (method static $socket-close::obj (::socket)
 		  "socket_close")
 	       (method static c-socket-server?::bool (::obj)
 		  "BGL_SOCKET_SERVERP")
@@ -391,7 +391,7 @@
 ;*    socket-close ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-close socket::socket)
-   (c-socket-close socket))
+   ($socket-close socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    host ...                                                         */

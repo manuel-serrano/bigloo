@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sat Jan  7 06:36:12 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 08:44:36 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -254,12 +254,12 @@
 		 (w 0))
 	 (if (=fx i buckets-len)
 	     vec
-	     (let liip ((bucket (vector-ref buckets i))
+	     (let liip ((bucket (vector-ref-ur buckets i))
 			(w w))
 		(if (null? bucket)
 		    (loop (+fx i 1) w)
 		    (begin
-		       (vector-set! vec w (cdar bucket))
+		       (vector-set-ur! vec w (cdar bucket))
 		       (liip (cdr bucket) (+fx w 1)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -281,7 +281,7 @@
 		 (res '()))
 	 (if (=fx i buckets-len)
 	     res
-	     (let liip ((bucket (vector-ref buckets i))
+	     (let liip ((bucket (vector-ref-ur buckets i))
 			(res res))
 		(if (null? bucket)
 		    (loop (+fx i 1) res)
@@ -306,7 +306,7 @@
 		 (res '()))
 	 (if (=fx i buckets-len)
 	     res
-	     (let liip ((bucket (vector-ref buckets i))
+	     (let liip ((bucket (vector-ref-ur buckets i))
 			(res res))
 		(if (null? bucket)
 		    (loop (+fx i 1) res)
@@ -329,7 +329,7 @@
       (let loop ((i 0)
 		 (res '()))
 	 (if (<fx i buckets-len)
-	     (let liip ((lst (vector-ref buckets i))
+	     (let liip ((lst (vector-ref-ur buckets i))
 			(res res))
 		(if (null? lst)
 		    (loop (+fx i 1) res)
@@ -357,7 +357,7 @@
 	     (begin
 		(for-each (lambda (cell)
 			     (fun (car cell) (cdr cell)))
-			  (vector-ref buckets i))
+			  (vector-ref-ur buckets i))
 		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -376,13 +376,13 @@
 	  (buckets-len (vector-length buckets)))
       (let loop ((i 0) (delta 0))
 	 (if (<fx i buckets-len)
-	     (let* ((l (vector-ref buckets i))
+	     (let* ((l (vector-ref-ur buckets i))
                     (old-len (length l))
                     (newl (filter! (lambda (cell)
                                     (fun (car cell) (cdr cell)))
                                    l))
                     (new-len (length newl)))
-		(vector-set! buckets i newl)
+		(vector-set-ur! buckets i newl)
 		(loop (+fx i 1) (+fx delta (-fx new-len old-len))))
              (%hashtable-size-set! table
                                    (+fx delta (%hashtable-size table)))))))
@@ -402,7 +402,7 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (bucket (vector-ref buckets bucket-num)))
+	  (bucket (vector-ref-ur buckets bucket-num)))
       (let loop ((bucket bucket))
 	 (cond
 	    ((null? bucket)
@@ -427,7 +427,7 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (bucket (vector-ref buckets bucket-num)))
+	  (bucket (vector-ref-ur buckets bucket-num)))
       (let loop ((bucket bucket))
 	 (cond
 	    ((null? bucket)
@@ -452,19 +452,19 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (bucket (vector-ref buckets bucket-num))
+	  (bucket (vector-ref-ur buckets bucket-num))
 	  (max-bucket-len (%hashtable-max-bucket-len table)))
       (if (null? bucket)
 	  (begin
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
-	     (vector-set! buckets bucket-num (list (cons key obj)))
+	     (vector-set-ur! buckets bucket-num (list (cons key obj)))
 	     obj)
 	  (let loop ((buck bucket)
 		     (count 0))
 	     (cond
 		((null? buck)
 		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
-		 (vector-set! buckets bucket-num (cons (cons key obj) bucket))
+		 (vector-set-ur! buckets bucket-num (cons (cons key obj) bucket))
 		 (when (>fx count max-bucket-len)
 		    (plain-hashtable-expand! table))
 		 obj)
@@ -490,19 +490,19 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (bucket (vector-ref buckets bucket-num))
+	  (bucket (vector-ref-ur buckets bucket-num))
 	  (max-bucket-len (%hashtable-max-bucket-len table)))
       (if (null? bucket)
 	  (begin
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
-	     (vector-set! buckets bucket-num (list (cons key obj)))
+	     (vector-set-ur! buckets bucket-num (list (cons key obj)))
 	     obj)
 	  (let loop ((buck bucket)
 		     (count 0))
 	     (cond
 		((null? buck)
 		 (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
-		 (vector-set! buckets bucket-num (cons (cons key obj) bucket))
+		 (vector-set-ur! buckets bucket-num (cons (cons key obj) bucket))
 		 (when (>fx count max-bucket-len)
 		    (plain-hashtable-expand! table))
 		 obj)
@@ -528,12 +528,12 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (bucket (vector-ref buckets bucket-num))
+	  (bucket (vector-ref-ur buckets bucket-num))
 	  (max-bucket-len (%hashtable-max-bucket-len table)))
       (if (null? bucket)
 	  (let ((v (proc obj init)))
 	     (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
-	     (vector-set! buckets bucket-num (list (cons key v)))
+	     (vector-set-ur! buckets bucket-num (list (cons key v)))
 	     v)
 	  (let loop ((buck bucket)
 		     (count 0))
@@ -541,7 +541,7 @@
 		((null? buck)
 		 (let ((v (proc obj init)))
 		    (%hashtable-size-set! table (+fx (%hashtable-size table) 1))
-		    (vector-set! buckets bucket-num (cons (cons key v) bucket))
+		    (vector-set-ur! buckets bucket-num (cons (cons key v) bucket))
 		    (when (>fx count max-bucket-len)
 		       (plain-hashtable-expand! table))
 		    v))
@@ -567,12 +567,12 @@
    (let* ((buckets (%hashtable-buckets table))
 	  (bucket-len (vector-length buckets))
 	  (bucket-num (remainderfx (table-get-hashnumber table key) bucket-len))
-	  (bucket (vector-ref buckets bucket-num)))
+	  (bucket (vector-ref-ur buckets bucket-num)))
       (cond
 	 ((null? bucket)
 	  #f)
 	 ((hashtable-equal? table (caar bucket) key)
-	  (vector-set! buckets bucket-num (cdr bucket))
+	  (vector-set-ur! buckets bucket-num (cdr bucket))
 	  (%hashtable-size-set! table (-fx (%hashtable-size table) 1))
 	  #t)
 	 (else
@@ -612,11 +612,9 @@
 			 (let* ((key (car cell))
 				(n (table-get-hashnumber table key))
 				(h (remainderfx n new-bucks-len)))
-			    (vector-set! new-bucks
-					 h
-					 (cons cell
-					       (vector-ref new-bucks h)))))
-		      (vector-ref old-bucks i))
+			    (vector-set-ur! new-bucks
+			       h (cons cell (vector-ref new-bucks h)))))
+		      (vector-ref-ur old-bucks i))
 	    (loop (+fx i 1))))))
 
 ;*---------------------------------------------------------------------*/

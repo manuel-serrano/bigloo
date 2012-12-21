@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 19 10:39:15 2012 (serrano)                */
+/*    Last change :  Fri Dec 21 10:19:03 2012 (serrano)                */
 /*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -347,8 +347,9 @@ bglpth_make_mutex( obj_t name ) {
 void
 bglpth_setup_mutex() {
    bgl_mutex_init_register( &bglpth_mutex_init );
+   bgl_spinlock_init_register( &bglpth_spinlock_init );
    
-#if( defined( BGL_INLINE_MUTEX ) )   
+#if( defined( BGL_INLINE_MUTEX ) )
    bgl_create_mutex_register( &bglpth_create_mutex );
    bgl_create_spinlock_register( &bglpth_create_spinlock );
 #endif   

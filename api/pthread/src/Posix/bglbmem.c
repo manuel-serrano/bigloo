@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 21 15:57:25 2004                          */
-/*    Last change :  Wed Dec 17 14:25:18 2008 (serrano)                */
-/*    Copyright   :  2004-08 Manuel Serrano                            */
+/*    Last change :  Fri Dec 21 09:34:12 2012 (serrano)                */
+/*    Copyright   :  2004-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The pthread bmem profiling setup                                 */
 /*=====================================================================*/
@@ -39,5 +39,6 @@ int bglpth_pthread_mutex_init( pthread_mutex_t *mutex, void *val ) {
 /*---------------------------------------------------------------------*/
 void
 bglpth_setup_bmem() {
+   /* left empty, a mere bmem hook */
 }
 

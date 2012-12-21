@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Mon Dec 10 00:02:23 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 08:51:32 2012 (serrano)                */
 ;*    Copyright   :  2012 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -105,6 +105,7 @@
       (application->node expr '() loc 'value))
 
    (define (failsafe-sync->sequence node)
+      ;; (tprint "FAILSAFE synchronize " *src-files*)
       ;; no exception raised, avoid pushing/poping mutexes
       (with-access::sync node (loc nodes mutex type prelock)
 	 (let* ((tmp (make-local-svar (gensym 'tmp) type))
@@ -136,6 +137,7 @@
 	       (nodes (list lock lbody))))))
    
    (define (effect-sync->sequence node)
+      ;; (tprint "FULL synchronize " *src-files*)
       ;; exceptions potentially raised, slow path compilation
       (with-access::sync node (loc nodes mutex type prelock)
 	 (let* ((tmp (make-local-svar (gensym 'tmp) type))

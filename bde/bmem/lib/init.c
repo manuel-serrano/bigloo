@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Dec 14 10:49:43 2012 (serrano)                */
+/*    Last change :  Fri Dec 21 09:34:19 2012 (serrano)                */
 /*    Copyright   :  2003-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -552,7 +552,7 @@ bglpth_setup_bmem() {
    bmem_thread = 2;
 
    /* Hello world */
-   fprintf( stderr, "Bmem Pthread initialization...\n" );
+   fprintf( stderr, "Pthread initialization...\n" );
    
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );

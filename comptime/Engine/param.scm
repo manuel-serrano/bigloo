@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Nov 18 10:21:22 2012 (serrano)                */
+;*    Last change :  Fri Dec 21 11:03:02 2012 (serrano)                */
 ;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -100,6 +100,7 @@
 	    *compiler-stack-debug?*
 	    ;; -------------------------------------------------------------
 	    *bmem-profiling*
+	    *sync-profiling*
 	    *debug-module*
 	    *c-debug*
 	    *c-debug-lines-info*
@@ -590,6 +591,10 @@
 ;; profiling with bmem
 (param-define *bmem-profiling*
 	      "Instrument code for bmem profiling"
+	      #f)
+;; synchronize profiling
+(param-define *sync-profiling*
+	      "Instrument code for synchronize profiling"
 	      #f)
 ;; debugging level
 (param-define *debug-module*
