@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:56:53 1994                          */
-;*    Last change :  Thu Nov 10 09:22:49 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Dec 24 06:29:31 2012 (serrano)                */
+;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define' forms                                               */
 ;*=====================================================================*/
@@ -161,8 +161,9 @@
 	     (leave-function)
 	     (replace! x `(set! ,var ,ev))))
 	 ((?- (and ?fa (-> . ?-)) ?value)
-	  (let ((ev (e value e)))
-	     (replace! x `(set! ,fa ,ev))))
+	  (let ((ev (e value e))
+		(efa (e fa e)))
+	     (replace! x `(set! ,efa ,ev))))
 	 (else
 	  (error #f "Illegal `set!' form" x))))
    (if internal-definition?
