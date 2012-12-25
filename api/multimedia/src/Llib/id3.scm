@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Tue Dec  4 13:45:57 2012 (serrano)                */
+;*    Last change :  Mon Dec 24 07:59:47 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -476,12 +476,12 @@
    (let ((frames (id3v2.2-frames mm)))
       (instantiate::id3
 	 (version "id3v2.3")
-	 (title (id3v2-get-frame "TT1" frames "???"))
-	 (artist (id3v2-get-frame "TPE1" frames "???"))
+	 (title (id3v2-get-frame "TT1" frames ""))
+	 (artist (id3v2-get-frame "TPE1" frames ""))
 	 (orchestra (id3v2-get-frame "TP2" frames #f))
 	 (conductor (id3v2-get-frame "TP3" frames #f))
 	 (interpret (id3v2-get-frame "TP4" frames #f))
-	 (album (id3v2-get-frame "TAL" frames "???"))
+	 (album (id3v2-get-frame "TAL" frames ""))
 	 (year (string->integer (id3v2-get-frame "TYE" frames "-1")))
 	 (recording (id3v2-get-frame "TRD" frames #f))
 	 (comment (id3v2-get-frame "COM" frames ""))
@@ -544,12 +544,12 @@
    (let ((frames (id3v2.3-frames mm)))
       (instantiate::id3
 	 (version "id3v2.3")
-	 (title (id3v2-get-frame "TIT2" frames "???"))
-	 (artist (id3v2-get-frame "TPE1" frames "???"))
+	 (title (id3v2-get-frame "TIT2" frames ""))
+	 (artist (id3v2-get-frame "TPE1" frames ""))
 	 (orchestra (id3v2-get-frame "TPE2" frames #f))
 	 (conductor (id3v2-get-frame "TPE3" frames #f))
 	 (interpret (id3v2-get-frame "TPE4" frames #f))
-	 (album (id3v2-get-frame "TALB" frames "???"))
+	 (album (id3v2-get-frame "TALB" frames ""))
 	 (year (string->integer (id3v2-get-frame "TYER" frames "-1")))
 	 (recording (or (id3v2-get-frame "TDAT" frames #f)
 			(id3v2-get-frame "TRDA" frames #f)))
@@ -571,12 +571,12 @@
    (let ((frames (id3v2.4-frames mm)))
       (instantiate::id3
 	 (version "id3v2.4")
-	 (title (id3v2-get-frame "TIT2" frames "???"))
-	 (artist (id3v2-get-frame "TPE1" frames "???"))
+	 (title (id3v2-get-frame "TIT2" frames ""))
+	 (artist (id3v2-get-frame "TPE1" frames ""))
 	 (orchestra (id3v2-get-frame "TPE2" frames #f))
 	 (conductor (id3v2-get-frame "TPE3" frames #f))
 	 (interpret (id3v2-get-frame "TPE4" frames #f))
-	 (album (id3v2-get-frame "TALB" frames "???"))
+	 (album (id3v2-get-frame "TALB" frames ""))
 	 (year (string->integer (id3v2-get-frame "TDRC" frames "-1")))
 	 (recording (id3v2-get-frame "TORY" frames #f))
 	 (comment (id3v2-get-frame "COMM" frames ""))
@@ -600,16 +600,25 @@
 ;*    id3v1merge ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (id3v1merge mm i)
-   (with-access::id3 i (year genre track)
-      (if (and (>fx year 0) (>fx track 0) (not (string-null? genre)))
+   (with-access::id3 i (year genre track title artist)
+      (if (and (>fx year 0) (>fx track 0)
+	       (not (string-null? genre))
+	       (not (string-null? title))
+	       (not (string-null? artist)))
 	  i
 	  (let ((i1 (cond
 		       ((id3v1.1? mm) (mp3-id3v11 mm))
 		       ((id3v1? mm) (mp3-id3v1 mm))
 		       (else #f))))
 	     (when (isa? i1 id3)
-		(with-access::id3 i1 ((year1 year) (genre1 genre) (track1 track))
+		(with-access::id3 i1 ((year1 year)
+				      (genre1 genre)
+				      (track1 track)
+				      (title1 title)
+				      (artist1 artist))
 		   (duplicate::id3 i
+		      (title (if (string-null? title) title1 title))
+		      (artist (if (string-null? artist) artist1 artist))
 		      (track (if (<=fx track 0) track1 track))
 		      (year (if (<=fx year 0) year1 year))
 		      (genre (if (string-null? genre) genre1 genre)))))))))
@@ -866,9 +875,9 @@
    
    (define (mmap-musictag mm)
       (cond
-	 ((id3v2.4? mm) (mp3-id3v2.4 mm))
-	 ((id3v2.3? mm) (mp3-id3v2.3 mm))
-	 ((id3v2.2? mm) (mp3-id3v2.2 mm))
+	 ((id3v2.4? mm) (id3v1merge mm (mp3-id3v2.4 mm)))
+	 ((id3v2.3? mm) (id3v1merge mm (mp3-id3v2.3 mm)))
+	 ((id3v2.2? mm) (id3v1merge mm (mp3-id3v2.2 mm)))
 	 ((id3v1.1? mm) (mp3-id3v11 mm))
 	 ((id3v1? mm) (mp3-id3v1 mm))
 	 ((read-flac-comments mm) => ogg-comments->musictag)

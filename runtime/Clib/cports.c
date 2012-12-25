@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Dec 19 12:01:55 2012 (serrano)                */
+/*    Last change :  Tue Dec 25 11:11:56 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2264,6 +2264,8 @@ bgl_file_to_string( char *path ) {
 /*    This function is a replacement for sendfile. In particular       */
 /*    it is used when the INPUT-PORT is a socket descriptor or when    */
 /*    the host system does not support the sendfile system call.       */
+/*    -------------------------------------------------------------    */
+/*    On entrance, op.mutex is alread locked.                          */
 /*---------------------------------------------------------------------*/
 static long
 copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
@@ -2282,7 +2284,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 #ifdef DEBUG_SENDCHARS
       fprintf( stderr, "copyfile op=%p ip=%p sz=%d\n", op, ip, sz );
 #endif
-      
+
    loopr:
       while( (n = sysread( ip, buf, default_io_bufsiz )) > 0 ) {
 	 o = 0;
@@ -2300,6 +2302,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 #endif
 
       bgl_output_flush( op, 0, 0 );
+      
       return rsz;
    } else {
       long n = 0, m;
@@ -2313,6 +2316,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 #ifdef DEBUG_SENDCHARS
       fprintf( stderr, "copyfile_with_timeout op=%p ip=%p sz=%d\n", op, ip, sz );
 #endif
+      
    loopr2:
       while( (sz > 0) && ((n = sysread( ip, buf, s )) > 0) ) {
 	 bgl_write( op, (unsigned char *)&buf[ 0 ], n );

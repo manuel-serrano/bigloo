@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Thu Dec 20 16:26:45 2012 (serrano)                */
+/*    Last change :  Tue Dec 25 10:45:53 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -485,7 +485,11 @@ bgl_write_input_port( obj_t o, obj_t op ) {
    BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<input_port:" );
+   
+   BGL_MUTEX_UNLOCK( mutex );
    bgl_display_obj( PORT( o ).name, op );
+   BGL_MUTEX_LOCK( mutex );
+   
    PRINTF1( op, 10, ".%ld>", (long)BGL_INPUT_PORT_BUFSIZ( o ) );
 
    BGL_MUTEX_UNLOCK( mutex );
@@ -524,7 +528,11 @@ bgl_write_foreign( obj_t o, obj_t op ) {
    BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<foreign:" );
+   
+   BGL_MUTEX_UNLOCK( mutex );
    bgl_display_obj( FOREIGN_ID( o ), op );
+   BGL_MUTEX_LOCK( mutex );
+   
    PRINTF1( op, 16, ":%lx>", (long)FOREIGN_TO_COBJ( o ) );
 
    BGL_MUTEX_UNLOCK( mutex );
@@ -659,7 +667,11 @@ bgl_write_mmap( obj_t o, obj_t op ) {
    BGL_MUTEX_LOCK( mutex );
    
    PUTS( op, "#<mmap:" );
+   
+   BGL_MUTEX_UNLOCK( mutex );
    bgl_display_obj( BGL_MMAP( o ).name, op );
+   BGL_MUTEX_LOCK( mutex );
+   
    PRINTF1( op, 16, ":%ld>", (long)BGL_MMAP( o ).length );
 
    BGL_MUTEX_UNLOCK( mutex );
