@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Wed Sep 26 15:06:06 2012 (serrano)                */
+;*    Last change :  Wed Dec 26 09:36:03 2012 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -596,7 +596,7 @@
    (test "string-skip-right.5" (string-skip-right "foobar-gee" "eg") 6)
    (test "string-skip-right.6" (string-skip-right "foobar-gee" "egegegegegegegegeg") 6)
    (test "string-skip-right.7" (string-skip-right "foobar-ge-e" "_") 10)
-   (test "string-skip-right.8" (string-skip-right "foobar-ge-e" "_" 7) 7)
+   (test "string-skip-right.8" (string-skip-right "foobar-ge-e" "_" 7) 6)
    (test "string-skip-right.9" (string-skip-right "foobar-gee" "fobar-ge") #f)
    (test "string-natural-compare3.1" (string-natural-compare3 "foo" "foo") 0)
    (test "string-natural-compare3.2"

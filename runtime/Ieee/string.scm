@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Dec 21 08:28:24 2012 (serrano)                */
+;*    Last change :  Wed Dec 26 09:32:00 2012 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -207,10 +207,10 @@
 	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
 	    (string-index-right::obj s::bstring ::obj
-				     #!optional (start (-fx (string-length s) 1)))
+				     #!optional (start (string-length s)))
 	    (string-skip::obj ::bstring ::obj #!optional (start 0))
 	    (string-skip-right::obj s::bstring ::obj
-				    #!optional (start (-fx (string-length s) 1)))
+				    #!optional (start (string-length s)))
 	    (string-prefix-length::int s1::bstring s2::bstring
 				       #!optional start1 end1 start2 end2)
 	    (string-suffix-length::int s1::bstring s2::bstring
@@ -948,9 +948,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-index-right ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (string-index-right s rs #!optional (start (-fx (string-length s) 1)))
+(define (string-index-right s rs #!optional (start (string-length s)))
    (define (string-char-index s c)
-      (let loop ((i start))
+      (let loop ((i (-fx start 1)))
 	 (cond
 	    ((<fx i 0)
 	     #f)
@@ -970,7 +970,7 @@
       ((<=fx (string-length rs) 10)
        (let ((len (string-length s))
 	     (lenj (string-length rs)))
-	  (let loop ((i start))
+	  (let loop ((i (-fx start 1)))
 	     (if (<fx i 0)
 		 #f
 		 (let ((c (string-ref s i)))
@@ -985,7 +985,7 @@
 	     (len (string-length s)))
 	  (let loop ((i (-fx (string-length rs) 1)))
 	     (if (=fx i -1)
-		 (let liip ((i start))
+		 (let liip ((i (-fx start 1)))
 		    (cond
 		       ((<fx i 0)
 			#f)
@@ -1003,6 +1003,7 @@
 ;*    string-skip ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (string-skip string rs #!optional (start 0))
+   
    (define (string-char-skip s c)
       (let ((len (string-length s)))
 	 (let loop ((i start))
@@ -1013,6 +1014,7 @@
 		(loop (+fx i 1)))
 	       (else
 		i)))))
+   
    (cond
       ((char? rs)
        (string-char-skip string rs))
@@ -1055,9 +1057,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-skip-right ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-skip-right s rs #!optional (start (-fx (string-length s) 1)))
+(define (string-skip-right s rs #!optional (start (string-length s)))
+   
    (define (string-char-skip s c)
-      (let loop ((i start))
+      (let loop ((i (-fx start 1)))
 	 (cond
 	    ((<fx i 0)
 	     #f)
@@ -1065,6 +1068,7 @@
 	     (loop (-fx i 1)))
 	    (else
 	     i))))
+   
    (cond
       ((>fx start (string-length s))
        (error 'string-index "index out of bound" start))
@@ -1077,7 +1081,7 @@
       ((<=fx (string-length rs) 10)
        (let ((len (string-length s))
 	     (lenj (string-length rs)))
-	  (let loop ((i start))
+	  (let loop ((i (-fx start 1)))
 	     (if (<fx i 0)
 		 #f
 		 (let ((c (string-ref s i)))
@@ -1092,7 +1096,7 @@
 	     (len (string-length s)))
 	  (let loop ((i (-fx (string-length rs) 1)))
 	     (if (=fx i -1)
-		 (let liip ((i start))
+		 (let liip ((i (-fx start 1)))
 		    (cond
 		       ((<fx i 0)
 			#f)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Mon Dec 24 07:59:47 2012 (serrano)                */
+;*    Last change :  Wed Dec 26 09:44:13 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -195,14 +195,16 @@
 ;*    string-cut! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (string-cut! s)
-   (let ((i (string-index s #a000)))
+   (let* ((i (string-index s #a000))
+	  (j (string-skip-right s #\space (or i (string-length s))))
+	  (e (or j i)))
       (cond
-	 ((not i)
+	 ((not e)
 	  s)
-	 ((=fx i 0)
+	 ((=fx e 0)
 	  "")
 	 (else
-	  (string-shrink! s i)))))
+	  (string-shrink! s (+fx e 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap-substring/len ...                                           */

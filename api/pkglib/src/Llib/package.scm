@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 13 11:57:08 2006                          */
-;*    Last change :  Wed Nov 16 09:58:28 2011 (serrano)                */
-;*    Copyright   :  2006-11 Manuel Serrano                            */
+;*    Last change :  Wed Dec 26 09:39:28 2012 (serrano)                */
+;*    Copyright   :  2006-12 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Tools for handling packages                                      */
 ;*=====================================================================*/
@@ -103,7 +103,7 @@
 			 #f))))
 	 (else
 	  ;; a package with release
-	  (let ((vindex (string-index-right n #\- (-fx index 1)))
+	  (let ((vindex (string-index-right n #\- index))
 		(tindex (string-index-right n (pkglib-package-tuning-mark))))
 	     (if (not vindex)
 		 (pkglib-error 'package-name-parse "Illegal package name" name)
