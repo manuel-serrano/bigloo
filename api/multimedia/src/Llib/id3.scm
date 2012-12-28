@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Dec 26 19:28:53 2012 (serrano)                */
+;*    Last change :  Fri Dec 28 18:39:21 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -613,20 +613,21 @@
 		       ((id3v1.1? mm) (mp3-id3v11 mm))
 		       ((id3v1? mm) (mp3-id3v1 mm))
 		       (else #f))))
-	     (when (isa? i1 id3)
-		(with-access::id3 i1 ((year1 year)
-				      (genre1 genre)
-				      (track1 track)
-				      (title1 title)
-				      (album1 album)
-				      (artist1 artist))
-		   (duplicate::id3 i
-		      (title (if (string-null? title) title1 title))
-		      (artist (if (string-null? artist) artist1 artist))
-		      (album (if (string-null? album) album1 album))
-		      (track (if (<=fx track 0) track1 track))
-		      (year (if (<=fx year 0) year1 year))
-		      (genre (if (string-null? genre) genre1 genre)))))))))
+	     (if (isa? i1 id3)
+		 (with-access::id3 i1 ((year1 year)
+				       (genre1 genre)
+				       (track1 track)
+				       (title1 title)
+				       (album1 album)
+				       (artist1 artist))
+		    (duplicate::id3 i
+		       (title (if (string-null? title) title1 title))
+		       (artist (if (string-null? artist) artist1 artist))
+		       (album (if (string-null? album) album1 album))
+		       (track (if (<=fx track 0) track1 track))
+		       (year (if (<=fx year 0) year1 year))
+		       (genre (if (string-null? genre) genre1 genre))))
+		 i)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mp3-musictag ...                                                 */
