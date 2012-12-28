@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Dec 25 11:11:56 2012 (serrano)                */
+/*    Last change :  Fri Dec 28 12:05:14 2012 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -498,7 +498,7 @@ loop:
 	    BGL_IO_WRITE_ERROR, "write/timeout", strerror( errno ), port );
       }
    } else {
-      fprintf( stderr, "<<< posix_timed_write fd=%d n=%d", fd, n );
+      fprintf( stderr, "<<< posix_timed_write fd=%d n=%d\n", fd, n );
       return syswrite_with_timeout( port, buf, num );
    }
 }
@@ -516,8 +516,10 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
    if( (n = tmt->syswrite( port, ptr, num )) >= 0 ) {
       return n;
    } else {
-      fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s\n",
-	       PORT_FD( port ), errno, strerror( errno ) );
+      fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s port-name=%s\n",
+	       PORT_FD( port ), errno, strerror( errno ),
+	       BSTRING_TO_STRING( PORT( port ).name ) );
+
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_WRITE_ERROR);

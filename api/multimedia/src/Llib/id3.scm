@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Dec 26 09:44:13 2012 (serrano)                */
+;*    Last change :  Wed Dec 26 19:28:53 2012 (serrano)                */
 ;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -602,10 +602,11 @@
 ;*    id3v1merge ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (id3v1merge mm i)
-   (with-access::id3 i (year genre track title artist)
+   (with-access::id3 i (year genre track title artist album)
       (if (and (>fx year 0) (>fx track 0)
 	       (not (string-null? genre))
 	       (not (string-null? title))
+	       (not (string-null? album))
 	       (not (string-null? artist)))
 	  i
 	  (let ((i1 (cond
@@ -617,10 +618,12 @@
 				      (genre1 genre)
 				      (track1 track)
 				      (title1 title)
+				      (album1 album)
 				      (artist1 artist))
 		   (duplicate::id3 i
 		      (title (if (string-null? title) title1 title))
 		      (artist (if (string-null? artist) artist1 artist))
+		      (album (if (string-null? album) album1 album))
 		      (track (if (<=fx track 0) track1 track))
 		      (year (if (<=fx year 0) year1 year))
 		      (genre (if (string-null? genre) genre1 genre)))))))))
