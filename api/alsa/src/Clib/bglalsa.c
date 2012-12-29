@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Fri Sep 28 08:49:42 2012 (serrano)                */
+/*    Last change :  Sat Dec 29 19:04:07 2012 (serrano)                */
 /*    Copyright   :  2011-12 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -308,10 +308,13 @@ loop:
    written = snd_pcm_writei( pcm, &buf[ w ], frames );
 
    if( written == -EINTR ) {
+      fprintf( stderr, "%s:%d snd_pcm_writei (-EINTR)\n", __FILE__, __LINE__ );
       written = 0;
    } else if( written == -EPIPE ) {
-      if( snd_pcm_prepare( pcm ) >= 0 )
+      fprintf( stderr, "%s:%d snd_pcm_writei under run (-EPIPE)\n", __FILE__, __LINE__ );
+      if( snd_pcm_prepare( pcm ) >= 0 ) {
 	 written = snd_pcm_writei( pcm, &buf[ w ], frames );
+      }
    }
 
    if( written >= 0 ) {
@@ -325,6 +328,7 @@ loop:
 	 goto loop;
       }
    } else {
+      fprintf( stderr, "%s:%d snd_pcm_writei (%d<0)\n", __FILE__, __LINE__, written );
       if( snd_pcm_state( pcm ) == SND_PCM_STATE_SUSPENDED ) {
 	 snd_pcm_resume( pcm );
 	 
