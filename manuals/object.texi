@@ -100,9 +100,7 @@ for the <ident> value.
 
 Field marked with @code{read-only} declaration are immutables.
 
-@code{Default} declarations allow default field values. For
-indexed fields, the default value is the default value of each
-element of the sequence.
+@code{Default} declarations allow default field values.
 
 For the means of an example, the traditional points and colored points 
 can be defined as:
@@ -155,9 +153,8 @@ instance:
       (print "imag: " imag)))
 @end smalllisp
 
-Virtual fields cannot be associated default values. Virtual fields may
-not be indexed fields. If a virtual field is not provided with a 
-setter it must be annotated as read only.
+Virtual fields cannot be associated default values. If a virtual field
+is not provided with a setter it must be annotated as read only.
 
 @code{Info} declarations allow arbitrary user information field values.
 This value can be retrieved by introspection, by the means of the
@@ -780,19 +777,9 @@ Returns #t if @var{obj} is a class field descriptor. Otherwise returns #f.
 Returns the name of the @var{field}. The name is a symbol.
 @end deffn
 
-@deffn {bigloo procedure} class-field-indexed? field
-Returns @code{#t} if the described field is indexed and @code{#f} otherwise.
-@end deffn
-
 @deffn {bigloo procedure} class-field-accessor field
 Returns a procedure of one argument. Applying this function to an object
 returns the value of the field described by @var{field}.
-@end deffn
-
-@deffn {bigloo procedure} class-field-len-accessor field
-A one argument function is returned. Applying this function to an object
-returns the length value of the field described by field. It is an error
-to apply @code{class-field-len-accessor} to a non-indexed field.
 @end deffn
 
 @deffn {bigloo procedure} class-field-mutable? field
@@ -800,8 +787,7 @@ Returns @code{#t} if the described field is mutable and @code{#f} otherwise.
 @end deffn
 
 @deffn {bigloo procedure} class-field-mutator field
-Returns a procedure of three, or two, arguments depending on whether
-the field is indexed or not. Applying this function to an object
+Returns a procedure of two arguments. Applying this function to an object
 changes the value of the field described by @var{field}. It is an
 error to apply @code{class-field-mutator} to an immutable field.
 @end deffn
@@ -819,24 +805,7 @@ For means of an example, here is a possible implementation of the
 (define (object-equal? obj1 obj2)
    (define (class-field-equal? fd)
       (let ((get-value (class-field-accessor fd)))
-         (if (not (class-field-indexed? fd))
-             (equal? (get-value obj1)
-                     (get-value obj2))
-             (let* ((len (class-field-len-accessor
-                          fd)))
-                    (len1 (len obj1))
-                    (len2 (len obj2)))
-                (and (=fx len1 len2)
-                     (let loop ((i 0))
-                        (cond
-                           ((=fx i len1)
-                            #t)
-                           ((equal?
-                             (get-value obj1 i)
-                             (get-value obj2 i))
-                            (loop (+fx i 1)))
-                           (else
-                            #f))))))))
+          (equal? (get-value obj1) (get-value obj2))))
    (let ((class1 (object-class obj1))
          (class2 (object-class obj2)))
       (cond
@@ -889,19 +858,6 @@ Example:
       creating instance: 3
 @end smalllisp
 
-For each indexed field, two values must be sent to the function returned
-by @code{class-creator}. The first value denotes the size of the indexed
-field. The second value denotes the initial values of the fields. For instance:
-@smalllisp
-(module example
-   (export (class point x y (* z))))
-
-(let ((create (class-creator point)))
-   (print (create 10 23 5 3)))
-@end smalllisp
-
-Produces
-  @print{} #|POINT [X: 10] [Y: 23] [Z: 3 3 3 3 3]|
 @end deffn
 
 @deffn {bigloo procedure} class-predicate class

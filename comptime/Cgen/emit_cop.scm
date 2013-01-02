@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Thu Dec 20 17:49:16 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  2 13:57:08 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -329,14 +329,6 @@
 	    (emit-light-cfuncall (cop)
                (let ((actuals (cfuncall-args cop)))
 		  (out-call "PROCEDURE_L_ENTRY" cop)
-;* 		  (if (bigloo-type? (cfuncall-type cop))               */
-;* 		      (display "(PROCEDURE_L_ENTRY(" *c-port*)         */
-;* 		      (begin                                           */
-;* 			 (display "((" *c-port*)                       */
-;* 			 (display (type-name (cfuncall-type cop)) *c-port*) */
-;* 			 (display "(*)())PROCEDURE_L_ENTRY(" *c-port*))) */
-;* 		  (emit-cop (cfuncall-fun cop))                        */
-;* 		  (display "))(" *c-port*)                             */
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because their are always
 		     ;; the function and EOA.
@@ -352,11 +344,6 @@
 	    (emit-regular-cfuncall/eoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
 		  (out-call "PROCEDURE_ENTRY" cop)
-;* 		  (display "((" *c-port*)                              */
-;* 		  (display (type-name (cfuncall-type cop)) *c-port*)   */
-;* 		  (display "(*)())PROCEDURE_ENTRY(" *c-port*)          */
-;* 		  (emit-cop (cfuncall-fun cop))                        */
-;* 		  (display "))(" *c-port*)                             */
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because their are always
 		     ;; the function and EOA.
@@ -372,11 +359,6 @@
 	    (emit-regular-cfuncall/oeoa (cop)
 	       (let ((actuals (cfuncall-args cop)))
 		  (out-call "PROCEDURE_ENTRY" cop)
-;* 		  (display "((" *c-port*)                              */
-;* 		  (display (type-name (cfuncall-type cop)) *c-port*)   */
-;* 		  (display "(*)())PROCEDURE_ENTRY(" *c-port*)          */
-;* 		  (emit-cop (cfuncall-fun cop))                        */
-;* 		  (display "))(" *c-port*)                             */
 		  (let loop ((actuals actuals))
 		     ;; actuals are never empty because their are always
 		     ;; the function and EOA.
