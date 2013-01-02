@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Jan  2 15:06:01 2013 (serrano)                */
+#*    Last change :  Wed Jan  2 17:44:53 2013 (serrano)                */
 #*    Copyright   :  2012-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -67,7 +67,7 @@ pkg=bigloo
 maemo=`pkg-config maemo-version --modversion 2> /dev/null`
 if [ $? = 0 ]; then
   debian=maemo`echo $maemo | sed -e "s/[.].*$//"`
-  libs="sqlite ssl alsa gstreamer avahi"
+  libs="sqlite ssl alsa gstreamer"
 else
   case `cat /etc/issue | awk '{ print $1 }'` in
     Debian)
