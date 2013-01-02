@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Nov 23 10:22:03 2012 (serrano)                */
+;*    Last change :  Wed Jan  2 12:17:17 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
 	    ast_var
 	    ast_node
 	    type_type
+	    type_typeof
 	    ast_local)
    (export  (type-increment-global! ::global)))
 
@@ -114,6 +115,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::funcall)
    (with-access::funcall node (fun args)
+      (type-occurrence-increment! (get-type node))
       (occur-node! fun)
       (occur-node*! args)))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Tue Dec 11 17:38:33 2012 (serrano)                */
+;*    Last change :  Wed Jan  2 12:12:59 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -150,7 +150,7 @@
 		 ((light) 'funcall-l)
 		 ((elight) 'funcall-el)
 		 (else 'funcall)))
-	  (top (shape-typed-node op (node-type node))))
+	  (top (shape-typed-node op (get-type node))))
       (location-shape (node-loc node)
 	 `(,top
 	     ,(node->sexp (funcall-fun node))
