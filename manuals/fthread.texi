@@ -50,7 +50,7 @@ suitable for a high level programming language such as Scheme:
 @menu
 * Introduction::
 * Fair Threads Api::
-* SRFI-18::
+* SRFI-18 compatibility::
 @end menu
 
 This whole chapter has been written in collaboration with @b{Frédéric
@@ -95,7 +95,7 @@ processor. Fair threads have a deterministic semantics, relying on
 previous work belonging to the so-called reactive approach.
 
 @c -- API ------------------------------------------------------------ @c
-@node Fair Threads Api, SRFI-18, Introduction, Fair Threads
+@node Fair Threads Api, SRFI-18  compatibility, Introduction, Fair Threads
 @comment  node-name,  next,  previous,  up
 @subsection Fair Threads Api
 
@@ -631,7 +631,7 @@ Fair Threads and Posix Threads.
 
 
 @c -- SRFI-18 -------------------------------------------------------- @c
-@node SRFI-18, , Fair Threads Api, Fair Threads
+@node SRFI-18 compatibility, , Fair Threads Api, Fair Threads
 @comment  node-name,  next,  previous,  up
 @subsection SRFI-18
 @cindex SRFI-18

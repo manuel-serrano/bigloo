@@ -18,7 +18,15 @@
 @cindex Parallelism
 @cindex Threads
 
-This section describes the Posix-Like multi-threading Bigloo library.
+This section describes two Posix-Like multi-threading Bigloo libraries.
+The two libraries, @code{pthread}, and @code{srfi-18} are all the same
+but the @code{mutex-state} function that returns different results.
+Because of these differences that might seem thin at first glance,
+the @code{pthread} library is significantly faster than the @code{srfi-18}
+library. For that reason, it is recommended to use the @code{pthread}
+library instead of the @code{srfi-18} library that is mostly supported
+for backward compatibility.
+
 As much as possible, the names exported by this library are compatible
 with the Fair Threads library (see Section @ref{Fair Threads}).
 
@@ -27,6 +35,7 @@ with the Fair Threads library (see Section @ref{Fair Threads}).
 * Threads API::
 * Mutexes API::
 * Condition Variables API::
+* SRFI-18::
 @end menu
 
 @c -- using posix threads -------------------------------------------- @c
@@ -133,8 +142,13 @@ systems abort silently.
 Thread locking mechanism is common to Fair Threads and Posix Threads
 (see @ref{Thread Common Functions}).
 
+@deffn {SRFI-18 function} {mutex-state} mutex
+Returns the symbol @code{locked} when the mutex is locked by a thread.
+Otherwise, it returns the symbol @code{unlocked}.
+@end deffn
+
 @c -- Condition Variables -------------------------------------------- @c
-@node Condition Variables API, , Mutexes API, Posix Threads
+@node Condition Variables API, SRFI-18, Mutexes API, Posix Threads
 @subsection Condition Variables
 
 Posix thread condition variables follows the common thread API
@@ -165,3 +179,35 @@ Posix thread condition variables follows the common thread API
 		    (mutex-unlock! lock))))))
       res))
 @end smalllisp
+
+@c -- Condition Variables -------------------------------------------- @c
+@node SRFI-18, , Condition Variables API, Posix Threads
+@subsection SRFI-18
+
+@deffn {SRFI-18 function} {mutex-state} mutex
+
+Returns information about the state of the mutex. The possible results are:
+
+@itemize @bullet
+ @item thread T: the mutex is in the locked/owned state and thread T is the owner of the mutex
+ @item symbol @code{not-owned}: the mutex is in the locked/not-owned state
+ @item symbol @code{abandoned}: the mutex is in the unlocked/abandoned state
+ @item symbol @code{not-abandoned}: the mutex is in the unlocked/not-abandoned state 
+@end itemize
+
+Examples:
+
+@smalllisp
+(mutex-state (make-mutex))  
+   @result{} not-abandoned
+
+(define (thread-alive? thread)
+   (let ((mutex (make-mutex)))
+      (mutex-lock! mutex #f thread)
+      (let ((state (mutex-state mutex)))
+         (mutex-unlock! mutex) ; avoid space leak
+         (eq? state thread))))
+
+@end smalllisp
+
+@end deffn
