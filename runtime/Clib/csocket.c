@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Dec 19 09:11:34 2012 (serrano)                */
+/*    Last change :  Wed Jan  9 17:44:59 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -137,9 +137,6 @@ extern ssize_t bgl_syswrite( obj_t, char *, size_t );
 extern int dup( int );
 extern int close( int );
 #endif
-
-#define DEBUG_CACHE_DNS 1
-#undef DEBUG_CACHE_DNS
 
 /*---------------------------------------------------------------------*/
 /*    bglhostent ...                                                   */
@@ -458,7 +455,7 @@ make_bglhostent_from_name( obj_t hostaddr, struct sockaddr_in *sin, char *n ) {
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    make_bglhostent ...                                              */
+/*    bglhostent_fill_from_hostent ...                                 */
 /*---------------------------------------------------------------------*/
 static void
 bglhostent_fill_from_hostent( obj_t hostaddr, struct bglhostent *bhp, struct hostent *hp ) {
@@ -596,9 +593,15 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int canon ) {
    hints.ai_protocol = 0;
    hints.ai_flags = canon ? AI_CANONNAME | AI_ADDRCONFIG : AI_ADDRCONFIG;
 
-   if( !(v=getaddrinfo( BSTRING_TO_STRING( hostname ), 0L, &hints, &res)) ) {
+   if( !(v=getaddrinfo( BSTRING_TO_STRING( hostname ), 0L, &hints, &res )) ) {
       bglhostent_fill_from_addrinfo( hostname, bhp, res );
+
       freeaddrinfo( res );
+      
+      if( bhp->hp.h_addr_list[ 0 ] == 0 ) {
+	 bhp->exptime = time( 0L ) + bgl_dns_cache_validity_timeout() / 4;
+	 bhp->state = BGLHOSTENT_STATE_FAILURE;
+      }
    } else {
       /* error message could be printed as follows: */
       /* printf( "%s\n", gai_strerror( v) );        */
@@ -718,11 +721,12 @@ retry_cache:
 	 VECTOR_SET( hosttable, key, (obj_t)bhp );
 	 BGL_MUTEX_UNLOCK( socket_mutex );
 
-	 /* make the actual DNS call */
 #if( DEBUG_CACHE_DNS )
 	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d QUERYING DNS...\n",
 		  __FILE__, __LINE__, BSTRING_TO_STRING( hostname ), key );
-#endif	 
+#endif
+	 
+	 /* make the actual DNS call */
 	 bglhostentbyname( hostname, bhp, canon );
 	 
 #if( DEBUG_CACHE_DNS )

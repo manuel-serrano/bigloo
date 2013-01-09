@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Mar 13 09:21:30 2012 (serrano)                */
+;*    Last change :  Wed Jan  9 19:13:16 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -779,14 +779,21 @@
 (define (utf8->8bits-fill! nstr str len table)
    
    (define (error-too-short r)
-      (error 'utf8->8bits
-	     "String too short"
-	     (string-for-read (substring str (maxfx 0 (-fx r 10)) len))))
+      (error "utf8->8bits"
+	 "String too short"
+	 (string-for-read (substring str (maxfx 0 (-fx r 10)) len))))
    
    (define (error-ill r)
-      (error 'utf8->8bits
-	     "Illegal string"
-	     (string-for-read (substring str r (minfx len (+fx r 10))))))
+      (error "utf8->8bits"
+	 (format "Illegal character \"~x\" at index ~a"
+	    (char->integer (string-ref str r))
+	    r)
+	 (string-for-read (substring str r (minfx len (+fx r 10))))))
+   
+   (define (error-subtable r)
+      (error "utf8->8bits"
+	 (string-append "Cannot encode at index " (integer->string r))
+	 (string-for-read (substring str r (minfx len (+fx r 10))))))
    
    (let loop ((r 0)
 	      (w 0))
@@ -808,12 +815,15 @@
 			(let ((m (bit-or (bit-lsh (bit-and n #x1f) 6)
 				    (bit-and #x3f nn))))
 			   (if (>fx m #xff)
-			       (error-ill r)
+			       (begin
+				  (string-set! nstr w #\.)
+				  (loop (+fx r 2) (+fx w 1)))
+;* 			       (error-ill r)                           */
 			       (begin
 				  (string-set! nstr w (integer->char m))
 				  (loop (+fx r 2) (+fx w 1))))))))
 ;* 		;; MS 20feb2012, Bigloo was using the expression below */
-;* 		;; that appears to me wrong!                           */
+;* 		;; that appears to be wrong!                           */
 ;* 		((<=fx n #xdf)                                         */
 ;* 		 (if (=fx r (-fx len 1))                               */
 ;* 		     (error-too-short r)                               */
@@ -829,7 +839,7 @@
 			    (nr (+fx r 1)))
 		    (cond
 		       ((not subtable)
-			(error-ill r))
+			(error-subtable r))
 		       ((char? (cdr subtable))
 			(string-set! nstr w (cdr subtable))
 			(loop nr (+fx w 1)))
