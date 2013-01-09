@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Fri Dec 21 10:11:09 2012 (serrano)                */
-/*    Copyright   :  2004-12 Manuel Serrano                            */
+/*    Last change :  Wed Jan  9 09:04:54 2013 (serrano)                */
+/*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -47,6 +47,10 @@ static obj_t bgl_create_mutex_default( obj_t );
 BGL_THREAD_DECL obj_t single_thread_denv = 0L;
 
 static obj_t denv_get() { return 0; }
+
+static obj_t nothread_backend;
+
+DEFINE_STRING( nothread_backend, ___0, "nothread", sizeof( "nothread" ) );
 
 /*---------------------------------------------------------------------*/
 /*    Thread registers                                                 */
@@ -113,6 +117,7 @@ bgl_mutex_init_default( obj_t m ) {
    BGL_MUTEX( m ).systimedlock = &bgl_act2long_default;
    BGL_MUTEX( m ).sysunlock = &bgl_act_default;
    BGL_MUTEX( m ).sysstate = &bgl_mutex_state_default;
+   BGL_MUTEX( m ).backend = nothread_backend;
 
    return m;
 }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed Dec 19 09:02:16 2012 (serrano)                */
-;*    Copyright   :  2004-12 Manuel Serrano                            */
+;*    Last change :  Wed Jan  9 09:55:42 2013 (serrano)                */
+;*    Copyright   :  2004-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -58,6 +58,8 @@
 	    ($make-nil-mutex::mutex () "bgl_make_nil_mutex")
 	    (macro $mutex-name::obj (::mutex)
 		   "BGL_MUTEX_NAME")
+	    (macro $mutex-backend::obj (::mutex)
+		   "BGL_MUTEX_BACKEND")
 	    (macro $mutex-lock::int (::mutex)
 		   "BGL_MUTEX_LOCK")
 	    (macro $mutex-lock-prelock::int (::mutex ::pair-nil)
@@ -109,6 +111,8 @@
 		       "bgl_make_nil_mutex")
 	       (method static $mutex-name::obj (::mutex)
 		       "BGL_MUTEX_NAME")
+	       (method static $mutex-backend::obj (::mutex)
+		       "BGL_MUTEX_BACKEND")
 	       (method static $mutex-lock::int (::mutex)
 		       "bgl_mutex_lock")
 	       (method static $mutex-lock-prelock::int (::mutex ::pair-nil)
@@ -225,6 +229,7 @@
 	    ($mutex? fail-safe)
 	    ($make-mutex fail-safe)
 	    ($mutex-name fail-safe)
+	    ($mutex-backend fail-safe)
 	    ($mutex-state fail-safe)
 	    ($mutex-lock fail-safe)
 	    ($mutex-timed-lock fail-safe)
@@ -254,7 +259,7 @@
 ;*---------------------------------------------------------------------*/
 (define *nothread-backend*
    (instantiate::nothread-backend
-	    (name "nothread")))
+      (name "nothread")))
 
 ;*---------------------------------------------------------------------*/
 ;*    *thread-backends* ...                                            */
@@ -602,6 +607,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (mutex-state mutex)
    ($mutex-state mutex))
+
+;*---------------------------------------------------------------------*/
+;*    mutex-backend ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (mutex-backend obj)
+   ($mutex-backend obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    with-lock ...                                                    */

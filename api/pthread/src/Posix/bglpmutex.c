@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Dec 21 10:19:03 2012 (serrano)                */
-/*    Copyright   :  2004-12 Manuel Serrano                            */
+/*    Last change :  Wed Jan  9 09:04:59 2013 (serrano)                */
+/*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -41,6 +41,8 @@ BGL_RUNTIME_DECL void bgl_sleep( long );
 /*---------------------------------------------------------------------*/
 static obj_t sym_locked = 0L;
 static obj_t sym_unlocked = 0L;
+
+DEFINE_STRING( pthread_backend, ___0, "pthread", sizeof( "pthread" ) );
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -233,6 +235,7 @@ bglpth_mutex_init( obj_t o ) {
 #endif   
    BGL_MUTEX( o ).systimedlock = &bglpth_mutex_timed_lock;
    BGL_MUTEX( o ).sysstate = &bglpth_mutex_state;
+   BGL_MUTEX( o ).backend = pthread_backend;
 
 #if !defined( BGL_INLINE_MUTEX )
    BGL_MUTEX_SYSMUTEX( o ) = mut;

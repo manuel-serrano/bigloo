@@ -6499,6 +6499,11 @@ public final class foreign
 	 return o.name;
       }
 
+   public static Object BGL_MUTEX_BACKEND(mutex o)
+      {
+	 return o.backend;
+      }
+
    public static int bgl_mutex_lock(mutex o)
       {
 	 return o.acquire_lock();

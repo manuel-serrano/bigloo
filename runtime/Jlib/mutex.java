@@ -5,15 +5,18 @@ import java.util.*;
 public class mutex extends obj
 {
    public final Object name;
+   public final Object backend;
    public static final mutex nil_mutex = new mutex();
    public static mutex amutex = new mutex( foreign.BUNSPEC );
    
    public mutex() {
       this.name = bigloo.foreign.BUNSPEC;
+      this.backend = "pthread".getBytes();
    }
 
    public mutex( final Object n ) {
       this.name = n;
+      this.backend = "pthread".getBytes();
    }
 
    protected mutex create( Object name ) {

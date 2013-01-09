@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Nov 21 07:26:26 2012 (serrano)                */
+;*    Last change :  Wed Jan  9 09:55:30 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -172,35 +172,35 @@
 		   "(incompatible DSSSL #!key prototype)")))
 	     ((not (equal? (sfun-dsssl-keywords old-value)
 			   (dsssl-formals args)))
-	      (mismatch-error old src-exp "(incompatible Dsssl prototype)")))))
-      (let loop ((locals locals)
-		 (types  (map (lambda (a)
-				 (cond
-				    ((local? a)
-				     (local-type a))
-				    ((type? a)
-				     a)
-				    (else
-				     (internal-error "check-method-definition"
-						     "unexpected generic arg"
-						     (shape a)))))
-			      (sfun-args old-value))))
-	 (cond
-	    ((null? locals)
-	     ;; we save the definition for a better location in
-	     ;; the source file.
-	     (if (null? types)
-		 (begin
-		    (global-src-set! old src-exp)
-		    old)
-		 (mismatch-error old src-exp "(arity differs)")))
-	    ((or (null? types)
-		 (not (compatible-type? #f
-					(local-type (car locals))
-					(car types))))
-	     (mismatch-error old src-exp "(incompatible formal type)"))
-	    (else
-	     (loop (cdr locals) (cdr types)))))))
+	      (mismatch-error old src-exp "(incompatible Dsssl prototype)"))))
+	 (else
+	  (let loop ((locals locals)
+		     (types  (map (lambda (a)
+				     (cond
+					((local? a)
+					 (local-type a))
+					((type? a)
+					 a)
+					(else
+					 (internal-error "check-method-definition"
+					    "unexpected generic arg"
+					    (shape a)))))
+				(sfun-args old-value))))
+	     (cond
+		((null? locals)
+		 ;; we save the definition for a better location in
+		 ;; the source file.
+		 (if (null? types)
+		     (global-src-set! old src-exp)
+		     (mismatch-error old src-exp "(arity differs)")))
+		((or (null? types)
+		     (not (compatible-type? #f
+			     (local-type (car locals))
+			     (car types))))
+		 (mismatch-error old src-exp "(incompatible formal type)"))
+		(else
+		 (loop (cdr locals) (cdr types)))))))
+      old))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    def-global-scnst! ...                                            */

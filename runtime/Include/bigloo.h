@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Dec 21 10:58:28 2012 (serrano)                */
+/*    Last change :  Wed Jan  9 08:41:00 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -545,6 +545,7 @@ typedef union scmobj {
       int (*syslockprelock)();   /*    - ...                           */
       union scmobj *(*sysstate)();
       void *sysmutex;            /* the actual mutex                   */
+      union scmobj *backend;     /* the backend managing the mutex     */
    } mutex_t;
    
    struct bgl_condvar {
@@ -2926,6 +2927,8 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
    (BGL_MUTEX( o ).sysstate( BGL_MUTEX_SYSMUTEX( o ) ))
    
 #define BGL_MUTEX_NAME( o ) BGL_MUTEX( o ).name
+
+#define BGL_MUTEX_BACKEND( o ) BGL_MUTEX( o ).backend
 
 #if( defined( BGL_INLINE_MUTEX ) )   
 #   define BGL_MUTEX_SYSMUTEX( o ) &(BGL_MUTEX( o ).sysmutex)
