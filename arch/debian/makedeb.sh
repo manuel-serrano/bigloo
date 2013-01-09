@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Jan  9 07:46:17 2013 (serrano)                */
+#*    Last change :  Wed Jan  9 08:00:38 2013 (serrano)                */
 #*    Copyright   :  2012-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -51,9 +51,9 @@ while : ; do
     --fakeroot)
       shift;
       fakeroot=$1;;
-    --version=*)
-      version="`echo $1 | sed 's/^[^=]*=//'`";
-      shift;;
+    --version)
+      shift;
+      version=$1;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
