@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Jan  9 19:13:16 2013 (serrano)                */
+;*    Last change :  Thu Jan 10 08:15:25 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -776,7 +776,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8->8bits-fill! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (utf8->8bits-fill! nstr str len table)
+(define (utf8->8bits-fill! nstr::bstring str::bstring len::int table)
    
    (define (error-too-short r)
       (error "utf8->8bits"
@@ -794,7 +794,22 @@
       (error "utf8->8bits"
 	 (string-append "Cannot encode at index " (integer->string r))
 	 (string-for-read (substring str r (minfx len (+fx r 10))))))
-   
+
+   (define (table->8bits subtable r w n)
+      (let liip ((subtable (assq n table))
+		 (nr (+fx r 1)))
+	 (cond
+	    ((not subtable)
+	     (error-subtable r))
+	    ((char? (cdr subtable))
+	     (string-set! nstr w (cdr subtable))
+	     nr)
+	    ((=fx nr len)
+	     (error-too-short r))
+	    (else
+	     (let ((nc (char->integer (string-ref str nr))))
+		(liip (assq nc (cdr subtable)) (+fx nr 1)))))))
+
    (let loop ((r 0)
 	      (w 0))
       (if (=fx r len)
@@ -807,6 +822,10 @@
 		 (loop (+fx r 1) (+fx w 1)))
 		((<fx n #xc2)
 		 (error-ill r))
+		((and table (assq n table))
+		 =>
+		 (lambda (subtable)
+		    (loop (table->8bits subtable r w n) (+fx w 1))))
 		((<=fx n #xdf)
 		 (if (=fx r (-fx len 1))
 		     (error-too-short r)
@@ -816,38 +835,14 @@
 				    (bit-and #x3f nn))))
 			   (if (>fx m #xff)
 			       (begin
+				  ;; before bigloo3.9b, an error was raised
+				  ;; here. it has been found judicious to
+				  ;; replace the ill char with .
 				  (string-set! nstr w #\.)
 				  (loop (+fx r 2) (+fx w 1)))
-;* 			       (error-ill r)                           */
 			       (begin
 				  (string-set! nstr w (integer->char m))
 				  (loop (+fx r 2) (+fx w 1))))))))
-;* 		;; MS 20feb2012, Bigloo was using the expression below */
-;* 		;; that appears to be wrong!                           */
-;* 		((<=fx n #xdf)                                         */
-;* 		 (if (=fx r (-fx len 1))                               */
-;* 		     (error-too-short r)                               */
-;* 		     (let* ((nc (string-ref str (+fx r 1)))            */
-;* 			    (nn (char->integer nc)))                   */
-;* 			(if (and (>=fx nn #x80) (<fx nn #xc0))         */
-;* 			    (let ((m (bit-or (bit-lsh (-fx n #xc2) 6) nn))) */
-;* 			       (string-set! nstr w (integer->char m))  */
-;* 			       (loop (+fx r 2) (+fx w 1)))             */
-;* 			    (error-ill r)))))                          */
-		(table
-		 (let liip ((subtable (assq n table))
-			    (nr (+fx r 1)))
-		    (cond
-		       ((not subtable)
-			(error-subtable r))
-		       ((char? (cdr subtable))
-			(string-set! nstr w (cdr subtable))
-			(loop nr (+fx w 1)))
-		       ((=fx nr len)
-			(error-too-short r))
-		       (else
-			(let ((nc (char->integer (string-ref str nr))))
-			   (liip (assq nc (cdr subtable)) (+fx nr 1)))))))
 		(else
 		 (error-ill r)))))))
 
