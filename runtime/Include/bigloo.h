@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jan  9 08:41:00 2013 (serrano)                */
+/*    Last change :  Thu Jan 10 16:34:45 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -544,8 +544,8 @@ typedef union scmobj {
       int (*sysunlock)();        /*    - ...                           */
       int (*syslockprelock)();   /*    - ...                           */
       union scmobj *(*sysstate)();
-      void *sysmutex;            /* the actual mutex                   */
       union scmobj *backend;     /* the backend managing the mutex     */
+      void *sysmutex;            /* the actual mutex                   */
    } mutex_t;
    
    struct bgl_condvar {
