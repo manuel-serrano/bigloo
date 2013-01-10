@@ -238,6 +238,25 @@
 (define-method (gen-expr fun::rtl_lightfuncall args);
    (gen-Xfuncall "L_" args #f) )
 
+(define-method (gen-expr fun::rtl_getfield args);
+   (display "((")
+   (gen-prefix fun)
+   (gen-reg (car args))
+   (display ")->")
+   (display (rtl_getfield-name fun))
+   (display ")") )
+
+(define-method (gen-expr fun::rtl_setfield args);
+   (display "((")
+   (gen-prefix fun)
+   (gen-reg (car args))
+   (display ")->")
+   (display (rtl_setfield-name fun))
+   (display "=")
+   (gen-reg (cadr args))
+   (display ")") )
+
+
 (define-method (gen-expr fun::rtl_funcall args);
    (if *stdc*
        (begin (display "(VA_PROCEDUREP(")
@@ -436,6 +455,9 @@
       ((string=? s "PUSH_TRACE")
        (set! *pushtraceemmited* (+fx 1 *pushtraceemmited*))
        "{PUSH_TRACE" )
+      ((string=? s "BGL_ENV_PUSH_TRACE")
+       (set! *pushtraceemmited* (+fx 1 *pushtraceemmited*))
+       "{BGL_ENV_PUSH_TRACE" )
       ((string=? s "BIGLOO_EXIT")
        (if *count* "PRINT_TRACE" s) )
       ;; MANU

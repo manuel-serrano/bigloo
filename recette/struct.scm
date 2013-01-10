@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:42:44 1992                          */
-;*    Last change :  Mon Sep  8 16:31:41 2008 (serrano)                */
+;*    Last change :  Thu Jan 10 17:35:49 2013 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des structures                         */
 ;*---------------------------------------------------------------------*/

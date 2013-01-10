@@ -338,9 +338,12 @@
    (let ( (id (global-id v)) )
       (cond
 	 ((eq? id '__evmeaning_address)
-	  (call e
+	  (let ((a (if (isa? (car args) pragma)
+		       (car (pragma-expr* (car args)))
+		       (car args))))
+	     (call e
 		(instantiate::rtl_globalref
-		   (var (get-global (var-variable (car args)))))) )
+		   (var (get-global (var-variable a)))))))
 	 (else #f) )))
 
 ;;
