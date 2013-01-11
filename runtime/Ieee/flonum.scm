@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Sun Nov 18 11:41:15 2012 (serrano)                */
+;*    Last change :  Fri Jan 11 14:52:32 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -57,6 +57,7 @@
 	    (macro c-sqrt::double (::double) "sqrt")
 	    (macro c-pow::double (::double ::double) "pow")
 	    (macro strtod::double (::string ::long) "strtod")
+	    (macro $strtod::double (::string) "STRTOD")
 	    (macro c-absfl::double (::double) "fabs")
 	    (macro c-maxfl::double (::double ::double) "BGL_FL_MAX2")
 	    (macro c-minfl::double (::double ::double) "BGL_FL_MIN2")
@@ -130,6 +131,8 @@
 	       (method static c-pow::double (::double ::double)
 		       "pow")
 	       (method static strtod::double (::string ::long)
+		       "strtod")
+	       (method static $strtod::double (::string)
 		       "strtod")
 	       (method static c-absfl::double (::double)
 		       "abs")
@@ -601,7 +604,7 @@
       ((string=? string "-inf.0")
        -inf.0)
       (else
-       (strtod string 0))))
+       ($strtod string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ieee-string->real ...                                            */

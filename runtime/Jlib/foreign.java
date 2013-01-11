@@ -2114,6 +2114,13 @@ public final class foreign
 		 ? 0 : Double.valueOf(new String(s, i, (len - i))).doubleValue());
       }
 
+   public static double strtod(byte[]s)
+      {
+	 // !!!!! JDK 1.2:  return Double.parseDouble( new String( s, i, (s.length - i) ) );
+
+	 return strtod( s, 0 );
+      }
+
    // Open functions
    public static int STRING_REF(byte[]s, int i)
       {

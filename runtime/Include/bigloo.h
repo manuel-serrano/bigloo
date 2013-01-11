@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jan 10 16:34:45 2013 (serrano)                */
+/*    Last change :  Fri Jan 11 14:57:48 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3048,14 +3048,18 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_RTL_RSH(x,y) (x >> y)
 #define BGL_RTL_LSH(x,y) (x << y)
 
-#define BGL_RTL_PUSH_ENV_EXIT( env, _xit, _ser )		\
-   exitd.exit  = _xit;						\
-   exitd.userp = _ser;						\
-   exitd.prev  = ((struct exitd *)BGL_ENV_EXITD_TOP( env ));	\
-   exitd.stamp = BGL_ENV_EXITD_STAMP( env );			\
-   BGL_ENV_EXITD_TOP_SET( env, (obj_t)(&exitd) );
+#define BGL_RTL_PUSH_ENV_EXIT( env, _xit, _ser ) \
+   exitd.exit  = _xit; \
+   exitd.userp = _ser; \
+   exitd.mutex0 = BFALSE; \
+   exitd.mutex1 = BFALSE; \
+   exitd.mutexn = BNIL; \
+   exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
+   exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
+   exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
+   BGL_ENV_EXITD_TOP_SET( env, (&exitd) );
 
-#define BGL_RTL_PUSH_EXIT( _xit, _ser )				\
+#define BGL_RTL_PUSH_EXIT( _xit, _ser ) \
    BGL_RTL_PUSH_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser )
 
 #define BGL_RTL_NOP() (BUNSPEC)
@@ -3213,6 +3217,8 @@ BGL_RUNTIME_DECL obj_t bgl_make_class( obj_t, obj_t, long,
 BGL_RUNTIME_DECL unsigned char bgl_mmap_nommap_ref( obj_t, long );
 BGL_RUNTIME_DECL obj_t bgl_mmap_nommap_set( obj_t, long, unsigned char );
 #endif
+
+#define STRTOD( x ) strtod( x, 0L )
    
 #if !BGL_HAVE_STRTOLL
 BGL_RUNTIME_DECL BGL_LONGLONG_T bgl_strtoll( const char *, char **, int );

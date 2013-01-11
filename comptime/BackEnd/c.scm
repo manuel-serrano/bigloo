@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Thu Dec 20 17:11:22 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Fri Jan 11 16:31:23 2013 (serrano)                */
+;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
 	    type_type
 	    type_cache
 	    type_env
+	    type_typeof
 	    ast_var
 	    ast_node
 	    ast_occur
@@ -343,3 +344,13 @@
 				  main
 				  fmain
 				  libraries))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    backend-subtype? ::cvm ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (backend-subtype? b::cvm t1 t2)
+   ;; CARE Agree manuel ? Something better ?
+   (or (eq? t1 t2)
+       (eq? (type-id t1) (type-id t2))
+       (string=? (type-name t1) (type-name t2)) ))
+

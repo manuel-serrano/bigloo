@@ -2,6 +2,7 @@
    (include "Tools/location.sch")
    (import type_type ast_var ast_node
 	   type_env
+	   type_typeof
 	   engine_param
 	   module_module
 	   object_class
@@ -294,6 +295,13 @@
    ;; Default case: forget arguments and call another generic method.
    (gen-fun fun me) )
 
+;* (define-method (gen-fun-with-args fun::rtl_cast me args);           */
+;*    (when *purify*                                                   */
+;*       (let ( (totype (rtl_cast-totype fun))                         */
+;* 	     (fromtype (rtl_cast-fromtype fun)) )                      */
+;* {* 	 (unless (subtype? fromtype totype)                            *} */
+;* 	    (code! me `(checkcast ,(compile-type me totype))) ))))     */
+
 ;;
 ;; Last entry for generating instructions
 ;;
@@ -565,9 +573,9 @@
 
 (define-method (gen-fun fun::rtl_cast me);
    (when *purify*
-      (let ( (type (rtl_cast-type fun)) )
-	 (unless (eq? (type-name type) 'obj)
-	    (code! me `(checkcast ,(compile-type me type))) ))))
+      (let ( (type (rtl_cast-totype fun)) )
+         (unless (eq? (type-name type) 'obj)
+            (code! me `(checkcast ,(compile-type me type))) ))))
 
 (define-method (gen-fun fun::rtl_cast_null me);
    (let ( (type (rtl_cast_null-type fun)) ) 

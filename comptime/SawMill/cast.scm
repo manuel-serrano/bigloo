@@ -22,9 +22,12 @@
 	     l ))
 
 (define (add-cast from to) ;()
+   ;; CARE BPS obsolete (11jan2013)
    (let ( (type (rtl_reg-type to)) )
       (instantiate::rtl_ins (dest to)
-			    (fun (instantiate::rtl_cast (type type)))
+			    (fun (instantiate::rtl_cast
+				    (totype type)
+				    (fromtype (rtl_reg-type from))))
 			    (args (cons from '())) )))
 
 (define (add-casts-ins back ins) ;()
@@ -65,8 +68,6 @@
    (or (eq? t1 t2)
        (numeric? t1)
        (numeric? t2)
-       (and (tclass? t1) (eq? (type-id t2) 'object))
-       (sub-type? t1 t2)
        ;; Give a chance to the backend
        (backend-subtype? back t1 t2) ))
 
@@ -123,7 +124,7 @@
    (global-type (rtl_call-var fun)) )
 
 (define-method (type-dest::type fun::rtl_cast args::pair-nil) ;(list expr)
-   (rtl_cast-type fun) )
+   (rtl_cast-totype fun) )
 
 ;;
 (define-generic (type-args fun::rtl_fun);

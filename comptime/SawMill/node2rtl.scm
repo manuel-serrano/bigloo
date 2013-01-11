@@ -343,7 +343,7 @@
 		       (car args))))
 	     (call e
 		(instantiate::rtl_globalref
-		   (var (get-global (var-variable a)))))))
+		   (var (get-global (var-variable a))) ))))
 	 (else #f) )))
 
 ;;
@@ -433,7 +433,7 @@
 
 ;;
 (define-method (node->rtl::area e::cast) ; ()
-   (with-access::cast e (arg)
+  (with-access::cast e (arg)
       ; CARE MANU pourquoi il y aurait des mauvais type!!
       ; (call e (instantiate::rtl_cast (type (get-type e))) arg)
       (node->rtl arg) ))

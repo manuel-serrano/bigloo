@@ -92,11 +92,3 @@
        "Zector" )
       (else  (qualified-type-name type)) ))
 
-;;
-;; Specific methods for subtyping
-;;
-(define-method (backend-subtype? b::jvm t1 t2)
-   (or (eq? t1 t2)
-       (eq? (type-id t1) (type-id t2))
-       (eq? (type-name t2) 'java.lang.Object)
-       (eq? (type-name t1) (type-name t2)) ))

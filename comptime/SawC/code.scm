@@ -9,6 +9,7 @@
 
 	   type_tools		; for emit-atom-value/make-typed-declaration
 	   type_cache		; for emit-atom-value
+	   type_typeof
 	   cnst_alloc
 	   tools_shape
 	   backend_backend
@@ -281,7 +282,10 @@
    ;; we have a pending "Rxx = "
    (display "(obj_t) jmpbuf;\n\t")
    (display "{BGL_STORE_TRACE();")
-   (display "if(SETJMP(jmpbuf)) {BGL_RESTORE_TRACE(); return(BGL_EXIT_VALUE());}}") )
+   (display "if(SETJMP(jmpbuf)) {BGL_RESTORE_TRACE(); return(BGL_EXIT_VALUE());}}\n")
+   (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
+   (display "  bgl_restore_signal_handlers();\n" *c-port*)
+   (display "#endif\n" *c-port*) )
 
 ;;
 (define-method (gen-expr fun::rtl_pragma args);
@@ -405,7 +409,7 @@
    (vextra (rtl_vlength-type fun)) )
 
 (define-method (gen-prefix fun::rtl_cast) ;()
-   (display (make-typed-declaration (rtl_cast-type fun) ""))
+   (display (make-typed-declaration (rtl_cast-totype fun) ""))
    (display ", ") )
 
 (define-method (gen-prefix fun::rtl_cast_null) ;()
@@ -463,15 +467,6 @@
       ;; MANU
       ((string=? s "STRING_REF") "BGL_RTL_STRING_REF")
       (else s) ))
-
-
-;;
-;; Specific methods for subtyping
-;;
-(define-method (backend-subtype? b::cvm t1 t2)
-   ;; CARE Agree manuel ? Something better ?
-   (or (eq? (type-id t1) (type-id t2))
-       (string=? (type-name t1) (type-name t2)) ))
 
 ;;
 ;; Specific methods for expression folding
