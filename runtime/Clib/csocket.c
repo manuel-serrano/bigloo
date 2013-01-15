@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Jan  9 17:44:59 2013 (serrano)                */
+/*    Last change :  Tue Jan 15 17:43:42 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -495,12 +495,6 @@ bglhostent_fill_from_addrinfo( obj_t hostaddr, struct bglhostent *bhp, struct ad
    /* h_name */
    bhp->hp.h_name = make_string( BSTRING_TO_STRING( hostaddr ) );
    
-#if DEBUG_CACHE_DNS
-   fprintf( stderr, "bglhostent_fill_from_addrinfo hostaddr=%s canonname=%s\n",
-	    BSTRING_TO_STRING( hostaddr ),
-	    ai->ai_canonname ? ai->ai_canonname : "_" );
-#endif       
-
    /* h_length */
    bhp->hp.h_length = sizeof( struct in_addr );
 
@@ -599,6 +593,10 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int canon ) {
       freeaddrinfo( res );
       
       if( bhp->hp.h_addr_list[ 0 ] == 0 ) {
+#if( DEBUG_CACHE_DNS )
+	 fprintf( stderr, "!!!!!!! %s:%d NO VALID IPv4 address for %s\n",
+		  BSTRING_TO_STRING( hostname ) );
+#endif
 	 bhp->exptime = time( 0L ) + bgl_dns_cache_validity_timeout() / 4;
 	 bhp->state = BGLHOSTENT_STATE_FAILURE;
       }
@@ -1261,6 +1259,9 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 
    /* Locate the host IP address */
    if( (hp = bglhostbyname( hostname, 0 )) == NULL ) {
+#if( DEBUG_CACHE_DNS )
+      fprintf( stderr, "!!!! %s:%d bglhostbyname returns null\n", __FILE__, __LINE__ );
+#endif      
       C_SYSTEM_FAILURE( BGL_IO_UNKNOWN_HOST_ERROR,
 			"make-client-socket",
 			"unknown or misspelled host name",

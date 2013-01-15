@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Dec 26 09:39:57 2012 (serrano)                */
+;*    Last change :  Tue Jan 15 19:17:02 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -52,8 +52,8 @@
 	    ($restore-signal-handlers::void () "bgl_restore_signal_handlers")
 	    (*the-command-line*::obj "command_line")
 	    (*the-executable-name*::string "executable_name")
-	    (macro c-getenv?::bool (::string) "(long)getenv")
-	    (macro c-getenv::string (::string) "(char *)getenv")
+	    (macro $getenv?::bool (::string) "(long)getenv")
+	    (macro $getenv::string (::string) "(char *)getenv")
 	    (c-setenv::int (::string ::string) "bgl_setenv")
 	    (macro c-system::int  (::string) "system")
 	    (c-date::string () "c_date")
@@ -95,9 +95,9 @@
 		       "bgl_get_signal_handler")
 	       (method static $restore-signal-handlers::void ()
 		       "bgl_restore_signal_handlers")
-	       (method static c-getenv?::bool (::string)
+	       (method static $getenv?::bool (::string)
 		       "getenv_exists")
-	       (method static c-getenv::string (::string)
+	       (method static $getenv::string (::string)
 		       "getenv")
 	       (method static c-setenv::int (::string ::string)
 		       "bgl_setenv")
@@ -217,11 +217,20 @@
 (define (os-arch) runtime-os-arch)
 (define (os-version) runtime-os-version)
 (define (os-tmp) runtime-os-tmp)
-(define (os-charset) runtime-os-charset)
 (define (file-separator) runtime-file-separator)
 (define (path-separator) runtime-path-separator)
 (define (static-library-suffix) runtime-static-library-suffix)
 (define (shared-library-suffix) runtime-shared-library-suffix)
+
+;*---------------------------------------------------------------------*/
+;*    os-charset ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (os-charset)
+   (cond
+      ((getenv "LANG") => (lambda (x) x))
+      ((getenv "LC_CTYPE") => (lambda (x) x))
+      ((getenv "LC_ALL") => (lambda (x) x))
+      (else runtime-os-charset)))
 
 ;*---------------------------------------------------------------------*/
 ;*    command-line ...                                                 */
@@ -270,8 +279,8 @@
    (if (and (string=? (os-class) "win32")
             (string=? string "HOME"))
        (set! string "USERPROFILE"))
-   (if (c-getenv? string)
-       (let ((result (c-getenv string)))
+   (if ($getenv? string)
+       (let ((result ($getenv string)))
           (if (string-ptr-null? result)
               #f
               result))

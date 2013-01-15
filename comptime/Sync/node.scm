@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Fri Dec 21 11:43:12 2012 (serrano)                */
-;*    Copyright   :  2012 Manuel Serrano                               */
+;*    Last change :  Tue Jan 15 19:24:07 2013 (serrano)                */
+;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
 ;*    explicitly lock/unlock and push/pop operations. Used by the      */
@@ -53,6 +53,7 @@
 (define mpop #f)
 (define getexitdtop #f)
 (define exitd-mutex-profile #f)
+(define failsafe-mutex-profile #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    init-sync! ...                                                   */
@@ -68,7 +69,10 @@
 	  (when *sync-profiling*
 	     (set! exitd-mutex-profile
 		(sexp->node '$exitd-mutex-profile '() loc 'app))
-	     (set-variable-name! (var-variable exitd-mutex-profile)))
+	     (set! failsafe-mutex-profile
+		(sexp->node '$failsafe-mutex-profile '() loc 'app))
+	     (set-variable-name! (var-variable exitd-mutex-profile))
+	     (set-variable-name! (var-variable failsafe-mutex-profile)))
 	  (set! mpush (sexp->node '$exitd-push-mutex! '() loc 'app))
 	  (set! mpop (sexp->node '$exitd-pop-mutex! '() loc 'app)))
 	 (else
@@ -114,6 +118,11 @@
 	  (list (app `(,exitd-mutex-profile) loc) node)
 	  (list node)))
 
+   (define (proffailsafe node loc)
+      (if (when failsafe-mutex-profile)
+	  (list (app `(,failsafe-mutex-profile) loc) node)
+	  (list node)))
+
    (define (failsafe-sync->sequence node)
       ;; (tprint "FAILSAFE synchronize " *src-files*)
       ;; no exception raised, avoid pushing/poping mutexes
@@ -144,7 +153,7 @@
 	    (instantiate::sequence
 	       (loc loc)
 	       (type type)
-	       (nodes (list lock lbody))))))
+	       (nodes (cons lock (proffailsafe lbody loc)))))))
    
    (define (effect-sync->sequence node)
       ;; (tprint "FULL synchronize " *src-files*)
