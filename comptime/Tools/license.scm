@@ -9,10 +9,10 @@
                               _ ___/ /|/                             
                           ,;'( )__, ) '                              
                          ;;  //   L__.                               
-                         '   \   /  '                               
+                         '   \\   /  '                               
                               ^   ^                                  
                                                                      
-               Copyright (c) 1992 - 2010 Manuel Serrano
+               Copyright (c) 1992 - 2013 Manuel Serrano
                                                                      
      Bug descriptions, user reports, comments or suggestions are      
      welcome. Send them to                                           

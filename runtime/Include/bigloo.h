@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Jan 11 14:57:48 2013 (serrano)                */
+/*    Last change :  Wed Jan 16 09:54:39 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2634,19 +2634,19 @@ struct exitd {
    (((struct exitd *)(ptr))->mutex0)
 
 #define EXITD_MUTEX0_SET( ptr, m ) \
-   ((((struct exitd *)(ptr))->mutex0) = (m))
+   ((EXITD_MUTEX0( ptr ) = (m)))
 
 #define EXITD_MUTEX1( ptr ) \
    (((struct exitd *)(ptr))->mutex1)
 
 #define EXITD_MUTEX1_SET( ptr, m ) \
-   ((((struct exitd *)(ptr))->mutex1) = (m))
+   ((EXITD_MUTEX1( ptr ) = (m)))
 
 #define EXITD_MUTEXN( ptr ) \
    (((struct exitd *)(ptr))->mutexn)
 
 #define EXITD_MUTEXN_SET( ptr, m ) \
-   ((((struct exitd *)(ptr))->mutexn) = (m))
+   ((EXITD_MUTEXN( ptr ) = (m)))
 
 #define BGL_EXITD_BOTTOMP( extd ) \
    (((struct exitd *)(extd)) == BGL_ENV_EXITD_BOTTOM( BGL_CURRENT_DYNAMIC_ENV() ))

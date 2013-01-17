@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Fri Dec 17 17:33:50 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Wed Jan 16 09:18:42 2013 (serrano)                */
+;*    Copyright   :  2008-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
 ;*=====================================================================*/
@@ -159,26 +159,40 @@
    (cond-expand
       (enable-gmp
        (pragma
-	($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting)
-	($fixnum->bignum side-effect-free no-cfa-top nesting (effect))
-	($elong->bignum side-effect-free no-cfa-top nesting (effect))
-	($llong->bignum side-effect-free no-cfa-top nesting (effect))
-	($oddbx? side-effect-free no-cfa-top nesting args-safe (effect))
-	($evenbx? side-effect-free no-cfa-top nesting args-safe (effect))
-	($bignum-cmp side-effect-free no-cfa-top nesting (effect))
-	($zerobx? side-effect-free no-cfa-top nesting (effect))
-	($positivebx? side-effect-free no-cfa-top nesting (effect))
-	($negativebx? side-effect-free no-cfa-top nesting (effect))
-	($absbx side-effect-free no-cfa-top nesting args-safe (effect))
-	($negbx side-effect-free no-cfa-top nesting args-safe (effect))
-	($+bx side-effect-free no-cfa-top nesting args-safe (effect))
-	($-bx side-effect-free no-cfa-top nesting args-safe (effect))
-	($*bx side-effect-free no-cfa-top nesting args-safe (effect))
-	($quotientbx side-effect-free no-cfa-top nesting args-safe (effect))
-	($remainderbx side-effect-free no-cfa-top nesting args-safe (effect))
-	($gcdbx side-effect-free no-cfa-top nesting args-safe (effect))
-	($lcmbx side-effect-free no-cfa-top nesting args-safe (effect))
-	($flonum->bignum side-effect-free args-safe (effect))
-	($bignum->flonum side-effect-free no-cfa-top nesting (effect))))))
+	($fixnum->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($elong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($llong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($oddbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($evenbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($bignum-cmp side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($zerobx? side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($positivebx? side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($negativebx? side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($absbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($negbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($+bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($-bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($*bx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($quotientbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($remainderbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($gcdbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($lcmbx side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
+	($flonum->bignum side-effect-free args-safe (effect) fail-safe)
+	($bignum->flonum side-effect-free no-cfa-top nesting (effect) fail-safe))))
+
+   (pragma
+      ($bignum? side-effect-free (predicate-of bignum) no-cfa-top nesting fail-safe)
+      ($bignum->fixnum-safe fail-safe)
+      (+fx-safe fail-safe)
+      (-fx-safe fail-safe)
+      (*fx-safe fail-safe)
+      (+elong-safe fail-safe)
+      (-elong-safe fail-safe)
+      (*elong-safe fail-safe)
+      (+llong-safe fail-safe)
+      (-llong-safe fail-safe)
+      (*llong-safe fail-safe)))
+
+
 
    

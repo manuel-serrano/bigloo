@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Fri Jan 11 15:16:46 2013 (serrano)                */
+;*    Last change :  Thu Jan 17 12:13:51 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -24,7 +24,7 @@
 	    tools_shape
 	    tools_speek
 	    object_class)
-   (export  (subtype? t1 t2)
+   (export  (is-subtype? t1 t2)
 	    (get-type-atom::type <atom>)
 	    (get-type-kwote::type <kwote>)
 	    (generic get-type::type ::node)))
@@ -170,18 +170,17 @@
 		   ((or (eq? ttrue tfalse) (eq? tfalse *magic*)) ttrue)
 		   ((eq? ttrue *magic*) tfalse)
 		   ((and (pair-nil? ttrue) (pair-nil? tfalse)) *pair-nil*)
-		   ((subtype? ttrue tfalse) tfalse)
-		   ((subtype? tfalse ttrue) ttrue)
+		   ((is-subtype? ttrue tfalse) tfalse)
+		   ((is-subtype? tfalse ttrue) ttrue)
 		   (else *obj*))))
 	  type)))
 
 ;*---------------------------------------------------------------------*/
-;*    subtype? ...                                                     */
+;*    is-subtype? ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    Is t1 a subtype of t2?                                           */
 ;*---------------------------------------------------------------------*/
-(define (subtype? t1 t2)
-   
+(define (is-subtype? t1 t2)
    (cond
       ((eq? t1 t2)
        #t)

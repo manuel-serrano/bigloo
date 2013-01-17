@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Fri Jan 11 16:31:56 2013 (serrano)                */
+;*    Last change :  Thu Jan 17 12:15:24 2013 (serrano)                */
 ;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -378,14 +378,14 @@
 (define-method (backend-check-inlines me::jvm)
    (unless *lib-mode* (check-jvm-inlines)))
 
-;;
-;; Specific methods for subtyping
-;;
+;*---------------------------------------------------------------------*/
+;*    backend-subtype? ::jvm ...                                       */
+;*---------------------------------------------------------------------*/
 (define-method (backend-subtype? b::jvm t1 t2)
    (or (eq? t1 t2)
        (eq? (type-id t1) (type-id t2))
        (and (tclass? t1) (eq? (type-id t2) 'object))
        (eq? (type-name t2) 'java.lang.Object)
        (eq? (type-name t1) (type-name t2))
-       (subtype? t1 t2)
+       (is-subtype? t1 t2)
        (sub-type? t1 t2) ))

@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=3.9b
+release=4.0a
 version=
 bigloourl=http://www.inria.fr/sophia/teams/indes/fp/Bigloo
 
