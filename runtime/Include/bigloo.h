@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jan 16 09:54:39 2013 (serrano)                */
+/*    Last change :  Thu Jan 17 14:59:52 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1884,7 +1884,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    ( OUTPUT_PORTP( o ) && (PORT( o ).kindof == KINDOF_PROCEDURE) )
    
 #define OUTPUT_PORT_TO_FILE( o ) \
-   ( PORT_STREAM( o ) )
+   ( PORT_FILE( o ) )
 
 #define FILE_TO_OUTPUT_PORT( f )		\
    (bgl_file_to_output_port( f, make_string_sans_fill( 8192 ) ))

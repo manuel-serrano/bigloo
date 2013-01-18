@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Wed Jan 16 09:12:25 2013 (serrano)                */
+;*    Last change :  Fri Jan 18 15:58:53 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -113,8 +113,9 @@
 	    (exitd-push-mutex! ::obj ::obj)
 	    (exitd-pop-mutex! ::obj ::obj))
 
-   (pragma  ($failsafe-mutex-profile fail-safe)
-	    ($exitd-mutex-profile fail-safe)))
+   (cond-expand (bigloo-c
+		 (pragma  ($failsafe-mutex-profile fail-safe)
+		    ($exitd-mutex-profile fail-safe)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    val-from-exit? ...                                               */

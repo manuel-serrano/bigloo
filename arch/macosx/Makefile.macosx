@@ -3,13 +3,15 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Apr 24 07:14:06 2009                          */
-#*    Last change :  Mon Jul 18 14:24:52 2011 (serrano)                */
-#*    Copyright   :  2009-11 Manuel Serrano                            */
+#*    Last change :  Fri Jan 18 15:44:51 2013 (serrano)                */
+#*    Copyright   :  2009-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Makefile for Bigloo MacOSX port. It builds the Bigloo's .dmg.    */
 #*    -------------------------------------------------------------    */
 #*    Obviously macosx gcc and packagemaker are required.              */
 #*    They both come with the Xcode Tools package.                     */
+#*                                                                     */
+#*    See the README file for usage of the Makefile.                   */
 #*                                                                     */
 #*    In the root directory, build arch/macosx/bigloo.dmg (-j3 is not  */
 #*    required. just as example):                                      */
