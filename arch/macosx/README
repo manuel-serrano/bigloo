@@ -1,0 +1,7 @@
+To build a macosx dmg, in the root directory:
+
+    make -f arch/macosx/Makefile.macosx all
+
+To build it with a gmp file aleady downloaded:
+
+    make -f arch/macosx/Makefile.macosx all GMPSRC=$HOME/gmp-5.0.2.tar.gz

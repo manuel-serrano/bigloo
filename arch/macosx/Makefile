@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Feb  5 17:49:56 2001                          */
-#*    Last change :  Sun Feb  7 07:42:50 2010 (serrano)                */
-#*    Copyright   :  2001-10 Manuel Serrano                            */
+#*    Last change :  Fri Jan 18 16:43:07 2013 (serrano)                */
+#*    Copyright   :  2001-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles macosx scripts.                        */
 #*=====================================================================*/
@@ -19,7 +19,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 POPULATION = Makefile Makefile.macosx \
    dmg/Readme.txt dmg/Readme-bee.txt \
-   Info.plist Info.plist.bee
+   Info.plist Info.plist.bee README
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

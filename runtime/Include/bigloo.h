@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jan 17 14:59:52 2013 (serrano)                */
+/*    Last change :  Thu Jan 24 16:56:29 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2657,9 +2657,15 @@ struct exitd {
       EXITD_MUTEXN_SET( extd, make_pair( m, EXITD_MUTEXN( extd ) ) )
 
 #define BGL_EXITD_POP_MUTEX( extd, m ) \
-   EXITD_MUTEX0( extd ) == m ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
-   EXITD_MUTEX1( extd ) == m ? EXITD_MUTEX1_SET( extd, BFALSE ) : \
+   EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
+      NULLP( EXITD_MUTEXN( extd ) ) ? \
+      EXITD_MUTEX1_SET( extd, BFALSE ) : \
       EXITD_MUTEXN_SET( extd, CDR( EXITD_MUTEXN( extd ) ) )
+      
+   
+/*    EXITD_MUTEX0( extd ) == m ? EXITD_MUTEX0_SET( extd, BFALSE ) : \ */
+/*    EXITD_MUTEX1( extd ) == m ? EXITD_MUTEX1_SET( extd, BFALSE ) : \ */
+/*       EXITD_MUTEXN_SET( extd, CDR( EXITD_MUTEXN( extd ) ) )         */
 
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */
