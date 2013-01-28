@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jan  9 08:21:10 2013 (serrano)                */
+#*    Last change :  Mon Jan 28 13:44:26 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -198,6 +198,7 @@ regexp=
 customgc=yes
 gccustom=gc-7.2d
 #gccustom=gc-7.3alpha1-20120316
+gccustom=gc-7.3alpha2
 #gccustom=gc-7.2alpha6
 #gccustom=bdwgc-7_2alpha5-20110313
 #gccustom=bdwgc-7_2alpha5-20110107

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue Aug 21 15:13:29 2012 (serrano)                */
-#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jan 28 13:49:20 2013 (serrano)                */
+#*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -107,6 +107,13 @@ POP73ALPHA1_20120316 = install-gc-7.3alpha1-20120316 \
   configure-gc-7.3alpha1-20120316-android \
   gc-7.3alpha1-20120316.patch \
   Makefile-gc-7.3alpha1-20120316
+
+POP73ALPHA2 = install-gc-7.3alpha2 \
+  configure-gc-7.3alpha2 \
+  configure-gc-7.3alpha2-android \
+  gc-7.3alpha2.patch \
+  Makefile-gc-7.3alpha2 \
+  libatomic_ops-7.3alpha2.tar.gz
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
