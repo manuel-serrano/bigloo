@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jan 24 16:56:29 2013 (serrano)                */
+/*    Last change :  Mon Jan 28 11:10:14 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2587,6 +2587,8 @@ struct exitd {
    union scmobj *mutex0;
    union scmobj *mutex1;
    union scmobj *mutexn;
+   /* protected blocks */
+   union scmobj *protect;
    /* linking */
    struct bgl_dframe *top_of_frame;
    struct exitd *prev;
