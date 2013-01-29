@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Mon Jan 28 13:49:20 2013 (serrano)                */
+#*    Last change :  Tue Jan 29 17:48:52 2013 (serrano)                */
 #*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -31,6 +31,7 @@ POPULATION = Makefile \
   $(POP72ALPHA6) \
   $(POP72D) \
   $(POP73ALPHA1_20120316) \
+  $(POP73ALPHA2) \
   sparc_linux_mach_dep.c \
   gc-7.1.tar.gz \
   $(CUSTOMGC).tar.gz
