@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Nov 30 09:32:34 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Tue Jan 29 17:07:00 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -188,7 +188,7 @@
 ;;
 (define-struct mcell value)
 
-(define **size-stack** (* 8 1024))
+(define **size-stack** (*fx 8 1024))
 
 (define (make-state)
    (let ( (stk (make-vector **size-stack** "")) )

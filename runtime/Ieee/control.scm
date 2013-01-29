@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Wed Feb  1 08:11:00 2012 (serrano)                */
+;*    Last change :  Tue Jan 29 17:12:19 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
    
    (java    (class foreign
 	       (method static c-procedure?::bool (::obj) "PROCEDUREP")
-	       (method static call-cc::obj (::procedure) "call_cc")
+	       ;(method static call-cc::obj (::procedure) "call_cc")
 	       
 	       (method static push-before!::obj (::procedure) "PUSH_BEFORE")
 	       (method static pop-before!::obj () "POP_BEFORE")))
@@ -329,6 +329,10 @@
 			       (begin
 				  (%set-mvalues-number! -1)
 				  (cont vals)))))))))
+
+(cond-expand
+   (bigloo-jvm
+    (define (call-cc proc) (bind-exit (exit) (proc exit)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-with-current-continuation ...                               */

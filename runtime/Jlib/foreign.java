@@ -4459,35 +4459,31 @@ public final class foreign
       return unspecified.unspecified;
    }
 
-   public static Object CALLCC_JUMP_EXIT(exit v, Object o) {
-      return o;
-   }
-   
-   public static Object call_cc(procedure p) {
-      final exit saved = (exit) bgldynamic.abgldynamic.get().exitd_top;
-      final exit me = (exit) setexit();
-      Object r;
-
-      PUSH_EXIT(me, 1);
-
-      try {
-	 if (PROCEDURE_CORRECT_ARITYP(p, 1))
-	 {
-	    r = p.funcall1(new callcc());
-	    bgldynamic.abgldynamic.get().exitd_top = saved;
-	 }
-	 else
-	 {
-	    r = null;
-	    fail("call/cc", "Wrong arity", p);
-	 }
-      } catch(bexception x) {
-	 r = debug_handler(x, me);
-	 bgldynamic.abgldynamic.get().exitd_top = saved;
-      }
-
-      return r;
-   }
+/*    public static Object call_cc(procedure p) {                      */
+/*       final exit saved = (exit) bgldynamic.abgldynamic.get().exitd_top; */
+/*       final exit me = (exit) setexit();                             */
+/*       Object r;                                                     */
+/*                                                                     */
+/*       PUSH_EXIT(me, 1);                                             */
+/*                                                                     */
+/*       try {                                                         */
+/* 	 if (PROCEDURE_CORRECT_ARITYP(p, 1))                           */
+/* 	 {                                                             */
+/* 	    r = p.funcall1(new callcc());                              */
+/* 	    bgldynamic.abgldynamic.get().exitd_top = saved;            */
+/* 	 }                                                             */
+/* 	 else                                                          */
+/* 	 {                                                             */
+/* 	    r = null;                                                  */
+/* 	    fail("call/cc", "Wrong arity", p);                         */
+/* 	 }                                                             */
+/*       } catch(bexception x) {                                       */
+/* 	 r = debug_handler(x, me);                                     */
+/* 	 bgldynamic.abgldynamic.get().exitd_top = saved;               */
+/*       }                                                             */
+/*                                                                     */
+/*       return r;                                                     */
+/*    }                                                                */
 
    //////
    // EVAL

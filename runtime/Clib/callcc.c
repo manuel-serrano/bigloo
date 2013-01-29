@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Thu Apr 22 08:42:45 2010 (serrano)                */
+/*    Last change :  Tue Jan 29 17:34:46 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -27,10 +27,11 @@ extern long glob_dummy;
 extern obj_t make_fx_procedure();
 extern obj_t c_constant_string_to_string();
 
-extern obj_t restore_stack();
+static obj_t callcc_restore_stack();
 extern obj_t unwind_stack_until( struct exitd *, obj_t, obj_t, obj_t );
 extern bool_t unwind_stack_value_p( obj_t );
 extern void *bgl_get_top_of_stack();
+extern obj_t  bgl_current_dynamic_env();
 
 /*---------------------------------------------------------------------*/
 /*    void *                                                           */
@@ -77,7 +78,7 @@ wind_stack( struct befored *bfl ) {
 /*    -------------------------------------------------------------    */
 /*    When applying a continuation, we first unwind the stack.         */
 /*    Either we reached the stack bottom and we have to restore        */
-/*    the entirer stack. Either, we find the escape procedure          */
+/*    the whole stack. Either, we find the escape procedure            */
 /*    and we stop.                                                     */
 /*---------------------------------------------------------------------*/
 obj_t
@@ -102,7 +103,7 @@ apply_continuation( obj_t kont, obj_t value ) {
    etop = STACK( stack ).exitd_top;
    estamp = STACK( stack ).stamp;
    
-   restore = make_fx_procedure( restore_stack, 1, 1 );
+   restore = make_fx_procedure( callcc_restore_stack, 1, 1 );
    PROCEDURE_SET( restore, 0, kont );
 
    /* We check that the continuation is applied on the same thread */
@@ -113,22 +114,51 @@ apply_continuation( obj_t kont, obj_t value ) {
 	 
    return unwind_stack_until( etop, estamp, value, restore );
 }
- 
+
+/*---------------------------------------------------------------------*/
+/*    callcc activation frame                                          */
+/*---------------------------------------------------------------------*/
+static obj_t  stack;
+static char  *stack_top;
+static long   stack_size;
+static obj_t  s_value;
+static obj_t  stamp;
+static void (*memorycpy)( void*, void*, size_t );
+
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    install_stack ...                                                */
+/*    callcc_init_stack ...                                            */
+/*    -------------------------------------------------------------    */
+/*    This function has to be separated from callcc_install_stack      */
+/*    in order to ensure that it allocates its own large enough        */
+/*    activation frame.                                                */
+/*---------------------------------------------------------------------*/
+static void 
+callcc_init_stack() {
+   const obj_t env = bgl_current_dynamic_env();
+
+   /* Restore the global before link pointer */
+   BGL_ENV_BEFORED_TOP_SET( env, STACK( stack ).before_top );
+
+   /* And now evaluate all the DYNAMIC-WIND's before thunks */
+   wind_stack( BGL_ENV_BEFORED_TOP( env ) );
+      
+   /* restore bexit linking */
+   BGL_ENV_EXITD_TOP_SET( env, STACK( stack ).exitd_top );
+
+   /* jump to the continuation, evaluting the DYNAMIC-WIND's after thunks */
+   unwind_stack_until( BGL_ENV_EXITD_TOP( env ), stamp, s_value, BFALSE );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    callcc_install_stack ...                                         */
 /*---------------------------------------------------------------------*/
 static void
-install_stack( obj_t kont, obj_t value ) {
+callcc_install_stack( obj_t kont, obj_t value ) {
    /* from now on we cannot use local variables because */
-   /* the stack will be erase.                          */
-   static obj_t  stack;
-   static char  *stack_top;
-   static long   stack_size;
-   static obj_t  s_value;
-   static obj_t  stamp;
-   static void (*memorycpy)( void*, void*, size_t );
-   const obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+   /* the stack will be erased.                         */
+   const obj_t env = bgl_current_dynamic_env();
 
    s_value    = value;
    stack      = PROCEDURE_REF( kont, 0 );
@@ -136,7 +166,7 @@ install_stack( obj_t kont, obj_t value ) {
    stack_size = STACK( stack ).size;
    stamp      = STACK( stack ).stamp;
    memorycpy  = (void (*)( void*, void*, size_t ))PROCEDURE_REF( kont, 1 );
-
+   
    /* Check the stack before restore */
    if( (!STACKP( stack )) || (!EQP( CREF( stack ), STACK( stack ).self )) )
       C_FAILURE( "apply_continuation",
@@ -157,26 +187,17 @@ install_stack( obj_t kont, obj_t value ) {
 #else
       memorycpy( BGL_ENV_STACK_BOTTOM( env ), &(STACK( stack ).stack), stack_size );
 #endif
-      /* Restore the global before link pointer */
-      BGL_BEFORED_TOP_SET( (STACK( stack ).before_top) );
 
-      /* And now evaluate all the DYNAMIC-WIND's before thunks */
-      wind_stack( BGL_ENV_BEFORED_TOP( env ) );
-      
-      /* restore bexit linking */
-      BGL_ENV_EXITD_TOP_SET( env, STACK( stack ).exitd_top );
-
-      /* jump to the continuation, evaluting the DYNAMIC-WIND's after thunks */
-      unwind_stack_until( BGL_ENV_EXITD_TOP( env ), stamp, s_value, BFALSE );
+      callcc_init_stack();
    }
 }
 
 /*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    restore_stack ...                                                */
+/*    static obj_t                                                     */
+/*    callcc_restore_stack ...                                         */
 /*---------------------------------------------------------------------*/
-obj_t
-restore_stack( obj_t env, obj_t value, char **_dummy ) {
+static obj_t
+callcc_restore_stack( obj_t env, obj_t value, char **_dummy ) {
    char *stack_top, *actual_stack_top;
    obj_t stack;
    obj_t kont = PROCEDURE_REF( env, 0 );
@@ -207,9 +228,9 @@ restore_stack( obj_t env, obj_t value, char **_dummy ) {
       /* par un compilo trop intelligent, on la range dans une        */
       /* variable globale.                                            */
       glob_dummy = (long)dummy;
-      restore_stack( env, value, &dummy[ 1 ] );
+      callcc_restore_stack( env, value, &dummy[ 1 ] );
    } else {
-      install_stack( kont, value );
+      callcc_install_stack( kont, value );
    }
 
    return (obj_t)_dummy;
@@ -259,7 +280,7 @@ call_cc( obj_t proc ) {
       STACK( stack ).before_top = BGL_ENV_BEFORED_TOP( env );
       STACK( stack ).stack_top  = stack_top;
       STACK( stack ).stack_bot  = BGL_ENV_STACK_BOTTOM( env );
-
+      
       /* on construit la continuation */
       continuation = make_fx_procedure( &apply_continuation, 1, 2 );
       PROCEDURE_SET( continuation, 0, stack );

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jan 29 10:57:47 2013 (serrano)                */
+;*    Last change :  Tue Jan 29 16:23:56 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -110,11 +110,7 @@
 	       (method static $exitd-protectn::pair-nil (::exit)
 		  "BGL_EXITD_PROTECTN")
 	       (method static $exitd-protectn-set!::void (::exit ::pair-nil)
-		  "BGL_EXITD_PROTECTN_SET")
-	       (method static $exitd-push-protect!::void (::exit ::obj)
-		  "BGL_EXITD_PUSH_PROTECT")
-	       (method static $exitd-pop-protect!::void (::exit)
-		  "BGL_EXITD_POP_PROTECT")))
+		  "BGL_EXITD_PROTECTN_SET")))
       
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
@@ -206,7 +202,6 @@
 (define (exitd-exec-protect p)
    (cond
       ((mutex? p) (mutex-unlock! p))
-      ((pair? p) ((car p) (cdr p)))
       ((procedure? p) (p))))
       
 ;*---------------------------------------------------------------------*/
@@ -220,8 +215,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    exitd-push-protect! ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    This is the portable version of $EXITD-PUSH-PROTECT!. It is not  */
-;*    used by the C backend.                                           */
+;*    The C backend used an inlined version (BGL_EXITD_PUSH_PROTECT)   */
+;*    to get synchronized as fast as possible.                         */
 ;*---------------------------------------------------------------------*/
 (define (exitd-push-protect! exitd m)
    (cond
@@ -234,9 +229,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-pop-protect! ...                                           */
-;*    -------------------------------------------------------------    */
-;*    This is the portable version of $EXITD-POP-PROTECT!. It is not   */
-;*    used by the C backend.                                           */
 ;*---------------------------------------------------------------------*/
 (define (exitd-pop-protect! exitd)
    (cond
@@ -251,7 +243,7 @@
 ;*    default-uncaught-exception-handler ...                           */
 ;*---------------------------------------------------------------------*/
 (define (default-uncaught-exception-handler val)
-   (error 'unwind-until! "exit out of dynamic scope" val))
+   (error "unwind-protect" "exit out of dynamic scope" val))
 
 ;*---------------------------------------------------------------------*/
 ;*    $exitd-mutex-profile                                             */

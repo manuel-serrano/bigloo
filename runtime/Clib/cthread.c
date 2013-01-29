@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Tue Jan 29 11:06:47 2013 (serrano)                */
+/*    Last change :  Tue Jan 29 15:51:49 2013 (serrano)                */
 /*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -328,6 +328,18 @@ bgl_dup_dynamic_env( obj_t o ) {
    }
 
    return env;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_current_dynamic_env ...                                      */
+/*    -------------------------------------------------------------    */
+/*    This function is used by callcc when the stack is being          */
+/*    restored.                                                        */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_current_dynamic_env() {
+   return BGL_CURRENT_DYNAMIC_ENV();
 }
 
 /*---------------------------------------------------------------------*/

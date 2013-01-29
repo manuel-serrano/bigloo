@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Wed Jun 15 07:25:45 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 29 17:18:14 2013 (serrano)                */
+;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
 ;*=====================================================================*/
@@ -245,7 +245,11 @@
       ((?- ?x . (?y . ()))
        (cond
 	  ((and (fixnum? x) (fixnum? y))
-	   (*fx x y))
+	   (let ((r (* x y)))
+	      (if (and (fixnum? r) (<fx r (bit-lsh 1 29)))
+		  ;; optimize only when the result is a small fixnum
+		  r
+		  `(*fx ,(e x e) ,(e y e)))))
 	  (else
 	   `(*fx ,(e x e) ,(e y e)))))
       (else

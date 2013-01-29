@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jan 11 11:16:45 2013 (serrano)                */
+;*    Last change :  Tue Jan 29 15:09:16 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -336,9 +336,9 @@
 	  (unwind-protect
 	     (if (correct-arity? thunk 0)
 		 (thunk)
-		 (error 'with-exception-handler "Incorrect thunk arity" thunk))
+		 (error "with-exception-handler" "Incorrect thunk arity" thunk))
 	     ($set-error-handler! old-handlers)))
-       (error 'with-exception-handler "Incorrect handler arity" handler)))
+       (error "with-exception-handler" "Incorrect handler arity" handler)))
 
 ;*---------------------------------------------------------------------*/
 ;*    current-exception-handler ...                                    */

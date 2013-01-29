@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Thu Feb 10 10:32:25 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 29 16:18:12 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -66,16 +66,16 @@
 	     (val      (mark-symbol-non-user! (gensym 'val)))
 	     (res      (mark-symbol-non-user! (gensym 'res))))
 	  (let ((new (e `(set-exit (,an-exit)
-				   (let ()
-				      (push-exit! ,an-exit 1)
-				      (let ((,an-exitd ($get-exitd-top)))
-					 (labels ((,exit (,val)
-							 ((@ unwind-until! __bexit)
-							  ,an-exitd
-							  ,val)))
-					    (let ((,res (begin ,@body)))
-					       (pop-exit!)
-					       ,res)))))
+			    (let ()
+			       (push-exit! ,an-exit 1)
+			       (let ((,an-exitd ($get-exitd-top)))
+				  (labels ((,exit (,val)
+					      ((@ unwind-until! __bexit)
+					       ,an-exitd
+					       ,val)))
+				     (let ((,res (begin ,@body)))
+					(pop-exit!)
+					,res)))))
 			e)))
 	     (replace! x new))))
       (else
@@ -85,27 +85,44 @@
 ;*    expand-unwind-protect ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (expand-unwind-protect x e)
+
+   (define (new-expander exp cleanup)
+      (let ((exitd (mark-symbol-non-user! (gensym 'exitd)))
+	    (protect (mark-symbol-non-user! (gensym 'protect)))
+	    (tmp (mark-symbol-non-user! (gensym 'tmp))))
+	 (let ((new `(let ((,exitd ($get-exitd-top))
+			   (,protect (lambda () ,@cleanup)))
+			((@ exitd-push-protect! __bexit) ,exitd ,protect)
+			(let ((,tmp ,exp))
+			   ((@ exitd-pop-protect! __bexit) ,exitd)
+			   (,protect)
+			   ,tmp))))
+	    (replace! x (e new e)))))
+
+   (define (old-expander exp cleanup)
+      (let* ((val (mark-symbol-non-user! (gensym 'val)))
+	     (an-exit (mark-symbol-non-user! (gensym 'an_exit)))
+	     (valbis (mark-symbol-non-user! (gensym 'val)))
+	     (eexp (e exp e))
+	     (aux `(let ((,valbis ,eexp))
+		      (pop-exit!)
+		      ,valbis))
+	     (eaux (if (epair? eexp)
+		       (econs (car aux) (cdr aux) (cer eexp))
+		       aux)))
+	 (let ((new `(let ((,val (set-exit (,an-exit)
+				    (let ()
+				       (push-exit! ,an-exit 0)
+				       ,aux))))
+			,(e (expand-progn cleanup) e)
+			(if (val-from-exit? ,val)
+			    ((@ unwind-until! __bexit) (car ,val) (cdr ,val))
+			    ,val))))
+	    (replace! x new))))
+   
    (match-case x
       ((?- ?exp . (and (? pair?) ?cleanup))
-       (let* ((val     (mark-symbol-non-user! (gensym 'val)))
-	      (an-exit (mark-symbol-non-user! (gensym 'an_exit)))
-	      (valbis  (mark-symbol-non-user! (gensym 'val)))
-	      (eexp    (e exp e))
-	      (aux     `(let ((,valbis ,eexp))
-			   (pop-exit!)
-			   ,valbis))
-	      (eaux    (if (epair? eexp)
-			   (econs (car aux) (cdr aux) (cer eexp))
-			   aux)))
-	  (let ((new `(let ((,val (set-exit (,an-exit)
-					    (let ()
-					       (push-exit! ,an-exit 0)
-					       ,aux))))
-			 ,(e (expand-progn cleanup) e)
-			 (if (val-from-exit? ,val)
-			     ((@ unwind-until! __bexit) (car ,val) (cdr ,val))
-			     ,val))))
-	     (replace! x new))))
+       (new-expander exp cleanup))
       (else
        (error #f "Illegal `unwind-protect' form" x))))
 			  
