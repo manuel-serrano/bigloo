@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jan 29 09:59:53 2013 (serrano)                */
+/*    Last change :  Tue Jan 29 10:56:57 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2583,10 +2583,6 @@ struct exitd {
    void *exit;
    long userp;
    obj_t stamp;
-   /* locked mutexes */
-   union scmobj *mutex0;
-   union scmobj *mutex1;
-   union scmobj *mutexn;
    /* protected blocks */
    union scmobj *protect0;
    union scmobj *protect1;
@@ -2604,9 +2600,6 @@ struct exitd {
    struct exitd exitd; \
    exitd.exit  = _xit; \
    exitd.userp = _ser; \
-   exitd.mutex0 = BFALSE; \
-   exitd.mutex1 = BFALSE; \
-   exitd.mutexn = BNIL; \
    exitd.protect0 = BFALSE; \
    exitd.protect1 = BFALSE; \
    exitd.protectn = BNIL; \
@@ -2637,41 +2630,8 @@ struct exitd {
 #define EXITD_STAMP( ptr ) \
    (((struct exitd *)(ptr))->stamp)
 
-#define EXITD_MUTEX0( ptr ) \
-   (((struct exitd *)(ptr))->mutex0)
-
-#define EXITD_MUTEX0_SET( ptr, m ) \
-   ((EXITD_MUTEX0( ptr ) = (m)))
-
-#define EXITD_MUTEX1( ptr ) \
-   (((struct exitd *)(ptr))->mutex1)
-
-#define EXITD_MUTEX1_SET( ptr, m ) \
-   ((EXITD_MUTEX1( ptr ) = (m)))
-
-#define EXITD_MUTEXN( ptr ) \
-   (((struct exitd *)(ptr))->mutexn)
-
-#define EXITD_MUTEXN_SET( ptr, m ) \
-   ((EXITD_MUTEXN( ptr ) = (m)))
-
 #define BGL_EXITD_BOTTOMP( extd ) \
    (((struct exitd *)(extd)) == BGL_ENV_EXITD_BOTTOM( BGL_CURRENT_DYNAMIC_ENV() ))
-
-#define BGL_EXITD_PUSH_MUTEX( extd, m ) \
-   EXITD_MUTEX0( extd ) == BFALSE ? EXITD_MUTEX0_SET( extd, m ) : \
-   EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX1_SET( extd, m ) : \
-      EXITD_MUTEXN_SET( extd, MAKE_PAIR( m, EXITD_MUTEXN( extd ) ) )
-
-#define BGL_EXITD_POP_MUTEX( extd, m ) \
-   EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
-      NULLP( EXITD_MUTEXN( extd ) ) ? \
-      EXITD_MUTEX1_SET( extd, BFALSE ) : \
-      EXITD_MUTEXN_SET( extd, CDR( EXITD_MUTEXN( extd ) ) )
-
-/*    EXITD_MUTEX0( extd ) == m ? EXITD_MUTEX0_SET( extd, BFALSE ) : \ */
-/*    EXITD_MUTEX1( extd ) == m ? EXITD_MUTEX1_SET( extd, BFALSE ) : \ */
-/*       EXITD_MUTEXN_SET( extd, CDR( EXITD_MUTEXN( extd ) ) )         */
 
 #define BGL_EXITD_PROTECT0( ptr ) \
    (((struct exitd *)(ptr))->protect0)

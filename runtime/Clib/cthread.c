@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Wed Jan  9 09:04:54 2013 (serrano)                */
+/*    Last change :  Tue Jan 29 11:06:47 2013 (serrano)                */
 /*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -223,9 +223,9 @@ make_exitd_bottom() {
    struct exitd *bottom =
       (struct exitd *)GC_MALLOC_UNCOLLECTABLE( sizeof( struct exitd ) );
 
-   bottom->mutex0 = BFALSE;
-   bottom->mutex1 = BFALSE;
-   bottom->mutexn = BNIL;
+   bottom->protect0 = BFALSE;
+   bottom->protect1 = BFALSE;
+   bottom->protectn = BNIL;
 
    return bottom;
 }
