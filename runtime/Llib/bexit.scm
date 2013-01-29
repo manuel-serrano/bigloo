@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jan 29 09:10:08 2013 (serrano)                */
+;*    Last change :  Tue Jan 29 10:30:28 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -63,14 +63,14 @@
 	    (macro $exitd-push-mutex!::obj (::obj ::obj) "BGL_EXITD_PUSH_MUTEX")
 	    (macro $exitd-pop-mutex!::obj (::obj ::obj) "BGL_EXITD_POP_MUTEX")
 
-	    (macro $exitd-protect0::obj (::obj) "BGL_EXITD_PROTECT0")
-	    (macro $exitd-protect0-set!::obj (::obj ::obj) "BGL_EXITD_PROTECT0_SET")
-	    (macro $exitd-protect1::obj (::obj) "BGL_EXITD_PROTECT1")
-	    (macro $exitd-protect1-set!::obj (::obj ::obj) "BGL_EXITD_PROTECT1_SET")
-	    (macro $exitd-protectn::obj (::obj) "BGL_EXITD_PROTECTN")
-	    (macro $exitd-protectn-set!::obj (::obj ::obj) "BGL_EXITD_PROTECTN_SET")
-	    (macro $exitd-push-protect!::obj (::obj ::obj) "BGL_EXITD_PUSH_PROTECT")
-	    (macro $exitd-pop-protect!::obj (::obj) "BGL_EXITD_POP_PROTECT")
+	    (macro $exitd-protect0::obj (::exit) "BGL_EXITD_PROTECT0")
+	    (macro $exitd-protect0-set!::void (::exit ::obj) "BGL_EXITD_PROTECT0_SET")
+	    (macro $exitd-protect1::obj (::exit) "BGL_EXITD_PROTECT1")
+	    (macro $exitd-protect1-set!::void (::exit ::obj) "BGL_EXITD_PROTECT1_SET")
+	    (macro $exitd-protectn::pair-nil (::exit) "BGL_EXITD_PROTECTN")
+	    (macro $exitd-protectn-set!::void (::exit ::pair-nil) "BGL_EXITD_PROTECTN_SET")
+	    (macro $exitd-push-protect!::void (::exit ::obj) "BGL_EXITD_PUSH_PROTECT")
+	    (macro $exitd-pop-protect!::void (::exit) "BGL_EXITD_POP_PROTECT")
 
 	    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
 	    (export $exitd-mutex-profile "bgl_exitd_mutex_profile")
@@ -121,21 +121,21 @@
 	       (method static $exitd-mutexn-set!::void (::exit ::obj)
 		  "EXITD_MUTEXN_SET")
 	       
-	       (method static $exitd-protect0::obj (::obj)
+	       (method static $exitd-protect0::obj (::exit)
 		  "BGL_EXITD_PROTECT0")
-	       (method static $exitd-protect0-set!::obj (::obj ::obj)
+	       (method static $exitd-protect0-set!::void (::exit ::obj)
 		  "BGL_EXITD_PROTECT0_SET")
-	       (method static $exitd-protect1::obj (::obj)
+	       (method static $exitd-protect1::obj (::exit)
 		  "BGL_EXITD_PROTECT1")
-	       (method static $exitd-protect1-set!::obj (::obj ::obj)
+	       (method static $exitd-protect1-set!::void (::exit ::obj)
 		  "BGL_EXITD_PROTECT1_SET")
-	       (method static $exitd-protectn::obj (::obj)
+	       (method static $exitd-protectn::pair-nil (::exit)
 		  "BGL_EXITD_PROTECTN")
-	       (method static $exitd-protectn-set!::obj (::obj ::obj)
+	       (method static $exitd-protectn-set!::void (::exit ::pair-nil)
 		  "BGL_EXITD_PROTECTN_SET")
-	       (method static $exitd-push-protect!::obj (::obj ::obj)
+	       (method static $exitd-push-protect!::void (::exit ::obj)
 		  "BGL_EXITD_PUSH_PROTECT")
-	       (method static $exitd-pop-protect!::obj (::obj)
+	       (method static $exitd-pop-protect!::void (::exit)
 		  "BGL_EXITD_POP_PROTECT")))
       
    (export  (val-from-exit? ::obj)
@@ -143,8 +143,8 @@
 	    (unwind-until! exitd ::obj)
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
-	    (exitd-push-mutex! ::obj ::obj)
-	    (exitd-pop-mutex! ::obj ::obj))
+	    (exitd-push-protect! ::obj ::obj)
+	    (exitd-pop-protect! ::obj))
 
    (cond-expand (bigloo-c
 		 (pragma
@@ -200,7 +200,8 @@
 			 default-uncaught-exception-handler)
 		     val)))
 	     (begin
-		(exitd-unlock-mutexes! exitd-top)
+		(exitd-exec-and-pop-protects! exitd-top)
+;* 		(exitd-unlock-mutexes! exitd-top)                      */
 		(pop-exit!)
 		(cond  
 		   ((and (eq? exitd-top exitd) 
@@ -237,7 +238,7 @@
 (define (exitd-exec-and-pop-protects! exitd)
    (exitd-exec-protect ($exitd-protect0 exitd))
    (exitd-exec-protect ($exitd-protect1 exitd))
-   (for-each exitd-exec-protect ($exitd-protect1 exitd)))
+   (for-each exitd-exec-protect ($exitd-protectn exitd)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-unlock-mutexes! ...                                        */

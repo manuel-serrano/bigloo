@@ -4256,6 +4256,36 @@ public final class foreign
 	 o.mutexn = m;
       }
 
+   public static Object BGL_EXITD_PROTECT0(exit o)
+      {
+	 return o.protect0;
+      }
+
+   public static void BGL_EXITD_PROTECT0_SET(exit o, Object m)
+      {
+	 o.protect0 = m;
+      }
+
+   public static Object BGL_EXITD_PROTECT1(exit o)
+      {
+	 return o.protect1;
+      }
+
+   public static void BGL_EXITD_PROTECT1_SET(exit o, Object m)
+      {
+	 o.protect1 = m;
+      }
+
+   public static Object BGL_EXITD_PROTECTN(exit o)
+      {
+	 return o.protectn;
+      }
+
+   public static void BGL_EXITD_PROTECTN_SET(exit o, Object m)
+      {
+	 o.protectn = m;
+      }
+
    public static Object jumpexit(Object excep, Object value)
       {
 	 //print("** jump " + excep + " " + value);
