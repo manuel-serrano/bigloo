@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jan 29 08:35:03 2013 (serrano)                */
+;*    Last change :  Tue Jan 29 09:10:08 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -62,9 +62,13 @@
 
 	    (macro $exitd-push-mutex!::obj (::obj ::obj) "BGL_EXITD_PUSH_MUTEX")
 	    (macro $exitd-pop-mutex!::obj (::obj ::obj) "BGL_EXITD_POP_MUTEX")
-	    (macro $exitd-pop-mutex2!::obj (::obj) "BGL_EXITD_POP_MUTEX2")
 
-	    (macro $exitd-protect::obj (::obj) "BGL_EXITD_PROTECT")
+	    (macro $exitd-protect0::obj (::obj) "BGL_EXITD_PROTECT0")
+	    (macro $exitd-protect0-set!::obj (::obj ::obj) "BGL_EXITD_PROTECT0_SET")
+	    (macro $exitd-protect1::obj (::obj) "BGL_EXITD_PROTECT1")
+	    (macro $exitd-protect1-set!::obj (::obj ::obj) "BGL_EXITD_PROTECT1_SET")
+	    (macro $exitd-protectn::obj (::obj) "BGL_EXITD_PROTECTN")
+	    (macro $exitd-protectn-set!::obj (::obj ::obj) "BGL_EXITD_PROTECTN_SET")
 	    (macro $exitd-push-protect!::obj (::obj ::obj) "BGL_EXITD_PUSH_PROTECT")
 	    (macro $exitd-pop-protect!::obj (::obj) "BGL_EXITD_POP_PROTECT")
 
@@ -117,8 +121,18 @@
 	       (method static $exitd-mutexn-set!::void (::exit ::obj)
 		  "EXITD_MUTEXN_SET")
 	       
-	       (method static $exitd-protect::obj (::obj)
-		  "BGL_EXITD_PROTECT")
+	       (method static $exitd-protect0::obj (::obj)
+		  "BGL_EXITD_PROTECT0")
+	       (method static $exitd-protect0-set!::obj (::obj ::obj)
+		  "BGL_EXITD_PROTECT0_SET")
+	       (method static $exitd-protect1::obj (::obj)
+		  "BGL_EXITD_PROTECT1")
+	       (method static $exitd-protect1-set!::obj (::obj ::obj)
+		  "BGL_EXITD_PROTECT1_SET")
+	       (method static $exitd-protectn::obj (::obj)
+		  "BGL_EXITD_PROTECTN")
+	       (method static $exitd-protectn-set!::obj (::obj ::obj)
+		  "BGL_EXITD_PROTECTN_SET")
 	       (method static $exitd-push-protect!::obj (::obj ::obj)
 		  "BGL_EXITD_PUSH_PROTECT")
 	       (method static $exitd-pop-protect!::obj (::obj)
@@ -130,8 +144,7 @@
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
 	    (exitd-push-mutex! ::obj ::obj)
-	    (exitd-pop-mutex! ::obj ::obj)
-	    (exitd-pop-mutex2! ::obj))
+	    (exitd-pop-mutex! ::obj ::obj))
 
    (cond-expand (bigloo-c
 		 (pragma
@@ -210,10 +223,21 @@
 		    (loop))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    exitd-pop-protects! ...                                          */
+;*    exitd-exec-protect ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-pop-protects! exitd)
-   #f)
+(define (exitd-exec-protect p)
+   (cond
+      ((mutex? p) (mutex-unlock! p))
+      ((pair? p) ((car p) (cdr p)))
+      ((procedure? p) (p))))
+      
+;*---------------------------------------------------------------------*/
+;*    exitd-exec-and-pop-protects! ...                                 */
+;*---------------------------------------------------------------------*/
+(define (exitd-exec-and-pop-protects! exitd)
+   (exitd-exec-protect ($exitd-protect0 exitd))
+   (exitd-exec-protect ($exitd-protect1 exitd))
+   (for-each exitd-exec-protect ($exitd-protect1 exitd)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-unlock-mutexes! ...                                        */
@@ -269,26 +293,35 @@
        ;;($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd))))))
    
 ;*---------------------------------------------------------------------*/
-;*    exitd-pop-mutex2! ...                                             */
+;*    exitd-push-protect! ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    This is the portable version of $EXITD-POP-MUTEX!. It is not     */
+;*    This is the portable version of $EXITD-PUSH-PROTECT!. It is not  */
 ;*    used by the C backend.                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-pop-mutex2! exitd)
+(define (exitd-push-protect! exitd m)
    (cond
-      ((not ($exitd-mutex1 exitd))
-       ;; (tprint "pop0 " m) 
-       ($exitd-mutex0-set! exitd #f))
-      ((null? ($exitd-mutexn exitd))
-       ;; (pragma "fprintf( stderr, \"pop1 %p\\n\", $1 )"  m)
-       ($exitd-mutex1-set! exitd #f))
+      ((not ($exitd-protect0 exitd))
+       ($exitd-protect0-set! exitd m))
+      ((not ($exitd-protect1 exitd))
+       ($exitd-protect1-set! exitd m))
       (else
-       ;; (pragma "fprintf( stderr, \"popN %p\\n\", $1 )"  m)
-       ;; here, we don't need to check, we always have to remove the
-       ;; first element of the stack
-       ($exitd-mutexn-set! exitd (cdr ($exitd-mutexn exitd))))))
-       ;;($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd))))))
-   
+       ($exitd-protectn-set! exitd (cons m ($exitd-protectn exitd))))))
+
+;*---------------------------------------------------------------------*/
+;*    exitd-pop-protect! ...                                           */
+;*    -------------------------------------------------------------    */
+;*    This is the portable version of $EXITD-POP-PROTECT!. It is not   */
+;*    used by the C backend.                                           */
+;*---------------------------------------------------------------------*/
+(define (exitd-pop-protect! exitd)
+   (cond
+      ((not ($exitd-protect1 exitd))
+       ($exitd-protect0-set! exitd #f))
+      ((null? ($exitd-protectn exitd))
+       ($exitd-protect1-set! exitd #f))
+      (else
+       ($exitd-protectn-set! exitd (cdr ($exitd-protectn exitd))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */
 ;*---------------------------------------------------------------------*/

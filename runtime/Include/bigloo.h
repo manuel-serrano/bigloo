@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jan 29 08:42:46 2013 (serrano)                */
+/*    Last change :  Tue Jan 29 08:50:28 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2609,7 +2609,7 @@ struct exitd {
    exitd.mutexn = BNIL; \
    exitd.protect0 = BFALSE; \
    exitd.protect1 = BFALSE; \
-   exitd.protect = BNIL; \
+   exitd.protectn = BNIL; \
    exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
    exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
    exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
@@ -2663,12 +2663,6 @@ struct exitd {
    EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX1_SET( extd, m ) : \
       EXITD_MUTEXN_SET( extd, MAKE_PAIR( m, EXITD_MUTEXN( extd ) ) )
 
-#define BGL_EXITD_POP_MUTEX2( extd ) \
-   EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
-      NULLP( EXITD_MUTEXN( extd ) ) ? \
-      EXITD_MUTEX1_SET( extd, BFALSE ) : \
-      EXITD_MUTEXN_SET( extd, CDR( EXITD_MUTEXN( extd ) ) )
-
 #define BGL_EXITD_POP_MUTEX( extd, m ) \
    EXITD_MUTEX1( extd ) == BFALSE ? EXITD_MUTEX0_SET( extd, BFALSE ) : \
       NULLP( EXITD_MUTEXN( extd ) ) ? \
@@ -2690,11 +2684,15 @@ struct exitd {
    (((struct exitd *)(ptr))->protectn)
    
 #define BGL_EXITD_PUSH_PROTECT( extd, p ) \
-   EXITD_PROTECT( extd ) = MAKE_PAIR( p, EXITD_PROTECT( extd ) )
+   EXITD_PROTECT0( extd ) == BFALSE ? EXITD_PROTECT0_SET( extd, m ) : \
+   EXITD_PROTECT1( extd ) == BFALSE ? EXITD_PROTECT1_SET( extd, m ) : \
+      EXITD_PROTECTN_SET( extd, MAKE_PAIR( m, EXITD_PROTECTN( extd ) ) )
    
 #define BGL_EXITD_POP_PROTECT( extd ) \
-   EXITD_PROTECT( extd ) = CDR( EXITD_PROTECT( extd ) )
-   
+   EXITD_PROTECT1( extd ) == BFALSE ? EXITD_PROTECT0_SET( extd, BFALSE ) : \
+      NULLP( EXITD_PROTECTN( extd ) ) ? \
+      EXITD_PROTECT1_SET( extd, BFALSE ) : \
+      EXITD_PROTECTN_SET( extd, CDR( EXITD_PROTECTN( extd ) ) )
    
 /*---------------------------------------------------------------------*/
 /*    `dynamic-wind' before thunk linking.                             */
