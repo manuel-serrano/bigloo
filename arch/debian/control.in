@@ -33,7 +33,7 @@ Description: Bigloo core Libraries
 
 @IFAVAHI@ Package: libavahi-bigloo
 @IFAVAHI@ Architecture: any
-@IFAVAHI@ Depends: libavahi-core7, libavahi-common3, libavahi-client3, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
+@IFAVAHI@ Depends: bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
 @IFAVAHI@ Description: Bigloo bindings for the AVAHI library
 
 @IFSQLITE@ Package: libsqlite-bigloo
