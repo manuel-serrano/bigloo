@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jan 15 17:43:42 2013 (serrano)                */
+/*    Last change :  Tue Feb  5 16:47:31 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1023,7 +1023,7 @@ bgl_gethostinterfaces() {
       if( ifa->ifa_addr->sa_family == AF_INET ) {
 	 char addressBuffer[ INET_ADDRSTRLEN ];
 	 /* a valid IPv4 addr */
-	 tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+	 tmpAddrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 	 inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
 
 	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
@@ -1035,7 +1035,7 @@ bgl_gethostinterfaces() {
       } else if( ifa->ifa_addr->sa_family == AF_INET6 ) {
 	 char addressBuffer[ INET6_ADDRSTRLEN ];
 	 /* a valid IPv6 addr */
-	 tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+	 tmpAddrPtr = &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
 	 
 	 inet_ntop( AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN );
 	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
@@ -1051,8 +1051,51 @@ bgl_gethostinterfaces() {
     
    return res;
 #else
+#  if( BGL_HAVE_GETHWADDRS )
+   int fd;
+   struct ifconf conf;
+   char data[ 4096 ];
+   struct ifreq *ifr;
+   obj_t res = BNIL;
+   void *tmpAddrPtr = 0L;
+
+   if( (fd = socket( AF_INET, SOCK_DGRAM, 0 )) >= 0 ) {
+      conf.ifc_len = sizeof( data );
+      conf.ifc_buf = (caddr_t)data;
+
+      if( ioctl( fd, SIOCGIFCONF, &conf ) < 0 ) {
+	 goto end;
+      } else {
+	 ifr = (struct ifreq*)data;
+	 while( (char*)ifr < data+conf.ifc_len ) {
+	    obj_t tmp;
+	    if( ifr->ifr_addr.sa_family == AF_INET ) {
+	       char addressBuffer[ INET_ADDRSTRLEN ];
+	       /* a valid IPv4 addr */
+	       tmpAddrPtr = &((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr;
+	       inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
+	       
+	       tmp = MAKE_PAIR( gethwaddr( ifr->ifr_name ), BNIL );
+	       tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), tmp );
+	       tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
+	       tmp = MAKE_PAIR( string_to_bstring( ifr->ifr_name ), tmp );
+
+	       res = MAKE_PAIR( tmp, res );
+	    }
+	    
+	    ifr++;
+	 }
+      }
+
+   end:    
+      close( fd );
+   }
+   
+   return res;
+#  else
    return BNIL;
-#endif
+#  endif
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -1755,7 +1798,7 @@ static obj_t
 get_socket_hostname( int fd, obj_t hostip ) {
    struct hostent *host = 0;
    char *hip = BSTRING_TO_STRING( hostip );
-   
+
 #if( BGL_HAVE_INET_ATON || BGL_HAVE_INET_PTON )
    struct sockaddr_in sin;
 #else
@@ -1798,8 +1841,12 @@ get_socket_hostname( int fd, obj_t hostip ) {
 BGL_RUNTIME_DEF obj_t
 bgl_socket_hostname( obj_t sock ) {
    if( SOCKET( sock ).hostname == BUNSPEC ) {
-      return SOCKET( sock ).hostname =
-	 get_socket_hostname( SOCKET( sock ).fd, SOCKET( sock ).hostip );
+      if( !STRINGP( SOCKET( sock ).hostip ) ) {
+	 return BFALSE;
+      } else {
+	 return SOCKET( sock ).hostname =
+	    get_socket_hostname( SOCKET( sock ).fd, SOCKET( sock ).hostip );
+      }
    } else {
       return SOCKET( sock ).hostname;
    }
