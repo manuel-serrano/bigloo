@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Fri Dec 21 08:29:52 2012 (serrano)                */
+;*    Last change :  Tue Feb  5 17:31:43 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -68,6 +68,7 @@
 	    ($hostinfo::pair-nil (::bstring) "bgl_hostinfo")
 	    
 	    ($gethostname::bstring () "bgl_gethostname")
+	    ($gethostname-by-address::bstring (::bstring) "bgl_gethostname_by_address")
 	    ($gethostinterfaces::pair-nil () "bgl_gethostinterfaces")
 	    ($getprotoents::pair-nil () "bgl_getprotoents")
 	    ($getprotobyname::obj (::string) "bgl_getprotobyname")
@@ -142,6 +143,8 @@
 		  "bgl_hostinfo")
 	       (method static $gethostname::bstring ()
 		  "bgl_gethostname")
+	       (method static $gethostname-by-address::bstring (::bstring)
+		  "bgl_gethostname_by_address")
 	       (method static $gethostinterfaces::pair-nil ()
 		  "bgl_gethostinterfaces")
 
@@ -208,7 +211,7 @@
 	    (inline socket-close::obj ::socket)
 	    (inline host::bstring ::bstring)
 	    (inline hostinfo::pair-nil ::bstring)
-	    (inline hostname::bstring)
+	    (hostname::bstring #!optional hostip)
 	    (inline get-interfaces::pair-nil)
 	    (inline get-protocols::pair-nil)
 	    (get-protocol ::obj)
@@ -412,10 +415,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    hostname ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define-inline (hostname)
-   (begin
-      (%socket-init!)
-      ($gethostname)))
+(define (hostname #!optional hostip)
+   (%socket-init!)
+   (if hostip
+       ($gethostname-by-address hostip)
+       ($gethostname)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-interfaces ...                                               */

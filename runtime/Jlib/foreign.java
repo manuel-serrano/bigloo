@@ -6472,6 +6472,15 @@ public final class foreign
       }
    }
 
+   public static byte[] bgl_gethostname_by_address(byte[] ip) {
+      try {
+	 InetAddress addr = java.net.InetAddress.getByName( new String( ip ) );
+	 return addr.getHostName().getBytes();
+      } catch( Exception _ ) {
+	 return "".getBytes();
+      }
+   }
+
    public static Object bgl_gethostinterfaces() {
       // to be implemented
       System.err.println( "foreign.java: bgl_hostinterfaces not implemented" );

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Feb  5 16:47:31 2013 (serrano)                */
+/*    Last change :  Tue Feb  5 20:05:45 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -33,6 +33,10 @@
 #   include <netdb.h>
 #   ifdef BGL_ANDROID
 #     include <linux/in.h>
+#     if( !defined( INET_ADDRSTRLEN ) )
+         /* INET_ADDRSTRLEN seems to be missing up to r8b */
+#        define INET_ADDRSTRLEN 16
+#     endif
 #   endif
 #   if( BGL_HAVE_SELECT )
 #     include <sys/time.h>
@@ -542,21 +546,6 @@ bglhostent_fill_from_addrinfo( obj_t hostaddr, struct bglhostent *bhp, struct ad
 #endif
 
 /*---------------------------------------------------------------------*/
-/*    static struct bglhostent *                                       */
-/*    make_bglhostent_from_addrinfo ...                                */
-/*---------------------------------------------------------------------*/
-#if( BGL_HAVE_GETADDRINFO )
-static struct bglhostent *
-make_bglhostent_from_addrinfo( obj_t hostaddr, struct addrinfo *ai ) {
-   struct bglhostent *bhp = make_bglhostent( hostaddr, 0 );
-
-   bglhostent_fill_from_addrinfo( hostaddr, bhp, ai );
-   
-   return bhp;
-}
-#endif
-
-/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bglhostentbyname ...                                             */
 /*    -------------------------------------------------------------    */
@@ -799,7 +788,7 @@ make_bglhostentbyaddr_dbg( obj_t hostaddr, struct sockaddr_in *sin ) {
 /*    struct hostent *                                                 */
 /*    bglhostbyaddr ...                                                */
 /*    -------------------------------------------------------------    */
-/*    See bglhostbynadd.                                               */
+/*    See bglhostbyaddr.                                               */
 /*---------------------------------------------------------------------*/
 static struct hostent *
 bglhostbyaddr( struct sockaddr_in *sin ) {
@@ -846,7 +835,7 @@ bglhostbyaddr( struct sockaddr_in *sin ) {
 #endif
    {
       obj_t hostaddr = string_to_bstring_len( (char *)&(sin->sin_addr),
-					    sizeof( sin->sin_addr ) );
+					      sizeof( sin->sin_addr ) );
       bhp = make_bglhostentbyaddr( hostaddr, sin );
       
       if( bhp )
@@ -1809,7 +1798,11 @@ get_socket_hostname( int fd, obj_t hostip ) {
    socklen_t len = sizeof( sin );
 
    /* cannot fail because we have created the socket */
-   getsockname( fd, (struct sockaddr *)&sin, (socklen_t *)&len );
+   if( fd >= 0 ) {
+      getsockname( fd, (struct sockaddr *)&sin, (socklen_t *)&len );
+   } else {
+      sin.sin_family = AF_INET;
+   }
 #endif
       
 #if( BGL_HAVE_INET_ATON )
@@ -1819,7 +1812,7 @@ get_socket_hostname( int fd, obj_t hostip ) {
       host = bglhostbyaddr( &sin );
 #else
 #  if( BGL_HAVE_INET_PTON )	 
-   if( inet_pton( AF_INET, hostip, &sin.sin_addr ) )
+   if( inet_pton( AF_INET, BSTRING_TO_STRING( hostip ), &sin.sin_addr ) )
       host = bglhostbyaddr( &sin );
 #  else
    sin = inet_addr( hostip );
@@ -1833,7 +1826,16 @@ get_socket_hostname( int fd, obj_t hostip ) {
       return hostip;
    }
 }
-   
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_gethostname_by_address ...                                   */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_gethostname_by_address( obj_t hostip ) {
+   return get_socket_hostname( -1, hostip );
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_socket_hostname ...                                          */
