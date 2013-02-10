@@ -2,7 +2,7 @@
 # Maintainer: Manuel Serrano <Manuel.Serrano@inria.fr>
 
 pkgname=bigloo
-_pkgver=@BGLVERSION@
+_pkgver=@VERSION@
 pkgver=${_pkgver/-/_}
 pkgrel=1
 pkgdesc="Fast scheme compiler"
