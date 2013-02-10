@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Aug  4 10:48:41 1993                          */
-;*    Last change :  Fri Nov 30 09:30:58 2012 (serrano)                */
+;*    Last change :  Sun Feb 10 09:55:02 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo's interpreter.                                        */
 ;*=====================================================================*/
@@ -767,17 +767,23 @@
 	   ((bounce (code stack denv) (175))
 	    ;; synchronize
 	    (let* ((mutex (evcode-ref code 0))
-		   (body (evcode-ref code 1)))
-	       (synchronize (evmeaning mutex stack denv)
-		  (evmeaning body stack denv))))
+		   (body (evcode-ref code 1))
+		   (m (evmeaning mutex stack denv)))
+	       (if (mutex? m)
+		   (synchronize m
+		      (evmeaning body stack denv))
+		   (evtype-error (evcode-loc code) "synchronize" "mutex" m))))
 	   ((bounce (code stack denv) (176))
 	    ;; synchronize/prelock
 	    (let* ((mutex (evcode-ref code 0))
 		   (prelock (evcode-ref code 1))
-		   (body (evcode-ref code 2)))
-	       (synchronize (evmeaning mutex stack denv)
-		  :prelock (evmeaning prelock stack denv)
-		  (evmeaning body stack denv))))
+		   (body (evcode-ref code 2))
+		   (m (evmeaning mutex stack denv)))
+	       (if (mutex? m)
+		   (synchronize m
+		      :prelock (evmeaning prelock stack denv)
+		      (evmeaning body stack denv))
+		   (evtype-error (evcode-loc code) "synchronize" "mutex" m))))
 	   ((131)
 	    ;; tailcall 0
 	    (let ((fun (evmeaning (evcode-ref code 1) stack denv)))

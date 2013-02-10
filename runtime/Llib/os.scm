@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Jan 15 19:17:02 2013 (serrano)                */
+;*    Last change :  Sun Feb 10 18:05:01 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -80,7 +80,7 @@
 	    (%dunload::int (::bstring) "bgl_dunload")
 	    (%dload-error::string () "bgl_dload_error")
 	    ($getuid::int () "bgl_getuid")
-	    ($setuid::obj () "bgl_setuid")
+	    ($setuid::obj (::int) "bgl_setuid")
 	    ($getpwnam::obj (::string) "bgl_getpwnam")
 	    ($getpwuid::obj (::int) "bgl_getpwuid"))
 
@@ -541,9 +541,8 @@
 			 ((null? obj)
 			  l)
 			 ((not (string? (car obj)))
-			  (bigloo-type-error 'make-file-path
-					     "string"
-					     (car obj)))
+			  (bigloo-type-error "make-file-path"
+			     "string" (car obj)))
 			 (else
 			  (loop (cdr obj) (+fx 1
 					       (+fx (string-length (car obj))
@@ -573,7 +572,7 @@
       ((bigloo-.net)
        (string-append lib ".dll"))
       (else
-       (error 'make-static-lib-name "Unknown backend" backend))))
+       (error "make-static-lib-name" "Unknown backend" backend))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-shared-lib-name ...                                         */
@@ -589,7 +588,7 @@
       ((bigloo-.net)
        (string-append lib ".dll"))
       (else
-       (error 'make-shared-lib-name "Unknown backend" backend))))
+       (error "make-shared-lib-name" "Unknown backend" backend))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn find-file/path@ ...                                       */
@@ -970,7 +969,7 @@
 		  (else
 		   (find-file/path lib *dynamic-load-path*)))))
       (if (not (string? flib))
-	  (error 'dynamic-unload "Can't find library" lib)
+	  (error "dynamic-unload" "Can't find library" lib)
 	  (=fx (%dunload flib) 0))))
    
 ;*---------------------------------------------------------------------*/
@@ -1011,9 +1010,9 @@
 (define (setuid uid)
    (cond-expand
       (bigloo-c
-       ($getuid))
+       ($setuid uid))
       (else
-       (error 'setuid "operation not supported" uid))))
+       (error "setuid" "operation not supported" uid))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getpwnam ...                                                     */
