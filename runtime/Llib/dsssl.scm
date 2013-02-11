@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Wed Aug  8 08:24:31 2012 (serrano)                */
+;*    Last change :  Mon Feb 11 18:24:03 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -62,11 +62,10 @@
 ;*    make-dsssl-function-prelude ...                                  */
 ;*    -------------------------------------------------------------    */
 ;*    This function decodes a DSSSL formal parameter list and          */
-;*    produce a header decoding the actuals.                           */
+;*    produce a header decoding the actual values.                     */
 ;*    -------------------------------------------------------------    */
-;*    We implement a finite automata where each state is represented   */
-;*    by a function. It is much easier to implement this than          */
-;*    with variables and loops.                                        */
+;*    It implements a finite automata where each state is represented  */
+;*    by a function.                                                   */
 ;*---------------------------------------------------------------------*/
 (define (make-dsssl-function-prelude where formals body err)
 
@@ -92,12 +91,8 @@
    (define (enter-dsssl-state args next-state)
       (let loop ((as args))
 	 (cond
-	    ((null? as)
-	     (next-state args #unspecified))
 	    ((not (pair? as))
 	     (err where "Illegal formal list" formals))
-	    ((and (not (symbol? (car as))) (not (pair? (car as))))
-	     (loop (cdr as)))
 	    (else
 	     (match-case (car as)
 		((? symbol?)
@@ -107,7 +102,9 @@
 		(((? symbol?) ?-)
 		 (let ((dsssl-arg (gensym 'dsssl)))
 		    `(let ((,dsssl-arg ,(car (car as))))
-			,(next-state args dsssl-arg)))))))))
+			,(next-state args dsssl-arg))))
+		(else
+		 (err where "Illegal formal list" formals)))))))
 
    (define (optional-state args dsssl-arg)
       
@@ -134,10 +131,10 @@
 			     (cons (symbol->keyword (caar args)) res))))))
 	       (else
 		(loop (cdr args))))))
-      
+
       (define keyword-arguments (get-keyword-arguments args))
 		
-      (define (one-optional-arg arg initializer)
+      (define (one-optional-arg arg initializer rest)
 	 (let ((tmp (gensym 'tmp)))
 	    `(let ((,arg (if (if (null? ,dsssl-arg)
 				 #t
@@ -153,42 +150,44 @@
 				(begin
 				   (set! ,dsssl-arg (cdr ,dsssl-arg))
 				   ,tmp)))))
-		,(optional-state (cdr args) dsssl-arg))))
-      (cond
-	 ((null? args)
-	  body)
-	 ((not (pair? args))
-	  (err where "Illegal DSSSL formal list (#!optional)" formals))
-	 ((and (not (symbol? (car args))) (not (pair? (car args))))
-	  ;; either it is a DSSSL named constant or an error.
-	  (case (car args)
-	     ((#!rest)
-	      (rest-state (cdr args) dsssl-arg))
-	     ((#!key)
-	      (no-rest-key-state (cdr args) dsssl-arg))
-	     (else
-	      (err where "Illegal DSSSL formal list (#!optional)" formals))))
-	 (else
-	  ;; an optional DSSSL formal
-	  (match-case (car args)
-	     (((and (? symbol?) ?arg) ?initializer)
-	      (one-optional-arg arg initializer))
-	     ((and (? symbol?) ?arg)
-	      (one-optional-arg arg #f))
-	     (else
-	      (err where "Illegal DSSSL formal list (#!optional)" formals))))))
+		,(optional-args rest))))
+
+      (define (optional-args args)
+	 (cond
+	    ((null? args)
+	     body)
+	    ((not (pair? args))
+	     (err where "Illegal DSSSL formal list (#!optional)" formals))
+	    ((and (not (symbol? (car args))) (not (pair? (car args))))
+	     ;; either it is a DSSSL named constant or an error.
+	     (case (car args)
+		((#!rest)
+		 (rest-state (cdr args) dsssl-arg))
+		((#!key)
+		 (no-rest-key-state (cdr args) dsssl-arg))
+		(else
+		 (err where "Illegal DSSSL formal list (#!optional)" formals))))
+	    (else
+	     ;; an optional DSSSL formal
+	     (match-case (car args)
+		(((and (? symbol?) ?arg) ?initializer)
+		 (one-optional-arg arg initializer (cdr args)))
+		((and (? symbol?) ?arg)
+		 (one-optional-arg arg #f (cdr args)))
+		(else
+		 (err where "Illegal DSSSL formal list (#!optional)" formals))))))
+
+      (optional-args args))
 
    (define (rest-state args dsssl-arg)
       (cond
 	 ((not (pair? args))
 	  (err where "Illegal DSSSL formal list (#!rest)" formals))
+	 ((not (symbol? (car args)))
+	  (err where "Illegal DSSSL formal list (#!rest)" formals))
 	 (else
-	  (match-case (car args)
-	     ((and (? symbol?) ?id)
-	      `(let ((,id ,dsssl-arg))
-		  ,(exit-rest-state (cdr args) dsssl-arg)))
-	     (else
-	      (error where "Illegal DSSSL formal list (#!rest)" formals))))))
+	  `(let ((,(car args) ,dsssl-arg))
+	      ,(exit-rest-state (cdr args) dsssl-arg)))))
       
    (define (exit-rest-state args dsssl-arg)
       (cond
@@ -202,71 +201,82 @@
 	  (err where "Illegal DSSSL formal list (#!rest)" formals))))
 
    (define (rest-key-state args dsssl-arg)
+      
+      (define (get-keyword-arguments args)
+	 (map (lambda (x)
+		 (cond
+		    ((and (pair? x) (symbol? (car x)))
+		     (symbol->keyword (car x)))
+		    ((symbol? x)
+		     (symbol->keyword x))
+		    (else
+		     (err where "Illegal #!keys parameters" formals))))
+	    args))
+      
       (cond
 	 ((null? args)
-	  body)
+	  (err where "Illegal DSSSL formal list (#!key)" formals))
 	 (else
-	  (let ((key-list (map (lambda (x)
-				  (cond
-				     ((and (pair? x) (symbol? (car x)))
-				      (symbol->keyword (car x)))
-				     ((symbol? x)
-				      (symbol->keyword x))
-				     (else
-				      (error "dsssl formal parsing"
-					     "Illegal #!keys parameters"
-					     x))))
-			       args)))
-	     `(begin
-		 (dsssl-check-key-args! ,dsssl-arg ',key-list)
-		 ,(key-state args dsssl-arg '() #f))))))
-
-   (define (formal-keyword-list args)
-      (let loop ((args args)
-		 (aux '()))
-	 (cond
-	    ((null? args)
-	     (reverse! aux))
-	    ((eq? (car args) #!rest)
-	     (reverse! aux))
-	    (else
-	     (match-case (car args)
-		((and (? symbol?) ?arg)
-		 (loop (cdr args) (cons (symbol->keyword arg) aux)))
-		(((and (? symbol?) ?arg) ?-)
-		 (loop (cdr args) (cons (symbol->keyword arg) aux)))
-		(else
-		 (err where
-		      "Illegal DSSSL formal list (#!key)"
-		      formals)))))))
+	  (let ((keys (get-keyword-arguments args)))
+	     (if (null? keys)
+		 (err where "Illegal DSSSL formal list (#!key)" formals)
+		 (key-state args dsssl-arg '() #f))))))
    
    (define (no-rest-key-state args dsssl-arg)
+      
+      (define (get-keyword-arguments args)
+	 (let loop ((args args)
+		    (aux '()))
+	    (cond
+	       ((null? args)
+		(reverse! aux))
+	       ((eq? (car args) #!rest)
+		(reverse! aux))
+	       (else
+		(match-case (car args)
+		   ((and (? symbol?) ?arg)
+		    (loop (cdr args) (cons (symbol->keyword arg) aux)))
+		   (((and (? symbol?) ?arg) ?-)
+		    (loop (cdr args) (cons (symbol->keyword arg) aux)))
+		   (else
+		    (err where "Illegal DSSSL formal list (#!key)" formals)))))))
+      
       (cond
 	 ((null? args)
-	  body)
+	  (err where "Illegal DSSSL formal list (#!key)" formals))
 	 (else
-	  `(begin
-	      (dsssl-check-key-args! ,dsssl-arg ',(formal-keyword-list args))
-	      ,(key-state args dsssl-arg '() #t)))))
+	  (let ((keys (get-keyword-arguments args)))
+	     (if (null? keys)
+		 (err where "Illegal DSSSL formal list (#!key)" formals)
+		 (key-state args dsssl-arg '() #t))))))
    
    (define (key-state args dsssl-arg collected-keys allow-restp)
       
       (define (one-key-arg arg initializer collected-keys)
 	 `(let ((,arg (dsssl-get-key-arg ,dsssl-arg
-					 ,(symbol->keyword arg)
-					 ,initializer)))
+			 ,(symbol->keyword arg) ,initializer)))
 	     ,(key-state (cdr args)
-			 dsssl-arg
-			 (cons (symbol->keyword arg)
-			       collected-keys)
-			 allow-restp)))
+		 dsssl-arg
+		 (cons (symbol->keyword arg) collected-keys)
+		 allow-restp)))
       
       (define (rest-key-arg arg body)
 	 `(let ((,arg (dsssl-get-key-rest-arg ,dsssl-arg ',collected-keys)))
 	     ,body))
+      
       (cond
 	 ((null? args)
-	  body)
+	  (if allow-restp
+	      ;; no #!rest before the #!key, check that everything is bound
+	      `(if (null? (dsssl-get-key-rest-arg ,dsssl-arg ',collected-keys))
+		   ,body
+		   (error "dsssl-get-key-arg"
+		      ((@ format __r4_output_6_10_3)
+		       "Illegal extra argument \"~a\""
+		       (dsssl-get-key-rest-arg ,dsssl-arg ',collected-keys))
+		      ,dsssl-arg))
+	      ;; a #!rest was found before the #!key, accept everthing
+	      body))
 	 ((eq? (car args) #!rest)
 	  (if (or (not allow-restp)
 		  (null? (cdr args))
@@ -346,14 +356,18 @@
 	  (loop (cdr args)))
 	 ((eq? (car args) keyword)
 	  (if (not (pair? (cdr args)))
-	      (error 'dsssl-get-key-arg
-		     "keyword argument misses value"
+	      (error "dsssl-get-key-arg"
+		     "Keyword argument misses value"
 		     (car args))
 	      (cadr args)))
+	 ((not (keyword? (car args)))
+	  (error "dsssl-get-key-arg"
+	     "Illegal keyword actual value"
+	     (car args)))
 	 (else
 	  (if (not (pair? (cdr args)))
-	      (error 'dsssl-get-key-arg
-		     "keyword argument misses value"
+	      (error "dsssl-get-key-arg"
+		     "Keyword argument misses value"
 		     (car args))
 	      (loop (cddr args)))))))
    

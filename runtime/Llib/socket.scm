@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Tue Feb  5 17:31:43 2013 (serrano)                */
+;*    Last change :  Mon Feb 11 18:33:46 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    __bexit
 	    __bignum
 	    
+	    __r4_output_6_10_3
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
 	    __r4_equivalence_6_2
