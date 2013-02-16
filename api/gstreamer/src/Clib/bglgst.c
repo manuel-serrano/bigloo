@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec 30 08:32:57 2007                          */
-/*    Last change :  Sun Feb  5 19:31:17 2012 (serrano)                */
-/*    Copyright   :  2007-12 Manuel Serrano                            */
+/*    Last change :  Wed Feb 13 15:07:26 2013 (serrano)                */
+/*    Copyright   :  2007-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Misc GSTREAMER wrappers.                                         */
 /*=====================================================================*/
@@ -163,7 +163,6 @@ bgl_gst_init( obj_t args ) {
       if( !bglgst_use_threadsp() ) {
 	 /* Use the GC for allocating glib objects */
 /* 	 bgl_gobject_alloc_init();                                     */
-
       } else {
 	 /* otherwise, create the dummy gstreamer dynamic env */
 	 bglgst_thread_init();

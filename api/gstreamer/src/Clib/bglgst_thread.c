@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 25 15:39:16 2008                          */
-/*    Last change :  Thu Mar 22 15:34:52 2012 (serrano)                */
-/*    Copyright   :  2008-12 Manuel Serrano                            */
+/*    Last change :  Wed Feb 13 15:05:03 2013 (serrano)                */
+/*    Copyright   :  2008-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo implementation for Glib threads                           */
 /*=====================================================================*/
@@ -216,7 +216,6 @@ bglgst_thread_run( void *self ) {
    GThreadFunc thread_func = (GThreadFunc)CAR( thunk );
    gpointer arg = CDR( thunk );
 
-   
    /* The environment is stored in a specific variable for dynamic   */
    /* access but it is pointed to by the thread structure for the GC */
    bglpth_thread_init( self, (char *)&self );
@@ -248,7 +247,7 @@ bglgst_thread_create( GThreadFunc thread_func,
   void *self = bglpth_thread_new( MAKE_PAIR( (obj_t)thread_func, (obj_t)arg ) );
 
   bglpth_thread_env_create( self, BFALSE );
-  
+
   g_return_if_fail( thread_func );
   g_return_if_fail( priority >= G_THREAD_PRIORITY_LOW );
   g_return_if_fail( priority <= G_THREAD_PRIORITY_URGENT );

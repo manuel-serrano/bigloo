@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Wed Jul 23 07:11:37 2008                          */
-/*    Last change :  Thu Mar 22 15:32:45 2012 (serrano)                */
-/*    Copyright   :  2008-12 Manuel Serrano                            */
+/*    Last change :  Wed Feb 13 16:11:29 2013 (serrano)                */
+/*    Copyright   :  2008-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INPUT-PORT plugin.                                        */
 /*    -------------------------------------------------------------    */
@@ -147,7 +147,7 @@ static guint bgl_gst_port_src_signals[ LAST_SIGNAL ] = { 0 };
 static void
 bgl_gst_port_src_set_port( BglPortSrc *src, gpointer new_port, char *new_uri ) {
 #if( defined( BGL_DEBUG ) )   
-   fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d)\n  new_port=%p\n  src->port=%p closed:%d\n", __FILE__, __LINE__, new_port, src->port, INPUT_PORT_CLOSEP( new_port ) );
+   fprintf( stderr, "bgl_gst_port_src_set_port(%s:%d)\n  new_port=%p src->port=%p closed:%d filepos=%d\n", __FILE__, __LINE__, new_port, src->port, INPUT_PORT_CLOSEP( new_port ), INPUT_PORT_FILEPOS( new_port ) );
 #endif
    
    if( !INPUT_PORTP( new_port ) ) {
@@ -175,6 +175,12 @@ static void
 bgl_gst_port_src_set_uri( BglPortSrc *src, char *new_uri ) {
    obj_t new_port = bglgst_open_input_file( new_uri );
 
+#if( defined( BGL_DEBUG ) )
+   fprintf( stderr, "bgl_gst_port_src_set_uri(%s:%d)\n   uri=%s pos=%d\n",
+	    __FILE__, __LINE__, 
+	    new_uri, INPUT_PORT_FILEPOS( new_port ) );
+#endif
+   
    if( !INPUT_PORTP( new_port ) ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"bglportsrc",
@@ -219,7 +225,7 @@ static gboolean
 bgl_gst_port_src_is_seekable( GstBaseSrc *basesrc ) {
    BglPortSrc *src = BGL_GST_PORT_SRC( basesrc );
    obj_t port = src->port;
-   
+
    if( !INPUT_PORTP( port ) ) return FALSE;
    
    switch( (long)PORT( port ).kindof ) {
@@ -279,8 +285,10 @@ static void
 bgl_gst_port_src_finalize( GObject * object ) {
    BglPortSrc *src;
 
+#if( defined( BGL_DEBUG ) )   
    fprintf( stderr, "%s:%d bgl_gst_port_src_finalize: %p\n",
 	    __FILE__, __LINE__, object );
+#endif
    
    src = BGL_GST_PORT_SRC( object );
 
@@ -356,6 +364,7 @@ bgl_gst_port_src_set_property( GObject *object,
 	 src->format = g_value_get_enum( value );
 	 break;
       case PROP_PORT:
+	 fprintf( stderr, "bgl_gst_port_set_property src=%p\n", src );
 	 bgl_gst_port_src_set_port( src, g_value_get_pointer( value ), 0 );
 	 break;
       case PROP_URI:
@@ -457,9 +466,12 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
    guint readlen;
   
    src = BGL_GST_PORT_SRC( basesrc );
-
-/*    fprintf( stderr, "bgl_gst_port_src_create: ret=%p *ret=%p length=%d\n", */
-/* 	    ret, *ret, length );                                       */
+   
+#if( defined( BGL_DEBUG ) )   
+   fprintf( stderr, "bgl_gst_port_src_create: ret=%p *ret=%p length=%d\n",
+	    ret, *ret, length );
+   fprintf( stderr, "bgl_gst_port_src_create: src=%p obj=%p pos=%d offset=%ld\n", src, src->port, INPUT_PORT_FILEPOS( src->port ), offset );
+#endif
 
    /* Check that a Bigloo input port is indeed associated to the element */
    if( src->port == BFALSE ) {
@@ -482,7 +494,9 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
 
    /* Seek to the correct position */
    if( INPUT_PORT( src->port ).filepos != offset ) {
-      bgl_input_port_seek( src->port, offset );
+      if( (offset > 0) && (bgl_gst_port_src_is_seekable( basesrc ) == TRUE) ) {
+	 bgl_input_port_seek( src->port, offset );
+      }
    }
    
    /* WARNING!!! get a new buffer for getting the read characters.    */
@@ -525,7 +539,7 @@ bgl_gst_port_src_create( GstBaseSrc *basesrc,
 #if( defined( BGL_DEBUG ) )
    fprintf( stderr, "bgl_rgc_blit_string( %p, %p, 0, %d )\n",
 	    src->port, readstr, length );
-#endif   
+#endif
    if( !(readlen = bgl_rgc_blit_string( src->port, readstr, 0, length )) ) {
       /* end of file */
       gst_buffer_unref( buf );
