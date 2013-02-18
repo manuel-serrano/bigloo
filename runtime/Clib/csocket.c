@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Feb 13 16:55:27 2013 (serrano)                */
+/*    Last change :  Mon Feb 18 15:07:58 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -236,8 +236,8 @@ bgl_init_socket() {
 /*    socket_error ...                                                 */
 /*---------------------------------------------------------------------*/
 static void
-socket_error( char *who, char *message, obj_t object ) {
-   C_SYSTEM_FAILURE( BGL_IO_ERROR, who, message, object );
+socket_error( const char *who, const char *message, obj_t object ) {
+   C_SYSTEM_FAILURE( BGL_IO_ERROR, (char *)who, (char *)message, object );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2403,7 +2403,7 @@ bgl_make_datagram_server_socket( int portnum ) {
 #ifdef BGL_ANDROID   
    hints.ai_family = AF_INET; // set to AF_INET to force IPv4
 #else   
-   hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
+   hints.ai_family = AF_UNSPEC;
 #endif
    hints.ai_socktype = SOCK_DGRAM;
 #if( !defined( AI_NUMERICSERV ) )
@@ -2445,6 +2445,42 @@ bgl_make_datagram_server_socket( int portnum ) {
 
    return BREF( a_socket );
 #endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_datagram_server_unbound_socket ...                      */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_make_datagram_server_unbound_socket( obj_t family ) {
+   static const char msg[] = "make-datagram-server-unbound-socket";
+   int fam, s;
+   obj_t a_socket;
+
+   if( family == string_to_symbol( "AF_INET" ) ) {
+      fam = AF_INET;
+   } else if( family == string_to_symbol( "AF_INET6" ) ) {
+      fam = AF_INET6;
+   } else if( family == string_to_symbol( "AF_UNIX" ) ) {
+      fam = AF_UNIX;
+   } else {
+      socket_error( msg, "unsupported socket family", family );
+   }
+
+   if( (s = socket( fam, SOCK_DGRAM, 0 )) == -1 ) {
+      socket_error( msg, "cannot create socket", family );
+   }
+
+   a_socket = GC_MALLOC( SOCKET_SIZE );
+   a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   a_socket->datagram_socket_t.portnum = 0;
+   a_socket->datagram_socket_t.hostname = BUNSPEC;
+   a_socket->datagram_socket_t.hostip = BFALSE;
+   a_socket->datagram_socket_t.fd = s;
+   a_socket->datagram_socket_t.port = BFALSE;
+   a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+
+   return BREF( a_socket );
 }
 
 /*---------------------------------------------------------------------*/

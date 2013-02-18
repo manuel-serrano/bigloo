@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Tue Jun 14 20:32:21 2011 (serrano)                */
-/*    Copyright   :  2000-11 Manuel Serrano                            */
+/*    Last change :  Mon Feb 18 17:08:58 2013 (serrano)                */
+/*    Copyright   :  2000-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram Server Socket implementation for the JVM back-end.  */
 /*=====================================================================*/
@@ -31,6 +31,19 @@ public class datagram_server_socket extends datagram_socket {
 	 foreign.fail( "make-datagram-server-socket",
 		       "cannot create socket",
 		       foreign.BINT( port ) );
+      }
+   }
+
+   public datagram_server_socket( final symbol family ) {
+      super();
+
+      try {
+	 // FIXME: The address family cannot be specified.
+	 socket = new DatagramSocket( null );
+      } catch( final IOException e ) {
+	 foreign.fail( "make-datagram-server-unbound-socket",
+		       "cannot create socket",
+		       family );
       }
    }
 

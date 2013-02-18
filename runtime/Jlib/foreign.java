@@ -5107,6 +5107,10 @@ public final class foreign
       return new datagram_server_socket( port );
    }
 
+   public static datagram_socket bgl_make_datagram_server_unbound_socket( symbol family ) {
+      return new datagram_server_socket( family );
+   }
+
    public static Object BGL_DATAGRAM_SOCKET_HOSTNAME( datagram_socket s ) {
 	 return s.HOSTNAME();
       }
