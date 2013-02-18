@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat Feb 16 19:31:45 2013 (serrano)                */
+/*    Last change :  Sat Feb 16 19:43:42 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -107,6 +107,8 @@ bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
 				      obj_t obj ) {
 #if( defined( FLAC_DEBUG ) )
    dbgfile = fopen( DEBUG_PATH, "w" );
+   fprintf( dbgfile, ";; index, *size, cres, rchecksum, bchecksum\n" );
+   
    dbgindex = 0;
 #endif   
    return FLAC__stream_decoder_init_stream(
