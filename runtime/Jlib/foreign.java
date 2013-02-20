@@ -5136,6 +5136,10 @@ public final class foreign
       return s.receive( len );
    }
 
+   public static Object bgl_datagram_socket_send( datagram_socket s, byte[] string, byte[] host, int port ) {
+      return s.send( string, host, port );
+   }
+
    public static Object bgl_dgetsockopt( datagram_socket s, keyword se )
       {
 	 try {

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Mon Feb 18 15:03:16 2013 (serrano)                */
+;*    Last change :  Wed Feb 20 10:35:41 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -89,8 +89,8 @@
 		   "BGL_DATAGRAM_SOCKET_CLIENTP")
 	    ($make-datagram-server-socket::datagram-socket (::int)
 	       "bgl_make_datagram_server_socket")
-	    ($make-datagram-server-unbound-socket::datagram-socket (::symbol)
-	       "bgl_make_datagram_server_unbound_socket")
+	    ($make-datagram-unbound-socket::datagram-socket (::symbol)
+	       "bgl_make_datagram_unbound_socket")
 
 	    ($make-datagram-client-socket::datagram-socket (::bstring ::int ::bool)
 	       "bgl_make_datagram_client_socket")
@@ -105,7 +105,9 @@
 	    ($datagram-socket-close::obj (::datagram-socket)
 	       "bgl_datagram_socket_close")
 	    ($datagram-socket-receive::obj (::datagram-socket ::long)
-	       "bgl_datagram_socket_receive"))
+	       "bgl_datagram_socket_receive")
+            ($datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
+	       "bgl_datagram_socket_send"))
    
    (java    (class foreign
 	       (method static c-socket?::bool (::obj)
@@ -170,8 +172,8 @@
 		   "BGL_DATAGRAM_SOCKET_CLIENTP")
 	       (method static $make-datagram-server-socket::datagram-socket (::int)
 		  "bgl_make_datagram_server_socket")
-	       (method static $make-datagram-server-unbound-socket::datagram-socket (::symbol)
-		  "bgl_make_datagram_server_unbound_socket")
+	       (method static $make-datagram-unbound-socket::datagram-socket (::symbol)
+		  "bgl_make_datagram_unbound_socket")
 	       (method static $make-datagram-client-socket::datagram-socket (::bstring ::int ::bool)
 		  "bgl_make_datagram_client_socket")
 	       (method static $datagram-socket-hostname::obj (::datagram-socket)
@@ -187,6 +189,9 @@
 		  "bgl_datagram_socket_close")
 	       (method static $datagram-socket-receive::obj (::datagram-socket ::long)
 		  "bgl_datagram_socket_receive")
+	       (method static $datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
+		  "bgl_datagram_socket_send")
+	       
 	       (method static $dgetsockopt::obj (::datagram-socket ::keyword)
 		  "bgl_dgetsockopt")
 	       (method static $dsetsockopt!::obj (::datagram-socket ::keyword ::obj)
@@ -227,13 +232,14 @@
 	    (inline datagram-socket-server?::bool ::obj)
 	    (inline datagram-socket-client?::bool ::obj)
 	    (inline make-datagram-server-socket::datagram-socket #!optional (port 0))
-	    (inline make-datagram-server-unbound-socket::datagram-socket ::symbol)
+	    (inline make-datagram-unbound-socket::datagram-socket #!optional (family::symbol 'inet))
 	    (inline make-datagram-client-socket::datagram-socket ::bstring ::int #!optional broadcast)
 	    (inline datagram-socket-hostname::obj ::datagram-socket)
 	    (inline datagram-socket-host-address::obj ::datagram-socket)
 	    (inline datagram-socket-port-number::bint ::datagram-socket)
 	    (inline datagram-socket-close ::datagram-socket)
 	    (inline datagram-socket-receive ::datagram-socket ::int)
+	    (inline datagram-socket-send ::datagram-socket ::bstring ::bstring ::int)
 	    (inline datagram-socket-option ::datagram-socket ::keyword)
 	    (inline datagram-socket-option-set! ::datagram-socket ::keyword ::obj)
 	    (datagram-socket-output-port::output-port ::datagram-socket))
@@ -509,10 +515,10 @@
    ($make-datagram-server-socket port))
 
 ;*---------------------------------------------------------------------*/
-;*    make-datagram-server-unbound-socket ...                          */
+;*    make-datagram-unbound-socket ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (make-datagram-server-unbound-socket family::symbol)
-   ($make-datagram-server-unbound-socket family))
+(define-inline (make-datagram-unbound-socket #!optional (family::symbol 'inet))
+   ($make-datagram-unbound-socket family))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-client-socket ...                                  */
@@ -531,6 +537,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (datagram-socket-receive dsocket length)
    ($datagram-socket-receive dsocket length))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-send ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-send dsocket string host port)
+   ($datagram-socket-send dsocket string host port))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-output-port ...                                  */

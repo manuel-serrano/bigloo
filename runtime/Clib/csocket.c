@@ -2452,16 +2452,18 @@ bgl_make_datagram_server_socket( int portnum ) {
 /*    bgl_make_datagram_server_unbound_socket ...                      */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_make_datagram_server_unbound_socket( obj_t family ) {
-   static const char msg[] = "make-datagram-server-unbound-socket";
+bgl_make_datagram_unbound_socket( obj_t family ) {
+   static const char msg[] = "make-datagram-unbound-socket";
    int fam, s;
-   obj_t a_socket;
+   obj_t a_socket, inp;
 
-   if( family == string_to_symbol( "AF_INET" ) ) {
+   if( family == string_to_symbol( "inet" ) ) {
       fam = AF_INET;
-   } else if( family == string_to_symbol( "AF_INET6" ) ) {
+   } else if( family == string_to_symbol( "inet6" ) ) {
       fam = AF_INET6;
-   } else if( family == string_to_symbol( "AF_UNIX" ) ) {
+   } else if( family == string_to_symbol( "unix" ) ) {
+      fam = AF_UNIX;
+   } else if( family == string_to_symbol( "local" ) ) {
       fam = AF_UNIX;
    } else {
       socket_error( msg, "unsupported socket family", family );
@@ -2595,4 +2597,56 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
 
       return string_to_bstring_len( buf, n );
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_datagram_socket_send ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_datagram_socket_send( obj_t sock, obj_t str, obj_t host, int port ) {
+   struct sockaddr_storage their_addr;
+   socklen_t slen;
+   ssize_t sent;
+   int fd = BGL_DATAGRAM_SOCKET( sock ).fd;
+
+   if( BGL_DATAGRAM_SOCKET( sock ).stype == BGL_SOCKET_CLIENT ) {
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"datagram-socket-send",
+			"client socket",
+			sock );
+   }
+
+   if( fd < 0 ) {
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"datagram-socket-send",
+			"socket closed",
+			sock );
+   }
+
+   /* FIXME: No support for AF_UNIX, etc.  */
+   if( !inet_pton( AF_INET, BSTRING_TO_STRING( host ),
+		   &((struct sockaddr_in *)&their_addr)->sin_addr ) ) {
+     if( !inet_pton( AF_INET6, BSTRING_TO_STRING( host ),
+		     &((struct sockaddr_in6 *)&their_addr)->sin6_addr ) ) {
+       socket_error( "datagram-socket-send",
+		     "cannot convert destination address", sock );
+     } else {
+	((struct sockaddr_in6 *)&their_addr)->sin6_port = htons( port );
+	((struct sockaddr *)&their_addr)->sa_family = AF_INET6;
+	slen = sizeof( struct sockaddr_in6 );
+     }
+   } else {
+      ((struct sockaddr_in *)&their_addr)->sin_port = htons( port );
+      ((struct sockaddr *)&their_addr)->sa_family = AF_INET;
+      slen = sizeof( struct sockaddr_in );
+   }
+
+   sent = sendto( fd, BSTRING_TO_STRING( str ), STRING_LENGTH( str ), 0,
+		  (struct sockaddr *) &their_addr, slen );
+   if( sent < 0 ) {
+      socket_error( "datagram-socket-send", "cannot send datagram", sock );
+   }
+
+   return BINT( sent );
 }

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Fri Jun 22 17:53:28 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Wed Feb 20 10:37:47 2013 (serrano)                */
+/*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
 /*=====================================================================*/
@@ -67,6 +67,10 @@ public abstract class datagram_socket extends obj {
    
    public Object receive( int len ) {
       return foreign.fail( "receive", "not a datagram-server socket", this );
+   }
+   
+   public Object send( byte[] string, byte[] host, int port ) {
+      return foreign.fail( "send", "Not implemented yet", this );
    }
    
    public Object getsockopt( keyword se ) throws IOException {
