@@ -141,8 +141,6 @@ quoted in order to be treated as literals. This is the only justification
 for having the @code{kwote} pattern since, by convention, any atom which is
 not a keyword is quoted.
 
-@unnumberedsubsubsec Explanations through examples
-
 @itemize @bullet
 @item @code{?-} matches any s-expr
 

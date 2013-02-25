@@ -54,6 +54,10 @@ Here is an example of a module that uses this library:
 @section Symmetric Block Ciphers
 @cindex Symmetric Block Ciphers
 
+@menu
+* String to Key::
+@end menu
+
 Bigloo supports some common block ciphers. Block ciphers work on blocks of fixed
 size. A @emph{mode of operation} defines the way bigger input is handled. For
 instance in ECB (Electronic Codebook mode) the blocks are all encrypted

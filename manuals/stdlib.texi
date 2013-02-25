@@ -242,8 +242,11 @@ it returns @code{#f}.
 
 @deffn {library procedure} caar pair
 @deffnx {library procedure} cadr pair
-@dots{}
-
+@deffnx {library procedure} cadar pair
+@deffnx {library procedure} caadr pair
+@deffnx {library procedure} caaar pair
+@deffnx {library procedure} caddr pair
+@deffnx {library procedure} cadar pair
 @deffnx {library procedure} cdddar pair
 @deffnx {library procedure} cddddr pair
 @end deffn
