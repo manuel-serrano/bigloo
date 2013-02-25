@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Tue Jan 29 17:18:14 2013 (serrano)                */
+;*    Last change :  Sat Feb 23 14:42:35 2013 (serrano)                */
 ;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
@@ -13,6 +13,7 @@
 ;*    Le module                                                        */
 ;*---------------------------------------------------------------------*/
 (module expand_iarithmetique
+   (import tools_misc)
    (export (expand-eq? ::obj ::procedure)
 	   (expand-i+ ::obj ::procedure)
 	   (expand-i- ::obj ::procedure)
@@ -30,6 +31,12 @@
 	   (expand-maxfx ::obj ::procedure)
 	   (expand-minfx ::obj ::procedure))
    (import tools_error))
+
+;*---------------------------------------------------------------------*/
+;*    epairify! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (epairify! x res)
+   (replace! x (epairify-rec res x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-eq? ...                                                   */
@@ -119,19 +126,19 @@
        (cond
 	  ((and (fixnum? a) (fixnum? y) (not (=fx y 0)))
 	   (user-warning "/"
-			 (string-append "Turning \"(/ "
-					(number->string a)
-					" "
-					(number->string y)
-					")\" into \""
-					(number->string (/fx a y))
-					"\" which may result in precision penalty")
-			 x)
+	      (string-append "Turning \"(/ "
+		 (number->string a)
+		 " "
+		 (number->string y)
+		 ")\" into \""
+		 (number->string (/fx a y))
+		 "\" which may result in precision penalty")
+	      x)
 	   (/fx a y))
 	  (else
 	   (user-warning "/"
-			 "Turning \"(/ ... ...)\" into \"(/fx ... ...)\" which may result in precision penalty"
-			 x)
+	      "Turning \"(/ ... ...)\" into \"(/fx ... ...)\" which may result in precision penalty"
+	      x)
 	   (e `(/fx ,a ,y) e))))
       ((?- ?a . ?y)
        (user-warning "/"
@@ -214,12 +221,14 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-+fx x e)
    (match-case x
-      ((?- ?x . (?y . ()))
+      ((?- ?a . (?b . ()))
        (cond
-	  ((and (fixnum? x) (fixnum? y))
-	   (+fx x y))
+	  ((and (fixnum? a) (fixnum? b))
+	   (+fx a b))
 	  (else
-	   `(+fx ,(e x e) ,(e y e)))))
+	   (set-car! (cdr x) (e a e))
+	   (set-car! (cddr x) (e b e))
+	   x)))
       (else
        (error #f "Incorrect number of arguments for `+fx'" x))))
 
@@ -228,12 +237,14 @@
 ;*---------------------------------------------------------------------*/
 (define (expand--fx x e)
    (match-case x
-      ((?- ?x . (?y . ()))
+      ((?- ?a . (?b . ()))
        (cond
-	  ((and (fixnum? x) (fixnum? y))
-	   (-fx x y))
+	  ((and (fixnum? a) (fixnum? b))
+	   (-fx a b))
 	  (else
-	   `(-fx ,(e x e) ,(e y e)))))
+	   (set-car! (cdr x) (e a e))
+	   (set-car! (cddr x) (e b e))
+	   x)))
       (else
        (error #f "Incorrect number of arguments for `-fx'" x))))
 
@@ -242,16 +253,18 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-*fx x e)
    (match-case x
-      ((?- ?x . (?y . ()))
+      ((?- ?a . (?b . ()))
        (cond
-	  ((and (fixnum? x) (fixnum? y))
-	   (let ((r (* x y)))
+	  ((and (fixnum? a) (fixnum? b))
+	   (let ((r (* a b)))
 	      (if (and (fixnum? r) (<fx r (bit-lsh 1 29)))
 		  ;; optimize only when the result is a small fixnum
 		  r
-		  `(*fx ,(e x e) ,(e y e)))))
+		  (epairify! x `(*fx ,(e a e) ,(e b e))))))
 	  (else
-	   `(*fx ,(e x e) ,(e y e)))))
+	   (set-car! (cdr x) (e a e))
+	   (set-car! (cddr x) (e b e))
+	   x)))
       (else
        (error #f "Incorrect number of arguments for `*fx'" x))))
 
@@ -276,16 +289,17 @@
    (match-case x
       ((?- ?x)
        (e x e))
-      ((?- ?x . (?y . ()))
+      ((?- ?a . (?b . ()))
        (cond
-	  ((and (fixnum? x) (fixnum? y))
-	   (maxfx x y))
+	  ((and (fixnum? a) (fixnum? b))
+	   (maxfx a b))
 	  (else
-	   `(let ((x ,(e x e))
-		  (y ,(e y e)))
-	       (if (>fx x y) x y)))))
-      ((?- ?x . ?y)
-       (e `(maxfx ,x (maxfx ,@y)) e))
+	   (epairify! x 
+	      `(let ((a ,(e a e))
+		     (b ,(e b e)))
+		  (if (>fx a b) a b))))))
+      ((?- ?a . ?b)
+       (epairify! x (e `(maxfx ,a (maxfx ,@b)) e)))
       (else
        (error #f "Incorrect number of arguments for `maxfx'" x))))
 
@@ -296,16 +310,17 @@
    (match-case x
       ((?- ?x)
        (e x e))
-      ((?- ?x . (?y . ()))
+      ((?- ?a . (?b . ()))
        (cond
-	  ((and (fixnum? x) (fixnum? y))
-	   (minfx x y))
+	  ((and (fixnum? a) (fixnum? b))
+	   (minfx a b))
 	  (else
-	   `(let ((x ,(e x e))
-		  (y ,(e y e)))
-	       (if (<fx x y) x y)))))
-      ((?- ?x . ?y)
-       (e `(minfx ,x (minfx ,@y)) e))
+	   (epairify! x 
+	      `(let ((a ,(e a e))
+		     (b ,(e b e)))
+		  (if (<fx a b) a b))))))
+      ((?- ?a . ?b)
+       (epairify! x (e `(minfx ,a (minfx ,@b)) e)))
       (else
        (error #f "Incorrect number of arguments for `minfx'" x))))
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sun Dec  9 20:48:42 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sat Feb 23 19:10:53 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
 ;*=====================================================================*/
@@ -82,6 +82,8 @@
 	    (generic alsabuffer-available::long ::alsabuffer)
 	    (generic alsabuffer-tell::obj ::alsabuffer)
 	    (generic alsabuffer-seek ::alsabuffer ::obj)
+	    (generic alsabuffer-substring ::alsabuffer ::int ::int)
+	    (generic alsabuffer-blit-string! ::alsabuffer ::int ::bstring ::int ::int)
 	    
 	    (generic alsadecoder-position::long ::alsadecoder ::alsabuffer)
 	    (generic alsadecoder-info::long ::alsadecoder)
@@ -106,7 +108,7 @@
 ;*    alsa-debug-file ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (alsa-debug-file)
-   #t)
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *error-sleep-duration* ...                                       */
@@ -429,7 +431,9 @@
 				       (raise
 					  (instantiate::&io-parse-error
 					     (proc "music-play")
-					     (msg "Illegal music format")
+					     (msg (format
+						     "Cannot find decoder (~a)"
+						     (mime-type (car l))))
 					     (obj (car l)))))))))
 		     (cond
 			((isa? action alsadecoder)
@@ -878,7 +882,49 @@
 	    ((elong? offset) (elong->fixnum offset))
 	    (else offset)))
       #t))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-substring ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-substring buffer::alsabuffer start end))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-substring ::alsaportbuffer ...                        */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-substring buffer::alsaportbuffer start end)
+   (with-access::alsaportbuffer buffer (%bmutex %inbuf)
+      (synchronize %bmutex
+	 (substring %inbuf start end))))
    
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-substring ::alsammapbuffer ...                        */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-substring buffer::alsammapbuffer start end)
+   (with-access::alsammapbuffer buffer (mmap)
+      (mmap-substring mmap (fixnum->elong start) (fixnum->elong end))))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-blit-string! ::alsabuffer ...                         */
+;*---------------------------------------------------------------------*/
+(define-generic (alsabuffer-blit-string! buf::alsabuffer s0 string s1 len))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-blit-string! ::alsaportbuffer ...                     */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-blit-string! buf::alsaportbuffer s0 string s1 len)
+   (with-access::alsaportbuffer buf (%inbuf)
+      (blit-string! %inbuf s0 string s1 len)))
+
+;*---------------------------------------------------------------------*/
+;*    alsabuffer-blit-string! ::alsammaptbuffer ...                    */
+;*---------------------------------------------------------------------*/
+(define-method (alsabuffer-blit-string! buf::alsammapbuffer s0 string s1 len)
+   (with-access::alsammapbuffer buf (mmap)
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (string-set! string (+fx s1 i) (mmap-ref mmap (+fx i s0)))
+	    (loop (+fx i 1))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    alsabuffer-available ...                                         */
 ;*---------------------------------------------------------------------*/

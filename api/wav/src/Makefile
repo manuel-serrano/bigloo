@@ -1,15 +1,15 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/alsa/src/Makefile                */
+#*    serrano/prgm/project/bigloo/api/wav/src/Makefile                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Feb 21 09:55:12 2013 (serrano)                */
+#*    Last change :  Thu Feb 21 09:52:55 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
-#*    Standard Alsa configuration                                      */
+#*    Standard Bigloo configuration                                    */
 #*---------------------------------------------------------------------*/
 include ../../../Makefile.config
 include ../../../Makefile.misc
@@ -18,7 +18,7 @@ include ../../../Makefile.misc
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
 # the library name
-API		= alsa
+API		= wav
 # Directories
 BIGLOO_SRC_DIR 	= Llib
 C_SRC_DIR 	= Clib
@@ -39,32 +39,29 @@ CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
-                  -srfi $(API) -copt "$(ALSACFLAGS)"
-CAPIFLAGS       = $(ALSACFLAGS) $(CGCTHREADFLAGS)
+                  -srfi $(API) -copt "$(WAVCFLAGS)"
+CAPIFLAGS       = $(WAVCFLAGS) $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(API)
 # C flags
-CEFLAGS		= $(ALSACFLAGS)
+CEFLAGS		= $(WAVCFLAGS)
 
 # Additional pthread lib for C
-ifeq "$(ALSALIBS) " " "
+ifeq "$(WAVLIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(ALSALIBS)
+ifeq "$(ALSALIBS) " " "
+EXTRALIBS	= $(WAVLIBS)
+else
+EXTRALIBS	= $(WAVLIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+endif
 endif
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= alsa pcm card control mixer music
-
-ifeq "$(ALSALIBS) " " "
-_C_OBJECTS	= 
-else
-_C_OBJECTS	= bglalsa
-endif
-_JAVA_CLASSES	= 
+_BGL_OBJECTS	= wav wav_alsadec
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
@@ -87,13 +84,12 @@ _WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
 SOURCES		= $(_BGL_SOURCES) \
                   $(_C_SOURCES) \
                   $(_JAVA_SOURCES)
-INCLUDES	= $(BIGLOO_SRC_DIR)/alsa.sch
+INCLUDES	= 
 
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
-		  $(C_SRC_DIR)/bglalsa.h \
 		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(API).init.in \
                   Makefile
@@ -120,32 +116,6 @@ $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ exit 1
 
 #*---------------------------------------------------------------------*/
-#*    $(C_SRC_DIR)/bglalsa_config.h.in ...                             */
-#*---------------------------------------------------------------------*/
-$(C_SRC_DIR)/bglalsa_config.h.in: $(C_SRC_DIR)/bglalsa_config.h
-	@ echo "*** ERROR: $@ is out of date (older than $?)"
-	@ echo "You need to re-configure \"(cd ..; ./configure --bootconfig)\""
-	@ exit 1
-
-#*---------------------------------------------------------------------*/
-#*    bglpcm.h                                                         */
-#*---------------------------------------------------------------------*/
-$(C_SRC_DIR)/bglpcm.h: Llib/pcm.scm
-	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
-
-#*---------------------------------------------------------------------*/
-#*    bglctl.h                                                         */
-#*---------------------------------------------------------------------*/
-$(C_SRC_DIR)/bglctl.h: Llib/control.scm
-	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
-
-#*---------------------------------------------------------------------*/
-#*    bglmixer.h                                                         */
-#*---------------------------------------------------------------------*/
-$(C_SRC_DIR)/bglmixer.h: Llib/mixer.scm
-	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
-
-#*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
 #*---------------------------------------------------------------------*/
 pop:
@@ -155,9 +125,6 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm -f $(C_SRC_DIR)/bglpcm.h
-	/bin/rm -f $(C_SRC_DIR)/bglctl.h
-	/bin/rm -f $(C_SRC_DIR)/bglmixer.h
 
 cleanall: api-cleanall
 
@@ -168,17 +135,10 @@ distclean: cleanall
 #*---------------------------------------------------------------------*/
 include ../../Makefile.api
 
-#*---------------------------------------------------------------------*/
-#*    explicit depencies                                               */
-#*---------------------------------------------------------------------*/
-$(C_SRC_DIR)/bglalsa.c: $(C_SRC_DIR)/bglpcm.h \
-  $(C_SRC_DIR)/bglctl.h \
-  $(C_SRC_DIR)/bglmixer.h
-
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/
 #*    Dependencies ...                                                 */
 #*---------------------------------------------------------------------*/
-objs/alsa.o Llib/alsa.class:
+objs/wav.o Llib/wav.class:
 
 #bdepend stop

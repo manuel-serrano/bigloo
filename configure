@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Feb 13 15:08:17 2013 (serrano)                */
+#*    Last change :  Thu Feb 21 09:56:50 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi phidget csv"
+apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac wav avahi phidget csv"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -3333,6 +3333,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "FLACLIBS=" >> $makefile_cfg
     echo "FLACCFLAGS=" >> $makefile_cfg
   fi
+
+  # WAV
+  echo ";; automatically generated. Don't edit" >  api/wav/src/Misc/wav.init
+  cat api/wav/src/Misc/wav.init.in \
+    >>  api/wav/src/Misc/wav.init
 
   # AVAHI
   echo "AVAHI=$avahi" >> $makefile_cfg

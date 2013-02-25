@@ -1,12 +1,12 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/alsa/examples/Makefile           */
+#*    serrano/prgm/project/bigloo/api/wav/examples/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Feb 25 08:55:49 2013 (serrano)                */
+#*    Last change :  Sat Feb 23 15:58:24 2013 (serrano)                */
 #*    Copyright   :  2002-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    The Makefile to build the Alsa examples                          */
+#*    The Makefile to build the Wav examples                           */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -23,7 +23,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = pcm-min cards ctl mixer
+SOURCES = musicplay
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -35,20 +35,11 @@ POPULATION = $(SOURCES:%=%.scm) Makefile
 #*---------------------------------------------------------------------*/
 all: $(SOURCES)
 
-pcm-min: pcm-min.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-cards: cards.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-ctl: ctl.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-mixer: mixer.o
+musicplay: musicplay.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:
-	@ echo $(POPULATION:%=alsa/examples/%)
+	@ echo $(POPULATION:%=wav/examples/%)
 
 clean:
 	@- $(RM) -f *~ '#*#' core

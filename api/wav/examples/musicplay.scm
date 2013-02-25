@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/mpg123/examples/musicplay.scm        */
+;*    serrano/prgm/project/bigloo/api/wav/examples/musicplay.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Sat Feb 23 16:43:46 2013 (serrano)                */
+;*    Last change :  Sat Feb 23 19:42:57 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module musicplay
-   (library multimedia pthread alsa mpg123)
+   (library multimedia pthread alsa wav)
    (main main))
 
 (define debug 0)
@@ -77,9 +77,7 @@
       (when (pair? files)
 	 (let* ((pcm (instantiate::alsa-snd-pcm
 			(device device)))
-		(decoder (instantiate::mpg123-alsadecoder
-			    (outbuf (make-string (* 16 1024)))
-			    (mimetypes '("audio/mpeg"))))
+		(decoder (instantiate::wav-alsadecoder))
 		(player (instantiate::alsamusic
 			   (onstate onstate)
 			   (onerror onerror)
@@ -92,7 +90,7 @@
 	    (music-playlist-clear! player)
 	    (print "playing: ")
 	    (for-each (lambda (p)
-			 (print "  " p)
+			 (print "  " p " " (file-musicinfo p))
 			 (music-playlist-add! player p))
 	       (reverse files))
 	    (music-play player)))))
