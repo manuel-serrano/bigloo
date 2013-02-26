@@ -68,9 +68,9 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean:
-	/bin/rm -f example
-	/bin/rm -f example.bmem
-	/bin/rm -f example.html
-	/bin/rm -f $(OBJECT)
-	/bin/rm -f .afile
+	$(RM) -f example
+	$(RM) -f example.bmem
+	$(RM) -f example.html
+	$(RM) -f $(OBJECT)
+	$(RM) -f .afile
 

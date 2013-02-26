@@ -77,5 +77,5 @@ distrib:
           fi
 	@ $(MAKE) clean
 	@ chmod a+rx $(POPULATION)
-	@ /bin/rm -f readline
+	@ $(RM) -f readline
 

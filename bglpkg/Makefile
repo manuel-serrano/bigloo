@@ -210,14 +210,14 @@ distrib:
 #*---------------------------------------------------------------------*/
 clean:
 	$(RM) -rf o
-	/bin/rm -rf META-INF
+	$(RM) -rf META-INF
 
 devclean: clean
-	/bin/rm -f $(BOOTBINDIR)/$(BGLPKG)
-	/bin/rm -f $(BOOTBINDIR)/$(BGLPKG).jar
+	$(RM) -f $(BOOTBINDIR)/$(BGLPKG)
+	$(RM) -f $(BOOTBINDIR)/$(BGLPKG).jar
 
 cleanall: devclean
-	/bin/rm -f .afile .jfile
+	$(RM) -f .afile .jfile
 
 distclean: devclean
 
