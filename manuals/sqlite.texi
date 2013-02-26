@@ -202,6 +202,10 @@ obtained with
 @end smalllisp
 @end deffn
 
+@deffn {Bigloo Sqlite function} sqlite-name-of-columns @var{sqlite} @var{table}
+Returns the name of columns in the table.
+@end deffn
+
 @deffn {Bigloo Sqlite function} sqlite-last-insert-rowid @var{sqlite}
 Returns the SQLite @emph{rowid} of the last inserted row.
 @end deffn
