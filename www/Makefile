@@ -329,9 +329,9 @@ pop:
 .PHONY: clean cleanall
 
 clean:
-	/bin/rm -f $(BASE)*.html $(BENCHGIF) 
-	/bin/rm -f old-bigloo.html
-	/bin/rm -f *~
+	$(RM) -f $(BASE)*.html $(BENCHGIF) 
+	$(RM) -f old-bigloo.html
+	$(RM) -f *~
 
 cleanall: clean
 	rm -rf doc
@@ -340,13 +340,13 @@ cleanall: clean
 #*    Benchmarks                                                       */
 #*---------------------------------------------------------------------*/
 bench/c.png:
-	/bin/rm -f /tmp/c.bc /tmp/c.eps
+	$(RM) -f /tmp/c.bc /tmp/c.eps
 	$(R2B) -R $(RESDIR)/base/base.stat -t "C back-ends vs C back-end of `$(STATINFO) $(RESDIR)/base/base.stat arch` (`$(STATINFO) $(RESDIR)/base/base.stat mhz`MHz)" $(RESDIR)/[^b]*/bigloo.stat -o /tmp/c.bc -bname $(BNAME) $(BENCHMARKS)
 	$(BCHART) -h $(BCHAR_HEIGHT) /tmp/c.bc -lv -max $(MAX_SCALE_VALUE) -o /tmp/c.eps -r 45
 	convert /tmp/c.eps bench/c.png
 
 bench/jvm.png:
-	/bin/rm -f /tmp/jvm.bc /tmp/jvm.eps
+	$(RM) -f /tmp/jvm.bc /tmp/jvm.eps
 	$(R2B) -R $(RESDIR)/base/base.stat -t "JVM (jdk1.3) back-ends vs C back-end of `$(STATINFO) $(RESDIR)/base/base.stat arch` (`$(STATINFO) $(RESDIR)/base/base.stat mhz`MHz)" $(RESDIR)/[^b]*/bigloo-jvm.stat -o /tmp/jvm.bc -bname $(BNAME) $(BENCHMARKS)
 	$(BCHART) -h $(BCHAR_HEIGHT) /tmp/jvm.bc -lv -max $(MAX_SCALE_VALUE) -o /tmp/jvm.eps -r 45
 	convert /tmp/jvm.eps bench/jvm.png

@@ -101,8 +101,8 @@ jshell=sh
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
-shell_rm="/bin/rm"
-shell_mv="/bin/mv"
+shell_rm="rm"
+shell_mv="mv"
 bgl_shell_rm=$BGLRM
 bgl_shell_mv=$BGLMV
 emacs=
@@ -2932,8 +2932,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "HOSTOS=$hostos" >> $makefile_cfg
   echo >> $makefile_cfg
 
-  # The rm command
+  # The rm & mv commands
   echo "RM=$shell_rm" >> $makefile_cfg
+  echo "MV=$shell_mv" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The ln -s command
