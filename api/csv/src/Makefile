@@ -127,9 +127,9 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm -f $(C_SRC_DIR)/bglpcm.h
-	/bin/rm -f $(C_SRC_DIR)/bglctl.h
-	/bin/rm -f $(C_SRC_DIR)/bglmixer.h
+	$(RM) -f $(C_SRC_DIR)/bglpcm.h
+	$(RM) -f $(C_SRC_DIR)/bglctl.h
+	$(RM) -f $(C_SRC_DIR)/bglmixer.h
 
 cleanall: api-cleanall
 

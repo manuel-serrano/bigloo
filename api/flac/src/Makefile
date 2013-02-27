@@ -139,7 +139,7 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm -f $(C_SRC_DIR)/bgldecoder.h
+	$(RM) -f $(C_SRC_DIR)/bgldecoder.h
 
 cleanall: api-cleanall
 

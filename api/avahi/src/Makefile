@@ -134,7 +134,7 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm -f $(C_SRC_DIR)/bglavahi.h
+	$(RM) -f $(C_SRC_DIR)/bglavahi.h
 
 cleanall: api-cleanall
 
