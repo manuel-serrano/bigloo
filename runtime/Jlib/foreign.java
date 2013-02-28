@@ -5107,7 +5107,7 @@ public final class foreign
       return new datagram_server_socket( port );
    }
 
-   public static datagram_socket bgl_make_datagram_server_unbound_socket( symbol family ) {
+   public static datagram_socket bgl_make_datagram_unbound_socket( symbol family ) {
       return new datagram_server_socket( family );
    }
 
@@ -5136,8 +5136,13 @@ public final class foreign
       return s.receive( len );
    }
 
-   public static Object bgl_datagram_socket_send( datagram_socket s, byte[] string, byte[] host, int port ) {
-      return s.send( string, host, port );
+   public static int bgl_datagram_socket_send( datagram_socket s, byte[] string, byte[] host, int port ) {
+      try {
+	 return s.send( string, host, port );
+      } catch( IOException e ) {
+	 fail("send", e.getMessage(), s);
+	 return -1;
+      }
    }
 
    public static Object bgl_dgetsockopt( datagram_socket s, keyword se )
