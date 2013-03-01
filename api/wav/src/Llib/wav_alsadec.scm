@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 21 08:15:23 2013                          */
-;*    Last change :  Thu Feb 28 19:01:23 2013 (serrano)                */
+;*    Last change :  Fri Mar  1 12:12:52 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WAV music decoder                                                */
@@ -18,6 +18,8 @@
       ((library alsa)
        (library alsa)))
 
+   (library multimedia)
+   
    (import __wav_wav)
 
    (cond-expand
