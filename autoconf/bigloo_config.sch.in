@@ -34,7 +34,7 @@
   (gc-lib . "@BGL_GC_LIBRARY@")
   (gc-custom . ,(not (=fx @BGL_GC_CUSTOM@ 0)))
   (endianess . ,(if (=fx @BGL_BIG_ENDIAN@ 0) 'little-endian 'big-endian))
-  (homeurl . "@BGLHOMEURL@")
+  (homeurl . "@BGL_HOMEURL@")
   (shell . "@SHELL@")
   (ld-library-dir . "@BGL_LD_LIBRARY_DIR@")
   (zip-directory . "@ZIP_DIRECTORY@")

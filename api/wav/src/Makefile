@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Feb 21 09:52:55 2013 (serrano)                */
+#*    Last change :  Fri Mar  1 08:00:16 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -47,15 +47,10 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 # C flags
 CEFLAGS		= $(WAVCFLAGS)
 
-# Additional pthread lib for C
-ifeq "$(WAVLIBS) " " "
-EXTRALIBS	= 
-else
-ifeq "$(ALSALIBS) " " "
-EXTRALIBS	= $(WAVLIBS)
-else
-EXTRALIBS	= $(WAVLIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
-endif
+# Additional libraries
+EXTRALIBS	= $(WAVLIBS) -lbigloomultimedia_u-$(RELEASE)
+ifneq "$(ALSALIBS) " " "
+EXTRALIBS	+= $(ALSALIBS) -lbiglooalsa_u-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/
