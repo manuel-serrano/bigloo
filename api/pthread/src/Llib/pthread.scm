@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Apr 17 17:06:29 2012 (serrano)                */
-;*    Copyright   :  2002-12 Manuel Serrano                            */
+;*    Last change :  Fri Mar  1 16:19:37 2013 (serrano)                */
+;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -77,41 +77,41 @@
 ;*    thread-initialize! ::pthread ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (thread-initialize! o::pthread)
-   (if (not (bigloo-initialized?))
-       (error 'make-thread
-	      "Threads cannot be created until modules are initialized (see the documentation)"
-	      (find-runtime-type o))
-       (with-access::pthread o ($builtin body end-result end-exception name)
-	  (let ((b (lambda ()
-		      (let ((id (if (symbol? name)
-				    (symbol-append '& name)
-				    (gensym '&pthread-))))
-			 (let ()
-			    ($push-trace id #unspecified)
-			    ($set-uncaught-exception-handler!
-			     (lambda (val)
-				(error (format "unwind-until!, ~a" o)
-				       "exit out of thread dynamic scope"
-				       val)))
-			    (with-handler
-			       (lambda (e)
-				  (let ((u (instantiate::uncaught-exception
-					      (reason e))))
-				     (set! end-exception  u)
-				     (exception-notify e)
-				     #f))
-			       (cond-expand
-				  (bigloo-c
-				   (bind-exit (exit)
-				      (signal $pthread-term-sig
-					      (lambda (s)
-						 ($set-uncaught-exception-handler!
-						  (lambda (val) val))
-						 (exit #f)))
-				      (set! end-result (body))))
-				  (else
-				   (set! end-result (body))))))))))
-	     (set! $builtin ($pthread-new b))))))
+   (unless (bigloo-initialized?)
+      (warning "make-thread"
+	 "Thread created before all modules initialized"
+	 o))
+   (with-access::pthread o ($builtin body end-result end-exception name)
+      (let ((b (lambda ()
+		  (let ((id (if (symbol? name)
+				(symbol-append '& name)
+				(gensym '&pthread-))))
+		     (let ()
+			($push-trace id #unspecified)
+			($set-uncaught-exception-handler!
+			   (lambda (val)
+			      (error (format "unwind-until!, ~a" o)
+				 "exit out of thread dynamic scope"
+				 val)))
+			(with-handler
+			   (lambda (e)
+			      (let ((u (instantiate::uncaught-exception
+					  (reason e))))
+				 (set! end-exception  u)
+				 (exception-notify e)
+				 #f))
+			   (cond-expand
+			      (bigloo-c
+			       (bind-exit (exit)
+				  (signal $pthread-term-sig
+				     (lambda (s)
+					($set-uncaught-exception-handler!
+					   (lambda (val) val))
+					(exit #f)))
+				  (set! end-result (body))))
+			      (else
+			       (set! end-result (body))))))))))
+	 (set! $builtin ($pthread-new b)))))
     
 ;*---------------------------------------------------------------------*/
 ;*    thread-start! ::pthread ...                                      */
@@ -187,7 +187,7 @@
 	  (begin
 	     ($pthread-cleanup-set! $builtin p)
 	     p)
-	  (error 'thread-cleanup-set! "Illegal procedure arity" p))))
+	  (error "thread-cleanup-set!" "Illegal procedure arity" p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    $pthread-nil ...                                                 */
