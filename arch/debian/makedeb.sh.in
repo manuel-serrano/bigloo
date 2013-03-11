@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Jan 30 15:13:20 2013 (serrano)                */
+#*    Last change :  Mon Mar 11 07:05:53 2013 (serrano)                */
 #*    Copyright   :  2012-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -27,7 +27,7 @@ depend=
 
 fakeroot=fakeroot
 
-libs="sqlite ssl alsa flac mpg123 gstreamer avahi"
+libs="sqlite ssl alsa flac wav mpg123 gstreamer avahi"
 
 while : ; do
   case $1 in
@@ -70,7 +70,7 @@ pkg=bigloo
 maemo=`pkg-config maemo-version --modversion 2> /dev/null`
 if [ $? = 0 ]; then
   debian=maemo`echo $maemo | sed -e "s/[.].*$//"`
-  libs="sqlite ssl alsa gstreamer flac avahi mpg123"
+  libs="sqlite ssl alsa gstreamer flac wav avahi mpg123"
 else
   case `cat /etc/issue | awk '{ print $1 }'` in
     Debian)

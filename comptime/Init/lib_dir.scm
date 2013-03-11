@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Sep  4 08:39:02 2009                          */
-;*    Last change :  Wed Sep 21 19:22:38 2011 (serrano)                */
-;*    Copyright   :  2009-11 Manuel Serrano                            */
+;*    Last change :  Fri Mar  1 07:53:00 2013 (serrano)                */
+;*    Copyright   :  2009-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Processes the lib-dir-compilation parameter.                     */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module init_lib-dir
    (import engine_param
-	   module_eval)
+	   module_eval
+	   tools_speek)
    (export (process-lib-dir-parameter param)))
 
 ;*---------------------------------------------------------------------*/
@@ -30,7 +31,7 @@
    
    (let ((tmp (read p)))
       (unless (correct-type? tmp)
-	 (error 'lib-dir "Bad bigloo_config.sch file" f))
+	 (error "lib-dir" "Bad bigloo_config.sch file" f))
       tmp))
 
 ;*---------------------------------------------------------------------*/
@@ -53,14 +54,17 @@
    (let* ((read-config (safe-read p 'pair f))
 	  (lib-config (eval read-config)))
       ;; override the existing config entries
-      (for-each (lambda (c) (bigloo-configuration-add-entry! (car c) (cdr c)))
-		lib-config)
-      (reinitialize-bigloo-variables!)))
+      (for-each (lambda (c)
+		   (bigloo-configuration-add-entry! (car c) (cdr c)))
+	 lib-config)
+      (reinitialize-bigloo-variables!)
+      (bigloo-library-path-set! (list "." (bigloo-config 'library-directory)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-config_sch ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (read-config_sch f)
+   (verbose 2 "      [reading config " f "]" #\Newline)
    (let ((port (open-input-file f)))
       (unwind-protect
 	 (begin
@@ -76,7 +80,7 @@
 (define (process-lib-dir-parameter param)
    (let ((dir (file-name-canonicalize! param)))
       (when (not (directory? dir))
-	 (error 'lib-dir  "Not a directory" dir))
+	 (error "lib-dir"  "Not a directory" dir))
       (let ((config_sch (make-file-path dir "bigloo_config.sch")))
 	 (when (file-exists? config_sch)
 	    (read-config_sch config_sch))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 21 08:15:23 2013                          */
-;*    Last change :  Sat Feb 23 20:49:44 2013 (serrano)                */
+;*    Last change :  Fri Mar  1 12:12:52 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WAV music decoder                                                */
@@ -14,16 +14,29 @@
 ;*---------------------------------------------------------------------*/
 (module __wav_alsadec
 
-   (library multimedia alsa)
+   (cond-expand
+      ((library alsa)
+       (library alsa)))
+
+   (library multimedia)
    
    (import __wav_wav)
 
-   (export (class wav-alsadecoder::alsadecoder
-	      (outbuf::bstring read-only (default (make-string (*fx 2 1024))))
-	      (%header::obj (default #f))
-	      (%cursor::int (default 0))
-	      (%size::int (default 0))
-	      (%position::int (default 0)))))
+   (cond-expand
+      ((library alsa)
+       (export (class wav-alsadecoder::alsadecoder
+		  (outbuf::bstring read-only (default (make-string (*fx 2 1024))))
+		  (%header::obj (default #f))
+		  (%cursor::int (default 0))
+		  (%size::int (default 0))
+		  (%position::int (default 0)))))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa dependency                                                  */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   ((library alsa)
+;;; compile only if alsa available
 
 ;*---------------------------------------------------------------------*/
 ;*    $compiler-debug ...                                              */
@@ -376,3 +389,7 @@
    (for-each (lambda (a) (display a *debug-port*)) args)
    (flush-output-port *debug-port*))
 
+;*---------------------------------------------------------------------*/
+;*    alsa dependency                                                  */
+;*---------------------------------------------------------------------*/
+))
