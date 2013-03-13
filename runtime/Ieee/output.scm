@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed Dec 19 11:24:46 2012 (serrano)                */
+;*    Last change :  Tue Mar 12 11:42:19 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -849,6 +849,8 @@
 (define (write-mutex obj port)
    (display-string "#<mutex:" port)
    (display (mutex-name obj) port)
+   (display ":" port)
+   (display ($mutex-backend obj) port)
    (display-string ">" port))
 
 ;*---------------------------------------------------------------------*/

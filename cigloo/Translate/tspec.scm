@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 30 17:24:36 1995                          */
-;*    Last change :  Mon Dec  3 18:19:40 2001 (serrano)                */
+;*    Last change :  Mon Mar 11 14:30:27 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type specification handling                                  */
 ;*=====================================================================*/
@@ -301,6 +301,31 @@
 				   (cdr tspcs))))
 			(else
 			 (error/ast 'type5 "Illegal type" ts))))
+		    ((eq? (type-spec-class ts) 'longlong)
+		     (cond
+			((and (not longlong)
+			      (not short)
+			      (not tspec))
+			 (if long
+			     (loop unsigned
+				signed
+				#f
+				;; this is the only place the longlong flag is 
+				;; changed ot something other than #f
+				ts
+				#f
+				#f
+				(cdr tspcs))
+			     ;; we really shouldn't get here
+			     (loop unsigned
+				signed
+				ts
+				#f
+				#f
+				#f
+				(cdr tspcs))))
+			(else
+			 (error/ast 'type6 "Illegal type" ts))))
 		    ((eq? (type-spec-class ts) 'int)
 		     (cond
 			(short

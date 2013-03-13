@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Sat Feb 16 19:56:38 2013 (serrano)                */
+;*    Last change :  Tue Mar 12 15:17:09 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both FLAC *and* ALSA libs.      */
@@ -16,6 +16,7 @@
    (library alsa flac pthread)
    (extern (macro $memcpy::void (::string ::string ::long) "memcpy"))
    (static (class flac-alsa::flac-decoder
+	      (port (default #f))
 	      (pcm::alsa-snd-pcm read-only)
 	      (%inbuf::bstring read-only (default (make-string (*fx 16 1024))))))
    (main main))
@@ -98,4 +99,9 @@
 	    (sz (minfx size (string-length %inbuf))))
 	 (let ((sz2 (read-chars! %inbuf sz port)))
 	    ($memcpy flacbuf %inbuf sz2)
+	    (when (>=fx (flac-debug) 1)
+	       (with-access::flac-alsa o (%bchecksum)
+		  (set! %bchecksum
+		     (flac-checksum-debug
+			%bchecksum %inbuf 0 sz2))))
 	    sz2))))

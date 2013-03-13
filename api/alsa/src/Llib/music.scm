@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Feb 23 19:10:53 2013 (serrano)                */
+;*    Last change :  Wed Mar 13 09:46:06 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -306,7 +306,7 @@
    (define (open-port-buffer o::alsamusic d::alsadecoder url::bstring next::pair-nil)
       (let ((ip (open-file url o)))
 	 (if (input-port? ip)
-	     (with-access::alsamusic o (%amutex inbuf %buffer onerror mkthread)
+	     (with-access::alsamusic o (inbuf %buffer onerror mkthread)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
 				 (port ip)
@@ -497,7 +497,7 @@
 			(condition-variable-broadcast! %dcondv)))
 		  #t)))))
    
-   (with-access::alsamusic o (%amutex %status)
+   (with-access::alsamusic o (%status)
       
       (cond
 	 ((pair? s)

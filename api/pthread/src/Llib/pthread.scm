@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Mar  1 16:19:37 2013 (serrano)                */
+;*    Last change :  Tue Mar 12 13:25:09 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -79,8 +79,8 @@
 (define-method (thread-initialize! o::pthread)
    (unless (bigloo-initialized?)
       (warning "make-thread"
-	 "Thread created before all modules initialized"
-	 o))
+	 "Thread created before module initialization completed -- "
+	 (typeof o)))
    (with-access::pthread o ($builtin body end-result end-exception name)
       (let ((b (lambda ()
 		  (let ((id (if (symbol? name)
