@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Mon Dec  3 16:13:05 2012 (serrano)                */
+;*    Last change :  Wed Mar 20 09:35:21 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -245,7 +245,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|sqlite-last-insert-rowid\\>\\)")
 	 1
 	 'ude-font-lock-face-9)
-   (list "\(\\([a-zA-Z0-9_-]+&\\)[ \t\n)]"
+   (list "\(\\([a-zA-Z0-9_-/!=%$@^*<>?]+&\\)[ \t\n)]"
 	 1
 	 'ude-font-lock-face-7)
    (list "\(\\(<[^> \t\n]+>\\)[ \n\t)]"

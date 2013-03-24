@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Mar 12 13:25:09 2013 (serrano)                */
+;*    Last change :  Fri Mar 22 14:40:38 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -137,10 +137,11 @@
 (define-method (thread-join! t::pthread . timeout)
    (with-access::pthread t (detachedp $builtin end-result end-exception)
       (if detachedp
-	  (raise (instantiate::&thread-error
-		    (proc 'thread-join!)
-		    (msg "detached thread")
-		    (obj t)))
+	  (raise
+	     (instantiate::&thread-error
+		(proc 'thread-join!)
+		(msg "detached thread")
+		(obj t)))
 	  (begin
 	     ($pthread-join! $builtin (if (pair? timeout) (car timeout) #f))
 	     (if (isa? end-exception &exception)
