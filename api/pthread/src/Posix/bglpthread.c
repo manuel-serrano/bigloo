@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sun Mar 24 18:13:12 2013 (serrano)                */
+/*    Last change :  Sun Mar 24 19:13:23 2013 (serrano)                */
 /*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -158,7 +158,6 @@ bglpth_thread_run( void *arg ) {
    obj_t thunk = self->thunk;
    sigset_t set;
    size_t stacksize;
-   pthread_attr_t attr;
 
    bglpth_thread_init( self, (char *)&arg );
 
@@ -173,15 +172,6 @@ bglpth_thread_run( void *arg ) {
    self->status = 1;
    pthread_cond_broadcast( &(self->condvar) );
    pthread_mutex_unlock( &(self->mutex) );
-
-   /* extend the stack size if needed */
-   pthread_attr_init( &attr );
-   if( !pthread_attr_getstacksize( &attr, &stacksize ) ) {
-      fprintf( stderr, "stacksize=%d\n", stacksize );
-      if( stacksize < (4 * 1024 * 1024) ) {
-	 pthread_attr_setstacksize( &attr, (4 * 1024 * 1024 ) );
-      }
-   }
 
    /* enter the user code */
    PROCEDURE_ENTRY( thunk )( thunk, BEOA );
@@ -226,7 +216,20 @@ bglpth_thread_start( bglpthread_t thread, obj_t bglthread, bool_t dt ) {
    pthread_attr_t a;
 
    pthread_attr_init( &a );
-
+   
+#ifdef BGL_ANDROID
+   size_t stacksize;
+#define ANDROID_STACKSIZE (4 * 1024 * 1024)
+   
+   if( !pthread_attr_getstacksize( &a, &stacksize ) ) {
+      if( stacksize < ANDROID_STACKSIZE ) {
+	 // enlarge to 4MB the stack size
+	 pthread_attr_setstacksize( &a, ANDROID_STACKSIZE );
+	 pthread_attr_getstacksize( &a, &stacksize );
+      }
+   }
+#endif
+   
    if( dt ) pthread_attr_setdetachstate( &a, PTHREAD_CREATE_DETACHED );
 
    bglpth_thread_env_create( thread, bglthread );
