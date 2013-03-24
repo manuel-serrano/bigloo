@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Dec 11 18:35:55 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Sun Mar 24 18:13:12 2013 (serrano)                */
+/*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -157,6 +157,8 @@ bglpth_thread_run( void *arg ) {
    bglpthread_t self = (bglpthread_t)arg;
    obj_t thunk = self->thunk;
    sigset_t set;
+   size_t stacksize;
+   pthread_attr_t attr;
 
    bglpth_thread_init( self, (char *)&arg );
 
@@ -171,6 +173,15 @@ bglpth_thread_run( void *arg ) {
    self->status = 1;
    pthread_cond_broadcast( &(self->condvar) );
    pthread_mutex_unlock( &(self->mutex) );
+
+   /* extend the stack size if needed */
+   pthread_attr_init( &attr );
+   if( !pthread_attr_getstacksize( &attr, &stacksize ) ) {
+      fprintf( stderr, "stacksize=%d\n", stacksize );
+      if( stacksize < (4 * 1024 * 1024) ) {
+	 pthread_attr_setstacksize( &attr, (4 * 1024 * 1024 ) );
+      }
+   }
 
    /* enter the user code */
    PROCEDURE_ENTRY( thunk )( thunk, BEOA );
