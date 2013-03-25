@@ -595,7 +595,7 @@ boot-jvm:
 #*    pre-compiled files).                                             */
 #*---------------------------------------------------------------------*/
 bigboot:  
-	@ $(AFILE)
+	@ $(MAKE) $(AFILE)
 	@ $(MAKE) objs includes dirs
 	@ $(MAKE) lib-c_s
 	@ $(MAKE) heap-c
