@@ -561,38 +561,32 @@ loop:
 
    if( (n = select( fd + 1, &readfds, NULL, NULL, &tv )) <= 0 ) {
       if( n == 0 ) {
-	 if( !FD_ISSET( fd, &readfds ) ) {
-	    INPUT_PORT( port ).eof = 1;
-	    /* eof */
-	    return 0;
-	 } else {
-	    /* timeout */
-	    char buf[ 100 ];
+	 /* timeout */
+	 char buf[ 100 ];
 
 #if( defined( DEBUG_TIMED_READ ) )    
-	    if( debug >= 2 ) {
-	       long mu;
+	 if( debug >= 2 ) {
+	    long mu;
 	 
-	       gettimeofday( &tv2, 0 );
+	    gettimeofday( &tv2, 0 );
 
-	       mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
+	    mu = (tv2.tv_sec - tv2.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec);
 
-	       if( debug >= 1 ) {
-		  fprintf( stderr, "%s:%d posix_timed_read, timeout: [0m[1;33m%dms[0m max=%dms select=%dms port=%s\n",
-			   __FILE__, __LINE__,
-			   mu / 1000,
-			   (tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec) / 1000,
-			   (tv.tv_sec * 1000000 + tv.tv_usec) / 1000,
-			   BSTRING_TO_STRING( PORT( port ).name) );
-	       }
+	    if( debug >= 1 ) {
+	       fprintf( stderr, "%s:%d posix_timed_read, timeout: [0m[1;33m%dms[0m max=%dms select=%dms port=%s\n",
+			__FILE__, __LINE__,
+			mu / 1000,
+			(tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec) / 1000,
+			(tv.tv_sec * 1000000 + tv.tv_usec) / 1000,
+			BSTRING_TO_STRING( PORT( port ).name) );
 	    }
+	 }
 	    
-	    sprintf( buf, "Time limit (%ld us) exceeded",
-		     tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
+	 sprintf( buf, "Time limit (%ld us) exceeded",
+		  tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
 #endif
 	 
-	    C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "read/timeout", buf, port );
-	 }
+	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "read/timeout", buf, port );
       } else {
 	 if( errno == EINTR ) {
 	    goto loop;

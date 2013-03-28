@@ -120,6 +120,21 @@
 		     (process-exit-status proc)
 		     line)))
 	 '(#f 6 "204"))
+   (test "&io-timeout-error"
+         (let* ((proc  (run-process *bigloo-path* "-eval" "(sleep 4)"
+			  output: pipe:))
+		(output (process-output-port proc)))
+	    (input-port-timeout-set! output 1000)
+	    (let ((result (with-handler
+			     (lambda (e)
+				(isa? e &io-timeout-error))
+			     (begin
+				(read-lines output)
+				#f))))
+	       (close-input-port output)
+	       (process-wait proc)
+	       result))
+	 #t)
    (cond-expand
       ;; no access to environment variables in Java
       (bigloo-jvm #f)          
