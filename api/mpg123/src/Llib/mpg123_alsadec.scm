@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sun Nov 18 15:04:26 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sat Feb 23 16:38:48 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
 ;*=====================================================================*/
@@ -319,6 +319,13 @@
 					      period-size-near-ratio)
 	 (multiple-value-bind (rate channels encoding)
 	    (mpg123-get-format %mpg123)
+	    (tprint `(alsa-snd-pcm-hw-set-params! pcm
+			:access 'rw-interleaved
+			:format ,encoding
+			:channels ,channels
+			:rate-near ,rate
+			:buffer-size-near-ratio ,buffer-size-near-ratio
+			:period-size-near-ratio ,period-size-near-ratio))
 	    (alsa-snd-pcm-hw-set-params! pcm
 	       :access 'rw-interleaved
 	       :format encoding
@@ -334,9 +341,9 @@
 	 (set! songlength 0)
 	 (when (<fx songlength songpos)
 	    (set! songlength songpos))
-	 (multiple-value-bind (bitrate rate)
+	 (multiple-value-bind (brate rate)
 	    (alsadecoder-info dec)
-	    (set! bitrate bitrate)
+	    (set! bitrate brate)
 	    (set! khz rate)))))
 
 ;*---------------------------------------------------------------------*/

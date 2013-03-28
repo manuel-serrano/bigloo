@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Sat Dec 29 19:04:07 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Fri Feb  1 07:26:19 2013 (serrano)                */
+/*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
 /*=====================================================================*/
@@ -60,6 +60,19 @@
 int
 bgl_snd_pcm_open( obj_t o, char *name, snd_pcm_stream_t stream, int mode ) {
    return snd_pcm_open( &(OBJ_TO_SND_PCM( o )), name, stream, mode );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_pcm_close ...                                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_pcm_close( obj_t o ) {
+   int res = snd_pcm_close( OBJ_TO_SND_PCM( o ) );
+   
+   OBJ_TO_SND_PCM( o ) = 0L;
+   
+   return res;
 }
 
 /*---------------------------------------------------------------------*/
@@ -328,7 +341,9 @@ loop:
 	 goto loop;
       }
    } else {
-      fprintf( stderr, "%s:%d snd_pcm_writei (%d<0)\n", __FILE__, __LINE__, written );
+      fprintf( stderr, "%s:%d snd_pcm_writei (%d<0) -> %s\n",
+	       __FILE__, __LINE__, written, snd_strerror( written ) );
+   
       if( snd_pcm_state( pcm ) == SND_PCM_STATE_SUSPENDED ) {
 	 snd_pcm_resume( pcm );
 	 

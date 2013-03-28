@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jan 28 15:30:43 2013 (serrano)                */
+#*    Last change :  Thu Feb 28 18:55:11 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac avahi phidget csv"
+apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac wav avahi phidget csv"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -101,8 +101,8 @@ jshell=sh
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
-shell_rm="/bin/rm"
-shell_mv="/bin/mv"
+shell_rm="rm"
+shell_mv="mv"
 bgl_shell_rm=$BGLRM
 bgl_shell_mv=$BGLMV
 emacs=
@@ -162,7 +162,7 @@ gstreamercflags=
 gstreameraudio=
 gstreameraudiolibs=
 gstreameraudiocflags=
-gstusethread=1
+gstusethread=0
 
 #*--- alsa (left blank for autoconfiguration) -------------------------*/
 alsa=
@@ -2932,8 +2932,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "HOSTOS=$hostos" >> $makefile_cfg
   echo >> $makefile_cfg
 
-  # The rm command
+  # The rm & mv commands
   echo "RM=$shell_rm" >> $makefile_cfg
+  echo "MV=$shell_mv" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The ln -s command
@@ -3216,7 +3217,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "GSTREAMERCFLAGS=$gstreamercflags" >> $makefile_cfg
 
     # Patch the code of the GSTREAMER init file
-    echo ";; automatically generated. Don't edit" >  api/gstreamer/src/Misc/gstreamer.init
+    echo ";; automatically generated. Don't edit" > api/gstreamer/src/Misc/gstreamer.init
     cat api/gstreamer/src/Misc/gstreamer.init.in \
       | sed -e "s|@GSTREAMERLIBS@|$gstreamerlibs|g" \
             -e "s|@GSTREAMERCFLAGS@|$gstreamercflags|g" \
@@ -3255,7 +3256,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "ALSACFLAGS=$alsacflags" >> $makefile_cfg
 
     # Patch the code of the ALSA init file
-    echo ";; automatically generated. Don't edit" >  api/alsa/src/Misc/alsa.init
+    echo ";; automatically generated. Don't edit" > api/alsa/src/Misc/alsa.init
     cat api/alsa/src/Misc/alsa.init.in \
       | sed -e "s|@ALSALIBS@|$alsalibs|g" \
             -e "s|@ALSACFLAGS@|$alsacflags|g" \
@@ -3284,7 +3285,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "MPG123CFLAGS=$mpg123cflags" >> $makefile_cfg
 
     # Patch the code of the MPG123 init file
-    echo ";; automatically generated. Don't edit" >  api/mpg123/src/Misc/mpg123.init
+    echo ";; automatically generated. Don't edit" > api/mpg123/src/Misc/mpg123.init
     cat api/mpg123/src/Misc/mpg123.init.in \
       | sed -e "s|@MPG123LIBS@|$mpg123libs|g" \
             -e "s|@MPG123CFLAGS@|$mpg123cflags|g" \
@@ -3333,6 +3334,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "FLACLIBS=" >> $makefile_cfg
     echo "FLACCFLAGS=" >> $makefile_cfg
   fi
+
+  # WAV
+  echo ";; automatically generated. Don't edit" >  api/wav/src/Misc/wav.init
+  cat api/wav/src/Misc/wav.init.in \
+    >>  api/wav/src/Misc/wav.init
 
   # AVAHI
   echo "AVAHI=$avahi" >> $makefile_cfg

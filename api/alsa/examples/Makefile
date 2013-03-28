@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Tue Jul 12 10:19:27 2011 (serrano)                */
-#*    Copyright   :  2002-11 Manuel Serrano                            */
+#*    Last change :  Mon Feb 25 08:55:49 2013 (serrano)                */
+#*    Copyright   :  2002-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Alsa examples                          */
 #*=====================================================================*/

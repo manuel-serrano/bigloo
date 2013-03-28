@@ -19,17 +19,17 @@
 @c    Title                                                            @c
 @c ------------------------------------------------------------------- @c
 @comment %**start of header
-@settitle Bigloo @value{edition}
-@syncodeindex vr cp
-@syncodeindex pg cp
-@syncodeindex fn cp
-@value{bigloovers}
-
 @set edition @value{bigloovers}
 @set update-month @value{bigloodate}
 @set update-date @value{update-month}
 @set bigloo-url http://www.inria.fr/indes/fp/Bigloo
 @set bigloo-mail bigloo@@sophia.inria.fr
+
+@settitle Bigloo @value{edition}
+@syncodeindex vr cp
+@syncodeindex pg cp
+@syncodeindex fn cp
+@value{bigloovers}
 
 @footnotestyle separate
 @ifinfo
@@ -109,7 +109,7 @@ MA 02111-1307, USA.
 @subtitle User manual for version @value{edition}
 @subtitle @value{update-month}
 
-@author{Manuel Serrano}
+@author Manuel Serrano
 
 @c Include the Distribution inside the titlepage so
 @c that headings are turned off.
@@ -217,10 +217,8 @@ MA 02111-1307, USA.
 @c ------------------------------------------------------------------- @c
 @node Acknowledgements, Overview, Top, Top
 @comment  node-name,  next,  previous,  up
-@setchapternewpage off
 @unnumbered Acknowledgements
 @cindex Acknowledgements
-@setchapternewpage odd
 
 Bigloo has been developed at Inria-Rocquencourt by the Icsla team from 1991
 to 1994, at the University of Montreal in 1995 and at Digital's Western

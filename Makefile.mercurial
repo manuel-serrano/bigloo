@@ -26,11 +26,11 @@ VM-LOG		= hg log --template "(\"{date|shortdate}\" \"{author}\" \"{files}\" \"{d
 #*    populate ...                                                     */
 #*---------------------------------------------------------------------*/
 populate:
-	find . -name '*~' -exec /bin/rm {} \;
+	find . -name '*~' -exec $(RM) {} \;
 	$(VM-POPULATE) `$(MAKE) popfilelist`
 
 populate.hg-populate-bug-workaround:
-	find . -name '*~' -exec /bin/rm {} \;
+	find . -name '*~' -exec $(RM) {} \;
 	for p in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
 	  $(VM-POPULATE) `$(MAKE) popfilelist | grep -e ^$$p`; \
 	done

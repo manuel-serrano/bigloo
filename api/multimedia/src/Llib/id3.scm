@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Fri Dec 28 18:39:21 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano and 2009 John G Malecki    */
+;*    Last change :  Sat Feb 23 19:23:20 2013 (serrano)                */
+;*    Copyright   :  2005-13 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
@@ -58,7 +58,9 @@
 	   (file-musictag ::bstring)
 	   (flac-musicinfo ::bstring)
 	   (mp3-musicinfo ::bstring)
-	   (file-musicinfo ::bstring)))
+	   (file-musicinfo ::bstring)
+
+	   (register-musicinfo-reader! ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *id3v2-genres* ...                                               */
@@ -1077,15 +1079,29 @@
 	     (close-mmap mm)))))
 
 ;*---------------------------------------------------------------------*/
+;*    *musicinfo-readers* ...                                          */
+;*---------------------------------------------------------------------*/
+(define *musicinfo-readers* '())
+
+;*---------------------------------------------------------------------*/
+;*    register-musicinfo-reader! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (register-musicinfo-reader! proc)
+   (set! *musicinfo-readers* (append *musicinfo-readers* (list proc))))
+
+;*---------------------------------------------------------------------*/
 ;*    file-musicinfo ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (file-musicinfo path)
+
+   (define (id mi) mi)
    
    (define (mmap-musicinfo mm)
       (cond
-	 ((read-flac-musicinfo mm) => (lambda (mi) mi))
-	 ((read-mp3-musicinfo mm) => (lambda (mi) mi))
+	 ((read-flac-musicinfo mm) => id)
+	 ((read-mp3-musicinfo mm) => id)
 	 ((read-ogg-comments path mm) #f)
+	 ((find (lambda (p) (p mm)) *musicinfo-readers*) => id)
 	 (else #f)))
    
    (cond

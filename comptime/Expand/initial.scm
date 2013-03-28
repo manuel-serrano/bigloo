@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Nov 18 14:50:24 2012 (serrano)                */
-;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 29 17:18:21 2013 (serrano)                */
+;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -402,8 +402,8 @@
    ;; fx
    (install-O-comptime-expander '+fx expand-+fx)
    (install-O-comptime-expander '-fx expand--fx)
-;*    (install-O-comptime-expander '*fx expand-*fx)                    */
-;*    (install-O-comptime-expander '/fx expand-/fx)                    */
+   (install-O-comptime-expander '*fx expand-*fx)
+   (install-O-comptime-expander '/fx expand-/fx)
    (install-O-comptime-expander 'maxfx expand-maxfx)
    (install-O-comptime-expander 'minfx expand-minfx)
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Nov 30 09:32:34 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sun Feb 10 09:51:30 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -188,7 +188,7 @@
 ;;
 (define-struct mcell value)
 
-(define **size-stack** (* 8 1024))
+(define **size-stack** (*fx 8 1024))
 
 (define (make-state)
    (let ( (stk (make-vector **size-stack** "")) )
@@ -531,18 +531,20 @@
 			   (vector-set! s 0 saved-bp) )))))))
 
 (define-method (comp e::ev_synchronize stk);
-   (with-access::ev_synchronize e (mutex prelock body)
+   (with-access::ev_synchronize e (mutex prelock body loc)
       (let ( (mutex (comp mutex stk))
 	     (prelock (comp prelock stk))
 	     (body (comp body stk)) )
 	 (EVA '(control synchronize) ()
 	      (let ( (m (EVC mutex)) )
-		 (let ( (p (EVC prelock)) )
-		    (let ( (saved-bp bp) )
-		       (prog1 (if (pair? p)
-				  (synchronize m :prelock p (EVC body))
-				  (synchronize m (EVC body)))
-			  (vector-set! s 0 saved-bp) ))))))))
+		 (if (mutex? m)
+		     (let ( (p (EVC prelock)) )
+			(let ( (saved-bp bp) )
+			   (prog1 (if (pair? p)
+				      (synchronize m :prelock p (EVC body))
+				      (synchronize m (EVC body)))
+			      (vector-set! s 0 saved-bp) )))
+		     (loc-type-error "synchronize" "mutex" m loc) ))))))
 
 ;;
 (define-struct label-tag)

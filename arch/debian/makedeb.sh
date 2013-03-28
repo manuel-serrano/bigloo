@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Jan  9 08:00:38 2013 (serrano)                */
+#*    Last change :  Mon Mar 11 07:05:53 2013 (serrano)                */
 #*    Copyright   :  2012-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -27,7 +27,7 @@ depend=
 
 fakeroot=fakeroot
 
-libs="sqlite ssl alsa flac mpg123 gstreamer avahi"
+libs="sqlite ssl alsa flac wav mpg123 gstreamer avahi"
 
 while : ; do
   case $1 in
@@ -70,7 +70,7 @@ pkg=bigloo
 maemo=`pkg-config maemo-version --modversion 2> /dev/null`
 if [ $? = 0 ]; then
   debian=maemo`echo $maemo | sed -e "s/[.].*$//"`
-  libs="sqlite ssl alsa gstreamer flac avahi"
+  libs="sqlite ssl alsa gstreamer flac wav avahi mpg123"
 else
   case `cat /etc/issue | awk '{ print $1 }'` in
     Debian)
@@ -111,17 +111,21 @@ if [ ! -f $basedir/makedeb.sh ]; then
 fi
 
 # check which ssl is available
-sudo apt-cache search 'libssl' | grep 0\.9\.8
+apt-cache search 'libssl' | grep 0\.9\.8
 if [ $? = 0 ]; then
   libssldepend=libssl0.9.8
 else
-  sudo apt-cache search 'libssl' | grep 1\.0\.0
+  apt-cache search 'libssl' | grep 1\.0\.0
   if [ $? = 0 ]; then
      libssldepend=libssl1.0.0
   else
      libssldepend=libssl
   fi
 fi
+
+# which avahi core is available
+avahicore=`apt-cache search 'libavahi-core' | grep -v dev | awk '{print $1}'`
+avahidepend="$avahicore, libavahi-common3, libavahi-client3"
 
 # configure debian files
 configure() {
@@ -134,6 +138,7 @@ configure() {
     | sed -e "s|@BGLCONFIGUREOPT@|$bglconfigureopt|g" \
     | sed -e "s|@EXTRADEPEND@|$depend|g" \
     | sed -e "s|@LIBSSLDEPEND@|$libssldepend|g" \
+    | sed -e "s|@AVAHIDEPEND@|$avahidepend|g" \
     | sed -e "s|@EXTRABUILDDEPEND@|$builddepend|g" \
     > $dest.tmp
   for l in $libs; do

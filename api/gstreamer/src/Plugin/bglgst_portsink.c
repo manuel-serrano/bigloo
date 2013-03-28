@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Cyprien Nicolas                                   */
 /*    Creation    :  Tue Jul 29 10:08:12 2008                          */
-/*    Last change :  Wed Sep 26 16:17:03 2012 (serrano)                */
-/*    Copyright   :  2008-12 Cyprien Nicolas & Manuel Serrano          */
+/*    Last change :  Wed Feb 13 16:48:18 2013 (serrano)                */
+/*    Copyright   :  2008-13 Cyprien Nicolas & Manuel Serrano          */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OUTPUT-PORT plugin.                                       */
 /*    -------------------------------------------------------------    */
@@ -274,7 +274,7 @@ bgl_gst_port_sink_query( GstPad * pad, GstQuery * query ) {
 /*    bgl_gst_port_sink_render ...                                     */
 /*---------------------------------------------------------------------*/
 static GstFlowReturn
-bgl_gst_port_sink_render( GstBaseSink * sink, GstBuffer * buffer ) {
+bgl_gst_port_sink_render( GstBaseSink *sink, GstBuffer *buffer ) {
    BglPortSink *portsink;
    guint size;
    guint8 *data;

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Fri Jun 22 17:53:28 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Thu Feb 28 13:59:06 2013 (serrano)                */
+/*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
 /*=====================================================================*/
@@ -67,6 +67,22 @@ public abstract class datagram_socket extends obj {
    
    public Object receive( int len ) {
       return foreign.fail( "receive", "not a datagram-server socket", this );
+   }
+   
+   public int send( byte[] string, byte[] host, int port )
+      throws IOException {
+      DatagramPacket p;
+      InetAddress a[];
+
+      a = InetAddress.getAllByName( new String( host ) );
+
+      p = new DatagramPacket( string, string.length );
+      p.setAddress( a[0] );
+      p.setPort( port );
+
+      socket.send( p );
+
+      return string.length;
    }
    
    public Object getsockopt( keyword se ) throws IOException {

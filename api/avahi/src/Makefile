@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Aug 29 15:06:42 2012 (serrano)                */
+#*    Last change :  Thu Feb 28 16:05:51 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -119,7 +119,7 @@ $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ exit 1
 
 #*---------------------------------------------------------------------*/
-#*    bglavahi.h                                                     */
+#*    bglavahi.h                                                       */
 #*---------------------------------------------------------------------*/
 $(C_SRC_DIR)/bglavahi.h: Llib/avahi.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
@@ -134,7 +134,7 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm -f $(C_SRC_DIR)/bglavahi.h
+	$(RM) -f $(C_SRC_DIR)/bglavahi.h
 
 cleanall: api-cleanall
 

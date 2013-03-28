@@ -26,6 +26,11 @@ Description: Bigloo core Libraries
 @IFFLAC@ Depends: libflac8, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
 @IFFLAC@ Description: Bigloo bindings for the FLAC library
 
+@IFWAV@ Package: libwav-bigloo
+@IFWAV@ Architecture: any
+@IFWAV@ Depends: libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @WAVDEPEND@, @EXTRADEPEND@
+@IFWAV@ Description: Bigloo bindings handling WAV resources
+
 @IFMPG123@ Package: libmpg123-bigloo
 @IFMPG123@ Architecture: any
 @IFMPG123@ Depends: libmpg123-0, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
@@ -33,7 +38,7 @@ Description: Bigloo core Libraries
 
 @IFAVAHI@ Package: libavahi-bigloo
 @IFAVAHI@ Architecture: any
-@IFAVAHI@ Depends: libavahi-core7, libavahi-common3, libavahi-client3, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
+@IFAVAHI@ Depends: bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @AVAHIDEPEND@, @EXTRADEPEND@
 @IFAVAHI@ Description: Bigloo bindings for the AVAHI library
 
 @IFSQLITE@ Package: libsqlite-bigloo

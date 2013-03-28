@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Aug 29 15:05:39 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Wed Feb  6 09:00:41 2013 (serrano)                */
+/*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
 /*=====================================================================*/
@@ -1058,7 +1058,7 @@ bgl_avahi_service_resolver_new( bgl_avahi_service_resolver_t o ) {
 	 BGL_AVAHI_SERVICE_RESOLVER_INTERFACE( o ),
 	 bgl_avahi_symbol_to_protocol( BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) ),
 	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) ),
-	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) ),
+	 (const char*)BSTRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) ),
 	 BGL_STRING_TO_STRING( BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) ),
 	 AVAHI_PROTO_UNSPEC,
 	 0,

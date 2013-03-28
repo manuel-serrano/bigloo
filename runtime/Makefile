@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Oct 28 10:28:44 2012 (serrano)                */
-#*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Feb 27 15:01:14 2013 (serrano)                */
+#*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -594,7 +594,9 @@ boot-jvm:
 #*    Boot a new Bigloo using the Scheme files (instead of the C       */
 #*    pre-compiled files).                                             */
 #*---------------------------------------------------------------------*/
-bigboot: objs includes dirs $(AFILE)
+bigboot:  
+	@ $(MAKE) $(AFILE)
+	@ $(MAKE) objs includes dirs
 	@ $(MAKE) lib-c_s
 	@ $(MAKE) heap-c
 

@@ -4226,34 +4226,34 @@ public final class foreign
 	 return bint.BZERO;
       }
 
-   public static Object EXITD_MUTEX0(exit o)
+   public static Object BGL_EXITD_PROTECT0(exit o)
       {
-	 return o.mutex0;
+	 return o.protect0;
       }
 
-   public static void EXITD_MUTEX0_SET(exit o, Object m)
+   public static void BGL_EXITD_PROTECT0_SET(exit o, Object m)
       {
-	 o.mutex0 = m;
+	 o.protect0 = m;
       }
 
-   public static Object EXITD_MUTEX1(exit o)
+   public static Object BGL_EXITD_PROTECT1(exit o)
       {
-	 return o.mutex1;
+	 return o.protect1;
       }
 
-   public static void EXITD_MUTEX1_SET(exit o, Object m)
+   public static void BGL_EXITD_PROTECT1_SET(exit o, Object m)
       {
-	 o.mutex1 = m;
+	 o.protect1 = m;
       }
 
-   public static Object EXITD_MUTEXN(exit o)
+   public static Object BGL_EXITD_PROTECTN(exit o)
       {
-	 return o.mutexn;
+	 return o.protectn;
       }
 
-   public static void EXITD_MUTEXN_SET(exit o, Object m)
+   public static void BGL_EXITD_PROTECTN_SET(exit o, Object m)
       {
-	 o.mutexn = m;
+	 o.protectn = m;
       }
 
    public static Object jumpexit(Object excep, Object value)
@@ -4459,35 +4459,31 @@ public final class foreign
       return unspecified.unspecified;
    }
 
-   public static Object CALLCC_JUMP_EXIT(exit v, Object o) {
-      return o;
-   }
-   
-   public static Object call_cc(procedure p) {
-      final exit saved = (exit) bgldynamic.abgldynamic.get().exitd_top;
-      final exit me = (exit) setexit();
-      Object r;
-
-      PUSH_EXIT(me, 1);
-
-      try {
-	 if (PROCEDURE_CORRECT_ARITYP(p, 1))
-	 {
-	    r = p.funcall1(new callcc());
-	    bgldynamic.abgldynamic.get().exitd_top = saved;
-	 }
-	 else
-	 {
-	    r = null;
-	    fail("call/cc", "Wrong arity", p);
-	 }
-      } catch(bexception x) {
-	 r = debug_handler(x, me);
-	 bgldynamic.abgldynamic.get().exitd_top = saved;
-      }
-
-      return r;
-   }
+/*    public static Object call_cc(procedure p) {                      */
+/*       final exit saved = (exit) bgldynamic.abgldynamic.get().exitd_top; */
+/*       final exit me = (exit) setexit();                             */
+/*       Object r;                                                     */
+/*                                                                     */
+/*       PUSH_EXIT(me, 1);                                             */
+/*                                                                     */
+/*       try {                                                         */
+/* 	 if (PROCEDURE_CORRECT_ARITYP(p, 1))                           */
+/* 	 {                                                             */
+/* 	    r = p.funcall1(new callcc());                              */
+/* 	    bgldynamic.abgldynamic.get().exitd_top = saved;            */
+/* 	 }                                                             */
+/* 	 else                                                          */
+/* 	 {                                                             */
+/* 	    r = null;                                                  */
+/* 	    fail("call/cc", "Wrong arity", p);                         */
+/* 	 }                                                             */
+/*       } catch(bexception x) {                                       */
+/* 	 r = debug_handler(x, me);                                     */
+/* 	 bgldynamic.abgldynamic.get().exitd_top = saved;               */
+/*       }                                                             */
+/*                                                                     */
+/*       return r;                                                     */
+/*    }                                                                */
 
    //////
    // EVAL
@@ -5111,6 +5107,10 @@ public final class foreign
       return new datagram_server_socket( port );
    }
 
+   public static datagram_socket bgl_make_datagram_unbound_socket( symbol family ) {
+      return new datagram_server_socket( family );
+   }
+
    public static Object BGL_DATAGRAM_SOCKET_HOSTNAME( datagram_socket s ) {
 	 return s.HOSTNAME();
       }
@@ -5134,6 +5134,15 @@ public final class foreign
 
    public static Object bgl_datagram_socket_receive( datagram_socket s, int len ) {
       return s.receive( len );
+   }
+
+   public static int bgl_datagram_socket_send( datagram_socket s, byte[] string, byte[] host, int port ) {
+      try {
+	 return s.send( string, host, port );
+      } catch( IOException e ) {
+	 fail("send", e.getMessage(), s);
+	 return -1;
+      }
    }
 
    public static Object bgl_dgetsockopt( datagram_socket s, keyword se )
@@ -6473,6 +6482,15 @@ public final class foreign
 	 return addr.getHostName().getBytes();
       } catch( Exception _ ) {
 	 return "localhost".getBytes();
+      }
+   }
+
+   public static byte[] bgl_gethostname_by_address(byte[] ip) {
+      try {
+	 InetAddress addr = java.net.InetAddress.getByName( new String( ip ) );
+	 return addr.getHostName().getBytes();
+      } catch( Exception _ ) {
+	 return "".getBytes();
       }
    }
 

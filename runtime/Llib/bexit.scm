@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Fri Jan 18 15:58:53 2013 (serrano)                */
+;*    Last change :  Tue Jan 29 16:23:56 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -49,19 +49,19 @@
 	    (macro exitd-user?::bool (::obj) "EXITD_USERP")
 	    (macro exitd-call/cc?::bool (::obj) "EXITD_CALLCCP")
 	    (macro exitd-stamp::bint (::obj) "EXITD_STAMP")
-	    (macro $exitd-mutex0::obj (::exit) "EXITD_MUTEX0")
-	    (macro $exitd-mutex0-set!::void (::exit ::obj) "EXITD_MUTEX0_SET")
-	    (macro $exitd-mutex1::obj (::exit) "EXITD_MUTEX1")
-	    (macro $exitd-mutex1-set!::void (::exit ::obj) "EXITD_MUTEX1_SET")
-	    (macro $exitd-mutexn::obj (::exit) "EXITD_MUTEXN")
-	    (macro $exitd-mutexn-set!::void (::exit ::obj) "EXITD_MUTEXN_SET")
 	    (macro $get-exitd-top::obj () "BGL_EXITD_TOP_AS_OBJ")
 	    (macro $exitd-bottom?::bool (::obj) "BGL_EXITD_BOTTOMP")
 	    (macro $set-exitd-top!::obj (::obj) "BGL_EXITD_TOP_SET")
 	    (macro $get-exitd-val::obj () "BGL_EXITD_VAL")
 
-	    (macro $exitd-push-mutex!::obj (::obj ::obj) "BGL_EXITD_PUSH_MUTEX")
-	    (macro $exitd-pop-mutex!::obj (::obj ::obj) "BGL_EXITD_POP_MUTEX")
+	    (macro $exitd-protect0::obj (::exit) "BGL_EXITD_PROTECT0")
+	    (macro $exitd-protect0-set!::void (::exit ::obj) "BGL_EXITD_PROTECT0_SET")
+	    (macro $exitd-protect1::obj (::exit) "BGL_EXITD_PROTECT1")
+	    (macro $exitd-protect1-set!::void (::exit ::obj) "BGL_EXITD_PROTECT1_SET")
+	    (macro $exitd-protectn::pair-nil (::exit) "BGL_EXITD_PROTECTN")
+	    (macro $exitd-protectn-set!::void (::exit ::pair-nil) "BGL_EXITD_PROTECTN_SET")
+	    (macro $exitd-push-protect!::void (::exit ::obj) "BGL_EXITD_PUSH_PROTECT")
+	    (macro $exitd-pop-protect!::void (::exit) "BGL_EXITD_POP_PROTECT")
 
 	    (export $failsafe-mutex-profile "bgl_failsafe_mutex_profile")
 	    (export $exitd-mutex-profile "bgl_exitd_mutex_profile")
@@ -77,44 +77,52 @@
    
    (java    (class foreign
 	       (method static push-exit!::obj (::exit ::long)
-		       "PUSH_EXIT")
+		  "PUSH_EXIT")
 	       (method static pop-exit!::obj ()
-		       "POP_EXIT")
+		  "POP_EXIT")
 	       (method static call/cc-jump-exit::obj (::exit ::obj)
-		       "CALLCC_JUMP_EXIT")
+		  "CALLCC_JUMP_EXIT")
 	       (method static $exitd->exit::exit (::obj)
-		       "EXITD_TO_EXIT")
+		  "EXITD_TO_EXIT")
 	       (method static exitd-user?::bool (::obj)
-		       "EXITD_USERP")
+		  "EXITD_USERP")
 	       (method static exitd-call/cc?::bool (::obj)
-		       "EXITD_CALLCCP")
+		  "EXITD_CALLCCP")
 	       (method static exitd-stamp::bint (::obj)
-		       "EXITD_STAMP")
+		  "EXITD_STAMP")
 	       (method static $get-exitd-top::obj ()
-		       "BGL_EXITD_TOP")
+		  "BGL_EXITD_TOP")
 	       (method static $exitd-bottom?::bool (::obj)
-		       "BGL_EXITD_BOTTOMP")
+		  "BGL_EXITD_BOTTOMP")
 	       (method static $set-exitd-top!::obj (::obj)
-		       "BGL_EXITD_TOP_SET")
+		  "BGL_EXITD_TOP_SET")
 	       (method static $get-exitd-val::obj ()
-		       "BGL_EXITD_VAL")
-	       (method static $exitd-mutex0::obj (::exit) "EXITD_MUTEX0")
-	       (method static $exitd-mutex0-set!::void (::exit ::obj) "EXITD_MUTEX0_SET")
-	       (method static $exitd-mutex1::obj (::exit) "EXITD_MUTEX1")
-	       (method static $exitd-mutex1-set!::void (::exit ::obj) "EXITD_MUTEX1_SET")
-	       (method static $exitd-mutexn::obj (::exit) "EXITD_MUTEXN")
-	       (method static $exitd-mutexn-set!::void (::exit ::obj) "EXITD_MUTEXN_SET")))
-   
+		  "BGL_EXITD_VAL")
+	       
+	       (method static $exitd-protect0::obj (::exit)
+		  "BGL_EXITD_PROTECT0")
+	       (method static $exitd-protect0-set!::void (::exit ::obj)
+		  "BGL_EXITD_PROTECT0_SET")
+	       (method static $exitd-protect1::obj (::exit)
+		  "BGL_EXITD_PROTECT1")
+	       (method static $exitd-protect1-set!::void (::exit ::obj)
+		  "BGL_EXITD_PROTECT1_SET")
+	       (method static $exitd-protectn::pair-nil (::exit)
+		  "BGL_EXITD_PROTECTN")
+	       (method static $exitd-protectn-set!::void (::exit ::pair-nil)
+		  "BGL_EXITD_PROTECTN_SET")))
+      
    (export  (val-from-exit? ::obj)
 	    (unwind-stack-value?::bool ::obj)
 	    (unwind-until! exitd ::obj)
 	    (unwind-stack-until! exitd ::obj ::obj ::obj)
 	    (default-uncaught-exception-handler ::obj)
-	    (exitd-push-mutex! ::obj ::obj)
-	    (exitd-pop-mutex! ::obj ::obj))
+	    (exitd-push-protect! ::obj ::obj)
+	    (exitd-pop-protect! ::obj))
 
    (cond-expand (bigloo-c
-		 (pragma  ($failsafe-mutex-profile fail-safe)
+		 (pragma
+		    ($failsafe-mutex-profile fail-safe)
 		    ($exitd-mutex-profile fail-safe)))))
 
 ;*---------------------------------------------------------------------*/
@@ -166,7 +174,7 @@
 			 default-uncaught-exception-handler)
 		     val)))
 	     (begin
-		(exitd-unlock-mutexes! exitd-top)
+		(exitd-exec-and-pop-protects! exitd-top)
 		(pop-exit!)
 		(cond  
 		   ((and (eq? exitd-top exitd) 
@@ -189,63 +197,53 @@
 		    (loop))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    exitd-unlock-mutexes! ...                                        */
+;*    exitd-exec-protect ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-unlock-mutexes! exitd)
-   (when ($exitd-mutex0 exitd)
-      ;; (pragma "fprintf( stderr, \"     UNLOCK mutex0...\\n\" )")
-      (mutex-unlock! ($exitd-mutex0 exitd)))
-   (when ($exitd-mutex1 exitd)
-      ;; (pragma "fprintf( stderr, \"     UNLOCK mutex1...\\n\" )")
-      (mutex-unlock! ($exitd-mutex1 exitd)))
-   (when (pair? ($exitd-mutexn exitd))
-      ;; (pragma "fprintf( stderr, \"     UNLOCK mutexn...\\n\" )")
-      (for-each mutex-unlock! ($exitd-mutexn exitd))))
+(define (exitd-exec-protect p)
+   (cond
+      ((mutex? p) (mutex-unlock! p))
+      ((procedure? p) (p))))
+      
+;*---------------------------------------------------------------------*/
+;*    exitd-exec-and-pop-protects! ...                                 */
+;*---------------------------------------------------------------------*/
+(define (exitd-exec-and-pop-protects! exitd)
+   (exitd-exec-protect ($exitd-protect0 exitd))
+   (exitd-exec-protect ($exitd-protect1 exitd))
+   (for-each exitd-exec-protect ($exitd-protectn exitd)))
 
 ;*---------------------------------------------------------------------*/
-;*    exitd-push-mutex! ...                                            */
+;*    exitd-push-protect! ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    This is the portable version of $EXITD-PUSH-MUTEX!. It is not    */
-;*    used by the C backend.                                           */
+;*    The C backend used an inlined version (BGL_EXITD_PUSH_PROTECT)   */
+;*    to get synchronized as fast as possible.                         */
 ;*---------------------------------------------------------------------*/
-(define (exitd-push-mutex! exitd m)
+(define (exitd-push-protect! exitd m)
    (cond
-      ((not ($exitd-mutex0 exitd))
-       ;; (pragma "fprintf( stderr, \"push0 %p\\n\", $1 )"  m)
-       ($exitd-mutex0-set! exitd m))
-      ((not ($exitd-mutex1 exitd))
-       ;; (pragma "fprintf( stderr, \"push1 %p\\n\", $1 )"  m)
-       ($exitd-mutex1-set! exitd m))
+      ((not ($exitd-protect0 exitd))
+       ($exitd-protect0-set! exitd m))
+      ((not ($exitd-protect1 exitd))
+       ($exitd-protect1-set! exitd m))
       (else
-       ;; (pragma "fprintf( stderr, \"pushN %p\\n\", $1 )"  m)
-       ($exitd-mutexn-set! exitd (cons m ($exitd-mutexn exitd))))))
+       ($exitd-protectn-set! exitd (cons m ($exitd-protectn exitd))))))
 
 ;*---------------------------------------------------------------------*/
-;*    exitd-pop-mutex! ...                                             */
-;*    -------------------------------------------------------------    */
-;*    This is the portable version of $EXITD-POP-MUTEX!. It is not     */
-;*    used by the C backend.                                           */
+;*    exitd-pop-protect! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (exitd-pop-mutex! exitd m)
+(define (exitd-pop-protect! exitd)
    (cond
-      ((eq? ($exitd-mutex0 exitd) m)
-       ;; (tprint "pop0 " m) 
-       ($exitd-mutex0-set! exitd #f))
-      ((eq? ($exitd-mutex1 exitd) m)
-       ;; (pragma "fprintf( stderr, \"pop1 %p\\n\", $1 )"  m)
-       ($exitd-mutex1-set! exitd #f))
+      ((not ($exitd-protect1 exitd))
+       ($exitd-protect0-set! exitd #f))
+      ((null? ($exitd-protectn exitd))
+       ($exitd-protect1-set! exitd #f))
       (else
-       ;; (pragma "fprintf( stderr, \"popN %p\\n\", $1 )"  m)
-       ;; here, we don't need to check, we always have to remove the
-       ;; first element of the stack
-       ($exitd-mutexn-set! exitd (cdr ($exitd-mutexn exitd))))))
-       ;;($exitd-mutexn-set! exitd (remq! m ($exitd-mutexn exitd))))))
-   
+       ($exitd-protectn-set! exitd (cdr ($exitd-protectn exitd))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    default-uncaught-exception-handler ...                           */
 ;*---------------------------------------------------------------------*/
 (define (default-uncaught-exception-handler val)
-   (error 'unwind-until! "exit out of dynamic scope" val))
+   (error "unwind-protect" "exit out of dynamic scope" val))
 
 ;*---------------------------------------------------------------------*/
 ;*    $exitd-mutex-profile                                             */

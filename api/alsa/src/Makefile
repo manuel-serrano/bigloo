@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul 22 06:36:53 2012 (serrano)                */
+#*    Last change :  Thu Feb 21 09:55:12 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -155,9 +155,9 @@ pop:
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
 clean: api-clean
-	/bin/rm -f $(C_SRC_DIR)/bglpcm.h
-	/bin/rm -f $(C_SRC_DIR)/bglctl.h
-	/bin/rm -f $(C_SRC_DIR)/bglmixer.h
+	$(RM) -f $(C_SRC_DIR)/bglpcm.h
+	$(RM) -f $(C_SRC_DIR)/bglctl.h
+	$(RM) -f $(C_SRC_DIR)/bglmixer.h
 
 cleanall: api-cleanall
 

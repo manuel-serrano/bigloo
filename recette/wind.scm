@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Fri Nov 26 18:03:12 2010 (serrano)                */
+;*    Last change :  Tue Jan 29 16:36:34 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -31,7 +31,7 @@
 		     (begin
 			(set! x (+ 1 x))
 			(exit (begin (set! x (+ 1 x)) x))
-			(set! x (+ 1 x)))
+			(set! x (+ 10 x)))
 		     (set! x (+ 1 x)))))
       x))
 

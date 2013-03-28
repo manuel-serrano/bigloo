@@ -22,6 +22,11 @@ machines. Sockets are useful for creating client-server applications.
 The implementation and this documentation are, to a great
 extent copies of the STk [Gallesio95] socket support.
 
+Bigloo supports both @dfn{stream-oriented} sockets and @dfn{datagram}
+sockets (@pxref{Communication Styles, socket communication styles, The
+GNU C Library Reference Manual, libc}).  Stream-oriented sockets are
+created and manipulated with the following procedures.
+
 @deffn {bigloo procedure} make-client-socket hostname port-number #!key (timeout 0) (inbuf #t) (outbuf #t) (domain 'inet)
 @cindex unbufferized socket port
 
@@ -213,7 +218,7 @@ Returns @code{#t} if @var{socket} has been previously closed
 with @code{socket-shutdown}. It returns @code{#f} otherwise.
 @end deffn
 
-Here is another example of making use of sockets:
+Here is another example of making use of stream sockets:
 
 @smalllisp
 (define s1 (make-server-socket))
@@ -300,6 +305,32 @@ consecutive connections:
                 (loop (+fx i 1)))
 	     (socket-shutdown s)))))
 @end smalllisp
+
+Bigloo also provides primitives dealing with @dfn{datagram} sockets, for
+use with transports such as UDP.  These are shown below:
+
+@deffn {bigloo procedure} make-datagram-server-socket @var{port}
+Return a datagram server socket bound to the loopback address on
+@var{port}, and whose address family and protocol family are those
+normally used for services on @var{port}.
+@end deffn
+
+@deffn {bigloo procedure} make-datagram-unbound-socket [(domain 'inet)]
+Return an unbound datagram socket.  It may then be used in conjunction
+with @code{datagram-socket-send} and @code{datagram-socket-receive}, for
+instance send to and receive from a UDP multicast address.
+@end deffn
+
+@deffn {bigloo procedure} datagram-socket-receive sock size
+Receive up to @var{size} bytes from datagram socket @var{sock}, and
+return them as a string.
+@end deffn
+
+@deffn {bigloo procedure} datagram-socket-send sock message host port
+Send string @var{message} over datagram socket @var{sock} to @var{host}
+and @var{port}.  @var{host} must be a string denoting an IPv4 or IPv6
+address.  On success, return the number of bytes actually sent.
+@end deffn
 
 @deffn {bigloo procedure} host hostname
 @deffnx {bigloo procedure} hostinfo hostname

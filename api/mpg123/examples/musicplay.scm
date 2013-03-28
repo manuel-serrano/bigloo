@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Fri Jan 20 17:27:09 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sat Feb 23 16:43:46 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
 ;*=====================================================================*/
@@ -14,19 +14,9 @@
 ;*---------------------------------------------------------------------*/
 (module musicplay
    (library multimedia pthread alsa mpg123)
-   (static (class mpg123-alsadecode2::mpg123-alsadecoder))
    (main main))
 
 (define debug 0)
-
-;*---------------------------------------------------------------------*/
-;*    pcm-cleanup ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (pcm-cleanup pcm)
-   (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
-      (when (memq pcm-state '(running prepared))
-	 (alsa-snd-pcm-drop pcm)))
-   (alsa-snd-pcm-cleanup pcm))
 
 ;*---------------------------------------------------------------------*/
 ;*    directory->files ...                                             */
@@ -88,13 +78,13 @@
 	 (let* ((pcm (instantiate::alsa-snd-pcm
 			(device device)))
 		(decoder (instantiate::mpg123-alsadecoder
+			    (outbuf (make-string (* 16 1024)))
 			    (mimetypes '("audio/mpeg"))))
 		(player (instantiate::alsamusic
 			   (onstate onstate)
 			   (onerror onerror)
 			   (onvolume onvolume)
 			   (onevent onevent)
-			   (outbuf (make-string (* 16 1024)))
 			   (inbuf (make-string (* 16 1024)))
 			   (decoders (list decoder))
 			   (pcm pcm))))

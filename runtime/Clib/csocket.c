@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jan 15 17:43:42 2013 (serrano)                */
+/*    Last change :  Mon Feb 18 15:07:58 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -33,6 +33,10 @@
 #   include <netdb.h>
 #   ifdef BGL_ANDROID
 #     include <linux/in.h>
+#     if( !defined( INET_ADDRSTRLEN ) )
+         /* INET_ADDRSTRLEN seems to be missing up to r8b */
+#        define INET_ADDRSTRLEN 16
+#     endif
 #   endif
 #   if( BGL_HAVE_SELECT )
 #     include <sys/time.h>
@@ -232,8 +236,8 @@ bgl_init_socket() {
 /*    socket_error ...                                                 */
 /*---------------------------------------------------------------------*/
 static void
-socket_error( char *who, char *message, obj_t object ) {
-   C_SYSTEM_FAILURE( BGL_IO_ERROR, who, message, object );
+socket_error( const char *who, const char *message, obj_t object ) {
+   C_SYSTEM_FAILURE( BGL_IO_ERROR, (char *)who, (char *)message, object );
 }
 
 /*---------------------------------------------------------------------*/
@@ -542,21 +546,6 @@ bglhostent_fill_from_addrinfo( obj_t hostaddr, struct bglhostent *bhp, struct ad
 #endif
 
 /*---------------------------------------------------------------------*/
-/*    static struct bglhostent *                                       */
-/*    make_bglhostent_from_addrinfo ...                                */
-/*---------------------------------------------------------------------*/
-#if( BGL_HAVE_GETADDRINFO )
-static struct bglhostent *
-make_bglhostent_from_addrinfo( obj_t hostaddr, struct addrinfo *ai ) {
-   struct bglhostent *bhp = make_bglhostent( hostaddr, 0 );
-
-   bglhostent_fill_from_addrinfo( hostaddr, bhp, ai );
-   
-   return bhp;
-}
-#endif
-
-/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bglhostentbyname ...                                             */
 /*    -------------------------------------------------------------    */
@@ -799,7 +788,7 @@ make_bglhostentbyaddr_dbg( obj_t hostaddr, struct sockaddr_in *sin ) {
 /*    struct hostent *                                                 */
 /*    bglhostbyaddr ...                                                */
 /*    -------------------------------------------------------------    */
-/*    See bglhostbynadd.                                               */
+/*    See bglhostbyaddr.                                               */
 /*---------------------------------------------------------------------*/
 static struct hostent *
 bglhostbyaddr( struct sockaddr_in *sin ) {
@@ -846,7 +835,7 @@ bglhostbyaddr( struct sockaddr_in *sin ) {
 #endif
    {
       obj_t hostaddr = string_to_bstring_len( (char *)&(sin->sin_addr),
-					    sizeof( sin->sin_addr ) );
+					      sizeof( sin->sin_addr ) );
       bhp = make_bglhostentbyaddr( hostaddr, sin );
       
       if( bhp )
@@ -1023,7 +1012,7 @@ bgl_gethostinterfaces() {
       if( ifa->ifa_addr->sa_family == AF_INET ) {
 	 char addressBuffer[ INET_ADDRSTRLEN ];
 	 /* a valid IPv4 addr */
-	 tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+	 tmpAddrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 	 inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
 
 	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
@@ -1035,7 +1024,7 @@ bgl_gethostinterfaces() {
       } else if( ifa->ifa_addr->sa_family == AF_INET6 ) {
 	 char addressBuffer[ INET6_ADDRSTRLEN ];
 	 /* a valid IPv6 addr */
-	 tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+	 tmpAddrPtr = &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
 	 
 	 inet_ntop( AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN );
 	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
@@ -1051,8 +1040,51 @@ bgl_gethostinterfaces() {
     
    return res;
 #else
+#  if( BGL_HAVE_GETHWADDRS )
+   int fd;
+   struct ifconf conf;
+   char data[ 4096 ];
+   struct ifreq *ifr;
+   obj_t res = BNIL;
+   void *tmpAddrPtr = 0L;
+
+   if( (fd = socket( AF_INET, SOCK_DGRAM, 0 )) >= 0 ) {
+      conf.ifc_len = sizeof( data );
+      conf.ifc_buf = (caddr_t)data;
+
+      if( ioctl( fd, SIOCGIFCONF, &conf ) < 0 ) {
+	 goto end;
+      } else {
+	 ifr = (struct ifreq*)data;
+	 while( (char*)ifr < data+conf.ifc_len ) {
+	    obj_t tmp;
+	    if( ifr->ifr_addr.sa_family == AF_INET ) {
+	       char addressBuffer[ INET_ADDRSTRLEN ];
+	       /* a valid IPv4 addr */
+	       tmpAddrPtr = &((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr;
+	       inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
+	       
+	       tmp = MAKE_PAIR( gethwaddr( ifr->ifr_name ), BNIL );
+	       tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), tmp );
+	       tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
+	       tmp = MAKE_PAIR( string_to_bstring( ifr->ifr_name ), tmp );
+
+	       res = MAKE_PAIR( tmp, res );
+	    }
+	    
+	    ifr++;
+	 }
+      }
+
+   end:    
+      close( fd );
+   }
+   
+   return res;
+#  else
    return BNIL;
-#endif
+#  endif
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -1755,7 +1787,7 @@ static obj_t
 get_socket_hostname( int fd, obj_t hostip ) {
    struct hostent *host = 0;
    char *hip = BSTRING_TO_STRING( hostip );
-   
+
 #if( BGL_HAVE_INET_ATON || BGL_HAVE_INET_PTON )
    struct sockaddr_in sin;
 #else
@@ -1766,7 +1798,11 @@ get_socket_hostname( int fd, obj_t hostip ) {
    socklen_t len = sizeof( sin );
 
    /* cannot fail because we have created the socket */
-   getsockname( fd, (struct sockaddr *)&sin, (socklen_t *)&len );
+   if( fd >= 0 ) {
+      getsockname( fd, (struct sockaddr *)&sin, (socklen_t *)&len );
+   } else {
+      sin.sin_family = AF_INET;
+   }
 #endif
       
 #if( BGL_HAVE_INET_ATON )
@@ -1776,7 +1812,7 @@ get_socket_hostname( int fd, obj_t hostip ) {
       host = bglhostbyaddr( &sin );
 #else
 #  if( BGL_HAVE_INET_PTON )	 
-   if( inet_pton( AF_INET, hostip, &sin.sin_addr ) )
+   if( inet_pton( AF_INET, BSTRING_TO_STRING( hostip ), &sin.sin_addr ) )
       host = bglhostbyaddr( &sin );
 #  else
    sin = inet_addr( hostip );
@@ -1790,7 +1826,16 @@ get_socket_hostname( int fd, obj_t hostip ) {
       return hostip;
    }
 }
-   
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_gethostname_by_address ...                                   */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_gethostname_by_address( obj_t hostip ) {
+   return get_socket_hostname( -1, hostip );
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_socket_hostname ...                                          */
@@ -1798,8 +1843,12 @@ get_socket_hostname( int fd, obj_t hostip ) {
 BGL_RUNTIME_DEF obj_t
 bgl_socket_hostname( obj_t sock ) {
    if( SOCKET( sock ).hostname == BUNSPEC ) {
-      return SOCKET( sock ).hostname =
-	 get_socket_hostname( SOCKET( sock ).fd, SOCKET( sock ).hostip );
+      if( !STRINGP( SOCKET( sock ).hostip ) ) {
+	 return BFALSE;
+      } else {
+	 return SOCKET( sock ).hostname =
+	    get_socket_hostname( SOCKET( sock ).fd, SOCKET( sock ).hostip );
+      }
    } else {
       return SOCKET( sock ).hostname;
    }
@@ -2354,7 +2403,7 @@ bgl_make_datagram_server_socket( int portnum ) {
 #ifdef BGL_ANDROID   
    hints.ai_family = AF_INET; // set to AF_INET to force IPv4
 #else   
-   hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
+   hints.ai_family = AF_UNSPEC;
 #endif
    hints.ai_socktype = SOCK_DGRAM;
 #if( !defined( AI_NUMERICSERV ) )
@@ -2396,6 +2445,44 @@ bgl_make_datagram_server_socket( int portnum ) {
 
    return BREF( a_socket );
 #endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_datagram_server_unbound_socket ...                      */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_make_datagram_unbound_socket( obj_t family ) {
+   static const char msg[] = "make-datagram-unbound-socket";
+   int fam, s;
+   obj_t a_socket, inp;
+
+   if( family == string_to_symbol( "inet" ) ) {
+      fam = AF_INET;
+   } else if( family == string_to_symbol( "inet6" ) ) {
+      fam = AF_INET6;
+   } else if( family == string_to_symbol( "unix" ) ) {
+      fam = AF_UNIX;
+   } else if( family == string_to_symbol( "local" ) ) {
+      fam = AF_UNIX;
+   } else {
+      socket_error( msg, "unsupported socket family", family );
+   }
+
+   if( (s = socket( fam, SOCK_DGRAM, 0 )) == -1 ) {
+      socket_error( msg, "cannot create socket", family );
+   }
+
+   a_socket = GC_MALLOC( SOCKET_SIZE );
+   a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   a_socket->datagram_socket_t.portnum = 0;
+   a_socket->datagram_socket_t.hostname = BUNSPEC;
+   a_socket->datagram_socket_t.hostip = BFALSE;
+   a_socket->datagram_socket_t.fd = s;
+   a_socket->datagram_socket_t.port = BFALSE;
+   a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+
+   return BREF( a_socket );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2510,4 +2597,56 @@ bgl_datagram_socket_receive( obj_t sock, long sz ) {
 
       return string_to_bstring_len( buf, n );
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_datagram_socket_send ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_datagram_socket_send( obj_t sock, obj_t str, obj_t host, int port ) {
+   struct sockaddr_storage their_addr;
+   socklen_t slen;
+   ssize_t sent;
+   int fd = BGL_DATAGRAM_SOCKET( sock ).fd;
+
+   if( BGL_DATAGRAM_SOCKET( sock ).stype == BGL_SOCKET_CLIENT ) {
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"datagram-socket-send",
+			"client socket",
+			sock );
+   }
+
+   if( fd < 0 ) {
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"datagram-socket-send",
+			"socket closed",
+			sock );
+   }
+
+   /* FIXME: No support for AF_UNIX, etc.  */
+   if( !inet_pton( AF_INET, BSTRING_TO_STRING( host ),
+		   &((struct sockaddr_in *)&their_addr)->sin_addr ) ) {
+     if( !inet_pton( AF_INET6, BSTRING_TO_STRING( host ),
+		     &((struct sockaddr_in6 *)&their_addr)->sin6_addr ) ) {
+       socket_error( "datagram-socket-send",
+		     "cannot convert destination address", sock );
+     } else {
+	((struct sockaddr_in6 *)&their_addr)->sin6_port = htons( port );
+	((struct sockaddr *)&their_addr)->sa_family = AF_INET6;
+	slen = sizeof( struct sockaddr_in6 );
+     }
+   } else {
+      ((struct sockaddr_in *)&their_addr)->sin_port = htons( port );
+      ((struct sockaddr *)&their_addr)->sa_family = AF_INET;
+      slen = sizeof( struct sockaddr_in );
+   }
+
+   sent = sendto( fd, BSTRING_TO_STRING( str ), STRING_LENGTH( str ), 0,
+		  (struct sockaddr *) &their_addr, slen );
+   if( sent < 0 ) {
+      socket_error( "datagram-socket-send", "cannot send datagram", sock );
+   }
+
+   return BINT( sent );
 }

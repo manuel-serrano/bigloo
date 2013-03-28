@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Nov 30 09:24:31 2012 (serrano)                */
-;*    Copyright   :  2010-12 Manuel Serrano                            */
+;*    Last change :  Sun Feb 10 09:52:15 2013 (serrano)                */
+;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -470,11 +470,13 @@
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((synchronize ?m :prelock ?p . ?body)
        (instantiate::ev_synchronize
+	  (loc loc)
 	  (mutex (uconv m))
 	  (prelock (uconv p))
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((synchronize ?m . ?body)
        (instantiate::ev_synchronize
+	  (loc loc)
 	  (mutex (uconv m))
 	  (prelock (uconv '()))
 	  (body (conv-begin body locals globals #f where loc #f)) ))

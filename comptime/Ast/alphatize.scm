@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Dec 11 18:03:02 2012 (serrano)                */
+;*    Last change :  Sat Feb 23 14:43:12 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -64,9 +64,26 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    get-location ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    This function selects which location to use, four different      */
+;*    cases:                                                           */
+;*                                                                     */
+;*      1- if there is no current loc, use the one of the node         */
+;*      2- if the node contains no location, use the current one       */
+;*      3- if the location of the node refers to another file,         */
+;*         use the default one.                                        */
+;*      4- otherwise, use the location of the node.                    */
 ;*---------------------------------------------------------------------*/
 (define (get-location node loc)
-   (or (node-loc node) loc))
+   (cond
+      ((not (location? (node-loc node)))
+       loc)
+      ((not (location? loc))
+       (node-loc node))
+      ((not (string=? (location-fname (node-loc node)) (location-fname loc)))
+       loc)
+      (else
+       (node-loc node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize* ...                                                */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Tue Jan 15 19:24:07 2013 (serrano)                */
+;*    Last change :  Tue Jan 29 09:48:19 2013 (serrano)                */
 ;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -73,11 +73,11 @@
 		(sexp->node '$failsafe-mutex-profile '() loc 'app))
 	     (set-variable-name! (var-variable exitd-mutex-profile))
 	     (set-variable-name! (var-variable failsafe-mutex-profile)))
-	  (set! mpush (sexp->node '$exitd-push-mutex! '() loc 'app))
-	  (set! mpop (sexp->node '$exitd-pop-mutex! '() loc 'app)))
+	  (set! mpush (sexp->node '$exitd-push-protect! '() loc 'app))
+	  (set! mpop (sexp->node '$exitd-pop-protect! '() loc 'app)))
 	 (else
-	  (set! mpush (sexp->node '(@ exitd-push-mutex! __bexit) '() loc 'app))
-	  (set! mpop (sexp->node '(@ exitd-pop-mutex! __bexit) '() loc 'app))))
+	  (set! mpush (sexp->node '(@ exitd-push-protect! __bexit) '() loc 'app))
+	  (set! mpop (sexp->node '(@ exitd-pop-protect! __bexit) '() loc 'app))))
       (set-variable-name! (var-variable getexitdtop))
       (set-variable-name! (var-variable mlock))
       (set-variable-name! (var-variable mlockprelock))
@@ -94,18 +94,18 @@
 ;*      =>                                                             */
 ;*        (begin                                                       */
 ;*           ($mutex-lock m)                                           */
-;*           ((@ exitd-push-mutex! __bexit) m)                         */
+;*           ((@ exitd-push-protect! __bexit) m)                       */
 ;*           (let ((tmp body))                                         */
-;*              ((@ exitd-pop-mutex! __bexit) m)                       */
+;*              ((@ exitd-pop-protect! __bexit))                       */
 ;*              ($mutex-unlock m)))                                    */
 ;*    2- if prelock is not NIL:                                        */
 ;*        (sync m prelock body)                                        */
 ;*      =>                                                             */
 ;*        (begin                                                       */
 ;*           ($mutex-lock-prelock m prelock)                           */
-;*           ((@ exitd-push-mutex! __bexit) m)                         */
+;*           ((@ exitd-push-protect! __bexit) m)                       */
 ;*           (let ((tmp body))                                         */
-;*              ((@ exitd-pop-mutex! __bexit) m)                       */
+;*              ((@ exitd-pop-protect! __bexit))                       */
 ;*              ($mutex-unlock m)))                                    */
 ;*---------------------------------------------------------------------*/
 (define (sync->sequence node::sync)
@@ -170,7 +170,7 @@
 			  (app `(,mlock ,mutex) loc)
 			  (app `(,mlockprelock ,mutex ,prelock) loc)))
 		(push (app `(,mpush ,topref ,mutex) loc))
-		(pop (app `(,mpop ,topref ,mutex) loc))
+		(pop (app `(,mpop ,topref) loc))
 		(unlock (app `(,mulock ,mutex) loc))
 		(vref (instantiate::var
 			 (loc loc)

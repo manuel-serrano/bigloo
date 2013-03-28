@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:37:05 2011                          */
-;*    Last change :  Fri Nov 30 09:23:52 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sun Feb 10 09:52:31 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private types of the lambda-based evaluator                      */
 ;*=====================================================================*/
@@ -90,6 +90,7 @@
 	      handler::ev_expr
 	      body::ev_expr)
 	   (class ev_synchronize::ev_expr
+	      (loc read-only)
 	      mutex::ev_expr
 	      prelock::ev_expr
 	      body::ev_expr)

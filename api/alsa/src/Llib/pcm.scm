@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Fri Sep 28 08:49:29 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Fri Feb  1 07:19:25 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
 ;*=====================================================================*/
@@ -98,7 +98,7 @@
    (with-access::alsa-snd-pcm pcm ($builtin)
       (unless ($snd-pcm-nil? $builtin)
 	 (unless (eq? (alsa-snd-pcm-get-state pcm) 'disconnected)
-	    ($snd-pcm-close $builtin)))))
+	    ($bgl-snd-pcm-close pcm)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-get-state ...                                       */

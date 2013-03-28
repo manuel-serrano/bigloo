@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Tue Nov 15 10:06:20 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Fri Feb  1 07:08:08 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
 ;*=====================================================================*/
@@ -42,6 +42,8 @@
 	 "bgl_snd_pcm_open")
       (macro $snd-pcm-name::string
 	 (::$snd-pcm) "(char *)snd_pcm_name")
+      (macro $bgl-snd-pcm-close::int
+	 (::obj) "bgl_snd_pcm_close")
       (macro $snd-pcm-close::int
 	 (::$snd-pcm) "snd_pcm_close")
       (macro $snd-pcm-get-state::$snd-pcm-state

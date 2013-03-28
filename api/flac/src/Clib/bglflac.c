@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sun Sep  9 08:58:21 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Sat Feb 16 19:43:42 2013 (serrano)                */
+/*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
 /*=====================================================================*/
@@ -42,6 +42,8 @@ extern obj_t bgl_flac_decoder_length( BgL_flaczd2decoderzd2_bglt );
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52volumez52)
 #define BGL_DECODER_RCHECKSUM( o ) \
    (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52rchecksumz52)
+#define BGL_DECODER_BCHECKSUM( o ) \
+   (((BgL_flaczd2decoderzd2_bglt)o)->BgL_z52bchecksumz52)
 
 /*---------------------------------------------------------------------*/
 /*    Local declarations                                               */
@@ -87,18 +89,14 @@ bgl_error_callback( const FLAC__StreamDecoder *,
 		    FLAC__StreamDecoderErrorStatus,
 		    void *client_data );
 
-toberemoved_debug_rcheck( char *buf, int o ) {
-   static FILE *foo = 0;
-   int i;
+#define FLAC_DEBUG 1
+//#undef FLAC_DEBUG
 
-   if( !foo ) foo = fopen( "/tmp/DEBUG_RCHECK", "w" );
-
-   for( i = 0; i < o; i++ ) {
-      fputc( buf[ i ], foo );
-   }
-
-   fflush( foo );
-}
+#if( defined( FLAC_DEBUG ) )
+#define DEBUG_PATH "/tmp/BGLFLAC"   
+FILE *dbgfile = 0;
+int dbgindex;
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    FLAC__StreamDecoderInitStatus                                    */
@@ -107,6 +105,12 @@ toberemoved_debug_rcheck( char *buf, int o ) {
 FLAC__StreamDecoderInitStatus
 bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
 				      obj_t obj ) {
+#if( defined( FLAC_DEBUG ) )
+   dbgfile = fopen( DEBUG_PATH, "w" );
+   fprintf( dbgfile, ";; index, *size, cres, rchecksum, bchecksum\n" );
+   
+   dbgindex = 0;
+#endif   
    return FLAC__stream_decoder_init_stream(
       decoder,
       bgl_read_callback,
@@ -138,21 +142,30 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
    if( EOF_OBJECTP( res ) ) {
       BGL_DECODER_EOF( obj ) = true;
       *size = 0;
-      // fprintf( stderr, "bgl_read_callback ... end_of_stream\n" );
+      
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
    } else {
       int cres = CINT( res );
-
+      
       if( cres >= 0 ) {
+#if( defined( FLAC_DEBUG ) )
+	 if( bgl_flac_debug() >= 1 ) {
+	    BGL_DECODER_RCHECKSUM( obj ) =
+	       bgl_flac_checksum_debug( BGL_DECODER_RCHECKSUM( obj ), buffer, 0, cres );
+	    if( dbgfile ) {
+	       if( (cres != *size) || (BGL_DECODER_RCHECKSUM( obj ) != BGL_DECODER_BCHECKSUM( obj ) ) ) {
+		  fprintf( dbgfile, ";; === ERROR ===================\n" );
+	       }
+	       
+	       fprintf( dbgfile, "%d %d %d %d %d\n", dbgindex++, *size, cres, BGL_DECODER_RCHECKSUM( obj ), BGL_DECODER_BCHECKSUM( obj ) );
+	       fflush( dbgfile );
+	    }
+	 }
+#endif
 	 *size = cres;
-
-/* 	 toberemoved_debug_rcheck( buffer, cres );                     */
-	 BGL_DECODER_RCHECKSUM( obj ) =
-	    bgl_flac_checksum_debug( BGL_DECODER_RCHECKSUM( obj ), buffer, 0, cres );
 
 	 return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
       } else {
-	 // fprintf( stderr, "bgl_read_callback... abort\n" );
 	 *size = 0;
 	 return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
       }
@@ -167,7 +180,6 @@ static FLAC__StreamDecoderSeekStatus
 bgl_seek_callback( const FLAC__StreamDecoder *decoder,
 		   FLAC__uint64 offset,
 		   void *client_data ) {
-//   fprintf( stderr, "BGL_SEEK_CALLBACK(%s:%d): offset=%ld\n", __FILE__, __LINE__, offset );
    obj_t obj = (obj_t)client_data;
    obj_t res = bgl_flac_decoder_seek( (BgL_flaczd2decoderzd2_bglt)obj, (BGL_LONGLONG_T)offset );
 
@@ -234,9 +246,6 @@ bgl_eof_callback( const FLAC__StreamDecoder *decoder,
 		  void *client_data ) {
    obj_t obj = (obj_t)client_data;
 
-//   if( BGL_DECODER_EOF( obj ) ) {
-//      fprintf( stderr, "bgl_eof_callback... EOF\n" );
-//   }
    return BGL_DECODER_EOF( obj ) ? true : false;
 }
 
@@ -358,6 +367,22 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
       default:
 	 msg = "unknown error"; break;
    }
+   
+#if( defined( FLAC_DEBUG ) )
+   if( !access( DEBUG_PATH, F_OK ) ) {
+      char buf[ 100 ];
+
+      if( dbgfile ) {
+	 fprintf( dbgfile, "%d %s\n", dbgindex++, msg );
+	 fflush( dbgfile );
+	 fclose( dbgfile );
+	 dbgfile = 0L;
+      }
+	 
+      sprintf( buf, "%s.svg", DEBUG_PATH );
+      rename( DEBUG_PATH, buf );
+   }
+#endif   
    
    bgl_flac_error( "flac-decoder", msg, obj );
 }

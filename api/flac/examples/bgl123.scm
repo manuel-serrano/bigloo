@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Tue Oct 25 15:26:14 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Sat Feb 16 19:56:38 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both FLAC *and* ALSA libs.      */
 ;*=====================================================================*/
@@ -98,4 +98,4 @@
 	    (sz (minfx size (string-length %inbuf))))
 	 (let ((sz2 (read-chars! %inbuf sz port)))
 	    ($memcpy flacbuf %inbuf sz2)
-	    sz))))
+	    sz2))))

@@ -656,7 +656,8 @@
 (define (%%imap-get* where s num part)
   (let* ((result '())
 	 (reply  (%imap-send s
-			     (format "UID FETCH ~A (UID ~A)"(%imap-arg num ",") part)
+			     (format "UID FETCH ~A (UID ~A)"
+				(%imap-arg num ",") part)
 			     (lambda (x)
 			       (when (and (pair? x) (>= (length x) 3))
 				 (let* ((info (%imap-listify (caddr x)))

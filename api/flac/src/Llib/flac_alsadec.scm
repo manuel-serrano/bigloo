@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Thu Nov 29 16:49:54 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sat Feb 16 19:39:01 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 		  (::string ::long ::string ::long ::long) "BGL_FLAC_BLIT_STRING")
 	       (macro $ref::byte
 		  (::string ::long) "BGL_FLAC_STRING_REF")
+	       (export flac-debug "bgl_flac_debug")
 	       (export flac-checksum-debug "bgl_flac_checksum_debug"))))
    
    (static (class flac-alsa::flac-decoder
@@ -42,6 +43,7 @@
        (export (class flac-alsadecoder::alsadecoder
 	          (%flac::obj (default #unspecified))
 		  (%inseek (default #f)))
+	       (flac-debug::int)
 	       (flac-checksum-debug::int ::int ::string ::int ::int)))))
 
 ;*---------------------------------------------------------------------*/
@@ -61,21 +63,21 @@
 ;*    flac-debug ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (flac-debug)
-   (if (>fx ($compiler-debug) 0)
-       (bigloo-debug)
-       0))
+   (begin
+      (if (>fx ($compiler-debug) 0)
+	  (bigloo-debug)
+	  0)
+      1))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-checksum-debug ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (flac-checksum-debug::int c::int buffer::string i::int s::int)
-   (if (>=fx (flac-debug) 1)
-       (let loop ((n 0)
-		  (c c))
-	  (if (=fx n s)
-	      c
-	      (loop (+fx n 1) (bit-xor c ($ref buffer (+fx i n))))))
-       c))
+   (let loop ((n 0)
+	      (c c))
+      (if (=fx n s)
+	  c
+	  (loop (+fx n 1) (bit-xor c ($ref buffer (+fx i n)))))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::flac-alsadecoder ...                          */
@@ -303,18 +305,6 @@
 		     (set! %last-percentage p)
 		     #unspecified)))
 
-	    (when (>=fx (flac-debug) 1)
-	       (with-access::flac-alsa o (%bchecksum %rchecksum)
-		  (unless (=fx %bchecksum %rchecksum)
-		     (tprint "FLAC CHECKSUM ERROR: bchecksum="
-			%bchecksum " rchecksum=" %rchecksum)
-		     (debug "!!! FLAC_DECODER, CHECKSUM_ERROR"
-			" bchecksum=" %bchecksum
-			" rchecksum=" %rchecksum
-			" %tail=" %tail " %head=" %head
-			" size=" size "\n")
-		     (exit -1))))
-	    
 	    (let loop ((size size)
 		       (i 0))
 	       (cond
