@@ -7,11 +7,11 @@
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GC.                             */
 #*    Run the script with:                                             */
-#*      GC=/usr/local/src/gc-7.3alpha2.tar.gz ./install-gc             */
+#*      GC=/usr/local/src/gc-7.3alphaXXX.tar.gz ./install-gc           */
 #*=====================================================================*/
 
 src=$GC.tar.gz
-libatomic=libatomic_ops-7.3alpha2.tar.gz
+libatomic=libatomic_ops-7.3alpha3-20130330.tar.gz
 
 gc=`basename $src .tar.gz`
 bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
@@ -30,7 +30,7 @@ fi
 # untar the two versions of the GC
 $tar xfz $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 /bin/rm -rf "../gc/$gc"_fth
-mv ../gc/$gc "../gc/$gc"_fth || (echo "mv gc-7.2 failed"; exit 1)
+mv ../gc/$gc "../gc/$gc"_fth || (echo "mv $gc failed"; exit 1)
 
 $tar xfz $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
 
@@ -42,10 +42,10 @@ if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
 
 # install libatomic
 (cd "../gc/$gc"_fth && tar xfz ../$libatomic && \
-  mv libatomic_ops-7.3alpha2 libatomic_ops)
+  mv libatomic_ops-7.3alpha3-20130330 libatomic_ops)
 # install libatomic
 (cd "../gc/$gc" && tar xfz ../$libatomic && \
-  mv libatomic_ops-7.3alpha2 libatomic_ops)
+  mv libatomic_ops-7.3alpha3-20130330 libatomic_ops)
 
 # Patch the Makefiles for generating a good lib name
 for p in configure configure.ac Makefile.direct Makefile.am Makefile.in; do

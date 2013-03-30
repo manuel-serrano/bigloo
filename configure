@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Mar 24 13:57:26 2013 (serrano)                */
+#*    Last change :  Sat Mar 30 09:31:40 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -196,12 +196,13 @@ regexp=
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
-gccustom=gc-7.2d
-#gccustom=gc-7.3alpha1-20120316
-gccustom=gc-7.3alpha2
-#gccustom=gc-7.2alpha6
 #gccustom=bdwgc-7_2alpha5-20110313
 #gccustom=bdwgc-7_2alpha5-20110107
+#gccustom=gc-7.2alpha6
+#gccustom=gc-7.2d
+#gccustom=gc-7.3alpha1-20120316
+#gccustom=gc-7.3alpha2
+gccustom=gc-7.3alpha3-20130330
 gcversion=
 # the following  variable is relevant only when using
 # standard (i.e. already existing and operational) Boehm's GC
