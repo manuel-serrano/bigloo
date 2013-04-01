@@ -1,9 +1,9 @@
-/*=====================================================================*/
+ /*=====================================================================*/
 /*    .../prgm/project/bigloo/api/pthread/src/Posix/bglpthread.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Sun Mar 24 19:13:23 2013 (serrano)                */
+/*    Last change :  Mon Apr  1 09:04:59 2013 (serrano)                */
 /*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -38,6 +38,9 @@ static pthread_key_t bgldenv_key;
 /*    bglpth_single_thread_denv ...                                    */
 /*---------------------------------------------------------------------*/
 static obj_t bglpth_single_thread_denv = 0L;
+
+static obj_t specifics;
+static pthread_mutex_t specific_mutex;
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -77,6 +80,10 @@ bglpth_dynamic_env_set( obj_t env ) {
    single_thread_denv = env;
 #else
    pthread_setspecific( bgldenv_key, env );
+   pthread_mutex_lock( &specific_mutex );
+specifics = MAKE_PAIR( env, specifics );
+   pthread_mutex_unlock( &specific_mutex );
+   
 #endif
    
    return env;
@@ -334,6 +341,7 @@ bglpth_setup_thread() {
    signal( SIGPIPE, SIG_IGN );
 #endif
 
+   pthread_mutex_init( &specific_mutex, 0L );
    /* main dynamic env init */
    bgl_init_dynamic_env();
 
