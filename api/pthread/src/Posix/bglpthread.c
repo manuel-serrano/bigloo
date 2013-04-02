@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Apr  1 09:04:59 2013 (serrano)                */
+/*    Last change :  Tue Apr  2 07:46:36 2013 (serrano)                */
 /*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -39,9 +39,6 @@ static pthread_key_t bgldenv_key;
 /*---------------------------------------------------------------------*/
 static obj_t bglpth_single_thread_denv = 0L;
 
-static obj_t specifics;
-static pthread_mutex_t specific_mutex;
-
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bglpth_thread_gc_conservative_mark_envs ...                      */
@@ -53,8 +50,8 @@ static pthread_mutex_t specific_mutex;
 /*    also backed up in a global static variables.                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
-static obj_t gc_conservative_mark_envs = BNIL;
-static pthread_mutex_t gc_conservative_mark_mutex;
+/* static obj_t gc_conservative_mark_envs = BNIL;                      */
+/* static pthread_mutex_t gc_conservative_mark_mutex;                  */
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -80,10 +77,6 @@ bglpth_dynamic_env_set( obj_t env ) {
    single_thread_denv = env;
 #else
    pthread_setspecific( bgldenv_key, env );
-   pthread_mutex_lock( &specific_mutex );
-specifics = MAKE_PAIR( env, specifics );
-   pthread_mutex_unlock( &specific_mutex );
-   
 #endif
    
    return env;
@@ -127,10 +120,10 @@ bglpth_thread_cleanup( void *arg ) {
    pthread_mutex_unlock( &(self->mutex) );
    
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
-   pthread_mutex_lock( &gc_conservative_mark_mutex );
-   gc_conservative_mark_envs =
-      bgl_remq_bang( self->env, gc_conservative_mark_envs );
-   pthread_mutex_unlock( &gc_conservative_mark_mutex );
+/*    pthread_mutex_lock( &gc_conservative_mark_mutex );               */
+/*    gc_conservative_mark_envs =                                      */
+/*       bgl_remq_bang( self->env, gc_conservative_mark_envs );        */
+/*    pthread_mutex_unlock( &gc_conservative_mark_mutex );             */
 #endif
    
    /* invoke user cleanup */
@@ -207,10 +200,10 @@ bglpth_thread_env_create( bglpthread_t thread, obj_t bglthread ) {
    thread->env = bgl_dup_dynamic_env( BGL_CURRENT_DYNAMIC_ENV() );
 
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
-   pthread_mutex_lock( &gc_conservative_mark_mutex );
-   gc_conservative_mark_envs =
-      MAKE_PAIR( thread->env, gc_conservative_mark_envs );
-   pthread_mutex_unlock( &gc_conservative_mark_mutex );
+/*    pthread_mutex_lock( &gc_conservative_mark_mutex );               */
+/*    gc_conservative_mark_envs =                                      */
+/*       MAKE_PAIR( thread->env, gc_conservative_mark_envs );          */
+/*    pthread_mutex_unlock( &gc_conservative_mark_mutex );             */
 #endif
 }
 
@@ -341,7 +334,7 @@ bglpth_setup_thread() {
    signal( SIGPIPE, SIG_IGN );
 #endif
 
-   pthread_mutex_init( &specific_mutex, 0L );
+/*    pthread_mutex_init( &specific_mutex, 0L );                       */
    /* main dynamic env init */
    bgl_init_dynamic_env();
 
@@ -361,6 +354,6 @@ bglpth_setup_thread() {
    single_thread_denv = 0;
    bgl_multithread_dynamic_denv_register( &bglpth_dynamic_env );
 #else
-   pthread_mutex_init( &gc_conservative_mark_mutex, 0L );
+/*    pthread_mutex_init( &gc_conservative_mark_mutex, 0L );           */
 #endif
 }

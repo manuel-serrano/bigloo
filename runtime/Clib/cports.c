@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec 28 12:05:14 2012 (serrano)                */
+/*    Last change :  Mon Apr  1 09:52:19 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -478,10 +478,10 @@ posix_timed_write( obj_t port, void *buf, size_t num ) {
 loop:
    FD_ZERO( &writefds );
    FD_SET( fd, &writefds );
-   fprintf( stderr, ">>> posix_timed_write fd=%d\n", fd );
+   // fprintf( stderr, ">>> posix_timed_write fd=%d\n", fd );
 
    if( (n = select( fd + 1, NULL, &writefds, NULL, &tv )) <= 0 ) {
-      fprintf( stderr, "<<< posix_timed_write fd=%d n=%d errno=%d strerr=%s\n", fd, n, errno, strerror( errno ) );
+      // fprintf( stderr, "<<< posix_timed_write fd=%d n=%d errno=%d strerr=%s\n", fd, n, errno, strerror( errno ) );
       if( n == 0 ) {
 	 char buf[ 100 ];
 
@@ -498,7 +498,7 @@ loop:
 	    BGL_IO_WRITE_ERROR, "write/timeout", strerror( errno ), port );
       }
    } else {
-      fprintf( stderr, "<<< posix_timed_write fd=%d n=%d\n", fd, n );
+      // fprintf( stderr, "<<< posix_timed_write fd=%d n=%d\n", fd, n );
       return syswrite_with_timeout( port, buf, num );
    }
 }
@@ -516,9 +516,7 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
    if( (n = tmt->syswrite( port, ptr, num )) >= 0 ) {
       return n;
    } else {
-      fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s port-name=%s\n",
-	       PORT_FD( port ), errno, strerror( errno ),
-	       BSTRING_TO_STRING( PORT( port ).name ) );
+      // fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s port-name=%s\n", PORT_FD( port ), errno, strerror( errno ), BSTRING_TO_STRING( PORT( port ).name ) );
 
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
