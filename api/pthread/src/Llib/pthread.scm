@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Mar  1 16:19:37 2013 (serrano)                */
+;*    Last change :  Fri Mar 22 14:40:38 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -79,8 +79,8 @@
 (define-method (thread-initialize! o::pthread)
    (unless (bigloo-initialized?)
       (warning "make-thread"
-	 "Thread created before all modules initialized"
-	 o))
+	 "Thread created before module initialization completed -- "
+	 (typeof o)))
    (with-access::pthread o ($builtin body end-result end-exception name)
       (let ((b (lambda ()
 		  (let ((id (if (symbol? name)
@@ -137,10 +137,11 @@
 (define-method (thread-join! t::pthread . timeout)
    (with-access::pthread t (detachedp $builtin end-result end-exception)
       (if detachedp
-	  (raise (instantiate::&thread-error
-		    (proc 'thread-join!)
-		    (msg "detached thread")
-		    (obj t)))
+	  (raise
+	     (instantiate::&thread-error
+		(proc 'thread-join!)
+		(msg "detached thread")
+		(obj t)))
 	  (begin
 	     ($pthread-join! $builtin (if (pair? timeout) (car timeout) #f))
 	     (if (isa? end-exception &exception)

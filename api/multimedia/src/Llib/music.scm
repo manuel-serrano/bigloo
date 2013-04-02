@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Sun Apr 15 06:00:51 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Thu Mar 14 09:48:34 2013 (serrano)                */
+;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/
@@ -101,7 +101,6 @@
 (define-generic (music-playlist-delete! m::music n::int))
 (define-generic (music-playlist-clear! m::music))
 
-(define-generic (music-update-status!::musicstatus m::music s::musicstatus))
 (define-generic (music-status::musicstatus m::music)
    (with-access::music m (%status)
       %status))
@@ -112,26 +111,24 @@
 (define-generic (music-pause m::music))
 
 (define-generic (music-next m::music)
-   (with-access::music m (%status)
-      (with-access::musicstatus %status (song playlistlength)
-	 (if (>=fx song (-fx playlistlength 1))
-	     (raise
-	      (instantiate::&io-error
-		 (proc "music-next")
-		 (msg "No next soung")
-		 (obj song)))
-	     (music-play m (+fx song 1))))))
+   (with-access::musicstatus (music-status m) (song playlistlength)
+      (if (>=fx song (-fx playlistlength 1))
+	  (raise
+	     (instantiate::&io-error
+		(proc "music-next")
+		(msg "No next soung")
+		(obj song)))
+	  (music-play m (+fx song 1)))))
 
 (define-generic (music-prev m::music)
-   (with-access::music m (%status)
-      (with-access::musicstatus %status (song playlistlength)
-	 (if (or (<fx song 0) (=fx playlistlength 0))
-	     (raise
-	      (instantiate::&io-error
-		 (proc "music-prev")
-		 (msg "No previous soung")
-		 (obj song)))
-	     (music-play m (-fx song 1))))))
+   (with-access::musicstatus (music-status m) (song songpos playlistlength)
+      (if (or (<fx song 0) (=fx playlistlength 0))
+	  (raise
+	     (instantiate::&io-error
+		(proc "music-prev")
+		(msg "No previous soung")
+		(obj song)))
+	  (music-play m (-fx song 1)))))
 
 (define-generic (music-crossfade m::music sec::int))
 (define-generic (music-random-set! m::music flag::bool))

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Mon Mar 26 10:47:44 2012 (serrano)                */
+#*    Last change :  Mon Apr  1 09:03:17 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking native threads (quite obvious)                          */
 #*=====================================================================*/
@@ -58,7 +58,7 @@ case $HOSTOS in
       echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
 
    android)
-      echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS $cflags";;
+      echo "-D_THREAD_SAFE -D_REENTRANT -DGC_THREADS -DNO_HANDLE_FORK -DTHREAD_LOCAL_ALLOC $cflags";;
 
    *)
      echo "no";;

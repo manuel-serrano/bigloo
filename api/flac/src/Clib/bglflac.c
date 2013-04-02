@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat Feb 16 19:43:42 2013 (serrano)                */
+/*    Last change :  Wed Mar 13 08:59:18 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -94,8 +94,10 @@ bgl_error_callback( const FLAC__StreamDecoder *,
 
 #if( defined( FLAC_DEBUG ) )
 #define DEBUG_PATH "/tmp/BGLFLAC"   
-FILE *dbgfile = 0;
-int dbgindex;
+FILE *dbg_file = 0L;
+int dbg_index;
+long dbg_countread;
+long dbg_countwrite;
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -106,10 +108,12 @@ FLAC__StreamDecoderInitStatus
 bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
 				      obj_t obj ) {
 #if( defined( FLAC_DEBUG ) )
-   dbgfile = fopen( DEBUG_PATH, "w" );
-   fprintf( dbgfile, ";; index, *size, cres, rchecksum, bchecksum\n" );
+   dbg_file = fopen( DEBUG_PATH, "w" );
+   fprintf( dbg_file, ";; index, count-read, *size, cres, count-write, rchecksum, bchecksum\n" );
    
-   dbgindex = 0;
+   dbg_index = 0;
+   dbg_countread = 0;
+   dbg_countwrite = 0;
 #endif   
    return FLAC__stream_decoder_init_stream(
       decoder,
@@ -145,25 +149,30 @@ bgl_read_callback( const FLAC__StreamDecoder *decoder,
       
       return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
    } else {
-      int cres = CINT( res );
+      long cres = CINT( res );
       
       if( cres >= 0 ) {
 #if( defined( FLAC_DEBUG ) )
 	 if( bgl_flac_debug() >= 1 ) {
 	    BGL_DECODER_RCHECKSUM( obj ) =
 	       bgl_flac_checksum_debug( BGL_DECODER_RCHECKSUM( obj ), buffer, 0, cres );
-	    if( dbgfile ) {
+	    if( dbg_file ) {
 	       if( (cres != *size) || (BGL_DECODER_RCHECKSUM( obj ) != BGL_DECODER_BCHECKSUM( obj ) ) ) {
-		  fprintf( dbgfile, ";; === ERROR ===================\n" );
+		  fprintf( dbg_file, ";; === ERROR ===================\n" );
 	       }
-	       
-	       fprintf( dbgfile, "%d %d %d %d %d\n", dbgindex++, *size, cres, BGL_DECODER_RCHECKSUM( obj ), BGL_DECODER_BCHECKSUM( obj ) );
-	       fflush( dbgfile );
+
+	       dbg_countread += *size;
+	       fprintf( dbg_file, "%d %ld %d %d %ld %d %d\n",
+			dbg_index++, dbg_countread,
+			*size, cres,
+			dbg_countwrite,
+			(unsigned char)BGL_DECODER_RCHECKSUM( obj ),
+			(unsigned char)BGL_DECODER_BCHECKSUM( obj ) );
+	       fflush( dbg_file );
 	    }
 	 }
 #endif
 	 *size = cres;
-
 	 return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
       } else {
 	 *size = 0;
@@ -183,6 +192,11 @@ bgl_seek_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    obj_t res = bgl_flac_decoder_seek( (BgL_flaczd2decoderzd2_bglt)obj, (BGL_LONGLONG_T)offset );
 
+#if( defined( FLAC_DEBUG ) )
+   if( bgl_flac_debug() >= 1 && dbg_file ) {
+      fprintf( dbg_file, ";; ### SEEK offset=%d\n", offset );
+   }
+#endif	    
    if( res == BTRUE ) {
       return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
    } else if( res == BFALSE ) {
@@ -203,6 +217,11 @@ bgl_tell_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    obj_t res = bgl_flac_decoder_tell( (BgL_flaczd2decoderzd2_bglt)obj );
 
+#if( defined( FLAC_DEBUG ) )
+   if( bgl_flac_debug() >= 1 && dbg_file ) {
+      fprintf( dbg_file, ";; ### TELL offset=%d\n", offset );
+   }
+#endif	    
    if( ELONGP( res ) ) {
       *offset = BELONG_TO_LONG( res );
       return FLAC__STREAM_DECODER_TELL_STATUS_OK;
@@ -262,21 +281,19 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    float vol = BGL_DECODER_VOLUME( obj );
    long i = 0;
-   FLAC__uint32 decoded_size =
-      h.blocksize * h.channels * (h.bits_per_sample / 8);
-
+   
    switch( h.bits_per_sample ) {
       case 16: {
 	 long sample;
-	 char *buf = (char *)BGL_DECODER_OUTBUF( obj );
+	 char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
 
 	 for( sample = 0; sample < h.blocksize; sample++ ) {
 	    long channel;
 
 	    for( channel = 0; channel < h.channels; channel++ ) {
 	       FLAC__int16 v = vol * (FLAC__int16)(buffer[ channel ][ sample ]);
-	       buf[ i++ ] = v & 0xff;
-	       buf[ i++ ] = (v >> 8) & 0xff;
+	       buf[ i++ ] = (unsigned char)(v & 0xff);
+	       buf[ i++ ] = (unsigned char)((v >> 8) & 0xff);
 	    }
 	 }
 
@@ -307,6 +324,10 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
       }
    }
 
+#if( defined( FLAC_DEBUG ) )
+   dbg_countwrite += i;
+#endif
+   
    if( h.number_type == FLAC__FRAME_NUMBER_TYPE_FRAME_NUMBER ) {
       BGL_DECODER_SAMPLE( obj ) = h.number.frame_number;
    } else {
@@ -365,24 +386,30 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
       case FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM:
 	 msg = "unparseable stream"; break;
       default:
-	 msg = "unknown error"; break;
+	 msg = "unknown error";
    }
    
 #if( defined( FLAC_DEBUG ) )
    if( !access( DEBUG_PATH, F_OK ) ) {
       char buf[ 100 ];
 
-      if( dbgfile ) {
-	 fprintf( dbgfile, "%d %s\n", dbgindex++, msg );
-	 fflush( dbgfile );
-	 fclose( dbgfile );
-	 dbgfile = 0L;
+      if( dbg_file ) {
+	 fprintf( dbg_file, "%d %ld %ld %s\n",
+		  dbg_index, dbg_countread, dbg_countwrite,
+		  msg );
+	 fflush( dbg_file );
+	 fclose( dbg_file );
+	 dbg_file = 0L;
       }
 	 
-      sprintf( buf, "%s.svg", DEBUG_PATH );
+      sprintf( buf, "%s.bck", DEBUG_PATH );
       rename( DEBUG_PATH, buf );
    }
 #endif   
-   
-   bgl_flac_error( "flac-decoder", msg, obj );
+
+   if( status != FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH ) {
+      bgl_flac_error( "flac-decoder", msg, obj );
+   } else {
+      fprintf( stderr, "flac crc mismatch: %ld\n", dbg_countread );
+   }
 }

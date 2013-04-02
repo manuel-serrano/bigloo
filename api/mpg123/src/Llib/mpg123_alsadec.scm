@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat Feb 23 16:38:48 2013 (serrano)                */
+;*    Last change :  Fri Mar 15 17:11:54 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -319,13 +319,6 @@
 					      period-size-near-ratio)
 	 (multiple-value-bind (rate channels encoding)
 	    (mpg123-get-format %mpg123)
-	    (tprint `(alsa-snd-pcm-hw-set-params! pcm
-			:access 'rw-interleaved
-			:format ,encoding
-			:channels ,channels
-			:rate-near ,rate
-			:buffer-size-near-ratio ,buffer-size-near-ratio
-			:period-size-near-ratio ,period-size-near-ratio))
 	    (alsa-snd-pcm-hw-set-params! pcm
 	       :access 'rw-interleaved
 	       :format encoding

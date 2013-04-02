@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue Jan 29 17:48:52 2013 (serrano)                */
+#*    Last change :  Sat Mar 30 09:28:41 2013 (serrano)                */
 #*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -32,6 +32,7 @@ POPULATION = Makefile \
   $(POP72D) \
   $(POP73ALPHA1_20120316) \
   $(POP73ALPHA2) \
+  $(POP73ALPHA3_20130330) \
   sparc_linux_mach_dep.c \
   gc-7.1.tar.gz \
   $(CUSTOMGC).tar.gz
@@ -115,6 +116,13 @@ POP73ALPHA2 = install-gc-7.3alpha2 \
   gc-7.3alpha2.patch \
   Makefile-gc-7.3alpha2 \
   libatomic_ops-7.3alpha2.tar.gz
+
+POP73ALPHA3_20130330 = install-gc-7.3alpha3-20130330 \
+  configure-gc-7.3alpha3-20130330 \
+  configure-gc-7.3alpha3-20130330-android \
+  gc-7.3alpha3-20130330.patch \
+  Makefile-gc-7.3alpha3-20130330 \
+  libatomic_ops-7.3alpha3-20130330.tar.gz
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */

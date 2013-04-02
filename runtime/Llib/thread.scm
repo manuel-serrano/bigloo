@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Wed Jan  9 09:55:42 2013 (serrano)                */
+;*    Last change :  Sun Mar 31 07:47:39 2013 (serrano)                */
 ;*    Copyright   :  2004-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -497,8 +497,8 @@
       (if (pair? c)
 	  (set-cdr! c val)
 	  (begin
-	     ($thread-parameters-set! (cons (cons id val)
-					    ($thread-parameters)))
+	     ($thread-parameters-set!
+		(cons (cons id val) ($thread-parameters)))
 	     val))))
 
 ;*---------------------------------------------------------------------*/

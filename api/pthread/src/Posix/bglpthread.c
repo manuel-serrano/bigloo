@@ -1,10 +1,10 @@
-/*=====================================================================*/
+ /*=====================================================================*/
 /*    .../prgm/project/bigloo/api/pthread/src/Posix/bglpthread.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Dec 11 18:35:55 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Tue Apr  2 07:46:36 2013 (serrano)                */
+/*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -50,8 +50,8 @@ static obj_t bglpth_single_thread_denv = 0L;
 /*    also backed up in a global static variables.                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
-static obj_t gc_conservative_mark_envs = BNIL;
-static pthread_mutex_t gc_conservative_mark_mutex;
+/* static obj_t gc_conservative_mark_envs = BNIL;                      */
+/* static pthread_mutex_t gc_conservative_mark_mutex;                  */
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -120,10 +120,10 @@ bglpth_thread_cleanup( void *arg ) {
    pthread_mutex_unlock( &(self->mutex) );
    
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
-   pthread_mutex_lock( &gc_conservative_mark_mutex );
-   gc_conservative_mark_envs =
-      bgl_remq_bang( self->env, gc_conservative_mark_envs );
-   pthread_mutex_unlock( &gc_conservative_mark_mutex );
+/*    pthread_mutex_lock( &gc_conservative_mark_mutex );               */
+/*    gc_conservative_mark_envs =                                      */
+/*       bgl_remq_bang( self->env, gc_conservative_mark_envs );        */
+/*    pthread_mutex_unlock( &gc_conservative_mark_mutex );             */
 #endif
    
    /* invoke user cleanup */
@@ -157,6 +157,7 @@ bglpth_thread_run( void *arg ) {
    bglpthread_t self = (bglpthread_t)arg;
    obj_t thunk = self->thunk;
    sigset_t set;
+   size_t stacksize;
 
    bglpth_thread_init( self, (char *)&arg );
 
@@ -199,10 +200,10 @@ bglpth_thread_env_create( bglpthread_t thread, obj_t bglthread ) {
    thread->env = bgl_dup_dynamic_env( BGL_CURRENT_DYNAMIC_ENV() );
 
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
-   pthread_mutex_lock( &gc_conservative_mark_mutex );
-   gc_conservative_mark_envs =
-      MAKE_PAIR( thread->env, gc_conservative_mark_envs );
-   pthread_mutex_unlock( &gc_conservative_mark_mutex );
+/*    pthread_mutex_lock( &gc_conservative_mark_mutex );               */
+/*    gc_conservative_mark_envs =                                      */
+/*       MAKE_PAIR( thread->env, gc_conservative_mark_envs );          */
+/*    pthread_mutex_unlock( &gc_conservative_mark_mutex );             */
 #endif
 }
 
@@ -215,7 +216,20 @@ bglpth_thread_start( bglpthread_t thread, obj_t bglthread, bool_t dt ) {
    pthread_attr_t a;
 
    pthread_attr_init( &a );
-
+   
+#ifdef BGL_ANDROID
+   size_t stacksize;
+#define ANDROID_STACKSIZE (4 * 1024 * 1024)
+   
+   if( !pthread_attr_getstacksize( &a, &stacksize ) ) {
+      if( stacksize < ANDROID_STACKSIZE ) {
+	 // enlarge to 4MB the stack size
+	 pthread_attr_setstacksize( &a, ANDROID_STACKSIZE );
+	 pthread_attr_getstacksize( &a, &stacksize );
+      }
+   }
+#endif
+   
    if( dt ) pthread_attr_setdetachstate( &a, PTHREAD_CREATE_DETACHED );
 
    bglpth_thread_env_create( thread, bglthread );
@@ -320,6 +334,7 @@ bglpth_setup_thread() {
    signal( SIGPIPE, SIG_IGN );
 #endif
 
+/*    pthread_mutex_init( &specific_mutex, 0L );                       */
    /* main dynamic env init */
    bgl_init_dynamic_env();
 
@@ -339,6 +354,6 @@ bglpth_setup_thread() {
    single_thread_denv = 0;
    bgl_multithread_dynamic_denv_register( &bglpth_dynamic_env );
 #else
-   pthread_mutex_init( &gc_conservative_mark_mutex, 0L );
+/*    pthread_mutex_init( &gc_conservative_mark_mutex, 0L );           */
 #endif
 }

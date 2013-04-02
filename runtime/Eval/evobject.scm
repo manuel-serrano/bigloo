@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sun Nov 18 10:11:50 2012 (serrano)                */
-;*    Copyright   :  2006-12 Manuel Serrano                            */
+;*    Last change :  Sat Mar 23 06:24:02 2013 (serrano)                */
+;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -282,7 +282,7 @@
 	(slot-id s)
 	(slot-getter s) (slot-setter s) (slot-read-only? s)
 	#t
-	(slot-user-info s)
+	(eval! (slot-user-info s))
 	(slot-default-value s)
 	(slot-type s)))
    
@@ -292,7 +292,7 @@
 	  (slot-id s)
 	  (car defs) (cadr defs) (slot-read-only? s)
 	  #f
-	  (slot-user-info s)
+	  (eval! (slot-user-info s))
 	  (slot-default-value s)
 	  (slot-type s))))
 

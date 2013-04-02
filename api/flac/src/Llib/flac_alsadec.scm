@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Feb 16 19:39:01 2013 (serrano)                */
+;*    Last change :  Wed Mar 13 09:04:03 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -44,7 +44,7 @@
 	          (%flac::obj (default #unspecified))
 		  (%inseek (default #f)))
 	       (flac-debug::int)
-	       (flac-checksum-debug::int ::int ::string ::int ::int)))))
+	       (flac-checksum-debug::int ::long ::string ::long ::long)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */
@@ -72,7 +72,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    flac-checksum-debug ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (flac-checksum-debug::int c::int buffer::string i::int s::int)
+(define (flac-checksum-debug::int c::long buffer::string i::long s::long)
    (let loop ((n 0)
 	      (c c))
       (if (=fx n s)
@@ -254,9 +254,7 @@
 	    
 	    (define inlen %inlen)
 	    
-	    (define flacbuf (custom-identifier %flacbuf))
-
-	    
+	    (define flacbuf::string (custom-identifier %flacbuf))
 	    
 	    (define (buffer-percentage-filled)
 	       (llong->fixnum
@@ -366,26 +364,8 @@
 			 ($flac-blit-string! %inbufp %tail flacbuf i s)
 			 (inc-tail! s))
 		      (if (<fx s size)
-			  (loop (- size s) (+fx i s))
-			  (let ((r (+fx i s)))
-			     (when (and (>=fx (flac-debug) 1) (=fx r 0))
-				(debug "!!! FLAC_DECODER, read 0 chars "
-				   url " " (current-microseconds)))
-			     r))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    toberemoved-debug-bcheck ...                                     */
-;*---------------------------------------------------------------------*/
-(define foo #f)
-
-(define (toberemoved-debug-bcheck buf::string i s)
-   (unless (binary-port? foo)
-      (set! foo (open-output-binary-file "/tmp/DEBUG_BCHECK")))
-   (let loop ((n 0))
-      (when (<fx n s)
-	 (output-byte foo ($ref buf (+ i n)))
-	 (loop (+fx n 1))))
-   (flush-binary-port foo))
+			  (loop (-fx size s) (+fx i s))
+			  (+fx i s))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *debug-port* ...                                                 */

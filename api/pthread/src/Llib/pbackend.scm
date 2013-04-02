@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 24 06:42:48 2008                          */
-;*    Last change :  Wed Jan  9 08:56:15 2013 (serrano)                */
+;*    Last change :  Tue Mar 12 11:58:00 2013 (serrano)                */
 ;*    Copyright   :  2008-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Posix thread backend                                         */
@@ -18,7 +18,7 @@
    
    (import __pth_thread)
    
-   (static (class pthread-backend::thread-backend))
+   (export (class pthread-backend::thread-backend))
    
    (export (pthread-setup-backend!)
 	   (get-pthread-backend)))

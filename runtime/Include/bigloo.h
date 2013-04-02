@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Jan 29 10:56:57 2013 (serrano)                */
+/*    Last change :  Wed Mar 13 11:27:07 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2650,11 +2650,32 @@ struct exitd {
    
 #define BGL_EXITD_PROTECTN_SET( extd, p ) \
    (BGL_EXITD_PROTECTN( extd ) = (p))
+
+#if( HAVE_ALLOCA && defined( __GNUC__ ) )
+#  if( defined( TAG_PAIR ) )
+#    define MAKE_STACK_PAIR( a, d ) \
+        ({ obj_t an_object; \
+           an_object = alloca( PAIR_SIZE ); \
+	   an_object->pair_t.car = a; \
+	   an_object->pair_t.cdr = d; \
+           ( BPAIR( an_object ) ); })
+#  else   
+#    define MAKE_STACK_PAIR( a, d ) \
+        ({ obj_t an_object; \
+           an_object = alloca( PAIR_SIZE ); \
+   	   an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ); \
+	   an_object->pair_t.car = a; \
+	   an_object->pair_t.cdr = d; \
+           ( BPAIR( an_object ) ); })
+#  endif     
+#else
+#  define MAKE_STACK_PAIR( a, d ) MAKE_PAIR( a, d )   
+#endif
    
 #define BGL_EXITD_PUSH_PROTECT( extd, p ) \
    BGL_EXITD_PROTECT0( extd ) == BFALSE ? BGL_EXITD_PROTECT0_SET( extd, p ) : \
    BGL_EXITD_PROTECT1( extd ) == BFALSE ? BGL_EXITD_PROTECT1_SET( extd, p ) : \
-      BGL_EXITD_PROTECTN_SET( extd, MAKE_PAIR( p, BGL_EXITD_PROTECTN( extd ) ) )
+      BGL_EXITD_PROTECTN_SET( extd, MAKE_STACK_PAIR( p, BGL_EXITD_PROTECTN( extd ) ) )
    
 #define BGL_EXITD_POP_PROTECT( extd ) \
    BGL_EXITD_PROTECT1( extd ) == BFALSE ? \
