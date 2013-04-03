@@ -5112,20 +5112,25 @@ public final class foreign
    }
 
    public static Object BGL_DATAGRAM_SOCKET_HOSTNAME( datagram_socket s ) {
-	 return s.HOSTNAME();
-      }
+      return s.HOSTNAME();
+   }
 
    public static Object BGL_DATAGRAM_SOCKET_HOSTIP( datagram_socket s) {
-	 return s.HOSTIP();
-      }
+      return s.HOSTIP();
+   }
 
    public static output_port BGL_DATAGRAM_SOCKET_PORT( datagram_socket s ) {
-	 return s.OUTPUT_PORT();
-      }
+      return s.OUTPUT_PORT();
+   }
 
    public static int BGL_DATAGRAM_SOCKET_PORTNUM( datagram_socket s ) {
-	 return s.PORT();
-      }
+      return s.PORT();
+   }
+   
+   public static input_port BGL_DATAGRAM_SOCKET_INPUT( datagram_socket s ) {
+      return s.INPUT_PORT();
+   }
+
 
    public static Object bgl_datagram_socket_close( datagram_socket s ) {
       s.close();

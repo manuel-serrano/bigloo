@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Sun May  1 07:24:53 2011 (serrano)                */
-/*    Copyright   :  2000-11 Manuel Serrano                            */
+/*    Last change :  Wed Apr  3 10:33:25 2013 (serrano)                */
+/*    Copyright   :  2000-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram Client Socket implementation for the JVM back-end.  */
 /*=====================================================================*/
@@ -51,6 +51,7 @@ public class datagram_client_socket extends datagram_socket {
       }
       
       output = new output_datagram_port( this, hostname, port );
+      input = new input_datagram_port( this, hostname, port );
    }
 
    // public methods
@@ -63,5 +64,9 @@ public class datagram_client_socket extends datagram_socket {
    
    public output_port OUTPUT_PORT() {
       return output;
+   }
+   
+   public input_port INPUT_PORT() {
+      return input;
    }
 }

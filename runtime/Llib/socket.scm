@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Wed Feb 20 10:35:41 2013 (serrano)                */
+;*    Last change :  Wed Apr  3 10:25:13 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -46,6 +46,7 @@
 	    (macro c-socket-down?::bool (::socket) "SOCKET_DOWNP")
 	    (macro c-socket-port-number::int (::socket) "SOCKET_PORT")
 	    (macro c-socket-input::input-port (::socket) "SOCKET_INPUT")
+	    
 	    (macro c-socket-output::output-port (::socket) "SOCKET_OUTPUT")
 	    (c-socket-startup::void () "socket_startup")
 	    (c-socket-cleanup::void () "socket_cleanup")
@@ -107,7 +108,9 @@
 	    ($datagram-socket-receive::obj (::datagram-socket ::long)
 	       "bgl_datagram_socket_receive")
             ($datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
-	       "bgl_datagram_socket_send"))
+	       "bgl_datagram_socket_send")
+	    (macro $datagram-socket-input::input-port (::datagram-socket)
+                   "BGL_DATAGRAM_SOCKET_INPUT"))
    
    (java    (class foreign
 	       (method static c-socket?::bool (::obj)
@@ -191,6 +194,8 @@
 		  "bgl_datagram_socket_receive")
 	       (method static $datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
 		  "bgl_datagram_socket_send")
+	       (method static $datagram-socket-input::input-port (::datagram-socket)
+                   "BGL_DATAGRAM_SOCKET_INPUT")
 	       
 	       (method static $dgetsockopt::obj (::datagram-socket ::keyword)
 		  "bgl_dgetsockopt")
@@ -207,6 +212,7 @@
 	    (inline socket-port-number::bint ::socket)
 	    (inline socket-input::input-port ::socket)
 	    (inline socket-output::output-port ::socket)
+	    (inline datagram-socket-input::input-port ::datagram-socket)
 	    (make-client-socket::socket ::bstring ::int
 					#!key
 					(domain 'inet)
@@ -327,6 +333,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-input socket::socket)
    (c-socket-input socket))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-input ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-input socket::datagram-socket)
+   ($datagram-socket-input socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-output ...                                                */
@@ -551,6 +563,15 @@
    (let ((p ($datagram-socket-port dsocket)))
       (unless (output-port? p)
 	 (error "datagram-socket-ouput-port" "Not a datagram-client" dsocket))
+      p))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-input-port ...                                   */
+;*---------------------------------------------------------------------*/
+(define (datagram-socket-input-port dsocket)
+   (let ((p (datagram-socket-input dsocket)))
+      (unless (input-port? p)
+	 (error "datagram-socket-input-port" "Not a datagram-server" dsocket))
       p))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Thu Feb 28 13:59:06 2013 (serrano)                */
+/*    Last change :  Wed Apr  3 10:34:17 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
@@ -21,6 +21,7 @@ public abstract class datagram_socket extends obj {
    // public fields
    public DatagramSocket socket;
    public output_datagram_port output;
+   public input_datagram_port input;
    
    // constructor
    protected datagram_socket() {
@@ -44,6 +45,13 @@ public abstract class datagram_socket extends obj {
 		    "not a datagram-client socket",
 		    this );
       return output;
+   }
+   
+   public input_port INPUT_PORT() {
+      foreign.fail( "datagram-socket-input-port",
+		    "not a datagram-client socket",
+		    this );
+      return input;
    }
    
    public Object close() {

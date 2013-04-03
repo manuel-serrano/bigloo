@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Feb 18 15:07:58 2013 (serrano)                */
+/*    Last change :  Wed Apr  3 10:13:19 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1198,7 +1198,7 @@ bgl_socket_flush( obj_t port ) {
 /*    set_socket_io_ports ...                                          */
 /*---------------------------------------------------------------------*/
 static void
-set_socket_io_ports( int s, obj_t sock, char *who, obj_t inb, obj_t outb ) {
+set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb ) {
    int t, port;
    obj_t host;
    FILE *fs;
@@ -2393,15 +2393,17 @@ bgl_make_datagram_server_socket( int portnum ) {
    struct addrinfo hints, *servinfo, *p;
    int rv;
    char service[ 10 ];
-   obj_t a_socket;
+   obj_t a_socket, buf, inb, iport;
+   FILE *fs;
 
    /* Determine port to use */
    if( portnum < 0 )
       socket_error( msg, "bad port number", BINT( portnum ) );
 
    memset( &hints, 0, sizeof( hints ) );
-#ifdef BGL_ANDROID   
-   hints.ai_family = AF_INET; // set to AF_INET to force IPv4
+#ifdef BGL_ANDROID
+   /* set to AF_INET to force IPv4 */
+   hints.ai_family = AF_INET; 
 #else   
    hints.ai_family = AF_UNSPEC;
 #endif
@@ -2409,7 +2411,8 @@ bgl_make_datagram_server_socket( int portnum ) {
 #if( !defined( AI_NUMERICSERV ) )
    hints.ai_flags = AI_PASSIVE;
 #else
-   hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV; // use my IP and numeric port
+   /* use my IP and numeric port */
+   hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV; 
 #endif
    sprintf( service, "%d", portnum );
 
@@ -2417,7 +2420,7 @@ bgl_make_datagram_server_socket( int portnum ) {
       socket_error( msg, (char *)gai_strerror( rv ), BINT( portnum ) );
    }
 
-   // loop through all the results and bind to the first we can
+   /* loop through all the results and bind to the first we can */
    for( p = servinfo; p != NULL; p = p->ai_next ) {
       if( (s = socket( p->ai_family, p->ai_socktype, p->ai_protocol )) == -1 ) {
 	 socket_error( msg, "cannot create socket", BINT( portnum ) );
@@ -2440,8 +2443,28 @@ bgl_make_datagram_server_socket( int portnum ) {
    a_socket->datagram_socket_t.hostname = BUNSPEC;
    a_socket->datagram_socket_t.hostip = BFALSE;
    a_socket->datagram_socket_t.fd = s;
-   a_socket->datagram_socket_t.port = BFALSE;
    a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+
+   if ( !(fs = fdopen( s, "r" )) ) {
+      char buffer[1024];
+
+      sprintf( buffer, "%s: cannot create datagram server socket io port, %s (s=%d->%p)",
+	       msg, strerror( errno ), s, fs );
+      socket_error( "bgl_make_datagram_server_socket", buffer, a_socket );
+   }
+
+   /* Make an unbuffered input port, so that `datagram-socket-receive',   */
+   /* which bypasses port buffering, can still be used without troubles.  */
+   setbuf( fs, NULL );
+   inb = make_string_sans_fill( 0 );
+   iport = bgl_make_input_port( string_to_bstring( "datagram-server" ),
+				fs, KINDOF_SOCKET, inb );
+   a_socket->datagram_socket_t.input = iport;
+   a_socket->datagram_socket_t.input->input_port_t.sysread = bgl_read;
+   a_socket->datagram_socket_t.input->input_port_t.sysseek = bgl_input_socket_seek;
+   a_socket->datagram_socket_t.input->port_t.sysclose = &bgl_sclose_rd;
+
+   a_socket->datagram_socket_t.port = iport;
 
    return BREF( a_socket );
 #endif
@@ -2455,7 +2478,8 @@ obj_t
 bgl_make_datagram_unbound_socket( obj_t family ) {
    static const char msg[] = "make-datagram-unbound-socket";
    int fam, s;
-   obj_t a_socket, inp;
+   obj_t a_socket, buf, inb, iport;
+   FILE *fs;
 
    if( family == string_to_symbol( "inet" ) ) {
       fam = AF_INET;
@@ -2479,8 +2503,29 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
    a_socket->datagram_socket_t.hostname = BUNSPEC;
    a_socket->datagram_socket_t.hostip = BFALSE;
    a_socket->datagram_socket_t.fd = s;
-   a_socket->datagram_socket_t.port = BFALSE;
    a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+
+
+   if ( !(fs = fdopen( s, "r" )) ) {
+      char buffer[1024];
+
+      sprintf( buffer, "%s: cannot create datagram server socket io port, %s (s=%d->%p)",
+	       msg, strerror( errno ), s, fs );
+      socket_error( "bgl_make_datagram_server_socket", buffer, a_socket );
+   }
+
+   /* Make an unbuffered input port, so that `datagram-socket-receive',   */
+   /* which bypasses port buffering, can still be used without troubles.  */
+   setbuf( fs, NULL );
+   inb = make_string_sans_fill( 0 );
+   iport = bgl_make_input_port( string_to_bstring( "datagram-unbound" ),
+				fs, KINDOF_SOCKET, inb );
+   a_socket->datagram_socket_t.input = iport;
+   a_socket->datagram_socket_t.input->input_port_t.sysread = bgl_read;
+   a_socket->datagram_socket_t.input->input_port_t.sysseek = bgl_input_socket_seek;
+   a_socket->datagram_socket_t.input->port_t.sysclose = &bgl_sclose_rd;
+
+   a_socket->datagram_socket_t.port = iport;
 
    return BREF( a_socket );
 }

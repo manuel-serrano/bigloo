@@ -493,6 +493,7 @@ typedef union scmobj {
       int stype;                 /*   - socket type (client/server)    */
       union scmobj *chook;       /*   - the close hook                 */
       void *server;              /*   - socket server                  */
+      union scmobj *input;       /*   - a scheme input port or #unspec */
    } datagram_socket_t;
 
    struct bgl_regexp {           /* Regular expressions                */
@@ -2863,6 +2864,14 @@ struct befored {
    (BGL_DATAGRAM_SOCKETP( o ) \
     && (BGL_DATAGRAM_SOCKET( o ).stype >= BGL_SOCKET_CLIENT))
    
+#define BGL_DATAGRAM_SOCKET_INPUT( o )			\
+  (INPUT_PORTP((o)->datagram_socket_t.input) ?		\
+   (o)->datagram_socket_t.input				\
+   : C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,		\
+                       "datagram-socket-input",		\
+                       "datagram socket has no port",	\
+                       o ))
+
 /*---------------------------------------------------------------------*/
 /*    Regexp ...                                                       */
 /*---------------------------------------------------------------------*/
