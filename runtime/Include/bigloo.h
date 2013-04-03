@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Apr  2 17:43:52 2013 (serrano)                */
+/*    Last change :  Wed Apr  3 11:06:57 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3083,9 +3083,9 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_RTL_PUSH_ENV_EXIT( env, _xit, _ser ) \
    exitd.exit  = _xit; \
    exitd.userp = _ser; \
-   exitd.mutex0 = BFALSE; \
-   exitd.mutex1 = BFALSE; \
-   exitd.mutexn = BNIL; \
+   exitd.protect0 = BFALSE; \
+   exitd.protect1 = BFALSE; \
+   exitd.protectn = BNIL; \
    exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \
    exitd.prev  = BGL_ENV_EXITD_TOP( env ); \
    exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \
