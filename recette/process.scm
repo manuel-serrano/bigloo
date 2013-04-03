@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Tue Mar 29 07:39:10 2011 (serrano)                */
+;*    Last change :  Wed Apr  3 07:27:48 2013 (serrano)                */
 ;*                                                                     */
 ;*    Process tests                                                    */
 ;*---------------------------------------------------------------------*/
@@ -120,21 +120,24 @@
 		     (process-exit-status proc)
 		     line)))
 	 '(#f 6 "204"))
-   (test "&io-timeout-error"
-         (let* ((proc  (run-process *bigloo-path* "-eval" "(sleep 4)"
-			  output: pipe:))
-		(output (process-output-port proc)))
-	    (input-port-timeout-set! output 1000)
-	    (let ((result (with-handler
-			     (lambda (e)
-				(isa? e &io-timeout-error))
-			     (begin
-				(read-lines output)
-				#f))))
-	       (close-input-port output)
-	       (process-wait proc)
-	       result))
-	 #t)
+   (cond-expand
+      ;; can't set timeout on regular Java ports
+      (bigloo-jvm #f)          
+      (else (test "&io-timeout-error"
+	       (let* ((proc  (run-process *bigloo-path* "-eval" "(sleep 4)"
+				output: pipe:))
+		      (output (process-output-port proc)))
+		  (input-port-timeout-set! output 1000)
+		  (let ((result (with-handler
+				   (lambda (e)
+				      (isa? e &io-timeout-error))
+				   (begin
+				      (read-lines output)
+				      #f))))
+		     (close-input-port output)
+		     (process-wait proc)
+		     result))
+	       #t)))
    (cond-expand
       ;; no access to environment variables in Java
       (bigloo-jvm #f)          

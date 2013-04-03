@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Tue Jan 29 17:34:46 2013 (serrano)                */
+/*    Last change :  Tue Apr  2 18:37:24 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -150,6 +150,8 @@ callcc_init_stack() {
    unwind_stack_until( BGL_ENV_EXITD_TOP( env ), stamp, s_value, BFALSE );
 }
 
+void (*__callcc_init_stack)() = &callcc_init_stack;
+ 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    callcc_install_stack ...                                         */
@@ -166,7 +168,7 @@ callcc_install_stack( obj_t kont, obj_t value ) {
    stack_size = STACK( stack ).size;
    stamp      = STACK( stack ).stamp;
    memorycpy  = (void (*)( void*, void*, size_t ))PROCEDURE_REF( kont, 1 );
-   
+
    /* Check the stack before restore */
    if( (!STACKP( stack )) || (!EQP( CREF( stack ), STACK( stack ).self )) )
       C_FAILURE( "apply_continuation",
@@ -188,9 +190,11 @@ callcc_install_stack( obj_t kont, obj_t value ) {
       memorycpy( BGL_ENV_STACK_BOTTOM( env ), &(STACK( stack ).stack), stack_size );
 #endif
 
-      callcc_init_stack();
+      __callcc_init_stack();
    }
 }
+
+void (*__callcc_install_stack)(obj_t, obj_t) = &callcc_install_stack;
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
@@ -230,7 +234,7 @@ callcc_restore_stack( obj_t env, obj_t value, char **_dummy ) {
       glob_dummy = (long)dummy;
       callcc_restore_stack( env, value, &dummy[ 1 ] );
    } else {
-      callcc_install_stack( kont, value );
+      __callcc_install_stack( kont, value );
    }
 
    return (obj_t)_dummy;

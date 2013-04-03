@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Dec  9 11:49:41 2000                          */
-/*    Last change :  Wed Aug 22 16:37:45 2012 (serrano)                */
-/*    Copyright   :  2000-12 Manuel Serrano                            */
+/*    Last change :  Wed Apr  3 06:53:35 2013 (serrano)                */
+/*    Copyright   :  2000-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo JVM input pipe ports.                                     */
 /*=====================================================================*/
@@ -22,7 +22,7 @@ public class input_pipe_port extends input_port {
    /*--- public constructors ---------------------------------------------*/
    public input_pipe_port( final InputStream in, final byte[] c ) {
       super( new String( c ), new byte[ 1024 ] );
-      this.in= in;
+      this.in = in;
    }
 
    public input_pipe_port( final byte[] cmd, final byte[] buf ) {

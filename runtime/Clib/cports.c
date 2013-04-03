@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Apr  2 15:59:45 2013 (serrano)                */
+/*    Last change :  Tue Apr  2 18:42:14 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -579,10 +579,9 @@ loop:
 			BSTRING_TO_STRING( PORT( port ).name) );
 	    }
 	 }
-	    
+#endif
 	 sprintf( buf, "Time limit (%ld us) exceeded",
 		  tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
-#endif
 	 
 	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "read/timeout", buf, port );
       } else {
@@ -592,9 +591,10 @@ loop:
 	 
 #if( defined( DEBUG_TIMED_READ ) )    
 	 if( debug >= 1 ) {
-           fprintf( stderr, "%s:%d posix_timed_read, select err=%s(%d) port=%s\n",
-	    __FILE__, __LINE__, 
-	    strerror( errno ), errno, BSTRING_TO_STRING( PORT( port ).name ) );
+	    fprintf( stderr, "%s:%d posix_timed_read, select err=%s(%d) port=%s\n",
+		     __FILE__, __LINE__, 
+		     strerror( errno ), errno,
+		     BSTRING_TO_STRING( PORT( port ).name ) );
          }
 #endif
 	 

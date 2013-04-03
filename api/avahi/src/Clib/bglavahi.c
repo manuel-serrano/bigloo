@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Feb  6 09:00:41 2013 (serrano)                */
+/*    Last change :  Tue Apr  2 18:42:44 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -628,7 +628,7 @@ bgl_avahi_client_new( bgl_avahi_client_t o ) {
    int error;
    bgl_avahi_poll_t bpoll = BGL_AVAHI_CLIENT_POLL( o );
    AvahiClient *client;
-   AvahiPoll *poll;
+   const AvahiPoll *poll;
    
    if( bgl_avahi_threaded_pollp( (obj_t)bpoll ) ) {
       poll = avahi_threaded_poll_get( BGL_AVAHI_THREADED_POLL_BUILTIN( bpoll ) );
