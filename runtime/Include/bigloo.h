@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Apr  3 11:06:57 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 10:36:38 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -489,11 +489,10 @@ typedef union scmobj {
       union scmobj *hostname;    /*   - a host name                    */
       union scmobj *hostip;      /*   - a host ip                      */
       int fd;                    /*   - a file descriptor              */
-      union scmobj *port;        /*   - the associated port            */
       int stype;                 /*   - socket type (client/server)    */
       union scmobj *chook;       /*   - the close hook                 */
       void *server;              /*   - socket server                  */
-      union scmobj *input;       /*   - a scheme input port or #unspec */
+      union scmobj *port;        /*   - the associated port            */
    } datagram_socket_t;
 
    struct bgl_regexp {           /* Regular expressions                */
@@ -1959,6 +1958,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define KINDOF_GZIP      BINT( 10 )
 #define KINDOF_BZIP2     BINT( 11 )
 #define KINDOF_TIMEOUT   BINT( 12 )
+#define KINDOF_DATAGRAM  BINT( 13 )
 #define KINDOF_UNUSED    BINT( 20 )
 
 #define PORT_IS_OS( o ) (PORT( o ).kindof < KINDOF_VIRTUAL)
@@ -2864,14 +2864,6 @@ struct befored {
    (BGL_DATAGRAM_SOCKETP( o ) \
     && (BGL_DATAGRAM_SOCKET( o ).stype >= BGL_SOCKET_CLIENT))
    
-#define BGL_DATAGRAM_SOCKET_INPUT( o )			\
-  (INPUT_PORTP((o)->datagram_socket_t.input) ?		\
-   (o)->datagram_socket_t.input				\
-   : C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,		\
-                       "datagram-socket-input",		\
-                       "datagram socket has no port",	\
-                       o ))
-
 /*---------------------------------------------------------------------*/
 /*    Regexp ...                                                       */
 /*---------------------------------------------------------------------*/

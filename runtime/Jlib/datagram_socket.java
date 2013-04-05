@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Wed Apr  3 10:34:17 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 10:46:07 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
@@ -36,11 +36,11 @@ public abstract class datagram_socket extends obj {
       return socket.getInetAddress().getHostAddress().getBytes();
    }
 
-   public int PORT() {
+   public int PORTNUM() {
       return socket.getPort();
    }
    
-   public output_port OUTPUT_PORT() {
+   public obj PORT() {
       foreign.fail( "datagram-socket-output-port",
 		    "not a datagram-client socket",
 		    this );

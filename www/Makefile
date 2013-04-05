@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Thu Jan 17 11:51:54 2013 (serrano)                */
+#*    Last change :  Fri Apr  5 10:02:41 2013 (serrano)                */
 #*    Copyright   :  2001-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
@@ -25,7 +25,7 @@ HOSTHTTPDIR	= /users/serrano/public_html/bigloo
 HOSTURL		= http://$(HOSTHTTP)/Bigloo
 BUGLOOURL	= http://$(HOSTHTTP)/Bugloo
 SCMPKGURL	= http://hop.inria.fr/hop/scmpkg
-ARCHIVEURL1	= https://lists-sop.inria.fr/wws/arc/bigloo
+ARCHIVEURL1	= https://sympa.inria.fr/sympa/arc/bigloo
 ARCHIVEURL2	= http://news.gmane.org/gmane.lisp.scheme.bigloo
 WIKIURL		= http://bigloo.pbwiki.com
 

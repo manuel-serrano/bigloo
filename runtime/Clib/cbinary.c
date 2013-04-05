@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Thu Dec  6 14:00:00 2012 (serrano)                */
+/*    Last change :  Fri Apr  5 09:52:06 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -53,13 +53,13 @@ extern obj_t bgl_string_shrink();
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    make_binary_port ...                                             */
+/*    bgl_make_binary_port ...                                         */
 /*    -------------------------------------------------------------    */
 /*    Cette procedure alloue tous les ports binaires. Qu'ils soient    */
 /*    en sortie ou en entree.                                          */
 /*---------------------------------------------------------------------*/
 static obj_t
-make_binary_port( char *name, FILE *file, bool_t io ) {
+bgl_make_binary_port( char *name, FILE *file, bool_t io ) {
    obj_t binary_port;
 
    binary_port = GC_MALLOC( BINARY_PORT_SIZE );
@@ -82,9 +82,9 @@ open_output_binary_file( obj_t name ) {
    if( !(file = fopen( BSTRING_TO_STRING( name ), "wb" )) )
       return BFALSE;
 
-   return make_binary_port( BSTRING_TO_STRING( name ),
-			    file,
-			    BINARY_PORT_OUT );
+   return bgl_make_binary_port( BSTRING_TO_STRING( name ),
+				file,
+				BINARY_PORT_OUT );
 }
 
 /*---------------------------------------------------------------------*/
@@ -97,9 +97,9 @@ append_output_binary_file( obj_t name ) {
    if( !(file = fopen( BSTRING_TO_STRING( name ), "a+b" )) )
       return BFALSE;
 
-   return make_binary_port( BSTRING_TO_STRING( name ),
-			    file,
-			    BINARY_PORT_OUT );
+   return bgl_make_binary_port( BSTRING_TO_STRING( name ),
+				file,
+				BINARY_PORT_OUT );
 }
 
 /*---------------------------------------------------------------------*/
@@ -140,9 +140,9 @@ open_input_binary_file( obj_t name ) {
    if( !(file = fopen( BSTRING_TO_STRING( name ), "rb" )) )
       return BFALSE;
    else {
-      binary_port = make_binary_port( BSTRING_TO_STRING( name ),
-				      file,
-				      BINARY_PORT_IN );
+      binary_port = bgl_make_binary_port( BSTRING_TO_STRING( name ),
+					  file,
+					  BINARY_PORT_IN );
       return BREF( binary_port );
    }
 }

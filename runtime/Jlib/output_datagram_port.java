@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 07:02:12 2011                          */
-/*    Last change :  Sun May  1 07:19:53 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Fri Apr  5 10:49:44 2013 (serrano)                */
+/*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    DatagramSocket output ports.                                     */
 /*=====================================================================*/
@@ -18,12 +18,14 @@ import java.net.*;
 /*---------------------------------------------------------------------*/
 public class output_datagram_port extends output_port {
    datagram_client_socket socket;
+   int port;
    
    public output_datagram_port( final datagram_client_socket s,
 				final byte[] hostname,
-				final int port ) {
+				final int p ) {
       super();
 
+      port = p;
       String n = new String( hostname ) + ":" + port;
       name = n.getBytes();
       socket = s;
@@ -47,7 +49,7 @@ public class output_datagram_port extends output_port {
    public void write( final byte[] s ) {
       try {
 	 socket.socket.send(
-	    new DatagramPacket( s, s.length, socket.ip, socket.port ) );
+	    new DatagramPacket( s, s.length, socket.ip, port ) );
       } catch( final Exception e ) {
 	 foreign.fail( "write", e, this );
       }

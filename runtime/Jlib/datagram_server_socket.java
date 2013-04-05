@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Mon Feb 18 17:08:58 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 11:05:16 2013 (serrano)                */
 /*    Copyright   :  2000-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram Server Socket implementation for the JVM back-end.  */
@@ -27,6 +27,7 @@ public class datagram_server_socket extends datagram_socket {
 
       try {
 	 socket = new DatagramSocket( port );
+	 input = new input_datagram_port( this, port );
       } catch( final IOException e ) {
 	 foreign.fail( "make-datagram-server-socket",
 		       "cannot create socket",
@@ -66,6 +67,10 @@ public class datagram_server_socket extends datagram_socket {
 
       System.arraycopy( packet.getData(), 0, tmp, 0, len );
       return tmp;
+   }
+   
+   public obj PORT() {
+      return input;
    }
 }
     

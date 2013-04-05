@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Apr  2 18:42:14 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 10:25:46 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1375,6 +1375,7 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
 #endif
 	 
       case (long)KINDOF_SOCKET:
+      case (long)KINDOF_DATAGRAM:
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
 	 break;
 
@@ -1436,7 +1437,8 @@ bgl_input_port_timeout_set( obj_t port, long timeout ) {
 	(PORT(port).kindof == KINDOF_PIPE) ||
 	(PORT(port).kindof == KINDOF_PROCPIPE) ||
 	(PORT(port).kindof == KINDOF_CONSOLE) ||
-	(PORT(port).kindof == KINDOF_SOCKET)) ) {
+	(PORT(port).kindof == KINDOF_SOCKET) ||
+	(PORT(port).kindof == KINDOF_DATAGRAM)) ) {
       if( timeout == 0 ) {
 	 struct bgl_input_timeout *to = PORT( port ).timeout;
 

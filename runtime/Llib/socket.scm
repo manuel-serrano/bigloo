@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Wed Apr  3 10:25:13 2013 (serrano)                */
+;*    Last change :  Fri Apr  5 10:40:19 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -101,16 +101,14 @@
 		   "BGL_DATAGRAM_SOCKET_HOSTIP")
 	    (macro $datagram-socket-port-number::int (::datagram-socket)
 		   "BGL_DATAGRAM_SOCKET_PORTNUM")
-	    (macro $datagram-socket-port::output-port (::datagram-socket)
+	    (macro $datagram-socket-port::obj (::datagram-socket)
 		   "BGL_DATAGRAM_SOCKET_PORT")
 	    ($datagram-socket-close::obj (::datagram-socket)
 	       "bgl_datagram_socket_close")
 	    ($datagram-socket-receive::obj (::datagram-socket ::long)
 	       "bgl_datagram_socket_receive")
             ($datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
-	       "bgl_datagram_socket_send")
-	    (macro $datagram-socket-input::input-port (::datagram-socket)
-                   "BGL_DATAGRAM_SOCKET_INPUT"))
+	       "bgl_datagram_socket_send"))
    
    (java    (class foreign
 	       (method static c-socket?::bool (::obj)
@@ -185,7 +183,7 @@
 		   "BGL_DATAGRAM_SOCKET_HOSTIP")
 	       (method static $datagram-socket-port-number::int (::datagram-socket)
 		   "BGL_DATAGRAM_SOCKET_PORTNUM")
-	       (method static $datagram-socket-port::output-port (::datagram-socket)
+	       (method static $datagram-socket-port::obj (::datagram-socket)
 		  "BGL_DATAGRAM_SOCKET_PORT")
 	       
 	       (method static $datagram-socket-close::obj (::datagram-socket)
@@ -194,8 +192,6 @@
 		  "bgl_datagram_socket_receive")
 	       (method static $datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
 		  "bgl_datagram_socket_send")
-	       (method static $datagram-socket-input::input-port (::datagram-socket)
-                   "BGL_DATAGRAM_SOCKET_INPUT")
 	       
 	       (method static $dgetsockopt::obj (::datagram-socket ::keyword)
 		  "bgl_dgetsockopt")
@@ -212,7 +208,6 @@
 	    (inline socket-port-number::bint ::socket)
 	    (inline socket-input::input-port ::socket)
 	    (inline socket-output::output-port ::socket)
-	    (inline datagram-socket-input::input-port ::datagram-socket)
 	    (make-client-socket::socket ::bstring ::int
 					#!key
 					(domain 'inet)
@@ -243,12 +238,12 @@
 	    (inline datagram-socket-hostname::obj ::datagram-socket)
 	    (inline datagram-socket-host-address::obj ::datagram-socket)
 	    (inline datagram-socket-port-number::bint ::datagram-socket)
+	    (inline datagram-socket-port::output-port ::datagram-socket)
 	    (inline datagram-socket-close ::datagram-socket)
 	    (inline datagram-socket-receive ::datagram-socket ::int)
 	    (inline datagram-socket-send ::datagram-socket ::bstring ::bstring ::int)
 	    (inline datagram-socket-option ::datagram-socket ::keyword)
-	    (inline datagram-socket-option-set! ::datagram-socket ::keyword ::obj)
-	    (datagram-socket-output-port::output-port ::datagram-socket))
+	    (inline datagram-socket-option-set! ::datagram-socket ::keyword ::obj))
    
    (pragma  (c-socket? nesting fail-safe)
 	    (c-socket-hostname nesting fail-safe)
@@ -333,12 +328,6 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-input socket::socket)
    (c-socket-input socket))
-
-;*---------------------------------------------------------------------*/
-;*    datagram-socket-input ...                                        */
-;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-input socket::datagram-socket)
-   ($datagram-socket-input socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-output ...                                                */
@@ -521,6 +510,12 @@
    ($datagram-socket-port-number socket))
 
 ;*---------------------------------------------------------------------*/
+;*    datagram-socket-port ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-port socket)
+   ($datagram-socket-port socket))
+
+;*---------------------------------------------------------------------*/
 ;*    make-datagram-server-socket ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-datagram-server-socket #!optional (port 0))
@@ -547,42 +542,24 @@
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-receive ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-receive dsocket length)
-   ($datagram-socket-receive dsocket length))
+(define-inline (datagram-socket-receive socket length)
+   ($datagram-socket-receive socket length))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-send ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-send dsocket string host port)
-   ($datagram-socket-send dsocket string host port))
-
-;*---------------------------------------------------------------------*/
-;*    datagram-socket-output-port ...                                  */
-;*---------------------------------------------------------------------*/
-(define (datagram-socket-output-port dsocket)
-   (let ((p ($datagram-socket-port dsocket)))
-      (unless (output-port? p)
-	 (error "datagram-socket-ouput-port" "Not a datagram-client" dsocket))
-      p))
-
-;*---------------------------------------------------------------------*/
-;*    datagram-socket-input-port ...                                   */
-;*---------------------------------------------------------------------*/
-(define (datagram-socket-input-port dsocket)
-   (let ((p (datagram-socket-input dsocket)))
-      (unless (input-port? p)
-	 (error "datagram-socket-input-port" "Not a datagram-server" dsocket))
-      p))
+(define-inline (datagram-socket-send socket string host port)
+   ($datagram-socket-send socket string host port))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-option ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-option dsocket option)
-   ($dgetsockopt dsocket option))
+(define-inline (datagram-socket-option socket option)
+   ($dgetsockopt socket option))
 
 ;*---------------------------------------------------------------------*/
 ;*    datagram-socket-option-set! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-option-set! dsocket option val)
-   ($dsetsockopt! dsocket option val))
+(define-inline (datagram-socket-option-set! socket option val)
+   ($dsetsockopt! socket option val))
 

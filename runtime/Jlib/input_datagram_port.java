@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Wed Apr  3 10:50:48 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 11:07:52 2013 (serrano)                */
 /*    Copyright   :  2000-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
@@ -17,13 +17,14 @@ import java.net.*;
 /*    INPUT_DATAGRAM_PORT                                              */
 /*---------------------------------------------------------------------*/
 public class input_datagram_port extends input_port {
-   private datagram_client_socket socket;
+   private int port;
+   private datagram_server_socket socket;
 
-   public input_datagram_port( final datagram_client_socket s,
-			       final byte[] buf,
-			       final int port ) {
-      super( "[datagram-socket]", buf );
+   public input_datagram_port( final datagram_server_socket s,
+			       final int p ) {
+      super( "[datagram-socket]", null );
       socket = s;
+      port = p;
    }
 
    public void close() {
@@ -76,8 +77,7 @@ public class input_datagram_port extends input_port {
       // to remove the '\0' sentinel that ends the buffer */
       final byte[] buffer = this.buffer;
 
-      socket.socket.receive(
-	 new DatagramPacket( buffer, bufpose-1, size, socket.ip, socket.port ) );
+      socket.socket.receive( new DatagramPacket( buffer, bufpose-1, size ) );
       
       final int nbread = size;
 

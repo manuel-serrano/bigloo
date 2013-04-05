@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Apr  5 08:40:31 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 10:26:02 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -252,12 +252,21 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
       }
 
       /* read what we need */
-      while( (l > 0) && !(INPUT_PORT( p ).eof) ) {
-	 long size = l < default_io_bufsiz ? l : default_io_bufsiz;
-	 long r = sysread( p, s, o, size );
+      if( l > 0 ) {
+_loop:
+	 if( !(INPUT_PORT( p ).eof) ) {
+	    long size = l < default_io_bufsiz ? l : default_io_bufsiz;
+	    long r = sysread( p, s, o, size );
 
-	 o += r;
-	 l -= r;
+	    o += r;
+	    l -= r;
+
+	    if( l > 0 ) {
+	       if( (long)PORT( p ).kindof != (long)KINDOF_DATAGRAM ) {
+		  goto _loop;
+	       }
+	    }
+	 }
       }
 
       INPUT_PORT( p ).forward = 0;

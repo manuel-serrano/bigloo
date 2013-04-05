@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Apr  3 10:13:19 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 10:39:00 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2363,18 +2363,17 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    a_socket->datagram_socket_t.fd = s;
    
    /* socket port */
-   oport = bgl_make_output_port( a_socket->datagram_socket_t.hostip,
-				 (bgl_stream_t)(void *)BREF( a_socket ),
-				 BGL_STREAM_TYPE_CHANNEL,
-				 KINDOF_SOCKET,
-				 make_string_sans_fill( 0 ),
-				 &datagram_socket_write,
-				 0L,
-				 close );
+   a_socket->datagram_socket_t.port =
+      bgl_make_output_port( a_socket->datagram_socket_t.hostip,
+			    (bgl_stream_t)(void *)BREF( a_socket ),
+			    BGL_STREAM_TYPE_CHANNEL,
+			    KINDOF_SOCKET,
+			    make_string_sans_fill( 0 ),
+			    &datagram_socket_write,
+			    0L,
+			    close );
    OUTPUT_PORT( oport ).sysflush = &bgl_socket_flush;
    OUTPUT_PORT( oport ).bufmode = BGL_IONB;
-   
-   a_socket->datagram_socket_t.port = oport;
    
    return BREF( a_socket );
 }
@@ -2456,15 +2455,10 @@ bgl_make_datagram_server_socket( int portnum ) {
    /* Make an unbuffered input port, so that `datagram-socket-receive',   */
    /* which bypasses port buffering, can still be used without troubles.  */
    setbuf( fs, NULL );
-   inb = make_string_sans_fill( 0 );
-   iport = bgl_make_input_port( string_to_bstring( "datagram-server" ),
-				fs, KINDOF_SOCKET, inb );
-   a_socket->datagram_socket_t.input = iport;
-   a_socket->datagram_socket_t.input->input_port_t.sysread = bgl_read;
-   a_socket->datagram_socket_t.input->input_port_t.sysseek = bgl_input_socket_seek;
-   a_socket->datagram_socket_t.input->port_t.sysclose = &bgl_sclose_rd;
-
-   a_socket->datagram_socket_t.port = iport;
+   a_socket->datagram_socket_t.port =
+      bgl_make_input_port( string_to_bstring( "datagram-server" ),
+			   fs, KINDOF_DATAGRAM,
+			   make_string_sans_fill( 0 ) );
 
    return BREF( a_socket );
 #endif
@@ -2517,15 +2511,10 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
    /* Make an unbuffered input port, so that `datagram-socket-receive',   */
    /* which bypasses port buffering, can still be used without troubles.  */
    setbuf( fs, NULL );
-   inb = make_string_sans_fill( 0 );
-   iport = bgl_make_input_port( string_to_bstring( "datagram-unbound" ),
-				fs, KINDOF_SOCKET, inb );
-   a_socket->datagram_socket_t.input = iport;
-   a_socket->datagram_socket_t.input->input_port_t.sysread = bgl_read;
-   a_socket->datagram_socket_t.input->input_port_t.sysseek = bgl_input_socket_seek;
-   a_socket->datagram_socket_t.input->port_t.sysclose = &bgl_sclose_rd;
-
-   a_socket->datagram_socket_t.port = iport;
+   a_socket->datagram_socket_t.port =
+      bgl_make_input_port( string_to_bstring( "datagram-server" ),
+			   fs, KINDOF_DATAGRAM,
+			   make_string_sans_fill( 0 ) );
 
    return BREF( a_socket );
 }

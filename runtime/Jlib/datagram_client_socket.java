@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Apr  3 10:33:25 2013 (serrano)                */
+/*    Last change :  Fri Apr  5 11:03:06 2013 (serrano)                */
 /*    Copyright   :  2000-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram Client Socket implementation for the JVM back-end.  */
@@ -19,7 +19,7 @@ import java.net.*;
 public class datagram_client_socket extends datagram_socket {
    // public fields
    public InetAddress ip;
-   int port;
+   output_datagram_port output;
    
    // constructors
    public datagram_client_socket() {
@@ -27,13 +27,12 @@ public class datagram_client_socket extends datagram_socket {
    }
    
    public datagram_client_socket( final byte[] hostname,
-				  final int p,
+				  final int port,
 				  final boolean broadcast ) {
       super();
 
       try {
 	 ip = InetAddress.getByName( new String( hostname ) );
-	 port = p;
 	 
 	 socket = new DatagramSocket();
 	 socket.setBroadcast( broadcast );
@@ -51,7 +50,6 @@ public class datagram_client_socket extends datagram_socket {
       }
       
       output = new output_datagram_port( this, hostname, port );
-      input = new input_datagram_port( this, hostname, port );
    }
 
    // public methods
@@ -62,11 +60,7 @@ public class datagram_client_socket extends datagram_socket {
       return bigloo.foreign.BUNSPEC;
    }
    
-   public output_port OUTPUT_PORT() {
+   public obj PORT() {
       return output;
-   }
-   
-   public input_port INPUT_PORT() {
-      return input;
    }
 }
