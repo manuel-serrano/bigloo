@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Apr  2 18:00:26 2013 (serrano)                */
+#*    Last change :  Fri Apr  5 08:31:32 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -306,6 +306,7 @@ customgclib=bigloogc
 gchaveblocking=0
 gchavedoblocking=0
 gcfinalizer=0
+gcparallelmark=
 
 #*--- Cross Compilation -----------------------------------------------*/
 hostsh=
@@ -451,6 +452,9 @@ while : ; do
 
     --gccustominstall=*)
       actiongc="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --gcparallelmark=*)
+      gcparallelmark="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --fildir=*)
       fildir="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -894,8 +898,9 @@ while : ; do
       echo "   --gcprefix=dir (non-custom gc installation prefix (/usr)"  >&2;
       echo "   --gclibdir=dir (non-custom gc library dir (/usr/lib)" >&2;
       echo "   --gcincdir=dir (non-custon gc include dir (/usr/include/gc)" >&2;
-      echo "   --gccustomversion=version (custom gc version, e.g. \"gc-7.1\")" >&2;
+      echo "   --gccustomversion=version (custom gc version, e.g., \"gc-7.1\")" >&2;
       echo "   --gccustominstall=[install|skip] (configure and install the gc))" >&2;
+      echo "   --gccparallelmark=[yes|no] (configure the gc for parallel mark))" >&2;
       echo "" >&2;
       echo "Tools and compilers:"  >&2;
       echo "   --bigloo=comp [default bigloo]" >&2;
@@ -1700,6 +1705,21 @@ else
   # pthread local storage
   if [ "$pthreadlibs" != "no" -a "$pthreadlocalstorage " = " " ]; then
     pthreadlocalstorage=`$autoconf pthreadlocalstorage --lib="$pthreadlibs"` || exit 1;
+  fi
+
+  # get the number of processors of the machine
+  if [ "$gcparallelmark " = " " ]; then
+    nbprocs=`$autoconf nbprocs --cflags="$cflags"` || exit 1
+
+    if [ "$nbprocs " = "0 " -o "$nbprocs " = "1 " ]; then
+      gcparallelmark=no;
+    else
+      gcparallelmark=yes;
+    fi
+  fi
+
+  if [ "$gcparallelmark " = "yes " ]; then
+    gthread="$gcthread -DPARALLEL_MARK";
   fi
 
   # thread local storage

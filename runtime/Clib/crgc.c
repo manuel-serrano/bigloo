@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Dec 14 09:28:43 2012 (serrano)                */
+/*    Last change :  Fri Apr  5 08:40:31 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -511,6 +511,7 @@ bgl_rgc_charready( obj_t port ) {
       case (long)KINDOF_PIPE:
       case (long)KINDOF_CONSOLE:
       case (long)KINDOF_SOCKET:
+      case (long)KINDOF_DATAGRAM:
 	 return ((INPUT_PORT( port ).forward) < INPUT_PORT( port ).bufpos)
 	    || file_charready( PORT_FILE( port ) );
 	 

@@ -1,0 +1,102 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/nbprocs                     */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Fri Apr  5 08:20:37 2013 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check the number of processors.                                  */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      lib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --opt=*)
+      tcp_opt="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $lib >/dev/null"
+compile_solaris="$CC $cflags $file.c -o $aout $solaris_lib >/dev/null"
+compile_mingw="$CC -D_MINGW_VER $cflags $file.c -o $aout $mingw_lib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <unistd.h>
+#include <stdio.h>
+
+main( int argc, char *argv[] ) {
+#if( defined( _SC_NPROCESSORS_ONLN ) )
+return (int)sysconf( _SC_NPROCESSORS_ONLN );
+#else 
+#  if( defined( _SC_NPROC_ONLN) )
+return (int)sysconf( _SC_NPROCESSORS_ONLN );
+#  else
+return 0;
+#  endif
+#endif
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   \rm -f $file.*
+   eval "$HOSTSH $aout"
+
+   ret_code=$?
+   \rm -f $file.*
+
+   if [ "$ret_code " = "0 " ]; then
+     if [ -f /proc/cpuinfo ]; then
+        grep processor /proc/cpuinfo | wc -l
+     else
+        echo 1
+     fi
+   else
+     echo $ret_code
+   fi
+else
+   echo 0
+fi
+
+rm -f $aout
+rm -f $aout*
+rm -f $file.*
