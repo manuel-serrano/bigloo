@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Apr  5 10:39:00 2013 (serrano)                */
+/*    Last change :  Mon Apr  8 18:33:37 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2499,7 +2499,6 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
    a_socket->datagram_socket_t.fd = s;
    a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
 
-
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
 
@@ -2515,6 +2514,7 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
+   fprintf( stderr, "PORT=%p\n", a_socket->datagram_socket_t.port );
 
    return BREF( a_socket );
 }

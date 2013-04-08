@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Fri Apr  5 10:40:19 2013 (serrano)                */
+;*    Last change :  Mon Apr  8 16:28:46 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -238,7 +238,8 @@
 	    (inline datagram-socket-hostname::obj ::datagram-socket)
 	    (inline datagram-socket-host-address::obj ::datagram-socket)
 	    (inline datagram-socket-port-number::bint ::datagram-socket)
-	    (inline datagram-socket-port::output-port ::datagram-socket)
+	    (inline datagram-socket-output::output-port ::datagram-socket)
+	    (inline datagram-socket-input::input-port ::datagram-socket)
 	    (inline datagram-socket-close ::datagram-socket)
 	    (inline datagram-socket-receive ::datagram-socket ::int)
 	    (inline datagram-socket-send ::datagram-socket ::bstring ::bstring ::int)
@@ -510,10 +511,22 @@
    ($datagram-socket-port-number socket))
 
 ;*---------------------------------------------------------------------*/
-;*    datagram-socket-port ...                                         */
+;*    datagram-socket-output ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (datagram-socket-port socket)
-   ($datagram-socket-port socket))
+(define-inline (datagram-socket-output socket)
+   (if (output-port? ($datagram-socket-port socket))
+       ($datagram-socket-port socket)
+       (error "datagram-socket-output"
+	  "Datagram-socket has no output port" socket)))
+
+;*---------------------------------------------------------------------*/
+;*    datagram-socket-input ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (datagram-socket-input socket)
+   (if (input-port? ($datagram-socket-port socket))
+       ($datagram-socket-port socket)
+       (error "datagram-socket-input"
+	  "Datagram-socket has no input port" socket)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-server-socket ...                                  */

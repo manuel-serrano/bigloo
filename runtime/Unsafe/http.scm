@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Tue Jul 31 06:24:01 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Mon Apr  8 16:07:27 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
 ;*=====================================================================*/
@@ -79,8 +79,8 @@
 	   (http-read-line ::input-port)
 	   (http-read-crlf ::input-port)
 	   (http-parse-status-line ::input-port)
-	   (http-parse-header ::input-port ::output-port)
-	   (http-parse-response ::input-port ::output-port ::procedure)
+	   (http-parse-header ::input-port ::obj)
+	   (http-parse-response ::input-port ::obj ::procedure)
 	   (http-response-body->port::input-port ::input-port ::output-port)
 	   (http-chunks->procedure::procedure ::input-port)
 	   (http-chunks->port::input-port ::input-port)

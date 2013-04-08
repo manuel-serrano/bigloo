@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Apr  5 08:31:32 2013 (serrano)                */
+#*    Last change :  Mon Apr  8 07:48:38 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac wav avahi phidget csv"
+apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac wav avahi phidget csv upnp"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -1719,7 +1719,7 @@ else
   fi
 
   if [ "$gcparallelmark " = "yes " ]; then
-    gthread="$gcthread -DPARALLEL_MARK";
+    gcthread="$gcthread -DPARALLEL_MARK";
   fi
 
   # thread local storage
