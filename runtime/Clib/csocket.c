@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Apr  8 18:33:37 2013 (serrano)                */
+/*    Last change :  Mon Apr  8 19:01:24 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2392,7 +2392,7 @@ bgl_make_datagram_server_socket( int portnum ) {
    struct addrinfo hints, *servinfo, *p;
    int rv;
    char service[ 10 ];
-   obj_t a_socket, buf, inb, iport;
+   obj_t sock, buf, inb, iport;
    FILE *fs;
 
    /* Determine port to use */
@@ -2436,31 +2436,34 @@ bgl_make_datagram_server_socket( int portnum ) {
    freeaddrinfo( servinfo );
 
    /* Now we can create the socket object */
-   a_socket = GC_MALLOC( SOCKET_SIZE );
-   a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
-   a_socket->datagram_socket_t.portnum = portnum;
-   a_socket->datagram_socket_t.hostname = BUNSPEC;
-   a_socket->datagram_socket_t.hostip = BFALSE;
-   a_socket->datagram_socket_t.fd = s;
-   a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+   sock = GC_MALLOC( SOCKET_SIZE );
+   sock->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   sock->datagram_socket_t.portnum = portnum;
+   sock->datagram_socket_t.hostname = BUNSPEC;
+   sock->datagram_socket_t.hostip = BFALSE;
+   sock->datagram_socket_t.fd = s;
+   sock->datagram_socket_t.stype = BGL_SOCKET_SERVER;
 
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
 
       sprintf( buffer, "%s: cannot create datagram server socket io port, %s (s=%d->%p)",
 	       msg, strerror( errno ), s, fs );
-      socket_error( "bgl_make_datagram_server_socket", buffer, a_socket );
+      socket_error( "bgl_make_datagram_server_socket", buffer, sock );
    }
 
    /* Make an unbuffered input port, so that `datagram-socket-receive',   */
    /* which bypasses port buffering, can still be used without troubles.  */
    setbuf( fs, NULL );
-   a_socket->datagram_socket_t.port =
+   sock->datagram_socket_t.port =
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
+   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysread = bgl_read;
+   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysseek = bgl_input_socket_seek;
+   BGL_DATAGRAM_SOCKET( sock ).port->port_t.sysclose = bgl_sclose_rd;
 
-   return BREF( a_socket );
+   return BREF( sock );
 #endif
 }
 
@@ -2472,7 +2475,7 @@ obj_t
 bgl_make_datagram_unbound_socket( obj_t family ) {
    static const char msg[] = "make-datagram-unbound-socket";
    int fam, s;
-   obj_t a_socket, buf, inb, iport;
+   obj_t sock, buf, inb, iport;
    FILE *fs;
 
    if( family == string_to_symbol( "inet" ) ) {
@@ -2491,32 +2494,34 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
       socket_error( msg, "cannot create socket", family );
    }
 
-   a_socket = GC_MALLOC( SOCKET_SIZE );
-   a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
-   a_socket->datagram_socket_t.portnum = 0;
-   a_socket->datagram_socket_t.hostname = BUNSPEC;
-   a_socket->datagram_socket_t.hostip = BFALSE;
-   a_socket->datagram_socket_t.fd = s;
-   a_socket->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+   sock = GC_MALLOC( SOCKET_SIZE );
+   sock->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   sock->datagram_socket_t.portnum = 0;
+   sock->datagram_socket_t.hostname = BUNSPEC;
+   sock->datagram_socket_t.hostip = BFALSE;
+   sock->datagram_socket_t.fd = s;
+   sock->datagram_socket_t.stype = BGL_SOCKET_SERVER;
 
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
 
       sprintf( buffer, "%s: cannot create datagram server socket io port, %s (s=%d->%p)",
 	       msg, strerror( errno ), s, fs );
-      socket_error( "bgl_make_datagram_server_socket", buffer, a_socket );
+      socket_error( "bgl_make_datagram_server_socket", buffer, sock );
    }
 
    /* Make an unbuffered input port, so that `datagram-socket-receive',   */
    /* which bypasses port buffering, can still be used without troubles.  */
    setbuf( fs, NULL );
-   a_socket->datagram_socket_t.port =
+   sock->datagram_socket_t.port =
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
-   fprintf( stderr, "PORT=%p\n", a_socket->datagram_socket_t.port );
+   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysread = bgl_read;
+   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysseek = bgl_input_socket_seek;
+   BGL_DATAGRAM_SOCKET( sock ).port->port_t.sysclose = bgl_sclose_rd;
 
-   return BREF( a_socket );
+   return BREF( sock );
 }
 
 /*---------------------------------------------------------------------*/
