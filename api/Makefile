@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Thu Feb 21 09:57:01 2013 (serrano)                */
+#*    Last change :  Wed Apr 10 17:12:59 2013 (serrano)                */
 #*    Copyright   :  2005-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -117,6 +117,8 @@ install:
 install-devel:
 	(cp Makefile.api $(LIBDIR)/$(FILDIR)/Makefile.api && \
          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api)
+	(cp Makefile.api-safe $(LIBDIR)/$(FILDIR)/Makefile.api-safe && \
+         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.api-safe)
 
 uninstall:
 	if [ "$(APIS) " != " " ]; then \
@@ -127,6 +129,7 @@ uninstall:
 
 uninstall-devel:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api
+	$(RM) -f $(LIBDIR)/$(FILDIR)/Makefile.api-safe
 
 #*---------------------------------------------------------------------*/
 #*    Populating the APIs                                              */
@@ -137,7 +140,7 @@ pop:
                 echo api/$$f; \
              done; \
           done;
-	@ echo api/Makefile api/Makefile.api api/README
+	@ echo api/Makefile api/Makefile.api api/Makefile.api-safe api/README
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

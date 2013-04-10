@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Nov 15 10:26:53 2011 (serrano)                */
-#*    Copyright   :  2001-11 Manuel Serrano                            */
+#*    Last change :  Wed Apr 10 17:24:38 2013 (serrano)                */
+#*    Copyright   :  2001-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -115,4 +115,4 @@ distrib:
 #*    Common rules                                                     */
 #*---------------------------------------------------------------------*/
 include ../../Makefile.misc
-include ../Makefile.api
+include ../Makefile.api-safe

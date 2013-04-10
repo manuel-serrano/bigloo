@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Mar 22 14:46:59 2013 (serrano)                */
+#*    Last change :  Wed Apr 10 17:22:49 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,8 @@ JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) 
+BAPIUNSAFEFLAGS = -unsafe -safee
 CAPIFLAGS	= $(CGCTHREADFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
@@ -53,8 +54,10 @@ _POSIX_OBJECTS	= bglsetup bglbmem bglpmutex bglpcondvar bglpthread
 _JAVA_CLASSES	= bglpmutex bglpcondvar bglpthread bglpdynamic
 
 _OBJECTS	= $(_POSIX_OBJECTS) $(_BGL_OBJECTS)
-OBJECTS		= $(_OBJECTS:%=objs/%.o)
-EOBJECTS	= objs/make_lib.o
+SAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_s/%.o)
+SAFE_EOBJECTS	= objs/objs_s/make_lib.o
+UNSAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_u/%.o)
+UNSAFE_EOBJECTS	= objs/objs_u/make_lib.o
 
 BGL_CLASSES	= $(_BGL_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
@@ -123,7 +126,7 @@ distclean: cleanall
 #*---------------------------------------------------------------------*/
 #*    Common API rules                                                 */
 #*---------------------------------------------------------------------*/
-include ../../Makefile.api
+include ../../Makefile.api-safe
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/
