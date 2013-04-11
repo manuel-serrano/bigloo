@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Wed Dec 19 09:09:51 2012 (serrano)                */
+/*    Last change :  Thu Apr 11 17:13:57 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -583,10 +583,10 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 			s1 = s2 ? s2 + 1 : 0;
 		     }
 		  }
-	       }
 
-	       /* try to execve, if it fails get errno and print the error */
-	       execve( *path, argv, env );
+		  /* try to execve, if it fails get errno and print the error */
+		  execve( *path, argv, env );
+	       }
 	    }
 #endif	    
 	 } else {
