@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 11:54:16 1996                          */
-;*    Last change :  Wed Apr  1 16:02:24 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 11 08:52:23 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `include' clauses compilation                                */
 ;*=====================================================================*/
@@ -29,10 +29,11 @@
 ;*    make-include-compiler ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (make-include-compiler)
-   (instantiate::ccomp (id 'include)
-		       (producer include-producer)
-		       (consumer include-consumer)
-		       (finalizer include-finalizer)))
+   (instantiate::ccomp
+      (id 'include)
+      (producer include-producer)
+      (consumer include-consumer)
+      (finalizer include-finalizer)))
  
 ;*---------------------------------------------------------------------*/
 ;*    *produced-code* ...                                              */
@@ -55,12 +56,12 @@
 	  (let ((file (car files)))
 	     (if (not (string? file))
 		 (include-error)
-		 (let* ((src       (read-include file))
-			(directive (car src))
-			(src-code  (reverse! (cdr src))))
+		 (let* ((src (read-include file))
+			(directives (car src))
+			(src-code (reverse! (cdr src))))
 		    ;; we parse the directive clause
-		    (if (pair? directive)
-			(for-each produce-module-clause! (cdr directive)))
+		    (when (pair? directives)
+		       (for-each produce-module-clause! (cdr directives)))
 		    (set! *produced-code* (append src-code *produced-code*))
 		    (loop (cdr files)))))))))
 

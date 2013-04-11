@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Wed Nov 21 05:44:32 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 11 09:03:31 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
 ;*=====================================================================*/
@@ -159,15 +159,23 @@
 ;*    produce-include-library-clauses ...                              */
 ;*---------------------------------------------------------------------*/
 (define (produce-include-library-clauses producer files)
-   (for-each (lambda (clause)
-		(match-case clause
-		   ((library . ?-)
-		    (producer clause))
-		   ((include . ?files)
-		    (produce-include-library-clauses producer files))
-		   (else
-		    #unspecified)))
-	     (append-map read-directives files)))
+   
+   (define (produce-include-clause clause)
+      (match-case clause
+	 ((library . ?-)
+	  (producer clause))
+	 ((include . ?files)
+	  (produce-include-library-clauses producer files))
+	 ((cond-expand . ?-)
+	  (let ((nc (progn-first-expression
+		       (comptime-expand-cond-expand-only clause))))
+	     (unless (or (eq? nc #unspecified) (eq? nc #f))
+		(produce-library-clauses (list nc)))))
+	 (else
+	  #unspecified)))
+   
+   (for-each produce-include-clause
+      (append-map read-directives files)))
 
 ;*---------------------------------------------------------------------*/
 ;*    finalize-clause-compilations ...                                 */
