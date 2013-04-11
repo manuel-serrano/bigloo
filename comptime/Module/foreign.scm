@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Wed Nov 21 07:27:55 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 11 13:55:49 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The foreign and extern clauses compilation. Foreign and extern   */
 ;*    clauses only differs by their syntax. They play the same role    */
@@ -43,18 +43,20 @@
 ;*    make-foreign-compiler ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (make-foreign-compiler)
-   (instantiate::ccomp (id 'foreign)
-		       (producer foreign-producer)
-		       (consumer (lambda (m c) (foreign-producer c)))
-		       (finalizer foreign-finalizer)))
+   (instantiate::ccomp
+      (id 'foreign)
+      (producer foreign-producer)
+      (consumer (lambda (m c) (foreign-producer c)))
+      (finalizer foreign-finalizer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-extern-compiler ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (make-extern-compiler)
-   (instantiate::ccomp (id 'extern)
-		       (producer extern-producer)
-		       (consumer (lambda (m c) (extern-producer c)))))
+   (instantiate::ccomp
+      (id 'extern)
+      (producer (lambda (c) (extern-producer c #t)))
+      (consumer (lambda (m c) (extern-producer c #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    foreign-producer ...                                             */
@@ -63,7 +65,7 @@
    (if (memq 'foreign (backend-foreign-clause-support (the-backend)))
        (match-case clause
 	  ((?- . ?protos)
-	   (for-each foreign-parser protos)
+	   (for-each (lambda (p) (foreign-parser p #t)) protos)
 	   '())
 	  (else
 	   (user-error "Parse error"
@@ -75,11 +77,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    extern-producer ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (extern-producer clause)
+(define (extern-producer clause exportp)
    (if (memq 'extern (backend-foreign-clause-support (the-backend)))
        (match-case clause
 	  ((?- . ?protos)
-	   (for-each extern-parser protos)
+	   (for-each (lambda (p) (extern-parser p exportp)) protos)
 	   '())
 	  (else
 	   (user-error "Parse error"
@@ -108,7 +110,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    foreign-parser ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (foreign-parser foreign)
+(define (foreign-parser foreign exportp)
    (trace (ast 2) "foreign parser: " foreign #\Newline)
    (match-case foreign
       ((include ?string)
@@ -119,7 +121,8 @@
       ((type . ?-)
        (parse-c-foreign-type foreign))
       ((export (and (? symbol?) ?bname) (and (? string?) ?cname))
-       (set! *foreign-exported* (cons foreign *foreign-exported*)))
+       (set! *foreign-exported*
+	  (cons (cons foreign exportp) *foreign-exported*)))
       (((or export type include) . ?-)
        ;; an error
        (user-error "Parse error" "Illegal foreign form" foreign '()))
@@ -160,14 +163,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    extern-parser ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (extern-parser extern)
+(define (extern-parser extern exportp)
    (trace (ast 2) "extern parser: " extern #\Newline)
    (match-case extern
       ((type . ?-)
        ;; type clauses
        (parse-c-extern-type extern))
       (((or export include) . ?-)
-       (foreign-parser extern))
+       (foreign-parser extern exportp))
       ((or (macro (and (? symbol?) ?id) ?proto (and (? string?) ?cn))
 	   (infix macro (and (? symbol?) ?id) ?proto (and (? string?) ?cn)))
        ;; macro function definitions
@@ -363,16 +366,20 @@
 (define (foreign-finalizer)
    ;; we patch bigloo foreign exported variables
    (for-each (lambda (foreign)
-		(let ((global (find-global (cadr foreign)))
-		      (name   (caddr foreign)))
+		(let* ((fo (car foreign))
+		       (ex (cdr foreign))
+		       (global (find-global (cadr fo)))
+		       (name (caddr fo)))
 		   (cond
 		      ((not (global? global))
-		       (if (not (or (eq? *pass* 'make-add-heap)
-				    (eq? *pass* 'make-heap)))
-			   (user-error "Foreign"
-				       "Unbound global variable"
-				       foreign
-				       '())))
+		       (when ex
+			  (if (not (or (eq? *pass* 'make-add-heap)
+				       (eq? *pass* 'make-heap)))
+			      (user-error "Foreign"
+				 (format "Unbound global variable \"~a\""
+				    (cadr fo))
+				 foreign
+				 '()))))
 		      ((string? (global-name global))
 		       (user-warning
 			"Foreign"
