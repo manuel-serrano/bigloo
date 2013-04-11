@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Apr  8 07:48:38 2013 (serrano)                */
+#*    Last change :  Thu Apr 11 07:47:21 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1078,7 +1078,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   done
 
   if [ "$err " != " " ]; then
-    echo "*** ERROR: unknown api(s):$err";
+    echo "*** ERROR: unknown apis:$err";
     exit 1
   fi
   
