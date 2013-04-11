@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Dec 20 18:24:20 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 11 16:27:52 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -219,6 +219,7 @@
 	 ;; regular macros have been installed in order to enable these
 	 ;; macro redefinitions
 	 (load-library-init)
+	 
 	 (unit-sexp*-add-head! (get-toplevel-unit) (get-alibrary-inits))
 
 	 ;; we perfom user pass

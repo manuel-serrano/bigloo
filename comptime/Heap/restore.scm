@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Thu Apr 15 14:52:18 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 11 16:30:34 2013 (serrano)                */
+;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -17,6 +17,7 @@
    (export  (restore-heap)
 	    (restore-additional-heaps)
 	    (restore-additional-heap ::bstring)
+	    (heap-file-name::bstring ::bstring)
 	    (heap-module-list . args))
    (import  engine_param
 	    engine_engine
@@ -123,15 +124,20 @@
 		       '__r4_control_features_6_9)))
 
 ;*---------------------------------------------------------------------*/
+;*    heap-file-name ...                                               */
+;*---------------------------------------------------------------------*/
+(define (heap-file-name heap)
+   (string-append heap "." (backend-heap-suffix (the-backend))))
+
+;*---------------------------------------------------------------------*/
 ;*    restore-additional-heaps ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (restore-additional-heaps)
-   (if (pair? *additional-heap-names*)
-       (let ((suf (string-append "." (backend-heap-suffix (the-backend)))))
-	  (pass-prelude "Library")
-	  (for-each (lambda (h)
-		       (restore-additional-heap (string-append h suf)))
-		    (reverse *additional-heap-names*)))))
+   (when (pair? *additional-heap-names*)
+      (pass-prelude "Library")
+      (for-each (lambda (h)
+		   (restore-additional-heap (heap-file-name h)))
+	 (reverse *additional-heap-names*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-additional-heap ...                                      */
