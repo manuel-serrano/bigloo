@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 22 08:05:17 2004                          */
-;*    Last change :  Wed Nov 21 07:20:01 2012 (serrano)                */
-;*    Copyright   :  2004-12 Manuel Serrano                            */
+;*    Last change :  Fri Apr 12 16:46:00 2013 (serrano)                */
+;*    Copyright   :  2004-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The `class-nil' function                                         */
 ;*=====================================================================*/
@@ -220,6 +220,7 @@
 	  ((custom) '(custom-nil))
 	  ((opaque) '(opaque-nil))
 	  ((socket) '(make-server-socket))
+	  ((datagram-socket) '(make-datagram-server-socket))
 	  ((bucs2) '(char->ucs2 #\_))
 	  ((ucs2string) '(utf8-string->ucs2-string ""))
 	  ((mutex) '(mutex-nil))

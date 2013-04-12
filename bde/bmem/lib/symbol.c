@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Wed Oct 24 08:41:53 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Fri Apr 12 19:44:17 2013 (serrano)                */
+/*    Copyright   :  2003-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/
@@ -131,4 +131,18 @@ string_to_symbol( char *cname ) {
    }
 }
 
-
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_gensym ...                                                   */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_gensym( obj_t name ) {
+   obj_t o = make_symbol( 0L );
+   
+   if( name == BFALSE ) {
+      return o;
+   } else {
+      bgl_symbol_genname( o, BSTRING_TO_STRING( name ) );
+      return o;
+   }
+}

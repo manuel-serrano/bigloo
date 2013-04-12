@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Dec 21 09:34:19 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Fri Apr 12 19:13:50 2013 (serrano)                */
+/*    Copyright   :  2003-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -391,7 +391,7 @@ bmem_init_inner() {
    ____bgl_make_output_port = (void *(*)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() ))get_function( hdl, "bgl_make_output_port" );
    ____bgl_open_output_string = (void *(*)( void * ))get_function( hdl, "bgl_open_output_string" );
    ____bgl_output_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_output_port_timeout_set" );
-   
+
    /* input port */
    ____bgl_make_input_port = (void *(*)( void *, FILE *, void *, void * ))get_function( hdl, "bgl_make_input_port" );
    ____bgl_open_input_file = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_file" );
@@ -401,7 +401,7 @@ bmem_init_inner() {
    ____bgl_open_input_c_string = (void *(*)( char * ))get_function( hdl, "bgl_open_input_c_string" );
    ____bgl_reopen_input_c_string = (void *(*)( void *, char * ))get_function( hdl, "bgl_reopen_input_c_string" );
    ____bgl_input_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_input_port_timeout_set" );
-   
+
    /* struct */
    ____create_struct = (void *(*)( void *, int ))get_function( hdl, "create_struct" );
    ____make_struct = (void *(*)( void *, int, void * ))get_function( hdl, "make_struct" );
@@ -419,7 +419,7 @@ bmem_init_inner() {
    /* class */
    ____register_class = get_function( hdl, "BGl_registerzd2classz12zc0zz__objectz00" );
    ____bgl_types_number = (int (*)())get_function( hdl, "bgl_types_number" );
-   
+
    /* dynamic environment */
    ____make_dynamic_env = (void *(*)())get_function( hdl, "make_dynamic_env" );
    ____bgl_init_dynamic_env = (void (*)())get_function( hdl, "bgl_init_dynamic_env" );
@@ -462,6 +462,8 @@ bmem_init_inner() {
    declare_type( HOSTENT_TYPE_NUM, "hostent" );
    declare_type( PORT_TIMEOUT_TYPE_NUM, "port-timeout" );
    declare_type( CLASS_TYPE_NUM, "class" );
+   declare_type( DATAGRAM_SOCKET_TYPE_NUM, "datagram-socket" );
+   declare_type( REGEXP_TYPE_NUM, "regexp" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -492,7 +494,7 @@ bglfth_setup_bmem() {
    
    /* Hello world */
    fprintf( stderr, "Bmem Fthread initialization...\n" );
-   
+
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
    } else {
@@ -500,7 +502,7 @@ bglfth_setup_bmem() {
 	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }
-   
+
    fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
 
    hdl = open_shared_library( bigloothread_lib );
@@ -533,9 +535,9 @@ bglfth_setup_bmem() {
       FAIL( IDENT, "Can't get thread key", "bmem_key" );
       exit( -2 );
    }
-      
+
    ____bglthread_setup_bmem();
-   
+
    bmem_init();
 }
 
@@ -553,7 +555,7 @@ bglpth_setup_bmem() {
 
    /* Hello world */
    fprintf( stderr, "Pthread initialization...\n" );
-   
+
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
    } else {
@@ -561,7 +563,7 @@ bglpth_setup_bmem() {
 	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
 	       SHARED_LIB_SUFFIX );
    }
-   
+
    fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
 
    hdl = open_shared_library( bigloothread_lib );
@@ -572,7 +574,7 @@ bglpth_setup_bmem() {
    ____pthread_setspecific = (int (*)())get_function( hdl, "bglpth_pthread_setspecific" );
    ____pthread_key_create = (int (*)())get_function( hdl, "bglpth_pthread_key_create" );
    ____pthread_mutex_init = (int (*)())get_function( hdl, "bglpth_pthread_mutex_init" );
-   
+
    if( ____pthread_key_create( &bmem_key, 0L ) ) {
       FAIL( IDENT, "Can't get thread key", "bmem_key" );
       exit( -2 );
@@ -582,10 +584,10 @@ bglpth_setup_bmem() {
       FAIL( IDENT, "Can't get thread key", "bmem_key" );
       exit( -2 );
    }
-   
+
    ____bglthread_setup_bmem();
-   
-      
+
+
    bmem_init();
 }
 
@@ -609,16 +611,16 @@ bgl_init_objects() {
 
    bgl_socket_accept_symbol = string_to_symbol( "$socket-accept" );
    ((esymbol_t *)(CREF(bgl_socket_accept_symbol)))->class_alloc = HOSTENT_TYPE_NUM;
-   
+
    bgl_socket_accept_many_symbol = string_to_symbol( "$socket-accept-many" );
    ((esymbol_t *)(CREF(bgl_socket_accept_many_symbol)))->class_alloc = HOSTENT_TYPE_NUM;
-   
+
    bgl_make_input_port_symbol = string_to_symbol( "$make-input-port" );
    ((esymbol_t *)(CREF(bgl_make_input_port_symbol)))->class_alloc = UNKNOWN_ATOMIC_TYPE_NUM;
-   
+
    /* signal registration */
    signal( 2, bmem_dump );
-   
+
    /* exit registration */
    atexit( (void (*)(void))bmem_dump );
 }

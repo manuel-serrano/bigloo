@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Dec 14 10:50:31 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Fri Apr 12 19:44:47 2013 (serrano)                */
+/*    Copyright   :  2003-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -236,7 +236,7 @@ mark_type( fun_alloc_info_t *i, int dtype, long dsize, int itype, long isize ) {
 			      (pa_pair_t *)(i->dtypes) );
       }
    }
-   
+
    if( itype >=  0 ) {
       pa_pair_t *cell = pa_assq( (void *)itype, (pa_pair_t *)(i->itypes) );
 
@@ -284,7 +284,7 @@ mark_function( void *id, long gc, long dsz, long isz, int dt, int it, long stamp
    } else {
       fun->stamp = stamp;
    }
-   
+
    if( !fun->alloc_info ) {
       fun_alloc_info_t *nfai = make_fun_alloc_info( gc, dsz, isz );
 
@@ -293,10 +293,10 @@ mark_function( void *id, long gc, long dsz, long isz, int dt, int it, long stamp
       fun->alloc_info = pa_cons( nfai, 0 );
    } else {
       fun_alloc_info_t *ofai = ((fun_alloc_info_t *)(PA_CAR( ((pa_pair_t *)fun->alloc_info) )));
-      
+
       if( ofai->gc_num != gc ) {
 	 fun_alloc_info_t *nfai = make_fun_alloc_info( gc, dsz, isz );
-	 
+
 	 mark_type( nfai, dt, dsz, it, isz );
 	 fun->alloc_info = pa_cons( nfai, fun->alloc_info );
       } else {
@@ -336,7 +336,7 @@ make_pair( obj_t car, obj_t cdr ) {
 		  PAIR_TYPE_NUM, -1,
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)PAIR_SIZE );
-   
+
    pair = ____GC_malloc( PAIR_SIZE );
 
 #if( !defined( TAG_PAIR ) )
@@ -344,7 +344,7 @@ make_pair( obj_t car, obj_t cdr ) {
 #endif
    pair->pair_t.car = car;
    pair->pair_t.cdr = cdr;
-   
+
    set_alloc_type( -1, 0 );
    return BPAIR( pair );
 }
@@ -372,7 +372,7 @@ make_cell( obj_t val ) {
    cell->cell_t.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE );
 #endif
    cell->cell_t.val = val;
-   
+
    set_alloc_type( -1, 0 );
    return BCELL( cell );
 }
@@ -396,14 +396,14 @@ make_real( double d ) {
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)REAL_SIZE );
 
    a_real = ____GC_malloc_atomic( REAL_SIZE );
-   
+
 #if( !defined( TAG_REAL ) )
    a_real->real_t.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE );
 #endif
    a_real->real_t.real = d;
-	
+
    set_alloc_type( -1,0  );
-   return BREAL( a_real );   
+   return BREAL( a_real );
 }
 
 /*---------------------------------------------------------------------*/
@@ -413,7 +413,7 @@ make_real( double d ) {
 obj_t
 make_belong( long l ) {
    obj_t a_elong;
-   
+
    set_alloc_type( ELONG_TYPE_NUM, 0 );
 
    gc_alloc_size_add( ELONG_SIZE );
@@ -426,10 +426,10 @@ make_belong( long l ) {
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)ELONG_SIZE );
 
    a_elong = ____GC_malloc_atomic( ELONG_SIZE );
-   
+
    a_elong->elong_t.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
    a_elong->elong_t.elong = l;
-	
+
    set_alloc_type( -1, 0 );
    return BREF( a_elong );
 }
@@ -454,10 +454,10 @@ make_bllong( BGL_LONGLONG_T l ) {
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)LLONG_SIZE );
 
    a_llong = ____GC_malloc_atomic( LLONG_SIZE );
-   
+
    a_llong->llong_t.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
    a_llong->llong_t.llong = l;
-	
+
    set_alloc_type( -1, 0 );
    return BREF( a_llong );
 }

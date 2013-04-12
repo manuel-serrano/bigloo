@@ -15,4 +15,4 @@
 (declare-library! 'upnp
 		  :basename "biglooupnp"
 		  :module-init '__upnp
-		  :module-eval '__upnp-makelib)
+		  :module-eval '__upnp_makelib)

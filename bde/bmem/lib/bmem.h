@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Fri Dec 14 10:48:08 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Fri Apr 12 19:07:55 2013 (serrano)                */
+/*    Copyright   :  2003-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -235,5 +235,7 @@ extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 #define UNKNOWN_REALLOC_TYPE_NUM       32
 #define HOSTENT_TYPE_NUM               33
 #define PORT_TIMEOUT_TYPE_NUM          34
+#define DATAGRAM_SOCKET_TYPE_NUM       44
+#define REGEXP_TYPE_NUM                45
 /* a fake type */
 #define CLASS_TYPE_NUM                 99

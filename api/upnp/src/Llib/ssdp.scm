@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr  8 08:20:16 2013                          */
-;*    Last change :  Wed Apr 10 16:27:14 2013 (serrano)                */
+;*    Last change :  Fri Apr 12 16:08:39 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    UPnP Simple Service Discovery protocol                           */
@@ -18,7 +18,7 @@
    
    (export (class ssdp-header
 	      ;; date
-	      (expiration-date::date read-only)
+	      (expiration-date::elong read-only)
 	      ;; uri
 	      (location::bstring read-only)
 	      (unique-service-name::bstring read-only)
@@ -50,7 +50,8 @@
 	      (buffer-size::int 2048)
 	      (target "ssdp:all")
 	      (timeout 0)
-	      (ondiscover (lambda (x) x)))
+	      (ondiscover (lambda (x) x))
+	      (socket (make-datagram-unbound-socket 'inet)))
 
 	   (ssdp-parse-location ::bstring)))
 
@@ -77,7 +78,7 @@
 (define (ssdp-parse-header buffer ondiscover)
    
    (define (date+ date seconds)
-      (seconds->date (+ seconds (date->seconds date))))
+      (+ seconds (date->seconds date)))
    
    (define (read-cache-control cc)
       (string-case cc
@@ -156,31 +157,31 @@
 	   (buffer-size::int 2048)
 	   (target "ssdp:all")
 	   (timeout 0)
-	   (ondiscover (lambda (x) x)))
-   (let ((sock (make-datagram-unbound-socket 'inet)))
-      ;; set the socket timeout
-      (when (> timeout 0)
-	 (input-port-timeout-set! (datagram-socket-input sock) timeout))
-      ;; send the search message
-      (datagram-socket-send sock
-	 (ssdp-search-message :ipv4-multicast-address ipv4-multicast-address
-	    :multicast-port multicast-port
-	    :target target)
-	 ipv4-multicast-address
-	 multicast-port)
-      ;; wait for the response and parse it
-      (let ((buffer (make-string buffer-size))
-	    (acc '()))
-	 (with-handler
-	    (lambda (e)
-	       (if (isa? e &io-timeout-error)
-		   acc
-		   (raise e)))
-	    (let loop ()
-	       (let ((header (ssdp-read-header sock buffer ondiscover)))
-		  (when header
-		     (set! acc (cons header acc)))
-		  (loop)))))))
+	   (ondiscover (lambda (x) x))
+	   (socket (make-datagram-unbound-socket 'inet)))
+   ;; set the socket timeout
+   (when (> timeout 0)
+      (input-port-timeout-set! (datagram-socket-input socket) timeout))
+   ;; send the search message
+   (datagram-socket-send socket
+      (ssdp-search-message :ipv4-multicast-address ipv4-multicast-address
+	 :multicast-port multicast-port
+	 :target target)
+      ipv4-multicast-address
+      multicast-port)
+   ;; wait for the response and parse it
+   (let ((buffer (make-string buffer-size))
+	 (acc '()))
+      (with-handler
+	 (lambda (e)
+	    (if (isa? e &io-timeout-error)
+		acc
+		(raise e)))
+	 (let loop ()
+	    (let ((header (ssdp-read-header socket buffer ondiscover)))
+	       (when header
+		  (set! acc (cons header acc)))
+	       (loop))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-parse-location ...                                          */
