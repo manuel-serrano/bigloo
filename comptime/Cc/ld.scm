@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Sun Oct  3 14:48:56 2010 (serrano)                */
-;*    Copyright   :  1992-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Apr 15 16:25:45 2013 (serrano)                */
+;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
 ;*=====================================================================*/
@@ -167,7 +167,8 @@
 				      " "
 				      res)))))
 	     ;; the extra bigloo libraries
-	     (add-libs (let loop ((lib *additional-bigloo-libraries*)
+	     (add-libs (let loop ((lib (delete-duplicates
+					  *additional-bigloo-libraries*))
 				  (res  ""))
 			  (if (null? lib)
 			      res
