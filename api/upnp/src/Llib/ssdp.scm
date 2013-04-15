@@ -3,11 +3,14 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr  8 08:20:16 2013                          */
-;*    Last change :  Fri Apr 12 16:08:39 2013 (serrano)                */
+;*    Last change :  Mon Apr 15 08:45:14 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    UPnP Simple Service Discovery protocol                           */
 ;*=====================================================================*/
+
+;; http://www.upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf
+;; https://tools.ietf.org/html/draft-cai-ssdp-v1-03
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
@@ -16,27 +19,44 @@
    
    (library web)
    
-   (export (class ssdp-header
-	      ;; date
-	      (expiration-date::elong read-only)
-	      ;; uri
-	      (location::bstring read-only)
-	      (unique-service-name::bstring read-only)
-	      ;; vendor field alist
-	      (extra-fields::pair-nil read-only (default '())))
+   (export (abstract-class ssdp-message
+	      (header::pair-nil read-only))
+
+	   (class ssdp-m-search::ssdp-message
+	      (host::bstring read-only)
+	      (mx::int read-only)
+	      (st::bstring read-only))
 	   
-	   (class ssdp-search-response::ssdp-header
+	   (class ssdp-notify::ssdp-message
+	      ;; expiration date
+	      (edate::elong read-only)
+	      ;; notification type
+	      (nt::bstring read-only)
+	      ;; ssdp:alive, ssdp:byebye, ssdp:update
+	      (nts::bstring read-only)
+	      ;; root device location
+	      (location::bstring read-only)
+	      ;; host
+	      (host::bstring read-only)
+	      ;; vendor
+	      (server::bstring read-only)
+	      ;; unique service identifier
+	      (usn::bstring read-only))
+
+	   (class ssdp-response::ssdp-message
+	      ;; expiration date
+	      (edate::elong read-only)
+	      ;; root device location
+	      (location::bstring read-only)
+	      ;; host
+	      (host::bstring read-only)
 	      ;; OS & vendor
 	      (server::bstring read-only)
-	      ;; uri
-	      (search-target::bstring read-only))
+	      ;; search target
+	      (st::bstring read-only)
+	      ;; unique service identifier
+	      (usn::bstring read-only))
 	   
-	   (class ssdp-advertisement::ssdp-header
-	      ;; byebye, etc.
-	      (notification-type::symbol read-only)
-	      (notification-sub-type::symbol read-only)
-	      (server::bstring read-only))
-
 	   (class ssdp-root
 	      (major (default 1))
 	      (minor (default 0))
@@ -44,38 +64,24 @@
 	      (icons (default '()))
 	      (device (default #f)))
 
-	   (ssdp-discover #!key
+	   (ssdp-discover-loop #!key
+	      (buffer-size::int 2048)
+	      (timeout 0)
+	      (onmessage::procedure (lambda (x) x))
+	      socket)
+
+	   (ssdp-discover-m-search #!key
 	      (ipv4-multicast-address "239.255.255.250")
 	      (multicast-port::int 1900)
-	      (buffer-size::int 2048)
 	      (target "ssdp:all")
-	      (timeout 0)
-	      (ondiscover (lambda (x) x))
-	      (socket (make-datagram-unbound-socket 'inet)))
+	      socket)
 
 	   (ssdp-parse-location ::bstring)))
 
 ;*---------------------------------------------------------------------*/
-;*    ssdp-search-message ...                                          */
-;*---------------------------------------------------------------------*/
-(define (ssdp-search-message #!key
-	   (ipv4-multicast-address "239.255.255.250")
-	   (multicast-port::int 1900)
-	   (target "ssdp:all"))
-   ;; Return the SSDP search message for TARGET.
-   (string-append
-      "M-SEARCH * HTTP/1.1\r\n"
-      "HOST: " ipv4-multicast-address
-      ":" (number->string multicast-port) "\r\n"
-      "MAN: \"ssdp:discover\"\r\n"
-      "MX: 10\r\n"
-      "ST: " target "\r\n"
-      "\r\n"))
-
-;*---------------------------------------------------------------------*/
 ;*    ssdp-parse-header ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-parse-header buffer ondiscover)
+(define (ssdp-parse-header buffer onmessage)
    
    (define (date+ date seconds)
       (+ seconds (date->seconds date)))
@@ -87,11 +93,11 @@
       	 (else
       	  #f)))
    
-   (define (header-field field header def)
+   (define (header-field field header)
       (let ((c (assq field header)))
 	 (if (pair? c)
 	     (cdr c)
-	     def)))
+	     (error "ssdp-parse-head" "Cannot find mandatory field" field))))
    
    (define (ssdp-parse-response buffer)
       ;; response (Section 1.3.3)
@@ -100,89 +106,132 @@
 	    (http-parse-response port #f
 	       (lambda (input status header length encoding)
 		  (let* ((now  (current-date))
-			 (cc (header-field :cache-control header ""))
+			 (cc (header-field :cache-control header))
 			 (ttl (read-cache-control cc))
 			 (then (date+ now ttl)))
-		     (instantiate::ssdp-search-response
-			(expiration-date then)
-			(location (header-field :location header ""))
-			(server (header-field :server header ""))
-			(search-target (header-field :st header ""))
-			(unique-service-name (header-field :usn header "")))))))))
+		     (instantiate::ssdp-response
+			(header header)
+			(edate then)
+			(host (header-field :host header))
+			(location (header-field :location header))
+			(server (header-field :server header))
+			(st (header-field :st header))
+			(usn (header-field :usn header)))))))))
    
-   (define (ssdp-parse-advertisement buffer)
+   (define (ssdp-parse-notify buffer)
       ;; response (Section 1.2.2)
       (call-with-input-string buffer
 	 (lambda (port)
-	    (http-parse-response port #f
-	       (lambda (input status header length encoding)
-		  (let* ((now  (current-date))
-			 (cc (header-field :cache-control header ""))
-			 (ttl (read-cache-control cc))
-			 (then (date+ now ttl)))
-		     (instantiate::ssdp-advertisement
-			(expiration-date then)
-			(location (header-field :location header""))
-			(notification-type (header-field :nt header 'unknown))
-			(unique-service-name (header-field :usn header ""))
-			(notification-sub-type (header-field :nts header 'unknown))
-			(server (header-field :server header "")))))))))
+	    ;; skip the request line
+	    (read-line port)
+	    (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
+	       (http-parse-header port #f)
+	       (let* ((now  (current-date))
+		      (cc (header-field :cache-control header))
+		      (ttl (read-cache-control cc))
+		      (then (date+ now ttl)))
+		  (instantiate::ssdp-notify
+		     (header header)
+		     (edate then)
+		     (location (header-field :location header))
+		     (host (header-field :host header))
+		     (nt (header-field :nt header))
+		     (usn (header-field :usn header))
+		     (nts (header-field :nts header))
+		     (server (header-field :server header))))))))
+
+   (define (ssdp-parse-m-search buffer)
+      (call-with-input-string buffer
+	 (lambda (port)
+	    ;; skip the request line
+	    (read-line port)
+	    (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
+	       (http-parse-header port #f)
+	       (instantiate::ssdp-m-search
+		  (header header)
+		  (host (header-field :host header))
+		  (mx (header-field :mx header))
+		  (st (header-field :st header)))))))
    
    ;; Match the start line (Section 1.1.1).
    (cond
       ((string-prefix? "HTTP/1.1 200 OK\r\n" buffer)
-       (ondiscover (ssdp-parse-response buffer)))
+       (onmessage (ssdp-parse-response buffer)))
       ((string-prefix? "NOTIFY * HTTP/1.1\r\n" buffer)
-       (ondiscover (ssdp-parse-advertisement buffer)))
+       (onmessage (ssdp-parse-notify buffer)))
       ((string-prefix? "M-SEARCH * HTTP/1.1\r\n" buffer)
-       #f)
+       (onmessage (ssdp-parse-m-search buffer)))
       (else
-       #f)))
+       (error "ssdp-parse-header"
+	  "Illegal start line"
+	  (call-with-input-string buffer read-line)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-read-header ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-read-header socket buffer ondiscover)
+(define (ssdp-read-header socket buffer onmessage)
    ;; fill the buffer with READ-CHARS! instead of RECEIVE for the timeout
    (read-chars! buffer (string-length buffer) (datagram-socket-input socket))
    ;; parse the obtained characters
-   (ssdp-parse-header buffer ondiscover))
+   (ssdp-parse-header buffer onmessage))
 		
 ;*---------------------------------------------------------------------*/
-;*    ssdp-discover ...                                                */
+;*    ssdp-discover-loop ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-discover #!key
-	   (ipv4-multicast-address "239.255.255.250")
-	   (multicast-port::int 1900)
+(define (ssdp-discover-loop #!key
 	   (buffer-size::int 2048)
-	   (target "ssdp:all")
 	   (timeout 0)
-	   (ondiscover (lambda (x) x))
-	   (socket (make-datagram-unbound-socket 'inet)))
+	   (onmessage::procedure (lambda (x) x))
+	   socket)
+   (unless (datagram-socket? socket)
+      (bigloo-type-error "ssdp-discover-loop" "datagram-socket" socket))
+   (datagram-socket-option-set! socket :IP_ADD_MEMBERSHIP "239.255.255.250")
    ;; set the socket timeout
    (when (> timeout 0)
       (input-port-timeout-set! (datagram-socket-input socket) timeout))
-   ;; send the search message
-   (datagram-socket-send socket
-      (ssdp-search-message :ipv4-multicast-address ipv4-multicast-address
-	 :multicast-port multicast-port
-	 :target target)
-      ipv4-multicast-address
-      multicast-port)
    ;; wait for the response and parse it
    (let ((buffer (make-string buffer-size))
 	 (acc '()))
       (with-handler
 	 (lambda (e)
+	    (tprint "E: " e)
 	    (if (isa? e &io-timeout-error)
 		acc
 		(raise e)))
 	 (let loop ()
-	    (let ((header (ssdp-read-header socket buffer ondiscover)))
+	    (let ((header (ssdp-read-header socket buffer onmessage)))
 	       (when header
 		  (set! acc (cons header acc)))
 	       (loop))))))
+
+;*---------------------------------------------------------------------*/
+;*    ssdp-discover-m-search ...                                       */
+;*---------------------------------------------------------------------*/
+(define (ssdp-discover-m-search #!key
+	   (ipv4-multicast-address "239.255.255.250")
+	   (multicast-port::int 1900)
+	   (target "ssdp:all")
+	   socket)
    
+   (define (ssdp-search-message)
+      (string-append
+	 "M-SEARCH * HTTP/1.1\r\n"
+	 "HOST: " ipv4-multicast-address
+	 ":" (number->string multicast-port) "\r\n"
+	 "MAN: \"ssdp:discover\"\r\n"
+	 "MX: 10\r\n"
+	 "ST: " target "\r\n"
+	 "\r\n"))
+
+   ;; type check
+   (unless (datagram-socket? socket)
+      (bigloo-type-error "ssdp-discover-loop" "datagram-socket" socket))
+   ;; send the search message
+   (datagram-socket-send socket
+      (ssdp-search-message)
+      ipv4-multicast-address
+      multicast-port))
+
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-parse-location ...                                          */
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Apr  8 19:01:24 2013 (serrano)                */
+/*    Last change :  Sun Apr 14 07:49:32 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -191,6 +191,8 @@ static obj_t tcp_nodelay;
 static obj_t tcp_cork;
 static obj_t tcp_quickack;
 static obj_t ip_multicast_ttl;
+static obj_t ip_add_membership;
+static obj_t ip_drop_membership;
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -224,6 +226,8 @@ bgl_init_socket() {
       tcp_cork = string_to_keyword( "TCP_CORK" );
       tcp_quickack = string_to_keyword( "TCP_QUICKACK" );
       ip_multicast_ttl = string_to_keyword( "IP_MULTICAST_TTL" );
+      ip_add_membership = string_to_keyword( "IP_ADD_MEMBERSHIP" );
+      ip_drop_membership = string_to_keyword( "IP_DROP_MEMBERSHIP" );
       
 #if( defined( DEBUG_SEGV ) )
       debug_init();
@@ -2257,6 +2261,41 @@ bgl_setsockopt( obj_t socket, obj_t option, obj_t val ) {
 #endif
    }
 
+   if( option == ip_add_membership ) {
+#if IP_ADD_MEMBERSHIP
+      struct ip_mreq mreq;
+
+      mreq.imr_multiaddr.s_addr = inet_addr( BSTRING_TO_STRING( val ) );
+      mreq.imr_interface.s_addr = htonl( INADDR_ANY );
+      
+      if( setsockopt( SOCKET( socket ).fd, IPPROTO_IP,
+	 IP_ADD_MEMBERSHIP, &mreq, sizeof( struct ip_mreq ) ) )
+	 return BFALSE;
+      else
+	 return socket;
+#else
+   } else {
+      return BFALSE;
+#endif
+   }
+
+   if( option == ip_drop_membership ) {
+#if IP_DROP_MEMBERSHIP
+      struct ip_mreq mreq;
+
+      mreq.imr_multiaddr.s_addr = inet_addr( BSTRING_TO_STRING( val ) );
+      mreq.imr_interface.s_addr = htonl( INADDR_ANY );
+      if( setsockopt( SOCKET( socket ).fd, IPPROTO_IP,
+	 IP_DROP_MEMBERSHIP, &mreq, sizeof( struct ip_mreq ) ) )
+	 return BFALSE;
+      else
+	 return socket;
+#else
+   } else {
+      return BFALSE;
+#endif
+   }
+
    return BFALSE;
 }
 
@@ -2421,8 +2460,16 @@ bgl_make_datagram_server_socket( int portnum ) {
 
    /* loop through all the results and bind to the first we can */
    for( p = servinfo; p != NULL; p = p->ai_next ) {
+      int sock_opt = 1;
+      
       if( (s = socket( p->ai_family, p->ai_socktype, p->ai_protocol )) == -1 ) {
 	 socket_error( msg, "cannot create socket", BINT( portnum ) );
+      }
+
+      /* set the reuse flag */
+      if( setsockopt( s, SOL_SOCKET, SO_REUSEADDR,
+		      &sock_opt, sizeof( sock_opt ) ) < 0 ) {
+	 system_error( msg, BINT( portnum ) );
       }
 
       if( bind( s, p->ai_addr, p->ai_addrlen ) == -1 ) {

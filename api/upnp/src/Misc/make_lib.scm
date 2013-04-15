@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Fri Apr 12 17:06:03 2013 (serrano)                */
+;*    Last change :  Mon Apr 15 08:09:23 2013 (serrano)                */
 ;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -18,9 +18,10 @@
 	   __upnp_ssdp
 	   __upnp_content-directory)
    
-   (eval   (class ssdp-header)
-           (class ssdp-search-response)
-	   (class ssdp-advertisement)
+   (eval   (class ssdp-message)
+           (class ssdp-notify)
+	   (class ssdp-response)
+	   (class ssdp-m-search)
 	   (class ssdp-root)
 	   
 	   (export-all)))
