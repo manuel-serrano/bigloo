@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Mar 14 09:45:42 2013 (serrano)                */
+;*    Last change :  Tue Apr 16 08:12:26 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -132,8 +132,8 @@
 (define-method (music-close o::alsamusic)
    (with-access::alsamusic o (pcm decoders %amutex)
       (synchronize %amutex
-	 (unless (eq? (alsa-snd-pcm-get-state pcm) 'disconnected))
-	 (alsa-snd-pcm-close pcm))))
+	 (unless (eq? (alsa-snd-pcm-get-state pcm) 'disconnected)
+	    (alsa-snd-pcm-close pcm)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-closed? ::alsamusic ...                                    */

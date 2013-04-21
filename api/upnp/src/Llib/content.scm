@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr  7 07:26:01 2013                          */
-;*    Last change :  Mon Apr  8 08:18:53 2013 (serrano)                */
+;*    Last change :  Sat Apr 20 16:54:10 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Upnp contentdirectory facilities                                 */
@@ -18,9 +18,8 @@
    
    (import __upnp_soap)
    
-   (export (upnp-content-directory-browse #!key host port
+   (export (upnp-content-directory-browse #!key host port (path "/")
 	      (content-type "text/xml")
-	      (path "/")
 	      #!rest args)
 	   (upnp-content-directory-browse-parse-response ::input-port ::obj
 	      #!optional htmldecode))
@@ -64,47 +63,67 @@
    (define (container? o)
       (and (pair? o) (eq? (car o) 'container)))
 
+   (define (item? o)
+      (and (pair? o) (eq? (car o) 'item)))
+
    (define (parser is content-length)
       (bind-exit (return)
 	 (xml-parse is
 	    :content-length content-length
 	    :procedure (lambda (tag attrs body)
 			  (case tag
-;* 			  ((s:Body s:Envelope)                         */
-;* 			   (car body))                                 */
-;* 			  ((u:BrowseResponse)                          */
-;* 			   (tprint tag " -> "                          */
-;* 			      (call-with-output-string                 */
-;* 				 (lambda (p)                           */
-;* 				    (write body p))))                  */
-;* 			   body)                                       */
-;* 			  ((Result)                                    */
-;* 			   (filter container?                          */
-;* 			      (apply append (filter pair? body))))     */
+;* 			     ((s:Body s:Envelope)                      */
+;* 			      (return body))                           */
+;* 			     ((u:BrowseResponse)                       */
+;* 			      (tprint tag " -> "                       */
+;* 				 (call-with-output-string              */
+;* 				    (lambda (p)                        */
+;* 				       (write body p))))               */
+;* 			      body)                                    */
+;* 			     ((Result)                                 */
+;* 			      (filter container?                       */
+;* 				 (apply append (filter pair? body))))  */
 			     ((DIDL-Lite)
-			      (return (filter container? body)))
+			      (return (filter (lambda (o) (or (container? o) (item? o))) body)))
 			     ((container)
 			      `(container ,@attrs ,@(filter pair? body)))
+			     ((res)
+			      (cons 'resource (car body)))
+			     ((item)
+			      `(item ,@attrs ,@(filter pair? body)))
 			     ((dc:title)
-			      `(title ,(car body)))
+			      (cons 'title (if (pair? body) (car body) "")))
+			     ((dc:creator)
+			      (cons 'creator (if (pair? body) (car body) "")))
+			     ((dc:date)
+			      (cons 'date (if (pair? body) (car body) "")))
 			     ((upnp:class)
-			      `(class ,(car body)))
+			      (cons 'class (if (pair? body) (car body) "")))
+			     ((upnp:albumArtURI)
+			      (cons 'art (car body)))
+			     ((upnp:originalTrackNumber)
+			      (cons 'tracknumber (car body)))
+			     ((upnp:album)
+			      (cons 'album (car body)))
+			     ((upnp:albumArtist)
+			      (cons 'albumartist (car body)))
+			     ((upnp:artist)
+			      (cons 'artist (car body)))
+			     ((upnp:genre)
+			      (cons 'genre (car body)))
 			     (else
-			      (tprint "else: " tag)))))))
+			      (tprint "TAG=[" tag "] " body)))))))
 
    (if htmldecode
-       (call-with-input-string (html-string-decode (read-chars ip content-length))
-	  parser)
+       (let ((s (html-string-decode (read-chars content-length ip))))
+	  (call-with-input-string s (lambda (ip) (parser ip (string-length s)))))
        (parser ip content-length)))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    upnp-content-directory-browse ...                                */
 ;*---------------------------------------------------------------------*/
-(define (upnp-content-directory-browse #!key
-	   host
-	   port
+(define (upnp-content-directory-browse #!key host port (path "/")
 	   (content-type "text/xml")
-	   (path "/")
 	   #!rest
 	   args)
    (let* ((body (browse-body args))
@@ -119,10 +138,10 @@
 	  (op (socket-output sock)))
       
       (define (parser ip status header clen type)
-	 (print "type: " type)
-	 (print "status: " status)
-	 (print "header: " header)
-	 (upnp-content-directory-browse-parse-response ip clen))
+;* 	 (print "type: " type)                                         */
+;* 	 (print "status: " status)                                     */
+;* 	 (print "header: " header)                                     */
+	 (upnp-content-directory-browse-parse-response ip clen #t))
 
       (http-parse-response ip op parser)))
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr  8 08:20:16 2013                          */
-;*    Last change :  Mon Apr 15 08:45:14 2013 (serrano)                */
+;*    Last change :  Sun Apr 21 08:55:31 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    UPnP Simple Service Discovery protocol                           */
@@ -26,36 +26,28 @@
 	      (host::bstring read-only)
 	      (mx::int read-only)
 	      (st::bstring read-only))
-	   
-	   (class ssdp-notify::ssdp-message
+
+	   (abstract-class ssdp-discovery::ssdp-message
 	      ;; expiration date
 	      (edate::elong read-only)
+	      ;; unique service identifier
+	      (usn::bstring read-only)
+	      ;; root device location
+	      (location::bstring read-only)
+	      ;; vendor
+	      (server::bstring read-only))
+	      
+	   (class ssdp-notify::ssdp-discovery
 	      ;; notification type
 	      (nt::bstring read-only)
 	      ;; ssdp:alive, ssdp:byebye, ssdp:update
 	      (nts::bstring read-only)
-	      ;; root device location
-	      (location::bstring read-only)
 	      ;; host
-	      (host::bstring read-only)
-	      ;; vendor
-	      (server::bstring read-only)
-	      ;; unique service identifier
-	      (usn::bstring read-only))
+	      (host::bstring read-only))
 
-	   (class ssdp-response::ssdp-message
-	      ;; expiration date
-	      (edate::elong read-only)
-	      ;; root device location
-	      (location::bstring read-only)
-	      ;; host
-	      (host::bstring read-only)
-	      ;; OS & vendor
-	      (server::bstring read-only)
+	   (class ssdp-response::ssdp-discovery
 	      ;; search target
-	      (st::bstring read-only)
-	      ;; unique service identifier
-	      (usn::bstring read-only))
+	      (st::bstring read-only))
 	   
 	   (class ssdp-root
 	      (major (default 1))
@@ -79,101 +71,109 @@
 	   (ssdp-parse-location ::bstring)))
 
 ;*---------------------------------------------------------------------*/
+;*    ssdp-debug ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (ssdp-debug)
+   #f)
+
+;*---------------------------------------------------------------------*/
 ;*    ssdp-parse-header ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-parse-header buffer onmessage)
-   
-   (define (date+ date seconds)
-      (+ seconds (date->seconds date)))
+(define (ssdp-parse-header buffer::bstring port::input-port onmessage)
    
    (define (read-cache-control cc)
       (string-case cc
       	 ((: "max-age" (* blank) "=" (* blank) (submatch (+ digit)))
-      	  (string->number (the-submatch 1)))
+      	  (string->elong (the-submatch 1)))
       	 (else
-      	  #f)))
+      	  #e0)))
    
    (define (header-field field header)
       (let ((c (assq field header)))
 	 (if (pair? c)
 	     (cdr c)
-	     (error "ssdp-parse-head" "Cannot find mandatory field" field))))
-   
-   (define (ssdp-parse-response buffer)
-      ;; response (Section 1.3.3)
-      (call-with-input-string buffer
-	 (lambda (port)
-	    (http-parse-response port #f
-	       (lambda (input status header length encoding)
-		  (let* ((now  (current-date))
-			 (cc (header-field :cache-control header))
-			 (ttl (read-cache-control cc))
-			 (then (date+ now ttl)))
-		     (instantiate::ssdp-response
-			(header header)
-			(edate then)
-			(host (header-field :host header))
-			(location (header-field :location header))
-			(server (header-field :server header))
-			(st (header-field :st header))
-			(usn (header-field :usn header)))))))))
-   
-   (define (ssdp-parse-notify buffer)
-      ;; response (Section 1.2.2)
-      (call-with-input-string buffer
-	 (lambda (port)
-	    ;; skip the request line
-	    (read-line port)
-	    (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
-	       (http-parse-header port #f)
-	       (let* ((now  (current-date))
-		      (cc (header-field :cache-control header))
-		      (ttl (read-cache-control cc))
-		      (then (date+ now ttl)))
-		  (instantiate::ssdp-notify
-		     (header header)
-		     (edate then)
-		     (location (header-field :location header))
-		     (host (header-field :host header))
-		     (nt (header-field :nt header))
-		     (usn (header-field :usn header))
-		     (nts (header-field :nts header))
-		     (server (header-field :server header))))))))
+	     (error "ssdp-parse-head" (format "Cannot find field \"~a\"" field) header))))
 
-   (define (ssdp-parse-m-search buffer)
-      (call-with-input-string buffer
-	 (lambda (port)
-	    ;; skip the request line
-	    (read-line port)
-	    (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
-	       (http-parse-header port #f)
-	       (instantiate::ssdp-m-search
-		  (header header)
-		  (host (header-field :host header))
-		  (mx (header-field :mx header))
-		  (st (header-field :st header)))))))
+   (define (header-field/opt field header def)
+      (let ((c (assq field header)))
+	 (if (pair? c)
+	     (cdr c)
+	     def)))
+
+   (define (header-cache-control header)
+      (let ((c (assq :cache-control header)))
+	 (if (pair? c)
+	     (let* ((cc (header-field :cache-control header))
+		    (ttl (read-cache-control cc)))
+		(+elong (current-seconds) ttl))
+	     #e0)))
+      
+   (define (ssdp-parse-response port)
+      ;; response (Section 1.3.3)
+      (when (ssdp-debug)
+	 (tprint "ssdp-parse-response..."))
+      (http-parse-response port #f
+	 (lambda (input status header length encoding)
+	    (instantiate::ssdp-response
+	       (header header)
+	       (edate (header-cache-control header))
+	       (location (header-field :location header))
+	       (server (header-field :server header))
+	       (st (header-field :st header))
+	       (usn (header-field :usn header))))))
+   
+   (define (ssdp-parse-notify port)
+      ;; response (Section 1.2.2)
+      (when (ssdp-debug)
+	 (tprint "ssp-parse-notify..."))
+      ;; skip the request line
+      (read-line port)
+      (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
+	 (http-parse-header port #f)
+	 (instantiate::ssdp-notify
+	    (header header)
+	    (edate (header-cache-control header))
+	    (location (header-field/opt :location header ""))
+	    (host (header-field :host header))
+	    (nt (header-field :nt header))
+	    (usn (header-field :usn header))
+	    (nts (header-field :nts header))
+	    (server (header-field/opt :server header "")))))
+
+   (define (ssdp-parse-m-search port)
+      (when (ssdp-debug)
+	 (tprint "ssdp-parse-m-search..."))
+      ;; skip the request line
+      (read-line port)
+      (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
+	 (http-parse-header port #f)
+	 (instantiate::ssdp-m-search
+	    (header header)
+	    (host (header-field :host header))
+	    (mx (string->integer (header-field :mx header)))
+	    (st (header-field :st header)))))
    
    ;; Match the start line (Section 1.1.1).
    (cond
       ((string-prefix? "HTTP/1.1 200 OK\r\n" buffer)
-       (onmessage (ssdp-parse-response buffer)))
+       (onmessage (ssdp-parse-response port)))
       ((string-prefix? "NOTIFY * HTTP/1.1\r\n" buffer)
-       (onmessage (ssdp-parse-notify buffer)))
+       (onmessage (ssdp-parse-notify port)))
       ((string-prefix? "M-SEARCH * HTTP/1.1\r\n" buffer)
-       (onmessage (ssdp-parse-m-search buffer)))
+       (onmessage (ssdp-parse-m-search port)))
       (else
-       (error "ssdp-parse-header"
-	  "Illegal start line"
-	  (call-with-input-string buffer read-line)))))
+       (error "ssdp-parse-header" "Illegal start line" (read-line port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-read-header ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-read-header socket buffer onmessage)
+(define (ssdp-read-header socket buffer::bstring port::input-port onmessage)
    ;; fill the buffer with READ-CHARS! instead of RECEIVE for the timeout
    (read-chars! buffer (string-length buffer) (datagram-socket-input socket))
+   ;; reset the input port associated with the buffer
+   (input-port-buffer-set! port buffer)
    ;; parse the obtained characters
-   (ssdp-parse-header buffer onmessage))
+   (ssdp-parse-header buffer port onmessage))
 		
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-discover-loop ...                                           */
@@ -190,18 +190,16 @@
    (when (> timeout 0)
       (input-port-timeout-set! (datagram-socket-input socket) timeout))
    ;; wait for the response and parse it
-   (let ((buffer (make-string buffer-size))
-	 (acc '()))
-      (with-handler
-	 (lambda (e)
-	    (tprint "E: " e)
-	    (if (isa? e &io-timeout-error)
-		acc
-		(raise e)))
-	 (let loop ()
-	    (let ((header (ssdp-read-header socket buffer onmessage)))
-	       (when header
-		  (set! acc (cons header acc)))
+   (let* ((buffer (make-string buffer-size))
+	  (port (open-input-string "")))
+      (let liip ()
+	 (with-handler
+	    (lambda (e)
+	       (when (ssdp-debug)
+		  (exception-notify e))
+	       (liip))
+	    (let loop ()
+	       (ssdp-read-header socket buffer port onmessage)
 	       (loop))))))
 
 ;*---------------------------------------------------------------------*/
@@ -236,13 +234,28 @@
 ;*    ssdp-parse-location ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (ssdp-parse-location url::bstring)
+
+   (define (stringify body)
+      (cond
+	 ((null? body)
+	  "")
+	 ((null? (cdr body))
+	  (car body))
+	 (else
+	  (apply string-append
+	     (filter (lambda (s)
+			(and (string? s)
+			     (not (string=? s "\n"))))
+		body)))))
+
    (call-with-input-file url
       (lambda (ip)
 	 (bind-exit (return)
 	    (let ((root (instantiate::ssdp-root))
 		  (icon '())
 		  (iconlist '())
-		  (dev '()))
+		  (dev '())
+		  (svc '()))
 	       (xml-parse ip
 		  :procedure (lambda (tag attrs body)
 				(case tag
@@ -263,10 +276,18 @@
 				       (set! iconlist '())))
 				   ((deviceType manufacturer friendlyName manufacturerURL modelDescription modelName modelNumber modelURL serialNumber UDN)
 				    (set! dev
-				       (cons (cons tag (car body)) dev)))
+				       (cons (cons tag (stringify body))
+					  dev)))
 				   ((serviceList)
+				    #unspecified)
+				   ((service)
 				    (with-access::ssdp-root root (services)
-				       (set! services body)))
+				       (set! services (cons svc services))
+				       (set! svc '())))
+				   ((serviceType serviceId controlURL eventSubURL SCPDURL)
+				    (set! svc
+				       (cons (cons tag (stringify body))
+					  svc)))
 				   ((mimetype)
 				    (set! icon
 				       (cons (cons 'mime-type (car body))

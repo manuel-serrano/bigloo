@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sun Dec 23 07:46:44 2012 (serrano)                */
+;*    Last change :  Sun Apr 21 08:38:03 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -594,9 +594,9 @@
 ;*    @deffn input-port-reopen!@ ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-reopen! port::input-port)
-   (if (not ($input-port-reopen! port))
-       (error/errno
-	  $errno-io-port-error "input-port-reopen!" "Cannot reopen port" port)))
+   (unless ($input-port-reopen! port)
+      (error/errno
+	 $errno-io-port-error "input-port-reopen!" "Cannot reopen port" port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn input-port-clone!! ...                                    */

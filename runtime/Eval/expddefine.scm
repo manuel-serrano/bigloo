@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Sat Oct 13 07:33:33 2012 (serrano)                */
-;*    Copyright   :  2001-12 Manuel Serrano                            */
+;*    Last change :  Sat Apr 20 07:44:05 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/
@@ -336,13 +336,12 @@
 						    ,fun
 						    ,(cdr p0))))
 					  (if (procedure? next)
-					      (if (procedure? next)
-						  ,(if va
-						       `(apply next ,(car p0) ,@rest)
-						       `(next ,(car p0) ,@rest))
-						  ,(if va
-						       `(apply ,fun ,(car p0) ,@rest)
-						       `(,fun ,(car p0) ,@rest))))))
+					      ,(if va
+						   `(apply next ,(car p0) ,@rest)
+						   `(next ,(car p0) ,@rest))
+					      ,(if va
+						   `(apply ,fun ,(car p0) ,@rest)
+						   `(,fun ,(car p0) ,@rest)))))
 				    ,@body) e)
 			    ',f0)))
 		 (evepairify res x))
