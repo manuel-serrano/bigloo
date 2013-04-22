@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr  8 08:20:16 2013                          */
-;*    Last change :  Sun Apr 21 08:55:31 2013 (serrano)                */
+;*    Last change :  Mon Apr 22 08:07:13 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    UPnP Simple Service Discovery protocol                           */
@@ -59,8 +59,11 @@
 	   (ssdp-discover-loop #!key
 	      (buffer-size::int 2048)
 	      (timeout 0)
-	      (onmessage::procedure (lambda (x) x))
+	      ondiscovery
+	      onsearch
 	      socket)
+
+	   (ssdp-discover-quit ::obj)
 
 	   (ssdp-discover-m-search #!key
 	      (ipv4-multicast-address "239.255.255.250")
@@ -79,7 +82,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-parse-header ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-parse-header buffer::bstring port::input-port onmessage)
+(define (ssdp-parse-header buffer::bstring port::input-port ondiscovery onsearch)
    
    (define (read-cache-control cc)
       (string-case cc
@@ -110,8 +113,6 @@
       
    (define (ssdp-parse-response port)
       ;; response (Section 1.3.3)
-      (when (ssdp-debug)
-	 (tprint "ssdp-parse-response..."))
       (http-parse-response port #f
 	 (lambda (input status header length encoding)
 	    (instantiate::ssdp-response
@@ -124,9 +125,6 @@
    
    (define (ssdp-parse-notify port)
       ;; response (Section 1.2.2)
-      (when (ssdp-debug)
-	 (tprint "ssp-parse-notify..."))
-      ;; skip the request line
       (read-line port)
       (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
 	 (http-parse-header port #f)
@@ -141,8 +139,6 @@
 	    (server (header-field/opt :server header "")))))
 
    (define (ssdp-parse-m-search port)
-      (when (ssdp-debug)
-	 (tprint "ssdp-parse-m-search..."))
       ;; skip the request line
       (read-line port)
       (multiple-value-bind (header actual-host actual-port cl te auth pauth co)
@@ -156,24 +152,34 @@
    ;; Match the start line (Section 1.1.1).
    (cond
       ((string-prefix? "HTTP/1.1 200 OK\r\n" buffer)
-       (onmessage (ssdp-parse-response port)))
+       (when (ssdp-debug)
+	  (tprint "ssdp-parse-response..."))
+       (when (procedure? ondiscovery)
+	  (ondiscovery (ssdp-parse-response port))))
       ((string-prefix? "NOTIFY * HTTP/1.1\r\n" buffer)
-       (onmessage (ssdp-parse-notify port)))
+      (when (ssdp-debug)
+	 (tprint "ssp-parse-notify..."))
+       (when (procedure? ondiscovery)
+	  (ondiscovery (ssdp-parse-notify port))))
       ((string-prefix? "M-SEARCH * HTTP/1.1\r\n" buffer)
-       (onmessage (ssdp-parse-m-search port)))
+       (when (ssdp-debug)
+	  (tprint "ssdp-parse-m-search..."))
+       (when (procedure? onsearch)
+	  (onsearch (ssdp-parse-m-search port))))
       (else
        (error "ssdp-parse-header" "Illegal start line" (read-line port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-read-header ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (ssdp-read-header socket buffer::bstring port::input-port onmessage)
+(define (ssdp-read-header socket buffer::bstring port::input-port
+	   ondiscovery onsearch)
    ;; fill the buffer with READ-CHARS! instead of RECEIVE for the timeout
    (read-chars! buffer (string-length buffer) (datagram-socket-input socket))
    ;; reset the input port associated with the buffer
    (input-port-buffer-set! port buffer)
    ;; parse the obtained characters
-   (ssdp-parse-header buffer port onmessage))
+   (ssdp-parse-header buffer port ondiscovery onsearch))
 		
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-discover-loop ...                                           */
@@ -181,7 +187,8 @@
 (define (ssdp-discover-loop #!key
 	   (buffer-size::int 2048)
 	   (timeout 0)
-	   (onmessage::procedure (lambda (x) x))
+	   ondiscovery
+	   onsearch
 	   socket)
    (unless (datagram-socket? socket)
       (bigloo-type-error "ssdp-discover-loop" "datagram-socket" socket))
@@ -191,7 +198,8 @@
       (input-port-timeout-set! (datagram-socket-input socket) timeout))
    ;; wait for the response and parse it
    (let* ((buffer (make-string buffer-size))
-	  (port (open-input-string "")))
+	  (port (open-input-string ""))
+	  (ctrl (cons 'ssdp-discover-loop #t)))
       (let liip ()
 	 (with-handler
 	    (lambda (e)
@@ -199,8 +207,17 @@
 		  (exception-notify e))
 	       (liip))
 	    (let loop ()
-	       (ssdp-read-header socket buffer port onmessage)
-	       (loop))))))
+	       (when (cdr ctrl)
+		  (ssdp-read-header socket buffer port ondiscovery onsearch)
+		  (loop)))))))
+
+;*---------------------------------------------------------------------*/
+;*    ssdp-discover-quit ...                                           */
+;*---------------------------------------------------------------------*/
+(define (ssdp-discover-quit loop)
+   (if (and (pair? loop) (eq? (car loop) 'ssdp-discover-loop))
+       (set-cdr! loop #f)
+       (bigloo-type-error "ssdp-discover-quit" "ssdp-loop" loop)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssdp-discover-m-search ...                                       */
