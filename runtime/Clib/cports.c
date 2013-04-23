@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sun Apr 21 08:58:29 2013 (serrano)                */
+/*    Last change :  Tue Apr 23 09:41:28 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -698,7 +698,6 @@ strseek( void *port, long offset, int whence ) {
    \
    while( _slen > 0 ) { \
       if( (_n = _syswrite( port, _str, _slen )) < 0 ) { \
-	 fprintf( stderr, "FLUSH_STRING, syswrite error: %d errno=%s (%d)\n", _n, strerror( errno ), errno ); \
 	 if( errno == EINTR ) { \
 	    continue; \
 	 } else if( err ) { \
