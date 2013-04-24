@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Sun Nov 18 10:49:20 2012 (serrano)                */
+;*    Last change :  Wed Apr 24 16:59:01 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1002,7 +1002,7 @@
     ($ulong->uint side-effect-free nesting args-safe fail-safe (effect))
     ($ulong->long side-effect-free nesting args-safe fail-safe (effect))
     ($bstring->string side-effect-free nesting args-safe fail-safe (effect))
-    ($string->bstring side-effect-free nesting args-safe fail-safe (effect))
+    ($string->bstring nesting args-safe fail-safe)
     ($char->bchar side-effect-free nesting args-safe fail-safe (effect))
     ($char->uchar side-effect-free nesting args-safe fail-safe (effect))
     ($uchar->bchar side-effect-free nesting args-safe fail-safe (effect))

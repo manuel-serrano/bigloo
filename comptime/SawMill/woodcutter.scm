@@ -36,7 +36,6 @@
    ;; Cannot do it here since it's a inter-procedural correction
    ; (saw-extratype v)
    ;; widen all the formal parameters
-   
    (let ( (b (global->rtl v))
 	  (args (map local->reg (sfun-args (global-value v)))) )
       (if *collapse* (collapse b))

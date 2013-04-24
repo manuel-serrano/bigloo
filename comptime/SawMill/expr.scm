@@ -170,7 +170,8 @@
 (define (conflict? mover ins ins-effects)
    (let ( (r (xx mover ins ins-effects)) )
 ;      (if r
-;	  (print "/* CON " (ins-name mover) " " (ins-name ins) " */") )
+;* 	  (print "/* CON " (typeof mover) " " (typeof ins) " *}")      */
+;* 	  )                                                            */
       r ))
       
 (define (xx mover ins ins-effects)
