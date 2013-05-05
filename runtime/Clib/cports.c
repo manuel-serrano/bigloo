@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Apr 23 09:41:28 2013 (serrano)                */
+/*    Last change :  Fri May  3 08:33:44 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -73,9 +73,6 @@
 #if( !defined( EINTR ) )
 #  define EINTR 0
 #endif
-
-#define CNT 1
-#undef CNT
 
 /*---------------------------------------------------------------------*/
 /*    Default IO operations                                            */
@@ -670,18 +667,12 @@ static long
 strseek( void *port, long offset, int whence ) {
    obj_t buf = OUTPUT_PORT( port ).buf;
    int len = STRING_LENGTH( buf );
-#if( defined( CNT ) )
-   int cnt = OUTPUT_PORT( port ).cnt;
-#else
    int cnt = BGL_OUTPUT_PORT_CNT( port );
-#endif
+   
    if( (offset < 0) || (offset >= (len - cnt)) )
       return 1;
 
    OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( buf, offset );
-#if( defined( CNT ) )
-   OUTPUT_PORT( port ).cnt = len - offset;
-#endif
    
    return 0;
 }
@@ -748,18 +739,12 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
 /*---------------------------------------------------------------------*/
 obj_t
 output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err ) {
-   static obj_t mu;
-   
    if( PORT( port ).kindof == KINDOF_CLOSED ) {
       return BFALSE;
    } else {
       obj_t buf = OUTPUT_PORT( port ).buf;
       int len = STRING_LENGTH( buf );
-#if( defined( CNT ) )      
-      size_t cnt = OUTPUT_PORT( port ).cnt;
-#else      
       size_t cnt = BGL_OUTPUT_PORT_CNT( port );
-#endif      
       long use = len - cnt;
       obj_t fhook = BGL_OUTPUT_PORT_FHOOK( port );
 
@@ -792,19 +777,11 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	    } else {
 	       stdout_from = 0;
 	       OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( buf, 0 );
-#if( defined( CNT ) )
-	       OUTPUT_PORT( port ).cnt = STRING_LENGTH( buf );
-#else
 	       OUTPUT_PORT( port ).end = (char *)&STRING_REF( buf, STRING_LENGTH( buf ) );
-#endif
 	    }
 	 } else {
 	    OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( buf, 0 );
-#if( defined( CNT ) )
-	    OUTPUT_PORT( port ).cnt = STRING_LENGTH( buf );
-#else
 	    OUTPUT_PORT( port ).end = (char *)&STRING_REF( buf, STRING_LENGTH( buf ) );
-#endif
 	 }
       } else {
 	 /* invoke the flush hook, if any attached to the port */
@@ -872,31 +849,6 @@ bgl_flush_output_port( obj_t op ) {
 /*    obj_t                                                            */
 /*    bgl_write ...                                                    */
 /*---------------------------------------------------------------------*/
-#if( defined( CNT ) )
-BGL_RUNTIME_DEF obj_t
-bgl_write( obj_t op, unsigned char *str, size_t sz ) {
-   if( OUTPUT_PORT( op ).cnt > sz ) {
-      if( OUTPUT_PORT( op ).bufmode == BGL_IOLBF ) {
-	 while( sz-- > 0 ) {
-	    char c = *str++;
-
-	    *OUTPUT_PORT( op ).ptr++ = c;
-	    OUTPUT_PORT( op ).cnt--;
-
-	    if( c == '\n' ) bgl_output_flush( op, 0, 0 );
-	 }
-      } else {
-	 memcpy( OUTPUT_PORT( op ).ptr, str, sz );
-	 OUTPUT_PORT( op ).ptr += sz;
-	 OUTPUT_PORT( op ).cnt -= sz;
-      }
-      
-      return op;
-   } else {
-      return bgl_output_flush( op, str, sz );
-   }
-}
-#else
 BGL_RUNTIME_DEF obj_t
 bgl_write( obj_t op, unsigned char *str, size_t sz ) {
    if( BGL_OUTPUT_PORT_CNT( op ) > sz ) {
@@ -918,7 +870,6 @@ bgl_write( obj_t op, unsigned char *str, size_t sz ) {
       return bgl_output_flush( op, str, sz );
    }
 }
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
@@ -998,11 +949,7 @@ bgl_output_port_buffer_set( obj_t port, obj_t buf ) {
    
    OUTPUT_PORT( port ).buf = buf;
    OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( buf, 0 );
-#if( defined( CNT ) )
-   OUTPUT_PORT( port ).cnt = STRING_LENGTH( buf );
-#else
    OUTPUT_PORT( port ).end = (char *)&STRING_REF( buf, STRING_LENGTH( buf ) );
-#endif
 }
 
 /*---------------------------------------------------------------------*/
@@ -1211,11 +1158,7 @@ BGL_RUNTIME_DEF obj_t
 get_output_string( obj_t port ) {
    if( PORT( port ).kindof == KINDOF_STRING ) {
       obj_t buf = OUTPUT_PORT( port ).buf;
-#if( defined( CNT ) )
-      int cnt = OUTPUT_PORT( port ).cnt;
-#else
       int cnt = BGL_OUTPUT_PORT_CNT( port );
-#endif
 	 
       return string_to_bstring_len( BSTRING_TO_STRING( buf ),
 				    STRING_LENGTH( buf ) - cnt );
@@ -1267,11 +1210,7 @@ bgl_close_output_port( obj_t port ) {
 
       if( PORT( port ).kindof == KINDOF_STRING ) {
 	 obj_t buf = OUTPUT_PORT( port ).buf;
-#if( defined( CNT ) )					
-	 int cnt = OUTPUT_PORT( port ).cnt;
-#else
          int cnt = BGL_OUTPUT_PORT_CNT( port );
-#endif
 	 res = bgl_string_shrink( buf, STRING_LENGTH( buf ) - cnt );
       } else {
 	 if( OUTPUT_PORT( port ).err == 0 ) {
@@ -2255,6 +2194,17 @@ bgl_file_to_string( char *path ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    force_unlock_output_mutex_proc ...                               */
+/*---------------------------------------------------------------------*/
+static obj_t
+force_unlock_output_mutex_proc( obj_t env ) {
+   fprintf( stderr, "force_unlock_output_mutex_proc(%s:%d)..\n", __FILE__, __LINE__ );
+   dprint( PROCEDURE_REF( env, 0 ) );
+   BGL_MUTEX_UNLOCK( OUTPUT_PORT( PROCEDURE_REF( env, 0 ) ).mutex );
+}
+
+/*---------------------------------------------------------------------*/
 /*    static long                                                      */
 /*    copyfile ...                                                     */
 /*    -------------------------------------------------------------    */
@@ -2262,12 +2212,19 @@ bgl_file_to_string( char *path ) {
 /*    it is used when the INPUT-PORT is a socket descriptor or when    */
 /*    the host system does not support the sendfile system call.       */
 /*    -------------------------------------------------------------    */
-/*    On entrance, op.mutex is alread locked.                          */
+/*    On entrance, op.mutex is already locked.                         */
 /*---------------------------------------------------------------------*/
 static long
 copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
    long rsz = 0, o;
+   obj_t exitd_top = BGL_EXITD_TOP_AS_OBJ();
+   obj_t proc = MAKE_FX_PROCEDURE( force_unlock_output_mutex_proc, 0, 1 );
 
+   /* if sysread raises an error, the output mutex has to be released */
+   /* this is achieved by installing a protected block manually       */
+   PROCEDURE_SET( proc, 0, op );
+   BGL_EXITD_PUSH_PROTECT( exitd_top, proc );
+   
    if( sz < 0 ) {
 #ifdef __GNUC__
       char _buf[ default_io_bufsiz + 1 ];
@@ -2300,6 +2257,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 
       bgl_output_flush( op, 0, 0 );
       
+      BGL_EXITD_POP_PROTECT( exitd_top );
       return rsz;
    } else {
       long n = 0, m;
@@ -2327,6 +2285,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 	 if( errno == EINTR ) {
 	    goto loopr2;
 	 } else {
+	    BGL_EXITD_POP_PROTECT( exitd_top );
 	    return n;
 	 }
       }
@@ -2336,6 +2295,8 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 #endif
       
       bgl_output_flush( op, 0, 0 );
+
+      BGL_EXITD_POP_PROTECT( exitd_top );
       return rsz;
    }
 }  
@@ -2668,12 +2629,7 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 static ssize_t
 strwrite( obj_t port, void *str, size_t count ) {
    obj_t buf = OUTPUT_PORT( port ).buf;
-#if( defined( CNT ) )				     
-   long cnt = OUTPUT_PORT( port ).cnt;
-#else				    
    long cnt = BGL_OUTPUT_PORT_CNT( port );
-#endif
-				    
    long used = STRING_LENGTH( buf ) - cnt;
    long nlen = (STRING_LENGTH( buf ) + count) * 2;
    obj_t nbuf = make_string_sans_fill( nlen );
@@ -2687,11 +2643,7 @@ strwrite( obj_t port, void *str, size_t count ) {
 
    OUTPUT_PORT( port ).buf = nbuf;
    OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( nbuf, used + count );
-#if( defined( CNT ) )
-   OUTPUT_PORT( port ).cnt = nlen - (used + count);
-#else
    OUTPUT_PORT( port ).end = (char *)&STRING_REF( nbuf, nlen );
-#endif
 
    return count;
 }
