@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sat Mar 23 06:24:02 2013 (serrano)                */
+;*    Last change :  Tue May 14 10:14:00 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -691,6 +691,13 @@
 	  (evcompile-error (or (get-source-location clauses) loc)
 	     "eval" "Illegal class declaration" clauses))
 	 ((match-case (car clauses) (((? symbol?)) #t) (else #f))
+	  ;; the constructor must be protected under a lambda because
+	  ;; may be still uninitialized
+	  (values `(lambda (o) (,(caar clauses) o))
+		  (append-map (lambda (f)
+				 (eval-parse-class-slot loc f))
+			      (cdr clauses))))
+	 ((match-case (car clauses) (((lambda . ?-)) #t) (else #f))
 	  ;; the constructor must be protected under a lambda because
 	  ;; may be still uninitialized
 	  (values `(lambda (o) (,(caar clauses) o))

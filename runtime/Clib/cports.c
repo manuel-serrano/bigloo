@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri May  3 08:33:44 2013 (serrano)                */
+/*    Last change :  Tue May 14 11:02:34 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2199,8 +2199,6 @@ bgl_file_to_string( char *path ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 force_unlock_output_mutex_proc( obj_t env ) {
-   fprintf( stderr, "force_unlock_output_mutex_proc(%s:%d)..\n", __FILE__, __LINE__ );
-   dprint( PROCEDURE_REF( env, 0 ) );
    BGL_MUTEX_UNLOCK( OUTPUT_PORT( PROCEDURE_REF( env, 0 ) ).mutex );
 }
 
