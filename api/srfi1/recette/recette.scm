@@ -60,6 +60,6 @@
    (srfi-1-test (list-index = '(3 1 4 1 5 9 2 5 6) '(2 7 1 8 2))
 		#f)
    (srfi-1-test (delete-duplicates '(a b a c a b c z))
+		'(a b c z))
+   (srfi-1-test (delete-duplicates! (list 'a 'b 'a 'c 'a 'b 'c 'z))
 		'(a b c z)))
-	     
-

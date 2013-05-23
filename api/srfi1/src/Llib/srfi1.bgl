@@ -84,7 +84,7 @@
 ;	   (delete! x lis . maybe-=)
 	   (member x lis . maybe-=)
 	   (delete-duplicates lis . maybe-=)
-	   (delete-duplicates! lis maybe-=)
+	   (delete-duplicates! lis . maybe-=)
 	   (assoc x lis . maybe-=)
 	   (alist-cons key datum alist)
 	   (alist-copy alist)
