@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Mon Dec 24 06:28:28 2012 (serrano)                */
-;*    Copyright   :  2002-12 Manuel Serrano                            */
+;*    Last change :  Tue May 14 15:14:42 2013 (serrano)                */
+;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -329,8 +329,9 @@
 			     (match-case x
 				((?- ?vars ?call . ?exprs)
 				 (evepairify
-				  (e `(call-with-values (lambda () ,call)
-							(lambda ,vars ,@exprs))
+				  (e `(call-with-values
+					 (lambda () ,call)
+					 (lambda ,vars ,@exprs))
 				     e)
 				  x))
 				(else
