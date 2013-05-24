@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Nov 15 16:17:43 2011 (serrano)                */
-;*    Copyright   :  2002-11 Manuel Serrano                            */
+;*    Last change :  Fri May 24 17:49:11 2013 (serrano)                */
+;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public FairThreads implementation.                           */
 ;*=====================================================================*/
@@ -361,29 +361,29 @@
    (thread-suspend/resume! t 'thread-resume! #f))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-specific ::fthread ...                                */
+;*    thread-specific ::fthread ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-get-specific th::fthread)
+(define-method (thread-specific th::fthread)
    (with-access::fthread th (%specific)
       %specific))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-specific! ::fthread ...                               */
+;*    thread-specific-set! ::fthread ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-set-specific! th::fthread v)
+(define-method (thread-specific-set! th::fthread v)
    (with-access::fthread th (%specific)
       (set! %specific v)))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-cleanup ::fthread ...                                 */
+;*    thread-cleanup ::fthread ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-get-cleanup th::fthread)
+(define-method (thread-cleanup th::fthread)
    (with-access::fthread th (%cleanup)
       %cleanup))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-cleanup! ::fthread ...                                */
+;*    thread-cleanup-set! ::fthread ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-set-cleanup! th::fthread v)
+(define-method (thread-cleanup-set! th::fthread v)
    (with-access::fthread th (%cleanup)
       (set! %cleanup v)))

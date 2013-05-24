@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sun Mar 31 07:47:39 2013 (serrano)                */
+;*    Last change :  Fri May 24 17:53:13 2013 (serrano)                */
 ;*    Copyright   :  2004-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -159,8 +159,8 @@
 	    (abstract-class thread
 	       (thread-initialize!)
 	       (name (default (gensym 'thread)))
-	       (specific (get thread-get-specific) (set thread-set-specific!))
-	       (cleanup (get thread-get-cleanup) (set thread-set-cleanup!)))
+	       (specific (get thread-specific) (set thread-specific-set!))
+	       (cleanup (get thread-cleanup) (set thread-cleanup-set!)))
 
 	    (class nothread::thread
 	       (body::procedure read-only)
@@ -190,10 +190,10 @@
 	    (generic thread-start-joinable! ::thread)
 	    (generic thread-join! ::thread . timeout)
 	    (generic thread-terminate! ::thread)
-	    (generic thread-get-specific::obj ::thread)
-	    (generic thread-set-specific!::obj ::thread ::obj)
-	    (generic thread-get-cleanup::obj ::thread)
-	    (generic thread-set-cleanup!::obj ::thread ::obj)
+	    (generic thread-specific::obj ::thread)
+	    (generic thread-specific-set!::obj ::thread ::obj)
+	    (generic thread-cleanup::obj ::thread)
+	    (generic thread-cleanup-set!::obj ::thread ::obj)
 	    (inline make-thread::thread ::procedure #!optional (name (gensym 'thread)))
 	    (generic %user-current-thread ::thread)
 	    (generic %user-thread-yield! ::thread)
@@ -394,24 +394,24 @@
 (define-generic (thread-terminate! th::thread))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-specific ::thread ...                                 */
+;*    thread-specific ::thread ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-generic (thread-get-specific th::thread))
+(define-generic (thread-specific th::thread))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-specific! ::thread ...                                */
+;*    thread-specific-set! ::thread ...                                */
 ;*---------------------------------------------------------------------*/
-(define-generic (thread-set-specific! th::thread v::obj))
+(define-generic (thread-specific-set! th::thread v::obj))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-cleanup ::thread ...                                  */
+;*    thread-cleanup ::thread ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-generic (thread-get-cleanup th::thread))
+(define-generic (thread-cleanup th::thread))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-cleanup! ::thread ...                                 */
+;*    thread-cleanup-set! ::thread ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-generic (thread-set-cleanup! th::thread v::obj))
+(define-generic (thread-cleanup-set! th::thread v::obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-thread ...                                                  */
@@ -541,27 +541,27 @@
       (exit 0)))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-specific ::nothread ...                               */
+;*    thread-specific ::nothread ...                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-get-specific th::nothread)
+(define-method (thread-specific th::nothread)
    (with-access::nothread th (%specific) %specific))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-specific! ::nothread ...                              */
+;*    thread-specific-set! ::nothread ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-set-specific! th::nothread v)
+(define-method (thread-specific-set! th::nothread v)
    (with-access::nothread th (%specific) (set! %specific v)))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-cleanup ::nothread ...                                */
+;*    thread-cleanup ::nothread ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-get-cleanup th::nothread)
+(define-method (thread-cleanup th::nothread)
    (with-access::nothread th (%cleanup) %cleanup))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-cleanup! ::nothread ...                               */
+;*    thread-cleanup-set! ::nothread ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-set-cleanup! th::nothread v)
+(define-method (thread-cleanup-set! th::nothread v)
    (with-access::nothread th (%cleanup) (set! %cleanup v)))
 
 ;*---------------------------------------------------------------------*/

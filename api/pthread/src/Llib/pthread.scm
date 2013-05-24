@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Wed Apr 10 17:05:05 2013 (serrano)                */
+;*    Last change :  Fri May 24 17:49:48 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -158,31 +158,31 @@
       t))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-specific ::pthread ...                                */
+;*    thread-specific ::pthread ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-get-specific t::pthread)
+(define-method (thread-specific t::pthread)
    (with-access::pthread t ($builtin)
       ($pthread-specific $builtin)))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-specific! ::pthread ...                               */
+;*    thread-specific-set! ::pthread ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-set-specific! t::pthread v)
+(define-method (thread-specific-set! t::pthread v)
    (with-access::pthread t ($builtin)
       ($pthread-specific-set! $builtin v))
    v)
 
 ;*---------------------------------------------------------------------*/
-;*    thread-get-cleanup ::pthread ...                                 */
+;*    thread-cleanup ::pthread ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-get-cleanup t::pthread)
+(define-method (thread-cleanup t::pthread)
    (with-access::pthread t ($builtin)
       ($pthread-cleanup $builtin)))
 
 ;*---------------------------------------------------------------------*/
-;*    thread-set-cleanup! ::pthread ...                                */
+;*    thread-cleanup-set! ::pthread ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (thread-set-cleanup! t::pthread p)
+(define-method (thread-cleanup-set! t::pthread p)
    (with-access::pthread t ($builtin)
       (if (correct-arity? p 1)
 	  (begin

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Sun Nov 18 09:55:20 2012 (serrano)                */
+;*    Last change :  Fri May 24 17:26:29 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -505,7 +505,7 @@
 			     (when (and (not (eq? mod env)) (evmodule? env))
 				(evmodule-check-unbound env #f))
 			     ($env-pop-trace denv)
-			     v))
+			     path))
 			 (else
 			  (when (epair? sexp)
 			     ($env-set-trace-location denv (cer sexp)))

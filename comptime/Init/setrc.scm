@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 07:53:05 1996                          */
-;*    Last change :  Sat May 12 08:44:34 2012 (serrano)                */
-;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri May 24 17:39:30 2013 (serrano)                */
+;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reading of the `runtime-command' file.                       */
 ;*=====================================================================*/
@@ -23,8 +23,8 @@
 (define (setup-default-values)
    (let* ((path  (let ((home (getenv "HOME")))
 		    (if (string? home)
-			(cons home *lib-dir*)
-			*lib-dir*)))
+			(list home *default-lib-dir*)
+			*default-lib-dir*)))
 	  (fname (find-file/path ".bigloorc" path)))
       (if fname
 	  (loadq fname))))
