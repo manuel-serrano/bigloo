@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Nov 16 11:08:02 2011 (serrano)                */
+#*    Last change :  Tue Jun  4 15:11:57 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -46,7 +46,7 @@ BHEAPFLAGS	= -unsafe -q \
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= bibtex gb2312 hyphenation
+_BGL_OBJECTS	= bibtex gb2312 hyphenation levenshtein
 
 _OBJECTS	= $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
