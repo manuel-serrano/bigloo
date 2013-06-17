@@ -331,6 +331,12 @@
   "*True means that legends are forced in the tool-bar."
   :group 'ude
   :type 'boolean)
+
+
+(defcustom ude-toolbar-image-directory "images"
+  "*Subdirectory of bmacs elisp directory containing toolbar images."
+  :group 'ude
+  :type 'string)
   
 ;*---------------------------------------------------------------------*/
 ;*    Font Lock                                                        */

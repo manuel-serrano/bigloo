@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Fri Feb 18 15:30:08 2011 (serrano)                */
+/*    Last change :  Thu Jun 13 19:12:01 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -490,7 +490,7 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
    ucs2_t *cucs2 = BUCS2_STRING_TO_UCS2_STRING( bucs2 );
    int read, write;
    obj_t result;
-   char *cresult;
+   unsigned char *cresult;
    
    /* First, we compute the size of the futur utf8 string */
    for( read = 0, utf8_len = 0; read < len; read++ )
@@ -512,7 +512,6 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
 	    cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
 	    ucs2 >>= 6;
 	 }
-	 
 	 cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
 	 ucs2 >>= 6;
 	 cresult[ write ] = (unsigned char)(0xff - (0xff >> len) + ucs2);

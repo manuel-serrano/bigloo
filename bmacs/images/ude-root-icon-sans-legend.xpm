@@ -1,0 +1,36 @@
+/* XPM */
+static char *dir[] = {
+/* width height num_colors chars_per_pixel */
+"    33    24        5            1",
+/* colors */
+"_ c None s backgroundToolBarColor",
+"# c black s foregroundToolBarColor",
+"b c #836fff",
+"c c #080408",
+"d c #9898f8",
+/* pixels */
+"_________________________________",
+"_________________________________",
+"_________________________________",
+"_________________________________",
+"_________________######__________",
+"________________#dddddd#_________",
+"_______________#dbbbbbbd#________",
+"________#################________",
+"_______cdddddddddddddddddc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______cdbbbbbbbbbbbbbbbbc_______",
+"_______ccccccccccccccccccc_______",
+"_________________________________",
+"_________________________________",
+"_________________________________",
+"_________________________________",
+"_________________________________"
+};

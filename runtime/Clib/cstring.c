@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Wed Nov 28 10:13:05 2012 (serrano)                */
+/*    Last change :  Thu Jun 13 19:10:31 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -992,7 +992,7 @@ bgl_escape_C_string( unsigned char *src, long start, long end ) {
 			   n3 = XDIGIT_TO_BYTE( s3 );
 			   n4 = XDIGIT_TO_BYTE( s4 );
 
-			   u = (ucs2_t)(n1*4096 + n2*512 + n3*16 + n4);
+			   u = (ucs2_t)((n1<<12) + (n2<<8) + (n3<<4) + n4);
 			   ucs2 = make_ucs2_string( 1, u );
 			   utf8 = ucs2_string_to_utf8_string( ucs2 );
 			   memcpy( dst, BSTRING_TO_STRING( utf8 ), STRING_LENGTH( utf8 ) );

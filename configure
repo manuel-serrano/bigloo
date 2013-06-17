@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Apr 12 19:04:46 2013 (serrano)                */
+#*    Last change :  Tue Jun 11 18:33:22 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -18,7 +18,7 @@
 #*---------------------------------------------------------------------*/
 release=4.0b
 version=
-bigloourl=http://www.inria.fr/sophia/teams/indes/fp/Bigloo
+bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
 

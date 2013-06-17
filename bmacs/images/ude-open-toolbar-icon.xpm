@@ -1,0 +1,20 @@
+/* XPM */
+static char *off[] = {
+/* width height num_colors chars_per_pixel */
+"    27    5        8            1",
+/* colors */
+". c #000000",
+"# c #303060",
+"a c #6064c8",
+"b c #686868",
+"c c None s backgroundToolBarColor",
+"d c #e0e4e0",
+"e c #f8e8c8",
+"f c #f8fcf8",
+/* pixels */
+"ccc#ccccccfccfccfccfccfcccc",
+"ccc##cccccc#cc#cc#cc#cc#ccc",
+"ccc#a#cccccfccfccfccfccfccc",
+"ccc#afcccccc.cc.cc.cc.cc.cc",
+"ccc#fcccccccccccccccccccccc",
+};

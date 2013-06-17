@@ -102,7 +102,7 @@ EMACS_SOURCES	= $(EMACS_FILE:%=%.el) $(BMACS_FILE)
 #*    Population                                                       */
 #*---------------------------------------------------------------------*/
 POPULATION	= Makefile README $(EMACS_SOURCES) $(OLD_SOURCES) \
-                  etc/bass-snap.au
+                  etc/bass-snap.au images/*.xpm
 
 #*---------------------------------------------------------------------*/
 #*     Suffixes ...                                                    */
@@ -205,6 +205,11 @@ doinstall: bmacs-config.el site-lisp
             chmod $(MODDIR) $(DESTDIR)$(EMACSDIR)/etc; \
         fi
 	cp etc/bass-snap.au $(DESTDIR)$(EMACSDIR)/etc
+	if [ ! -d $(DESTDIR)$(EMACSDIR)/images ]; then \
+          mkdir -p $(DESTDIR)$(EMACSDIR)/images && \
+            chmod $(MODDIR) $(DESTDIR)$(EMACSDIR)/images; \
+        fi
+	cp images/*.xpm $(DESTDIR)$(EMACSDIR)/images
 
 site-lisp:
 	if [ "$(EMACSDIR) " = " " ]; then \
