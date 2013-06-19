@@ -232,7 +232,11 @@
 	 
 	 ;; check if inlined code correspond to library functions
 	 (backend-check-inlines (the-backend))
-      
+
+	 ;; stop after performing syntax check and write no output.
+	 ;; this is usefull for use with Flycheck and Flymake
+	 (stop-on-pass 'syntax-check (lambda () #unspecified))
+	 
 	 ;; ok, now we build the ast
 	 (let ((ast (profile ast (build-ast units))))
 	    (stop-on-pass 'ast (lambda () (write-ast ast)))

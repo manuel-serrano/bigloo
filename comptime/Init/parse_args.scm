@@ -806,6 +806,8 @@
        (set! *pass* 'dump-module))
       (("-ast" (help "Stop after the ast construction stage"))
        (set! *pass* 'ast))
+      (("-syntax-check" (help "Stop after checking syntax"))
+       (set! *pass* 'syntax-check))
       (("-bdb-spread-obj" (help "Stop after the bdb obj spread stage"))
        (set! *pass* 'bdb-spread-obj))
       (("-trace" (help "Stop after the trace pass"))
