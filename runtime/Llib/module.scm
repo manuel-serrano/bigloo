@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Sun Nov 18 14:55:40 2012 (serrano)                */
-;*    Copyright   :  2009-12 Manuel Serrano                            */
+;*    Last change :  Fri Jun 21 09:27:49 2013 (serrano)                */
+;*    Copyright   :  2009-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */
@@ -92,19 +92,29 @@
 
 (define (bigloo-module-resolver-set! resolve)
    (synchronize modules-mutex
-      (if (and (procedure? resolve) (correct-arity? resolve 2))
-	  (set! %bigloo-module-resolver resolve)
-	  (error 'bigloo-module-resolver-set! "Illegal resolver" resolve))))
+      (cond
+	 ((and (procedure? resolve) (correct-arity? resolve 2))
+	  ;; backward compatibility
+	  (set! %bigloo-module-resolver
+	     (lambda (module files abase) (resolve module abase))))
+	 ((and (procedure? resolve) (correct-arity? resolve 3))
+	  (set! %bigloo-module-resolver resolve))
+	 (else
+	  (error 'bigloo-module-resolver-set! "Illegal resolver" resolve)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    module-default-resolver ...                                      */
 ;*    -------------------------------------------------------------    */
-;*    The default module resolver first check the afile-table and      */
-;*    then try a filename whose name matches the module name.          */
+;*    The default module resolver first check if the files are         */
+;*    provided. Otherwise, it checks the afile-table and then try a    */
+;*    filename whose name matches the module name.                     */
 ;*---------------------------------------------------------------------*/
-(define (module-default-resolver mod::symbol abase)
+(define (module-default-resolver mod::symbol files::pair-nil abase)
    (synchronize modules-mutex
       (cond
+	 ((pair? files)
+	  (module-add-access! mod files abase)
+	  files)
 	 ((null? abase)
 	  (resolve-abase mod "."))
 	 ((string? abase)
@@ -165,9 +175,9 @@
 	     (if (not cell)
 		 (set-cdr! base (cons (cons module files) (cdr base)))
 		 (unless (equal? (cdr cell) files)
-		    (warning 'add-access!
+		    (warning "add-access!"
 			     "access redefinition -- " module " ["
-			     (cdr cell) " " files "] for directory \"" abase
+			     (cdr cell) " " files "] in directory \"" abase
 			     "\"")
 		    ;; MS 19oct2012: care don't what to do here
 		    '(set-cdr! cell files)))))))
@@ -187,7 +197,7 @@
 	      (if (and (pair? x) (symbol? (car x)) (list? (cdr x)))
 		  #t
 		  (begin
-		     (warning 'module-read-access-file "Illegal entry -- " x)
+		     (warning "module-read-access-file" "Illegal entry -- " x)
 		     #f)))
 	   (read port)))
 

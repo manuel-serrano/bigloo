@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Tue Apr 20 07:57:24 2010 (serrano)                */
-;*    Copyright   :  1993-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jun 21 08:10:45 2013 (serrano)                */
+;*    Copyright   :  1993-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handle `qualified type <-> module' associations */
 ;*=====================================================================*/
@@ -178,7 +178,7 @@
 	  (add-current-module-qualified-type-name!))
 	 (else
 	  (let* ((abase (map dirname *access-files*))
-		 (files ((bigloo-module-resolver) module abase))
+		 (files ((bigloo-module-resolver) module '() abase))
 		 (default (if (pair? files)
 	 		      (prefix (basename (car files)))
 			      (symbol->string module))))

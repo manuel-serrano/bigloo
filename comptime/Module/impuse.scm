@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Tue Nov 27 11:47:20 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jun 21 08:10:17 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
 ;*=====================================================================*/
@@ -421,7 +421,7 @@
    (when (eq? (import-decl import) #unspecified)
       (let* ((module (import-module import))
 	     (abase (map dirname *access-files*))
-	     (fnames ((bigloo-module-resolver) module abase)))
+	     (fnames ((bigloo-module-resolver) module '() abase)))
 	 (verbose 2 "      [reading "
 		  (if (eq? (import-mode import) 'use) "used" "imported")
 		  " module " module "]" #\Newline)

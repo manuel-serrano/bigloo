@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Fri Mar 27 07:54:24 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jun 21 08:10:25 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The load clause compilation                                      */
 ;*=====================================================================*/
@@ -60,7 +60,7 @@
 	      (loop (cdr f))))))
       ((? symbol?)
        (let* ((abase (map dirname *access-files*))
-	      (b ((bigloo-module-resolver) proto abase)))
+	      (b ((bigloo-module-resolver) proto '() abase)))
 	  (if (not (pair? b))
 	      (user-error "load" "Can't load module" proto)
 	      (load-module proto b))))

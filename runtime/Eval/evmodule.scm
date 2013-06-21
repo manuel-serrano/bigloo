@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Tue Nov 20 17:59:11 2012 (serrano)                */
-;*    Copyright   :  2006-12 Manuel Serrano                            */
+;*    Last change :  Fri Jun 21 09:17:24 2013 (serrano)                */
+;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -514,8 +514,10 @@
 ;*    evmodule-import! ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-import! mod ident path set abase loc)
+   
    (define (import-error msg obj)
       (evcompile-error loc "eval" msg obj))
+   
    (define (import-module mod2)
       ;; bind imported the macros
       (let ((t (%evmodule-macros mod)))
@@ -527,6 +529,7 @@
 		   (when (or (null? set) (memq (car b) set))
 		      (evmodule-import-binding! mod (car b) (cdr b) (car b) loc)))
 		(%evmodule-exports mod2)))
+   
    (let ((mod2 (eval-find-module ident)))
       (cond
 	 ((evmodule? mod2)
@@ -583,7 +586,7 @@
 	 (unwind-protect
 	    (cond
 	       ((symbol? s)
-		(let ((path ((bigloo-module-resolver) s abase)))
+		(let ((path ((bigloo-module-resolver) s '() abase)))
 		   (evmodule-import! mod s path '() (module-abase) loc)))
 	       ((or (not (pair? s))
 		    (not (list? s))
@@ -593,10 +596,9 @@
 		(let ((files (find-module-files s))
 		      (imod (find symbol? s))
 		      (imports (find-module-imports s))
-		      (aliases (find-module-aliases s)))
-		   (unless (null? files)
-		      (module-add-access! imod files (pwd)))
-		   (let ((path ((bigloo-module-resolver) imod (pwd))))
+		      (aliases (find-module-aliases s))
+		      (dir (pwd)))
+		   (let ((path ((bigloo-module-resolver) imod files dir)))
 		      (for-each (lambda (ap)
 				   (bind-alias! mod imod
 				      (car ap)
@@ -609,28 +611,6 @@
    (if (not (list? clause))
        (import-error clause)
        (for-each import-clause (cdr clause))))
-
-;* (define (evmodule-import-old mod clause loc)                        */
-;*    (define (import-error arg)                                       */
-;*       (evcompile-error loc "eval" "Illegal `import' clause" arg))   */
-;*    (define (import-clause s)                                        */
-;*       (let ((loc (or (get-source-location s) loc))                  */
-;* 	    (abase (module-abase)))                                    */
-;* 	 (unwind-protect                                               */
-;* 	    (cond                                                      */
-;* 	       ((symbol? s)                                            */
-;* 		(let ((path ((bigloo-module-resolver) s abase)))       */
-;* 		   (evmodule-import! mod s path '() (module-abase) loc))) */
-;* 	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s)))) */
-;* 		(import-error s))                                      */
-;* 	       (else                                                   */
-;* 		(module-add-access! (car s) (cdr s) (pwd))             */
-;* 		(let ((path ((bigloo-module-resolver) (car s) (pwd)))) */
-;* 		   (evmodule-import! mod (car s) path '() (module-abase) loc)))) */
-;* 	    (module-abase-set! abase))))                               */
-;*    (if (not (list? clause))                                         */
-;*        (import-error clause)                                        */
-;*        (for-each import-clause (cdr clause))))                      */
 
 ;*---------------------------------------------------------------------*/
 ;*    bind-alias! ...                                                  */
@@ -688,13 +668,12 @@
 	 (unwind-protect
 	    (cond
 	       ((symbol? s)
-		(let ((path ((bigloo-module-resolver) s abase)))
+		(let ((path ((bigloo-module-resolver) s '() abase)))
 		   (evmodule-from! mod s path '() loc)))
 	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
 		(from-error s))
 	       (else
-		(module-add-access! (car s) (cdr s) (pwd))
-		(let ((path ((bigloo-module-resolver) (car s) (pwd))))
+		(let ((path ((bigloo-module-resolver) (car s) (cdr s) (pwd))))
 		   (evmodule-from! mod (car s) path '() loc))))
 	    (module-abase-set! abase))))
    (if (not (list? clause))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Fri Mar 27 13:31:07 2009 (serrano)                */
-;*    Copyright   :  1996-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jun 21 08:10:34 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The with clauses compilation.                                    */
 ;*=====================================================================*/
@@ -77,7 +77,7 @@
 				   (string-append "Illegal `with' clause")
 				   clause
 				   '())
-	      (let ((b ((bigloo-module-resolver) proto ".")))
+	      (let ((b ((bigloo-module-resolver) proto '() ".")))
 		 ;; this is not a user module
 		 (if (not (pair? b))
 		     (if (memq proto (heap-module-list))
