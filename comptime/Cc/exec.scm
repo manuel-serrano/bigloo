@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:09:34 1995                          */
-;*    Last change :  Tue Jan 29 15:17:19 2008 (serrano)                */
-;*    Copyright   :  1995-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jun 21 11:09:11 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When we don't need to make any action after invoking the C       */
 ;*    compiler (i.e. when the C compiler is called in a tail           */
@@ -46,7 +46,7 @@
 ;*    exec ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (exec cmd come-back name)
-   (if (or come-back (not (string? *shell*)))
+   (if (or come-back (not (string? *shell*)) (string-null? *shell*))
        (begin
 	  (trace cc "system: " cmd #\Newline)
 	  (let ((res (system cmd)))

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 11 18:33:22 2013 (serrano)                */
+#*    Last change :  Fri Jun 21 11:01:15 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -101,6 +101,7 @@ jshell=sh
 
 #*--- Misc user configuration -----------------------------------------*/
 shell=/bin/sh
+ccshell=$shell
 shell_rm="rm"
 shell_mv="mv"
 bgl_shell_rm=$BGLRM
@@ -1481,6 +1482,13 @@ case $hostos in
       macosx=`$autoconf macosx` || exit 1
     fi
 
+    uname -r | grep "^9.8" > /dev/null
+
+    if [ $? = 0 ]; then
+      # workaround to patch MacOS 10.5 buggous execl
+      ccshell=
+    fi 
+
     if [ "$macosx" = "yes" ]; then
       echo "* MacOS X tuning enabled"; >&2;
       if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
@@ -2719,7 +2727,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_GETIFADDRS@|$getifaddrs|" \
               -e "s|@BGL_HAVE_GETHWADDRS@|$gethwaddrs|" \
               -e "s|@BGL_AUTO_FINALIZER@|$gcfinalizer|" \
-              -e "s|@SHELL@|$shell|" \
+              -e "s|@SHELL@|$ccshell|" \
               -e "s|@SHELL_MV@|$bgl_shell_mv|" \
               -e "s|@SHELL_RM@|$bgl_shell_rm|" \
               -e "s|@C_COMPILER_STYLE@|$ccstyle|" \
