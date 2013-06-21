@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Dec 26 09:32:00 2012 (serrano)                */
+;*    Last change :  Fri Jun 21 15:12:56 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -425,16 +425,12 @@
       (cond
 	 ((or (<fx start 0) (>fx start len))
 	  (error "substring"
-		 (string-append "Illegal start index \"" string "\"")
-		 start))
-	 ((<fx end 0)
-	  (error "substring"
-		 (string-append "Illegal end index \"" string "\"")
-		 end))
+		 (string-append "Illegal start index " (fixnum->string start))
+		 (list (string-length string) string)))
 	 ((or (<fx end start) (>fx end len))
 	  (error "substring"
-		 (string-append "Illegal end index \"" string "\"")
-		 end))
+		 (string-append "Illegal end index " (fixnum->string end))
+		 (list (string-length string) string)))
 	 (else
 	  ($substring string start end)))))
 
