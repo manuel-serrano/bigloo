@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Jan  9 09:04:59 2013 (serrano)                */
+/*    Last change :  Mon Jun 24 15:28:09 2013 (serrano)                */
 /*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
@@ -113,6 +113,7 @@ bool_t
 bglpth_mutex_timed_lock( void *m, long ms ) {
    bglpmutex_t mut = (bglpmutex_t)m;
    int res;
+   long usec;
    
 #if BGL_HAVE_MUTEX_TIMEDLOCK
    struct timespec timeout;
@@ -120,14 +121,18 @@ bglpth_mutex_timed_lock( void *m, long ms ) {
 #  if defined( _MINGW_VER ) || defined( _MSC_VER )
    struct timeb tb;
    ftime( &tb );
-   timeout.tv_sec = tb.time + (ms / 1000);
-   timeout.tv_nsec = (tb.millitm * 1000000) + ((ms % 1000) * 100000); 
+
+   usec = (tb.millitm + ms) * 1000;
+
+   timeout.tv_nsec = (usec % 1000000) * 1000;
+   timeout.tv_sec = tb.time + (usec / 1000000);
 #  else
    struct timeval now;
    gettimeofday( &now, 0 );
-   timeout.tv_sec = now.tv_sec + (ms / 1000);
-   timeout.tv_nsec = (now.tv_usec * 1000) + ((ms % 1000) * 100000);
-   gettimeofday( &now, 0 );
+
+   usec = (now.tv_usec + ms * 1000);
+   timeout.tv_nsec = (usec % 1000000) * 1000;
+   timeout.tv_sec = now.tv_sec + (usec / 1000000);
 #  endif
 
    res = pthread_mutex_timedlock( &(mut->pmutex), &timeout );
