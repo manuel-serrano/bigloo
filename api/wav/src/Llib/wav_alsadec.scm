@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 21 08:15:23 2013                          */
-;*    Last change :  Fri Mar  1 12:12:52 2013 (serrano)                */
+;*    Last change :  Fri Jun 21 20:21:47 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    WAV music decoder                                                */
@@ -64,7 +64,7 @@
 (define-method (alsadecoder-init dec::wav-alsadecoder)
    (with-access::wav-alsadecoder dec (mimetypes)
       (when (null? mimetypes)
-	 (set! mimetypes '("audio/wav" "audio/x-wav")))))
+	 (set! mimetypes '("audio/wav" "audio/x-wav" "audio/x-pn-windows-acm")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-reset! ::wav-alsadecoder ...                         */

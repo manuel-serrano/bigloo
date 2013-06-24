@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Tue Apr 17 07:44:21 2012 (serrano)                */
+;*    Last change :  Mon Jun 24 14:11:36 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -173,8 +173,15 @@
 ;*---------------------------------------------------------------------*/
 (define (%with-lexical new form e key)
    (let ((old-lexical-stack (%lexical-stack)))
-      ($lexical-stack-set! (append (map (lambda (n) (cons n key)) new)
-				   old-lexical-stack))
+      ($lexical-stack-set!
+	 (append (map (lambda (n)
+			 (let ((f (parse-formal-ident n
+				     (get-source-location e))))
+			    (if (pair? f)
+				(cons (car f) key)
+				(cons n key))))
+		    new)
+	    old-lexical-stack))
       (unwind-protect
 	 (e form e)
 	 ($lexical-stack-set! old-lexical-stack))))

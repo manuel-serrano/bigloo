@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sat Feb 23 19:23:20 2013 (serrano)                */
+;*    Last change :  Fri Jun 21 20:14:46 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -1101,7 +1101,7 @@
 	 ((read-flac-musicinfo mm) => id)
 	 ((read-mp3-musicinfo mm) => id)
 	 ((read-ogg-comments path mm) #f)
-	 ((find (lambda (p) (p mm)) *musicinfo-readers*) => id)
+	 ((find (lambda (p) (p mm)) *musicinfo-readers*) => (lambda (r) (r mm)))
 	 (else #f)))
    
    (cond

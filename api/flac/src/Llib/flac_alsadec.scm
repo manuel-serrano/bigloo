@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Wed Mar 13 09:04:03 2013 (serrano)                */
+;*    Last change :  Fri Jun 21 20:25:49 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -85,7 +85,7 @@
 (define-method (alsadecoder-init dec::flac-alsadecoder)
    (with-access::flac-alsadecoder dec (mimetypes %flac)
       (when (null? mimetypes)
-	 (set! mimetypes '("audio/flac" "application/x-flac")))
+	 (set! mimetypes '("audio/flac" "application/x-flac" "audio/x-flac")))
       (set! %flac (instantiate::flac-alsa))))
 
 ;*---------------------------------------------------------------------*/

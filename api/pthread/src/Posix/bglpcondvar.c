@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 12 10:38:26 2012 (serrano)                */
-/*    Copyright   :  2004-12 Manuel Serrano                            */
+/*    Last change :  Mon Jun 24 13:59:12 2013 (serrano)                */
+/*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
 /*=====================================================================*/
@@ -51,25 +51,29 @@ bool_t
 bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    bglpmutex_t mut = (bglpmutex_t)BGL_MUTEX_SYSMUTEX( m );
    struct timespec timeout;
-   bool_t res;
-   
+   long usec;
+
 #if defined( _MINGW_VER ) || defined( _MSC_VER )
    struct timeb tb;
    ftime( &tb );
-   timeout.tv_sec = tb.time + (ms / 1000);
-   timeout.tv_nsec = (tb.millitm * 1000000) + ((ms % 1000) * 1000000); 
+
+   usec = (tb.millitm + ms) * 1000;
+
+   timeout.tv_nsec = (usec % 1000000) * 1000;
+   timeout.tv_sec = tb.time + (usec / 1000000);
 #else
    struct timeval now;
    gettimeofday( &now, 0 );
-   timeout.tv_sec = now.tv_sec + (ms / 1000);
-   timeout.tv_nsec = (now.tv_usec * 1000) + ((ms % 1000) * 1000000);
+
+   usec = (now.tv_usec + ms * 1000);
+   timeout.tv_nsec = (usec % 1000000) * 1000;
+   timeout.tv_sec = now.tv_sec + (usec / 1000000);
+
 #endif
 
-   res = pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
-				 &(mut->pmutex),
-				 &timeout );
-   
-   return !res;
+   return !pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),
+				   &(mut->pmutex),
+				   &timeout );
 }
 
 /*---------------------------------------------------------------------*/
