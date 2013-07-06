@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Mon Jun 24 13:59:12 2013 (serrano)                */
+/*    Last change :  Mon Jun 24 15:28:36 2013 (serrano)                */
 /*    Copyright   :  2004-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
@@ -68,7 +68,6 @@ bglpth_condvar_timed_wait( obj_t cv, obj_t m, long ms ) {
    usec = (now.tv_usec + ms * 1000);
    timeout.tv_nsec = (usec % 1000000) * 1000;
    timeout.tv_sec = now.tv_sec + (usec / 1000000);
-
 #endif
 
    return !pthread_cond_timedwait( BGLPTH_CONDVAR_PCONDVAR( cv ),

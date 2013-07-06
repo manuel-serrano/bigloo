@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Mon Oct 15 09:42:19 2012 (serrano)                */
+;*    Last change :  Tue Jul  2 11:19:02 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -431,6 +431,8 @@
 	     (obj (allocate-instance cname))
 	     (klass (object-class obj))
 	     (fields (class-all-fields klass)))
+	 (unless (=fx (-fx sz 1) (vector-length fields))
+	    (error "string->obj" "corrupted class" cname))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining obj))
 	 ;; skip the class fields

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Apr 10 17:22:49 2013 (serrano)                */
+#*    Last change :  Wed Jun 26 09:31:00 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -43,7 +43,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API)
 
 # Additional pthread lib for C
-EXTRALIBS	= "$(PTHREADLIBS)"
+EXTRALIBS	= "$(PTHREADLIBS)" "$(GCCLOSELIB)"
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

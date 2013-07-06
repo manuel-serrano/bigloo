@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Fri Dec  9 07:55:54 2011 (serrano)                */
+;*    Last change :  Fri Jun 28 16:48:33 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -114,7 +114,6 @@
 	    
 	    __r5_control_features_6_4
 	    __r5_macro_4_3_syntax
-	    ;__r5_macro_4_3_hygiene
 	    
 	    __lalr_driver
 	    __lalr_expand))
