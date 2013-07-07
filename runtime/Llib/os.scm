@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Jul  7 18:49:36 2013 (serrano)                */
+;*    Last change :  Sun Jul  7 19:21:21 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -206,6 +206,7 @@
 	    (unix-path->list::pair-nil ::bstring)
 	    (getuid::int)
 	    (setuid ::int)
+	    (setgid ::int)
 	    (getpwnam ::bstring)
 	    (getpwuid ::int)))
 
