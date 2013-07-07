@@ -171,11 +171,14 @@ in millisecond.
 @end deffn
 
 @deffn {bigloo procedure} getuid
+@deffnx {bigloo procedure} getgid
 @deffnx {bigloo procedure} setuid uid
-The procedure @code{getuid} returns the UID of the user the current process
-is executed on behalf of.
+@deffnx {bigloo procedure} setgid uid
+The procedure @code{getuid} (resp. @code{getgid}) returns the UID 
+(resp. GID) of the user the current process is executed on behalf of.
 
-The procedure @code{setuid} set the UID of the current process. In case of
+The procedure @code{setuid} (resp. @code{setgid}) set the UID 
+(resp. GID) of the current process. In case of
 failure, this procedure raises an error.
 @end deffn
 

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jun 21 11:01:15 2013 (serrano)                */
+#*    Last change :  Sun Jul  7 18:51:31 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2177,6 +2177,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     getuid=`$autoconf getuid` || exit 1
   fi
 
+  # getuid
+  if [ "$getgid " = " " ]; then
+    getgid=`$autoconf getgid` || exit 1
+  fi
+
   # gecos
   if [ "$gecos " = " " ]; then
     gecos=`$autoconf gecos` || exit 1
@@ -2663,6 +2668,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_STDLIBINT@|$stdlibint|" \
               -e "s|@HAVE_UNISTDINT@|$unistdint|" \
               -e "s|@HAVE_GETUID@|$getuid|" \
+              -e "s|@HAVE_GETGID@|$getgid|" \
               -e "s|@HAVE_GECOS@|$gecos|" \
               -e "s|@HAVE_GETPROTOENT@|$getprotoent|" \
               -e "s|@SETJMP@|$setjmp|" \

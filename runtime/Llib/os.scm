@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Feb 10 18:05:01 2013 (serrano)                */
+;*    Last change :  Sun Jul  7 18:49:36 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -80,7 +80,9 @@
 	    (%dunload::int (::bstring) "bgl_dunload")
 	    (%dload-error::string () "bgl_dload_error")
 	    ($getuid::int () "bgl_getuid")
+	    ($getgid::int () "bgl_getgid")
 	    ($setuid::obj (::int) "bgl_setuid")
+	    ($setgid::obj (::int) "bgl_setgid")
 	    ($getpwnam::obj (::string) "bgl_getpwnam")
 	    ($getpwuid::obj (::int) "bgl_getpwuid"))
 
@@ -1013,6 +1015,26 @@
        ($setuid uid))
       (else
        (error "setuid" "operation not supported" uid))))
+
+;*---------------------------------------------------------------------*/
+;*    getgid ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (getgid)
+   (cond-expand
+      (bigloo-c
+       ($getgid))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    setgid ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (setgid uid)
+   (cond-expand
+      (bigloo-c
+       ($setgid uid))
+      (else
+       (error "setgid" "operation not supported" uid))))
 
 ;*---------------------------------------------------------------------*/
 ;*    getpwnam ...                                                     */

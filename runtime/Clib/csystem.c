@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sun Feb 10 18:04:04 2013 (serrano)                */
+/*    Last change :  Sun Jul  7 18:51:00 2013 (serrano)                */
 /*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -425,6 +425,39 @@ bgl_setuid( uid_t uid ) {
       C_SYSTEM_FAILURE( BGL_ERROR, "setuid",
 			"operation not supported", BINT( uid ) );
       return uid;
+#endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_getgid ...                                                   */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_getgid() {
+#if BGL_HAVE_GETGID
+   return getgid();
+#else
+   return 0;
+#endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_setgid ...                                                   */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_setgid( gid_t gid ) {
+#if BGL_HAVE_GETGID
+   if( !setgid( gid ) ) {
+      return gid;
+   } else {
+      C_SYSTEM_FAILURE( BGL_ERROR, "setgid", strerror( errno ), BINT( gid ) );
+      return gid;
+   }
+#else
+      C_SYSTEM_FAILURE( BGL_ERROR, "setgid",
+			"operation not supported", BINT( gid ) );
+      return gid;
 #endif
 }
 
