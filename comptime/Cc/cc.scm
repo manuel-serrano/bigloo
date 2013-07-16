@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Wed Aug 11 14:59:37 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jul 15 16:11:38 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
 ;*=====================================================================*/
@@ -55,55 +55,57 @@
 		       "")
 		      (needmv
 		       (unix-filename
-			(string-append (bigloo-mangle (symbol->string *module*))
-				       "."
-				       *c-object-file-extension*)))
+			  (string-append
+			     (bigloo-mangle (symbol->string *module*))
+			     (if *unsafe-library* "_u" "_s")
+			     "."
+			     *c-object-file-extension*)))
 		      (else
 		       (unix-filename
-			(string-append objname
-				       "."
-				       *c-object-file-extension*)))))
+			  (string-append objname
+			     "."
+			     *c-object-file-extension*)))))
 	      (cc (string-append *cc*
-				 " "
-				 *cc-options*
-				 " "
-				 *cflags*
-				 " -c "
-				 (if need-o *cc-o-option* "")
-				 " "
-				 obj
-				 " -I. "
-				 (let loop ((path *lib-dir*))
-				    (cond
-				       ((null? path)
-					"")
-				       ((directory? (car path))
-					(string-append "-I"
-						       (car path)
-						       " "
-						       (loop (cdr path))))
-				       (else
-					(loop (cdr path)))))
-				 (if (or *c-debug* (>fx *bdb-debug* 0))
-				     (string-append " " *c-debug-option*)
-				     "")
-				 " " (unix-filename name ".c") " "))
+		     " "
+		     *cc-options*
+		     " "
+		     *cflags*
+		     " -c "
+		     (if need-o *cc-o-option* "")
+		     " "
+		     obj
+		     " -I. "
+		     (let loop ((path *lib-dir*))
+			(cond
+			   ((null? path)
+			    "")
+			   ((directory? (car path))
+			    (string-append "-I"
+			       (car path)
+			       " "
+			       (loop (cdr path))))
+			   (else
+			    (loop (cdr path)))))
+		     (if (or *c-debug* (>fx *bdb-debug* 0))
+			 (string-append " " *c-debug-option*)
+			 "")
+		     " " (unix-filename name ".c") " "))
 	      (rm-csrc  (if *rm-tmp-files*
 			    (string-append "&& "
-					   (bigloo-config 'shell-rm)
-					   " "
-					   (unix-filename name ".c") " ")
+			       (bigloo-config 'shell-rm)
+			       " "
+			       (unix-filename name ".c") " ")
 			    ""))
 	      (mv-obj   (if needmv
 			    (string-append "&& "
-					   (bigloo-config 'shell-mv)
-					   " "
-					   obj
-					   " "
-					   (unix-filename
-					    objname "."
-					    *c-object-file-extension*)
-					   " 2>&1 >/dev/null ")
+			       (bigloo-config 'shell-mv)
+			       " "
+			       obj
+			       " "
+			       (unix-filename
+				  objname "."
+				  *c-object-file-extension*)
+			       " 2>&1 >/dev/null ")
 			    ""))
 	      (cmd      (string-append cc mv-obj rm-csrc)))
 	  (verbose 2 "      [" cmd #\] #\Newline)

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Apr 10 17:43:58 2013 (serrano)                */
+#*    Last change :  Mon Jul 15 16:03:15 2013 (serrano)                */
 #*    Copyright   :  2010-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */

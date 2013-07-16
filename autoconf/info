@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 15:12:37 1999                          */
-#*    Last change :  Mon Sep  7 09:42:34 2009 (serrano)                */
+#*    Last change :  Fri Jul 12 20:13:32 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the info setting.                                          */
 #*=====================================================================*/
@@ -59,7 +59,7 @@ file=actest$USER
 
 cat > $file.texi <<EOF
 \input texinfo
-@settitle Bdb @value{edition}
+@settitle Bdb
 
 @footnotestyle separate
 @ifinfo
@@ -67,7 +67,6 @@ cat > $file.texi <<EOF
 @end ifinfo
 @finalout
 
-@set edition 0.0
 @set update-month Jun 1998
 @set update-date 0 @value{update-month}
 
@@ -118,7 +117,7 @@ if [ $? = "0" ];then
 else
    cat > $file.texi <<EOF
 \input texinfo
-@settitle Bdb @value{edition}
+@settitle Bdb
 
 @footnotestyle separate
 @ifinfo
@@ -126,7 +125,6 @@ else
 @end ifinfo
 @finalout
 
-@set edition 0.0
 @set update-month Jun 1998
 @set update-date 0 @value{update-month}
 
@@ -211,12 +209,12 @@ else
    res="$res texi2pdf="
 fi
 
-rm -f $file.texi 
+rm -f $file.texi
 rm -f $file.dvi
 rm -f $file.pdf
-rm -f $file.html 
-rm -f $file.info 
-rm -f $file.log 
-rm -f $file.toc 
+rm -f $file.html
+rm -f $file.info
+rm -f $file.log
+rm -f $file.toc
 echo $res
 exit 0
