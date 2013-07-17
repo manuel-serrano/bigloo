@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Mon Jul 15 16:11:38 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 09:36:23 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
@@ -36,6 +36,12 @@
        (user-error "cc" "Unknown os" (os-class)))))
 
 ;*---------------------------------------------------------------------*/
+;*    command-line->string ...                                         */
+;*---------------------------------------------------------------------*/
+(define (command-line->string l)
+   (md5sum (format "~a" l)))
+
+;*---------------------------------------------------------------------*/
 ;*    unix-cc ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (unix-cc name oname need-to-return)
@@ -57,7 +63,7 @@
 		       (unix-filename
 			  (string-append
 			     (bigloo-mangle (symbol->string *module*))
-			     (if *unsafe-library* "_u" "_s")
+			     (command-line->string *bigloo-args*)
 			     "."
 			     *c-object-file-extension*)))
 		      (else
