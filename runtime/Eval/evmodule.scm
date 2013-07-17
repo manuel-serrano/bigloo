@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Jun 21 09:17:24 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 12:26:08 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -294,7 +294,6 @@
 ;*    bind-global! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (bind-global! id mod loc)
-;* 		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod) */
    (let ((g (make-eval-global id mod loc)))
       (evmodule-bind-global! mod id g loc)
       g))
@@ -441,12 +440,14 @@
 	 "Unbound variable" (eval-global-name v)))
    
    (let ((l '()))
+      
       (define (global-check-unbound k g)
 	 (unless (evalias? g)
 	    (let ((tag (eval-global-tag g)))
 	       (when (and (eq? (eval-global-module g) mod)
 			  (or (=fx tag 3) (=fx tag 4)))
 		  (set! l (cons g l))))))
+      
       (hashtable-for-each (%evmodule-env mod) global-check-unbound)
       (when (pair? l)
 	 (for-each (lambda (v)
@@ -475,10 +476,10 @@
 	     (evmodule-check-unbound mod loc)
 	     mod)
 	  (evcompile-error loc "eval"
-			   (format "Cannot find module \"~a\"" ident)
-			   (if (pair? (cdr paths))
-			       paths
-			       (car paths))))))
+	     (format "Cannot find module \"~a\"" ident)
+	     (if (pair? (cdr paths))
+		 paths
+		 (car paths))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *loading-list* ...                                               */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sun Feb 10 09:52:15 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 12:25:45 2013 (serrano)                */
 ;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -315,7 +315,7 @@
 	       (arity arity)
 	       (vars vars)
 	       (body (conv body (append vars locals) globals #t where nloc #f)) ))))
-   
+
    (match-case e
       ((atom ?x)
        (if (symbol? x)
@@ -328,7 +328,9 @@
 	      (value x)) ))
       ((module . ?bah)
        (if top?
-	   (conv (expand (evmodule e (get-location e loc))) locals globals where #f loc #t)
+	   (let ((forms (evmodule e (get-location e loc))))
+	      (conv (expand forms) locals
+		 ($eval-module) where #f loc #t))
 	   (evcompile-error loc "eval" "Illegal non toplevel module declaration" e) ))
       ((@ (and ?id (? symbol?)) (and ?modname (? symbol?)))
        (instantiate::ev_global

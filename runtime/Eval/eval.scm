@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri May 24 17:26:29 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 12:25:36 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -462,8 +462,8 @@
    (let* ((path (find-file filename))
 	  (port (open-input-file path))
 	  (evread (get-eval-reader))
-	  (mod ($eval-module))
-	  (denv (current-dynamic-env)))
+	  (denv (current-dynamic-env))
+	  (mod ($eval-module)))
       (if (input-port? port)
 	  (unwind-protect
 	     (let ()
@@ -496,14 +496,16 @@
 		      (cond
 			 ((eof-object? sexp)
 			  (close-input-port port)
-			  (let ((v (if (symbol? mainsym)
-				       (let ((iexp (econs mainsym
-						      (list '(command-line))
-						      loc)))
-					  (eval! iexp env))
-				       0)))
-			     (when (and (not (eq? mod env)) (evmodule? env))
-				(evmodule-check-unbound env #f))
+			  (let* ((v (if (symbol? mainsym)
+					(let ((iexp (econs mainsym
+						       (list '(command-line))
+						       loc)))
+					   (eval! iexp env))
+					0))
+				 (nenv ($eval-module)))
+			     (when (and (not (eq? env nenv)) (evmodule? env))
+				(evmodule-check-unbound env #f)
+				(set! env nenv))
 			     ($env-pop-trace denv)
 			     path))
 			 (else

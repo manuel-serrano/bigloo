@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Fri Nov 30 09:31:47 2012 (serrano)                */
+;*    Last change :  Wed Jul 17 12:12:41 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -85,8 +85,9 @@
        (evcompile-error loc "eval" "Illegal expression" '()))
       ((module . ?-)
        (if toplevelp
-	   (evcompile (expand (evmodule exp (get-location exp loc)))
-		      env genv where #f loc lkp #t)
+	   (let ((forms (evmodule exp (get-location exp loc))))
+	      (evcompile (expand forms)
+		 env ($eval-module) where #f loc lkp #t))
 	   (evcompile-error loc "eval"
 			    "Illegal non toplevel module declaration" exp)))
       ((assert . ?-)
@@ -95,11 +96,6 @@
        (cond
 	  ((symbol? atom)
 	   (evcompile-ref (variable loc atom env genv) genv loc lkp))
-;* 	  ((or (vector? atom) (struct? atom))                          */
-;* 	   (evcompile-error loc                                        */
-;* 			    "eval"                                     */
-;* 			    "Illegal expression (should be quoted)"    */
-;* 			    exp))                                      */
 	  ((and (procedure? atom) (not lkp))
 	   (evcompile-error loc
 			    "eval"
@@ -170,23 +166,23 @@
 		(or (eq? genv (scheme-report-environment 5))
 		    (eq? genv (null-environment 5))))
 	   (evcompile-error loc
-			    "eval"
-			    "Illegal define form (sealed environment)"
-			    exp))
+	      "eval"
+	      "Illegal define form (sealed environment)"
+	      exp))
 	  ((not toplevelp)
 	   (evcompile-error loc
-			    "eval"
-			    "Illegal non toplevel define"
-			    exp))
+	      "eval"
+	      "Illegal non toplevel define"
+	      exp))
 	  (else
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-value var
-				      (evcompile val '()
-						 genv where
-						 (tailcall?)
-						 (get-location val loc)
-						 lkp #f)
-				      loc)))))
+		 (evcompile val '()
+		    genv where
+		    (tailcall?)
+		    (get-location val loc)
+		    lkp #f)
+		 loc)))))
       ((set! . ?-)
        (match-case exp
 	  ((?- (@ (and ?id (? symbol?)) (and ?mod (? symbol?))) ?val)
