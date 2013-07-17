@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Tue Aug 14 10:51:12 2007 (serrano)                */
-;*    Copyright   :  2007 Manuel Serrano                               */
+;*    Last change :  Wed Jul 17 12:35:19 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
 ;*=====================================================================*/
@@ -136,7 +136,7 @@
 			"\n    "
 			(module ,module)
 			"\n    "
-			(name ,(global-name new))
+			(name ,(format "~s" (global-name new)))
 			"\n    "
 			(qualified-type ,qt)
 			,(if (and (sfun? val) (eq? (sfun-class val) 'sifun))
