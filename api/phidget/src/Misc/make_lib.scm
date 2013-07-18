@@ -15,7 +15,7 @@
 (module __phidget_makelib
 
    (include "pdg.sch")
-   
+
    (import  __phidget_types
 	    __phidget_phidget
 	    __phidget_event
@@ -25,13 +25,14 @@
 	    __phidget_spatial
 	    __phidget_servo
 	    __phidget_advanced-servo
-	    __phidget_stepper)
+	    __phidget_stepper
+            __phidget_motor-control)
 
    (eval    (export-all)
 
 	    (class &phidget-error)
 	    (class &phidget-log-error)
-	   
+
 	    (class phidget-manager)
 	    (class phidget)
 
@@ -55,4 +56,5 @@
 	    (class phidget-spatial)
 	    (class phidget-servo)
 	    (class phidget-advanced-servo)
-	    (class phidget-stepper)))
+	    (class phidget-stepper)
+            (class phidget-motor-control)))
