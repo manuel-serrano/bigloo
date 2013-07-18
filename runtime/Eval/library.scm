@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Fri Mar  1 07:53:43 2013 (serrano)                */
+;*    Last change :  Thu Jul 18 11:40:17 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -397,19 +397,19 @@
 		(when init (loadq init))
 		(let* ((info (library-info lib))
 		       (n (make-shared-lib-name
-			   (library-file-name lib "" be)
-			   be))
+			     (library-file-name lib "" be)
+			     be))
 		       (ns (make-shared-lib-name
-			    (library-file-name
-			     lib (string-append "_" (eval-library-suffix)) be)
-			    be))
+			      (library-file-name
+				 lib (string-append "_" (eval-library-suffix)) be)
+			      be))
 		       (ne (make-shared-lib-name
-			    (library-file-name
-			     lib (string-append "_e" (eval-library-suffix)) be)
-			    be))
+			      (library-file-name
+				 lib (string-append "_e" (eval-library-suffix)) be)
+			      be))
 		       (rsc (let ((p (string-append "/resource/bigloo/"
-						    (symbol->string lib)
-						    "/make_lib.class")))
+					(symbol->string lib)
+					"/make_lib.class")))
 			       ;; JVM supports fake file system in the JAR
 			       ;; file. In Bigloo it is a sub-directory of
 			       ;; /resource inside ressources, we always search
@@ -427,17 +427,17 @@
 		   (cond
 		      ((not (string? rsc))
 		       (error 'library-load
-			      (format "Can't find library `~a' (`~a')" lib ns)
-			      path))
+			  (format "Can't find library `~a' (`~a')" lib ns)
+			  path))
 		      ((not (string? libe))
 		       (cond-expand
 			  ((not bigloo-jvm)
 			   (evwarning
-			    #f
-			    "library-load"
-			    (format "Can't find _e library `~a' (`~a') in path "
-				    lib ne)
-			    path))))
+			      #f
+			      "library-load"
+			      (format "Can't find _e library `~a' (`~a') in path "
+				 lib ne)
+			      path))))
 		      (else
 		       (dynamic-load libe init_e module_e)))
 		   (when (and info (libinfo-init info))

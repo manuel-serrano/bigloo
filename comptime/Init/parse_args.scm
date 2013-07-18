@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Mar  1 07:43:42 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 16:52:00 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -253,8 +253,6 @@
       ;; Bigloo libary
       (("-library" ?library (help "Compile/link with additional Bigloo library"))
        (set! *libraries* (cons (string->symbol library) *libraries*)))
-;* 	     (cons (use-library! (string->symbol library) 'delay)      */
-;* 		   *library-init*)))                                   */
       ;; srfi support
       (("-srfi" ?srfi (help "Declares srfi support"))
        (register-srfi! (string->symbol srfi)))
@@ -694,6 +692,11 @@
       (("-l?library" (help "Link with host library"))
        (set! *bigloo-user-lib* (cons (string-append "-l" library)
 				     *bigloo-user-lib*)))
+      ;; main generation
+      (("-auto-link-main" (help "Enable main generation when needed for linking"))
+       (set! *auto-link-main* #t))
+      (("-no-auto-link-main" (help "Disable main generation"))
+       (set! *auto-link-main* #f))
       
 ;*--- Jvm specific options --------------------------------------------*/
       (section "Jvm specific options")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Tue Jan 29 16:36:34 2013 (serrano)                */
+;*    Last change :  Thu Jul 18 12:56:11 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -137,6 +137,43 @@
       x))
 
 ;*---------------------------------------------------------------------*/
+;*    unwind-nesting                                                   */
+;*---------------------------------------------------------------------*/
+(define (unwind-nesting init)
+   (set! unwind-nesting-l init)
+   (with-handler
+      (lambda (e)
+	 #f)
+      (unwind-nesting-foo))
+   unwind-nesting-l)
+
+(define unwind-nesting-l '())
+
+
+(define (unwind-nesting-foo)
+   (unwind-protect
+      (unwind-nesting-bar)
+      (set! unwind-nesting-l (cons 'foo unwind-nesting-l))))
+
+(define (unwind-nesting-bar)
+   (unwind-protect
+      (unwind-nesting-gee)
+      (set! unwind-nesting-l (cons 'bar unwind-nesting-l))))
+
+(define (unwind-nesting-gee)
+   (unwind-protect
+      (unwind-nesting-hux)
+      (set! unwind-nesting-l (cons 'gee unwind-nesting-l))))
+
+(define (unwind-nesting-hux)
+   (unwind-protect
+      (unwind-nesting-mee)
+      (set! unwind-nesting-l (cons 'hux unwind-nesting-l))))
+
+(define (unwind-nesting-mee)
+   (error 1 2 3))
+
+;*---------------------------------------------------------------------*/
 ;*    test-wind2 ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (test-wind2)
@@ -216,5 +253,6 @@
 	       (if (< (length path) 4)
 		   (c 'talk2)
 		   (reverse path))))
-	 '(connect talk1 disconnect connect talk2 disconnect)))
+	 '(connect talk1 disconnect connect talk2 disconnect))
+   (test "unwind-nesting" (unwind-nesting '()) '(foo bar gee hux)))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Thu Jan 17 12:15:24 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 16:50:04 2013 (serrano)                */
 ;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -70,8 +70,8 @@
    (jvm-qname-set! me (string->symbol (module->qualified-type *module*)))
    ;; if we are going to link and we have not found a main yet, we
    ;; have to produce a fake one
-   (if (and (not *main*) (memq *pass* '(ld distrib)))
-       (set! *main* (make-bigloo-main)))
+   (when (and (not *main*) *auto-link-main* (memq *pass* '(ld distrib)))
+      (set! *main* (make-bigloo-main)))
    ;; the jvm driver
    (define (emit classfile dest)
       (let ((dir *jvm-dir-name*))
