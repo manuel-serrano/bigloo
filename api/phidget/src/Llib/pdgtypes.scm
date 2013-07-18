@@ -82,6 +82,14 @@
 	       (index::int read-only)
 	       (current::double read-only))
 
+	    (class phidget-motorcontrolvelocity-event::%phidget-event
+	       (index::int read-only)
+	       (velocity::double read-only))
+
+	    (class phidget-motorcontrolcurrent-event::%phidget-event
+	       (index::int read-only)
+	       (current::double read-only))
+
 	    (generic %phidget-init ::%phidget)))
 
 ;*---------------------------------------------------------------------*/

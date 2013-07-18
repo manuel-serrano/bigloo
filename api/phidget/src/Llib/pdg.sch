@@ -471,7 +471,63 @@
 
       ($pdg-phidget-stepper-add-event-listener!::int
 	 (::$pdg-stepper ::string ::obj ::procedure)
-	 "bgl_phidget_stepper_add_event_listener")))
+	 "bgl_phidget_stepper_add_event_listener")
+
+      ;; motor control
+      (type $pdg-motor-control void* "CPhidgetMotorControlHandle")
+      (type $pdg-motor-control* void* "CPhidgetMotorControlHandle *")
+      (macro $pdg-motor-control-create::int (::$pdg-motor-control*)
+             "CPhidgetMotorControl_create")
+
+      (macro $pdg-motor-control->phidget::$pdg-phidget
+	 (::$pdg-motor-control)
+	 "(CPhidgetHandle)")
+      (macro $pdg-phidget->motor-control::$pdg-motor-control
+	 (::$pdg-phidget)
+	 "(CPhidgetMotorControlHandle)")
+      (macro $pdg-phidget-motor-control-add-event-listener!::int
+	 (::$pdg-manager ::string ::obj ::procedure)
+	 "bgl_phidget_motor_control_add_event_listener")
+
+      ($pdg-phidget-motor-control-get-motor-count::int
+	 (::$pdg-motor-control ::obj)
+	 "bgl_phidget_motor_control_get_motor_count")
+      ($pdg-phidget-motor-control-get-acceleration::double
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_acceleration")
+      (macro $pdg-phidget-motor-control-set-acceleration!::int
+         (::$pdg-motor-control ::int ::double)
+         "CPhidgetMotorControl_setAcceleration")
+      ($pdg-phidget-motor-control-get-acceleration-min::double
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_acceleration_min")
+      ($pdg-phidget-motor-control-get-acceleration-max::double
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_acceleration_max")
+      ($pdg-phidget-motor-control-get-velocity::double
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_velocity")
+      (macro $pdg-phidget-motor-control-set-velocity!::int
+	 (::$pdg-motor-control ::int ::double)
+	 "CPhidgetMotorControl_setVelocity")
+      ($pdg-phidget-motor-control-encoder-count::int
+         (::$pdg-motor-control ::obj)
+         "bgl_phidget_motor_control_get_encoder_count")
+      ($pdg-phidget-motor-control-get-encoder-position::int
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_encoder_position")
+      (macro $pdg-phidget-motor-control-set-encoder-position!::int
+         (::$pdg-motor-control ::int ::int)
+         "CPhidgetMotorControl_setEncoderPosition")
+      ($pdg-phidget-motor-control-get-braking::double
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_braking")
+      (macro $pdg-phidget-motor-control-set-braking!::int
+         (::$pdg-motor-control ::int ::double)
+         "CPhidgetMotorControl_setBraking")
+      ($pdg-phidget-motor-control-get-current::double
+         (::$pdg-motor-control ::int ::obj)
+         "bgl_phidget_motor_control_get_current")))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-return ...                                               */

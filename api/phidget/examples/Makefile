@@ -23,8 +23,9 @@ BCFLAGS		=
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES		= manager_simple interfacekit_simple spatial_simple \
-		  servo_simple advancedservo_simple stepper_simple
+SOURCES		= manager_simple interfacekit_simple spatial_simple	\
+		  servo_simple advancedservo_simple stepper_simple	\
+		  motor-control
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -52,6 +53,9 @@ advancedservo_simple: advancedservo_simple.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 stepper_simple: stepper_simple.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+motor-control: motor-control.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:

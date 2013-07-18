@@ -53,6 +53,8 @@ struct handler {
 #define EVENT_STEPPERVELOCITY 14
 #define EVENT_STEPPERPOSITION 15
 #define EVENT_STEPPERCURRENT 16
+#define EVENT_MOTORCONTROLVELOCITY 17
+#define EVENT_MOTORCONTROLCURRENT 18
 
 #define INITIAL_MAX_HANDLER 40
 static struct handler *handlers;
@@ -105,6 +107,14 @@ struct callback {
 	 int index;
 	 BGL_LONGLONG_T position;
       } stepperposition;
+      struct {
+	 int index;
+	 double velocity;
+      } motorcontrolvelocity;
+      struct {
+	 int index;
+	 double current;
+      } motorcontrolcurrent;
    } event;
 };
 
@@ -278,12 +288,26 @@ void bgl_phidget_invoke_callbacks() {
 	       cb->event.servocurrent.current );
 	    break;
 	 }
+	 case EVENT_MOTORCONTROLVELOCITY: {
+	    event = bgl_phidget_event_motorcontrolvelocity_new(
+	       hdl->obj,
+	       cb->event.motorcontrolvelocity.index,
+	       cb->event.motorcontrolvelocity.velocity );
+	    break;
+	 }
+	 case EVENT_MOTORCONTROLCURRENT: {
+	    event = bgl_phidget_event_motorcontrolcurrent_new(
+	       hdl->obj,
+	       cb->event.motorcontrolcurrent.index,
+	       cb->event.motorcontrolcurrent.current );
+	    break;
+	 }
 	 default:
 	    event = BUNSPEC;
 	    C_SYSTEM_FAILURE(
 	       BGL_ERROR, "phidget", "Unknown event", BINT( hdl->evtype ) );
       }
-      
+
       PROCEDURE_ENTRY( hdl->proc )( hdl->proc, event, BEOA ); 
    }
 }
@@ -1329,4 +1353,170 @@ bgl_phidget_stepper_get_engaged( CPhidgetStepperHandle phid, int i, obj_t o ) {
 int
 bgl_phidget_stepper_get_stopped( CPhidgetStepperHandle phid, int i, obj_t o ) {
    FIELD_INDEXED_GET( phid, Stopped, CPhidgetStepper, int, i, o );
+}
+
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_motor_controlvelocity_handler ...                            */
+/*---------------------------------------------------------------------*/
+static int
+bgl_motor_controlvelocity_handler( CPhidgetMotorControlHandle id, void *ptr, int index, double velocity ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servovelocity.index = index;
+   callbacks[ callback_index ].event.servovelocity.velocity = velocity;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_motor_controlcurrent_handler ...                             */
+/*---------------------------------------------------------------------*/
+static int
+bgl_motor_controlcurrent_handler( CPhidgetMotorControlHandle id, void *ptr, int index, double current ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.servocurrent.index = index;
+   callbacks[ callback_index ].event.servocurrent.current = current;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_add_event_listener ...                 */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_motor_control_add_event_listener( CPhidgetMotorControlHandle id, char *event, obj_t obj, obj_t proc ) {
+   if( !strcmp( event, "velocity" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_MOTORCONTROLVELOCITY );
+
+      return CPhidgetMotorControl_set_OnVelocityChange_Handler(
+	 id, &bgl_motor_controlvelocity_handler, hdl );
+   }
+   if( !strcmp( event, "current" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_MOTORCONTROLCURRENT );
+
+      return CPhidgetMotorControl_set_OnCurrentChange_Handler(
+	 id, &bgl_motor_controlcurrent_handler, hdl );
+   } else {
+      return bgl_phidget_phidget_add_event_listener(
+	 (CPhidgetHandle)id, event, obj, proc );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_motor_count ...                    */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_motor_control_get_motor_count( CPhidgetMotorControlHandle phid, obj_t o ) {
+  int err, count;
+
+  err = CPhidgetMotorControl_getMotorCount( phid, &count );
+
+  return err == EPHIDGET_OK
+    ? count
+    : (bgl_phidget_error( "MotorCount", err, o ), count);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_encoder_count ...                  */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_motor_control_get_encoder_count( CPhidgetMotorControlHandle phid, obj_t o ) {
+  int err, count;
+
+  err = CPhidgetMotorControl_getEncoderCount( phid, &count );
+
+  return err == EPHIDGET_OK
+    ? count
+    : (bgl_phidget_error( "EncoderCount", err, o ), count);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_acceleration ...                   */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_get_acceleration( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Acceleration, CPhidgetMotorControl, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_velocity ...                       */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_get_velocity( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Velocity, CPhidgetMotorControl, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_acceleration_min ...               */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_get_acceleration_min( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, AccelerationMin, CPhidgetMotorControl, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_acceleration_max ...               */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_get_acceleration_max( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, AccelerationMax, CPhidgetMotorControl, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_encoder_position ...               */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_motor_control_get_encoder_position( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, EncoderPosition, CPhidgetMotorControl, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_braking ...                        */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_get_braking( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Braking, CPhidgetMotorControl, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_set_braking ...                        */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_set_braking( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Braking, CPhidgetMotorControl, double, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_motor_control_get_current ...                        */
+/*---------------------------------------------------------------------*/
+double
+bgl_phidget_motor_control_get_current( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Current, CPhidgetMotorControl, double, i, o );
 }

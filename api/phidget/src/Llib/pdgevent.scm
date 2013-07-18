@@ -40,7 +40,9 @@
 	   (export phidget-event-stepperinput-new "bgl_phidget_event_stepperinput_new")
 	   (export phidget-event-steppervelocity-new "bgl_phidget_event_steppervelocity_new")
 	   (export phidget-event-stepperposition-new "bgl_phidget_event_stepperposition_new")
-	   (export phidget-event-steppercurrent-new "bgl_phidget_event_steppercurrent_new"))
+	   (export phidget-event-steppercurrent-new "bgl_phidget_event_steppercurrent_new")
+           (export phidget-event-motorcontrolvelocity-new "bgl_phidget_event_motorcontrolvelocity_new")
+	   (export phidget-event-motorcontrolcurrent-new "bgl_phidget_event_motorcontrolcurrent_new"))
 
    (export (%phidget-thread-init!)
 	   (%phidget-lock!)
@@ -67,7 +69,9 @@
 	   (phidget-event-stepperinput-new::obj ::obj ::int ::int)
 	   (phidget-event-steppervelocity-new::obj ::obj ::int ::double)
 	   (phidget-event-stepperposition-new::obj ::obj ::int ::llong)
-	   (phidget-event-steppercurrent-new::obj ::obj ::int ::double)))
+	   (phidget-event-steppercurrent-new::obj ::obj ::int ::double)
+           (phidget-event-motorcontrolvelocity-new::obj ::obj ::int ::double)
+	   (phidget-event-motorcontrolcurrent-new::obj ::obj ::int ::double)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *phidget-mutex* ...                                              */
@@ -275,6 +279,24 @@
 ;*---------------------------------------------------------------------*/
 (define (phidget-event-steppercurrent-new target index current)
    (instantiate::phidget-steppercurrent-event
+      (target target)
+      (index index)
+      (current current)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-motorcontrolvelocity-new ...                       */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-motorcontrolvelocity-new target index velocity)
+   (instantiate::phidget-motorcontrolvelocity-event
+      (target target)
+      (index index)
+      (velocity velocity)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-motorcontrolcurrent-new ...                        */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-motorcontrolcurrent-new target index current)
+   (instantiate::phidget-motorcontrolcurrent-event
       (target target)
       (index index)
       (current current)))

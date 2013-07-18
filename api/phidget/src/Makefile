@@ -61,8 +61,9 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= phidget pdgtypes pdg pdglogging pdgmanager pdgstepper \
-                  pdgphidget pdgifkit pdgspatial pdgservo pdgaservo pdgevent
+_BGL_OBJECTS	= phidget pdgtypes pdg pdglogging pdgmanager pdgstepper	\
+                  pdgphidget pdgifkit pdgspatial pdgservo pdgaservo	\
+		  pdgevent pdgmotorcontrol
 
 _C_OBJECTS	= bglphidget
 _JAVA_CLASSES	= 
