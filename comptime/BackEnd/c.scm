@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Fri Jan 11 16:31:23 2013 (serrano)                */
+;*    Last change :  Wed Jul 17 16:49:33 2013 (serrano)                */
 ;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -259,7 +259,7 @@
 		  (fmain "")
 		  (libraries '()))
 	  (if (null? sources)
-	      (if main
+	      (if (or main (not *auto-link-main*))
 		  (let ((first (prefix (car *o-files*))))
 		     ;; if libraries are used by some module we add them
 		     ;; to the link

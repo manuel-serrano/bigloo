@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri Dec 21 11:03:02 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jul 17 16:52:16 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -176,6 +176,7 @@
 	    *startup-file*     
 	    *call/cc?*
 	    *garbage-collector*
+	    *auto-link-main*
 	    *pass*
 	    *jvm-jar?*
 	    *jvm-shell*
@@ -681,6 +682,10 @@
 (param-define *call/cc?*
    "Shall we enable call/cc?"
    #f)
+(param-define *auto-link-main*
+   "Enable automatically a main generation when linking"
+   #t)
+
 (param-define *pass*
    "Stop after the pass"
    'ld)

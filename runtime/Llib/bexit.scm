@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Tue Jan 29 16:23:56 2013 (serrano)                */
+;*    Last change :  Thu Jul 18 13:00:40 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -208,9 +208,9 @@
 ;*    exitd-exec-and-pop-protects! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (exitd-exec-and-pop-protects! exitd)
-   (exitd-exec-protect ($exitd-protect0 exitd))
+   (for-each exitd-exec-protect ($exitd-protectn exitd))
    (exitd-exec-protect ($exitd-protect1 exitd))
-   (for-each exitd-exec-protect ($exitd-protectn exitd)))
+   (exitd-exec-protect ($exitd-protect0 exitd)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-push-protect! ...                                          */

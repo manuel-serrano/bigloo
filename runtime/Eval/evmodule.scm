@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Jul 17 12:26:08 2013 (serrano)                */
+;*    Last change :  Thu Jul 18 13:04:12 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -31,6 +31,7 @@
 	    __reader
 	    __macro
 	    __expand
+	    __trace
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -530,6 +531,11 @@
 		   (when (or (null? set) (memq (car b) set))
 		      (evmodule-import-binding! mod (car b) (cdr b) (car b) loc)))
 		(%evmodule-exports mod2)))
+
+   (define (load-module)
+      (unwind-protect
+	 (import-module (evmodule-load ident path loc))
+	 ($eval-module-set! mod)))
    
    (let ((mod2 (eval-find-module ident)))
       (cond
@@ -540,12 +546,12 @@
 	   (format "Cannot find imported module in base \"~a\"" abase)
 	   ident))
 	 (else
-	  (when (>fx (bigloo-debug-module) 0)
-	     (fprint (current-error-port)
-		     "*** loading module `" ident "' [" path "]..."))
-	  (unwind-protect
-	     (import-module (evmodule-load ident path loc))
-	     ($eval-module-set! mod))))))
+	  (if (>fx (bigloo-debug-module) 0)
+	      (%with-trace 0 ident
+		 (lambda ()
+		    (trace-item "path=" path)
+		    (load-module)))
+	      (load-module))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-import ...                                              */
@@ -839,11 +845,10 @@
 	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
 	      (let* ((path (or (evcompile-loc-filename loc) "."))
 		     (mod (make-evmodule name path loc)))
+		 (when (procedure? hdl)
+		    (%evmodule-extension-set! mod (hdl exp)))
 		 (unwind-protect
-		    (begin
-		       (when (procedure? hdl)
-			  (%evmodule-extension-set! mod (hdl exp)))
-		       (evmodule-module mod clauses loc))
+		    (evmodule-module mod clauses loc)
 		    ($eval-module-set! mod)))))
 	 (else
 	  (evcompile-error loc "eval" "Illegal module expression" exp)))))
