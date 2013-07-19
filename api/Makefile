@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Thu Apr 11 07:47:45 2013 (serrano)                */
+#*    Last change :  Fri Jul 19 10:52:49 2013 (serrano)                */
 #*    Copyright   :  2005-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
@@ -154,7 +154,7 @@ distrib:
           fi
 	@ for d in $(DIRECTORIES); do \
              if [ -d $$d ]; then \
-               $(MAKE) -C $$d/src ude; \
+               $(MAKE) -C $$d distrib; \
              fi; \
           done;
 	@ $(RM) -f api/Makefile~

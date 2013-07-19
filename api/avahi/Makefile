@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Wed Dec 14 08:13:10 2011 (serrano)                */
-#*    Copyright   :  2001-11 Manuel Serrano                            */
+#*    Last change :  Fri Jul 19 10:51:46 2013 (serrano)                */
+#*    Copyright   :  2001-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -92,7 +92,7 @@ uninstall: api-uninstall-init \
 #*    distrib                                                          */
 #*---------------------------------------------------------------------*/
 distrib:
-	(cd src && $(MAKE) ude)
+	(cd src && $(MAKE) ude distrib)
 
 #*---------------------------------------------------------------------*/
 #*    Common rules                                                     */

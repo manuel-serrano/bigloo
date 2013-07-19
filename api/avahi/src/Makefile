@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Feb 28 16:05:51 2013 (serrano)                */
+#*    Last change :  Fri Jul 19 10:49:04 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -52,6 +52,8 @@ EXTRALIBS	=
 else
 EXTRALIBS	= $(AVAHILIBS)
 endif
+
+DISTRIB_FILES	= $(C_SRC_DIR)/bglavahi.h
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */

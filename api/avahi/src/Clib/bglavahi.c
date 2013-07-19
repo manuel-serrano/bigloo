@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Tue Apr  2 18:42:44 2013 (serrano)                */
+/*    Last change :  Fri Jul 19 10:51:11 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */

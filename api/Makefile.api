@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Apr 10 17:11:52 2013 (serrano)                */
+#*    Last change :  Fri Jul 19 10:48:40 2013 (serrano)                */
 #*    Copyright   :  2010-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -410,3 +410,8 @@ api-clean: api-clean-c api-clean-jvm api-clean-dotnet
 	$(RM) -f *.ast
 
 api-cleanall: clean udeclean clean-init
+
+#*---------------------------------------------------------------------*/
+#*    distrib                                                          */
+#*---------------------------------------------------------------------*/
+distrib: $(DISTRIB_FILES)

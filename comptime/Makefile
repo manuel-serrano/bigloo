@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sun Nov 18 08:55:49 2012 (serrano)                */
-#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Jul 19 10:37:18 2013 (serrano)                */
+#*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -91,7 +91,7 @@ INIT_OBJ_NOMAIN	= $(INIT_FILE_NOMAIN:%=Init/%.o)
 INIT_OBJ	= $(INIT_FILE:%=Init/%.o)
 
 #*--- tools -----------------------------------------------------------*/
-TOOLS_FILE	= args location progn trace speek error shape misc date \
+TOOLS_FILE	= args location progn trace speek error shape misc \
                   dsssl license
 
 TOOLS_OBJ	= $(TOOLS_FILE:%=Tools/%.o)
@@ -335,7 +335,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ)
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) Tools/date.o
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
