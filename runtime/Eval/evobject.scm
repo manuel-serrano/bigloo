@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Tue May 14 10:14:00 2013 (serrano)                */
+;*    Last change :  Sat Jul 20 10:39:03 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -822,11 +822,12 @@
 			`(,(symbol-append id '|::| (class-name klass))
 			  (,(class-allocator klass)))))
 		vars)
-	  ,@(map (lambda (var)
-		    (let ((id (car var))
-			  (klass (cadr var))
-			  (expr (caddr var)))
-		       (instantiate-fill (car expr) (cdr expr)
-			  klass (class-all-fields klass) id expr e)))
-	       vars)
-	  ,(e `(begin ,@body) e))))   
+	  (begin
+	     ,@(map (lambda (var)
+		       (let ((id (car var))
+			     (klass (cadr var))
+			     (expr (caddr var)))
+			  (instantiate-fill (car expr) (cdr expr)
+			     klass (class-all-fields klass) id expr e)))
+		  vars)
+	     ,(e `(begin ,@body) e)))))

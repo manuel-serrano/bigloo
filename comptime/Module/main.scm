@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 11:51:01 1996                          */
-;*    Last change :  Wed Nov 21 05:37:12 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jul 21 10:58:38 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The main clause compilation.                                     */
 ;*=====================================================================*/
@@ -31,9 +31,10 @@
 ;*    clause will be naturally checksummed.                            */
 ;*---------------------------------------------------------------------*/
 (define (make-main-compiler)
-   (instantiate::ccomp (id 'main)
-		       (producer main-producer)
-		       (consumer main-consumer)))
+   (instantiate::ccomp
+      (id 'main)
+      (producer main-producer)
+      (consumer main-consumer)))
 
 ;*---------------------------------------------------------------------*/
 ;*    correct-main? ...                                                */

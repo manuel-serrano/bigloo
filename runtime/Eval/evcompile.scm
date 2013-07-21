@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Wed Jul 17 12:12:41 2013 (serrano)                */
+;*    Last change :  Sat Jul 20 10:42:48 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -77,9 +77,9 @@
 ;*    already enforced it.                                             */
 ;*---------------------------------------------------------------------*/
 (define (evcompile exp
-		   env::pair-nil genv::obj
-		   where::symbol
-		   tail::bool loc lkp::bool toplevelp::bool)
+	   env::pair-nil genv::obj
+	   where::symbol
+	   tail::bool loc lkp::bool toplevelp::bool)
    (match-case exp
       (()
        (evcompile-error loc "eval" "Illegal expression" '()))
@@ -89,35 +89,38 @@
 	      (evcompile (expand forms)
 		 env ($eval-module) where #f loc lkp #t))
 	   (evcompile-error loc "eval"
-			    "Illegal non toplevel module declaration" exp)))
+	      "Illegal non toplevel module declaration" exp)))
       ((assert . ?-)
        (unspecified))
       ((atom ?atom)
        (cond
 	  ((symbol? atom)
-	   (evcompile-ref (variable loc atom env genv) genv loc lkp))
+	   (evcompile-ref 1 (variable loc atom env genv) genv loc lkp))
 	  ((and (procedure? atom) (not lkp))
 	   (evcompile-error loc
-			    "eval"
-			    "Illegal procedure in unlinked byte code"
-			    atom))
+	      "eval"
+	      "Illegal procedure in unlinked byte code"
+	      atom))
 	  (else
 	   (evcompile-cnst atom loc))))
-      (((and (? symbol?)
-	     (? (lambda (x) (not (dynamic? (variable loc x env genv)))))
-	     ?fun)
-	. ?args)
-       (let* ((loc (get-location exp loc))
-	      (actuals (map (lambda (a)
-			       (evcompile a env genv where #f loc lkp #f))
-			  args)))
-	  (let* ((proc (variable loc fun env genv))
-		 (ref (evcompile-ref proc genv loc lkp)))
-	     (evcompile-application fun ref actuals tail loc))))
+      ;; MS: 20 Jul 2013, I don't understand anymore why the following
+      ;; should be needed. It seems redondant with the general application
+      ;; compilation rules given below
+;*       (((and (? symbol?)                                            */
+;* 	     (? (lambda (x) (not (dynamic? (variable loc x env genv))))) */
+;* 	     ?fun)                                                     */
+;* 	. ?args)                                                       */
+;*        (let* ((loc (get-location exp loc))                          */
+;* 	      (actuals (map (lambda (a)                                */
+;* 			       (evcompile a env genv where #f loc lkp #f)) */
+;* 			  args)))                                      */
+;* 	  (let* ((proc (variable loc fun env genv))                    */
+;* 		 (ref (evcompile-ref proc genv loc lkp)))              */
+;* 	     (evcompile-application fun ref actuals tail loc))))       */
       ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
        (let ((@var (@variable loc id env genv mod)))
-	  (evcompile-ref @var genv loc lkp)))
-       ((-> . ?l)
+	  (evcompile-ref 2 @var genv loc lkp)))
+      ((-> . ?l)
        (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	   (evcompile-field-ref exp env genv where tail loc lkp toplevelp)
 	   (evcompile-error loc "eval" "Illegal form" exp) ))
@@ -126,40 +129,40 @@
       ((if ?si ?alors ?sinon)
        (let ((loc (get-location exp loc)))
 	  (evcompile-if (evcompile si env genv
-				   where #f
-				   (get-location si loc)
-				   lkp #f)
-			(evcompile alors env genv
-				   where tail
-				   (get-location alors loc)
-				   lkp #f)
-			(evcompile sinon env genv
-				   where tail
-				   (get-location sinon loc)
-				   lkp #f)
-			loc)))
+			   where #f
+			   (get-location si loc)
+			   lkp #f)
+	     (evcompile alors env genv
+		where tail
+		(get-location alors loc)
+		lkp #f)
+	     (evcompile sinon env genv
+		where tail
+		(get-location sinon loc)
+		lkp #f)
+	     loc)))
       ((if ?si ?alors)
        (let ((loc (get-location exp loc)))
 	  (evcompile-if (evcompile si env genv
-				   where #f
-				   (get-location si loc)
-				   lkp #f)
-			(evcompile alors env genv
-				   where tail
-				   (get-location alors loc)
-				   lkp #f)
-			(evcompile #f env genv
-				   where tail
-				   (get-location exp loc)
-				   lkp #f)
-			loc)))
+			   where #f
+			   (get-location si loc)
+			   lkp #f)
+	     (evcompile alors env genv
+		where tail
+		(get-location alors loc)
+		lkp #f)
+	     (evcompile #f env genv
+		where tail
+		(get-location exp loc)
+		lkp #f)
+	     loc)))
       (((kwote or) . ?rest)
        (evcompile-or rest env genv where (get-location exp loc) lkp))
       (((kwote and) . ?rest)
        (evcompile-and rest env genv where (get-location exp loc) lkp))
       ((begin . ?rest)
        (evcompile-begin rest env genv where tail
-			(get-location exp loc) lkp toplevelp))
+	  (get-location exp loc) lkp toplevelp))
       ((define ?var ?val)
        (cond
 	  ((and (eq? where '_)
@@ -188,12 +191,12 @@
 	  ((?- (@ (and ?id (? symbol?)) (and ?mod (? symbol?))) ?val)
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-set (@variable loc id env genv mod)
-			     (evcompile val env
-					genv id #f
-					(get-location val loc)
-					lkp #f)
-			     genv
-			     loc)))
+		 (evcompile val env
+		    genv id #f
+		    (get-location val loc)
+		    lkp #f)
+		 genv
+		 loc)))
 	  ((?- (-> . ?l) ?val)
 	   (if (and (pair? l) (pair? (cdr l)) (every symbol? l))
 	       (evcompile-field-set l val exp env genv where tail loc lkp toplevelp)
@@ -270,60 +273,60 @@
 		(get-location body loc)
 		lkp #f)
 	     loc)))
-     ((lambda ?formals ?body)
-      (let* ((loc (get-location exp loc))
-	     (scm-formals (dsssl-formals->scheme-typed-formals
+      ((lambda ?formals ?body)
+       (let* ((loc (get-location exp loc))
+	      (scm-formals (dsssl-formals->scheme-typed-formals
+			      formals
+			      (lambda (proc msg obj)
+				 (evcompile-error loc proc msg obj))
+			      #t)))
+	  (evcompile-lambda scm-formals
+	     (evcompile (make-dsssl-function-prelude
+			   exp
 			   formals
+			   body
 			   (lambda (proc msg obj)
-			      (evcompile-error loc proc msg obj))
-			   #t)))
-	 (evcompile-lambda scm-formals
- 			   (evcompile (make-dsssl-function-prelude
-				       exp
-				       formals
-				       body
-				       (lambda (proc msg obj)
-					  (evcompile-error loc proc msg obj)))
-				      (extend-env scm-formals env)
-				      genv
-				      where
-				      (tailcall?)
-				      (get-location body loc)
-				      lkp #f)
-			   where
-			   loc)))
+			      (evcompile-error loc proc msg obj)))
+		(extend-env scm-formals env)
+		genv
+		where
+		(tailcall?)
+		(get-location body loc)
+		lkp #f)
+	     where
+	     loc)))
       ((let ?bindings ?body)
        (evcompile-let bindings body env
-		      genv where tail
-		      (get-location exp loc)
-		      lkp))
+	  genv where tail
+	  (get-location exp loc)
+	  lkp))
       ((let* ?bindings ?body)
        (evcompile-let* bindings body env
-		       genv where tail
-		       (get-location exp loc)
-		       lkp))
+	  genv where tail
+	  (get-location exp loc)
+	  lkp))
       ((letrec ?bindings ?body)
        (evcompile-letrec bindings body env
-			 genv where tail
-			 (get-location exp loc)
-			 lkp))
+	  genv where tail
+	  (get-location exp loc)
+	  lkp))
       (((atom ?fun) . ?args)
        (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f loc lkp #f))
-			    args)))
+			  args)))
 	  (cond
 	     ((symbol? fun)
 	      (let* ((proc (variable loc fun env genv))
-		     (ref (evcompile-ref proc genv loc lkp)))
+		     (ref (evcompile-ref 3 proc genv loc lkp)))
 		 (evcompile-application fun ref actuals tail loc)))
 	     ((procedure? fun)
 	      (if lkp
 		  (evcompile-compiled-application fun actuals loc)
 		  (evcompile-error loc
-				   "eval"
-				   "Illegal procedure in unlinked byte code"
-				   fun)))
+		     "eval"
+		     "Illegal procedure in unlinked byte code"
+		     fun)))
 	     (else
 	      (evcompile-error loc "eval" "Not a procedure" fun)
 	      (evcode -2 loc (list "eval" "Not a procedure" fun))))))
@@ -331,18 +334,18 @@
        (let* ((loc (get-location exp loc))
 	      (actuals (map (lambda (a)
 			       (evcompile a env genv where #f loc lkp #f))
-			    args))
+			  args))
 	      (@proc (@variable loc fun env genv mod)))
 	  (evcompile-application fun
-				 (evcompile-ref @proc genv loc lkp)
-				 actuals
-				 tail
-				 loc)))
+	     (evcompile-ref 4 @proc genv loc lkp)
+	     actuals
+	     tail
+	     loc)))
       ((?fun . ?args)
        (let ((loc (get-location exp loc))
 	     (actuals (map (lambda (a)
 			      (evcompile a env genv where #f loc lkp #f))
-			   args))
+			 args))
 	     (proc (evcompile fun env genv where #f loc lkp #f)))
 	  (evcompile-application fun proc actuals tail loc)))
       (else
@@ -367,7 +370,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evcompile-ref ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evcompile-ref variable mod loc lkp)
+(define (evcompile-ref where variable mod loc lkp)
    (cond
       ((eval-global? variable)
        (if lkp

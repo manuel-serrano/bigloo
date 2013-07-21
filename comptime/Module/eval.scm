@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Sat Nov 24 17:19:58 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jul 21 09:48:36 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -33,6 +33,7 @@
 	    backend_backend)
    (export  (make-eval-compiler)
 	    (get-eval-libraries::pair-nil)
+	    (add-eval-library! ::symbol)
 	    *all-eval?*
 	    *all-export-eval?*
 	    *all-module-eval?*
@@ -88,16 +89,27 @@
 			(user-error "Parse error"
 				    "Illegal `eval' clause"
 				    clause '())
-			(set! *eval-libraries* (cons lib *eval-libraries*))))
+			(add-eval-library! lib)))
 		 libs))
       (else
        (user-error "Parse error" "Illegal `eval' clause" clause '()))))
+
+;*---------------------------------------------------------------------*/
+;*    *eval-libraries* ...                                             */
+;*---------------------------------------------------------------------*/
+(define *eval-libraries* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    get-eval-libraries ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (get-eval-libraries)
    *eval-libraries*)
+
+;*---------------------------------------------------------------------*/
+;*    add-eval-library! ...                                            */
+;*---------------------------------------------------------------------*/
+(define (add-eval-library! lib)
+   (set! *eval-libraries* (cons lib *eval-libraries*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *eval-exported* ...                                              */
@@ -110,21 +122,10 @@
 (define *eval-classes* '())
 
 ;*---------------------------------------------------------------------*/
-;*    *eval-libraries* ...                                             */
-;*---------------------------------------------------------------------*/
-(define *eval-libraries* '())
-
-;*---------------------------------------------------------------------*/
 ;*    remember-eval-exported! ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (remember-eval-exported! var::symbol module loc)
    (set! *eval-exported* (cons (list var module loc) *eval-exported*)))
-
-;*---------------------------------------------------------------------*/
-;*    remember-eval-libs ...                                           */
-;*---------------------------------------------------------------------*/
-(define (remember-eval-libs lib)
-   (set! *eval-libraries* (cons lib *eval-libraries*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *all-eval?* ...                                                  */

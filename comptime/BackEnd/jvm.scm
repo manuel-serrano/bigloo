@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:31:55 2012                          */
-;*    Last change :  Wed Jul 17 16:50:04 2013 (serrano)                */
+;*    Last change :  Sun Jul 21 11:34:37 2013 (serrano)                */
 ;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo JVM backend driver                                        */
@@ -23,6 +23,7 @@
 	   ast_node
 	   module_module
 	   module_alibrary
+	   module_eval
 	   type_type
 	   type_typeof
 	   type_env
@@ -284,7 +285,13 @@
 		     (for-each (lambda (lib)
 				  (match-case lib
 				     ((library . ?libs)
-				      (for-each use-library! libs))))
+				      (for-each use-library! libs))
+				     ((eval . ?clauses)
+				      (for-each (match-lambda
+						   ((library . ?libs)
+						    (for-each use-library! libs)
+						    (for-each add-eval-library! libs)))
+					 clauses))))
 			       libraries)
 		     ;; we load the library init files.
 		     (load-library-init)
@@ -320,48 +327,24 @@
 		     (let ((exp (compiler-read port)))
 			(close-input-port port)
 			(match-case exp
-			   ((module ?name ??- (main ?new-main) . ?-)
-			    (add-qualified-type!
-			     name
-			     (string-replace (jvm-class-sans-directory
-					      (prefix (cdar sources)))
-					     (file-separator)
-					     #\.))
-			    (if main
-				(error ""
-				       (string-append
-					"Redeclaration of the main (files "
-					fmain
-					" and "
-					(caar sources) ")")
-				       (cons main new-main)))
-			    (loop (cdr sources)
-				  (cons (list name
-					      (string-append
-					       "\"" (caar sources) "\""))
-					cls)
-				  name
-				  new-main
-				  (caar sources)
-				  (append (find-libraries (cddr exp))
-					  libraries)))
 			   ((module ?name . ?-)
-			    (add-qualified-type!
-			     name
-			     (string-replace (jvm-class-sans-directory
-					      (prefix (cdar sources)))
-					     (file-separator)
-					     #\.))
-			    (loop (cdr sources)
+			    (let ((libs (find-libraries (cddr exp)))
+				  (nmain (find-main (cddr exp))))
+			       (add-qualified-type!
+				  name
+				  (string-replace (jvm-class-sans-directory
+						     (prefix (cdar sources)))
+				     (file-separator)
+				     #\.))
+			       (loop (cdr sources)
 				  (cons (list name
-					      (string-append
-					       "\"" (caar sources) "\""))
-					cls)
-				  main-module
-				  main
-				  fmain
-				  (append (find-libraries (cddr exp))
-					  libraries)))
+					   (string-append
+					      "\"" (caar sources) "\""))
+				     cls)
+				  (if nmain name main-module)
+				  (or nmain main)
+				  (if nmain (caar sources) fmain)
+				  (append libs libraries))))
 			   (else
 			    ;; ah, ce n'etait pas un fichier bigloo,
 			    ;; on saute (en meprisant :-)

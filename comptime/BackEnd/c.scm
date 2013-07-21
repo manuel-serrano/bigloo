@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Wed Jul 17 16:49:33 2013 (serrano)                */
+;*    Last change :  Sun Jul 21 11:11:45 2013 (serrano)                */
 ;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -27,6 +27,7 @@
 	    module_module
 	    module_library
 	    module_alibrary
+	    module_eval
 	    type_type
 	    type_cache
 	    type_env
@@ -254,7 +255,7 @@
 	  (set! *o-files* (cdr *o-files*))
 	  (ld first #f))
        (let loop ((sources sources)
-		  (cls '())
+		  (clauses '())
 		  (main #f)
 		  (fmain "")
 		  (libraries '()))
@@ -266,8 +267,14 @@
 		     (for-each (lambda (lib)
 				  (match-case lib
 				     ((library . ?libs)
-				      (for-each use-library! libs))))
-			       libraries)
+				      (for-each use-library! libs))
+				     ((eval . ?clauses)
+				      (for-each (match-lambda
+						   ((library . ?libs)
+						    (for-each use-library! libs)
+						    (for-each add-eval-library! libs)))
+					 clauses))))
+			libraries)
 		     ;; we load the library init files.
 		     (load-library-init)
 		     (set! *src-files* (list fmain))
@@ -275,7 +282,7 @@
 		     (ld first #f))
 		  ;; let's generate a main, then link
 		  (let ((tmp (make-tmp-file-name)))
-		     (make-tmp-main tmp main (gensym 'module) cls libraries)
+		     (make-tmp-main tmp main (gensym 'module) clauses libraries)
 		     (set! *src-files* (list tmp))
 		     ;; we have to remove extra mco files before compiler
 		     ;; otherwise the compiler will warn about that files.
@@ -296,13 +303,13 @@
 			   (let* ((pre (prefix tmp))
 				  (c-file (string-append pre ".c"))
 				  (o-file (string-append
-					   pre
-					   "."
-					   *c-object-file-extension*)))
+					     pre
+					     "."
+					     *c-object-file-extension*)))
 			      (for-each (lambda (f)
 					   (when (file-exists? f)
 					      (delete-file f)))
-					(list tmp c-file o-file)))))
+				 (list tmp c-file o-file)))))
 		     0))
 	      (let ((port (open-input-file (caar sources))))
 		 (if (not (input-port? port))
@@ -310,37 +317,20 @@
 		     (let ((exp (expand (compiler-read port))))
 			(close-input-port port)
 			(match-case exp
-			   ((module ?name ??- (main ?new-main) . ?-)
-			    (if main
-				(error ""
-				       (string-append
-					"Redeclaration of the main (files "
-					fmain
-					" and "
-					(caar sources) ")")
-				       (cons main new-main)))
-			    (loop (cdr sources)
-				  (cons (list name
-					      (string-append
-					       "\"" (caar sources) "\""))
-					cls)
-				  new-main
-				  (caar sources)
-				  (append (find-libraries (cddr exp))
-					  libraries)))
 			   ((module ?name . ?-)
-			    (loop (cdr sources)
+			    (let ((libs (find-libraries (cddr exp)))
+				  (nmain (find-main (cddr exp))))
+			       (loop (cdr sources)
 				  (cons (list name
-					      (string-append
-					       "\"" (caar sources) "\""))
-					cls)
-				  main
-				  fmain
-				  (append (find-libraries (cddr exp))
-					  libraries)))
+					   (string-append
+					      "\"" (caar sources) "\""))
+				     clauses)
+				  (or nmain main)
+				  (if nmain (caar sources) fmain)
+				  (append libs libraries))))
 			   (else
 			    (loop (cdr sources)
-				  cls
+				  clauses
 				  main
 				  fmain
 				  libraries))))))))))

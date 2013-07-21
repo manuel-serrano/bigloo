@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 15 11:16:02 1994                          */
-;*    Last change :  Sun Oct  3 15:55:36 2010 (serrano)                */
-;*    Copyright   :  1994-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jul 21 11:09:27 2013 (serrano)                */
+;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On link quand l'utilisateur n'a passe que des `.o'               */
 ;*    -------------------------------------------------------------    */
@@ -23,6 +23,7 @@
 	   (find-file-for-link ::bstring)
 	   (find-src-file prefix bname)
 	   (find-libraries ::pair-nil)
+	   (find-main ::pair-nil)
 	   (make-tmp-main ::bstring ::bool ::symbol ::pair-nil ::pair-nil))
    (import cc_ld
 	   read_reader
@@ -50,7 +51,7 @@
    (let loop ((objects *o-files*)
 	      (sources '()))
       (if (null? objects)
-	  ;; and with launch the linking process
+	  ;; and we launch the linking process
 	  (backend-link-objects (the-backend) sources)
 	  (let* ((object   (car objects))
 		 (pref     (unprof-src-name (prefix object)))
@@ -115,7 +116,7 @@
 ;*    find-libraries ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (find-libraries clauses)
-   (let loop ((clauses   clauses)
+   (let loop ((clauses clauses)
 	      (libraries '()))
       (match-case clauses
 	 (()
@@ -123,9 +124,9 @@
 	 (((and ?lib (library . ?libs)) . ?rest)
 	  (loop rest (cons lib libraries)))
 	 (((eval . ?evclauses) . ?rest)
-	  (let ((evlibs (filter-map (lambda (clauses)
-				       (match-case clauses
-					  ((library . ?libs) `(eval ,clauses))
+	  (let ((evlibs (filter-map (lambda (clause)
+				       (match-case clause
+					  ((library . ?libs) `(eval ,clause))
 					  (else #f)))
 			     evclauses)))
 	     (loop rest (append evlibs libraries))))
@@ -139,6 +140,27 @@
 		(loop rest libraries)))
 	 (else
 	  (loop (cdr clauses) libraries)))))
+
+;*---------------------------------------------------------------------*/
+;*    find-main ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (find-main clauses)
+   (let loop ((clauses clauses))
+      (match-case clauses
+	 (()
+	  #f)
+	 (((main ?main) . ?rest)
+	  main)
+	 (((include . ?includes) . ?rest)
+	  (or (find (lambda (include)
+		       (find-main (read-directives include)))
+		 includes)
+	      (loop rest)))
+	 (((cond-expand . ?-) . ?rest)
+	  (or (find-main (list (comptime-expand/error (car clauses))))
+	      (loop rest)))
+	 (else
+	  (loop (cdr clauses))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-tmp-main ...                                                */
