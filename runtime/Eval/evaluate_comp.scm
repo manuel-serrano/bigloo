@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Sat Jul 20 10:50:43 2013 (serrano)                */
+;*    Last change :  Mon Jul 22 12:07:47 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -703,41 +703,47 @@
 	  (begin (vector-set! s sp (EVC (car l)))
 		 (rec (cdr l) (+fx sp 1) (-fx n 1)) ))))
 
-(define-macro (comp-call-pattern pn tail? comp-call subr-call fix-expr-call notfix-expr-call);
+(define-macro (comp-call-pattern/location location pn tail? comp-call subr-call fix-expr-call notfix-expr-call);
    `(let ( (args ,comp-call) )
        (EVA ,pn ()
-	    (let ( (f (EVC f)) )
-	       (unless (procedure? f)
-		  (evtype-error loc "eval" "procedure" f) )
-	       (let ( (uf (procedure-attr f)) )
-		  (if (not (user? uf))
-		      (begin
-			 (prof '(call int subr))
-			 (if (not (correct-arity? f nbargs))
-			     (evarity-error loc symb-fun nbargs ($procedure-arity f))
-			     ,subr-call ))
-		      (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
-			 (prof '(call int int))
-			 (let ( (sp (+fx bp size)) )
-			    (if (=fx arity nbargs)
-				,fix-expr-call
-				(if (or (>=fx arity 0) (<fx arity (-fx -1 nbargs)))
-				    (evarity-error loc (user-where uf) nbargs arity)
-				    ,notfix-expr-call ))
-			    (let ( (!denv::dynamic-env (current-dynamic-env)) )
-			       ,(when (> (bigloo-debug) 0)
-				   `($env-set-trace-location !denv loc))
-			       (if (check-stack s ,(if tail? 'bp 'sp) sf)
-				   ,(if tail?
-					'(throw-trampoline run)
-					'(catch-trampoline run s sp) )
-				   (let ( (ns (make-state)) )
-				      (let ( (start ,(if tail? 'bp 'sp)) )
-					 (vector-copy! ns 2 s start (+fx start nbargs)) )
-				      (vector-set! ns 1 s)
-				      ($evmeaning-evstate-set! !denv ns)
-				      (foo_unwind-protect (catch-trampoline run ns 2)
-					 ($evmeaning-evstate-set! !denv s) ))))))))))))
+	  (let ( (f (EVC f)) )
+	     (unless (procedure? f)
+		(evtype-error loc "eval" "procedure" f) )
+	     (let ( (uf (procedure-attr f)) )
+		(if (not (user? uf))
+		    (begin
+		       (prof '(call int subr))
+		       (if (not (correct-arity? f nbargs))
+			   (evarity-error loc symb-fun nbargs ($procedure-arity f))
+			   (begin
+			      ,(when location `($env-set-trace-location (current-dynamic-env) loc))
+			      ,subr-call )))
+		    (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
+		       (prof '(call int int))
+		       (let ( (sp (+fx bp size)) )
+			  (if (=fx arity nbargs)
+			      ,fix-expr-call
+			      (if (or (>=fx arity 0) (<fx arity (-fx -1 nbargs)))
+				  (evarity-error loc (user-where uf) nbargs arity)
+				  ,notfix-expr-call ))
+			  (let ( (!denv::dynamic-env (current-dynamic-env)) )
+			     ,(when location `($env-set-trace-location !denv loc))
+			     (if (check-stack s ,(if tail? 'bp 'sp) sf)
+				 ,(if tail?
+				      '(throw-trampoline run)
+				      '(catch-trampoline run s sp) )
+				 (let ( (ns (make-state)) )
+				    (let ( (start ,(if tail? 'bp 'sp)) )
+				       (vector-copy! ns 2 s start (+fx start nbargs)) )
+				    (vector-set! ns 1 s)
+				    ($evmeaning-evstate-set! !denv ns)
+				    (foo_unwind-protect (catch-trampoline run ns 2)
+				       ($evmeaning-evstate-set! !denv s) ))))))))))))
+
+(define-macro (comp-call-pattern pn tail? comp-call subr-call fix-expr-call notfix-expr-call);
+   `(if (> (bigloo-debug) 0)
+	(comp-call-pattern/location #t ,pn ,tail? ,comp-call ,subr-call ,fix-expr-call ,notfix-expr-call)
+	(comp-call-pattern/location #f ,pn ,tail? ,comp-call ,subr-call ,fix-expr-call ,notfix-expr-call)))
 
 (define (need-shift args stk)
    ;; CARE must memorize the results of use.
@@ -774,19 +780,26 @@
 				(push-args-on-sp s args bp)
 				(push-nargs-on-sp arity s args bp) ))))))
 
-;; specialized version for a direct call
-(define-macro (generate-comp-constant-calli-body args)
+;; specialized version for a direct call/location
+(define-macro (generate-comp-constant-calli-body/location location args)
    (let ( (nbargs (length args)) )
       `(EVA '(call compiled-constant ,nbargs) ("nb args" ,nbargs "size" size)
-	    (let ( ,@(map (lambda (v) `(,v (EVC ,v))) args) )
-	       (let ( (nbp (+fx bp size)) )
-		  (vector-set! s 0 nbp)
-		  (let ( (r (cfun ,@args)) )
-		     (vector-set! s 0 bp)
-		     r ))))))
+	  (let ( ,@(map (lambda (v) `(,v (EVC ,v))) args) )
+	     (let ( (nbp (+fx bp size)) )
+		(vector-set! s 0 nbp)
+		,(when location `($env-set-trace-location (current-dynamic-env) loc))
+		(let ( (r (cfun ,@args)) )
+		   (vector-set! s 0 bp)
+		   r ))))))
+
+;; specialized version for a direct call
+(define-macro (generate-comp-constant-calli-body args)
+   `(if (> (bigloo-debug) 0)
+	(generate-comp-constant-calli-body/location #t ,args)
+	(generate-comp-constant-calli-body/location #f ,args)))
 
 ;; specialized version for a fixed number of arguments
-(define-macro (generate-comp-calli-body tail? args)
+(define-macro (generate-comp-calli-body/location location tail? args)
    (define (push-args l sp)
       (map (lambda (v i) `(vector-set! s (+fx ,sp ,i) ,v)) l (iota (length l) 0)) )
    (define (bpush-args l sp)
@@ -815,9 +828,11 @@
 			   (evarity-error loc symb-fun ,nbargs ($procedure-arity f))
 			   (let ( (nbp (+fx bp size)) )
 			      (vector-set! s 0 nbp)
-			      (let ( (r (f ,@args)) )
-				 (vector-set! s 0 bp)
-				 r ))))
+			      (begin
+				 ,(when location `($env-set-trace-location (current-dynamic-env) loc))
+				 (let ( (r (f ,@args)) )
+				    (vector-set! s 0 bp)
+				    r )))))
 		    (let ( (arity (user-arity uf)) (run (user-runner uf)) (sf (user-frame uf)) )
 		       (let ( (sp (+fx bp size)) )
 			  (prof '(call int int))
@@ -828,8 +843,7 @@
 				 (else
 				  (evarity-error loc (user-where uf) ,nbargs arity) )))
 			  (let ( (!denv::dynamic-env (current-dynamic-env)) )
-			     ,(when (> (bigloo-debug) 0)
-				 `($env-set-trace-location !denv loc))
+			     ,(when location `($env-set-trace-location !denv loc))
 			     (if (check-stack s ,(if tail? 'bp 'sp) sf)
 				 ,(if tail?
 				      '(throw-trampoline run)
@@ -841,6 +855,11 @@
 				    ($evmeaning-evstate-set! !denv ns)
 				    (foo_unwind-protect (catch-trampoline run ns 2)
 				       ($evmeaning-evstate-set! !denv s) ))))))))))))
+
+(define-macro (generate-comp-calli-body tail? args)
+   `(if (> (bigloo-debug) 0)
+	(generate-comp-calli-body/location #t ,tail? ,args)
+	(generate-comp-calli-body/location #f ,tail? ,args)))
 
 (define-macro (generate-comp-calli from to)
    (if (>fx from to)
