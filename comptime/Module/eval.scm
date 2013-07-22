@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Sun Jul 21 09:48:36 2013 (serrano)                */
+;*    Last change :  Mon Jul 22 08:22:03 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -155,7 +155,7 @@
 	  (define-primop-ref->node g (location->node g)))
 	 (else
 	  (define-primop->node g))))
-
+   
    (if (or *one-eval?*
 	   *all-eval?*
 	   *all-export-eval?*
@@ -163,8 +163,7 @@
 	   (pair? *eval-libraries*)
 	   (pair? *eval-classes*))
        (list
-	  (unit
-	     'eval
+	  (unit 'eval
 	     (-fx (get-toplevel-unit-weight) 2)
 	     (delay
 		(let loop ((globals (append (get-evaluated-globals)
@@ -172,14 +171,14 @@
 			   (init*  '(#unspecified)))
 		   (if (null? globals)
 		       `(begin
+			   ;; initialize the library module
+			   ,@(map library_e *eval-libraries*)
 			   ;; declare the sfri
 			   ,@(get-eval-srfi-libraries)
 			   ;; bind the classes
 			   ,@(get-evaluated-class-macros)
 			   ;; the variables
 			   ,@(reverse! init*)
-			   ;; initialize the library module
-			   ,@(map library_e *eval-libraries*)
 			   #unspecified)
 		       (let ((g (car globals)))
 			  (set-eval-types! g)
@@ -218,6 +217,7 @@
 	  (let ((init (module-initialization-id (libinfo-module_e info))))
 	     (if (backend-pragma-support (the-backend))
 		 `(begin
+		     ((@ library-load-init __library) ',lib ',*lib-dir*)
 		     (pragma ,(format "~a( 0, ~s )"
 				      (bigloo-module-mangle
 				       (symbol->string init)
@@ -256,11 +256,11 @@
 			      (*all-module-eval?* '(static export))
 			      (else '(export)))))
 	     (for-each-global!
-	      (lambda (g)
-		 (if (and (memq (global-import g) scope-lst)
-			  (global-evaluable? g)
-			  (or *lib-mode* (not (global-library g))))
-		     (set! globals (cons g globals)))))))
+		(lambda (g)
+		   (if (and (memq (global-import g) scope-lst)
+			    (global-evaluable? g)
+			    (or *lib-mode* (not (global-library g))))
+		       (set! globals (cons g globals)))))))
       (let loop ((eval-exported *eval-exported*)
 		 (res globals))
 	 (if (null? eval-exported)
@@ -268,24 +268,24 @@
 	     (let ((var-module-pos (car eval-exported)))
 		(let ((g (if (cadr var-module-pos)
 			     (find-global/module (car var-module-pos)
-						 (cadr var-module-pos))
+				(cadr var-module-pos))
 			     (find-global (car var-module-pos)))))
 		   (cond
 		      ((not (global? g))
 		       (user-error/location (find-location
-					     (caddr var-module-pos))
-					    "eval-init"
-					    "Unbound eval variable"
-					    (car var-module-pos)
-					    '())
+					       (caddr var-module-pos))
+			  "eval-init"
+			  "Unbound eval variable"
+			  (car var-module-pos)
+			  '())
 		       (loop (cdr eval-exported) res))
 		      ((not (global-evaluable? g))
 		       (user-error/location (find-location
-					     (caddr var-module-pos))
-					    "eval-init"
-					    "This variable cannot be known by eval"
-					    (car var-module-pos)
-					    '())
+					       (caddr var-module-pos))
+			  "eval-init"
+			  "This variable cannot be known by eval"
+			  (car var-module-pos)
+			  '())
 		       (loop (cdr eval-exported) res))
 		      (else
 		       (loop (cdr eval-exported) (cons g res))))))))))

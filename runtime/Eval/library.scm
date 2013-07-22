@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Thu Jul 18 11:40:17 2013 (serrano)                */
+;*    Last change :  Mon Jul 22 08:32:30 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
@@ -67,6 +67,7 @@
 	    (library-translation-table-add! ::symbol ::bstring . ::obj)
 	    (library-file-name::bstring ::symbol ::bstring ::symbol)
 	    (library-load ::obj . opt)
+	    (library-load-init ::obj ::obj)
 	    (library-load_e ::obj . opt)
 	    (library-exists? ::symbol . opt)
 	    (library-loaded?::bool ::symbol)
@@ -371,6 +372,26 @@
 	 ($eval-module-set! mod))))
 
 ;*---------------------------------------------------------------------*/
+;*    loaded libraries init files                                      */
+;*---------------------------------------------------------------------*/
+(define *loaded-init-files* '())
+
+;*---------------------------------------------------------------------*/
+;*    library-load-init ...                                            */
+;*---------------------------------------------------------------------*/
+(define (library-load-init lib path)
+   (let ((init (find-file/path (library-init-file lib) path)))
+      (when init
+	 (let ((to-load #f))
+	    (synchronize *library-mutex*
+	       (unless (member init *loaded-init-files*)
+		  (set! to-load #t)
+		  (set! *loaded-init-files* (cons init *loaded-init-files*))))
+	    (when to-load
+	       (tprint "LOADING: " init)
+	       (loadq init))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    library-load_e ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (library-load_e lib . path)
@@ -389,12 +410,11 @@
 				 (if (not venv)
 				     (bigloo-library-path)
 				     (cons "." (unix-path->list venv))))))
-		    (init (find-file/path (library-init-file lib) path))
 		    (be (cond-expand
 			   (bigloo-c 'bigloo-c)
 			   (bigloo-jvm 'bigloo-jvm)
 			   (bigloo-.net 'bigloo-.net))))
-		(when init (loadq init))
+		(library-load-init lib path)
 		(let* ((info (library-info lib))
 		       (n (make-shared-lib-name
 			     (library-file-name lib "" be)
