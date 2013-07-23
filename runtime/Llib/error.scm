@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Jan 29 15:09:16 2013 (serrano)                */
+;*    Last change :  Mon Jul 22 14:10:08 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -631,7 +631,7 @@
    (if (or (not (string? fname)) (not (fixnum? loc)))
        (notify-&error err)
        (multiple-value-bind (lnum lpoint lstring)
-	  (location-line-num fname loc)
+	  (location-line-num 'at fname loc)
 	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
 	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))
@@ -639,29 +639,67 @@
 ;*---------------------------------------------------------------------*/
 ;*    location-line-num ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (location-line-num file point)
-   (if (and (string? file) (fixnum? point))
-       (let* ((fname (if (string=? (os-class) "win32")
-			 (string-replace (uncygdrive file) #\/ #\\)
-			 file))
-	      (port (open-input-file fname)))
-	  (if (input-port? port)
-	      (let loop ((lstring (read-line port))
-			 (lnum 1)
-			 (opos 0))
-		 (if (eof-object? lstring)
-		     (begin
-			(close-input-port port)
-			(values #f #f #f))
-		     (if (>fx (input-port-position port) point)
-			 (begin
-			    (close-input-port port)
-			    (values lnum (-fx point opos) lstring))
-			 (let ((opos (input-port-position port)))
-			    (loop (read-line port) 
-				  (+fx lnum 1)
-				  opos)))))))
-       (values #f #f #f)))
+(define (location-line-num method file point)
+   
+   (define (location-at file point)
+      (when (and (string? file) (integer? point))
+	 (let* ((fname (if (string=? (os-class) "win32")
+			   (string-replace (uncygdrive file) #\/ #\\)
+			   file))
+		(port (open-input-file fname)))
+	    (if (input-port? port)
+		(unwind-protect
+		   (let loop ((lstring (read-line port))
+			      (lnum 1)
+			      (opos 0))
+		      (if (eof-object? lstring)
+			  (values #f #f #f)
+			  (if (>fx (input-port-position port) point)
+			      (values lnum (-fx point opos) lstring)
+			      (let ((opos (input-port-position port)))
+				 (loop (read-line port) 
+				    (+fx lnum 1)
+				    opos)))))
+		   (close-input-port port))
+		(values #f #f #f)))))
+   
+   (define (location-line-col file line col)
+      (if (and (>=fx line 0) (>=fx col 0))
+	  (let* ((fname (if (string=? (os-class) "win32")
+			    (string-replace (uncygdrive file) #\/ #\\)
+			    file))
+		 (port (open-input-file fname)))
+	     (if (input-port? port)
+		 (unwind-protect
+		    (let loop ((lstring (read-line port))
+			       (lnum line))
+		       (if (eof-object? lstring)
+			   (values #f #f #f)
+			   (if (=fx lnum 0)
+			       (values line col lstring)
+			       (let ((opos (input-port-position port)))
+				  (loop (read-line port) (-fx lnum 1))))))
+		    (close-input-port port))
+		 (values #f #f #f)))
+	  (values #f #f #f)))
+   
+   (case method
+      ((at)
+       ;; at schema: (at file line)
+       (location-at file point))
+      ((line-col)
+       ;; line-col schema: (line-col file "line:col")
+       (let ((i (string-index point ":")))
+	  (if (integer? i)
+	      (let ((line (string->integer (substring point 0 i)))
+		    (col (string->integer (substring point (+fx i 1)))))
+		 (location-line-col file line col))
+	      (values #f #f #f))))
+      ((line)
+       ;; line schema: (line file line)
+       (location-line-col file point 0))
+      (else
+       (values #f #f #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-location? ...                                          */
@@ -744,7 +782,7 @@
 	  (apply warning args)
 	  ;; we readlines until we reach location
 	  (multiple-value-bind (lnum lpoint lstring)
-	     (location-line-num fname loc)
+	     (location-line-num 'at fname loc)
 	     (if (not lnum)
 		 (apply warning args)
 		 (do-warn/location fname lnum loc lstring lpoint args))))))
@@ -797,7 +835,8 @@
 	 ((pair? (cdr frame))
 	  (display ", " port)
 	  (multiple-value-bind (lnum lpoint lstring)
-	     (location-line-num (cadr (cdr frame)) (caddr (cdr frame)))
+	     (location-line-num (car (cdr frame))
+		(cadr (cdr frame)) (caddr (cdr frame)))
 	     (if lnum
 		 (begin
 		    (display (relative-file-name (cadr (cdr frame))) port)

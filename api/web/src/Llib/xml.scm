@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Sat Apr 14 13:07:49 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Tue Jul 23 10:28:48 2013 (serrano)                */
+;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -24,7 +24,6 @@
 	   (xml-string-decode::bstring ::bstring)
 	   (xml-string-decode!::bstring ::bstring)
 	   (xml-string-encode::bstring ::bstring)
-	   (xml-attribute-encode::obj ::obj)
 	   (read-xml #!optional (port::input-port (current-input-port)))
 	   (xml-metadata xml-tree::pair-nil)))
 
@@ -555,51 +554,6 @@
    (let ((ol (string-length str)))
       (encode str ol (count str ol))))
 	 
-;*---------------------------------------------------------------------*/
-;*    xml-attribute-encode ...                                         */
-;*---------------------------------------------------------------------*/
-(define (xml-attribute-encode obj)
-   (if (not (string? obj))
-       obj
-       (let ((ol (string-length obj)))
-	  (define (count str ol)
-	     (let loop ((i 0)
-			(j 0))
-		(if (=fx i ol)
-		    j
-		    (let ((c (string-ref str i)))
-		       (if (or (char=? c #\') (char=? c #\&))
-			   (loop (+fx i 1) (+fx j 5))
-			   (loop (+fx i 1) (+fx j 1)))))))
-	  (define (encode str ol nl)
-	     (if (=fx nl ol)
-		 obj
-		 (let ((nstr (make-string nl)))
-		    (let loop ((i 0)
-			       (j 0))
-		       (if (=fx j nl)
-			   nstr
-			   (let ((c (string-ref str i)))
-			      (case c
-				 ((#\')
-				  (string-set! nstr j #\&)
-				  (string-set! nstr (+fx j 1) #\#)
-				  (string-set! nstr (+fx j 2) #\3)
-				  (string-set! nstr (+fx j 3) #\9)
-				  (string-set! nstr (+fx j 4) #\;)
-				  (loop (+fx i 1) (+fx j 5)))
-				 ((#\&)
-				  (string-set! nstr j #\&)
-				  (string-set! nstr (+fx j 1) #\#)
-				  (string-set! nstr (+fx j 2) #\3)
-				  (string-set! nstr (+fx j 3) #\8)
-				  (string-set! nstr (+fx j 4) #\;)
-				  (loop (+fx i 1) (+fx j 5)))
-				 (else
-				  (string-set! nstr j c)
-				  (loop (+fx i 1) (+fx j 1))))))))))
-	  (encode obj ol (count obj ol)))))
-
 ;*---------------------------------------------------------------------*/
 ;*    read-xml ...                                                     */
 ;*---------------------------------------------------------------------*/
