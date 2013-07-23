@@ -583,6 +583,30 @@
    (define (module-keyword? id)
       (and (symbol? id) (memq id *btags-module-list*)))
    (match-case expr
+      (((kwote cond-expand) . ?clauses)
+       (letrec ((match-cond (lambda (requirement)
+                              (match-case requirement
+                                (((kwote and) . ?rest)
+                                 (every match-cond rest))
+                                (((kwote or) . ?rest)
+                                 (any match-cond rest))
+                                (((kwote not) ?req)
+                                 (not (match-cond req)))
+                                ((or srfi-0 srfi-1 srfi-2 srfi-6 srfi-8 srfi-9
+                                     srfi-22 srfi-28 srfi-30 srfi-33
+                                     bigloo bigloo-c bigloo-compile bigloo-debug
+                                     bigloo3 bigloo38 debug)
+                                 #t)
+                                ((kwote else) ; cond-expand's else-clause
+                                 #t)
+                                (else ; no feature match
+                                 #f)))))
+         (let ((first-match (find (lambda (clause) (match-cond (car clause))) clauses)))
+           ; we will always find something (at least an else-clause)
+           (cond ((pair? (cdr first-match))
+                  (btags-expression (cadr first-match))) ; definition might be any expression
+                 (else
+                  '()))))) ; requirement, but empty definition
       ((begin . ?rest)
        (apply append (map btags-expression rest)))
       ((define-method (?fun . ?-) . ?-)

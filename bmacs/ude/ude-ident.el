@@ -52,8 +52,8 @@
 	    (if (or (= (point) min)
 		    (progn
 		      (backward-char 1)
-		      (looking-at "\\s-\\|(\\|:")))
-		(let ((start (if (looking-at "\\s-\\|(\\|:")
+		      (looking-at "\\s-\\|(\\|:\\|'\\|,")))
+		(let ((start (if (looking-at "\\s-\\|(\\|:\\|'\\|,")
 				 (+ 1 (point))
 			       (point))))
 		  ;; we have to look right

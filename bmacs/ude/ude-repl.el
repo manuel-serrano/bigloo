@@ -23,15 +23,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    ude-repl-buffer ...                                              */
 ;*---------------------------------------------------------------------*/
-(defvar ude-repl-buffer nil)
+(defvar ude-repl-buffer nil
+  "The buffer interacting with `ude-repl-comint-process'.")
 (defvar ude-repl-comint-process nil
-  "The comint process running Bigloo.")
+  "The comint process running a Bigloo interpreter.")
+(defcustom ude-repl-args '()
+  "Additional arguments to the Bigloo interpreter."
+  :group 'bee
+  :type 'string)
 
 ;*---------------------------------------------------------------------*/
 ;*    ude-repl ...                                                     */
 ;*---------------------------------------------------------------------*/
 (defun ude-repl ()
-  (setq ude-repl-buffer (make-comint ude-repl ude-repl))
+  (setq ude-repl-buffer (make-comint ude-repl ude-repl nil ude-repl-args))
   (setq ude-repl-comint-process (get-buffer-process ude-repl-buffer))
 
   (set-process-sentinel ude-repl-comint-process
@@ -81,7 +86,7 @@ displayed."
 ;*---------------------------------------------------------------------*/
 (defun ude-repl-other-frame ()
   (interactive)
-  (if (bufferp ude-repl-buffer)
+  (if (and (bufferp ude-repl-buffer) (buffer-name ude-repl-buffer))
       (display-buffer ude-repl-buffer))
   (ude-repl))
 
