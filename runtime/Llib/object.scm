@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Dec 21 08:20:52 2012 (serrano)                */
+;*    Last change :  Wed Jul 24 14:26:25 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1324,7 +1324,7 @@
 		       (with-access::&exception exc (stack)
 			 (or stack (get-trace-stack)))
 		       (get-trace-stack))))
-	 (display-trace-stack stack port))))
+	 (display-trace-stack stack 1 port))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-notify ::&error ...                                    */

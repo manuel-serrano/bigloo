@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Jul 22 14:10:08 2013 (serrano)                */
+;*    Last change :  Wed Jul 24 14:45:36 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -220,7 +220,7 @@
 	    (warning-notify/location ::obj ::bstring ::int)
 	    
 	    (get-trace-stack #!optional depth)
-	    (display-trace-stack ::obj ::output-port)
+	    (display-trace-stack ::obj ::int ::output-port)
 	    (dump-trace-stack port depth)
 	    
 	    (find-runtime-type::bstring  ::obj)
@@ -578,7 +578,7 @@
 	 (display " -- " port)
 	 (display-circle obj port)
 	 (newline port)
-	 (display-trace-stack (or stack (get-trace-stack)) port)
+	 (display-trace-stack (or stack (get-trace-stack)) 1 port)
 	 (flush-output-port port))))
 
 ;*---------------------------------------------------------------------*/
@@ -620,7 +620,7 @@
 	    (display " -- " port)
 	    (display-circle obj port)
 	    (newline port)
-	    (display-trace-stack (or stack (get-trace-stack)) port)
+	    (display-trace-stack (or stack (get-trace-stack)) 1 port)
 	    ;; we are now done, we flush
 	    (flush-output-port port)))))
 
@@ -630,8 +630,8 @@
 (define (notify-&error/loc err fname loc)
    (if (or (not (string? fname)) (not (fixnum? loc)))
        (notify-&error err)
-       (multiple-value-bind (lnum lpoint lstring)
-	  (location-line-num 'at fname loc)
+       (multiple-value-bind (file lnum lpoint lstring)
+	  (location-line-num `(at ,fname ,loc))
 	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
 	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))
@@ -639,7 +639,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    location-line-num ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (location-line-num method file point)
+(define (location-line-num loc)
    
    (define (location-at file point)
       (when (and (string? file) (integer? point))
@@ -653,15 +653,15 @@
 			      (lnum 1)
 			      (opos 0))
 		      (if (eof-object? lstring)
-			  (values #f #f #f)
+			  (values fname #f #f #f)
 			  (if (>fx (input-port-position port) point)
-			      (values lnum (-fx point opos) lstring)
+			      (values file lnum (-fx point opos) lstring)
 			      (let ((opos (input-port-position port)))
 				 (loop (read-line port) 
 				    (+fx lnum 1)
 				    opos)))))
 		   (close-input-port port))
-		(values #f #f #f)))))
+		(values file #f #f #f)))))
    
    (define (location-line-col file line col)
       (if (and (>=fx line 0) (>=fx col 0))
@@ -674,32 +674,27 @@
 		    (let loop ((lstring (read-line port))
 			       (lnum line))
 		       (if (eof-object? lstring)
-			   (values #f #f #f)
+			   (values file #f #f #f)
 			   (if (=fx lnum 0)
-			       (values line col lstring)
+			       (values file line col lstring)
 			       (let ((opos (input-port-position port)))
 				  (loop (read-line port) (-fx lnum 1))))))
 		    (close-input-port port))
-		 (values #f #f #f)))
-	  (values #f #f #f)))
-   
-   (case method
-      ((at)
+		 (values file line col #f)))
+	  (values file line col #f)))
+
+   (match-case loc
+      ((at ?file ?point)
        ;; at schema: (at file line)
        (location-at file point))
-      ((line-col)
+      ((line-col ?file ?line ?col)
        ;; line-col schema: (line-col file "line:col")
-       (let ((i (string-index point ":")))
-	  (if (integer? i)
-	      (let ((line (string->integer (substring point 0 i)))
-		    (col (string->integer (substring point (+fx i 1)))))
-		 (location-line-col file line col))
-	      (values #f #f #f))))
-      ((line)
+       (location-line-col file line col))
+      ((line ?file ?point)
        ;; line schema: (line file line)
        (location-line-col file point 0))
       (else
-       (values #f #f #f))))
+       (values #f #f #f #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exception-location? ...                                          */
@@ -759,7 +754,7 @@
    ;; stack
    (with-access::&warning e (stack)
       (when stack
-	 (display-trace-stack stack (current-error-port))))
+	 (display-trace-stack stack 1 (current-error-port))))
    #f)
 
 ;*---------------------------------------------------------------------*/
@@ -781,8 +776,8 @@
 	  ;; standard warning
 	  (apply warning args)
 	  ;; we readlines until we reach location
-	  (multiple-value-bind (lnum lpoint lstring)
-	     (location-line-num 'at fname loc)
+	  (multiple-value-bind (file lnum lpoint lstring)
+	     (location-line-num `(at ,fname ,loc))
 	     (if (not lnum)
 		 (apply warning args)
 		 (do-warn/location fname lnum loc lstring lpoint args))))))
@@ -817,57 +812,98 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-trace-stack ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (display-trace-stack stack port)
+(define (display-trace-stack stack offset port)
    
-   (define (display-trace-stack-frame level frame num)
-      (cond
-	 ((<fx level 10) (display "    " port))
-	 ((<fx level 100) (display "   " port))
-	 ((<fx level 1000) (display "  " port)))
-      (display level port)
-      (display ". " port)
-      (display (car frame) port)
-      (cond
-	 ((>fx num 1)
-	  (display " (* " port)
-	  (display num port)
-	  (display ")" port))
-	 ((pair? (cdr frame))
-	  (display ", " port)
-	  (multiple-value-bind (lnum lpoint lstring)
-	     (location-line-num (car (cdr frame))
-		(cadr (cdr frame)) (caddr (cdr frame)))
-	     (if lnum
-		 (begin
-		    (display (relative-file-name (cadr (cdr frame))) port)
-		    (display ":" port)
-		    (display lnum port))
-		 (begin
-		    (display (cadr (cdr frame)) port)
-		    (display "@" port)
-		    (display (caddr (cdr frame)) port))))))
-      (newline port))
-
+   (define (alist? l)
+      ;; it is crucial that this function never fails (otherwise, it falls
+      ;; into a infinite loop), hence it implement drastric type checks
+      (and (list? l) (every pair? l)))
+   
+   (define (display-trace-stack-frame frame level num)
+      (match-case frame
+	 ((?name ?loc . (and (? alist?) ?rest))
+	  (let ((margin (assq 'margin rest))
+		(fmt (assq 'format rest)))
+	     ;; margin
+	     (if (and (pair? margin) (char? (cdr margin)))
+		 (display (cdr margin) port)
+		 (display " " port))
+	     (cond
+		((<fx level 10) (display "   " port))
+		((<fx level 100) (display "  " port))
+		((<fx level 1000) (display " " port)))
+	     ;; level
+	     (display level port)
+	     (display ". " port)
+	     ;; frame name
+	     (if (and (pair? fmt) (string? (cdr fmt)))
+		 (display (format (cdr fmt) name) port)
+		 (display name port))
+	     (cond
+		((>fx num 1)
+		 (display " (* " port)
+		 (display num port)
+		 (display ")" port))
+		(loc
+		 (display ", " port)
+		 (multiple-value-bind (file lnum lpoint lstring)
+		    (location-line-num loc)
+		    ;; file name
+		    (when file
+		       (display (relative-file-name file) port))
+		    ;; line num
+		    (cond
+		       (lnum
+			(display ":" port)
+			(display lnum port))
+		       (lpoint
+			(display "@" port)
+			(display lpoint port))))))
+	     (newline port))
+	  (+fx level 1))
+	 ((?name)
+	  (cond
+	     ((<fx level 10) (display "    " port))
+	     ((<fx level 100) (display "   " port))
+	     ((<fx level 1000) (display "  " port)))
+	  ;; level
+	  (display level port)
+	  (display (if (or (symbol? name) (string? name)) ". " "! ") port)
+	  (display name port)
+	  (newline port)
+	  (+fx level 1))
+	 ((? string?)
+	  ;; plain string (e.g., for separators)
+	  (display frame port)
+	  (newline port)
+	  level)
+	 (else
+	  ;; bad stack frame
+	  (display "! " port)
+	  (display frame port)
+	  (newline port)
+	  (+fx level 1))))
+   
    (when (pair? stack)
-      (let loop ((i 1)
+      (let loop ((i offset)
 		 (stack (cdr stack))
 		 (hds (car stack))
 		 (hdn 1))
 	 (cond
 	    ((null? stack)
-	     (display-trace-stack-frame i hds hdn)
+	     (display-trace-stack-frame hds i hdn)
 	     (flush-output-port port))
 	    ((eq? (car stack) hds)
 	     (loop (+fx i 1) (cdr stack) hds (+fx hdn 1)))
 	    (else
-	     (display-trace-stack-frame i hds hdn)
-	     (loop (+fx i 1) (cdr stack) (car stack) 1))))))
+	     (let ((ni (display-trace-stack-frame hds i hdn)))
+		(loop ni (cdr stack) (car stack) 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-trace-stack ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (dump-trace-stack port depth)
-   (display-trace-stack (get-trace-stack depth) port))
+   (display-trace-stack (get-trace-stack depth) 1 port))
 	     
 ;*---------------------------------------------------------------------*/
 ;*    fix-tabulation! ...                                              */

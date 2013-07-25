@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Thu Nov  3 11:44:34 2011 (serrano)                */
+;*    Last change :  Wed Jul 24 14:27:58 2013 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -151,10 +151,10 @@
 	    (lambda ()
 	       (bind-exit (exit)
 		  (test-trace-stack-hux exit))
-	       (display-trace-stack (get-trace-stack) (current-output-port))
+	       (display-trace-stack (get-trace-stack) 1 (current-output-port))
 	       (bind-exit (exit)
 		  (test-trace-stack-hux exit))
-	       (display-trace-stack (get-trace-stack) (current-output-port))))
+	       (display-trace-stack (get-trace-stack) 1 (current-output-port))))
 	 #t)
       (lambda (e a b c)
 	 (fprint (current-error-port) "+++ ERROR: " a " " b " -- " c)
@@ -170,10 +170,10 @@
    (let ((p (open-output-string)))
       (let loop ((i 3))
 	 (when (> i 0)
-	    (display-trace-stack (get-trace-stack) p)
+	    (display-trace-stack (get-trace-stack) 1 p)
 	    (bind-exit (exit)
 	       (test-trace-stack2-aux (list exit)))
-	    (display-trace-stack (get-trace-stack) p)
+	    (display-trace-stack (get-trace-stack) 1 p)
 	    (loop (- i 1)))))
    #t)
 

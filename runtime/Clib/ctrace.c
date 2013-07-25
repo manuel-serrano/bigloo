@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Fri Dec 10 16:13:37 2010 (serrano)                */
+/*    Last change :  Wed Jul 24 07:16:45 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    We dump a execution trace                                        */
 /*=====================================================================*/
@@ -32,19 +32,21 @@ BGL_RUNTIME_DEF obj_t
 get_trace_stack( int depth ) {
    long level = 0L;
    struct bgl_dframe *runner = BGL_ENV_GET_TOP_OF_FRAME( BGL_CURRENT_DYNAMIC_ENV() );
-   obj_t l = BNIL;
+   obj_t l = MAKE_PAIR( BNIL, BNIL );
+   obj_t r = l;
 
    while( ((depth < 0) || (level < depth)) && runner ) {
       if( SYMBOLP( runner->name ) ) {
-	 obj_t p = MAKE_PAIR( runner->name, runner->location );
-	 l = MAKE_PAIR( p, l );
+	 obj_t p = MAKE_PAIR( runner->name, MAKE_PAIR( runner->location, BNIL ) );
+	 SET_CDR( r, MAKE_PAIR( p, BNIL ) );
+	 r = CDR( r );
 	 level++; 
       }
       
       runner = runner->link;
    }
    
-   return bgl_reverse_bang( l );
+   return CDR( l );
 }
 
 /*---------------------------------------------------------------------*/

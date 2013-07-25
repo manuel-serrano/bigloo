@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Fri Jun 21 08:10:45 2013 (serrano)                */
+;*    Last change :  Wed Jul 24 14:25:33 2013 (serrano)                */
 ;*    Copyright   :  1993-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The module which handle `qualified type <-> module' associations */
@@ -90,7 +90,7 @@
 			 "\n  old qualified type=" b
 			 "\n  new qualified type=" qtype
 			 "\n")
-		(display-trace-stack (get-trace-stack 10) (current-error-port)))))))
+		(dump-trace-stack (current-error-port) 10))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-jfile ...                                                   */

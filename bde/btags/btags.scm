@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 28 07:24:34 1998                          */
-;*    Last change :  Tue Nov  2 07:32:26 2010 (serrano)                */
-;*    Copyright   :  2000-10 Manuel Serrano                            */
+;*    Last change :  Wed Jul 24 07:42:08 2013 (serrano)                */
+;*    Copyright   :  2000-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo tag generator.                                        */
 ;*=====================================================================*/
@@ -18,7 +18,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    Global parameters                                                */
 ;*---------------------------------------------------------------------*/
-(define *btags-version*         "0.2")
+(define *btags-version*         "0.3")
 (define *btags-append*          #f)
 (define *btags-language*        #f)
 (define *btags-table-name*      "TAGS")
@@ -597,16 +597,19 @@
                                      bigloo bigloo-c bigloo-compile bigloo-debug
                                      bigloo3 bigloo38 debug)
                                  #t)
-                                ((kwote else) ; cond-expand's else-clause
+                                ((kwote else)
+				 ;; cond-expand's else-clause
                                  #t)
-                                (else ; no feature match
+                                (else
+				 ;; no feature match
                                  #f)))))
-         (let ((first-match (find (lambda (clause) (match-cond (car clause))) clauses)))
-           ; we will always find something (at least an else-clause)
-           (cond ((pair? (cdr first-match))
-                  (btags-expression (cadr first-match))) ; definition might be any expression
-                 (else
-                  '()))))) ; requirement, but empty definition
+         (let ((first-match (find (lambda (clause) (match-cond (car clause)))
+			       clauses)))
+           (if (and (pair? first-match) (pair? (cdr first-match)))
+	       ;; definition might be any expression
+	       (btags-expression (cadr first-match))
+	       ;; requirement, but empty definition
+	       '()))))
       ((begin . ?rest)
        (apply append (map btags-expression rest)))
       ((define-method (?fun . ?-) . ?-)
