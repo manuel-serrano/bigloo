@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Jul 29 08:45:05 2013 (serrano)                */
+/*    Last change :  Mon Jul 29 09:28:50 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -668,13 +668,22 @@ strseek( void *port, long offset, int whence ) {
    obj_t buf = OUTPUT_PORT( port ).buf;
    int len = STRING_LENGTH( buf );
    int cnt = BGL_OUTPUT_PORT_CNT( port );
-   
-   if( (offset < 0) || (offset >= (len - cnt)) )
-      return 1;
+
+   switch( whence ) {
+      case SEEK_CUR:
+	 offset += (OUTPUT_PORT( port ).ptr - (char *)&STRING_REF( buf, 0 ));
+	 break;
+
+      case SEEK_END:
+	 offset = len + offset;
+	 break;
+   }
+
+   if( (offset < 0) || (offset > cnt) )
+      return -1;
 
    OUTPUT_PORT( port ).ptr = (char *)&STRING_REF( buf, offset );
-   
-   return 0;
+   return offset;
 }
 
 /*---------------------------------------------------------------------*/
@@ -1050,7 +1059,7 @@ bgl_open_output_file( obj_t name, obj_t buf ) {
 				   KINDOF_PIPE,
 				   buf,
 				   posix_write,
-				   lseek,
+				   (long (*)())_LSEEK,
 				   pclose );
    } else
 #endif
@@ -1806,11 +1815,11 @@ bgl_output_port_seek( obj_t port, long pos ) {
    if( sysseek ) {
       switch( OUTPUT_PORT( port ).stream_type ) {
 	 case BGL_STREAM_TYPE_FD: 
-	    return sysseek( PORT_FD( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+	    return sysseek( PORT_FD( port ), pos, SEEK_SET ) < 0 ? BFALSE : BTRUE;
 	 case BGL_STREAM_TYPE_FILE: 
-	    return sysseek( PORT_FILE( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+	    return sysseek( PORT_FILE( port ), pos, SEEK_SET ) < 0 ? BFALSE : BTRUE;
 	 case BGL_STREAM_TYPE_CHANNEL: 
-	    return sysseek( PORT_CHANNEL( port ), pos, SEEK_SET ) ? BFALSE : BTRUE;
+	    return sysseek( PORT_CHANNEL( port ), pos, SEEK_SET ) < 0 ? BFALSE : BTRUE;
 	 default:
 	    return BFALSE;
       }
