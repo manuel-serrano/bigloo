@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue May 14 11:02:34 2013 (serrano)                */
+/*    Last change :  Mon Jul 29 08:45:05 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1050,7 +1050,7 @@ bgl_open_output_file( obj_t name, obj_t buf ) {
 				   KINDOF_PIPE,
 				   buf,
 				   posix_write,
-				   posix_lseek,
+				   lseek,
 				   pclose );
    } else
 #endif
@@ -1776,20 +1776,22 @@ bgl_input_port_seek( obj_t port, long pos ) {
 BGL_RUNTIME_DEF long
 bgl_output_port_filepos( obj_t port ) {
    long (*sysseek)() = OUTPUT_PORT( port ).sysseek;
+   char *buf = &STRING_REF( BGL_OUTPUT_PORT_BUFFER( port ), 0 );
+   long bufsz = (char *)(OUTPUT_PORT( port ).ptr) - buf;
 
    if( sysseek ) {
       switch( OUTPUT_PORT( port ).stream_type ) {
 	 case BGL_STREAM_TYPE_FD: 
-	    return (long)sysseek( PORT_FD( port ), 0, SEEK_CUR );
+	    return bufsz + (long)sysseek( PORT_FD( port ), 0, SEEK_CUR );
 	 case BGL_STREAM_TYPE_FILE: 
-	    return (long)sysseek( PORT_FILE( port ), 0, SEEK_CUR );
+	    return bufsz + (long)sysseek( PORT_FILE( port ), 0, SEEK_CUR );
 	 case BGL_STREAM_TYPE_CHANNEL: 
-	    return (long)sysseek( PORT_CHANNEL( port ), 0, SEEK_CUR );
+	    return bufsz + (long)sysseek( PORT_CHANNEL( port ), 0, SEEK_CUR );
 	 default:
-	    return 0;
+	    return bufsz;
       }
    } else {
-      return 0;
+      return bufsz;
    }
 }
 

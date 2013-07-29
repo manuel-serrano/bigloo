@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sun Apr 21 08:38:03 2013 (serrano)                */
+;*    Last change :  Mon Jul 29 08:40:10 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1193,9 +1193,9 @@
 ;*    set-output-port-position! ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (set-output-port-position! port::output-port pos::long)
-   (if (not (c-set-output-port-position! port pos))
-       (error/errno $errno-io-port-error
-	    "set-output-port-position!" "Cannot seek port" port)))
+   (unless (c-set-output-port-position! port pos)
+      (error/errno $errno-io-port-error
+	 "set-output-port-position!" "Cannot seek port" port)))
    
 ;*---------------------------------------------------------------------*/
 ;*    output-port-position ...                                         */
