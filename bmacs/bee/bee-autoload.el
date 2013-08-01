@@ -16,7 +16,6 @@
 ;; bee-mode
 (autoload 'bee-debug                   "bee-mode" "Bee emacs mode." t)
 ;; bee-repl
-(autoload 'bee-repl-other-frame        "bee-repl" "Read-eval-print loop." t)
 (autoload 'bee-repl-send-region        "bee-repl" "Read-eval-print loop." t)
 (autoload 'bee-repl-send-buffer        "bee-repl" "Read-eval-print loop." t)
 (autoload 'bee-repl-send-define        "bee-repl" "Read-eval-print loop." t)

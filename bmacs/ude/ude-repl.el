@@ -27,7 +27,7 @@
   "The buffer interacting with `ude-repl-comint-process'.")
 (defvar ude-repl-comint-process nil
   "The comint process running a Bigloo interpreter.")
-(defcustom ude-repl-args '()
+(defcustom ude-repl-args "-i"
   "Additional arguments to the Bigloo interpreter."
   :group 'bee
   :type 'string)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Jul 24 14:45:36 2013 (serrano)                */
+;*    Last change :  Thu Aug  1 06:42:58 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -220,7 +220,7 @@
 	    (warning-notify/location ::obj ::bstring ::int)
 	    
 	    (get-trace-stack #!optional depth)
-	    (display-trace-stack ::obj ::int ::output-port)
+	    (display-trace-stack ::obj ::output-port #!optional (offset 1))
 	    (dump-trace-stack port depth)
 	    
 	    (find-runtime-type::bstring  ::obj)
@@ -578,7 +578,7 @@
 	 (display " -- " port)
 	 (display-circle obj port)
 	 (newline port)
-	 (display-trace-stack (or stack (get-trace-stack)) 1 port)
+	 (display-trace-stack (or stack (get-trace-stack)) port)
 	 (flush-output-port port))))
 
 ;*---------------------------------------------------------------------*/
@@ -620,7 +620,7 @@
 	    (display " -- " port)
 	    (display-circle obj port)
 	    (newline port)
-	    (display-trace-stack (or stack (get-trace-stack)) 1 port)
+	    (display-trace-stack (or stack (get-trace-stack)) port)
 	    ;; we are now done, we flush
 	    (flush-output-port port)))))
 
@@ -754,7 +754,7 @@
    ;; stack
    (with-access::&warning e (stack)
       (when stack
-	 (display-trace-stack stack 1 (current-error-port))))
+	 (display-trace-stack stack (current-error-port))))
    #f)
 
 ;*---------------------------------------------------------------------*/
@@ -812,7 +812,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    display-trace-stack ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (display-trace-stack stack offset port)
+(define (display-trace-stack stack port #!optional (offset 1))
    
    (define (alist? l)
       ;; it is crucial that this function never fails (otherwise, it falls
@@ -903,7 +903,7 @@
 ;*    dump-trace-stack ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (dump-trace-stack port depth)
-   (display-trace-stack (get-trace-stack depth) 1 port))
+   (display-trace-stack (get-trace-stack depth) port))
 	     
 ;*---------------------------------------------------------------------*/
 ;*    fix-tabulation! ...                                              */
