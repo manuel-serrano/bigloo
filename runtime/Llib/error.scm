@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Aug  1 06:42:58 2013 (serrano)                */
+;*    Last change :  Thu Aug  1 08:44:51 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -221,6 +221,7 @@
 	    
 	    (get-trace-stack #!optional depth)
 	    (display-trace-stack ::obj ::output-port #!optional (offset 1))
+	    (display-trace-stack-source ::obj ::output-port)
 	    (dump-trace-stack port depth)
 	    
 	    (find-runtime-type::bstring  ::obj)
@@ -595,21 +596,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    notify-&error/location-loc ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (notify-&error/location-loc err fname line loc string column)
+(define (notify-&error/location-loc err fname line loc string col)
    (with-access::&error err (proc msg obj stack)
       (let ((port (current-error-port)))
 	 ;; we flush error-port
 	 (flush-output-port port)
 	 (newline port)
-	 (let* ((space-string (if (>fx column 0)
-				  (make-string column #\space)
-				  ""))
+	 (let* ((space-string (if (>fx col 0) (make-string col #\space) ""))
 		(l (string-length string))
-		(n-column (if (>=fx column l)
-			      l
-			      column)))
+		(n-col (if (>=fx col l) l col)))
 	    ;; we ajust tabulation in space string.
-	    (fix-tabulation! n-column string space-string)
+	    (fix-tabulation! n-col string space-string)
 	    ;; we now print the error message
 	    (print-cursor fname line loc string space-string)
 	    ;; we display the error message
@@ -810,14 +807,17 @@
       (flush-output-port (current-error-port))))
 
 ;*---------------------------------------------------------------------*/
+;*    alist? ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (alist? l)
+   ;; it is crucial that this function never fails (otherwise, it falls
+   ;; into a infinite loop), hence it implement drastric type checks
+   (and (list? l) (every pair? l)))
+
+;*---------------------------------------------------------------------*/
 ;*    display-trace-stack ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (display-trace-stack stack port #!optional (offset 1))
-   
-   (define (alist? l)
-      ;; it is crucial that this function never fails (otherwise, it falls
-      ;; into a infinite loop), hence it implement drastric type checks
-      (and (list? l) (every pair? l)))
    
    (define (display-trace-stack-frame frame level num)
       (match-case frame
@@ -898,6 +898,36 @@
 	    (else
 	     (let ((ni (display-trace-stack-frame hds i hdn)))
 		(loop ni (cdr stack) (car stack) 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    display-trace-stack-source ...                                   */
+;*    -------------------------------------------------------------    */
+;*    Display an excerpt of the source file corresponding to the       */
+;*    top of the stack trace.                                          */
+;*---------------------------------------------------------------------*/
+(define (display-trace-stack-source stack port)
+
+   (define (display-source file lnum lpoint lstring)
+      (let* ((tabs (if (>fx lpoint 0) (make-string lpoint #\space) ""))
+	     (l (string-length lstring))
+	     (ncol (if (>=fx lpoint l) l lpoint)))
+	 ;; we ajust tabulation in space string.
+	 (fix-tabulation! ncol lstring tabs)
+	 ;; we now print the error message
+	 (print-cursor file lnum lpoint lstring tabs)))
+   
+   (let loop ((stack stack))
+      (when (pair? stack)
+	 (match-case (car stack)
+	    ((?name ?loc . (and (? alist?) ?rest))
+	     ;; got a localized stack frame
+	     (multiple-value-bind (file lnum lpoint lstring)
+		(location-line-num loc)
+		(if (string? lstring)
+		    (display-source file lnum lpoint lstring)
+		    (loop (cdr stack)))))
+	    (else
+	     (loop (cdr stack)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-trace-stack ...                                             */
