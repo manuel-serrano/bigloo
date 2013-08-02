@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Tue May 14 15:14:42 2013 (serrano)                */
+;*    Last change :  Fri Aug  2 07:47:39 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
@@ -280,64 +280,68 @@
 ;*    Interpreter macros                                               */
 ;*---------------------------------------------------------------------*/
    ;; bind-exit
-   (install-eval-expander 'bind-exit (lambda (x e)
-					(match-case x
-					   ((?- (?exit) . (and ?body (not ())))
-					    (evepairify
-					     `(bind-exit (,exit)
-						 ,(e (expand-progn body) e))
-					     x))
-					   (else
-		    			    (expand-error "bind-exit"
-							  "Illegal form"
-							  x)))))
+   (install-eval-expander 'bind-exit
+      (lambda (x e)
+	 (match-case x
+	    ((?- (?exit) . (and ?body (not ())))
+	     (evepairify
+		`(bind-exit (,exit)
+		    ,(e (expand-progn body) e))
+		x))
+	    (else
+	     (expand-error "bind-exit"
+		"Illegal form"
+		x)))))
    
    ;; unwind-protect
-   (install-eval-expander 'unwind-protect (lambda (x e)
-					     (match-case x
-						((?- ?body . ?exp)
-						 (evepairify
-						  `(unwind-protect
-						      ,(e body e)
-						      ,@(map (lambda (x)
-								(e x e))
-							     exp))
-						  x))
-						(else
-						 (expand-error "unwind-protect"
-							       "Illegal form"
-							       x)))))
+   (install-eval-expander 'unwind-protect
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?body . ?exp)
+	     (evepairify
+		`(unwind-protect
+		    ,(e body e)
+		    ,@(map (lambda (x)
+			      (e x e))
+			 exp))
+		x))
+	    (else
+	     (expand-error "unwind-protect" "Illegal form" x)))))
    
    ;; with-handler
-   (install-eval-expander 'with-handler (lambda (x e)
-					   (match-case x
-					      ((?- ?handler . ?body)
-					       (evepairify
-						`(with-handler
-						    ,(e handler e)
-						    ,@(map (lambda (x) (e x e))
-							   body))
-						x))
-					      (else
-					       (expand-error "with-handler"
-							     "Illegal form"
-							     x)))))
+   (install-eval-expander 'with-handler
+      (lambda (x e)
+	 (match-case x
+	    ((?- ?handler . ?body)
+	     (evepairify
+		`(with-handler
+		    ,(e handler e)
+		    ,@(map (lambda (x) (e x e))
+			 body))
+		x))
+	    (else
+	     (expand-error "with-handler" "Illegal form" x)))))
    
    ;; multiple-value-bind
    (install-eval-expander 'multiple-value-bind
-			  (lambda (x e)
-			     (match-case x
-				((?- ?vars ?call . ?exprs)
-				 (evepairify
-				  (e `(call-with-values
-					 (lambda () ,call)
-					 (lambda ,vars ,@exprs))
-				     e)
-				  x))
-				(else
-				 (expand-error "multiple-value-bind"
-					       "Illegal form"
-					       x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?- (and ??- (? (lambda (x) (every symbol? x))) ?vars)
+		?producer . ?exprs)
+	     (let* ((tmps (map gensym vars))
+		    (tmps2 (map gensym vars))
+		    (nx `(let (,@(map (lambda (v) `(,v #unspecified)) tmps))
+			    (call-with-values
+			       (lambda () ,producer)
+			       (lambda ,tmps2
+				  ,@(map (lambda (v t) `(set! ,v ,t))
+				       tmps tmps2)))
+			    (let (,@(map (lambda (v t) `(,v ,t))
+				       vars tmps))
+			       ,@exprs))))
+		(evepairify (e nx e) x)))
+	    (else
+	     (expand-error "multiple-value-bind" "Illegal form" x)))))
    ;; if
    (install-eval-expander 'if expand-if)
    
@@ -382,46 +386,46 @@
    
    ;; profile
    (install-eval-expander 'profile
-			  (lambda (x e)
-			     (match-case x
-				((?- (and (? symbol?) ?lbl) . ?exprs)
-				 (let* ((la  `(lambda () ,@exprs))
-					(lam (if (epair? x)
-						 (econs (car la)
-							(cdr la)
-							(cer x))
-						 la))
-					(val (let ((sym (gensym 'value)))
-						sym))
-					(aux `(let ((,lbl ,lam))
-						 (GC-profile-push
-						  ,(symbol->string lbl)
-						  ,lbl)
-						 (let ((,val (,lbl)))
-						    (GC-profile-pop)
-						    ,val)))
-					(res (if (epair? x)
-						 (econs (car aux)
-							(cdr aux)
-							(cer x))
-						 aux)))
-				    (e aux e)))
-				(else
-				 (expand-error "profile" "Illegal form" x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?- (and (? symbol?) ?lbl) . ?exprs)
+	     (let* ((la  `(lambda () ,@exprs))
+		    (lam (if (epair? x)
+			     (econs (car la)
+				(cdr la)
+				(cer x))
+			     la))
+		    (val (let ((sym (gensym 'value)))
+			    sym))
+		    (aux `(let ((,lbl ,lam))
+			     (GC-profile-push
+				,(symbol->string lbl)
+				,lbl)
+			     (let ((,val (,lbl)))
+				(GC-profile-pop)
+				,val)))
+		    (res (if (epair? x)
+			     (econs (car aux)
+				(cdr aux)
+				(cer x))
+			     aux)))
+		(e aux e)))
+	    (else
+	     (expand-error "profile" "Illegal form" x)))))
    
    ;; instantiate
    (install-eval-expander 'instantiate
-			  (lambda (x e)
-			     (match-case x
-				((?id . ?-)
-				 (expand-error id "Unknown class" x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?id . ?-)
+	     (expand-error id "Unknown class" x)))))
    
    ;; with-access
    (install-eval-expander 'with-access
-			  (lambda (x e)
-			     (match-case x
-				((?id . ?-)
-				 (expand-error id "Unknown class" x)))))
+      (lambda (x e)
+	 (match-case x
+	    ((?id . ?-)
+	     (expand-error id "Unknown class" x)))))
 
    ;; co-instantiate
    (install-eval-expander 'co-instantiate eval-co-instantiate-expander)
