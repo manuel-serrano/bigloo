@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Mon Jul 22 08:22:03 2013 (serrano)                */
+;*    Last change :  Fri Aug  2 08:38:44 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
@@ -217,7 +217,7 @@
 	  (let ((init (module-initialization-id (libinfo-module_e info))))
 	     (if (backend-pragma-support (the-backend))
 		 `(begin
-		     ((@ library-load-init __library) ',lib ',*lib-dir*)
+		     ((@ library-load-init __library) ',lib (bigloo-library-path))
 		     (pragma ,(format "~a( 0, ~s )"
 				      (bigloo-module-mangle
 				       (symbol->string init)

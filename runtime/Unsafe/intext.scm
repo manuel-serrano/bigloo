@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Fri Jul 26 09:28:51 2013 (serrano)                */
+;*    Last change :  Sat Aug  3 05:44:33 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -751,8 +751,15 @@
 	 (print-word (+fx 1 len))
 	 (print-item klass)
 	 (for i 0 len
-	    (let ((f (vector-ref-ur fields i)))
-	       (print-item ((class-field-accessor f) item))))
+	    (let* ((f (vector-ref-ur fields i))
+		   (iv (class-field-info f)))
+	       (cond
+		  ((and (pair? iv) (memq :serialize iv))
+		   =>
+		   (lambda (x)
+		      (print-item (when (pair? (cdr x)) (cadr x)))))
+		  (else
+		   (print-item ((class-field-accessor f) item))))))
 	 (print-item (class-hash klass))))
    
    ;; print-object-custom
@@ -974,8 +981,15 @@
 	     (let* ((fields (class-all-fields klass))
 		    (len (vector-length fields)))
 		(for i 0 len
-		   (let ((f (vector-ref-ur fields i)))
-		      (mark ((class-field-accessor f) obj)))))
+		   (let* ((f (vector-ref-ur fields i))
+			  (iv (class-field-info f)))
+		      (cond
+			 ((and (pair? iv) (memq :serialize iv))
+			  =>
+			  (lambda (x)
+			     (when (pair? (cdr x)) (mark (cadr x)))))
+			 (else
+			  (mark ((class-field-accessor f) obj)))))))
 	     (mark custom))))
 
    ;; mark-class
