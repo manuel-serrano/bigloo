@@ -1,0 +1,45 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/arch/android/doit.in                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Mon Sep 27 11:21:42 2010                          */
+#*    Last change :  Sat Aug  3 07:29:54 2013 (serrano)                */
+#*    Copyright   :  2010-13 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    The shell script to build the .apk for Hop on Android            */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Global user configuration                                        */
+#*---------------------------------------------------------------------*/
+BIGLOOVERSION=@BGL_RELEASE@
+
+REPOSITORY=/users/serrano/prgm/distrib
+
+BUILDBINDIR=/users/serrano/prgm/project/bigloo/bin
+
+#*---------------------------------------------------------------------*/
+#*    Android dev configuration                                        */
+#*---------------------------------------------------------------------*/
+source $HOME/house/conf.d/functions
+hostsource android
+
+#*---------------------------------------------------------------------*/
+#*    Build process                                                    */
+#*---------------------------------------------------------------------*/
+/bin/rm -rf bigloo$BIGLOOVERSION
+
+tar xvfz $REPOSITORY/bigloo$BIGLOOVERSION.tar.gz
+
+(cd bigloo$BIGLOOVERSION && \
+ ./configure --prefix=$ANDROIDBUILDDIR/local \
+             --build-bindir=$BUILDBINDIR \
+             --android-root=$ANDROIDROOT/${ANDROIDGIT} \
+             --android-sdk-root=$ANDROIDSDK \
+             --gcparallelmark=yes \
+             --cflags="-fdata-sections -ffunction-sections" \
+             --ldflags="-Wl,--gc-sections" \
+             --os-android && \
+ make && \
+ make install)

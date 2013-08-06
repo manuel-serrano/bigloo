@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Wed Jul 17 12:25:45 2013 (serrano)                */
+;*    Last change :  Tue Aug  6 15:29:01 2013 (serrano)                */
 ;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -273,11 +273,17 @@
    (define (rconv e)
       (rconv/loc e (get-location e loc)))
    
+   (define (uconv/loc+where e loc where)
+      (conv e locals globals #f where loc #f))
+   
    (define (uconv/loc e loc)
       (conv e locals globals #f where loc #f))
    
    (define (uconv e)
       (uconv/loc e (get-location e loc)))
+   
+   (define (uconv/where e where)
+      (uconv/loc+where e (get-location e loc) where))
    
    (define (uconv* es)
       (let loop ((es es))
@@ -456,7 +462,7 @@
 	  (loc loc)
 	  (name (car (untype-ident gv)))
 	  (mod (if (evmodule? globals) globals ($eval-module)))
-	  (e (uconv ge)) ))
+	  (e (uconv/where ge (if top? gv where))) ))
       ((bind-exit (?v) . ?body)
        (let ( (var (instantiate::ev_var (name v) (type #f))) )
 	  (instantiate::ev_bind-exit

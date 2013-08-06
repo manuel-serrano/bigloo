@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Aug  2 07:33:33 2013 (serrano)                */
+#*    Last change :  Sat Aug  3 07:29:59 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1282,7 +1282,7 @@ case $hostos in
      exit 1
     fi
   
-    # Generate the adhoc shell wrapper
+    # Generate the adhoc shell wrapper and tool
     hostsh=$pwd/arch/android/androidsh;
   
     cat $hostsh.in \
@@ -1290,6 +1290,11 @@ case $hostos in
             -e "s|@DROID_TMP@|$droidtmp|" \
             -e "s|@DROID_ADB@|$adb|" \
       > $hostsh && chmod u+x $hostsh || exit 1
+
+    hostsh=$pwd/arch/android/doit;
+    cat $doit.in \
+      | sed -e "s|@BGL_RELEASE@|$release|" \
+      > $doit && chmod u+x $doit || exit 1
 
     # Use droid-gcc if no CC specified
     if [ "$cc " = " " ]; then

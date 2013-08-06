@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Sat Jul 20 10:42:48 2013 (serrano)                */
+;*    Last change :  Tue Aug  6 15:28:42 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -181,7 +181,7 @@
 	   (let ((loc (get-location exp loc)))
 	      (evcompile-define-value var
 		 (evcompile val '()
-		    genv where
+		    genv (if toplevelp var where)
 		    (tailcall?)
 		    (get-location val loc)
 		    lkp #f)

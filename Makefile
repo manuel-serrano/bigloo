@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Oct 12 14:48:59 2012 (serrano)                */
-#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat Aug  3 07:12:11 2013 (serrano)                */
+#*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -363,8 +363,8 @@ fullbootstrap:
             echo "Error, No MSG provided using standard revision message"; \
             echo "use \"make fullbootstrap LOGMSG=a-message\""; \
 	    echo ""; \
-            echo "To bootstrap without creating a revision use \"$make fullbootstrap-sans-log\""; \
-            echo "To bootstrap with an editable log \"make fullbootstrap-edit-log\""; \
+            echo "To bootstrap without creating a revision use \"$(MAKE) fullbootstrap-sans-log\""; \
+            echo "To bootstrap with an editable log \"$(MAKE) fullbootstrap-edit-log\""; \
             exit -1; \
           fi
 	@ $(MAKE) fullbootstrap-sans-log

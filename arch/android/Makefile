@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Sat Oct  2 06:51:49 2010 (serrano)                */
-#*    Copyright   :  2010 Manuel Serrano                               */
+#*    Last change :  Sat Aug  3 07:27:31 2013 (serrano)                */
+#*    Copyright   :  2010-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles maemo specific files                   */
 #*=====================================================================*/
@@ -17,7 +17,8 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-POPULATION = README Makefile droid-wrapper.diff droid-gcc.in androidsh.in
+POPULATION = README Makefile droid-wrapper.diff droid-gcc.in androidsh.in \
+  doit.in
 
 
 #*---------------------------------------------------------------------*/

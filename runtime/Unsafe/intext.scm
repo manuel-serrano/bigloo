@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sat Aug  3 05:44:33 2013 (serrano)                */
+;*    Last change :  Sat Aug  3 15:22:45 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -99,7 +99,7 @@
 	    (register-opaque-serialization! ::procedure ::procedure)
 	    (get-opaque-serialization)
 	    
-	    (register-class-serialization! ::obj ::procedure ::procedure)
+	    (register-class-serialization! ::obj ::obj ::procedure)
 	    (get-class-serialization ::obj))
    
    (option  (set! *unsafe-type*   #t)
@@ -1261,11 +1261,13 @@
 ;*    register-class-serialization! ...                                */
 ;*---------------------------------------------------------------------*/
 (define (register-class-serialization! class serializer unserializer)
-   (generic-add-method! object-serializer
-			class
-			serializer
-			(string-append
-			   (symbol->string! (class-name class)) "-serializer"))
+   (when serializer
+      ;; optional serializer, can be #f for backward serialization compatibility
+      (generic-add-method! object-serializer
+	 class
+	 serializer
+	 (string-append
+	    (symbol->string! (class-name class)) "-serializer")))
    (let* ((hash (class-hash class))
 	  (cell (assq hash *class-serialization*)))
       (if (not (pair? cell))
