@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 15 07:24:23 2007                          */
-;*    Last change :  Thu Sep 15 15:24:11 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Thu Aug 22 08:05:51 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Hastable structure                                               */
 ;*=====================================================================*/
@@ -12,7 +12,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    %hashtable                                                       */
 ;*---------------------------------------------------------------------*/
-(define-struct %hashtable size max-bucket-len buckets eqtest hashn weak)
+(define-struct %hashtable size max-bucket-len buckets eqtest hashn weak
+   max-length bucket-expansion)
 
 ;*---------------------------------------------------------------------*/
 ;*    table-get-hashnumber ...                                         */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 11:48:02 1992                          */
-;*    Last change :  Tue Apr 17 07:46:02 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:28:31 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Structure expansion                                              */
 ;*    -------------------------------------------------------------    */
@@ -45,7 +45,8 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
 	    
-	    __progn)
+	    __progn
+	    __expand)
    
    (use     __type
 	    __evenv)
@@ -67,9 +68,9 @@
 				     ((? symbol?)
 				      s)
 				     (else
-				      (error "define-struct"
-					     "Illegal `define-struct' form"
-					     x))))
+				      (expand-error "define-struct"
+					 "Illegal `define-struct' form"
+					 x))))
 			       slots))
 	      (slots-val?  #f)
 	      (slots-val   (map (lambda (s)
@@ -80,9 +81,9 @@
 				      ((? symbol?)
 				       ''())
 				      (else
-				       (error "define-struct"
-					      "Illegal `define-struct' form"
-					      x))))
+				       (expand-error "define-struct"
+					  "Illegal `define-struct' form"
+					  x))))
 				slots)))
           (cons
            'begin
@@ -93,16 +94,16 @@
 		    ,(if slots-val?
 			 `(if (pair? init)
 			      (if (not (null? (cdr init)))
-				  (error ',(symbol-append 'make- name)
-					 "Too many argument provided"
-					 init)
+				  (expand-error ',(symbol-append 'make- name)
+				     "Too many argument provided"
+				     init)
 				  (make-struct ',name ,len (car init)))
 			      (,name ,@slots-val))
 			 `(if (pair? init)
 			      (if (not (null? (cdr init)))
-				  (error ',(symbol-append 'make- name)
-					 "Too many argument provided"
-					 init)
+				  (expand-error ',(symbol-append 'make- name)
+				     "Too many argument provided"
+				     init)
 				  (make-struct ',name ,len (car init)))
 			      (make-struct ',name ,len '()))))
 		x)
@@ -151,10 +152,10 @@
 				       (,(symbol-append name '- pr) s)
 				       (if (,(symbol-append name '?) s)
 					   (struct-ref s ,i)
-					   (error
-					    "struct-ref:not an instance of"
-					    ,(symbol->string name)
-					    s)))
+					   (expand-error
+					      "struct-ref:not an instance of"
+					      ,(symbol->string name)
+					      s)))
 				   x)
                                   e)
                                (cons
@@ -164,7 +165,7 @@
 					(,(symbol-append name '- pr '-set!) s v)
 					(if (,(symbol-append name '?) s)
 					    (struct-set! s ,i v)
-					    (error
+					    (expand-error
 					     "struct-set!:not an instance of"
 					     ,(symbol->string name)
 					     s)))
@@ -172,5 +173,5 @@
                                    e)
                                 res))))))))))))
       (else
-       (error "define-struct" "Illegal `define-struct' form" x))))
+       (expand-error "define-struct" "Illegal `define-struct' form" x))))
  

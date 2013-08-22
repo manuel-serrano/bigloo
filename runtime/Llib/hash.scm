@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Dec 21 08:44:36 2012 (serrano)                */
+;*    Last change :  Thu Aug 22 08:13:37 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -89,7 +89,9 @@
 			      (max-bucket-length 10)
 			      (eqtest #f)
 			      (hash #f)
-			      (weak 'none))
+			      (weak 'none)
+			      (max-length 16384)
+			      (bucket-expansion 1.2))
 	    (get-hashnumber::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
 	    (string-hash::long ::bstring #!optional (start 0) len)
@@ -123,71 +125,73 @@
 ;*    make-hashtable ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (make-hashtable . args)
-   (let ((size (if (pair? args)
-		   (cond
-		      ((and (fixnum? (car args)) (>=fx (car args) 1))
-		       (car args))
-		      ((eq? (car args) #unspecified)
-		       default-hashtable-bucket-length)
-		      (else
-		       (error "make-hashtable"
+   (let* ((size (if (pair? args)
+		    (let ((size (car args)))
+		       (set! args (cdr args))
+		       (cond
+			  ((and (fixnum? size) (>=fx size 1))
+			   size)
+			  ((eq? size #unspecified)
+			   default-hashtable-bucket-length)
+			  (else
+			   (error "make-hashtable"
 			      "Illegal default bucket length"
-			      args)))
-		   default-hashtable-bucket-length))
-	 (mblen (if (and (pair? args) (pair? (cdr args)))
-		    (cond
-		       ((and (fixnum? (cadr args)) (>=fx (cadr args) 1))
-			(cadr args))
-		       ((eq? (cadr args) #unspecified)
-			default-max-bucket-length)
-		       (else
-			(error "make-hashtable"
+			      size))))
+		    default-hashtable-bucket-length))
+	  (mblen (if (pair? args)
+		     (let ((mblen (car args)))
+			(set! args (cdr args))
+			(cond
+			   ((and (fixnum? mblen) (>=fx mblen 1))
+			    mblen)
+			   ((eq? mblen #unspecified)
+			    default-max-bucket-length)
+			   (else
+			    (error "make-hashtable"
 			       "Illegal max bucket length"
-			       args)))
-		    default-max-bucket-length))
-	 (eqtest (match-case args
-		    ((?- ?- ?eq . ?-)
-		     (cond
-			((and (procedure? eq) (correct-arity? eq 2))
-			 eq)
-			((eq? eq #unspecified)
-			 #f)
-			(else
-			 (error 'make-hashtable
+			       mblen))))
+		     default-max-bucket-length))
+	  (eqtest (if (pair? args)
+		      (let ((eqtest (car args)))
+			 (set! args (cdr args))
+			 (cond
+			    ((and (procedure? eqtest) (correct-arity? eqtest 2))
+			     eqtest)
+			    ((eq? eqtest #unspecified)
+			     #f)
+			    (else
+			     (error "make-hashtable"
 				"Illegal equality test"
-				eq))))
-		    (else
-		     #f)))
-	 (hashn (match-case args
-		   ((?- ?- ?- ?hn . ?-)
-		    (cond
-		       ((and (procedure? hn) (correct-arity? hn 1))
-			hn)
-		       ((eq? hn #unspecified)
-			#f)
-		       (else
-			(error 'make-hashtable
+				eqtest))))
+		      #f))
+	  (hashn (if (pair? args)
+		     (let ((hn (car args)))
+			(set! args (cdr args))
+			(cond
+			   ((and (procedure? hn) (correct-arity? hn 1))
+			    hn)
+			   ((eq? hn #unspecified)
+			    #f)
+			   (else
+			    (error "make-hashtable"
 			       "Illegal hashnumber function"
 			       hn))))
-		   (else
-		    #f)))
-	 (wk (bit-or (match-case args
-			((?- ?- ?- ?- ?wkk . ?-)
-			 (if (and (not (eq? wkk #unspecified))
-				  wkk)
-			     (weak-keys)
-			     (weak-none)))
-			(else
-			 (weak-none)))
-                     (match-case args
-			((?- ?- ?- ?- ?- ?wkd)
-			 (if (and (not (eq? wkd #unspecified))
-				  wkd)
-			     (weak-data)
-			     (weak-none)))
-			(else
-			 (weak-none))))))
-      (%hashtable 0 mblen (make-vector size '()) eqtest hashn wk)))
+		     #f))
+	  (wkk (if (pair? args)
+		   (let ((wkk (car args)))
+		      (set! args (cdr args))
+		      (if (and (not (eq? wkk #unspecified)) wkk)
+			  (weak-keys)
+			  (weak-none)))
+		   (weak-none)))
+	  (wkd (if (pair? args)
+		   (let ((wkd (car args)))
+		      (if (and (not (eq? wkd #unspecified)) wkd)
+			  (weak-data)
+			  (weak-none)))
+		   (weak-none)))
+	  (wk (bit-or wkk wkd)))
+      (%hashtable 0 mblen (make-vector size '()) eqtest hashn wk 16384 1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    create-hashtable ...                                             */
@@ -197,13 +201,17 @@
 			  (max-bucket-length 10)
 			  (eqtest #f)
 			  (hash #f)
-			  (weak 'none))
+			  (weak 'none)
+			  (max-length 16384)
+			  (bucket-expansion 1.2))
    (let ((weak (case weak
 		  ((keys) (weak-keys))
 		  ((data) (weak-data))
 		  ((none) (weak-none))
 		  (else (if weak (weak-data) (weak-none))))))
-      (%hashtable 0 max-bucket-length (make-vector size '()) eqtest hash weak)))
+      (%hashtable 0 max-bucket-length (make-vector size '()) eqtest hash weak
+	 max-length
+	 bucket-expansion)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable? ...                                                   */
@@ -379,13 +387,13 @@
 	     (let* ((l (vector-ref-ur buckets i))
                     (old-len (length l))
                     (newl (filter! (lambda (cell)
-                                    (fun (car cell) (cdr cell)))
-                                   l))
+				      (fun (car cell) (cdr cell)))
+			     l))
                     (new-len (length newl)))
 		(vector-set-ur! buckets i newl)
 		(loop (+fx i 1) (+fx delta (-fx new-len old-len))))
              (%hashtable-size-set! table
-                                   (+fx delta (%hashtable-size table)))))))
+		(+fx delta (%hashtable-size table)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-contains? ...                                          */
@@ -602,20 +610,33 @@
 ;*---------------------------------------------------------------------*/
 (define (plain-hashtable-expand! table)
    (let* ((old-bucks (%hashtable-buckets table))
-	  (old-bucks-len (vector-length old-bucks))
-	  (new-bucks-len (*fx 2 old-bucks-len))
-	  (new-bucks (make-vector new-bucks-len '())))
-      (%hashtable-buckets-set! table new-bucks)
-      (let loop ((i 0))
-	 (when (<fx i old-bucks-len)
-	    (for-each (lambda (cell)
-			 (let* ((key (car cell))
-				(n (table-get-hashnumber table key))
-				(h (remainderfx n new-bucks-len)))
-			    (vector-set-ur! new-bucks
-			       h (cons cell (vector-ref new-bucks h)))))
+	  (len (vector-length old-bucks))
+	  (new-len (*fx 2 len))
+	  (max-len (%hashtable-max-length table)))
+      ;; enlarge the max-bucket-len
+      (let ((nmax (* (%hashtable-max-bucket-len table)
+		     (%hashtable-bucket-expansion table))))
+	 (%hashtable-max-bucket-len-set! table
+	    (if (flonum? nmax) (flonum->fixnum nmax) nmax)))
+      ;; re-construct the buckets
+      (if (or (<fx max-len 0) (<=fx new-len max-len))
+	  (let ((new-bucks (make-vector new-len '())))
+	     (%hashtable-buckets-set! table new-bucks)
+	     (let loop ((i 0))
+		(when (<fx i len)
+		   (for-each (lambda (cell)
+				(let* ((key (car cell))
+				       (n (table-get-hashnumber table key))
+				       (h (remainderfx n new-len)))
+				   (vector-set-ur! new-bucks
+				      h (cons cell (vector-ref new-bucks h)))))
 		      (vector-ref-ur old-bucks i))
-	    (loop (+fx i 1))))))
+		   (loop (+fx i 1)))))
+	  (error "hashtable-put!"
+	     (format "Hashtable too large (new-len=~a/~a, size=~a)"
+		new-len max-len
+		(hashtable-size table))
+	     table))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-hashnumber ...                                               */

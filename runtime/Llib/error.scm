@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Aug  1 08:44:51 2013 (serrano)                */
+;*    Last change :  Wed Aug  7 17:48:31 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -886,18 +886,22 @@
    
    (when (pair? stack)
       (let loop ((i offset)
-		 (stack (cdr stack))
+		 (stk (cdr stack))
 		 (hds (car stack))
 		 (hdn 1))
 	 (cond
-	    ((null? stack)
+	    ((null? stk)
 	     (display-trace-stack-frame hds i hdn)
 	     (flush-output-port port))
-	    ((eq? (car stack) hds)
-	     (loop (+fx i 1) (cdr stack) hds (+fx hdn 1)))
+	    ((not (pair? stk))
+	     (fprintf (current-error-port)
+		"\n*** INTERNAL ERROR: corrupted stack -- ~s\n" stack)
+	     (flush-output-port port))
+	    ((eq? (car stk) hds)
+	     (loop (+fx i 1) (cdr stk) hds (+fx hdn 1)))
 	    (else
 	     (let ((ni (display-trace-stack-frame hds i hdn)))
-		(loop ni (cdr stack) (car stack) 1)))))))
+		(loop ni (cdr stk) (car stk) 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-trace-stack-source ...                                   */

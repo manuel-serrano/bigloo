@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sat Aug  3 15:22:45 2013 (serrano)                */
+;*    Last change :  Thu Aug 22 07:54:49 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -533,16 +533,16 @@
 ;*    @deffn obj->string@ ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (obj->string obj)
-   (let* ((table (make-hashtable #unspecified
-				 #unspecified
-				 (lambda (a b)
-				    (cond
-				       ((string? a)
-					(and (string? b) (string=? a b)))
-				       ((ucs2-string? a)
-					(equal? a b))
-				       (else
-					(eq? a b))))))
+   (let* ((table (create-hashtable
+		    :eqtest (lambda (a b)
+			       (cond
+				  ((string? a)
+				   (and (string? b) (string=? a b)))
+				  ((ucs2-string? a)
+				   (equal? a b))
+				  (else
+				   (eq? a b))))
+		    :max-length -1))
 	  (nbref (mark-obj! table obj)))
       (print-obj table nbref obj)))
 
@@ -954,16 +954,24 @@
 
    ;; mark-epair
    (define (mark-epair obj)
-      (put-mark! table obj #f)
-      (mark (car obj))
-      (mark (cdr obj))
-      (mark (cer obj)))
+      (let ((m (get-mark table obj)))
+	 (if (mark? m)
+	     (incr-mark! m)
+	     (begin
+		(put-mark! table obj #f)
+		(mark (car obj))
+		(mark (cdr obj))
+		(mark (cer obj))))))
    
    ;; mark-pair
    (define (mark-pair obj)
-      (put-mark! table obj #f)
-      (mark (car obj))
-      (mark (cdr obj)))
+      (let ((m (get-mark table obj)))
+	 (if (mark? m)
+	     (incr-mark! m)
+	     (begin
+		(put-mark! table obj #f)
+		(mark (car obj))
+		(mark (cdr obj))))))
    
    ;; mark-object
    (define (mark-object obj)

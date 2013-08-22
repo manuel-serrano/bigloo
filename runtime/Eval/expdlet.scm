@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Mon Nov 12 09:37:26 2012 (serrano)                */
-;*    Copyright   :  2004-12 Manuel Serrano                            */
+;*    Last change :  Tue Aug 13 07:26:22 2013 (serrano)                */
+;*    Copyright   :  2004-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -67,7 +67,7 @@
 			     ((?- ?-) #t)
 			     (else #f)))
 		       bindings))
-	  (error "let" "Illegal form" x)
+	  (expand-error "let" "Illegal form" x)
 	  (let* ((vars (map (lambda (x)
 			       (if (and (null? (cddr x))
 					(not (pair? (cadr x))))
@@ -103,7 +103,7 @@
 		       (cons (make-binding var (e val e) (car bindings)) nbindings)
 		       (cons var ebdgs)))
 		(else
-		 (error "let" "Illegal binding form" x))))))
+		 (expand-error "let" "Illegal binding form" x))))))
 
    (let* ((e (eval-begin-expander e))
 	  (res (match-case x
@@ -114,7 +114,7 @@
 		  ((?- (and (? list?) ?bindings) . (and ?body (not ())))
 		   (expand-let-simple bindings body x e))
 		  (else
-		   (error "let" "Illegal `let' form" x)))))
+		   (expand-error "let" "Illegal `let' form" x)))))
       (evepairify res x)))
 	   
 ;*---------------------------------------------------------------------*/
@@ -146,7 +146,7 @@
 				(cons (car bindings) ebdgs)))
 			 ((or (not (pair? (cdar bindings)))
 			      (not (null? (cddar bindings))))
-			  (error "let*" "Illegal bindings form" x))
+			  (expand-error "let*" "Illegal bindings form" x))
 			 (else
 			  (loop (cdr bindings)
 				(cons (make-binding (caar bindings)
@@ -159,7 +159,7 @@
 				      nbindings)
 				(cons (caar bindings) ebdgs))))))
 		  (else
-		   (error "let*" "Illegal form" x)))))
+		   (expand-error "let*" "Illegal form" x)))))
       (evepairify res x)))
    
 ;*---------------------------------------------------------------------*/
@@ -186,14 +186,14 @@
 				      nbindings)))
 			 ((or (not (pair? (cdar bindings)))
 			      (not (null? (cddar bindings))))
-			  (error "letrec" "Illegal binding form" x))
+			  (expand-error "letrec" "Illegal binding form" x))
 			 (else
 			  (loop (cdr bindings)
 				(cons (list (caar bindings)
 					    (e (expand-progn (cdar bindings)) e))
 				      nbindings))))))
 		  (else
-		   (error "letrec" "Illegal form" x)))))
+		   (expand-error "letrec" "Illegal form" x)))))
       (evepairify res x)))
 
 ;*---------------------------------------------------------------------*/
@@ -210,30 +210,35 @@
 				(unless (and (pair? b)
 					     (symbol? (car b))
 					     (pair? (cdr b)))
-				   (error "letrec*" "Illegal form" x)))
-			     bindings)
+				   (expand-error "letrec*" "Illegal form" x)))
+		      bindings)
 		   (if (every (lambda (b)
-				  (and (pair? (cadr b))
-				       (eq? (car (cadr b)) 'lambda)))
-			       bindings)
+				 (and (pair? (cadr b))
+				      (eq? (car (cadr b)) 'lambda)))
+			  bindings)
 		       ;; all bindings bind lambda form, we
 		       ;; can omit intermediate variables
-		       (e `(letrec ,(map (lambda (b)
-					    (list (car b)
+		       (e (evepairify
+			     `(letrec ,(map (lambda (b)
+					       (list (car b)
 						  (e (expand-progn (cdr b)) e)))
-					 bindings)
-			      ,@body) e)
-		       (e `(let ,(map (lambda (b)
-					 (list (car b) #unspecified))
-				      bindings)
-			      ,@(map (lambda (b)
-					`(set! ,(car b)
+					  bindings)
+				 ,@body)
+			     x)
+			  e)
+		       (e (evepairify
+			     `(let ,(map (lambda (b)
+					    (list (car b) #unspecified))
+				       bindings)
+				 ,@(map (lambda (b)
+					   `(set! ,(car b)
 					       ,(e (expand-progn (cdr b)) e)))
-				     bindings)
-			      ,@body)
+				      bindings)
+				 ,@body)
+			     x)
 			  e)))
 		  (else
-		   (error "letrec*" "Illegal form" x)))))
+		   (expand-error "letrec*" "Illegal form" x)))))
       (evepairify res x)))
 
 ;*---------------------------------------------------------------------*/
@@ -249,17 +254,17 @@
 				   ((null? bindings)
 				    '())
 				   ((not (pair? bindings))
-				    (error "expand-labels" "Illegal form" x))
+				    (expand-error "expand-labels" "Illegal form" x))
 				   (else
 				    (match-case (car bindings)
 				       ((?name ?args . ?lbody)
 					(cons `(,name (lambda ,args ,@lbody))
 					      (loop (cdr bindings))))
 				       (else
-					(error "expand-labels"
+					(expand-error "expand-labels"
 					       "Illegal form"
 					       x))))))))
 		     (e `(letrec ,new ,@body) e)))
 		 (else
-		  (error "expand-labels" "Illegal form" x)))))
+		  (expand-error "expand-labels" "Illegal form" x)))))
       (evepairify res x)))

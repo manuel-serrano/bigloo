@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Tue Apr 17 07:48:00 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:28:46 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -39,7 +39,8 @@
 	    __r4_output_6_10_3
 	    
 	    __progn
-	    __param)
+	    __param
+	    __expand)
    
    (use     __type
 	    __evenv)
@@ -64,7 +65,7 @@
 		 e)
 	      #unspecified))
 	 (else
-	  (error "when-trace" "Illegal form" x)))))
+	  (expand-error "when-trace" "Illegal form" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-with-trace ...                                              */
@@ -84,7 +85,7 @@
 		 (e nx e))
 	      (e `(begin ,@arg*) e)))
 	 (else
-	  (error "with-trace" "Illegal form" x)))))
+	  (expand-error "with-trace" "Illegal form" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-expand-trace-item ...                                       */

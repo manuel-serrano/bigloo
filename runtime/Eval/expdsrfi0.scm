@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Sun Nov 18 14:36:07 2012 (serrano)                */
-;*    Copyright   :  2001-12 Manuel Serrano                            */
+;*    Last change :  Tue Aug 13 07:27:56 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -41,7 +41,8 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
 	    
-	    __progn)
+	    __progn
+	    __expand)
    
    (use     __type
 	    __evenv
@@ -201,7 +202,7 @@
 	  (((kwote else) . ?body)
 	   (if (null? else)
 	       (e (evepairify `(begin ,@body) x) e)
-	       (error "cond-expand" "Illegal form" x)))
+	       (expand-error "cond-expand" "Illegal form" x)))
 	  ((((kwote and)) . ?body)
 	   (e (evepairify `(begin ,@body) x) e))
 	  ((((kwote and) ?req1) . ?body)
@@ -247,9 +248,9 @@
 			  x)
 	      e))
 	  (else
-	   (error "cond-expand" "Illegal form" x))))
+	   (expand-error "cond-expand" "Illegal form" x))))
       (else
-       (error "cond-expand" "Illegal form" x))))
+       (expand-error "cond-expand" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-cond-expand-and ...                                       */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr  1 06:28:06 2000                          */
-;*    Last change :  Sat Oct 13 07:34:38 2012 (serrano)                */
-;*    Copyright   :  2001-12 Manuel Serrano                            */
+;*    Last change :  Tue Aug 13 07:29:47 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    args-parse expansion.                                            */
 ;*    -------------------------------------------------------------    */
@@ -48,7 +48,8 @@
 	    
 	    __r5_control_features_6_4
 	    
-	    __progn)
+	    __progn
+	    __expand)
    
    (use     __type
 	    __evenv
@@ -61,13 +62,13 @@
 ;*    expand-time-error ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (expand-time-error x)
-   (error 'args-parse "Illegal syntax" x))
+   (expand-error "args-parse" "Illegal syntax" x))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-time-error-clause ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (expand-time-error-clause clause msg)
-   (error 'args-parse msg clause))
+   (expand-error "args-parse" msg clause))
  
 ;*---------------------------------------------------------------------*/
 ;*    expand-args-parse ...                                            */
@@ -408,9 +409,7 @@
 		   (cons* `(,(string->symbol id)
 			    (if (pair? ,na)
 				(car ,na)
-				(error ',(car args)
-				       "missing argument"
-				       ',clause)))
+				(error ',(car args) "missing argument" ',clause)))
 			  `(,na (cdr ,na))
 			  (loop (cdr args))))
 		'()))))

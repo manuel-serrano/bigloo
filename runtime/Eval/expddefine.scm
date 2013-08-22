@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Sat Apr 20 07:44:05 2013 (serrano)                */
+;*    Last change :  Tue Aug 13 07:24:16 2013 (serrano)                */
 ;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -66,7 +66,7 @@
 	 ((symbol? args)
 	  args)
 	 ((not (pair? args))
-	  (error "expand" "Illegal argument" args))
+	  (expand-error "expand" "Illegal argument" args))
 	 ((not (and (pair? (car args))
 		    (pair? (cdr (car args)))
 		    (null? (cddr (car args)))))
@@ -85,7 +85,7 @@
 		     #unspecified)
 		    ((begin . ?rest)
 		     (if (not (list? rest))
-			 (error "begin" "Illegal `begin' form" x)
+			 (expand-error "begin" "Illegal `begin' form" x)
 			 (lambda-defines (map (lambda (x) (olde x e)) rest))))
 		    (else
 		     (let ((nx (olde x e)))
@@ -94,7 +94,7 @@
 			    #unspecified)
 			   ((begin . ?rest)
 			    (if (not (list? rest))
-				(error "begin" "Illegal `begin' form" x)
+				(expand-error "begin" "Illegal `begin' form" x)
 				(lambda-defines rest)))
 			   (else
 			    nx)))))))
@@ -112,7 +112,7 @@
 		     `(lambda ,eargs
 			 ,(%with-lexical (args->list eargs) ebody ne #f))))
 		 (else
-		  (error "lambda" "Illegal form" x)))))
+		  (expand-error "lambda" "Illegal form" x)))))
       (evepairify res x)))
 
 ;*---------------------------------------------------------------------*/
@@ -136,7 +136,7 @@
 ;*---------------------------------------------------------------------*/
 (define (expand-eval-external-define x e)
    (let ((e (eval-begin-expander e)))
-      (let* ((err (lambda () (error "define" "Illegal form" x)))
+      (let* ((err (lambda () (expand-error "define" "Illegal form" x)))
 	     (res (if (and (pair? x) (pair? (cdr x)) (pair? (cddr x)))
 		      (let ((type (cadr x)))
 			 (cond
@@ -174,7 +174,7 @@
 	  (evepairify res x)))
       ;; 3- an illegal define form
       (else
-       (error "define" "Illegal form" x))))
+       (expand-error "define" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lambda-defines ...                                               */
@@ -216,7 +216,7 @@
 			      ,(expand-progn body)) e))))
 	  (evepairify res x)))
       (else
-       (error "define-inline" "Illegal form" x))))
+       (expand-error "define-inline" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    map+ ...                                                         */
@@ -295,9 +295,9 @@
 		      #f
 		      ,(symbol->string id)))
 		 e)
-	      (error fun "Illegal formal arguments for generic function" x))))
+	      (expand-error fun "Illegal formal arguments for generic function" x))))
       (else
-       (error "define-generic" "Illegal form" x))))
+       (expand-error "define-generic" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-eval-define-method ...                                    */
@@ -345,6 +345,6 @@
 				    ,@body) e)
 			    ',f0)))
 		 (evepairify res x))
-	      (error "define-method" "Illegal form" x))))
+	      (expand-error "define-method" "Illegal form" x))))
       (else
-       (error "define-method" "Illegal form" x))))
+       (expand-error "define-method" "Illegal form" x))))

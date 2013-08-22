@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Mon Jun 24 14:11:36 2013 (serrano)                */
+;*    Last change :  Tue Aug 13 07:17:39 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -61,7 +61,8 @@
 	    (expand! ::obj)
 	    (expand-once ::obj)
 	    (%lexical-stack::pair-nil)
-	    (%with-lexical ::pair-nil ::obj ::procedure ::obj)))
+	    (%with-lexical ::pair-nil ::obj ::procedure ::obj)
+	    (expand-error proc msg obj)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand ...                                                       */
@@ -186,3 +187,14 @@
 	 (e form e)
 	 ($lexical-stack-set! old-lexical-stack))))
     
+;*---------------------------------------------------------------------*/
+;*    expand-error ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (expand-error proc msg obj)
+   (if (epair? obj)
+       (match-case (cer obj)
+	  ((at ?fname ?loc)
+	   (error/location proc msg obj fname loc))
+	  (else
+	   (error proc msg obj)))
+       (error proc msg obj)))

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Tue Apr 17 07:45:37 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:23:29 2013 (serrano)                */
 ;*                                                                     */
 ;*    On macro-expanse ce satane-case                                  */
 ;*---------------------------------------------------------------------*/
@@ -39,7 +39,8 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
 	    
-	    __progn)
+	    __progn
+	    __expand)
    
    (use     __type
 	    __evenv)
@@ -54,7 +55,7 @@
       ((?- ?value . ?clauses)
        (generic-case x value clauses e))
       (else
-       (error "case" "Illegal form" x))))
+       (expand-error "case" "Illegal form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    generic-case ...                                                 */
@@ -70,22 +71,26 @@
 		      #unspecified)
 		     ((else . ?body)
 		      (if (or (not (null? (cdr clauses))) (null? body))
-			  (error "case" "Illegal `case' form" x)
+			  (expand-error "case" "Illegal `case' form" x)
 			  (expand-progn body)))
 		     (((and ?datums (?- . (?- ???-))) . ?body)
 		      (if (null? body)
-			  (error "case" "Illegal `case' form" x)
-			  `(if (memv case-value ',datums)
-			       ,(expand-progn body)
-			       ,(loop (cdr clauses)))))
+			  (expand-error "case" "Illegal `case' form" x)
+			  (evepairify
+			     `(if (memv case-value ',datums)
+				  ,(expand-progn body)
+				  ,(loop (cdr clauses)))
+			     (car clauses))))
 		     (((?datums) . ?body)
 		      (if (null? body)
-			  (error "case" "Illegal `case' form" x)
-			  `(if (eqv? case-value ',datums)
-			       ,(expand-progn body)
-			       ,(loop (cdr clauses)))))
+			  (expand-error "case" "Illegal `case' form" x)
+			  (evepairify
+			     `(if (eqv? case-value ',datums)
+				  ,(expand-progn body)
+				  ,(loop (cdr clauses)))
+			     (car clauses))))
 		     (else
-		      (error "case" "Illegal `case' form" x))))))
+		      (expand-error "case" "Illegal `case' form" x))))))
       e))
 
 

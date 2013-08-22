@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Tue Mar 20 08:18:38 2012 (serrano)                */
-;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Aug 22 07:14:05 2013 (serrano)                */
+;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
 ;*=====================================================================*/

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:12:21 1993                          */
-;*    Last change :  Tue Apr 17 07:45:17 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:20:59 2013 (serrano)                */
 ;*                                                                     */
 ;*    Les expanseurs des formes booleenes.                             */
 ;*---------------------------------------------------------------------*/
@@ -39,7 +39,8 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
 	    
-	    __progn)
+	    __progn
+	    __expand)
 
    (use     __type
 	    __evenv)
@@ -77,12 +78,12 @@
 	 ((null? clause1)
 	  '#f)
 	 ((or (not (pair? clause1)) (equal? clause1 '(else)))
-	  (error "cond-clause" "Illegal form" exp))
+	  (expand-error "cond" "Illegal form" exp))
 	 ((null? (cdr clause1))
 	  (let ((res `(or ,(car clause1) (cond ,@clause2+))))
 	     (if (epair? (car clause1))
 		 (econs (car res) (cdr res) (cer (car clause1)))
-		 (evepairify res exp))))
+		 (evepairify-deep res exp))))
 	 ((and (eq? (cadr clause1) '=>) (=fx (length clause1) 3))
 	  (let* ((aux (get-new-test-name "cd"))
 		 (test (get-new-test-name "test"))
@@ -93,16 +94,20 @@
 			      (cond ,@clause2+)))))
 	     (if (epair? (car clause1))
 		 (econs (car res) (cdr res) (cer (car clause1)))
-		 (evepairify res exp))))
+		 (evepairify-deep res exp))))
 	 ((eq? (car clause1) 'else)
 	  (when (and (pair? clause2+) (> (bigloo-warning) 0))
-	     (warning 'cond "ignored COND clauses -- " clause2+))
+	     (warning "cond" "ignored COND clauses -- " clause2+))
 	  (expand-progn (cdr clause1)))
 	 (else
 	  (let* ((ncond (let ((nc `(cond ,@clause2+)))
 			   (cond
 			      ((and (pair? clause2+) (epair? (car clause2+)))
 			       (econs (car nc) (cdr nc) (cer (car clause2+))))
+			      ((epair? (car clauses))
+			       (econs (car nc) (cdr nc) (cer (car clauses))))
+			      ((epair? clauses)
+			       (econs (car nc) (cdr nc) (cer clauses)))
 			      (else
 			       nc))))
 		 (loc (when (epair? exp) (cer exp)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:53:05 1994                          */
-;*    Last change :  Tue Apr 17 07:47:23 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:27:19 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    L'expansion des formes `',@                                      */
 ;*=====================================================================*/
@@ -37,7 +37,9 @@
 	    __r4_control_features_6_9
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1
-	    __r4_output_6_10_3)
+	    __r4_output_6_10_3
+	    
+	    __expand)
    
    (use     __type
 	    __evenv)
@@ -71,7 +73,7 @@
 	  (else
 	   x)))
       (else
-       (error "quote" "Illegal `quote' form" x))))
+       (expand-error "quote" "Illegal `quote' form" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    quasiquotation ...                                               */
@@ -79,7 +81,7 @@
 (define (quasiquotation d exp)
     (if (and (pair? exp) (pair? (cdr exp)) (null? (cddr exp)))
 	(template d (cadr exp))
-	(error "quasiquotation" "illegal `quasiquote' form" exp)))
+	(expand-error "quasiquotation" "illegal `quasiquote' form" exp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    template ...                                                     */
@@ -92,7 +94,7 @@
 	      (if (eq? d 1)
 		  (template (-fx d 1) (cadr exp))
 		  (list 'list ''unquote (template (-fx d 1) (cadr exp))))
-	      (error "unquote" "Illegal `unquote' form" exp)))
+	      (expand-error "unquote" "Illegal `unquote' form" exp)))
 	 ((vector? exp)
 	  (vector-template d exp))
 	 ((pair? exp)
@@ -166,7 +168,8 @@
 		(template (-fx d 1) (cadr exp))
 		(list 'list (list 'list ''unquote-splicing
 				  (template (-fx d 1) (cadr exp)))))
-	    (error "unquote-splicing" "Illegal `unquote-splicing' form" exp))
+	    (expand-error "unquote-splicing"
+	       "Illegal `unquote-splicing' form" exp))
 	(template d exp)))
 
 

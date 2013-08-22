@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 10:13:23 1993                          */
-;*    Last change :  Tue Aug 14 09:40:59 2007 (serrano)                */
-;*    Copyright   :  1993-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Aug 22 07:55:27 2013 (serrano)                */
+;*    Copyright   :  1993-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The system's engine (some kind of dispatcher between the linker, */
 ;*    the interpreter and the compiler).                               */

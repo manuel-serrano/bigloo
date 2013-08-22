@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 28 16:06:31 1992                          */
-;*    Last change :  Tue Apr 17 07:45:46 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:29:31 2013 (serrano)                */
 ;*                                                                     */
 ;*    La macro `DO'                                                    */
 ;*---------------------------------------------------------------------*/
@@ -37,7 +37,10 @@
 	    __r4_control_features_6_9
 	    __r4_vectors_6_8
 	    __r4_ports_6_10_1
-	    __r4_output_6_10_3)
+	    __r4_output_6_10_3
+
+	    __expand
+	    __progn)
    
    (use     __type
 	    __evenv)
@@ -64,7 +67,7 @@
  	      (loop (gen-doloop-name))
 	      (test (if (pair? end)
 			(car end)
-			(error "do" "Illegal form" exp)))
+			(expand-error "do" "Illegal form" exp)))
 	      (ending (if (null? (cdr end))
 			  (list #f)
 			  (cdr end)))
@@ -81,14 +84,15 @@
 		     (set! vars  (cons var vars))
 		     (set! steps (cons step steps))
 		     (set! inits (cons init inits)))
-		  (error 'do "Illegal form:" var-init-step)))
+		  (expand-error "do" "Illegal form:" var-init-step)))
 	   (reverse let-bindings))
-	  (e `(letrec ((,loop (lambda ,vars
-				 (if ,test
-				     (begin ,@ending)
-				     (begin ,@body
-					    (,loop ,@steps))))))
-		 (,loop ,@inits))
+	  (e (evepairify-deep
+		`(letrec ((,loop (lambda ,vars
+				    (if ,test
+					(begin ,@ending)
+					(begin ,@body (,loop ,@steps))))))
+		    (,loop ,@inits))
+		exp)
 	     e)))
       (else
-       (error 'do "Illegal form" 'exp))))
+       (expand-error "do" "Illegal form" exp))))

@@ -19,7 +19,7 @@ Bigloo offers hash tables with support for weak pointers. Here are described
 functions which define and use them.
 
 @deffn {bigloo procedure} make-hashtable [bucket-len] [max-bucket-len] [eqtest] [hash] [weak-keys] [weak-data]
-@deffnx {bigloo procedure} create-hashtable [:size] [:max-bucket-len] [:eqtest] [:hash] [:weak]
+@deffnx {bigloo procedure} create-hashtable [:size] [:max-bucket-len] [:eqtest] [:hash] [:weak] [:max-length] [:bucket-expansion]
 Defines an hash table for which the number of buckets is @var{size}.
 The variable @var{max-bucket-len} specify when the table should be
 resized. If provided, these two values have to be exact integers greater or
@@ -38,7 +38,7 @@ hash tables rely on @code{hashtable-equal?}, which is defined as:
             (string=? obj1 obj2))))
 @end smalllisp
 
-The argument @var{hashn} specifies an
+The argument @var{hash} specifies an
 hashing function. It defaults to @var{get-hashnumber}. 
 The arguments @var{weak-keys} and @var{weak-data} specify respectively whether
 the hash table should use weak pointers to store the keys and/or the data.
@@ -47,6 +47,20 @@ Each optional
 arguments @var{size}, @var{max-bucket-len}, @var{eqtest}, 
 @var{hash}, @var{weak-keys}, and @var{weak-data} can be bound to the Bigloo 
 value @code{#unspecified} which forces its default. 
+
+The argument @var{max-length} specifies a maximum length (in number of
+buckets) for this hashtable. It defaults to @code{16384}. If during the
+execution, the hashtable tries to expand itself more than
+@var{max-length}, an exception is raised. This feature helps debugging
+incorrect hashtable uses because excessive expansion is generally the
+signs of an incorrect behavior. Excessive expansions, cause the
+garbage collector to crash at some point. This debugging feature can
+be disable by specifies a negative max length, in which case, no check
+is performed at runtime.
+
+The argument @var{bucket-expansion} controls how @var{max-bucket-len} is
+expanded each time the table grows. This is a floating point number that
+is a multiplicative coefficient. It defaults to @code{1.2}.
 
 The function @code{create-hashtable} is equivalent to @code{make-hashtable}
 but it uses a keyword interface. The keyword argument @code{weak} can either

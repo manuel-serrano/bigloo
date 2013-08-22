@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Tue Apr 17 07:45:54 2012 (serrano)                */
+;*    Last change :  Tue Aug 13 07:21:16 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Try form expansion                                               */
 ;*=====================================================================*/
@@ -39,7 +39,9 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
 	    
-	    __progn)
+	    __progn
+	    __expand)
+   
    (use     __type
 	    __evenv)
    
@@ -54,4 +56,4 @@
        (let ((n (e `(&try (lambda () ,body) ,handler) e)))
 	  (evepairify n x)))
       (else
-       (error 'try "Illegal form" x))))
+       (expand-error "try" "Illegal form" x))))
