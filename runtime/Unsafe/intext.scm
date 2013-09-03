@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Aug 22 07:54:49 2013 (serrano)                */
+;*    Last change :  Tue Sep  3 14:35:19 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -150,11 +150,21 @@
    ;; *pointer*
    (define *pointer* 0)
 
+   ;; str-len
+   (define *strlen* (string-length s))
+   
    ;; *definitions*
    (define *definitions* '#())
    
    ;; *defining*
    (define *defining* #f)
+
+   ;; string-guard!
+   (define (string-guard! sz)
+      (when (>fx (+fx sz *pointer*) *strlen*)
+	 (error "string->obj"
+	    (format "Corrupted string at index ~a/~a" *pointer* *strlen*)
+	    s)))
    
    ;; read-integer
    (define (read-integer s)
@@ -181,6 +191,7 @@
    ;; read-word
    (define (read-word::long s sz::int)
       (let ((acc::long 0))
+	 (string-guard! sz)
 	 (for i 0 sz
 	      (let ((d (string-ref s *pointer*)))
 		 (set! acc (+fx (*fx 256 acc) (char->integer d)))
@@ -190,6 +201,7 @@
    ;; read-long-word
    (define (read-long-word::long s sz::int)
       (let ((acc::llong 0))
+	 (string-guard! sz)
 	 (for i 0 sz
 	      (let ((d (string-ref s *pointer*)))
 		 (set! acc (+llong (*llong #l256 acc)
@@ -199,6 +211,7 @@
    
    ;; read-size
    (define (read-size::long s)
+      (string-guard! 1)
       (let ((sz (char->integer (string-ref s *pointer*))))
 	 (set! *pointer* (+fx *pointer* 1))
 	 (read-word s sz)))
@@ -480,6 +493,7 @@
 
    ;; read-item
    (define (read-item)
+      (string-guard! 1)
       (let ((d (string-ref s *pointer*)))
 	 (set! *pointer* (+fx *pointer* 1))
 	 (case d
@@ -522,6 +536,7 @@
 	    ((#\o) (read-special s *string->opaque*))
 	    (else (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
+   (string-guard! 1)
    (let ((d (string-ref s *pointer*)))
       (when (char=? d #\c)
 	 (set! *pointer* (+fx *pointer* 1))

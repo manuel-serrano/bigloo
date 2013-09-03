@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Wed Nov 16 11:08:46 2011 (serrano)                */
-;*    Copyright   :  2001-11 Manuel Serrano                            */
+;*    Last change :  Thu Aug 29 09:40:45 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A BibTeX parser, produces a list of UTF-8 entries.               */
 ;*=====================================================================*/
@@ -323,6 +323,8 @@
 	bibtex-entry-value-block*)
        ((COMMA)
 	(list ","))
+       ((SHARP)
+	(list "#"))
        ((IDENT)
 	(list (cadr IDENT)))
        ((BLANK)
