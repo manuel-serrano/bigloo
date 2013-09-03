@@ -42,7 +42,10 @@
 	   (export phidget-event-stepperposition-new "bgl_phidget_event_stepperposition_new")
 	   (export phidget-event-steppercurrent-new "bgl_phidget_event_steppercurrent_new")
            (export phidget-event-motorcontrolvelocity-new "bgl_phidget_event_motorcontrolvelocity_new")
-	   (export phidget-event-motorcontrolcurrent-new "bgl_phidget_event_motorcontrolcurrent_new"))
+	   (export phidget-event-motorcontrolcurrent-new "bgl_phidget_event_motorcontrolcurrent_new")
+           (export phidget-event-encoderinput-new "bgl_phidget_event_encoderinput_new")
+           (export phidget-event-encoderposition-new "bgl_phidget_event_encoderposition_new")
+           (export phidget-event-encoderindex-new "bgl_phidget_event_encoderindex_new"))
 
    (export (%phidget-thread-init!)
 	   (%phidget-lock!)
@@ -71,7 +74,11 @@
 	   (phidget-event-stepperposition-new::obj ::obj ::int ::llong)
 	   (phidget-event-steppercurrent-new::obj ::obj ::int ::double)
            (phidget-event-motorcontrolvelocity-new::obj ::obj ::int ::double)
-	   (phidget-event-motorcontrolcurrent-new::obj ::obj ::int ::double)))
+	   (phidget-event-motorcontrolcurrent-new::obj ::obj ::int ::double)
+
+           (phidget-event-encoderinput-new::obj ::obj ::int ::bool)
+           (phidget-event-encoderposition-new::obj ::obj ::int ::int ::int)
+           (phidget-event-encoderindex-new::obj ::obj ::int ::int)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *phidget-mutex* ...                                              */
@@ -300,3 +307,31 @@
       (target target)
       (index index)
       (current current)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-encoderinput-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-encoderinput-new target index state)
+   (instantiate::phidget-encoderinput-event
+      (target target)
+      (index index)
+      (state state)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-encoderposition-new ...                            */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-encoderposition-new target index time position)
+   (instantiate::phidget-encoderposition-event
+      (target target)
+      (index index)
+      (time time)
+      (position position)))
+
+;*---------------------------------------------------------------------*/
+;*    phidget-event-encoderindex-new ...                               */
+;*---------------------------------------------------------------------*/
+(define (phidget-event-encoderindex-new target index position)
+   (instantiate::phidget-encoderindex-event
+      (target target)
+      (index index)
+      (position position)))

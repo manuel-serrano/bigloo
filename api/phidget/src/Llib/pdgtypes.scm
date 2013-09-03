@@ -90,6 +90,19 @@
 	       (index::int read-only)
 	       (current::double read-only))
 
+            (class phidget-encoderinput-event::%phidget-event
+               (index::int read-only)
+               (state::bool read-only))
+
+            (class phidget-encoderposition-event::%phidget-event
+               (index::int read-only)
+               (time::int read-only)
+               (position::int read-only))
+
+            (class phidget-encoderindex-event::%phidget-event
+               (index::int read-only)
+               (position::int read-only))
+
 	    (generic %phidget-init ::%phidget)))
 
 ;*---------------------------------------------------------------------*/
