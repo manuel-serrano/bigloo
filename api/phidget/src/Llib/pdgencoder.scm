@@ -31,9 +31,11 @@
 	       (encoder-count::int
 		  read-only
 		  (get (lambda (o)
-			  (with-access::phidget o ($builtin)
-			     ($pdg-phidget-encoder-get-encoder-count
-				($pdg-phidget->encoder $builtin) o))))))
+                          (with-handler
+                             (lambda (_) 0)
+                             (with-access::phidget o ($builtin)
+                                ($pdg-phidget-encoder-get-encoder-count
+                                   ($pdg-phidget->encoder $builtin) o)))))))
 
             (phidget-encoder-input-count::int ::phidget-encoder)
             (phidget-encoder-input-enabled?::bool ::phidget-encoder ::int)
