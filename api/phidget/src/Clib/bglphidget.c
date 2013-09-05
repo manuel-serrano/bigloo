@@ -1692,7 +1692,7 @@ bgl_phidget_encoder_get_input_enabled( CPhidgetEncoderHandle phid, int i, obj_t 
 /*---------------------------------------------------------------------*/
 int
 bgl_phidget_encoder_get_position( CPhidgetEncoderHandle phid, int i, obj_t o ) {
-   FIELD_INDEXED_GET( phid, InputState, CPhidgetEncoder, int, i, o );
+   FIELD_INDEXED_GET( phid, Position, CPhidgetEncoder, int, i, o );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1701,7 +1701,7 @@ bgl_phidget_encoder_get_position( CPhidgetEncoderHandle phid, int i, obj_t o ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_phidget_encoder_get_index_position( CPhidgetEncoderHandle phid, int i, obj_t o ) {
-   FIELD_INDEXED_GET( phid, InputState, CPhidgetEncoder, int, i, o );
+   FIELD_INDEXED_GET( phid, IndexPosition, CPhidgetEncoder, int, i, o );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1710,7 +1710,7 @@ bgl_phidget_encoder_get_index_position( CPhidgetEncoderHandle phid, int i, obj_t
 /*---------------------------------------------------------------------*/
 int
 bgl_phidget_encoder_get_enabled( CPhidgetEncoderHandle phid, int i, obj_t o ) {
-   FIELD_INDEXED_GET( phid, InputState, CPhidgetEncoder, int, i, o );
+   FIELD_INDEXED_GET( phid, Enabled, CPhidgetEncoder, int, i, o );
 }
 
 
