@@ -22,7 +22,16 @@ public class output_pipe_port extends output_buffered_port {
    Thread thread;
    
    static boolean pipe_name_p( final byte[] name ) {
-      return ( (name[ 0 ] == (byte)'|') && (name[ 1 ] == (byte)' ') );
+      
+      return ( name.length > 2 
+               && (name[ 0 ] == (byte)'|') 
+               && (name[ 1 ] == (byte)' ') )
+	  || (name.length > 5 
+	      && name[ 0 ] == (byte)'p'
+	      && name[ 1 ] == (byte)'i'
+	      && name[ 2 ] == (byte)'p'
+	      && name[ 3 ] == (byte)'e'
+	      && name[ 4 ] == (byte)':');
    }
 
    static int skip_whitespace( byte[] s, int i ) {
@@ -34,7 +43,9 @@ public class output_pipe_port extends output_buffered_port {
    static String[] tokenizer( byte[] s ) {
       int len = s.length;
       Vector v = new Vector();
-      int i = skip_whitespace( s, 1 );
+      // if | then offset = 2, otherwise, if pipe: offset = 5
+      int offset =  (s[0] == (byte)'|') ? 2 : 5;
+      int i = skip_whitespace( s, offset );
 
       while( i < len ) {
 	 int j = i;
@@ -66,7 +77,10 @@ public class output_pipe_port extends output_buffered_port {
 	 String[] scmd = new String[ 3 ];
 	 scmd[ 0 ] = new String( configure.SHELL );
 	 scmd[ 1 ] = "-c";
-	 scmd[ 2 ] = new String( s, 2, s.length - 2 );
+         
+         // if | then offset = 2, otherwise, if pipe: offset = 5
+         int offset =  (s[0] == (byte)'|') ? 2 : 5;
+	 scmd[ 2 ] = new String( s, offset, s.length - offset );
 
 	 return scmd;
       } else {

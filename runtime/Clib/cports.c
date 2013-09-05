@@ -2019,7 +2019,9 @@ reset_eof( obj_t port ) {
 /*---------------------------------------------------------------------*/
 static bool_t
 pipe_name_p( char *name ) {
-   return( (name[ 0 ] == '|') && (name[ 1 ] == ' ') );
+   int length = strlen(name);
+   return ( length > 2 && (name[ 0 ] == '|') && (name[ 1 ] == ' ') ) 
+          || ( length > 5 && strncmp(name, "pipe:", 5) == 0 );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2030,7 +2032,9 @@ pipe_name_p( char *name ) {
 /*---------------------------------------------------------------------*/
 static char *
 pipe_name( char *pipe_name ) {
-   return (pipe_name + 1);
+  /* if | is used the offset is 1, otherwise, if pipe: is used, it is 5 */ 
+   int offset = (pipe_name[0] == '|') ? 1 : 5;
+   return (pipe_name + offset);
 }
 
 /*---------------------------------------------------------------------*/

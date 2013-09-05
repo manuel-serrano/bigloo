@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Aug  7 17:48:31 2013 (serrano)                */
+;*    Last change :  Wed Sep  4 17:27:20 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -210,7 +210,7 @@
 	    (bigloo-type-error/location::obj ::obj ::obj ::obj ::obj ::obj)
 
 	    (type-error fname loc proc type obj)
-	    (index-out-of-bounds-error fname loc proc i len obj)
+	    (index-out-of-bounds-error fname loc proc obj i::int len::int)
 
 	    (module-init-error ::string ::string)
 
@@ -312,7 +312,7 @@
       ((=fx sysno $errno-typename-error)
        (raise (typename-error #f #f proc msg obj)))
       ((=fx sysno $errno-index-out-of-bound-error)
-       (raise (index-out-of-bounds-error #f #f proc msg obj -1)))
+       (raise (index-out-of-bounds-error #f #f proc obj msg -1)))
       (else
        (error proc msg obj))))
 
@@ -508,7 +508,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    index-out-of-bounds-error ...                                    */
 ;*---------------------------------------------------------------------*/
-(define (index-out-of-bounds-error fname loc proc len obj i)
+(define (index-out-of-bounds-error fname loc proc obj len i)
    (let* ((len (cond
 		  ((fixnum? len) len)
 		  ((string? len) (string->integer len))
