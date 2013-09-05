@@ -47,19 +47,28 @@
          (phidget-open mc)
          (phidget-wait-for-attachment mc 1000)
 
-         (phidget-open e)
-         (phidget-wait-for-attachment e 1000)
-
-         (phidget-encoder-enable! e encoder-index)
-         (tprint "encoder enabled?" (phidget-encoder-enabled? e encoder-index))
+         ;; Attempt to use an encoder, if available.
+         (with-handler
+            (lambda (x)
+               (print "x=" x)
+               (tprint "encoder not found, not using it")
+               (set! e #f))
+            (begin
+               (phidget-open e)
+               (phidget-wait-for-attachment e 1000)
+               (phidget-encoder-enable! e encoder-index)
+               (tprint "encoder enabled? "
+                  (phidget-encoder-enabled? e encoder-index))))
 
          ;; Note: We actually need to use the CPhidgetEncoder API to access the
          ;; Phidget 1047 encoders.
          (tprint "mc=" mc " "
             (phidget-motor-control-encoder-count mc)
             " on-motor encoders; "
-            (with-access::phidget-encoder e (encoder-count)
-               encoder-count)
+            (if e
+                (with-access::phidget-encoder e (encoder-count)
+                   encoder-count)
+                -1)
             " encoders")
 
          (phidget-motor-control-acceleration-set! mc motor-index 4.)
@@ -74,12 +83,14 @@
                   (printf "motor ~a: velocity = ~5d; current = ~12d; position = ~5d~%"
                      motor-index velocity
                      (phidget-motor-control-current mc index)
-                     (phidget-encoder-position e encoder-index)))))
+                     (if e
+                         (phidget-encoder-position e encoder-index)
+                         -1)))))
          (sleep 1000000)
 
          (synchronize lock
             (phidget-motor-control-velocity-set! mc motor-index 0.)
             (condition-variable-wait! halted lock))
-         (print "done\n")
+         (tprint "done")
          (phidget-motor-control-braking-set! mc motor-index 100.)
          #f)))
