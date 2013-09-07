@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Tue Aug  6 15:29:01 2013 (serrano)                */
+;*    Last change :  Sat Sep  7 11:31:20 2013 (serrano)                */
 ;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -263,6 +263,79 @@
 	 (tail? tail?))))
 
 ;*---------------------------------------------------------------------*/
+;*    evepairify ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (evepairify p loc)
+   (econs (car p) (cdr p) loc))
+
+;*---------------------------------------------------------------------*/
+;*    type-check ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (type-check var tname loc procname body)
+   
+   (if (symbol? tname)
+       (let ((pred (case tname
+		      ((pair) 'pair?)
+		      ((vector) 'vector?)
+		      ((symbol) 'symbol?)
+		      ((char) 'char?)
+		      ((int bint) 'integer?)
+		      ((real breal) 'real?)
+		      ((bool) 'boolean?)
+		      ((struct) 'struct?)
+		      ((class) 'class?)
+		      ((string bstring) 'string?)
+		      (else `(lambda (o)
+				(let ((c (class-exists ',tname)))
+				   (if c (isa? o c) #t)))))))
+	  (evepairify
+	     `(if (,pred ,var)
+		  ,body
+		  ,(match-case loc
+		      ((at ?fname ?pos)
+		       `(bigloo-type-error/location
+			   ,(when (symbol? procname) (symbol->string procname))
+			   ,(symbol->string tname) ,var
+			   ,fname ,pos))
+		      (else
+		       `(bigloo-type-error
+			   ,(when (symbol? procname) (symbol->string procname))
+			   ,(symbol->string tname) ,var))))
+	     loc))
+       body))
+
+;*---------------------------------------------------------------------*/
+;*    type-checks ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (type-checks vars srcs body loc procname)
+   (if (<=fx (bigloo-debug) 0)
+       body
+       (let loop ((vars vars)
+		  (srcs srcs))
+	  (if (null? vars)
+	      body
+	      (let* ((v (car vars))
+		     (id (car v))
+		     (tname (cdr v)))
+		 (if tname
+		     (let ((loc (get-location3 (car srcs) srcs loc)))
+			(type-check id tname loc procname
+			   (loop (cdr vars) (cdr srcs))))
+		     (loop (cdr vars) (cdr srcs))))))))
+
+;*---------------------------------------------------------------------*/
+;*    type-result ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (type-result type body loc)
+   (if (and type (>=fx (bigloo-debug) 1))
+       (let ((tmp (gensym 'tmp)))
+	  (evepairify
+	     `(let ((,(string->symbol (format "~a::~a" tmp type)) ,body))
+		 ,tmp)
+	     (get-location body loc)))
+       body))
+
+;*---------------------------------------------------------------------*/
 ;*    conv ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (conv e locals globals tail? where loc top?)
@@ -293,8 +366,8 @@
 		(cons (conv e locals globals #f where (get-location3 e es loc) #f)
 		      (loop (cdr es)))))))
    
-   (define (conv-lambda formals body where)
-      
+   (define (conv-lambda formals body where type)
+   
       (define (split-formals l)
 	 (let rec ( (r l) (flat '()) (arity 0) )
 	    (cond
@@ -306,14 +379,16 @@
 		(rec (cdr r)
 		     (cons (untype-ident (car r)) flat) (+fx arity 1))) )))
       
-      (multiple-value-bind (vars arity)
+      (multiple-value-bind (args arity)
 	 (split-formals (dsssl-formals->scheme-typed-formals formals error #t))
 	 (let ( (vars (map (lambda (v)
 			      (instantiate::ev_var
 				 (name (car v))
 				 (type (cdr v))) )
-			 vars ))
-		(body (make-dsssl-function-prelude e formals body error))
+			 args ))
+		(body (make-dsssl-function-prelude e formals
+			 (type-checks args args (type-result type body loc) loc where)
+			 error))
 		(nloc (get-location body loc)) )
 	    (instantiate::ev_abs
 	       (loc loc)
@@ -382,12 +457,14 @@
       ((begin . ?l)
        (conv-begin l locals globals tail? where loc top?) )
       ((let ?binds . ?body)
-       (let ( (vars (map (lambda (b)
-			    (let ( (i (untype-ident (car b))) )
-			       (instantiate::ev_var
-				  (name (car i))
-				  (type (cdr i)) )))
-		       binds)) )
+       (let* ( (ubinds (map (lambda (b) (untype-ident (car b))) binds))
+	       (vars (map (lambda (i)
+			     (instantiate::ev_var
+				(name (car i))
+				(type (cdr i)) ))
+			ubinds))
+	       (body (if (pair? (cdr body)) (econs 'begin body loc) (car body)))
+	       (tbody (type-checks ubinds binds body loc where)) )
 	  (let ( (bloc (get-location binds loc)) )
 	     (instantiate::ev_let
 		(vars vars)
@@ -395,7 +472,7 @@
 			      (let ( (loc (get-location b bloc)) )
 				 (uconv/loc (cadr b) loc) ))
 			 binds))
-		(body (conv-begin body (append vars locals) globals tail? where loc #f)) ))))
+		(body (conv tbody (append vars locals) globals tail? where loc #f)) ))))
       ((let* ?binds . ?body)
        (define (conv-vals l vars locals loc)
 	  (if (null? l)
@@ -415,19 +492,21 @@
 	     (vals (conv-vals binds vars locals bloc))
 	     (body (conv-begin body (append (reverse vars) locals) globals tail? where loc #f)) )))
       ((letrec ?binds . ?body)
-       (let* ( (vars (map (lambda (b)
-			     (let ( (i (untype-ident (car b))) )
-			       (instantiate::ev_var
-				  (name (car i))
-				  (type (cdr i)) )))
-			  binds))
+       (let* ( (ubinds (map (lambda (b) (untype-ident (car b))) binds))
+	       (vars (map (lambda (i)
+			     (instantiate::ev_var
+				(name (car i))
+				(type (cdr i)) ))
+			  ubinds))
 	       (locals (append vars locals))
+	       (body (if (pair? (cdr body)) (econs 'begin body loc) (car body)))
+	       (tbody (type-checks ubinds binds body loc where))
 	       (bloc (get-location binds loc)) )
 	  (instantiate::ev_letrec
 	     (vars vars)
 	     (vals (map (lambda (b)
 			   (conv (cadr b) locals globals #f (symbol-append (car b) '| | where) (get-location b bloc) #f)) binds) )
-	     (body (conv-begin body locals globals tail? where loc #f) ))))
+	     (body (conv tbody locals globals tail? where loc #f) ))))
       ((set! (@ (and ?id (? symbol?)) (and ?modname (? symbol?))) ?e)
        (instantiate::ev_setglobal
 	  (loc loc)
@@ -452,17 +531,21 @@
       ((set! . ?-)
        (evcompile-error loc "eval" "Illegal form" e))
       ((define ?gv (lambda ?formals ?body))
-       (instantiate::ev_defglobal
-	  (loc loc)
-	  (name (car (untype-ident gv)))
-	  (mod (if (evmodule? globals) globals ($eval-module)))
-	  (e (conv-lambda formals body gv)) ))
+       (let ((tid (untype-ident gv)))
+	  (instantiate::ev_defglobal
+	     (loc loc)
+	     (name (car tid))
+	     (mod (if (evmodule? globals) globals ($eval-module)))
+	     (e (conv-lambda formals body gv (cdr tid))) )))
       ((define ?gv ?ge)
-       (instantiate::ev_defglobal
-	  (loc loc)
-	  (name (car (untype-ident gv)))
-	  (mod (if (evmodule? globals) globals ($eval-module)))
-	  (e (uconv/where ge (if top? gv where))) ))
+       (let ( (tid (untype-ident gv)) )
+	  (instantiate::ev_defglobal
+	     (loc loc)
+	     (name (car tid))
+	     (mod (if (evmodule? globals) globals ($eval-module)))
+	     (e (uconv/where
+		   (type-result (cdr tid) ge loc)
+		   (if top? gv where))) )))
       ((bind-exit (?v) . ?body)
        (let ( (var (instantiate::ev_var (name v) (type #f))) )
 	  (instantiate::ev_bind-exit
@@ -489,7 +572,7 @@
 	  (prelock (uconv '()))
 	  (body (conv-begin body locals globals #f where loc #f)) ))
       ((lambda ?formals ?body)
-       (conv-lambda formals body (symbol-append '\@ where)) )
+       (conv-lambda formals body (symbol-append '\@ where) #f) )
       ((?f . ?args)
        (let ( (fun (uconv f)) (args (uconv* args)) )
 	  (instantiate::ev_app

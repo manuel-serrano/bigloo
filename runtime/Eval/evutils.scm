@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 30 08:07:53 2010                          */
-;*    Last change :  Tue Apr 17 07:48:39 2012 (serrano)                */
-;*    Copyright   :  2010-12 Manuel Serrano                            */
+;*    Last change :  Sat Sep  7 09:28:41 2013 (serrano)                */
+;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Utility functions for eval                                       */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
 ;*    parse-formal-ident ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (parse-formal-ident ident loc)
-
+   
    (define (parse-typed-ident ident)
       (let* ((str (symbol->string! ident))
 	     (len (string-length str)))
@@ -68,14 +68,14 @@
 		(cond
 		   ((=fx i (-fx len 2))
 		    (error/source-location "parse-formal-ident"
-					   "Illegal empty identifier type"
-					   ident
-					   loc))
+		       "Illegal empty identifier type"
+		       ident
+		       loc))
 		   ((=fx i 0)
 		    (cons (string->symbol "") ident))
 		   (else
 		    (cons (string->symbol (substring str 0 i))
-			  (string->symbol (substring str (+fx i 2) len))))))
+		       (string->symbol (substring str (+fx i 2) len))))))
 	       (else
 		(loop (+fx i 1)))))))
    
@@ -86,9 +86,9 @@
        (cons ident '()))
       ((not (symbol? ident))
        (error/source-location "parse-formal-ident"
-			      "Illegal identifier type"
-			      ident
-			      loc))
+	  "Illegal identifier type"
+	  ident
+	  loc))
       (else
        (parse-typed-ident ident))))
 
