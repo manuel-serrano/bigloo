@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Sep  9 09:02:51 2013 (serrano)                */
+;*    Last change :  Mon Sep  9 09:21:35 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -200,66 +200,60 @@
 (define-method (copyable? node::atom)
    #t)
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::kwote ...                                            *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::kwote)                              */
-;*    *shared-cnst?*)                                                  */
-
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::var ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (copyable? node::var)
    (eq? (variable-access (var-variable node)) 'read))
 
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::sequence ...                                         *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::sequence)                           */
-;*    (with-access::sequence node (nodes)                              */
-;*       (every copyable? nodes)))                                     */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::vlength ...                                          *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::vlength)                            */
-;*    (with-access::vlength node (expr*)                               */
-;*       (every copyable? expr*)))                                     */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::cast ...                                             *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::cast)                               */
-;*    (with-access::cast node (arg)                                    */
-;*       (copyable? arg)))                                             */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::cast-null ...                                        *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::cast-null)                          */
-;*    (with-access::cast-null node (expr*)                             */
-;*       (every copyable? expr*)))                                     */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::instanceof ...                                       *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::instanceof)                         */
-;*    (with-access::instanceof node (expr*)                            */
-;*       (every copyable? expr*)))                                     */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::conditional ...                                      *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::conditional)                        */
-;*    (with-access::conditional node (test true false)                 */
-;*       (and (copyable? test) (copyable? true) (copyable? false))))   */
-;*                                                                     */
-;* {*---------------------------------------------------------------------*} */
-;* {*    copyable? ::fail ...                                             *} */
-;* {*---------------------------------------------------------------------*} */
-;* (define-method (copyable? node::fail)                               */
-;*    (with-access::fail node (proc msg obj)                           */
-;*       (and (copyable? proc) (copyable? msg) (copyable? obj))))      */
+;*---------------------------------------------------------------------*/
+;*    copyable? ::sequence ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::sequence)
+   (with-access::sequence node (nodes)
+      (every copyable? nodes)))
+
+;*---------------------------------------------------------------------*/
+;*    copyable? ::vlength ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::vlength)
+   (with-access::vlength node (expr*)
+      (every copyable? expr*)))
+
+;*---------------------------------------------------------------------*/
+;*    copyable? ::cast ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::cast)
+   (with-access::cast node (arg)
+      (copyable? arg)))
+
+;*---------------------------------------------------------------------*/
+;*    copyable? ::cast-null ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::cast-null)
+   (with-access::cast-null node (expr*)
+      (every copyable? expr*)))
+
+;*---------------------------------------------------------------------*/
+;*    copyable? ::instanceof ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::instanceof)
+   (with-access::instanceof node (expr*)
+      (every copyable? expr*)))
+
+;*---------------------------------------------------------------------*/
+;*    copyable? ::conditional ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::conditional)
+   (with-access::conditional node (test true false)
+      (and (copyable? test) (copyable? true) (copyable? false))))
+
+;*---------------------------------------------------------------------*/
+;*    copyable? ::fail ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (copyable? node::fail)
+   (with-access::fail node (proc msg obj)
+      (and (copyable? proc) (copyable? msg) (copyable? obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::let-var ...                                         */
