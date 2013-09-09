@@ -37,6 +37,9 @@
 #define BGL_PHIDGET_MOTOR_CONTROL_BUILTIN( o ) \
    ((CPhidgetMotorControlHandle *)(&(((BgL_phidgetzd2motorzd2controlz00_bglt)o)->BgL_z42builtinz42)))
 
+#define BGL_PHIDGET_ENCODER_BUILTIN( o ) \
+   ((CPhidgetEncoderHandle *)(&(((BgL_phidgetzd2encoderzd2_bglt)o)->BgL_z42builtinz42)))
+
 extern void bgl_phidget_init();
 
 extern int bgl_phidget_manager_add_event_listener(
@@ -69,6 +72,9 @@ extern obj_t bgl_phidget_event_stepperposition_new( obj_t, int, BGL_LONGLONG_T);
 extern obj_t bgl_phidget_event_steppercurrent_new( obj_t, int, double);
 extern obj_t bgl_phidget_event_motorcontrolvelocity_new( obj_t, int, double);
 extern obj_t bgl_phidget_event_motorcontrolcurrent_new( obj_t, int, double);
+extern obj_t bgl_phidget_event_encoderinput_new( obj_t, int, int );
+extern obj_t bgl_phidget_event_encoderindex_new( obj_t, int, int );
+extern obj_t bgl_phidget_event_encoderposition_new( obj_t, int, int, int );
 
 extern obj_t bgl_phidget_get_device_name( CPhidgetHandle );
 extern obj_t bgl_phidget_get_device_type( CPhidgetHandle );

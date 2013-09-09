@@ -26,7 +26,8 @@
 	    __phidget_servo
 	    __phidget_advanced-servo
 	    __phidget_stepper
-            __phidget_motor-control)
+            __phidget_motor-control
+            __phidget_encoder)
 
    (eval    (export-all)
 
@@ -57,4 +58,5 @@
 	    (class phidget-servo)
 	    (class phidget-advanced-servo)
 	    (class phidget-stepper)
-            (class phidget-motor-control)))
+            (class phidget-motor-control)
+            (class phidget-encoder)))

@@ -55,6 +55,9 @@ struct handler {
 #define EVENT_STEPPERCURRENT 16
 #define EVENT_MOTORCONTROLVELOCITY 17
 #define EVENT_MOTORCONTROLCURRENT 18
+#define EVENT_ENCODERINPUT 19
+#define EVENT_ENCODERPOSITION 20
+#define EVENT_ENCODERINDEX 21
 
 #define INITIAL_MAX_HANDLER 40
 static struct handler *handlers;
@@ -115,6 +118,19 @@ struct callback {
 	 int index;
 	 double current;
       } motorcontrolcurrent;
+      struct {
+	 int index;
+	 int state;
+      } encoderinput;
+      struct {
+	 int index;
+	 int time;
+	 int position;
+      } encoderposition;
+      struct {
+	 int index;
+	 int position;
+      } encoderindex;
    } event;
 };
 
@@ -302,6 +318,29 @@ void bgl_phidget_invoke_callbacks() {
 	       cb->event.motorcontrolcurrent.current );
 	    break;
 	 }
+	 case EVENT_ENCODERINPUT: {
+	    event = bgl_phidget_event_encoderinput_new(
+	       hdl->obj,
+	       cb->event.encoderinput.index,
+	       cb->event.encoderinput.state );
+	    break;
+	 }
+	 case EVENT_ENCODERINDEX: {
+	    event = bgl_phidget_event_encoderindex_new(
+	       hdl->obj,
+	       cb->event.encoderindex.index,
+	       cb->event.encoderindex.position );
+	    break;
+	 }
+	 case EVENT_ENCODERPOSITION: {
+	    event = bgl_phidget_event_encoderposition_new(
+	       hdl->obj,
+	       cb->event.encoderposition.index,
+	       cb->event.encoderposition.time,
+	       cb->event.encoderposition.position );
+	    break;
+	 }
+
 	 default:
 	    event = BUNSPEC;
 	    C_SYSTEM_FAILURE(
@@ -1519,4 +1558,176 @@ bgl_phidget_motor_control_set_braking( CPhidgetMotorControlHandle phid, int i, o
 double
 bgl_phidget_motor_control_get_current( CPhidgetMotorControlHandle phid, int i, obj_t o ) {
    FIELD_INDEXED_GET( phid, Current, CPhidgetMotorControl, double, i, o );
+}
+
+
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_encoderinput_handler ...                                     */
+/*---------------------------------------------------------------------*/
+static int
+bgl_encoderinput_handler( CPhidgetEncoderHandle id, void *ptr, int index, int state ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.encoderinput.index = index;
+   callbacks[ callback_index ].event.encoderinput.state = state;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_encoderposition_handler ...                                  */
+/*---------------------------------------------------------------------*/
+static int
+bgl_encoderposition_handler( CPhidgetEncoderHandle id, void *ptr, int index, int time, int pos ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.encoderposition.index = index;
+   callbacks[ callback_index ].event.encoderposition.time = time;
+   callbacks[ callback_index ].event.encoderposition.position = pos;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_encoderindex_handler ...                                     */
+/*---------------------------------------------------------------------*/
+static int
+bgl_encoderindex_handler( CPhidgetEncoderHandle id, void *ptr, int index, int position ) {
+   bgl_phidget_lock();
+
+   if( callback_index == callback_length ) enlarge_callback_array();
+
+   callbacks[ callback_index ].event.encoderindex.index = index;
+   callbacks[ callback_index ].event.encoderindex.position = position;
+   callbacks[ callback_index++ ].handler = (struct handler *)ptr;
+
+   bgl_phidget_signal();
+   bgl_phidget_unlock();
+
+   return 0;
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_add_event_listener ...                       */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_add_event_listener( CPhidgetEncoderHandle id, char *event, obj_t obj, obj_t proc ) {
+   if( !strcmp( event, "input" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_ENCODERINPUT );
+
+      return CPhidgetEncoder_set_OnInputChange_Handler(
+	 id, &bgl_encoderinput_handler, hdl );
+   }
+   else if( !strcmp( event, "position" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_ENCODERPOSITION );
+
+      return CPhidgetEncoder_set_OnPositionChange_Handler(
+	 id, &bgl_encoderposition_handler, hdl );
+   }
+   else if( !strcmp( event, "index" ) ) {
+      struct handler *hdl = bgl_add_handler( obj, proc, EVENT_ENCODERINDEX );
+
+      return CPhidgetEncoder_set_OnIndex_Handler(
+	 id, &bgl_encoderindex_handler, hdl );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_get_input_count ...                          */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_get_input_count( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+  int err, count;
+
+  err = CPhidgetEncoder_getInputCount( phid, &count);
+  return err == EPHIDGET_OK
+    ? count
+    : (bgl_phidget_error( "EncoderCount", err, o ), count);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_get_encoder_count ...                        */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_get_encoder_count( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+  int err, count;
+
+  err = CPhidgetEncoder_getEncoderCount( phid, &count);
+  return err == EPHIDGET_OK
+    ? count
+    : (bgl_phidget_error( "EncoderCount", err, o ), count);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_get_input_enabled ...                        */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_get_input_enabled( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, InputState, CPhidgetEncoder, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_get_position ...                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_get_position( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Position, CPhidgetEncoder, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_get_index_position ...                       */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_get_index_position( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, IndexPosition, CPhidgetEncoder, int, i, o );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_get_enabled ...                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_phidget_encoder_get_enabled( CPhidgetEncoderHandle phid, int i, obj_t o ) {
+   FIELD_INDEXED_GET( phid, Enabled, CPhidgetEncoder, int, i, o );
+}
+
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_enable ...                                   */
+/*---------------------------------------------------------------------*/
+void
+bgl_phidget_encoder_enable( CPhidgetEncoderHandle phid, int i ) {
+   CPhidgetEncoder_setEnabled( phid, i, PTRUE );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_phidget_encoder_disable ...                                  */
+/*---------------------------------------------------------------------*/
+void
+bgl_phidget_encoder_disable( CPhidgetEncoderHandle phid, int i ) {
+   CPhidgetEncoder_setEnabled( phid, i, PFALSE );
 }

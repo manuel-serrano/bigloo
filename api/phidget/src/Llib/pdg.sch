@@ -4,7 +4,7 @@
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 15:28:51 2007                          */
 ;*    Last change :  Thu Oct  4 18:07:52 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Copyright   :  2007-13 Inria                                     */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of PHIDGET functions                                  */
 ;*=====================================================================*/
@@ -486,7 +486,7 @@
 	 (::$pdg-phidget)
 	 "(CPhidgetMotorControlHandle)")
       (macro $pdg-phidget-motor-control-add-event-listener!::int
-	 (::$pdg-manager ::string ::obj ::procedure)
+	 (::$pdg-motor-control ::string ::obj ::procedure)
 	 "bgl_phidget_motor_control_add_event_listener")
 
       ($pdg-phidget-motor-control-get-motor-count::int
@@ -527,7 +527,43 @@
          "CPhidgetMotorControl_setBraking")
       ($pdg-phidget-motor-control-get-current::double
          (::$pdg-motor-control ::int ::obj)
-         "bgl_phidget_motor_control_get_current")))
+         "bgl_phidget_motor_control_get_current")
+
+      ;; encoder
+      (type $pdg-encoder void* "CPhidgetEncoderHandle")
+      (type $pdg-encoder* void* "CPhidgetEncoderHandle *")
+      (macro $pdg-encoder-create::int (::$pdg-encoder*)
+             "CPhidgetEncoder_create")
+
+      (macro $pdg-encoder->phidget::$pdg-phidget (::$pdg-encoder)
+             "(CPhidgetHandle)")
+      (macro $pdg-phidget->encoder::$pdg-encoder (::$pdg-phidget)
+             "(CPhidgetEncoderHandle)")
+      (macro $pdg-phidget-encoder-add-event-listener!::int
+         (::$pdg-encoder ::string ::obj ::procedure)
+         "bgl_phidget_encoder_add_event_listener")
+
+      ($pdg-phidget-encoder-get-encoder-count::int (::$pdg-encoder ::obj)
+         "bgl_phidget_encoder_get_encoder_count")
+      ($pdg-phidget-encoder-get-input-count::int (::$pdg-encoder ::obj)
+         "bgl_phidget_encoder_get_input_count")
+      ($pdg-phidget-encoder-get-input-enabled?::bool (::$pdg-encoder ::int ::obj)
+         "bgl_phidget_encoder_get_input_enabled")
+      ($pdg-phidget-encoder-get-position::int (::$pdg-encoder ::int ::obj)
+         "bgl_phidget_encoder_get_position")
+      (macro $pdg-phidget-encoder-set-position!::int
+         (::$pdg-encoder ::int ::int)
+         "CPhidgetEncoder_setPosition")
+      ($pdg-phidget-encoder-get-index-position::int
+         (::$pdg-encoder ::int ::obj)
+         "bgl_phidget_encoder_get_index_position")
+
+      ($pdg-phidget-encoder-get-enabled?::bool (::$pdg-encoder ::int ::obj)
+         "bgl_phidget_encoder_get_enabled")
+      (macro $pdg-phidget-encoder-enable!::int (::$pdg-encoder ::int)
+             "bgl_phidget_encoder_enable")
+      (macro $pdg-phidget-encoder-disable!::int (::$pdg-encoder ::int)
+             "bgl_phidget_encoder_disable")))
 
 ;*---------------------------------------------------------------------*/
 ;*    phidget-return ...                                               */
