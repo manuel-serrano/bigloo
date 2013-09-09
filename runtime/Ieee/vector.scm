@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Sat Oct 13 07:34:55 2012 (serrano)                */
+;*    Last change :  Sun Sep  8 06:42:32 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -266,11 +266,12 @@
 ;*---------------------------------------------------------------------*/
 (define (vector-copy! target tstart source
 		      #!optional (sstart 0) (send (vector-length source)))
-   (let loop ((i sstart)
-	      (j tstart))
-      (when (<fx i send)
-	 (vector-set-ur! target j (vector-ref-ur source i))
-	 (loop (+fx i 1) (+fx j 1)))))
+   (let ((end (minfx send (vector-length target))))
+      (let loop ((i sstart)
+		 (j tstart))
+	 (when (<fx i send)
+	    (vector-set-ur! target j (vector-ref-ur source i))
+	    (loop (+fx i 1) (+fx j 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-append ...                                                */
