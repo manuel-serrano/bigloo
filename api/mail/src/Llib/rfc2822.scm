@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Sat Jun 30 07:22:13 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Wed Sep 11 19:23:41 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
 ;*    (Internet Message Format) specification.                         */
@@ -166,8 +166,10 @@
        (let ((end (string-index-right address #\")))
 	  (if (and end (>fx end 0))
 	      (substring address 1 end)
-	      (substring address 0 (-fx i 1))))
-       (substring address 0 (-fx i 1))))
+	      (let ((j (string-skip-right address " \t" i)))
+		 (substring address 0 (+fx j 1)))))
+       (let ((j (string-skip-right address " \t" i)))
+	  (substring address 0 (+fx j 1)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rfc2822-address-display-name ...                                 */
