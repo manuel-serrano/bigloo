@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Wed May  4 18:46:06 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 11 11:22:56 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
 ;*=====================================================================*/
@@ -39,8 +39,10 @@
 	  (args-id (map local-id locals))
 	  (type (local-type (car locals)))
 	  (m-id (gensym (symbol-append id '- (type-id type)))))
-      (if (not (tclass? type))
-	  (method-error id "method has a non-class dispatching type arg" src)
+      (cond
+	 ((not (tclass? type))
+	  (method-error id "method has a non-class dispatching type arg" src))
+	 (else
 	  (let* ((holder (tclass-holder type))
 		 (module (global-module holder))
 		 (generic (find-global id)))
@@ -49,14 +51,14 @@
 		 (method-error id "Can't find generic for method" src))
 		(else
 		 (let* ((body `(labels ((call-next-method ()
-				  (let ((,met (find-super-class-method
-						 ,(car args-id)
-						 ,id
-						 (@ ,(global-id holder)
-						    ,module))))
-				     ,(if (>=fx arity 0)
-					  `(,met ,@args-id)
-					  `(apply ,met (cons* ,@args-id))))))
+					   (let ((,met (find-super-class-method
+							  ,(car args-id)
+							  ,id
+							  (@ ,(global-id holder)
+							     ,module))))
+					      ,(if (>=fx arity 0)
+						   `(,met ,@args-id)
+						   `(apply ,met (cons* ,@args-id))))))
 				  ,body))
 			(ebody (if (epair? src)
 				   (econs (car body) (cdr body) (cer src))
@@ -72,15 +74,15 @@
 		    (list `(labels (,ebdg)
 			      ,(when (and (>=fx *debug-module* 1)
 					  (memq 'module
-						(backend-debug-support
-						 (the-backend))))
+					     (backend-debug-support
+						(the-backend))))
 				  `(pragma::void
-				   ,(string-append "bgl_init_module_debug_string( \"generic-add-method: " (symbol->string ident) " ::" (symbol->string (global-id holder)) "\"); ")))
+				      ,(string-append "bgl_init_module_debug_string( \"generic-add-method: " (symbol->string ident) " ::" (symbol->string (global-id holder)) "\"); ")))
 			      (generic-add-method!
-			       ,id
-			       (@ ,(global-id holder) ,module)
-			       ,m-id
-			       ,(symbol->string ident)))))))))))
+				 ,id
+				 (@ ,(global-id holder) ,module)
+				 ,m-id
+				 ,(symbol->string ident))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *methods* ...                                                    */

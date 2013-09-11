@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Sun Sep  8 06:42:32 2013 (serrano)                */
+;*    Last change :  Tue Sep 10 17:36:06 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -269,7 +269,7 @@
    (let ((end (minfx send (vector-length target))))
       (let loop ((i sstart)
 		 (j tstart))
-	 (when (<fx i send)
+	 (when (<fx i end)
 	    (vector-set-ur! target j (vector-ref-ur source i))
 	    (loop (+fx i 1) (+fx j 1))))))
 

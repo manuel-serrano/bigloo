@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Jan  9 09:55:30 2013 (serrano)                */
+;*    Last change :  Wed Sep 11 11:44:11 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -306,10 +306,15 @@
 	  (type-res  (type-of-id id loc))
 	  (method-id (id-of-id id loc))
 	  (generic   (find-global id)))
-      (if (not (global? generic))
+      (cond
+	 ((null? args)
+	  (user-error id (shape src) "argument missing")
+	  #t)
+	 ((not (global? generic))
 	  ;; this error will be signaled later hence for now, we just
 	  ;; return #t, as for no error
-	  #t
+	  #t)
+	 (else
 	  (let ((generic-value (global-value generic)))
 	     (cond
 		((not (sfun? generic-value))
@@ -323,8 +328,8 @@
 		 #f)
 		((not (compatible-type? #t type-res (global-type generic)))
 		 (mismatch-error generic
-				 src
-				 "(incompatible function type result)")
+		    src
+		    "(incompatible function type result)")
 		 #f)
 		((let loop ((locals locals)
 			    (types  (map (lambda (a)
@@ -335,29 +340,29 @@
 						a)
 					       (else
 						(internal-error
-						 "check-method-definition"
-						 "unexpected generic arg"
-						 (shape a)))))
-					 (sfun-args generic-value)))
+						   "check-method-definition"
+						   "unexpected generic arg"
+						   (shape a)))))
+				       (sfun-args generic-value)))
 			    (sub?   #t))
 		    (cond
 		       ((null? locals)
 			#t)
 		       ((null? types)
 			(mismatch-error generic
-					src
-					"(incompatible formal type)"))
+			   src
+			   "(incompatible formal type)"))
 		       ((not (compatible-type? sub?
-					       (local-type (car locals))
-					       (car types)))
+				(local-type (car locals))
+				(car types)))
 			(mismatch-error generic
-					src
-					"(incompatible formal type)")
+			   src
+			   "(incompatible formal type)")
 			#f)
 		       (else
 			(loop (cdr locals)
-			      (cdr types)
-			      #f)))))
+			   (cdr types)
+			   #f)))))
 		(else
-		 #t))))))
+		 #t)))))))
        
