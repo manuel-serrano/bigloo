@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Thu Aug 22 08:13:37 2013 (serrano)                */
+;*    Last change :  Fri Sep 13 08:10:24 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -191,7 +191,7 @@
 			  (weak-none)))
 		   (weak-none)))
 	  (wk (bit-or wkk wkd)))
-      (%hashtable 0 mblen (make-vector size '()) eqtest hashn wk 16384 1)))
+      (%hashtable 0 mblen (make-vector size '()) eqtest hashn wk -1 1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    create-hashtable ...                                             */
