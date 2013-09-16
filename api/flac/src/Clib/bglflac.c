@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Mar 13 08:59:18 2013 (serrano)                */
+/*    Last change :  Mon Sep 16 09:04:01 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -24,6 +24,8 @@ extern obj_t bgl_flac_decoder_meta( BgL_flaczd2decoderzd2_bglt, FLAC__uint64, lo
 extern obj_t bgl_flac_decoder_tell( BgL_flaczd2decoderzd2_bglt );
 extern obj_t bgl_flac_decoder_seek( BgL_flaczd2decoderzd2_bglt, BGL_LONGLONG_T );
 extern obj_t bgl_flac_decoder_length( BgL_flaczd2decoderzd2_bglt );
+extern int bgl_flac_debug();
+extern int bgl_flac_checksum_debug( long, char *, long, long );
 
 /*---------------------------------------------------------------------*/
 /*    decoder bigloo object                                            */
