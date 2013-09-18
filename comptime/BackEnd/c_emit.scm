@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Wed Sep 18 10:40:17 2013 (serrano)                */
+;*    Last change :  Wed Sep 18 10:52:55 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -57,8 +57,6 @@
 		      (prefix *dest*))
 		     (else
 		      #f))))
-      (tprint "start-emission: suffix=" suffix " dest=" *dest*
-	 " prefix=" prefix " *pass*=" *pass*)
       (if (or (eq? *dest* '--to-stdout) (not (string? prefix)))
 	  (set! *c-port* (current-output-port))
 	  (let ((f-name (string-append prefix suffix)))
