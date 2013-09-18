@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:00:44 1996                          */
-;*    Last change :  Tue Dec 11 17:50:04 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 18 11:05:43 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The location managment                                           */
 ;*=====================================================================*/
@@ -43,10 +43,7 @@
 ;*---------------------------------------------------------------------*/
 (define (pos->line file pos)
    (let ((lines (get-file-lines file)))
-      (let ((r (file-position->line pos lines)))
-	 (unless r
-	    (tprint "*** WARNING:pos->list: NO LINE NUMBER " file " " pos))
-	 r)))
+      (or (file-position->line pos lines) 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-location ...                                                */
