@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 17 16:52:00 2013 (serrano)                */
+;*    Last change :  Mon Sep 16 12:07:27 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -550,7 +550,7 @@
 ;*--- Profiling -------------------------------------------------------*/
       (section "Profiling")
       ;; -pg
-      (("-p" (help "-p[2]" "Compile files for profiling"))
+      (("-p" (help "-p[2g]" "Compile files for cpu profiling"))
        (if (or (not (number? *profile-mode*))
 	       (<fx *profile-mode* 1))
 	   (begin
@@ -572,21 +572,21 @@
 	      (set! *profile-mode* 2)
 	      (set! *jas-profile-mode* 2)
 	      (do-parse-args '("-static-bigloo")))))
-      (("-pg" (help "Compile files with profiling option"))
+      (("-pg")
        (set! *strip* #f)
        (set! *profile-library* #t)
        (set! *cc-options* (string-append *cc-options* " " *cflags-prof*)))
-      (("-pmem" (help "Compile files for memory profiling"))
+      (("-pmem" (help "-pmem[2]" "Compile files for memory profiling"))
        (bigloo-compiler-debug-set! 1)
        (set! *compiler-debug* 1)
        (set! *jas-peephole* #f)
        (set! *bmem-profiling* #t))
-      (("-pmem2" (help "Compile files for memory profiling"))
+      (("-pmem2")
        (bigloo-compiler-debug-set! 2)
        (set! *compiler-debug* 2)
        (set! *jas-peephole* #f)
        (set! *bmem-profiling* #t))
-      (("-psync" (help "Compile files for synchronize profiling"))
+      (("-psync" (help "Profile synchronize expr (see $exitd-mutex-profile)"))
        (set! *sync-profiling* #t))
       
 ;*--- verbosity -------------------------------------------------------*/

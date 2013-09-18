@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sun Jul 21 11:11:45 2013 (serrano)                */
+;*    Last change :  Wed Sep 18 10:35:17 2013 (serrano)                */
 ;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -103,8 +103,8 @@
 ;*    backend-link ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link me::cvm result)
-   (if (string? result)
-       (cc-compiler result #f)))
+   (when (string? result)
+      (cc-compiler result #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    c-walk ...                                                       */
