@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat Oct 13 07:54:14 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Thu Sep 19 11:36:56 2013 (serrano)                */
+;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -21,8 +21,8 @@
            (export %certificate-$native "bgl_certificate_native")
            (export %private-key-$native "bgl_private_key_native")
 	   
-           (type $private-key (opaque) "void *")
-           (type $certificate (opaque) "void *")
+           (type $private-key void* "void *")
+           (type $certificate void* "void *")
            
            ($certificate-subject::bstring (::certificate)
                                           "bgl_ssl_certificate_subject")

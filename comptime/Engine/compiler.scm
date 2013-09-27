@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Apr 11 16:27:52 2013 (serrano)                */
+;*    Last change :  Thu Sep 19 11:59:40 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -219,7 +219,10 @@
 	 ;; regular macros have been installed in order to enable these
 	 ;; macro redefinitions
 	 (load-library-init)
-	 
+	 ;; once library clauses have been parsed
+	 ;; we must restore again additional heaps
+	 (restore-additional-heaps)
+	 (additional-heap-restore-globals!)
 	 (unit-sexp*-add-head! (get-toplevel-unit) (get-alibrary-inits))
 
 	 ;; we perfom user pass

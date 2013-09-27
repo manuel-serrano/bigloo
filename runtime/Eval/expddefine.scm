@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Tue Aug 13 07:24:16 2013 (serrano)                */
+;*    Last change :  Fri Sep 27 16:25:03 2013 (serrano)                */
 ;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -137,15 +137,16 @@
 (define (expand-eval-external-define x e)
    (let ((e (eval-begin-expander e)))
       (let* ((err (lambda () (expand-error "define" "Illegal form" x)))
+	     (loc (get-source-location x))
 	     (res (if (and (pair? x) (pair? (cdr x)) (pair? (cddr x)))
 		      (let ((type (cadr x)))
 			 (cond
 			    ((and (pair? type) (symbol? (car type)))
-			     `(define ,(car type)
+			     `(define ,(car (parse-formal-ident (car type) loc))
 				 (lambda ,(expand-args (cdr type) e)
 				    ,(e (expand-progn (cddr x)) e))))
 			    ((symbol? type)
-			     `(define ,type
+			     `(define ,(car (parse-formal-ident type loc))
 				 ,(e (expand-progn (cddr x)) e)))
 			    (else
 			     (err))))

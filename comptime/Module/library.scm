@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  9 16:05:09 1996                          */
-;*    Last change :  Wed Oct 20 08:07:12 2010 (serrano)                */
-;*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Sep 19 11:52:46 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Library finalizer                                                */
 ;*=====================================================================*/
@@ -120,8 +120,7 @@
 ;*    with-library-module! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (with-library-module! module::symbol)
-   (if (not (getprop module *with-key*))
-       (begin
-	  (putprop! module *with-key* #t)
-	  (set! *with-library-modules* (cons module *with-library-modules*)))))
+   (unless (getprop module *with-key*)
+      (putprop! module *with-key* #t)
+      (set! *with-library-modules* (cons module *with-library-modules*))))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Sat Sep  7 11:31:20 2013 (serrano)                */
+;*    Last change :  Thu Sep 19 09:49:40 2013 (serrano)                */
 ;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -172,6 +172,15 @@
 	     (e2 (conv-begin r locals globals tail? where loc top?)) ))
 	 (else
 	  (evcompile-error loc "eval" "bad syntax" l)) )))
+
+;*---------------------------------------------------------------------*/
+;*    conv-global ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (conv-global loc id globals)
+   (instantiate::ev_global
+      (loc loc)
+      (name id)
+      (mod (if (evmodule? globals) globals ($eval-module)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    conv-field-ref ...                                               */
@@ -400,11 +409,7 @@
    (match-case e
       ((atom ?x)
        (if (symbol? x)
-	   (or (conv-var x locals)
-	       (instantiate::ev_global
-		  (loc loc)
-		  (name x)
-		  (mod (if (evmodule? globals) globals ($eval-module)))) )
+	   (or (conv-var x locals) (conv-global loc x globals))
 	   (instantiate::ev_litt
 	      (value x)) ))
       ((module . ?bah)

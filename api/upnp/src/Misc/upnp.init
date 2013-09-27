@@ -14,5 +14,5 @@
 ;*---------------------------------------------------------------------*/
 (declare-library! 'upnp
 		  :basename "biglooupnp"
-		  :module-init '__upnp
+		  :module-init '__upnp_ssdp
 		  :module-eval '__upnp_makelib)

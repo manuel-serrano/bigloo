@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Sep 16 12:07:27 2013 (serrano)                */
+;*    Last change :  Tue Sep 24 18:44:59 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -942,6 +942,9 @@
        (set! *reader* 'intern))
       (("-fread-internal-src" (help "Read source only from binary interned file"))
        (set! *reader* 'intern-src))
+      (("-fread-internal-src-file-name" ?name (help "Set fake source file name"))
+       (when (eq? (car *src-files*) 'stdin)
+	  (set! *src-files* (cons (string->symbol name) (cdr *src-files*)))))
       (("-fread-plain" (help "Read source from plain text file"))
        (set! *reader* 'plain))
       ;; target

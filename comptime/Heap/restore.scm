@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Thu Apr 11 16:30:34 2013 (serrano)                */
+;*    Last change :  Tue Sep 24 18:35:51 2013 (serrano)                */
 ;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -136,8 +136,16 @@
    (when (pair? *additional-heap-names*)
       (pass-prelude "Library")
       (for-each (lambda (h)
-		   (restore-additional-heap (heap-file-name h)))
+		   (unless (member h *restored-heap-names*)
+		      (set! *restored-heap-names*
+			 (cons h *restored-heap-names*))
+		      (restore-additional-heap (heap-file-name h))))
 	 (reverse *additional-heap-names*))))
+
+;*---------------------------------------------------------------------*/
+;*    *restored-heap-names* ...                                        */
+;*---------------------------------------------------------------------*/
+(define *restored-heap-names* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    restore-additional-heap ...                                      */
@@ -148,15 +156,18 @@
 	  (let ((port (open-input-binary-file fname)))
 	     (if (not (binary-port? port))
 		 (let ((m (format "Cannot open heap file ~s" fname)))
-		    (error "restore-additional-heap" m *lib-dir*)
+		    (error (if (pair? *src-files*)
+			       (car *src-files*)
+			       "-")
+		       m *lib-dir*)
 		    (compiler-exit 6))
 		 (begin
 		    (verbose 2 "      [reading " fname "]" #\Newline)
 		    (unwind-protect
 		       (let* ((Envs (input-obj port))
-			      (_ (if (not (and (vector Envs)
-					       (=fx (vector-length Envs) 6)))
-				     (error heap "Corrupted heap" Envs)))
+			      (_ (unless (and (vector? Envs)
+					      (=fx (vector-length Envs) 6))
+				    (error heap "Corrupted heap" Envs)))
 			      (target (vector-ref Envs 0))
 			      (version (vector-ref Envs 1))
 			      (specific (vector-ref Envs 2))
@@ -217,7 +228,7 @@
 			  #t)
 		       (close-binary-port port)))))
 	  (let ((m (format "Cannot open heap file ~s" heap)))
-	     (error 'restore-additional-heap m *lib-dir*)
+	     (error (if (pair? *src-files*) (car *src-files*) "-") m *lib-dir*)
 	     (compiler-exit 6)))))
 
 ;*---------------------------------------------------------------------*/

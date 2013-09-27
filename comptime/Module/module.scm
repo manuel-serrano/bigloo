@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Thu Apr 11 09:03:31 2013 (serrano)                */
+;*    Last change :  Thu Sep 19 11:57:46 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Feb 28 10:20:55 1998                          */
-;*    Last change :  Thu Apr 11 16:46:40 2013 (serrano)                */
+;*    Last change :  Thu Sep 19 11:59:07 2013 (serrano)                */
 ;*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler library clause compilation                          */
@@ -111,15 +111,17 @@
 			    ,(when (and (libinfo-init_s info)
 					(backend-pragma-support (the-backend)))
 				`(pragma ,(format "~a()"
-						  (libinfo-init_s info))))
+					     (libinfo-init_s info))))
 			    ,(when (libinfo-module_s info)
 				(let ((v (find-global 'module-initialization
-						      (libinfo-module_s info))))
-				   (when (global? v)
-				      (let ((f (if (string? (car *src-files*))
-						   (car *src-files*)
-						   "-")))
-					 `(,v 0 ,f)))))
+					    (libinfo-module_s info))))
+				   (if (global? v)
+				       (let ((f (if (string? (car *src-files*))
+						    (car *src-files*)
+						    "-")))
+					  `(,v 0 ,f))
+				       (error 'library "Cannot find library init module"
+					  (libinfo-module_s info)))))
 			    ,(when (libinfo-init info)
 				`(,(libinfo-init info)))))))
-	       (delete-duplicates *additional-bigloo-libraries*)))
+      (delete-duplicates *additional-bigloo-libraries*)))
