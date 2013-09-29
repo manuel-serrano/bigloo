@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr  5 10:36:38 2013 (serrano)                */
+/*    Last change :  Sun Sep 29 14:36:02 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2268,6 +2268,8 @@ BGL_RUNTIME_DECL int FLOAT_TO_INT_BITS( float );
 BGL_RUNTIME_DECL float INT_BITS_TO_FLOAT( int );
 #endif
 
+#define RANDOMFL() ((double)rand()/RAND_MAX)
+   
 #if BGL_ISOC99 || defined( __USE_ISOC99 )
 #  define BGL_SIGNBIT( a ) signbit( a ) 
 #  define BGL_NAN ((double) NAN)

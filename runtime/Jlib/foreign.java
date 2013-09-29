@@ -1368,6 +1368,11 @@ public final class foreign
 	 return Float.intBitsToFloat( n );
       }
 
+   public static double RANDOMFL()
+      {
+	 return (double) randg.nextDouble();
+      }
+   
    // Open functions
    public static boolean EQ_FL(double n1, double n2)
       {

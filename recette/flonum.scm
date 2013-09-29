@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 11:59:37 1992                          */
-;*    Last change :  Tue Jan 18 12:23:01 2011 (serrano)                */
+;*    Last change :  Sun Sep 29 14:38:25 2013 (serrano)                */
 ;*                                                                     */
 ;*    On test un peu les flotants (il le faut bien).                   */
 ;*---------------------------------------------------------------------*/
@@ -106,4 +106,5 @@
    (test "int-bits.0" (float->int-bits 5.6904566139035e-28) #x12345678)
    (test "int-bits.1" (int-bits->float (float->int-bits 3.1415)) 3.1415)
    (test "int-bits.2" (float->int-bits 1.0) (bit-lsh #x3f80 16))
-   (test "int-bits.3" (float->int-bits +inf.0) (bit-lsh #x7f80 16)))
+   (test "int-bits.3" (float->int-bits +inf.0) (bit-lsh #x7f80 16))
+   (test "randomfl" (let ((n (randomfl))) (and (>=fl n 0.) (<=fl n 1.))) #t))

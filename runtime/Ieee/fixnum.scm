@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Nov 18 11:40:14 2012 (serrano)                */
+;*    Last change :  Sun Sep 29 14:30:20 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1525,40 +1525,33 @@
 ;*---------------------------------------------------------------------*/
 (define (string->integer string . radix)
    (let ((r (if (null? radix) 10 (car radix))))
-      (case r
-	 ((2 8 10 16)
-	  (strtol string 0 r))
-	 (else
-	  (error "string->integer" "Illegal radix" r)))))
+      (if (and (>=fx r 2) (<=fx r 36))
+	  (strtol string 0 r)
+	  (error "string->integer" "Illegal radix" r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->elong ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (string->elong string . radix)
    (let ((r (if (null? radix) 10 (car radix))))
-      (case r
-	 ((2 8 10 16)
-	  (strtoel string 0 r))
-	 (else
-	  (error "string->elong" "Illegal radix" r)))))
+      (if (and (>=fx r 2) (<=fx r 36))
+	  (strtoel string 0 r)
+	  (error "string->elong" "Illegal radix" r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->llong ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (string->llong string . radix)
    (let ((r (if (null? radix) 10 (car radix))))
-      (case r
-	 ((2 8 10 16)
-	  (strtoll string 0 r))
-	 (else
-	  (error "string->llong" "Illegal radix" r)))))
+      (if (and (>=fx r 2) (<=fx r 36))
+	  (strtoll string 0 r)
+	  (error "string->llong" "Illegal radix" r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->bignum ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (string->bignum string #!optional (radix::long 10))
-  (if (and (>=fx radix 2)
-	   (<=fx radix 36))
+  (if (and (>=fx radix 2) (<=fx radix 36))
       ($string->bignum string radix)
       (error "string->bignum" "Illegal radix" radix)))
 

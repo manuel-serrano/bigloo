@@ -831,6 +831,7 @@ These two functions implement the unary function @code{-}.
 @end deffn
 
 @deffn {bigloo procedure} random z
+@deffnx {bigloo procedure} randomfl
 @deffnx {bigloo procedure} randombx z
 @deffnx {bigloo procedure} seed-random! z
 the @code{random} function returns a pseudo-random integer between 0
@@ -838,6 +839,8 @@ and @var{z}.
 
 If no seed value is provided,  the @code{random} function  is  automatically
 seeded with a value of 1.
+
+The function @code{randomfl} returns a double in the range [0..1].
 @end deffn
 
 @deffn {procedure} exp z
