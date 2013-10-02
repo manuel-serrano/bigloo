@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun May 18 08:35:34 1997                          */
-/*    Last change :  Sun Dec 20 15:57:11 2009 (serrano)                */
+/*    Last change :  Tue Oct  1 09:14:16 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    UCS-2 Characters management.                                     */
 /*    -------------------------------------------------------------    */
@@ -1380,9 +1380,15 @@ ucs2_letterp( ucs2_t ch ) {
 /*    bool_t                                                           */
 /*    ucs2_whitespacep ...                                             */
 /*    -------------------------------------------------------------    */
+/*    MS: As of 1 Oct 2013, some white characters are omitted          */
+/*    (see http://en.wikipedia.org/wiki/Whitespace_character for the   */
+/*    exhaustive list of whitespaces).                                 */
+/*    Since I don't understand the tables organisation, I have         */
+/*    manually patched the test below.                                 */
+/*    -------------------------------------------------------------    */
 /*    A character is a whitespace if and only if it satisfies one      */
 /*    of the following criteria:                                       */
-/*       - It is a unicode space separator (category "Zs") byt is      */
+/*       - It is a unicode space separator (category "Zs") but is      */
 /*         not a no-break space #u00a0 #ufeff                          */
 /*       - It is a unicode line separator ("Zl")                       */
 /*       - It is a unicode paragraph separator ("Zp")                  */
@@ -1392,7 +1398,16 @@ ucs2_letterp( ucs2_t ch ) {
 BGL_RUNTIME_DEF
 bool_t
 ucs2_whitespacep( ucs2_t ch ) {
-   return (A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch&0x3F) ] ] & 0x00070000) == 0x00040000;
+   return ((A[ (int)Y[ (X[ ch>>6 ]<<6) | (ch&0x3F) ] ] & 0x00070000) == 0x00040000)
+      || (ch == 0x0085)
+      || (ch == 0x00a0)
+      || ((ch >= 0x1680)
+	  && 
+	  ((ch == 0x1680)
+	   || (ch == 0x180e)
+	   || (ch == 0x202f)
+	   || (ch == 0x205f)
+	   || (ch == 0x3000)));
 }
 
 /*---------------------------------------------------------------------*/

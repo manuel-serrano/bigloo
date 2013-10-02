@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Thu Jun 13 19:12:01 2013 (serrano)                */
+/*    Last change :  Tue Oct  1 17:25:13 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -469,8 +469,13 @@ utf8_size( ucs2_t ucs2 ) {
       return 3;
    if( ucs2 <= 0xdfff )
       /* df is 11011111 */
-      C_FAILURE( "utf8_size", "Illegal ucs2 character", BUCS2( ucs2 ) );
+      /* see http://en.wikipedia.org/wiki/UTF-16 */
+      return 4;
+/*       C_FAILURE( "utf8_size", "Illegal ucs2 character", BUCS2( ucs2 ) ); */
    if( ucs2 <= 0xfffd )
+      return 3;
+   if( ucs2 <= 0xffff )
+      /* see http://en.wikipedia.org/wiki/UTF-16 */
       return 3;
    
    C_FAILURE( "utf8_size", "Illegal ucs2 character", BUCS2( ucs2 ) );
@@ -508,14 +513,27 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
       if( len == 1 )
 	 cresult[ write++ ] = (unsigned char)ucs2;
       else {
-	 if( len == 3 ) {
-	    cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	    ucs2 >>= 6;
+	 switch( len ) {
+	    case 4:
+	       cresult[ write + 3 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	       ucs2 >>= 6;
+	       cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3));
+	       ucs2 >>= 2;
+	       cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3));
+	       cresult[ write ] = 0xf3;
+	       write += len;
+	       break;
+	       
+	    case 3:
+	       cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	       ucs2 >>= 6;
+	       
+	    default:
+	       cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	       ucs2 >>= 6;
+	       cresult[ write ] = (unsigned char)(0xff - (0xff >> len) + ucs2);
+	       write += len;
 	 }
-	 cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	 ucs2 >>= 6;
-	 cresult[ write ] = (unsigned char)(0xff - (0xff >> len) + ucs2);
-	 write += len;
       }
    }
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Sep 20 15:42:27 2013 (serrano)                */
+;*    Last change :  Tue Oct  1 07:22:42 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -164,6 +164,7 @@
 	    (inline ucs2-string->utf8-string::bstring ::ucs2string)
 	    (inline utf8-string->ucs2-string::ucs2string ::bstring)
 	    (inverse-utf8-table ::vector)
+	    (utf8-char-size::long c::char)
 	    (utf8-string?::bool ::bstring)
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
@@ -331,9 +332,9 @@
    ;; no macro on inline so we don't use `and'
    (if (if (>=fx end start)
 	   (if ($string-bound-check? start
-				     (+fx (ucs2-string-length ucs2-string) 1))
+		  (+fx (ucs2-string-length ucs2-string) 1))
 	       ($string-bound-check? end
-				     (+fx (ucs2-string-length ucs2-string) 1))
+		  (+fx (ucs2-string-length ucs2-string) 1))
 	       #f)
 	   #f)
        (c-subucs2-string ucs2-string start end)
