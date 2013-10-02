@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Sep 24 18:44:59 2013 (serrano)                */
+;*    Last change :  Wed Oct  2 16:19:19 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -392,7 +392,7 @@
 			     "-copt" ,*cflags-optim*
 			     "-static-all-bigloo"))) 
       ;; optimization
-      (("-O?opt" (help "-O[2..6]" "Optimization modes"))
+      (("-O?opt" (help "-O[0..6]" "Optimization modes"))
        (parse-optim-args opt))
       ;; cfa optimizations
       (("-fcfa-arithmetic" (help "Enable arithmetic spec. (see -farithmetic-overflow)"))
@@ -1177,6 +1177,10 @@
    (set! *optim-symbol-case* #t)
    (if (> (string-length string) 0)
        (case (string-ref string 0)
+	  ((#\0)
+	   (set! *optim* 0))
+	  ((#\1)
+	   (set! *optim* 1))
 	  ((#\2)
 	   (-O2!)
 	   (set! *optim* 2))
