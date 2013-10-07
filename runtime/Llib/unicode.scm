@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Oct  1 07:22:42 2013 (serrano)                */
+;*    Last change :  Mon Oct  7 14:34:02 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -168,6 +168,7 @@
 	    (utf8-string?::bool ::bstring)
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
+	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-substring::bstring string::bstring ::long #!optional (end::long (utf8-string-length string)))
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
@@ -653,9 +654,21 @@
 		   ((<fx n #xc2)
 		    ;; error, reserved
 		    #f)
+		   ((<fx n #xdf)
+		    ;; two chars encoding
+		    (when (and (<fx (+fx 1 r) len)
+			       (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
+		       (loop (+fx r 2))))
+		   ((and (>=fx n #xd8) (<=fx n #xdb))
+		    ;; utf16 escape
+		    (when (and (<fx r (-fx len 3))
+			       (in-range? (string-ref str (+fx r 1)) #xdc #xdf)
+			       (in-range? (string-ref str (+fx r 2)) #xdc #xdf)
+			       (in-range? (string-ref str (+fx r 3)) #xdc #xdf))
+		       (loop (+fx r 4))))
 		   ((<=fx n #xdf)
-		    ;; 2 bytes sequence
-		    (when (and (<fx r (-fx len 1))
+		    ;; utf16 error
+		    (when (and (<fx (+fx 1 r) len)
 			       (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
 		       (loop (+fx r 2))))
 		   ((<=fx n #xef)
@@ -671,10 +684,10 @@
 			       (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 			       (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
 		       (loop (+fx r 4))))
-		   ((=fx n #xf4)
+		   ((or (=fx n #xf4) (=fx n #xf8) (=fx n #xfc))
 		    ;; 4 bytes sequence special2
 		    (when (and (<fx r (-fx len 3))
-			       (in-range? (string-ref str (+fx r 1)) #x80 #x8f)
+			       (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
 			       (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 			       (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
 		       (loop (+fx r 4))))
@@ -686,9 +699,20 @@
 			       (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
 		       (loop (+fx r 4))))
 		   ((<=fx n #xfb)
-		    (loop (+fx r 5)))
+		    (when (and (<fx r (-fx len 4))
+			       (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 3)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 4)) #x80 #xbf))
+		       (loop (+fx r 5))))
 		   ((<=fx n #xfd)
-		    (loop (+fx r 6)))
+		    (when (and (<fx r (-fx len 5))
+			       (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 3)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 4)) #x80 #xbf)
+			       (in-range? (string-ref str (+fx r 5)) #x80 #xbf))
+		       (loop (+fx r 6))))
 		   (else
 		    #f)))))))
 
@@ -704,7 +728,9 @@
 	 ((<=fx n #xdf) 2)
 	 ((<=fx n #xef) 3)
 	 ((or (=fx n #xf0) (=fx n #xf4) (<=fx n #xf7)) 4)
+	 ((=fx n #xf8) 4) ;; see utf8-string-append
 	 ((<=fx n #xfb) 5)
+	 ((=fx n #xfc) 4) ;; see utf8-string-append
 	 ((<=fx n #xfd) 6)
 	 (else (error "utf8-string" "Badly formed UTF8 string" c)))))
 
@@ -720,6 +746,61 @@
 	 (if (=fx r len)
 	     l
 	     (loop (+fx r (utf8-char-size (string-ref str r))) (+fx l 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-append ...                                           */
+;*    -------------------------------------------------------------    */
+;*    UTF8 string-append. This function assumes an illegal code point  */
+;*    for halt UTF16 code point concatanated during a string-append.   */
+;*    See the function cucs2_string_to_utf8_string defined in          */
+;*    bigloo/runtime/Clib/cunicode.c                                   */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-append left right)
+   (let ((lenf (string-length left)))
+      (if (and (>=fx lenf 4)
+	       (=fx (char->integer (string-ref-ur left (-fx lenf 4))) #xf8))
+	  (let ((lenr (string-length right)))
+	     (if (>=fx lenr 4)
+		 (let ((cr1 (char->integer (string-ref-ur right 0))))
+		    (if (=fx cr1 #xfc)
+			(let* ((tmp ($make-string/wo-fill (+fx (-fx lenf 4) lenr)))
+			       (cl1 (char->integer (string-ref-ur left (-fx lenf 4))))
+			       (cl2 (char->integer (string-ref-ur left (-fx lenf 3))))
+			       (cl3 (char->integer (string-ref-ur left (-fx lenf 2))))
+			       (cl4 (char->integer (string-ref-ur left (-fx lenf 1))))
+			       (cr2 (char->integer (string-ref-ur right 1)))
+			       (cr3 (char->integer (string-ref-ur right 2)))
+			       (cr4 (char->integer (string-ref-ur right 3)))
+			       (zzzzzz (bit-and #b111111 cr4))
+			       (yyyy (bit-and #b1111 cr3))
+			       (xx (bit-and (bit-rsh cl3 4) #b11))
+			       (wwww (bit-and cl3 #b1111))
+			       (uuuuu (bit-or
+					 (bit-lsh (bit-and cl4 #b111) 2)
+					 (bit-and (bit-rsh cl2 4) #b11))))
+			   (blit-string! left 0 tmp 0 (-fx lenf 4))
+			   (blit-string! right 2 tmp (-fx lenf 2) (-fx lenr 2))
+			   ;; byte 1
+			   (string-set! tmp (-fx lenf 4)
+			      (integer->char
+				 (bit-or
+				    (bit-and cl1 #b11110000)
+				    (bit-rsh uuuuu 2))))
+			   ;; byte 2
+			   (string-set! tmp (-fx lenf 3)
+			      (integer->char cl2))
+			   ;; byte 3
+			   (string-set! tmp (-fx lenf 2)
+			      (integer->char
+				 (bit-or #x80
+				    (bit-or (bit-lsh xx 4) yyyy))))
+			   ;; byte 4
+			   (string-set! tmp (-fx lenf 1)
+			      (integer->char cr4))
+			   tmp)
+			(string-append left right)))
+		 (string-append left right)))
+	  (string-append left right))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-ref ...                                              */

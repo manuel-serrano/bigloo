@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Tue Oct  1 17:25:13 2013 (serrano)                */
+/*    Last change :  Mon Oct  7 11:12:38 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -467,11 +467,12 @@ utf8_size( ucs2_t ucs2 ) {
       return 2;
    if( ucs2 <= 0xd7ff )
       return 3;
-   if( ucs2 <= 0xdfff )
-      /* df is 11011111 */
-      /* see http://en.wikipedia.org/wiki/UTF-16 */
+   if( ucs2 <= 0xdbff )
+      /* utf16 extension, see http://en.wikipedia.org/wiki/UTF-16 */
       return 4;
-/*       C_FAILURE( "utf8_size", "Illegal ucs2 character", BUCS2( ucs2 ) ); */
+   if( ucs2 <= 0xdfff )
+      return 4;
+   //C_FAILURE( "utf8_size", "Illegal ucs2 character", BUCS2( ucs2 ) );
    if( ucs2 <= 0xfffd )
       return 3;
    if( ucs2 <= 0xffff )
@@ -504,39 +505,101 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
    /* now, we allocate the new string */
    result  = make_string( utf8_len, '0' );
    cresult = BSTRING_TO_STRING( result );
-   
+
    /* and we fill it */
    for( read = 0, write = 0; read < len; read++ ) {
       ucs2_t ucs2 = cucs2[ read ];
-      int len  = utf8_size( ucs2 );
+      int ulen  = utf8_size( ucs2 );
 
-      if( len == 1 )
-	 cresult[ write++ ] = (unsigned char)ucs2;
-      else {
-	 switch( len ) {
-	    case 4:
-	       cresult[ write + 3 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	       ucs2 >>= 6;
-	       cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3));
-	       ucs2 >>= 2;
-	       cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3));
-	       cresult[ write ] = 0xf3;
-	       write += len;
+      switch( ulen ) {
+	 case 1:
+	    cresult[ write++ ] = (unsigned char)ucs2;
+	    break;
+	    
+	 case 4: 
+	    if( read < len - 1 ) {
+	       /* www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.4 */
+	       ucs2_t nu = cucs2[ read + 1 ];
+
+	       if( (nu >= 0xdc00) && (nu <= 0xdfff) ) {
+		  read++;
+		  int zzzzzz = (nu & 0x3f);
+		  int yyyy = (nu & 0x3ff) >> 6;
+		  int xx = ucs2 & 3;
+		  int wwww = (ucs2 >> 2) & 0xf;
+		  int vvvv = (ucs2 >> 6) & 0xf;
+		  int uuuuu = vvvv + 1;
+
+		  cresult[ write + 3 ] =
+		     (unsigned char)(zzzzzz + 0x80);
+		  cresult[ write + 2 ] =
+		     (unsigned char)((xx << 4) | yyyy) + 0x80;
+		  cresult[ write + 1 ] =
+		     (unsigned char)(((uuuuu & 3) << 4)| wwww) + 0x80;
+		  cresult[ write ] =
+		     (unsigned char)(0xf0 | (uuuuu >> 2));
+
+		  utf8_len -= 4;
+		  write += ulen;
+		  break;
+	       }
+	    } 
+
+	    if( (ucs2 >= 0xd800) && (ucs2 <= 0xdbff) ) {
+	       /* See http://en.wikipedia.org/wiki/UTF-8, section   */
+	       /* Invalid code points.                              */
+	       /* We encode, half utf16 #xdc00-#dbff with the       */
+	       /* illegal code point #xf8, and 3 following bytes.   */
+	       /* This allows an application to implement a correct */
+	       /* utf8 string-append.                               */
+	       int xx = ucs2 & 3;
+	       int wwww = (ucs2 >> 2) & 0xf;
+	       int vvvv = (ucs2 >> 6) & 0xf;
+	       int uuuuu = vvvv + 1;
+
+	       cresult[ write + 3 ] =
+		  (unsigned char)(0x80 | (uuuuu >> 2));
+	       cresult[ write + 2 ] =
+		  (unsigned char)(xx << 4) + 0x80;
+	       cresult[ write + 1 ] =
+		  (unsigned char)(((uuuuu & 3) << 4) | wwww) + 0x80;
+	       cresult[ write ] =
+		  (unsigned char)0xf8;
+	       
+	       write += ulen;
 	       break;
+	    } else {
+	       int nu = ucs2;
+	       int zzzzzz = (nu & 0x3f);
+	       int yyyy = (nu & 0x3ff) >> 6;
+
+	       cresult[ write + 3 ] =
+		  (unsigned char)(zzzzzz + 0x80);
+	       cresult[ write + 2 ] =
+		  (unsigned char)(yyyy + 0x80);
+	       cresult[ write + 1 ] =
+		  (unsigned char)0x80;
+	       cresult[ write  ] =
+		  (unsigned char)0xfc;
+
+	       write += ulen;
+	       break;
+	    }
 	       
-	    case 3:
-	       cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	       ucs2 >>= 6;
+	 case 3:
+	    cresult[ write + 2 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	    ucs2 >>= 6;
 	       
-	    default:
-	       cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
-	       ucs2 >>= 6;
-	       cresult[ write ] = (unsigned char)(0xff - (0xff >> len) + ucs2);
-	       write += len;
-	 }
+	 default:
+	    cresult[ write + 1 ] = (unsigned char)(0x80 + (ucs2 & 0x3f));
+	    ucs2 >>= 6;
+	    cresult[ write ] = (unsigned char)(0xff - (0xff >> ulen) + ucs2);
+	    write += ulen;
       }
    }
 
+   result = bgl_string_shrink( result, utf8_len );
+   
    return result;
 }
 

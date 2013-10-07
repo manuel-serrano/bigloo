@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Sep 13 08:10:24 2013 (serrano)                */
+;*    Last change :  Sat Oct  5 21:26:33 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -207,6 +207,7 @@
    (let ((weak (case weak
 		  ((keys) (weak-keys))
 		  ((data) (weak-data))
+		  ((both) (weak-both))
 		  ((none) (weak-none))
 		  (else (if weak (weak-data) (weak-none))))))
       (%hashtable 0 max-bucket-length (make-vector size '()) eqtest hash weak

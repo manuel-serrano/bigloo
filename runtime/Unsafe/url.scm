@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Tue Aug 14 15:44:57 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Mon Oct  7 15:49:20 2013 (serrano)                */
+;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
 ;*=====================================================================*/
@@ -48,6 +48,7 @@
    (export (url-parse ::obj)
 	   (url-sans-protocol-parse ::obj ::bstring)
 	   (http-url-parse ::obj)
+	   (url?::bool ::bstring)
 	   (url-path-encode::bstring ::bstring)
 	   (url-encode::bstring ::bstring)
 	   (url-decode::bstring ::bstring)
@@ -274,15 +275,13 @@
 	 (if (=fx i ol)
 	     n
 	     (let ((c (string-ref str i)))
-		(case c
-		   ((#\# #\Space #\" #\' #\+ #\& #\= #\% #\? #\: #\Newline #\^ #\[ #\] #\\ #\< #\>)
+		(cond
+		   ((string-index "# \"'+&=%?:\n^[]\<>;" c)
+		    (loop (+fx i 1) (+fx n 3)))
+		   ((or (char<? c #a032) (char>=? c #a123))
 		    (loop (+fx i 1) (+fx n 3)))
 		   (else
-		    (cond
-		       ((or (char<? c #a032) (char>=? c #a123))
-			(loop (+fx i 1) (+fx n 3)))
-		       (else
-			(loop (+fx i 1) (+fx n 1))))))))))
+		    (loop (+fx i 1) (+fx n 1))))))))
    
    (define (encode str ol nl)
       (if (=fx nl ol)
@@ -293,18 +292,16 @@
 		(if (=fx j nl)
 		    res
 		    (let ((c (string-ref str i)))
-		       (case c
-			  ((#\# #\Space #\" #\' #\+ #\& #\= #\% #\? #\: #\Newline #\^ #\[ #\] #\\ #\< #\>)
+		       (cond
+			  ((string-index "# \"'+&=%?:\n^[]\<>;" c)
+			   (encode-char res j c)
+			   (loop (+fx i 1) (+fx j 3)))
+			  ((or (char<? c #a032) (char>=? c #a123))
 			   (encode-char res j c)
 			   (loop (+fx i 1) (+fx j 3)))
 			  (else
-			   (if (or (char<? c #a032) (char>=? c #a123))
-			       (begin
-				  (encode-char res j c)
-				  (loop (+fx i 1) (+fx j 3)))
-			       (begin
-				  (string-set! res j c)
-				  (loop (+fx i 1) (+fx j 1))))))))))))
+			   (string-set! res j c)
+			   (loop (+fx i 1) (+fx j 1))))))))))
    
    (let ((ol (string-length str)))
       (encode str ol (count str ol))))
@@ -323,17 +320,44 @@
 		 (format "~a://~a:~a~a" scheme host port epath))))))
 
 ;*---------------------------------------------------------------------*/
+;*    url? ...                                                         */
+;*    -------------------------------------------------------------    */
+;*    Is a string a valid URL?                                         */
+;*---------------------------------------------------------------------*/
+(define (url? str)
+   (let ((len (string-length str)))
+      (let loop ((i 0))
+	 (if (=fx i len)
+	     #t
+	     (let ((c (string-ref str i)))
+		(cond
+		   ((char=? c #\%)
+		    (if (and (<=fx i (-fx len 3))
+			     (char-hexnumeric? (string-ref str (+fx i 1)))
+			     (char-hexnumeric? (string-ref str (+fx i 2))))
+			(loop (+fx i 3))
+			#f))
+		   ((char<=? c #a127)
+		    (loop (+fx i 1)))
+		   (else
+		    (loop (+fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    char-value ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (char-value c)
+   (cond
+      ((char-numeric? c)
+       (-fx (char->integer c) (char->integer #\0)))
+      ((char<=? c #\F)
+       (+fx 10 (-fx (char->integer c) (char->integer #\A))))
+      (else
+       (+fx 10 (-fx (char->integer c) (char->integer #\a))))))
+
+;*---------------------------------------------------------------------*/
 ;*    url-string-decode-inner! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (url-string-decode-inner! str ol nl res)
-   (define (char-value c)
-      (cond
-	 ((char-numeric? c)
-	  (-fx (char->integer c) (char->integer #\0)))
-	 ((char<=? c #\F)
-	  (+fx 10 (-fx (char->integer c) (char->integer #\A))))
-	 (else
-	  (+fx 10 (-fx (char->integer c) (char->integer #\a))))))
    (let ((ol-2 (-fx ol 2)))
       (let loop ((i 0)
 		 (j 0))
@@ -346,9 +370,16 @@
 		       (if (and (char-hexnumeric? c1) (char-hexnumeric? c2))
 			   (let* ((v1 (char-value c1))
 				  (v2 (char-value c2))
-				  (d (integer->char (+fx (*fx v1 16) v2))))
-			      (string-set! res j d)
-			      (loop (+fx i 3) (+fx j 1)))
+				  (d (+fx (*fx v1 16) v2)))
+			      (case d
+				 ((#x23 #x24 #x26 #x2b #x2c #x2f #x3a #x3b #x3d #x3f #x40)
+				  (string-set! res j c)
+				  (string-set! res (+fx j 1) c1)
+				  (string-set! res (+fx j 2) c2)
+				  (loop (+fx i 3) (+fx j 3)))
+				 (else
+				  (string-set! res j (integer->char d))
+				  (loop (+fx i 3) (+fx j 1)))))
 			   (begin
 			      (string-set! res j c)
 			      (loop (+fx i 1) (+fx j 1)))))
@@ -366,10 +397,19 @@
 	 ((=fx i -1)
 	  c)
 	 ((char=? (string-ref str i) #\%)
-	  (if (and (char-hexnumeric? (string-ref str (+fx i 1)))
-		   (char-hexnumeric? (string-ref str (+fx i 2))))
-	      (loop (-fx i 1) (+fx c 1))
-	      (loop (-fx i 1) c)))
+	  (let ((c1 (string-ref str (+fx i 1)))
+		(c2 (string-ref str (+fx i 2))))
+	     (if (and (char-hexnumeric? c1)
+		      (char-hexnumeric? c2))
+		 (let* ((v1 (char-value c1))
+			(v2 (char-value c2))
+			(d (+fx (*fx v1 16) v2)))
+		    (case d
+		       ((#x23 #x24 #x26 #x2b #x2c #x2f #x3a #x3b #x3d #x3f #x40)
+			(loop (-fx i 1) c))
+		       (else
+			(loop (-fx i 1) (+fx c 1)))))
+		 (loop (-fx i 1) c))))
 	 (else
 	  (loop (-fx i 1) c)))))
 

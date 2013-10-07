@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Fri Feb 18 15:18:39 2011 (serrano)                */
+;*    Last change :  Sat Oct  5 21:26:27 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -32,6 +32,7 @@
 	    __tvector
             __weakptr
 	    __bignum
+	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
 	    __r4_numbers_6_5_flonum_dtoa
@@ -519,6 +520,11 @@
 	   (new-bucks-len (*fx 2 old-bucks-len))
 	   (new-bucks (make-vector new-bucks-len '()))
 	   (count (%hashtable-size table)))
+       ;; enlarge the max-bucket-len
+      (let ((nmax (* (%hashtable-max-bucket-len table)
+		     (%hashtable-bucket-expansion table))))
+	 (%hashtable-max-bucket-len-set! table
+	    (if (flonum? nmax) (flonum->fixnum nmax) nmax)))
        (%hashtable-buckets-set! table new-bucks)
        (let loop ((i 0))
 	  (when (<fx i old-bucks-len)

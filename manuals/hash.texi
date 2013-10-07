@@ -38,15 +38,14 @@ hash tables rely on @code{hashtable-equal?}, which is defined as:
             (string=? obj1 obj2))))
 @end smalllisp
 
-The argument @var{hash} specifies an
-hashing function. It defaults to @var{get-hashnumber}. 
-The arguments @var{weak-keys} and @var{weak-data} specify respectively whether
-the hash table should use weak pointers to store the keys and/or the data.
-By default a hash table uses strong pointers for both keys and data.
-Each optional
-arguments @var{size}, @var{max-bucket-len}, @var{eqtest}, 
-@var{hash}, @var{weak-keys}, and @var{weak-data} can be bound to the Bigloo 
-value @code{#unspecified} which forces its default. 
+The argument @var{hash} specifies an hashing function. It defaults to
+@var{get-hashnumber}.  The arguments @var{weak-keys}, @var{weak-data},
+and @var{weak-both} specify respectively whether the hash table should
+use weak pointers to store the keys and/or the data.  By default a
+hash table uses strong pointers for both keys and data.  Each optional
+arguments @var{size}, @var{max-bucket-len}, @var{eqtest}, @var{hash},
+@var{weak-keys}, and @var{weak-data} can be bound to the Bigloo value
+@code{#unspecified} which forces its default.
 
 The argument @var{max-length} specifies a maximum length (in number of
 buckets) for this hashtable. It defaults to @code{16384}. If during the
