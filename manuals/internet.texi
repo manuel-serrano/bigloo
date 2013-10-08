@@ -103,7 +103,7 @@ Encode a URL by removing any illegal character.
 @deffnx {bigloo procedure} url-decode! url
 @deffnx {bigloo procedure} uri-decode url
 @deffnx {bigloo procedure} uri-decode! url
-@deffn {bigloo procedure} uri-decode-component url
+@deffnx {bigloo procedure} uri-decode-component url
 @deffnx {bigloo procedure} uri-decode-component! url
 Decode a URL. The function @code{url-decode!} may return its argument
 unmodified if no decoding is for the URL.
