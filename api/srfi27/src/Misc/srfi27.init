@@ -15,7 +15,7 @@
 (declare-library! 'srfi27
 		  :srfi '(srfi27)
 		  :basename "bigloosrfi27"
-		  :module-init '__srfi27_bibtex
+		  :module-init '__srfi27
 		  :module-eval '__srfi27_makelib
 		  :class-init "bigloo.srfi27.bibtex"
 		  :class-eval "bigloo.srfi27.make_lib")
