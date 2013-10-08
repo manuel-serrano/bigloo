@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Oct  7 14:34:02 2013 (serrano)                */
+;*    Last change :  Tue Oct  8 11:42:06 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -165,7 +165,7 @@
 	    (inline utf8-string->ucs2-string::ucs2string ::bstring)
 	    (inverse-utf8-table ::vector)
 	    (utf8-char-size::long c::char)
-	    (utf8-string?::bool ::bstring)
+	    (utf8-string?::bool ::bstring #!optional strict)
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
@@ -635,7 +635,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string? ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string? str)
+(define (utf8-string? str #!optional strict)
    
    (define (in-range? c minc maxc)
       (let ((n (char->integer c)))
@@ -684,7 +684,8 @@
 			       (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 			       (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
 		       (loop (+fx r 4))))
-		   ((or (=fx n #xf4) (=fx n #xf8) (=fx n #xfc))
+		   ((or (=fx n #xf4)
+			(and (or (=fx n #xf8) (=fx n #xfc)) (not strict)))
 		    ;; 4 bytes sequence special2
 		    (when (and (<fx r (-fx len 3))
 			       (in-range? (string-ref str (+fx r 1)) #x80 #xbf)

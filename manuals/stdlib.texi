@@ -1525,9 +1525,13 @@ Physically upcases the @var{s-ucs2} argument.
 Convert UCS-2 strings to (or from) UTF-8 encoded ascii strings.
 @end deffn
 
-@deffn {bigloo procedure} utf8-string? string
+@deffn {bigloo procedure} utf8-string? string [strict @code{#f}]
 Returns @code{#t} if and only if the argument @var{string} is a well formed
 UTF8 string. Otherwise returns @code{#f}.
+
+If the optional argument @var{strict} is @code{#t}, half utf16-surrogates are
+rejected. The optional argument @var{strict} defaults to @code{#f}.
+
 @end deffn
 
 @deffn {bigloo procedure} utf8-string-length string

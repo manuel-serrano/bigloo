@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 13:32:00 2005                          */
-;*    Last change :  Mon Oct  7 15:49:20 2013 (serrano)                */
+;*    Last change :  Tue Oct  8 12:20:02 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    URL parsing                                                      */
@@ -50,9 +50,15 @@
 	   (http-url-parse ::obj)
 	   (url?::bool ::bstring)
 	   (url-path-encode::bstring ::bstring)
+	   (uri-encode::bstring ::bstring)
+	   (uri-encode-component::bstring ::bstring)
 	   (url-encode::bstring ::bstring)
 	   (url-decode::bstring ::bstring)
 	   (url-decode!::bstring ::bstring)
+	   (uri-decode::bstring ::bstring)
+	   (uri-decode::bstring ::bstring)
+	   (uri-decode-component::bstring ::bstring)
+	   (uri-decode-component!::bstring ::bstring)
 	   (www-form-urlencode::bstring ::pair-nil)
 	   (x-www-form-urlencode::bstring ::pair-nil)
 	   (www-form-urldecode::pair-nil ::bstring)))
@@ -265,9 +271,9 @@
 	     (string-set! res (+fx j 2) (int->char n2)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    url-path-encode ...                                              */
+;*    url-path-encode/set ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (url-path-encode str)
+(define (url-path-encode/set str set)
    
    (define (count str ol)
       (let loop ((i 0)
@@ -276,9 +282,9 @@
 	     n
 	     (let ((c (string-ref str i)))
 		(cond
-		   ((string-index "# \"'+&=%?:\n^[]\<>;" c)
+		   ((string-index set c)
 		    (loop (+fx i 1) (+fx n 3)))
-		   ((or (char<? c #a032) (char>=? c #a123))
+		   ((or (char<? c #a032) (char>=? c #a127))
 		    (loop (+fx i 1) (+fx n 3)))
 		   (else
 		    (loop (+fx i 1) (+fx n 1))))))))
@@ -293,10 +299,10 @@
 		    res
 		    (let ((c (string-ref str i)))
 		       (cond
-			  ((string-index "# \"'+&=%?:\n^[]\<>;" c)
+			  ((string-index set c)
 			   (encode-char res j c)
 			   (loop (+fx i 1) (+fx j 3)))
-			  ((or (char<? c #a032) (char>=? c #a123))
+			  ((or (char<? c #a032) (char>=? c #a127))
 			   (encode-char res j c)
 			   (loop (+fx i 1) (+fx j 3)))
 			  (else
@@ -305,6 +311,24 @@
    
    (let ((ol (string-length str)))
       (encode str ol (count str ol))))
+
+;*---------------------------------------------------------------------*/
+;*    url-path-encode ...                                              */
+;*---------------------------------------------------------------------*/
+(define (url-path-encode str)
+   (url-path-encode/set str "# \"'+&=%?:\n^[]\<>;{|}~"))
+
+;*---------------------------------------------------------------------*/
+;*    uri-encode ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (uri-encode str)
+   (url-path-encode/set str " \"%\n^[]\<>"))
+
+;*---------------------------------------------------------------------*/
+;*    uri-encode-component ...                                         */
+;*---------------------------------------------------------------------*/
+(define (uri-encode-component str)
+   (url-path-encode/set str "# \"+=%?:\n^[]\<>;/@&$,{|}"))
 
 ;*---------------------------------------------------------------------*/
 ;*    url-encode ...                                                   */
@@ -357,7 +381,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    url-string-decode-inner! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (url-string-decode-inner! str ol nl res)
+(define (url-string-decode-inner! str ol nl res set)
    (let ((ol-2 (-fx ol 2)))
       (let loop ((i 0)
 		 (j 0))
@@ -371,15 +395,15 @@
 			   (let* ((v1 (char-value c1))
 				  (v2 (char-value c2))
 				  (d (+fx (*fx v1 16) v2)))
-			      (case d
-				 ((#x23 #x24 #x26 #x2b #x2c #x2f #x3a #x3b #x3d #x3f #x40)
-				  (string-set! res j c)
-				  (string-set! res (+fx j 1) c1)
-				  (string-set! res (+fx j 2) c2)
-				  (loop (+fx i 3) (+fx j 3)))
-				 (else
-				  (string-set! res j (integer->char d))
-				  (loop (+fx i 3) (+fx j 1)))))
+			      (if (string-index set (integer->char d))
+				  (begin
+				     (string-set! res j c)
+				     (string-set! res (+fx j 1) c1)
+				     (string-set! res (+fx j 2) c2)
+				     (loop (+fx i 3) (+fx j 3)))
+				  (begin
+				     (string-set! res j (integer->char d))
+				     (loop (+fx i 3) (+fx j 1)))))
 			   (begin
 			      (string-set! res j c)
 			      (loop (+fx i 1) (+fx j 1)))))
@@ -390,7 +414,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    url-decode-count ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (url-decode-count str ol)
+(define (url-decode-count str ol set)
    (let loop ((i (-fx ol 3))
 	      (c 0))
       (cond
@@ -404,42 +428,76 @@
 		 (let* ((v1 (char-value c1))
 			(v2 (char-value c2))
 			(d (+fx (*fx v1 16) v2)))
-		    (case d
-		       ((#x23 #x24 #x26 #x2b #x2c #x2f #x3a #x3b #x3d #x3f #x40)
-			(loop (-fx i 1) c))
-		       (else
-			(loop (-fx i 1) (+fx c 1)))))
+		    (if (string-index set (integer->char d))
+			(loop (-fx i 1) c)
+			(loop (-fx i 1) (+fx c 1))))
 		 (loop (-fx i 1) c))))
 	 (else
 	  (loop (-fx i 1) c)))))
 
 ;*---------------------------------------------------------------------*/
-;*    url-decode ...                                                   */
+;*    url-decode/set ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (url-decode str)
+(define (url-decode/set str set)
    (let ((ol (string-length str)))
       (if (>=fx ol 3)
-	  (let ((count (url-decode-count str ol)))
+	  (let ((count (url-decode-count str ol set)))
 	     (if (=fx count 0)
 		 (string-copy str)
 		 (let* ((nl (-fx ol (*fx count 2)))
 			(res (make-string nl)))
-		    (url-string-decode-inner! str ol nl res))))
+		    (url-string-decode-inner! str ol nl res set))))
 	  (string-copy str))))
+
+;*---------------------------------------------------------------------*/
+;*    url-decode/set! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (url-decode/set! str set)
+   (let ((ol (string-length str)))
+      (if (>=fx ol 3)
+	  (let ((count (url-decode-count str ol set)))
+	     (if (=fx count 0)
+		 str
+		 (let* ((nl (-fx ol (*fx count 2)))
+			(res (make-string nl)))
+		    (url-string-decode-inner! str ol nl res set))))
+	  str)))
+
+;*---------------------------------------------------------------------*/
+;*    url-decode ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (url-decode str)
+   (url-decode/set str ""))
+
+;*---------------------------------------------------------------------*/
+;*    uri-decode ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (uri-decode str)
+   (url-decode/set str "#$&+,/:;=?@"))
+
+;*---------------------------------------------------------------------*/
+;*    uri-decode-component ...                                         */
+;*---------------------------------------------------------------------*/
+(define (uri-decode-component str)
+   (url-decode/set str ""))
 
 ;*---------------------------------------------------------------------*/
 ;*    url-decode! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (url-decode! str)
-   (let ((ol (string-length str)))
-      (if (>=fx ol 3)
-	  (let ((count (url-decode-count str ol)))
-	     (if (=fx count 0)
-		 str
-		 (let* ((nl (-fx ol (*fx count 2)))
-			(res (make-string nl)))
-		    (url-string-decode-inner! str ol nl res))))
-	  str)))
+   (url-decode/set! str ""))
+
+;*---------------------------------------------------------------------*/
+;*    uri-decode! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uri-decode! str)
+   (url-decode/set! str "#$&+,/:;=?@"))
+
+;*---------------------------------------------------------------------*/
+;*    uri-decode-component! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (uri-decode-component! str)
+   (url-decode/set! str ""))
 
 ;*---------------------------------------------------------------------*/
 ;*    form-urlencode ...                                               */
