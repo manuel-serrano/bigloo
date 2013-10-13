@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Thu Aug 22 07:16:07 2013 (serrano)                */
+;*    Last change :  Fri Oct 11 14:15:53 2013 (serrano)                */
 ;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -43,7 +43,9 @@
 ;*    read-heap ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (dump-heap heap)
-   (let ((fname (find-file/path heap *lib-dir*)))
+   (let ((fname (if (file-exists? heap)
+		    heap
+		    (find-file/path heap *lib-dir*))))
       (if (string? fname)
 	  (let ((port (open-input-binary-file fname)))
 	     (if (not (binary-port? port))
@@ -124,32 +126,55 @@
 	     (id (global-id new))
 	     (qt (module->qualified-type module))
 	     (jt (global-jvm-type-name new))
-	     (val (global-value new))
-	     (kind (cond
-		      ((sfun? val) 'function)
-		      ((cfun? val) 'native)
-		      (else 'variable))))
-	 (print "   " `(,kind
-			,(shape new)
-			"\n    "
-			(id ,id)
-			"\n    "
-			(module ,module)
-			"\n    "
-			(name ,(format "~s" (global-name new)))
-			"\n    "
-			(qualified-type ,qt)
-			,(if (and (sfun? val) (eq? (sfun-class val) 'sifun))
-			     "\n    "
-			     "")
-			,(if (and (sfun? val) (eq? (sfun-class val) 'sifun))
-			     `(inline ,(shape (sfun-body val)))
-			     "")
-			"\n    "
-			(jvm-type-name ,jt)))))
+	     (val (global-value new)))
+	 (cond
+	    ((sfun? val)
+	     (print "   " `(function
+			      ,(shape new)
+			      "\n    "
+			      (id ,id)
+			      "\n    "
+			      (module ,module)
+			      "\n    "
+			      (name ,(format "~s" (global-name new)))
+			      "\n    "
+			      (qualified-type ,qt)
+			      ,(if (eq? (sfun-class val) 'sifun)
+				   `(inline ,(shape (sfun-body val)))
+				   "")
+			      "\n    "
+			      (jvm-type-name ,jt) "\n   "
+			      (args ,(map shape (sfun-args val))))))
+	    ((cfun? val)
+	     (print "   " `(native
+			      ,(shape new)
+			      "\n    "
+			      (id ,id)
+			      "\n    "
+			      (module ,module)
+			      "\n    "
+			      (name ,(format "~s" (global-name new)))
+			      "\n    "
+			      (qualified-type ,qt)
+			      "\n    "
+			      (jvm-type-name ,jt) "\n   "
+			      (args ,(map shape (cfun-args-type val))))))
+	    (else
+	     (print "   " `(variable
+			      ,(shape new)
+			      "\n    "
+			      (id ,id)
+			      "\n    "
+			      (module ,module)
+			      "\n    "
+			      (name ,(format "~s" (global-name new)))
+			      "\n    "
+			      (qualified-type ,qt)
+			      "\n    "
+			      (jvm-type-name ,jt)))))))
    (hashtable-for-each
-    Genv
-    (lambda (k bucket) (for-each dump-var (cdr bucket)))))
+      Genv
+      (lambda (k bucket) (for-each dump-var (cdr bucket)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-Tenv ...                                                    */
