@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Sun Oct 13 18:41:35 2013 (serrano)                */
+;*    Last change :  Mon Oct 14 08:22:57 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -325,8 +325,7 @@
 			(cnst-alloc-l-procedure node loc)
 			node)))
 		((eq? fun *double->real*)
-		 (if (and (real? actual-value) (not (nanfl? actual-value)))
-		     ;; nan must not be eq? with itself
+		 (if (real? actual-value)
 		     (cnst-alloc-real actual-value loc)
 		     node))
 		((eq? fun *elong->belong*)
