@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Fri Oct 11 14:19:09 2013 (serrano)                */
+;*    Last change :  Mon Oct 14 14:12:11 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
@@ -76,10 +76,11 @@
 ;*    shape ::slot ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (shape s::slot)
-   (with-access::slot s (id name class-owner type)
+   (with-access::slot s (id name class-owner type default-value)
       (string-append "(" (symbol->string id) " (" name ")"
-		     " owner: " (shape class-owner)
-		     " type: " (shape type) ")")))
+	 " owner: " (shape class-owner)
+	 " type: " (shape type)
+	 ")")))
 
 ;*---------------------------------------------------------------------*/
 ;*    slot-default? ...                                                */

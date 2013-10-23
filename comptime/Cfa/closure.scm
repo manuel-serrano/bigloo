@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Fri Dec  7 16:02:27 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 23 07:25:43 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -376,7 +376,9 @@
 		   (if (or (eq? t0 t1) (and (bigloo-type? t0) (bigloo-type? t1)))
 		       (loop (cdr a0) (cdr a1) cont)
 		       (begin
-;* 			  (tprint "t1=" (shape t1) " t0=" (shape t0))  */
+;* 			  (tprint "t1=" (shape t1) " t0=" (shape t0)   */
+;* 			     " bt0=" (shape (get-bigloo-type t0))      */
+;* 			     " bt1=" (shape (get-bigloo-type t1)))     */
 ;* 			  (tprint "a0=" (map shape a0))                */
 ;* 			  (tprint "a1=" (map shape a1))                */
 			  ;; The merge is not complete because this procedures
@@ -394,11 +396,18 @@
 			  ;; more complex (see the procedure
 			  ;;   funcall-light@saw_jvm_funcall
 			  ;; (in file SawJvm/funcall.scm)
-			  (variable-type-set! (car a0) (get-bigloo-type t0))
-			  (variable-type-set! (car a1) (get-bigloo-type t1))
+			  (let ((bt0 (get-bigloo-type t0))
+				(bt1 (get-bigloo-type t1))
+				(cont #f))
+			     (unless (eq? (variable-type (car a0)) bt0)
+				(variable-type-set! (car a0) bt0)
+				(set! cont #t))
+			     (unless (eq? (variable-type (car a1)) bt1)
+				(variable-type-set! (car a1) bt1)
+				(set! cont #t))
 ;* 			  (tprint "-> a0=" (map shape a0))             */
 ;* 			  (tprint "-> a1=" (map shape a1))             */
-			  (loop (cdr a0) (cdr a1) #t))))
+			     (loop (cdr a0) (cdr a1) cont)))))
 		cont))))
 
 ;*    (tprint ">>> merge: " (map shape apps0))                         */

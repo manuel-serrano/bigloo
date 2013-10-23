@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Fri Oct 11 14:15:53 2013 (serrano)                */
+;*    Last change :  Mon Oct 14 14:23:48 2013 (serrano)                */
 ;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
@@ -160,18 +160,19 @@
 			      (jvm-type-name ,jt) "\n   "
 			      (args ,(map shape (cfun-args-type val))))))
 	    (else
-	     (print "   " `(variable
-			      ,(shape new)
-			      "\n    "
-			      (id ,id)
-			      "\n    "
-			      (module ,module)
-			      "\n    "
-			      (name ,(format "~s" (global-name new)))
-			      "\n    "
-			      (qualified-type ,qt)
-			      "\n    "
-			      (jvm-type-name ,jt)))))))
+	     (unless (eq? (type-id (global-type new)) 'class)
+		(print "   " `(variable
+				 ,(shape new)
+				 "\n    "
+				 (id ,id)
+				 "\n    "
+				 (module ,module)
+				 "\n    "
+				 (name ,(format "~s" (global-name new)))
+				 "\n    "
+				 (qualified-type ,qt)
+				 "\n    "
+				 (jvm-type-name ,jt))))))))
    (hashtable-for-each
       Genv
       (lambda (k bucket) (for-each dump-var (cdr bucket)))))
