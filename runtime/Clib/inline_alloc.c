@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Thu Mar 22 15:37:15 2012 (serrano)                */
+/*    Last change :  Wed Oct 23 16:23:54 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -14,6 +14,7 @@
 #undef abs
 
 #include <bigloo.h>
+#include <bigloo_static.h>
 
 /*---------------------------------------------------------------------*/
 /*    static long                                                      */
@@ -276,14 +277,18 @@ alloc_make_belong( long l ) {
 /*---------------------------------------------------------------------*/
 GC_API obj_t
 make_belong( long l ) {
-   obj_t elong;
+   if(( BGL_ELONG_PREALLOC_MIN <= l) && (l < BGL_ELONG_PREALLOC_MAX) ) {
+      return BREF( &belong_allocated[ (long)l + BGL_ELONG_PREALLOC_MIN ] );
+   } else {
+      obj_t elong;
 
-   GC_INLINE_ALLOC( elong, ELONG_SIZE, alloc_make_belong( l ) );
+      GC_INLINE_ALLOC( elong, ELONG_SIZE, alloc_make_belong( l ) );
+      
+      elong->elong_t.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
+      elong->elong_t.elong = l;
 
-   elong->elong_t.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
-   elong->elong_t.elong = l;
-
-   return BREF( elong );
+      return BREF( elong );
+   }
 }
 
 /*---------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Sep 14 18:30:43 2013 (serrano)                */
+#*    Last change :  Wed Oct 23 16:33:39 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -86,6 +86,9 @@ stringsplit="0"
 
 gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
 gcconfigurethreadsopt=--enable-thread
+
+belong_prealloc_min=-100
+belong_prealloc_max=2048
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -332,6 +335,7 @@ buildbindir=
 cgcfinalflags="-DFINALIZE_ON_DEMAND"
 bigloo_h=
 bigloo_gc_h=
+bigloo_static_h=
 bigloo_config_h=
 bigloo_config_jvm=
 bigloo_config_sch=
@@ -406,6 +410,10 @@ while : ; do
     --bigloo_gc.h=*)
       action="bigloo_config";
       bigloo_gc_h="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_static.h=*)
+      action="bigloo_config";
+      bigloo_static_h="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --bigloo_config.h=*)
       action="bigloo_config";
@@ -971,6 +979,7 @@ while : ; do
       echo "Configuration settings:"  >&2;
       echo "   --bigloo.h[=file]" >&2;
       echo "   --bigloo_gc.h[=file]" >&2;
+      echo "   --bigloo_static.h[=file]" >&2;
       echo "   --bigloo_config.h[=file]" >&2;
       echo "   --bigloo_config.jvm[=file]" >&2;
       echo "   --Makefile.config=file" >&2;
@@ -1000,6 +1009,11 @@ fi
 # The bigloo_gc.h file
 if [ "$bigloo_gc_h " = " " ]; then
   bigloo_gc_h=lib/$release/bigloo_gc.h
+fi
+
+# The bigloo_static.h file
+if [ "$bigloo_static_h " = " " ]; then
+  bigloo_static_h=lib/$release/bigloo_static.h
 fi
 
 # The bigloo_config.h file
@@ -2700,6 +2714,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_LONG_SIGN_BIT@|$long_sign_bit|" \
               -e "s|@C_ELONG_SIGN_BIT@|$elong_sign_bit|" \
               -e "s|@C_LLONG_SIGN_BIT@|$llong_sign_bit|" \
+              -e "s|@BGL_ELONG_PREALLOC_MIN@|$belong_prealloc_min|" \
+              -e "s|@BGL_ELONG_PREALLOC_MAX@|$belong_prealloc_max|" \
               -e "s|@BGL_HAVE_LABS@|$have_labs|" \
               -e "s|@BGL_LABS@|$labs|" \
               -e "s|@BGL_HAVE_LLABS@|$have_llabs|" \
@@ -2822,6 +2838,22 @@ if [ $action = "all" -o $action = "bigloo_gc" ]; then
   echo "/* Generated file, don't edit */" > $bigloo_gc_h
   cat autoconf/bigloo_gc.h.in \
      | sed -e "s|@GC_VERSION@|$gcversion|" >> $bigloo_gc_h
+fi
+
+#*---------------------------------------------------------------------*/
+#*    bigloo_static.h                                                  */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" -o $action = "bigloo_static" ]; then
+  echo "/* Generated file, don't edit */" > $bigloo_static_h
+  echo "" >> $bigloo_static_h
+  echo "static struct elong belong_allocated[] = { " >> $bigloo_static_h
+  max=`expr $belong_prealloc_max - 1`;
+  i=$belong_prealloc_min
+  while expr $i "<" $max > /dev/null; do
+    echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), elong: $i }, " >> $bigloo_static_h
+    i=`expr $i + 1`;
+  done
+  echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), elong: $i } }; " >> $bigloo_static_h
 fi
 
 #*---------------------------------------------------------------------*/
