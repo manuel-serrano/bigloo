@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sun Nov 18 13:05:27 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 23 19:17:01 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -195,18 +195,27 @@
 ;*    node-cond! ::conditional ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cond! node::conditional)
-   (with-access::conditional node (test true false)
+   (with-access::conditional node (test true false type)
       (set! test (node-cond! test))
       (set! true (node-cond! true))
       (set! false (node-cond! false))
-      (if (atom? test)
-	  (begin
+      (cond
+	 ((atom? test)
+	  (set! *cond-reduced* (+fx 1 *cond-reduced*))
+	  (trace (reduce 2) "Je reduis le cond: " (shape node) #\Newline)
+	  (if (atom-value test)
+	      true
+	      false))
+	 ((static-value test)
+	  =>
+	  (lambda (v)
 	     (set! *cond-reduced* (+fx 1 *cond-reduced*))
 	     (trace (reduce 2) "Je reduis le cond: " (shape node) #\Newline)
-	     (if (atom-value test)
-		 true
-		 false))
-	  node)))
+	     (instantiate::sequence
+		(type type)
+		(nodes (list test (if (eq? v 'true) true false))))))
+	 (else
+	  node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cond! ::fail ...                                            */
@@ -305,4 +314,32 @@
 	  (begin
 	     (set-car! node* (node-cond! (car node*)))
 	     (loop (cdr node*))))))
+
+;*---------------------------------------------------------------------*/
+;*    static-value ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (static-value node::node)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    static-value ::let-var ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (static-value node::let-var)
+   (with-access::let-var node (body)
+      (static-value body)))
+
+;*---------------------------------------------------------------------*/
+;*    static-value ::atom ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (static-value node::atom)
+   (with-access::atom node (value)
+      (if (eq? value #f) 'false 'true)))
+
+;*---------------------------------------------------------------------*/
+;*    static-value ::sequence ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (static-value node::sequence)
+   (with-access::sequence node (nodes)
+      (when (pair? nodes)
+	 (static-value (car (last-pair nodes))))))
 

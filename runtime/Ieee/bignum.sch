@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Wed Jan 16 09:18:42 2013 (serrano)                */
+;*    Last change :  Thu Oct 24 12:51:42 2013 (serrano)                */
 ;*    Copyright   :  2008-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
@@ -21,6 +21,8 @@
 	($elong->bignum::bignum (::elong) "bgl_long_to_bignum")
 	($llong->bignum::bignum (::llong) "bgl_llong_to_bignum")
 	($bignum->fixnum::long (::bignum) "bgl_bignum_to_long")
+	($bignum->elong::elong (::bignum) "bgl_bignum_to_long")
+	($bignum->llong::llong (::bignum) "bgl_bignum_to_llong")
 	($bignum-cmp::int (::bignum ::bignum) "bgl_bignum_cmp")
 	(macro $zerobx?::bool (::bignum) "BXZERO")
 	(macro $positivebx?::bool (::bignum) "BXPOSITIVE")
@@ -82,6 +84,10 @@
 		    "LLONG_TO_BIGNUM")
 	    (method static $bignum->fixnum::long (::bignum)
 		    "bgl_bignum_to_long")
+	    (method static $bignum->elong::elong (::bignum)
+		    "bgl_bignum_to_llong")
+	    (method static $bignum->llong::llong (::bignum)
+		    "bgl_bignum_to_llong")
 	    (method static $bignum-cmp::int (::bignum ::bignum)
 		    "CMP_BIGNUM")
 	    (method static $zerobx?::bool (::bignum)

@@ -650,6 +650,11 @@ public final class foreign
 	 return n.value.intValue();
       }
 
+   public static long bgl_bignum_to_llong(bignum n)
+      {
+	 return n.value.longValue();
+      }
+
    public static bignum ELONG_TO_BIGNUM(long n)
       {
 	 return new bignum(n);

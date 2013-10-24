@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Sep 29 14:30:20 2013 (serrano)                */
+;*    Last change :  Thu Oct 24 12:53:17 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -243,6 +243,8 @@
 	    (inline llong->elong::elong ::llong)
 	    (inline fixnum->bignum::bignum ::long)
 	    (inline bignum->fixnum::long ::bignum)
+	    (inline bignum->elong::elong ::bignum)
+	    (inline bignum->llong::llong ::bignum)
 	    (inline elong->bignum::bignum ::elong)
 	    (inline llong->bignum::bignum ::llong)
 	    (inline minvalfx::long)
@@ -379,6 +381,8 @@
 	    ($llong->elong side-effect-free args-safe (effect) fail-safe)
 	    (fixnum->bignum side-effect-free no-cfa-top nesting (effect))
 	    (bignum->fixnum side-effect-free no-cfa-top nesting (effect))
+	    (bignum->elong side-effect-free no-cfa-top nesting (effect))
+	    (bignum->llong side-effect-free no-cfa-top nesting (effect))
 	    (elong->bignum side-effect-free no-cfa-top nesting (effect))
 	    (llong->bignum side-effect-free no-cfa-top nesting (effect))
 	    (integer? side-effect-free no-cfa-top nesting (effect) fail-safe)
@@ -567,6 +571,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (bignum->fixnum x)
    ($bignum->fixnum x))
+
+;*---------------------------------------------------------------------*/
+;*    bignum->elong ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (bignum->elong x)
+   ($bignum->elong x))
+
+;*---------------------------------------------------------------------*/
+;*    bignum->llong ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (bignum->llong x)
+   ($bignum->llong x))
 
 ;*---------------------------------------------------------------------*/
 ;*    elong->bignum ...                                                */

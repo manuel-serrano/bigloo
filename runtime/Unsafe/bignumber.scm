@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Dec  8 17:52:08 2011 (serrano)                */
-;*    Copyright   :  2006-11 Marc Feeley                               */
+;*    Last change :  Thu Oct 24 12:46:57 2013 (serrano)                */
+;*    Copyright   :  2006-13 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -90,6 +90,8 @@
 	       
 	       (export $fixnum->bignum "bgl_long_to_bignum")
 	       (export $bignum->fixnum "bgl_bignum_to_long")
+	       (export $bignum->elong "bgl_bignum_to_elong")
+	       (export $bignum->llong "bgl_bignum_to_llong")
 	       (export $elong->bignum "bgl_elong_to_bignum")
 	       (export $llong->bignum "bgl_llong_to_bignum")
 	       (export $bignum-cmp "bgl_bignum_cmp")
@@ -122,6 +124,8 @@
        (export (inline $string->integer-obj::obj ::string ::long)
 	       ($fixnum->bignum::bignum ::long)
 	       ($bignum->fixnum::long ::bignum)
+	       ($bignum->elong::elong ::bignum)
+	       ($bignum->llong::llong ::bignum)
 	       ($elong->bignum::bignum ::elong)
 	       ($llong->bignum::bignum ::llong)
 	       ($bignum-cmp::int ::bignum ::bignum)
@@ -992,7 +996,7 @@
 	       (else
 		#f)))))
 
-(define (bignum->elong x) ;; returns #f on fixnum overflow
+(define ($bignum->elong x) ;; returns #f on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::elong #e0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)
@@ -1011,7 +1015,7 @@
 	       (else
 		#f)))))
 
-(define (bignum->llong x) ;; returns #f on fixnum overflow
+(define ($bignum->llong x) ;; returns #f on fixnum overflow
    (let ((lenx-minus-1 (-fx (bignum-length x) 1)))
       (let loop ((n::llong #l0) (i lenx-minus-1))
 	 (cond ((<fx 0 i)

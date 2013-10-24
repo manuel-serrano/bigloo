@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Apr 25 07:33:14 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Thu Oct 24 12:52:32 2013 (serrano)                */
+/*    Copyright   :  2003-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -177,6 +177,15 @@ bgl_flonum_to_bignum( double r ) {
 BGL_RUNTIME_DEF long
 bgl_bignum_to_long( obj_t x ) {
    return mpz_get_si( &(x->bignum_t.mpz) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF BGL_LONGLONG_T                                   */
+/*    bgl_bignum_to_llong ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BGL_LONGLONG_T
+bgl_bignum_to_llong( obj_t x ) {
+   return (BGL_LONGLONG_T)mpz_get_ui( &(x->bignum_t.mpz) );
 }
 
 /*---------------------------------------------------------------------*/
