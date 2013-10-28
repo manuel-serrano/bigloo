@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Thu Feb 16 09:26:27 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 28 08:49:34 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -494,7 +494,8 @@
 	 (cond
 	    ((null? list)
 	     #f)
-	    ((=fl (car (car list)) real)
+	    ((and (=fl (car (car list)) real)
+		  (=fx (signbitfl (car (car list))) (signbitfl real)))
 	     (cdr (car list)))
 	    (else
 	     (loop (cdr list))))))
