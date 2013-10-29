@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Sun Oct 27 08:08:20 2013 (serrano)                */
+;*    Last change :  Mon Oct 28 14:07:35 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -734,7 +734,10 @@
       (let loop ((i 0)
 		 (a #f))
 	 (if (=fx i len)
-	     (if a (display-string str port) (wrt))
+	     (cond
+		(a (display-string str port))
+		((or (eq? obj '+) (eq? obj '-)) (display-string str port))
+		(else (wrt)))
 	     (let ((c (string-ref str i)))
 		(case c
 		   ((#\Space #\Newline #\Tab #\Return #\` #\' #\" #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\,)

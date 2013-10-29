@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Sep 18 11:02:34 2013 (serrano)                */
+;*    Last change :  Tue Oct 29 10:15:29 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -324,8 +324,10 @@
 	      (nexp `(,(car let-part) ,(cadr let-part) (,body ,@args))))
 	  (sexp->node nexp stack loc site)))
 ;*--- let & letrec ----------------------------------------------------*/
-      (((or let (? let-sym?) letrec letrec*) . ?-)
+      (((or let (? let-sym?) letrec) . ?-)
        (let->node exp stack loc 'value))
+      ((letrec* . ?-)
+       (letrec*->node exp stack loc 'value))
 ;*--- labels ----------------------------------------------------------*/
       (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value))

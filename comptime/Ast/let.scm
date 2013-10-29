@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sat Oct 13 07:38:29 2012 (serrano)                */
+;*    Last change :  Tue Oct 29 15:19:56 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
 	    tools_progn
 	    tools_shape
 	    tools_location
+	    tools_misc
 	    engine_param
 	    ast_ident
 	    ast_sexp
@@ -29,7 +30,8 @@
 	    backend_backend)
    (export  (let-sym? ::obj)
 	    (let-sym::symbol)
-	    (let->node::node <sexp> <stack> ::obj ::symbol)))
+	    (let->node::node <sexp> <stack> ::obj ::symbol)
+	    (letrec*->node::node <sexp> <stack> ::obj ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *let* ...                                                        */
@@ -53,15 +55,15 @@
 ;*---------------------------------------------------------------------*/
 (define (let->node exp stack oloc site)
    (trace (ast 3)
-	  "*** LET *******: " exp #\Newline
-	  "            loc: " (find-location/loc exp #f) #\Newline
-	  "        old-loc: " oloc #\Newline
-	  "           body: " (match-case exp
-				 ((?- ?- . ?body)
-				  (find-location/loc body #f))
-				 (else
-				  '???))
-	  #\Newline)
+      "*** LET *******: " exp #\Newline
+      "            loc: " (find-location/loc exp #f) #\Newline
+      "        old-loc: " oloc #\Newline
+      "           body: " (match-case exp
+			     ((?- ?- . ?body)
+			      (find-location/loc body #f))
+			     (else
+			      '???))
+      #\Newline)
    (match-case exp
       ((?- () . ?body)
        ;; we don't remove explicit user let.
@@ -71,9 +73,9 @@
 			nloc))
 	      (body (sexp->node (normalize-progn body) stack bloc site)))
 	  (trace (ast 3)
-		 "make-empty-let: " (shape exp) #\Newline
-		 "bloc: " bloc #\Newline
-		 "nloc: " nloc #\Newline)
+	     "make-empty-let: " (shape exp) #\Newline
+	     "bloc: " bloc #\Newline
+	     "nloc: " nloc #\Newline)
 	  (instantiate::let-var
 	     (loc nloc)
 	     (type (strict-node-type *_* (node-type body)))
@@ -91,20 +93,19 @@
 			     (loop (cdr bindings)))
 			    (else
 			     #t))))))
-	   (error-sexp->node (string-append "Illegal "
-					    (symbol->string (car exp))
-					    "' form")
-			     exp
-			     (find-location/loc exp oloc))
-	   (make-smart-generic-let (car exp)
-				   (make-generic-let exp stack oloc site)
-				   site)))
+	   (error-sexp->node
+	      (string-append "Illegal " (symbol->string (car exp)) "' form")
+	      exp
+	      (find-location/loc exp oloc))
+	   (make-smart-generic-let
+	      (car exp)
+	      (make-generic-let exp stack oloc site)
+	      site)))
       (else
-       (error-sexp->node (string-append "Illegal "
-					(symbol->string (car exp))
-					"' form")
-			 exp
-			 (find-location/loc exp oloc)))))
+       (error-sexp->node
+	  (string-append "Illegal " (symbol->string (car exp)) "' form")
+	  exp
+	  (find-location/loc exp oloc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-generic-let ...                                             */
@@ -251,9 +252,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    let-or-letrec ...                                                */
 ;*    -------------------------------------------------------------    */
-;*    Let differ from letrec in the sens that in a letrec form all     */
-;*    bindings must be introduces by the unspecified value and         */
-;*    it must exists an initialization stage which initialize all      */
+;*    Let differs from letrec in the sense that in a letrec form all   */
+;*    bindings must be introduced by the unspecified value and         */
+;*    it must exists an initialization stage which initializes all     */
 ;*    introduced local variables. This means that in a letrec form     */
 ;*    all variables have to be bound to unspecified then, they have    */
 ;*    to be mutated to their correct values.                           */
@@ -510,3 +511,99 @@
 					     'value))
 		;; ok, it is finished, we loop now.
 		(loop (cdr vbindings) (cdr nvars)))))))
+
+;*---------------------------------------------------------------------*/
+;*    letrec*->node ...                                                */
+;*    -------------------------------------------------------------    */
+;*    Decompose a letrec* in a let* and a labels, i.e.,                */
+;*      (LETREC* ((f1 (lambda (x) ...))                                */
+;*    	    (f2 (lambda (y) ...))                                      */
+;*    	    (v1 i1)                                                    */
+;*    	    (v2 i2)                                                    */
+;*    	    (f3 (lambda (y) ...))                                      */
+;*    	    (v3 i3)                                                    */
+;*    	    ...)                                                       */
+;*         body)                                                       */
+;*                                                                     */
+;*      ==>                                                            */
+;*                                                                     */
+;*      (let* ((v1 i1)                                                 */
+;*    	 (v2 i2)                                                       */
+;*    	 (v3 i1))                                                      */
+;*         (letrec ((f1 (lambda (x) ...))                              */
+;*    	      (f2 (lambda (x) ...))                                    */
+;*    	      (f3 (lambda (x) ...)))                                   */
+;*    	body))                                                         */
+;*---------------------------------------------------------------------*/
+(define (letrec*->node sexp stack loc site)
+
+   (define (quote? v)
+      (and (pair? v) (eq? (car v) 'quote)))
+   
+   (define (atom? v)
+      (or (number? v) (string? v) (boolean? v) (quote? v) (cnst? v)))
+
+   (define (simple? v comp-vars forward-vars)
+      (let loop ((v v))
+	 (cond
+	    ((pair? v) (every loop v))
+	    ((memq v comp-vars) #f)
+	    ((memq v forward-vars) #f)
+	    (else #t))))
+
+   (define (lambda? x)
+      (or (eq? x 'lambda) (eq? (fast-id-of-id x loc) 'lambda)))
+   
+   (define (letrec*-split-bindings bindings)
+      (let ((comp-vars '())
+	    (let-bindings '())
+	    (letrec-bindings '())
+	    (forward-vars (map (lambda (x)
+				  (if (pair? x)
+				      (fast-id-of-id (car x) loc)
+				      (fast-id-of-id x loc)))
+			     bindings)))
+	 (for-each (lambda (b)
+		      (match-case b
+			 (((and ?var (? symbol?)) (? atom?))
+			  (set! let-bindings (cons b let-bindings)))
+			 (((and ?var (? symbol?)) ((? lambda?) . ?-))
+			  (set! comp-vars (cons var comp-vars))
+			  (set! letrec-bindings (cons b letrec-bindings)))
+			 (((and ?var (? symbol?)) ?value)
+			  (if (simple? value comp-vars forward-vars)
+			      (set! let-bindings (cons b let-bindings))
+			      (begin
+				 (set! comp-vars
+				    (cons (fast-id-of-id var loc) comp-vars))
+				 (set! letrec-bindings (cons b letrec-bindings)))))
+			 ((? symbol?)
+			  (set! let-bindings (cons b let-bindings)))
+			 (else
+			  (set! letrec-bindings (cons b letrec-bindings))))
+		      (set! forward-vars (cdr forward-vars)))
+	    bindings)
+	 (values (reverse! let-bindings) (reverse! letrec-bindings))))
+   
+   (match-case sexp
+      ((letrec* (and (? list?) ?bindings) . ?body)
+       (multiple-value-bind (let-bindings letrec-bindings)
+	  (letrec*-split-bindings bindings)
+;* 	  (tprint "let-simple=" (map car let-bindings))                */
+;* 	  (tprint "let-comp=" (map car letrec-bindings))               */
+	  (if (null? let-bindings)
+	      (let->node sexp stack loc site)
+	      (let ((loc (find-location/loc exp loc))
+		    (res (let loop ((bindings let-bindings))
+			    (if (null? bindings)
+				`(letrec* ,letrec-bindings ,@body)
+				`(let (,(car bindings))
+				    ,(loop (cdr bindings)))))))
+		 (sexp->node
+		    (epairify-propagate-loc res loc)
+		    stack loc site)))))
+      (else
+       (error-sexp->node
+	  (string-append "Illegal 'letrec*' form")
+	  exp
+	  (find-location/loc exp loc)))))
