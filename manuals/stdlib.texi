@@ -1216,8 +1216,8 @@ zero if the @var{string1} equal @var{string2}. It returns
 a positive integer if @var{string1} > @var{string2}.
 @end deffn
 
-@deffn {bigloo procedure} string-natural-compare3 string1 string2
-@deffnx {bigloo procedure} string-natural-compare3-ci string1 string2
+@deffn {bigloo procedure} string-natural-compare3 string1 string2 [start1 0] [start2 0]
+@deffnx {bigloo procedure} string-natural-compare3-ci string1 string2 [start1 0] [start2 0]
 This function compares @var{string1} and @var{string2} according to
 a @emph{natural string order}. It returns
 a negative integer if @var{string1} < @var{string2}. It returns

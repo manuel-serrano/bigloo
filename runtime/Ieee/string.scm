@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Jun 21 15:12:56 2013 (serrano)                */
+;*    Last change :  Fri Nov  1 18:55:48 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -207,28 +207,30 @@
 	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
 	    (string-index-right::obj s::bstring ::obj
-				     #!optional (start (string-length s)))
+	       #!optional (start (string-length s)))
 	    (string-skip::obj ::bstring ::obj #!optional (start 0))
 	    (string-skip-right::obj s::bstring ::obj
-				    #!optional (start (string-length s)))
+	       #!optional (start (string-length s)))
 	    (string-prefix-length::int s1::bstring s2::bstring
-				       #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-suffix-length::int s1::bstring s2::bstring
-				       #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-prefix-length-ci::int s1::bstring s2::bstring
-					  #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-suffix-length-ci::int s1::bstring s2::bstring
-					  #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-prefix?::bool s1::bstring s2::bstring
-				  #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-suffix?::bool s1::bstring s2::bstring
-				  #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-prefix-ci?::bool s1::bstring s2::bstring
-				     #!optional start1 end1 start2 end2)
+	       #!optional start1 end1 start2 end2)
 	    (string-suffix-ci?::bool s1::bstring s2::bstring
-				     #!optional start1 end1 start2 end2)
-	    (string-natural-compare3::int ::bstring ::bstring)
-	    (string-natural-compare3-ci::int ::bstring ::bstring)
+	       #!optional start1 end1 start2 end2)
+	    (string-natural-compare3::int ::bstring ::bstring
+	       #!optional (start1 0) (start2 0))
+	    (string-natural-compare3-ci::int ::bstring ::bstring
+	       #!optional (start1 0) (start2 0))
 	    (string-hex-intern::bstring ::bstring)
 	    (string-hex-intern!::bstring ::bstring)
 	    (string-hex-extern::bstring ::bstring))
@@ -1313,21 +1315,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-natural-compare3 ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (string-natural-compare3 a b)
-   (strnatcmp a b #f))
+(define (string-natural-compare3 a b #!optional (start1 0) (start2 0))
+   (strnatcmp a b #f start1 start2))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-natural-compare3-ci ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (string-natural-compare3-ci a b)
-   (strnatcmp a b #t))
+(define (string-natural-compare3-ci a b #!optional (start1 0) (start2 0))
+   (strnatcmp a b #t start1 start2))
 
 ;*---------------------------------------------------------------------*/
 ;*    strnatcmp ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (strnatcmp a b foldcase)
-   (let loop ((ia 0)
-	      (ib 0))
+(define (strnatcmp a b foldcase start1 start2)
+   (let loop ((ia start1)
+	      (ib start2))
       (let ((ca (char-at a ia))
 	    (cb (char-at b ib)))
 	 (let while ()
