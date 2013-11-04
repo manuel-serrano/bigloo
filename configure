@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct 23 16:33:39 2013 (serrano)                */
+#*    Last change :  Mon Nov  4 12:03:46 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2714,8 +2714,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_LONG_SIGN_BIT@|$long_sign_bit|" \
               -e "s|@C_ELONG_SIGN_BIT@|$elong_sign_bit|" \
               -e "s|@C_LLONG_SIGN_BIT@|$llong_sign_bit|" \
-              -e "s|@BGL_ELONG_PREALLOC_MIN@|$belong_prealloc_min|" \
-              -e "s|@BGL_ELONG_PREALLOC_MAX@|$belong_prealloc_max|" \
               -e "s|@BGL_HAVE_LABS@|$have_labs|" \
               -e "s|@BGL_LABS@|$labs|" \
               -e "s|@BGL_HAVE_LLABS@|$have_llabs|" \
@@ -2845,6 +2843,9 @@ fi
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_static" ]; then
   echo "/* Generated file, don't edit */" > $bigloo_static_h
+  echo "" >> $bigloo_static_h
+  echo "#define BGL_ELONG_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
+  echo "#define BGL_ELONG_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
   echo "" >> $bigloo_static_h
   echo "static struct elong belong_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
