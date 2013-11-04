@@ -15,7 +15,7 @@
 (declare-library! 'packrat
 		  :srfi '(packrat)
 		  :basename "bigloopackrat"
-		  :module-init '__packrat_bibtex
+		  :module-init '__packrat
 		  :module-eval '__packrat_makelib
 		  :class-init "bigloo.packrat.bibtex"
 		  :class-eval "bigloo.packrat.make_lib")
