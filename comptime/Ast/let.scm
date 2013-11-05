@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Oct 29 15:19:56 2013 (serrano)                */
+;*    Last change :  Tue Nov  5 07:34:05 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -553,50 +553,102 @@
 
    (define (lambda? x)
       (or (eq? x 'lambda) (eq? (fast-id-of-id x loc) 'lambda)))
+
+   (define (free-in-sexp var sexp)
+      (cond
+	 ((eq? sexp var)
+	  #f)
+	 ((not (pair? sexp))
+	  #t)
+	 (else
+	  (and (free-in-sexp var (car sexp))
+	       (free-in-sexp var (cdr sexp))))))
+
+   (define (free-in-bindings var bindings)
+      (every (lambda (b)
+		(free-in-sexp var (cadr b)))
+	 bindings))
    
    (define (letrec*-split-bindings bindings)
       (let ((comp-vars '())
 	    (let-bindings '())
-	    (letrec-bindings '())
+	    (tmp-bindings '())
 	    (forward-vars (map (lambda (x)
 				  (if (pair? x)
 				      (fast-id-of-id (car x) loc)
 				      (fast-id-of-id x loc)))
 			     bindings)))
+	 ;; first stage, isolate the prelet-bindings
 	 (for-each (lambda (b)
 		      (match-case b
 			 (((and ?var (? symbol?)) (? atom?))
 			  (set! let-bindings (cons b let-bindings)))
 			 (((and ?var (? symbol?)) ((? lambda?) . ?-))
 			  (set! comp-vars (cons var comp-vars))
-			  (set! letrec-bindings (cons b letrec-bindings)))
+			  (set! tmp-bindings (cons b tmp-bindings)))
 			 (((and ?var (? symbol?)) ?value)
 			  (if (simple? value comp-vars forward-vars)
 			      (set! let-bindings (cons b let-bindings))
 			      (begin
 				 (set! comp-vars
 				    (cons (fast-id-of-id var loc) comp-vars))
-				 (set! letrec-bindings (cons b letrec-bindings)))))
+				 (set! tmp-bindings (cons b tmp-bindings)))))
 			 ((? symbol?)
 			  (set! let-bindings (cons b let-bindings)))
 			 (else
-			  (set! letrec-bindings (cons b letrec-bindings))))
+			  (set! tmp-bindings (cons b tmp-bindings))))
 		      (set! forward-vars (cdr forward-vars)))
 	    bindings)
-	 (values (reverse! let-bindings) (reverse! letrec-bindings))))
+	 (if (>=fx *optim* 2)
+	     ;; second stage, isolate the postlet-bindings, as its complexity
+	     ;; depends of the size of the binding values, it is executed
+	     ;; only in optimizing mode
+	     (let loop ((bindings tmp-bindings)
+			(postlet-bindings '()))
+		(if (null? bindings)
+		    (values (reverse! let-bindings)
+		       '()
+		       postlet-bindings)
+		    (let ((b (car bindings)))
+		       (match-case b
+			  (((and ?var (? symbol?)) ((? lambda?) . ?-))
+			   (values (reverse! let-bindings)
+			      (reverse! bindings)
+			      postlet-bindings))
+			  (((and ?var (? symbol?)) ?-)
+			   (if (free-in-bindings var bindings)
+			       (loop (cdr bindings)
+				  (cons b postlet-bindings))
+			       (values (reverse! let-bindings)
+				  (reverse! bindings)
+				  postlet-bindings)))
+			  (else
+			   (values (reverse! let-bindings)
+			      (reverse! bindings)
+			      postlet-bindings))))))
+	     (values (reverse! let-bindings)
+		(reverse! tmp-bindings)
+		'()))))
    
    (match-case sexp
       ((letrec* (and (? list?) ?bindings) . ?body)
-       (multiple-value-bind (let-bindings letrec-bindings)
+       (multiple-value-bind (prelet-bindings letrec-bindings postlet-bindings)
 	  (letrec*-split-bindings bindings)
-;* 	  (tprint "let-simple=" (map car let-bindings))                */
-;* 	  (tprint "let-comp=" (map car letrec-bindings))               */
-	  (if (null? let-bindings)
+;* 	  (tprint "all vars=" (map (lambda (x) (if (pair? x) (car x) x)) bindings)) */
+;* 	  (tprint "prelet-simple=" (map car prelet-bindings))          */
+;* 	  (tprint "letrec*-comp=" (map car letrec-bindings))           */
+;* 	  (tprint "postlet-simple=" (map car postlet-bindings) "\n")   */
+	  (if (and (null? prelet-bindings) (null? postlet-bindings))
 	      (let->node sexp stack loc site)
 	      (let ((loc (find-location/loc exp loc))
-		    (res (let loop ((bindings let-bindings))
+		    (res (let loop ((bindings prelet-bindings))
 			    (if (null? bindings)
-				`(letrec* ,letrec-bindings ,@body)
+				`(letrec* ,letrec-bindings
+				    ,(let loop ((bindings postlet-bindings))
+					(if (null? bindings)
+					    `(begin ,@body)
+					    `(let (,(car bindings))
+						,(loop (cdr bindings))))))
 				`(let (,(car bindings))
 				    ,(loop (cdr bindings)))))))
 		 (sexp->node

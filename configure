@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Nov  4 12:03:46 2013 (serrano)                */
+#*    Last change :  Tue Nov  5 07:38:08 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -87,8 +87,8 @@ stringsplit="0"
 gcconfigureopt="--disable-gcj-support --disable-java-finalization --disable-libcord"
 gcconfigurethreadsopt=--enable-thread
 
-belong_prealloc_min=-100
-belong_prealloc_max=2048
+belong_prealloc_min=-10
+belong_prealloc_max=100
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
