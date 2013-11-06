@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Mon Oct 28 06:37:17 2013 (serrano)                */
+;*    Last change :  Tue Nov  5 08:18:29 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -927,7 +927,7 @@
 	     ;; got a localized stack frame
 	     (multiple-value-bind (file lnum lpoint lstring)
 		(location-line-num loc)
-		(if (string? lstring)
+		(if (and (string? file) (string? lstring))
 		    (display-source file lnum lpoint lstring)
 		    (loop (cdr stack)))))
 	    (else
