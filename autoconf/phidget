@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Nov  6 14:26:38 2013 (serrano)                */
+#*    Last change :  Wed Nov  6 14:34:35 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host phidget library.                              */
 #*=====================================================================*/
@@ -81,6 +81,7 @@ if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    \rm -f $aout
    \rm -f $aout*
+   exit 0
 else
    compile="$CC $cflags $file.c -o $aout >/dev/null"
 
@@ -89,9 +90,10 @@ else
      \rm -f $file.*
      \rm -f $aout
      \rm -f $aout*
+     exit 0
    else
      echo ""
    fi
 fi
 
-exit 0
+exit 1
