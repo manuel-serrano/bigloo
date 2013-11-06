@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Tue Mar 27 12:11:53 2012 (serrano)                */
+#*    Last change :  Wed Nov  6 14:09:28 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host phidget library.                              */
 #*=====================================================================*/
@@ -43,11 +43,6 @@ file=$TMP/actest$USER
 aout=$TMP/Xactest$USER
 
 #*---------------------------------------------------------------------*/
-#*    compile                                                          */
-#*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout $phidgetlib >/dev/null"
-
-#*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
 #*---------------------------------------------------------------------*/
 if( test -f $file.c ); then
@@ -79,13 +74,24 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $phidgetlib >/dev/null"
+
 if eval "$BUILDSH $compile"; then
-   echo "-lphidget$phidgetversion"
+   echo "$phidgetlib"
    \rm -f $file.*
    \rm -f $aout
    \rm -f $aout*
 else
-   echo ""
+   phidgetlib="-framework Phidget$phidgetversion -I/Library/Frameworks/Phidget$phidgetversion.framework/Headers  -F /Library/Frameworks"
+   compile="$CC $cflags $file.c -o $aout $phidgetlib >/dev/null"
+   if eval "$BUILDSH $compile"; then
+     echo $phidgetlib
+     \rm -f $file.*
+     \rm -f $aout
+     \rm -f $aout*
+   else
+     echo ""
+   fi
 fi
 
 exit 0
