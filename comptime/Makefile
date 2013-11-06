@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Jul 19 10:37:18 2013 (serrano)                */
+#*    Last change :  Wed Nov  6 18:04:26 2013 (serrano)                */
 #*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -129,7 +129,7 @@ AST_FILE	= build venv glo_decl node unit dump glo_def pragma \
                   var find_gdefs ident remove local sexp labels let \
                   exit substitute alphatize occur toccur app apply lvtype \
                   hrtype shrinkify check_init private check_sharing init \
-                  check_type object
+                  check_type object walk
 
 AST_OBJ		= $(AST_FILE:%=Ast/%.o)
 
@@ -321,6 +321,11 @@ USER_FILE	= user
 
 USER_OBJ	= $(USER_FILE:%=User/%.o)
 
+#*--- narrow ----------------------------------------------------------*/
+NARROW_FILE	= walk
+
+NARROW_OBJ	= $(NARROW_FILE:%=Narrow/%.o)
+
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
 #*---------------------------------------------------------------------*/
@@ -335,7 +340,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) Tools/date.o
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(NARROW_OBJ) Tools/date.o
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

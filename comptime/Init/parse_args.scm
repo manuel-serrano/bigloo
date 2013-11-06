@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Nov  6 12:18:09 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 17:59:59 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -458,6 +458,10 @@
        (set! *optim-initflow?* #t))
       (("-fno-initflow" (help "Disable init flow"))
        (set! *optim-initflow?* #f))
+      (("-fnarrow" (help "Enable scope narrowing"))
+       (set! *optim-narrow?* #t))
+      (("-fno-narrow" (help "Disable scope narrowing"))
+       (set! *optim-narrow?* #f))
       (("-fsync-failsafe" (help "Enable failsafe synchronize optimization"))
        (set! *optim-sync-failsafe?* #t))
       (("-fno-sync-failsafe" (help "Disable failsafe synchronize optimization"))

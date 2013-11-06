@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Sep 19 11:59:40 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 18:05:03 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -78,6 +78,7 @@
 	    bdb_spread-obj
 	    bdb_walk
 	    prof_walk
+	    narrow_walk
 	    cc_cc
 	    cc_ld
 	    backend_backend
@@ -252,6 +253,13 @@
 	    (stop-on-pass 'initflow (lambda () (write-ast ast)))
 	    (check-sharing "initflow" ast)
 	    (check-type "initflow" ast #f #f)
+
+	    ;; narrow the variables scope
+	    (when *optim-narrow?*
+	       (set! ast (profile narrow (narrow-walk! ast))))
+	    (stop-on-pass 'narrow (lambda () (write-ast ast)))
+	    (check-sharing "narrow" ast)
+	    (check-type "narrow" ast #f #f)
 	    
 	    ;; we make a heap on `mkheap' mode
 	    (stop-on-pass 'make-heap (lambda () (make-heap)))

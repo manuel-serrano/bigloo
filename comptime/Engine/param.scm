@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Jul 17 16:52:16 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 17:59:30 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -76,6 +76,7 @@
 	    *optim-dataflow-for-errors?*
 	    *optim-dataflow-types?*
 	    *optim-initflow?*
+	    *optim-narrow?*
 	    *optim-sync-failsafe?*
 	    *optim-reduce-beta?*
 	    *optim-jvm-inlining*
@@ -897,6 +898,9 @@
    #f)
 (param-define *optim-initflow?*
    "Enable initflow optimization for global variables"
+   #f)
+(param-define *optim-narrow?*
+   "Enable scope narrowing optimization for locale variables"
    #f)
 (param-define *optim-sync-failsafe?*
    "Enable failsafe synchronize optimization"
