@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Jul 18 13:04:12 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 11:21:10 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -397,6 +397,8 @@
 		(eval/loc loc `(define ,id ',evmodule-uninitialized) mod)
 		(mark-global-readonly! id mod loc))))
 	 ((macro . ?-)
+	  #unspecified)
+	 ((syntax . ?-)
 	  #unspecified)
 	 ((expander ?-)
 	  #unspecified)

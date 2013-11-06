@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Tue Jun  5 15:29:40 2012 (serrano)                */
-;*    Copyright   :  2005-12 Chris Veness                              */
+;*    Last change :  Wed Nov  6 11:17:51 2013 (serrano)                */
+;*    Copyright   :  2005-13 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
@@ -51,7 +51,8 @@
    
    (import __sha1
 	   __date
-	   __param)
+	   __param
+	   __reader)
    
    (export (aes-ctr-encrypt::bstring ::obj ::bstring
 				     #!optional (nbits 128))
@@ -72,7 +73,9 @@
 	   (aes-ctr-decrypt-port::bstring ::input-port ::bstring
 					  #!optional (nbits 128))
 	   (aes-ctr-decrypt-file::bstring ::bstring ::bstring
-					  #!optional (nbits 128))))
+					  #!optional (nbits 128)))
+
+   (option (set! *init-mode* 'read)))
 
 ;*---------------------------------------------------------------------*/
 ;*    aes-ctr-encrypt ...                                              */

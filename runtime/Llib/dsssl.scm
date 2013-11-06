@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Wed Feb 13 08:34:04 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 11:20:14 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -351,8 +351,11 @@
 (define (dsssl-get-key-arg dsssl-args keyword initializer)
    (let loop ((args dsssl-args))
       (cond
-	 ((null? args)
-	  initializer)
+	 ((not (pair? args))
+	  (if (null? args)
+	      initializer
+	      (error "dsssl-get-key-arg"
+		 "Illegal DSSSL arguments" dsssl-args)))
 	 ((not (keyword? (car args)))
 	  (loop (cdr args)))
 	 ((eq? (car args) keyword)
