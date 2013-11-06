@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Apr  4 12:37:01 2012 (serrano)                */
+#*    Last change :  Wed Nov  6 14:49:58 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,9 +53,9 @@ CEFLAGS		=
 
 # Additional pthread lib for C
 ifeq "$(PHIDGETLIBS) " " "
-EXTRALIBS	= 
+EXTRALIBS	= $(PTHREADLIBS)
 else
-EXTRALIBS	= $(PHIDGETLIBS)
+EXTRALIBS	= $(PTHREADLIBS) $(PHIDGETLIBS)
 endif
 
 #*---------------------------------------------------------------------*/

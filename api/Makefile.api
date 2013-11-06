@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Fri Jul 19 10:48:40 2013 (serrano)                */
+#*    Last change :  Wed Nov  6 14:53:03 2013 (serrano)                */
 #*    Copyright   :  2010-13 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -12,8 +12,8 @@
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: api-install-init api-install-c api-install-jvm api-install-dotnet \
-  api-uninstall-init api-uninstall-c api-uninstall-jvm api-uninstall-dotnet
+.PHONY: api-install-init api-install-c api-install-jvm \
+  api-uninstall-init api-uninstall-c api-uninstall-jvm 
 
 # init files
 api-install-init:
@@ -74,33 +74,6 @@ api-uninstall-jvm:
 	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).zip
 	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).zip
 	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).zip
-
-# Dotnet install
-api-install-dotnet:
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/$(API).jheap $(LIBDIR)/$(FILDIR)/$(API).jheap && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(API).jheap && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll && \
-	  cp $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll \
-             $(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll; \
-        fi
-
-# Dotnet uninstallation
-api-uninstall-dotnet:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/$(API).jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_s-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_u-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_es-$(RELEASE).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(API)_eu-$(RELEASE).dll
 
 #*---------------------------------------------------------------------*/
 #*    Init build                                                       */
@@ -260,76 +233,10 @@ api-clean-jvm:
 	$(RM) -rf $(CLASS_DIR)
 
 #*---------------------------------------------------------------------*/
-#*    Dotnet build                                                     */
-#*---------------------------------------------------------------------*/
-.PHONY: api-dotnet api.dll api-clean-dotnet
-
-api-dotnet: api-init $(TAGS) $(DOTNET_OBJ_DIR) $(DOTNET_OBJ_EDIR) 
-	$(MAKE) api.dll
-
-$(DOTNET_OBJ_DIR):
-	mkdir -p $(DOTNET_OBJ_DIR)
-
-$(DOTNET_OBJ_EDIR):
-	mkdir -p $(DOTNET_OBJ_EDIR)
-
-api.dll: $(TAGS) .jfile heap-jvm
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll
-	@ $(MAKE) $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll
-
-$(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll: .afile $(BGL_DOTNET_OBJ) $(DOTNET_OBJ_SRC)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_DIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_S) \
-                -shared -o $@ \
-                $(DOTNET_OBJ_SRC:$(DOTNET_OBJ_DIR)/%=%) \
-		$(BGL_DOTNET_OBJ:$(DOTNET_OBJ_DIR)/%=%))
-
-$(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll: .afile $(BGL_DOTNET_OBJ) $(DOTNET_OBJ_SRC)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_DIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_U) \
-                -shared -o $@ \
-                $(DOTNET_OBJ_SRC:$(DOTNET_OBJ_DIR)/%=%) \
-		$(BGL_DOTNET_OBJ:$(DOTNET_OBJ_DIR)/%=%))
-
-$(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll: .afile $(BGL_DOTNET_EOBJ)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_EDIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_S) \
-                 -shared -o $@ $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll \
-		$(BGL_DOTNET_EOBJ:$(DOTNET_OBJ_EDIR)/%=%))
-
-$(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll: .afile $(BGL_DOTNET_EOBJ)
-	@ $(RM) -f $@
-	@ (cd $(DOTNET_OBJ_EDIR) && \
-	  $(DOTNETCSCC) \
-		$(DOTNETFTDLLPATH) $(DOTNETLINKBIGLOODLL) \
-	        $(EXTRALIBS_U) \
-                 -shared -o $@ $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll \
-		$(BGL_DOTNET_EOBJ:$(DOTNET_OBJ_EDIR)/%=%))
-
-api-clean-dotnet:
-	$(RM) -f $(BOOTLIBDIR)/$(API).jheap
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_es-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_u-$(RELEASE).dll
-	$(RM) -f $(BOOTLIBDIR)/bigloo$(API)_eu-$(RELEASE).dll
-	$(RM) -rf $(DOTNET_OBJ_DIR)
-
-#*---------------------------------------------------------------------*/
 #*    Compilation rules                                                */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .scm .c .java .cs .class .o .obj
+.SUFFIXES: .scm .c .java .cs .class .o 
 
 objs/%.o: $(BIGLOO_SRC_DIR)/%.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $< -o $@ -c
@@ -348,19 +255,6 @@ $(CLASS_DIR)/%.java: $(JAVA_SRC_DIR)/%.java
 
 $(CLASS_EDIR)/%.class: $(MISC_SRC_DIR)/%.scm
 	$(BIGLOO) -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $< -o $@
-
-$(DOTNET_OBJ_DIR)/%.cs: $(DOTNET_SRC_DIR)/%.cs
-	cp $< $@
-
-$(DOTNET_OBJ_DIR)/%.obj: $(BIGLOO_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
-
-$(DOTNET_OBJ_EDIR)/%.obj: $(MISC_SRC_DIR)/%.scm
-	$(BIGLOO) -dotnet \
-            -dotnet-mono-workaround -dotnet-pnet-workaround \
-             $(EFLAGS) $(BDOTNETFLAGS) $(BAPIFLAGS) -c -dotnet-managed $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */
@@ -404,7 +298,7 @@ dep:
 #*---------------------------------------------------------------------*/
 .PHONY: api-clean api-cleanall
 
-api-clean: api-clean-c api-clean-jvm api-clean-dotnet
+api-clean: api-clean-c api-clean-jvm
 	$(RM) -f *~
 	$(RM) -f *.mco
 	$(RM) -f *.ast
