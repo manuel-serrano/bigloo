@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov  6 14:07:29 2013 (serrano)                */
+#*    Last change :  Wed Nov  6 14:26:00 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1544,6 +1544,8 @@ case $hostos in
       fi
     fi
 
+    phidgetcflags="-framework Phidget21 -I/Library/Frameworks/Phidget21.framework/Headers  -F /Library/Frameworks $phidgetcflags"
+    
     syszipdir=$zipdir
     syszipdirstr=$zipdir
     ;;
