@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Apr 24 16:59:01 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 12:27:47 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -715,7 +715,7 @@
     (macro $ullong->llong::llong (::ullong) "(BGL_LONGLONG_T)")
     (macro $llong->ullong::ullong (::llong) "(unsigned BGL_LONGLONG_T)")
 
-    ($string->bstring::bstring (::string) "string_to_bstring")
+    (macro $string->bstring::bstring (::string) "string_to_bstring")
     (macro $bstring->string::string (::bstring) "BSTRING_TO_STRING")
 
     (macro $char->bchar::bchar (::char) "BCHAR")
