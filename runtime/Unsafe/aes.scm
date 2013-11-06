@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Wed Nov  6 11:17:51 2013 (serrano)                */
+;*    Last change :  Wed Nov  6 11:47:07 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
@@ -47,12 +47,12 @@
 	   __error
 	   __evenv
 	   __os
-	   __srfi4)
+	   __srfi4
+	   __intext)
    
    (import __sha1
 	   __date
-	   __param
-	   __reader)
+	   __param)
    
    (export (aes-ctr-encrypt::bstring ::obj ::bstring
 				     #!optional (nbits 128))
@@ -75,7 +75,7 @@
 	   (aes-ctr-decrypt-file::bstring ::bstring ::bstring
 					  #!optional (nbits 128)))
 
-   (option (set! *init-mode* 'read)))
+   (option (set! *init-mode* 'intern)))
 
 ;*---------------------------------------------------------------------*/
 ;*    aes-ctr-encrypt ...                                              */

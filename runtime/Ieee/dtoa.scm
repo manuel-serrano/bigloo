@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Fri Jun 10 10:54:14 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Wed Nov  6 11:46:02 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
 ;*=====================================================================*/
@@ -33,10 +33,14 @@
 	    __r5_control_features_6_4
 
 	    __bit
-	    __evenv)
+	    __evenv
+	    __intext)
 
    (export (real->string::bstring d::double))
-   (extern (export real->string "bgl_real_to_string")))
+   
+   (extern (export real->string "bgl_real_to_string"))
+
+   (option (set! *init-mode* 'intern)))
 
 ;*---------------------------------------------------------------------*/
 ;*    constants                                                        */
@@ -111,9 +115,9 @@
    ;; furthermore m will be normalized (even when d is a denormal)
    ;;    (obvious exception of course 0.0)
    (let* ((el (double->llong-bits d))
-	  (biased-e (llong->fixnum (bit-rshllong (bit-andllong el
-							       *exponent-mask*)
-						 52))) ;; 52 bits mantissa
+	  (biased-e (llong->fixnum (bit-rshllong
+				      (bit-andllong el *exponent-mask*)
+				      52))) ;; 52 bits mantissa
 	  (mantissa (bit-andllong el *mantissa-mask*)))
       (cond
 	 ((not (zerofx? biased-e))
@@ -520,6 +524,6 @@
 ;*    real->string ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (real->string d)
-  (let* ((str (make-string 50)) ;; TODO: Reduce length to minimum.
+  (let* ((str (make-string 50))
 	 (len (fill-double! str 0 d)))
      (string-shrink! str len)))
