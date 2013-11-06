@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Nov  6 14:09:28 2013 (serrano)                */
+#*    Last change :  Wed Nov  6 14:16:21 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host phidget library.                              */
 #*=====================================================================*/
@@ -84,8 +84,9 @@ if eval "$BUILDSH $compile"; then
 else
    phidgetlib="-framework Phidget$phidgetversion -I/Library/Frameworks/Phidget$phidgetversion.framework/Headers  -F /Library/Frameworks"
    compile="$CC $cflags $file.c -o $aout $phidgetlib >/dev/null"
-   if eval "$BUILDSH $compile"; then
-     echo $phidgetlib
+
+   if eval "$BUILDSH $compile > /dev/null"; then
+     echo "$phidgetlib"
      \rm -f $file.*
      \rm -f $aout
      \rm -f $aout*
