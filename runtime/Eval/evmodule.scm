@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Nov  6 11:21:10 2013 (serrano)                */
+;*    Last change :  Thu Nov  7 15:23:33 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -734,7 +734,7 @@
 		(multiple-value-bind (ic2 ie2)
 		   (evmodule-include mod ic loc)
 		   (loop (cdr clauses)
-			 (append iclauses ic2 ic)
+			 (append iclauses ic2)
 			 (append iexprs ie2 ie)))))
 	    (else
 	     (loop (cdr clauses)
@@ -829,7 +829,8 @@
 	 ;; Step2: evaluate import and from clauses.
 	 (evmodule-step2 mod iclauses loc)
 	 ;; step3: evaluate classes and build the module body (with includes).
-	 (evmodule-step3 mod mclauses loc)
+;* 	 (evmodule-step3 mod mclauses loc)                             */
+	 (evmodule-step3 mod iclauses loc)
 	 ;; returns the include expressions
 	 `(begin ,@iexprs))))
 
