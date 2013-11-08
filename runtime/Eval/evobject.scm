@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sat Jul 20 10:39:03 2013 (serrano)                */
+;*    Last change :  Fri Nov  8 09:26:33 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
@@ -126,7 +126,7 @@
 		   (object-class-num-set! o (cell-ref classnum))
 		   (%object-widening-set! o (list->vector (list-tail l n)))
 		   o)
-		(error id
+		(expand-error id
 		   (format
 		      "Wrong number of arguments for constructor (expecting ~a)"
 		      (+fx n len))
@@ -335,7 +335,7 @@
    (lambda (x e)
       (instantiate-fill (car x) (cdr x) class
 	 (class-all-fields class)
-	 `(,(class-allocator class)) x e)))
+	 (localize x `(,(class-allocator class))) x e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    instantiate-fill ...                                             */
@@ -371,7 +371,7 @@
 			 (set-car! pval #t)
 			 (set-cdr! pval (localize p value))))
 		     (else
-		      (error op "Illegal argument" p)))
+		      (expand-error op "Illegal argument" p)))
 		  (loop (cdr provided)))))
 	 ;; build the result
 	 vargs))
@@ -385,7 +385,7 @@
 		  (unless (car a)
 		     (unless (class-field-virtual? s)
 			;; value missing
-			(error op
+			(expand-error op
 			   (format "Missing value for field \"~a\""
 			      (class-field-name s))
 			   x))))
@@ -397,30 +397,33 @@
       (check-all-values args fields)
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
-      `(let ((,new ,(e init e)))
-	  (begin
-	     ;; actual fields
-	     ,@(vector-filter-map
-		  (lambda (field val)
-		     (unless (class-field-virtual? field)
-			(let ((v (e (cdr val) e)))
-			   `(,(class-field-mutator field) ,new ,v))))
-		  fields args)
-	     ;; constructor
-	     ,(let ((constr (find-class-constructor class)))
-		 (when constr
-		    (e `(,constr ,new) e)))
-	     ;; virtual fields
-	     ,@(vector-filter-map
-		  (lambda (field val)
-		     (when (and (class-field-virtual? field)
-				(class-field-mutable? field)
-				(car val))
-			(let ((v (e (cdr val) e)))
-			   `(,(class-field-mutator field) ,new ,v))))
-		  fields args)
-	     ;; return the new instance
-	     ,new))))
+      (localize x
+	 `(let ((,new ,(e init e)))
+	     (begin
+		;; actual fields
+		,@(vector-filter-map
+		     (lambda (field val)
+			(unless (class-field-virtual? field)
+			   (let ((v (e (cdr val) e)))
+			      (localize val
+				 `(,(class-field-mutator field) ,new ,v)))))
+		     fields args)
+		;; constructor
+		,(let ((constr (find-class-constructor class)))
+		    (when constr
+		       (e (localize x `(,constr ,new)) e)))
+		;; virtual fields
+		,@(vector-filter-map
+		     (lambda (field val)
+			(when (and (class-field-virtual? field)
+				   (class-field-mutable? field)
+				   (car val))
+			   (let ((v (e (cdr val) e)))
+			      (localize val
+				 `(,(class-field-mutator field) ,new ,v)))))
+		     fields args)
+		;; return the new instance
+		,new)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-filter-map ...                                            */
@@ -451,7 +454,7 @@
 	 ((?duplicate ?dup . ?prov)
 	  (duplicate-expander class dup prov x e))
 	 (else
-	  (error "duplicate" "Illegal form" x)))))
+	  (expand-error "duplicate" "Illegal form" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-expander ...                                           */
@@ -473,7 +476,7 @@
 			    i
 			    (cons #t (localize p value)))))
 		     (else
-		      (error (car x) "Illegal form" x)))
+		      (expand-error (car x) "Illegal form" x)))
 		  (loop (cdr provided)))))
 	 ;; we collect the duplicated values
 	 (let loop ((i 0))
@@ -570,7 +573,7 @@
 				     e aux nfields x))
 			       aux)))))
 		((not (pair? s))
-		 (error s "Illegal field" x))
+		 (expand-error s "Illegal field" x))
 		((symbol? (car s))
 		 (loop (cdr s) (cons (list (car s) (car s)) nfields)))
 		((and (pair? (car s))
@@ -580,7 +583,7 @@
 		      (null? (cddr (car s))))
 		 (loop (cdr s) (cons (car s) nfields)))
 		(else
-		 (error (car s) "Illegal form" x)))))
+		 (expand-error (car s) "Illegal form" x)))))
 	 (else
 	  (expand-error "with-access" "Illegal with-access" x)))))
 
@@ -791,17 +794,17 @@
 		 (kclass (find-class (cdr id-type))))
 	     (cond
 		((not (eq? (car id-type) 'instantiate))
-		 (error instantiate "Illegal binding" bdg))
+		 (expand-error instantiate "Illegal binding" bdg))
 		((not (class? kclass))
-		 (error instantiate "Illegal class" bdg))
+		 (expand-error instantiate "Illegal class" bdg))
 		((class-abstract? kclass)
-		 (error instantiate
+		 (expand-error instantiate
 		    "Abstract classes can't be instantiated"
 		    bdg))
 		(else
 		 kclass))))
 	 (else
-	  (error "co-instantiate" "Illegal binding" bdg))))
+	  (expand-error "co-instantiate" "Illegal binding" bdg))))
    
    (let ((vars (map (lambda (bdg)
 		       (match-case bdg
@@ -812,9 +815,10 @@
 				  (klass (find-instantiate-class expr bdg)))
 			      (if (or (not t) (eq? t (class-name klass)))
 				  (list id klass expr)
-				  (error (car x) "Illegal variable type" bdg))))
+				  (expand-error (car x) "Illegal variable type"
+				     bdg))))
 			  (else
-			   (error (car x) "Illegal binding" bdg))))
+			   (expand-error (car x) "Illegal binding" bdg))))
 		  bindings)))
       `(let ,(map (lambda (var)
 		     (let ((id (car var))

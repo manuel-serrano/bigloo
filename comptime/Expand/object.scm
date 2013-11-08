@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Nov 17 07:44:45 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov  8 09:51:31 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -236,13 +236,6 @@
 	  (tnew (make-typed-ident new id))
 	  (args (collect-slot-values slots)))
 
-      #;(tprint "instantiate->fill id=" id " slots="
-	 (map (lambda (s)
-		 `(:id ,(slot-id s)
-		     :index ,(slot-index s)
-		     :vnum ,(slot-virtual-num s)))
-	    slots))
-      
       ;; check that there is enough values
       (for-each (lambda (a s)
 		   (unless (or (car a) (slot-virtual? s))
@@ -259,15 +252,16 @@
 			   (unless (slot-virtual? slot)
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
-				 `(set! ,(field-access new id) ,v))))
+				 (localize (cdr val)
+				    `(set! ,(field-access new id) ,v)))))
 	       slots args)
 	  ;; constructors
 	  ,(when (find-class-constructor class)
-	      (let ((g (tclass-holder class)))
-		 (e `(((@ class-constructor __object)
-		       (@ ,(global-id g) ,(global-module g)))
-		      ,new)
-		     e)))
+	      (let* ((g (tclass-holder class))
+		     (nx `(((@ class-constructor __object)
+			    (@ ,(global-id g) ,(global-module g)))
+			   ,new)))
+		 (e (localize x nx) e)))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)
@@ -275,7 +269,8 @@
 				      (car val))
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
-				 `(set! ,(field-access new id) ,v))))
+				 (localize (cdr val)
+				    `(set! ,(field-access new id) ,v)))))
 	       slots args)
 	  ;; return the new instance
 	  ,new)))
@@ -334,8 +329,9 @@
       `(let ,(map (lambda (var)
 		     (let ((id (car var))
 			   (klass (cadr var)))
-			`(,(make-typed-ident id (type-id klass))
-			  ,(allocate-expr klass))))
+			(localize x
+			   `(,(make-typed-ident id (type-id klass))
+			     ,(allocate-expr klass)))))
 		vars)
 	  ,@(map (lambda (var)
 		    (let ((id (car var))
@@ -423,7 +419,8 @@
 			   (unless (slot-virtual? slot)
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
-				 `(set! ,(field-access new id) ,v))))
+				 (localize (cdr val)
+				    `(set! ,(field-access new id) ,v)))))
 	       slots args)
 	  ;; constructors
 	  ,(when (find-class-constructor class)
@@ -439,7 +436,8 @@
 				      (car val))
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
-				 `(set! ,(field-access new id) ,v))))
+				 (localize (cdr val)
+				    `(set! ,(field-access new id) ,v)))))
 	       slots args)
 	  ,new)))
 
@@ -529,11 +527,19 @@
 ;*    object-epairify ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (object-epairify obj epair)
-   (if (epair? epair)
-       (if (pair? obj)
-	   (econs (car obj) (cdr obj) (cer epair))
-	   (object-epairify `(begin ,obj) epair))
-       obj))
+   (if (epair? obj)
+       obj
+       (if (epair? epair)
+	   (if (pair? obj)
+	       (econs (car obj) (cdr obj) (cer epair))
+	       (object-epairify `(begin ,obj) epair))
+	   obj)))
+
+;*---------------------------------------------------------------------*/
+;*    localize ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (localize epair obj)
+   (object-epairify obj epair))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-slot-offset ...                                             */
