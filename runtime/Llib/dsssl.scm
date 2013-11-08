@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Wed Nov  6 11:20:14 2013 (serrano)                */
+;*    Last change :  Fri Nov  8 10:55:31 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -273,7 +273,7 @@
 		   (error "dsssl-get-key-arg"
 		      (apply string-append "Illegal extra key arguments: "
 			 (map (lambda (v)
-				 (string-append (keyword->string (car v)) " "))
+				 (format "~a " v))
 			    (dsssl-get-key-rest-arg ,dsssl-arg ',collected-keys)))
 		      ,dsssl-arg))
 	      ;; a #!rest was found before the #!key, accept everthing
