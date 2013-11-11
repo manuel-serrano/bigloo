@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  6 17:48:38 2013                          */
-;*    Last change :  Wed Nov  6 18:47:08 2013 (serrano)                */
+;*    Last change :  Sun Nov 10 17:27:08 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Ast walkers                                                      */
@@ -167,36 +167,63 @@
 (define-macro (gen-walks class . fields)
    
    (define (field-name f)
-      (if (pair? f)
-	  (car f)
-	  f))
+      (match-case f
+	 ((? symbol?)
+	  f)
+	 (((? symbol?))
+	  (car f))
+	 ((=> ?- ?- ?field)
+	  field)))
    
    (define (visit f nb-args)
-      (if (pair? f)
+      (match-case f
+	 ((? symbol?)
+	  `(p ,f ,@(map (lambda (i)
+			   (string->symbol (format "arg~a" i)))
+		      (iota nb-args))))
+	 (((? symbol?))
 	  `(for-each (lambda (f)
 			(p f 
 			   ,@(map (lambda (i)
 				     (string->symbol (format "arg~a" i)))
 				(iota nb-args))))
-	      ,(car f))
-	  `(p ,f ,@(map (lambda (i)
-			   (string->symbol (format "arg~a" i)))
-		      (iota nb-args)))))
+	      ,(car f)))
+	 ((=> ?get ?set ?field)
+	  `(for-each (lambda (f)
+			(p (,get f)
+			   ,@(map (lambda (i)
+				     (string->symbol (format "arg~a" i)))
+				(iota nb-args))))
+	      ,field))))
    
    (define (visit* f nb-args)
-      (if (pair? f)
+      (match-case f
+	 ((? symbol?)
+	  `(p ,f ,@(map (lambda (i)
+			   (string->symbol (format "arg~a" i)))
+		      (iota nb-args))))
+	 (((? symbol?))
+	   `(append-map (lambda (f)
+			   (p f 
+			      ,@(map (lambda (i)
+					(string->symbol (format "arg~a" i)))
+				   (iota nb-args))))
+	       ,(car f)))
+	 ((=> ?get ?set ?field)
 	  `(append-map (lambda (f)
-			  (p f 
+			  (p (,get f)
 			     ,@(map (lambda (i)
 				       (string->symbol (format "arg~a" i)))
 				  (iota nb-args))))
-	      ,(car f))
-	  `(p ,f ,@(map (lambda (i)
-			   (string->symbol (format "arg~a" i)))
-		      (iota nb-args)))))
+	      ,field))))
    
    (define (visit! f nb-args)
-      (if (pair? f)
+      (match-case f
+	 ((? symbol?)
+	  `(set! ,f (p ,f ,@(map (lambda (i)
+				    (string->symbol (format "arg~a" i)))
+			       (iota nb-args)))))
+	 (((? symbol?))
 	  `(let loop ((fields ,(car f)))
 	      (unless (null? fields)
 		 (set-car! fields
@@ -204,10 +231,16 @@
 		       ,@(map (lambda (i)
 				 (string->symbol (format "arg~a" i)))
 			    (iota nb-args))))
-		 (loop (cdr fields))))
-	  `(set! ,f (p ,f ,@(map (lambda (i)
-				    (string->symbol (format "arg~a" i)))
-			       (iota nb-args))))))
+		 (loop (cdr fields)))))
+	 ((=> ?get ?set ?field)
+	  `(let loop ((fields ,field))
+	      (unless (null? fields)
+		 (,set (car fields)
+		    (p (,get (car fields))
+		       ,@(map (lambda (i)
+				 (string->symbol (format "arg~a" i)))
+			    (iota nb-args))))
+		 (loop (cdr fields)))))))
 
    (define (withaccess body)
       `(,(symbol-append 'with-access:: class) n ,(map field-name fields)
@@ -256,84 +289,6 @@
        ,@(map (lambda (nb) (gen-method! nb)) (iota 4))))
 
 ;*---------------------------------------------------------------------*/
-;*    gen-traverals ...                                                */
-;*---------------------------------------------------------------------*/
-(define-macro (gen-traverals class)
-
-   (define (gen-method nb-args)
-      (let ((args (map (lambda (i)
-			  (string->symbol (format "arg~a" i)))
-		     (iota nb-args)))
-	    (walk (string->symbol (format "walk~a" nb-args))))
-	 `(define-method (,walk ,(symbol-append 'n:: class) p ,@args)
-	     (let loop ((n n))
-		(cond
-		   ((isa? n J2SDollar)
-		    (,walk n p ,@args))
-		   ((isa? n J2SNode)
-		    (let ((fields (class-all-fields (object-class n))))
-		       (let for ((i (-fx (vector-length fields) 1)))
-			  (when (>=fx i 0)
-			     (let* ((f (vector-ref fields i))
-				    (v ((class-field-accessor f) n)))
-				(loop v)
-				(for (-fx i 1)))))))
-		   ((pair? n)
-		    (for-each loop n)))))))
-
-   (define (gen-method* nb-args)
-      (let ((args (map (lambda (i)
-			  (string->symbol (format "arg~a" i)))
-		     (iota nb-args)))
-	    (walk (string->symbol (format "walk~a*" nb-args))))
-	 `(define-method (,walk ,(symbol-append 'n:: class) p ,@args)
-	     (let loop ((n n))
-		(cond
-		   ((isa? n J2SDollar)
-		    (,walk n p ,@args))
-		   ((isa? n J2SNode)
-		    (let ((fields (class-all-fields (object-class n))))
-		       (let for ((i (-fx (vector-length fields) 1)))
-			  (if (=fx i -1)
-			      '()
-			      (let* ((f (vector-ref fields i))
-				     (v ((class-field-accessor f) n)))
-				 (append (loop v) (for (-fx i 1))))))))
-		   ((pair? n)
-		    (append-map loop n))
-		   (else
-		    '()))))))
-   
-   (define (gen-method! nb-args)
-      (let ((args (map (lambda (i)
-			  (string->symbol (format "arg~a" i)))
-		     (iota nb-args)))
-	    (walk (string->symbol (format "walk~a!" nb-args))))
-	 `(define-method (,walk ,(symbol-append 'n:: class) p ,@args)
-	     (let loop ((n n))
-		(cond
-		   ((isa? n J2SDollar)
-		    (,walk n p ,@args))
-		   ((isa? n J2SNode)
-		    (let ((fields (class-all-fields (object-class n))))
-		       (let for ((i (-fx (vector-length fields) 1)))
-			  (if (>=fx i 0)
-			      (let* ((f (vector-ref fields i))
-				     (v ((class-field-accessor f) n)))
-				 ((class-field-mutator f) n (loop v))
-				 (for (-fx i 1)))
-			      n))))
-		   ((pair? n)
-		    (map! loop n))
-		   (else
-		    n))))))
-   
-   `(begin
-       ,@(map (lambda (nb) (gen-method nb)) (iota 4))
-       ,@(map (lambda (nb) (gen-method* nb)) (iota 4))
-       ,@(map (lambda (nb) (gen-method! nb)) (iota 4))))
-
-;*---------------------------------------------------------------------*/
 ;*    default walk                                                     */
 ;*---------------------------------------------------------------------*/
 (gen-walks node)
@@ -346,11 +301,20 @@
 (gen-walks setq value)
 (gen-walks conditional test true false)
 (gen-walks fail proc msg obj)
-(gen-walks select test (clauses))
-(gen-walks let-fun (locals) body)
 (gen-walks set-ex-it body)
 (gen-walks jump-ex-it exit value)
 (gen-walks make-box value)
 (gen-walks box-set! value)
 (gen-walks sync mutex prelock (nodes))
+(gen-walks select
+   test
+   (=> cdr set-cdr! clauses))
+(gen-walks let-fun
+   (=> (lambda (v) (sfun-body (variable-value v)))
+      (lambda (v b) (sfun-body-set! (variable-value v) b))
+      locals)
+   body)
+(gen-walks let-var
+   (=> cdr set-cdr! bindings)
+   body)
 

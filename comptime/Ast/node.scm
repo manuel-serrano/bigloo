@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Tue Dec 11 17:52:34 2012 (serrano)                */
+;*    Last change :  Sat Nov  9 07:05:13 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -175,7 +175,7 @@
 	   (final-class cast-null::private)
 
 	   ;; the cast node
-	   (class cast::node
+	   (final-class cast::node
 	      ;; the casted node. 
 	      arg::node)
 

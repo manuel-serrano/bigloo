@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Jul  7 19:21:21 2013 (serrano)                */
+;*    Last change :  Sun Nov 10 16:16:57 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -865,17 +865,20 @@
 	  (make-file-name (car f) (cadr f)))
 	 (else
 	  (apply make-file-path f))))
-   (let loop ((f (file-name->list name))
-	      (b (file-name->list base)))
-      (cond
-	 ((null? f)
-	  "")
-	 ((null? b)
-	  (make-file f))
-	 ((not (string=? (car f) (car b)))
-	  (make-file f))
-	 (else
-	  (loop (cdr f) (cdr b))))))
+   (let ((f (file-name->list name)))
+      (if (not (string=? (car f) ""))
+	  name
+	  (let loop ((f f)
+		     (b (file-name->list base)))
+	     (cond
+		((null? f)
+		 "")
+		((null? b)
+		 (make-file f))
+		((not (string=? (car f) (car b)))
+		 (make-file (append (make-list (length b) "..") f)))
+		(else
+		 (loop (cdr f) (cdr b))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-static-library-name ...                                     */

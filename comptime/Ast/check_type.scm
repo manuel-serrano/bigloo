@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Nov 23 10:17:16 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano                            */
+;*    Last change :  Sun Nov 10 17:31:43 2013 (serrano)                */
+;*    Copyright   :  2000-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -111,6 +111,9 @@
 	 (unless (sfun? (variable-value variable))
 	    (unless (or (subtype? type vtype)
 			(and (tclass? vtype) (subtype? vtype type)))
+	       (tprint "ERR: type1=" (shape type) " type2=" (shape vtype)
+		  " eq=" (eq? type vtype) " sub=" (subtype? type vtype)
+		  " check-full=" *check-full*)
 	       (err node type vtype))
 	    (when (and (eq? vtype *_*)
 		       (global? variable)
@@ -326,11 +329,11 @@
 ;*---------------------------------------------------------------------*/
 (define (subtype? t1 t2)
    (cond
+      ((eq? t1 t2)
+       #t)
       ((or (eq? t2 *_*) (eq? t1 *_*))
        (not *check-full*))
       ((or (not *check-correctness*) *unsafe-type*)
-       #t)
-      ((eq? t1 t2)
        #t)
       ((or (eq? t1 *magic*) (eq? t2 *magic*))
        #t)

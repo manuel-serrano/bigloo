@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Nov  6 17:59:59 2013 (serrano)                */
+;*    Last change :  Sun Nov 10 19:09:30 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -834,6 +834,8 @@
        (set! *pass* 'abound))
       (("-initflow" (help "Stop after the type initflow stage"))
        (set! *pass* 'initflow))
+      (("-narrow" (help "Stop after the scope narrowing stage"))
+       (set! *pass* 'narrow))
       (("-dataflow" (help "Stop after the type dataflow stage"))
        (set! *pass* 'dataflow))
       (("-dataflow+" (help "Stop after the second type dataflow stage"))

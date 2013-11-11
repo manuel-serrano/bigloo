@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 08:29:58 1992                          */
-;*    Last change :  Wed Nov 23 18:29:11 2011 (serrano)                */
-;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 10 09:42:39 2013 (serrano)                */
+;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Let expansions.                                                  */
 ;*=====================================================================*/

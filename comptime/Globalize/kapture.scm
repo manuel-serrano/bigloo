@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 30 07:30:09 1995                          */
-;*    Last change :  Tue Oct  3 09:46:21 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 10 17:56:56 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `kaptured' computation                                       */
 ;*=====================================================================*/
@@ -84,9 +84,9 @@
 		       "      "  setter? #\Newline)
 		(cond
 		   ((null? cto)
-		    (let* ((free      (get-free-vars new-body local))
+		    (let* ((free (get-free-vars new-body local))
 			   (fkaptured (free-from kaptured local))
-			   (kaptured  (union (cons free fkaptured))))
+			   (kaptured (union (cons free fkaptured))))
 		       (trace globalize
 			      "   kaptured(" (shape local) ") : "
 			      (shape kaptured) #\Newline)

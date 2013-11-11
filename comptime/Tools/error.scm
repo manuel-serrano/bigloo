@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Tue Nov 15 08:33:16 2011 (serrano)                */
-;*    Copyright   :  1994-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 10 09:39:15 2013 (serrano)                */
+;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
 ;*=====================================================================*/
@@ -110,7 +110,9 @@
 				       (proc (or p proc))
 				       (fname (location-full-fname loc))
 				       (location (location-pos loc))))
-		      (error-notify e))))))))
+		      (begin
+			 (unless p (set! p proc))
+			 (error-notify e)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    user-error ...                                                   */

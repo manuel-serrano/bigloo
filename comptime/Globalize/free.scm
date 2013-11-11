@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Tue Nov 27 15:56:48 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 10 18:07:12 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -104,13 +104,15 @@
 ;*    it maintains `bound' variables list.                             */
 ;*---------------------------------------------------------------------*/
 (define (internal-get-free-vars! node::node integrator::local)
+   (trace (globalize 5) "internal-get-free-vars [" (shape integrator)
+      "] : node=" (shape node) #\Newline)
    (set! *round* (+fx *round* 1))
    ;; we mark integrator and its formals
    (set! *integrator* integrator)
    (bind-variable! integrator integrator)
    (bind-variable! (the-closure integrator #f) integrator)
    (for-each (lambda (l) (bind-variable! l integrator))
-	     (sfun-args (local-value integrator)))
+      (sfun-args (local-value integrator)))
    ;; we can now walk across the body
    (node-free node '()))
 
@@ -125,6 +127,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-free node::var free)
    (with-access::var node (variable)
+      (trace (globalize 5) "node-free ::var var=" (shape node)
+	 " global=" (global? variable) " free="
+	 (free-variable? variable) #\Newline)
       (cond
 	 ((global? variable)
 	  free)

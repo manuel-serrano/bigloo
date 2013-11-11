@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 30 09:25:08 1995                          */
-;*    Last change :  Sat Nov 17 07:54:04 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 10 17:54:25 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    For each globalized function, we set its new body.               */
 ;*=====================================================================*/
@@ -89,7 +89,7 @@
 	    ;; during the computation of the captured variable, we will compute
 	    ;; the set of free variables from the new-body but, we have to
 	    ;; ajust the field `cto' of local.
-	    (let loop ((ncto      (sfun/Ginfo-cto info))
+	    (let loop ((ncto (sfun/Ginfo-cto info))
 		       (nbindings nbindings))
 	       (if (null? nbindings)
 		   (sfun/Ginfo-cto-set! info ncto)
