@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Fri Nov 23 10:21:11 2012 (serrano)                */
+;*    Last change :  Mon Nov 11 17:16:24 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
@@ -153,7 +153,7 @@
 (define-method (node-remove! node::sync)
    (sync-mutex-set! node (node-remove! (sync-mutex node)))
    (sync-prelock-set! node (node-remove! (sync-prelock node)))
-   (node-remove*! (sync-nodes node))
+   (sync-body-set! node (node-remove! (sync-body node)))
    node)
 
 ;*---------------------------------------------------------------------*/

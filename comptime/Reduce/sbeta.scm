@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Sun Nov 18 11:12:46 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano                            */
+;*    Last change :  Mon Nov 11 10:10:19 2013 (serrano)                */
+;*    Copyright   :  2000-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -323,10 +323,10 @@
 ;*    node-beta! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (node-beta! mutex))
       (set! prelock (node-beta! prelock))
-      (node-beta*! nodes)
+      (set! body (node-beta! body))
       node))
 
 ;*---------------------------------------------------------------------*/

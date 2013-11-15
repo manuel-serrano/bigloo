@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Nov  4 15:43:48 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 17:17:47 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -328,6 +328,7 @@
        (let->node exp stack loc 'value))
       ((letrec* . ?-)
        (letrec*->node exp stack loc 'value))
+						     
 ;*--- labels ----------------------------------------------------------*/
       (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value))
@@ -751,7 +752,7 @@
 	  (type *_*)
 	  (mutex (sexp->node mutex stack loc 'value))
 	  (prelock (sexp->node prelock stack loc 'value))
-	  (nodes (sexp*->node body stack loc site)))
+	  (body (sexp->node (normalize-progn body) stack loc site)))
        (let* ((v (mark-symbol-non-user! (gensym 'mutex)))
 	      (var (make-typed-ident v 'mutex))
 	      (nexp (epairify-rec `(synchronize ,v ,@body) exp)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Fri Nov 23 10:24:38 2012 (serrano)                */
-;*    Copyright   :  1997-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:54:29 2013 (serrano)                */
+;*    Copyright   :  1997-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
@@ -368,10 +368,10 @@
 ;*    patch! ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::sync)
-   (with-access::sync node (type nodes mutex prelock)
+   (with-access::sync node (type body mutex prelock)
       (set! mutex (patch! mutex))
       (set! prelock (patch! prelock))
-      (patch*! nodes)
+      (set! body (patch! body))
       (when (eq? type *obj*)
 	 (set! type *_*)
 	 (set! type (get-type node)))

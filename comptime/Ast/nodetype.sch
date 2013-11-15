@@ -622,10 +622,11 @@
 ;; sync
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sync::sync loc1403::obj type1404::type mutex1405::node prelock1406::node nodes1407::pair-nil)
+    (inline make-sync::sync loc1403::obj type1404::type mutex1405::node prelock1406::node body1407::node)
     (inline sync?::bool ::obj)
     (sync-nil::sync)
-    (inline sync-nodes::pair-nil ::sync)
+    (inline sync-body::node ::sync)
+    (inline sync-body-set! ::sync ::node)
     (inline sync-prelock::node ::sync)
     (inline sync-prelock-set! ::sync ::node)
     (inline sync-mutex::node ::sync)
@@ -1234,11 +1235,11 @@
 (define-inline (box-set!-loc-set! o::box-set! v::obj) (with-access::box-set! o (loc) (set! loc v)))
 
 ;; sync
-(define-inline (make-sync::sync loc1403::obj type1404::type mutex1405::node prelock1406::node nodes1407::pair-nil) (instantiate::sync (loc loc1403) (type type1404) (mutex mutex1405) (prelock prelock1406) (nodes nodes1407)))
+(define-inline (make-sync::sync loc1403::obj type1404::type mutex1405::node prelock1406::node body1407::node) (instantiate::sync (loc loc1403) (type type1404) (mutex mutex1405) (prelock prelock1406) (body body1407)))
 (define-inline (sync?::bool obj::obj) ((@ isa? __object) obj (@ sync ast_node)))
 (define (sync-nil::sync) (class-nil (@ sync ast_node)))
-(define-inline (sync-nodes::pair-nil o::sync) (with-access::sync o (nodes) nodes))
-(define-inline (sync-nodes-set! o::sync v::pair-nil) (with-access::sync o (nodes) (set! nodes v)))
+(define-inline (sync-body::node o::sync) (with-access::sync o (body) body))
+(define-inline (sync-body-set! o::sync v::node) (with-access::sync o (body) (set! body v)))
 (define-inline (sync-prelock::node o::sync) (with-access::sync o (prelock) prelock))
 (define-inline (sync-prelock-set! o::sync v::node) (with-access::sync o (prelock) (set! prelock v)))
 (define-inline (sync-mutex::node o::sync) (with-access::sync o (mutex) mutex))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Fri Nov 16 16:56:39 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Mon Nov 11 10:00:10 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
 ;*    init property of a global can be one of:                         */
@@ -153,10 +153,10 @@
 ;*    initflow-node ::sync ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (initflow-node node::sync e)
-   (with-access::sync node (mutex prelock nodes)
+   (with-access::sync node (mutex prelock body)
       (initflow-node mutex e)
       (initflow-node prelock e)
-      (initflow-node* nodes e)))
+      (initflow-node body e)))
 
 ;*---------------------------------------------------------------------*/
 ;*    initflow-node ::app ...                                          */

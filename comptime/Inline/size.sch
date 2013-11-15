@@ -28,11 +28,12 @@
 ;; sized-sync
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-sized-sync::sized-sync loc1194::obj type1195::type mutex1196::node prelock1197::node nodes1198::pair-nil size1199::long)
+    (inline make-sized-sync::sized-sync loc1194::obj type1195::type mutex1196::node prelock1197::node nodes1198::node size1199::long)
     (inline sized-sync?::bool ::obj)
     (sized-sync-nil::sized-sync)
     (inline sized-sync-size::long ::sized-sync)
-    (inline sized-sync-nodes::pair-nil ::sized-sync)
+    (inline sized-sync-body::node ::sized-sync)
+    (inline sized-sync-body-set! ::sized-sync ::node)
     (inline sized-sync-prelock::node ::sized-sync)
     (inline sized-sync-prelock-set! ::sized-sync ::node)
     (inline sized-sync-mutex::node ::sized-sync)
@@ -122,13 +123,13 @@
 (define-inline (sized-sequence-loc-set! o::sized-sequence v::obj) (with-access::sized-sequence o (loc) (set! loc v)))
 
 ;; sized-sync
-(define-inline (make-sized-sync::sized-sync loc1194::obj type1195::type mutex1196::node prelock1197::node nodes1198::pair-nil size1199::long) (instantiate::sized-sync (loc loc1194) (type type1195) (mutex mutex1196) (prelock prelock1197) (nodes nodes1198) (size size1199)))
+(define-inline (make-sized-sync::sized-sync loc1194::obj type1195::type mutex1196::node prelock1197::node body1198::node size1199::long) (instantiate::sized-sync (loc loc1194) (type type1195) (mutex mutex1196) (prelock prelock1197) (body body1198) (size size1199)))
 (define-inline (sized-sync?::bool obj::obj) ((@ isa? __object) obj (@ sized-sync inline_size)))
 (define (sized-sync-nil::sized-sync) (class-nil (@ sized-sync inline_size)))
 (define-inline (sized-sync-size::long o::sized-sync) (with-access::sized-sync o (size) size))
 (define-inline (sized-sync-size-set! o::sized-sync v::long) (with-access::sized-sync o (size) (set! size v)))
-(define-inline (sized-sync-nodes::pair-nil o::sized-sync) (with-access::sized-sync o (nodes) nodes))
-(define-inline (sized-sync-nodes-set! o::sized-sync v::pair-nil) (with-access::sized-sync o (nodes) (set! nodes v)))
+(define-inline (sized-sync-body::node o::sized-sync) (with-access::sized-sync o (body) body))
+(define-inline (sized-sync-body-set! o::sized-sync v::node) (with-access::sized-sync o (body) (set! body v)))
 (define-inline (sized-sync-prelock::node o::sized-sync) (with-access::sized-sync o (prelock) prelock))
 (define-inline (sized-sync-prelock-set! o::sized-sync v::node) (with-access::sized-sync o (prelock) (set! prelock v)))
 (define-inline (sized-sync-mutex::node o::sized-sync) (with-access::sized-sync o (mutex) mutex))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Fri Nov 23 10:24:23 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:54:14 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
 ;*=====================================================================*/
@@ -202,10 +202,10 @@
 ;*    node-setup! ::sync ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (node-setup! mutex)
       (node-setup! prelock)
-      (node-setup*! nodes)))
+      (node-setup! body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::app ...                                            */

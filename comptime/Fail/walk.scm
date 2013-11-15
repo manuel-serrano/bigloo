@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Nov 19 19:21:54 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:58:49 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
 ;*    -------------------------------------------------------------    */
@@ -91,7 +91,7 @@
 (define-method (fail-node! node::sync)
    (sync-mutex-set! node (fail-node! (sync-mutex node)))
    (sync-prelock-set! node (fail-node! (sync-prelock node)))
-   (fail-node*! (sync-nodes node))
+   (sync-body-set! node (fail-node! (sync-body node)))
    node)
 
 ;*---------------------------------------------------------------------*/

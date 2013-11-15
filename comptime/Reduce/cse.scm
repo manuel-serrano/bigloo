@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Nov 17 08:16:51 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:09:36 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -92,14 +92,14 @@
 ;*    node-cse! ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-cse! node::sync stack)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (multiple-value-bind (resetm nmutex)
 	 (node-cse! mutex stack)
 	 (set! mutex nmutex)
 	 (multiple-value-bind (resetp nprelock)
 	    (node-cse! prelock stack)
 	    (set! prelock nprelock)
-	    (values (or (node-cse*! nodes stack) resetm resetp) node)))))
+	    (values (or (node-cse! body stack) resetm resetp) node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cse! ::app-ly ...                                           */

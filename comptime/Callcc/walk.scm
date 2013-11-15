@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Fri Nov 23 10:23:11 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:49:37 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -167,10 +167,10 @@
 ;*    callcc! ::sync ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (callcc! node::sync)
-   (with-access::sync node (mutex prelock nodes)
+   (with-access::sync node (mutex prelock body)
       (set! mutex (callcc! mutex))
       (set! prelock (callcc! prelock))
-      (callcc*! nodes)
+      (set! body (callcc! body))
       node))
 
 ;*---------------------------------------------------------------------*/

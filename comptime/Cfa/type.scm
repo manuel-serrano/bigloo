@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Nov 23 10:24:59 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:32:23 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -246,14 +246,12 @@
 ;*    type-node! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sync)
-   (with-access::sync node (type nodes mutex prelock)
+   (with-access::sync node (type body mutex prelock)
       (set! mutex (type-node! mutex))
       (set! prelock (type-node! prelock))
-      (type-node*! nodes)
+      (set! body (type-node! body))
       (when (eq? type *_*)
-	 (if (pair? nodes)
-	     (set! type (get-type (car (last-pair nodes))))
-	     (set! type *unspec*)))
+	 (set! type (get-type body)))
       node))
 
 ;*---------------------------------------------------------------------*/

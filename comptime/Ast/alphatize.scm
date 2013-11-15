@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Sat Feb 23 14:43:12 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:41:12 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -176,7 +176,7 @@
       (loc (get-location node loc))
       (mutex (do-alphatize (sync-mutex node) loc))
       (prelock (do-alphatize (sync-prelock node) loc))
-      (nodes (do-alphatize* (sync-nodes node) loc))))
+      (body (do-alphatize (sync-body node) loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::app ...                                           */

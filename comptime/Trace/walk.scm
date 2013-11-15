@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Sat Nov 17 08:22:55 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:33:55 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -151,10 +151,8 @@
 ;*    find-last-node ::sync ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (find-last-node node::sync)
-   (with-access::sync node (mutex prelock nodes)
-      (if (pair? nodes)
-	  (find-last-node (car (last-pair nodes)))
-	  mutex)))
+   (with-access::sync node (mutex prelock body)
+      (find-last-node body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-last-node ::app ...                                         */
@@ -288,10 +286,10 @@
 ;*    trace-node ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::sync stack)
-   (with-access::sync node (mutex prelock nodes)
+   (with-access::sync node (mutex prelock body)
       (set! mutex (trace-node mutex stack))
       (set! prelock (trace-node prelock stack))
-      (trace-node*! nodes stack))
+      (set! body (trace-node body stack)))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -457,7 +455,7 @@
 (define-method (toplevel-trace-node node::sync)
    (sync-mutex-set! node (toplevel-trace-node (sync-mutex node)))
    (sync-prelock-set! node (toplevel-trace-node (sync-prelock node)))
-   (toplevel-trace-node*! (sync-nodes node))
+   (sync-body-set! node (toplevel-trace-node (sync-body node)))
    node)
 
 ;*---------------------------------------------------------------------*/

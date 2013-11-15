@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 11:02:16 1999                          */
-;*    Last change :  Fri Nov 23 10:16:32 2012 (serrano)                */
+;*    Last change :  Mon Nov 11 09:41:31 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module checks that global variables are not used before     */
 ;*    being initialized. This function implements a walk thru          */
@@ -121,7 +121,7 @@
 (define-method (check-init node::sync)
    (check-init (sync-mutex node))
    (check-init (sync-prelock node))
-   (check-init* (sync-nodes node)))
+   (check-init (sync-body node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-init ::app ...                                             */

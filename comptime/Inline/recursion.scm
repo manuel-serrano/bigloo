@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Sat Dec  8 14:34:04 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:01:00 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -246,7 +246,7 @@
 (define-method (find-recursive-calls node::sync var)
    (append (find-recursive-calls (sync-mutex node) var)
       (find-recursive-calls (sync-prelock node) var)
-      (find-recursive-calls* (sync-nodes node) var)))
+      (find-recursive-calls (sync-body node) var)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::app ...                                   */

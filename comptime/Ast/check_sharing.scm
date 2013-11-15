@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Nov 23 10:16:45 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano                            */
+;*    Last change :  Mon Nov 11 09:41:41 2013 (serrano)                */
+;*    Copyright   :  2000-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that appears several times (because of illegal sharing)    */
@@ -100,7 +100,7 @@
    (call-next-method)
    (check-node-sharing (sync-mutex node) node)
    (check-node-sharing (sync-prelock node) node)
-   (check-node-sharing* (sync-nodes node) node))
+   (check-node-sharing (sync-body node) node))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-sharing ::app ...                                     */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Sat Nov 17 08:01:41 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:05:52 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.
 ;*    -------------------------------------------------------------    */
@@ -213,20 +213,10 @@
 ;*    node-A ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::sync host k A)
-   (with-access::sync node (nodes mutex prelock) 
-      (if (null? nodes)
-	  (node-A prelock host k
-	     (node-A mutex host (cons (get-new-kont) *mutex*) A))
-	  (let liip ((nds nodes)
-		     (A (node-A prelock host (cons (get-new-kont) *obj*)
-			   (node-A mutex host (cons (get-new-kont) *mutex*) A))))
-	     (if (null? (cdr nds))
-		 (node-A (car nds) host k A)
-		 (liip (cdr nds)
-		    (node-A (car nds)
-		       host
-		       (cons (get-new-kont) (get-type (car nds)))
-		       A)))))))
+   (with-access::sync node (body mutex prelock)
+      (node-A body host k
+	 (node-A prelock host (cons (get-new-kont) *obj*)
+	    (node-A mutex host (cons (get-new-kont) *mutex*) A)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::app ...                                                 */

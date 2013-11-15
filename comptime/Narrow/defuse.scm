@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Sun Nov 10 17:20:47 2013 (serrano)                */
+;*    Last change :  Thu Nov 14 21:29:30 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property.                                           */
@@ -24,9 +24,8 @@
 	    ast_node
 	    ast_env
 	    module_module
-	    engine_param)
-   (static  (wide-class local/defuse::local
-	       (count::int (default 0))))
+	    engine_param
+	    narrow_types)
    (export (defuse-locals ::node ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -34,7 +33,9 @@
 ;*---------------------------------------------------------------------*/
 (define (defuse-locals n::node locals::pair-nil)
    (for-each (lambda (l)
-		(widen!::local/defuse l))
+		(when (isa? l local/narrow)
+		   (with-access::local/narrow l (%count)
+		      (set! %count 0))))
       locals)
    (defuse n))
    
@@ -53,7 +54,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::var)
    (with-access::var n (variable)
-      (if (isa? variable local/defuse)
+      (if (isa? variable local/narrow)
 	  (values '() (list variable))
 	  (values '() '()))))
 
@@ -143,7 +144,7 @@
       (multiple-value-bind (defvalue usevalue)
 	 (defuse value)
 	 (with-access::var var (variable)
-	    (if (isa? variable local/defuse)
+	    (if (isa? variable local/narrow)
 		(values (cons variable defvalue) usevalue)
 		(values defvalue usevalue))))))
 
@@ -229,7 +230,7 @@
 (define-method (defuse n::box-ref)
    (with-access::box-ref n (var)
       (with-access::var var (variable)
-	 (if (isa? variable local/defuse)
+	 (if (isa? variable local/narrow)
 	     (values '() (list variable))
 	     (values '() '())))))
 
@@ -241,7 +242,7 @@
       (multiple-value-bind (defvalue usevalue)
 	 (defuse value)
 	 (with-access::var var (variable)
-	    (if (isa? variable local/defuse)
+	    (if (isa? variable local/narrow)
 		(values (cons variable defvalue) usevalue)
 		(values defvalue usevalue))))))
 
@@ -249,8 +250,8 @@
 ;*    defuse ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sync)
-   (with-access::sync n (mutex prelock nodes)
-      (defuse-sequence (cons* prelock mutex nodes))))
+   (with-access::sync n (mutex prelock body)
+      (defuse-sequence (list prelock mutex body))))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::let-fun ...                                             */
@@ -298,8 +299,8 @@
 ;*    variable-reset! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (variable-reset! v)
-   (with-access::local/defuse v (count)
-      (set! count 0)))
+   (with-access::local/narrow v (%count)
+      (set! %count 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    union ...                                                        */
@@ -311,9 +312,9 @@
    (define res '())
    
    (define (variable-mark! v)
-      (with-access::local/defuse v (count)
-	 (when (=fx count 0)
-	    (set! count 1)
+      (with-access::local/narrow v (%count)
+	 (when (=fx %count 0)
+	    (set! %count 1)
 	    (set! res (cons v res)))))
 
    (for-each (lambda (l) (for-each variable-mark! l)) ls)
@@ -328,17 +329,17 @@
 (define (intersection . ls)
    
    (define (variable-mark! v)
-      (with-access::local/defuse v (count)
-	 (set! count (+fx 1 count))))
+      (with-access::local/narrow v (%count)
+	 (set! %count (+fx 1 %count))))
    
    (define (mark-list! l)
       (for-each variable-mark! l))
    
    (for-each mark-list! ls)
-   (let* ((count (length ls))
+   (let* ((%count (length ls))
 	  (res (filter (lambda (l)
-			  (with-access::local/defuse l ((c count))
-			     (=fx c count)))
+			  (with-access::local/narrow l ((c %count))
+			     (=fx c %count)))
 		  (car ls))))
       (for-each (lambda (l) (for-each variable-reset! l)) ls)
       res))
@@ -351,13 +352,13 @@
 (define (disjonction l1 l2)
    
    (define (variable-mark! v)
-      (with-access::local/defuse v (count)
-	 (set! count (+fx 1 count))))
+      (with-access::local/narrow v (%count)
+	 (set! %count (+fx 1 %count))))
    
    (for-each variable-mark! l2)
    (let ((res (filter (lambda (v)
-			 (with-access::local/defuse v (count)
-			    (=fx count 0)))
+			 (with-access::local/narrow v (%count)
+			    (=fx %count 0)))
 		 l1)))
       (for-each variable-reset! l2)
       res))

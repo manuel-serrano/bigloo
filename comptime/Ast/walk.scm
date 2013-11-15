@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  6 17:48:38 2013                          */
-;*    Last change :  Sun Nov 10 17:27:08 2013 (serrano)                */
+;*    Last change :  Wed Nov 13 06:25:45 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Ast walkers                                                      */
@@ -298,14 +298,15 @@
 (gen-walks funcall fun (args))
 (gen-walks extern (expr*))
 (gen-walks cast arg)
-(gen-walks setq value)
+(gen-walks setq var value)
 (gen-walks conditional test true false)
 (gen-walks fail proc msg obj)
 (gen-walks set-ex-it body)
 (gen-walks jump-ex-it exit value)
 (gen-walks make-box value)
-(gen-walks box-set! value)
-(gen-walks sync mutex prelock (nodes))
+(gen-walks box-ref var)
+(gen-walks box-set! var value)
+(gen-walks sync mutex prelock body)
 (gen-walks select
    test
    (=> cdr set-cdr! clauses))

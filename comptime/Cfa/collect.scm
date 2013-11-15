@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Fri Nov 23 10:23:54 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:53:34 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
 ;*=====================================================================*/
@@ -173,7 +173,7 @@
 (define-method (node-collect! node::sync owner)
    (node-collect! (sync-mutex node) owner)
    (node-collect! (sync-prelock node) owner)
-   (node-collect*! (sync-nodes node) owner))
+   (node-collect! (sync-body node) owner))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-collect! ::app ...                                          */

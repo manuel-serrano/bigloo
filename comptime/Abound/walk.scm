@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Sep  4 17:55:01 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:38:51 2013 (serrano)                */
 ;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -91,9 +91,9 @@
 ;*    abound-node ::sync ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::sync)
-   (with-access::sync node (mutex nodes)
+   (with-access::sync node (mutex body)
       (set! mutex (abound-node mutex))
-      (abound-node*! (sync-nodes node))
+      (set! body (abound-node body))
       node))
 
 ;*---------------------------------------------------------------------*/

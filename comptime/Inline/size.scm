@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Fri Nov 23 10:15:45 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:29:45 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -70,14 +70,12 @@
 ;*    node-size ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-size node::sync)
-   (let loop ((nodes (sync-nodes node))
-	      (size  (+ 1 (node-size (sync-mutex node))
-			(node-size (sync-prelock node)))))
-      (if (null? nodes)
-	  (begin
-	     (widen!::sized-sync node (size size))
-	     size)
-	  (loop (cdr nodes) (+fx size (node-size (car nodes)))))))
+   (let ((size (+ 1
+		  (node-size (sync-mutex node))
+		  (node-size (sync-prelock node))
+		  (node-size (sync-body node)))))
+      (widen!::sized-sync node (size size))
+      size))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-size ::sized-sync ...                                       */

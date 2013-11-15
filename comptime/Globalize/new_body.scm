@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 30 09:25:08 1995                          */
-;*    Last change :  Sun Nov 10 17:54:25 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:59:49 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    For each globalized function, we set its new body.               */
@@ -174,10 +174,10 @@
 ;*    rem! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (rem! node::sync owner current)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (rem! mutex owner current))
       (set! prelock (rem! prelock owner current))
-      (rem*! nodes owner current)
+      (set! body (rem! body owner current))
       node))
 
 ;*---------------------------------------------------------------------*/

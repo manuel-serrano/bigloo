@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Fri Nov 23 10:24:48 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:54:51 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -332,10 +332,10 @@
 ;*    patch! ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (patch! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (patch! mutex))
       (set! prelock (patch! prelock))
-      (patch*! nodes)
+      (set! body (patch! body))
       node))
 
 ;*---------------------------------------------------------------------*/

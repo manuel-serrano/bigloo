@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Jan  2 12:12:59 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:42:32 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -106,7 +106,7 @@
       (location-shape (node-loc node)
 	 `(,sym ,(node->sexp (sync-mutex node))
 	     :prelock ,(node->sexp (sync-prelock node))
-	     ,@(map node->sexp (sync-nodes node))))))
+	     ,(node->sexp (sync-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::app ...                                             */

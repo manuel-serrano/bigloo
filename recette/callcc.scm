@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 13:57:49 1992                          */
-;*    Last change :  Sat Aug 25 07:08:38 2012 (serrano)                */
+;*    Last change :  Mon Nov 11 08:36:25 2013 (serrano)                */
 ;*                                                                     */
 ;*    On test differents call/cc                                       */
 ;*---------------------------------------------------------------------*/

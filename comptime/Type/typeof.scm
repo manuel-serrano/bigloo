@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Thu Jan 17 12:13:51 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 10:14:39 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
@@ -153,8 +153,8 @@
 (define-method (get-type node::sync)
    (with-access::sync node (type)
       (if (eq? type *_*)
-	  (with-access::sync node (nodes)
-	     (get-type (car (last-pair nodes))))
+	  (with-access::sync node (body)
+	     (get-type body))
 	  type)))
 
 ;*---------------------------------------------------------------------*/

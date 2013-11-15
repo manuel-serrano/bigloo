@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:54:22 1995                          */
-;*    Last change :  Sat Nov 17 07:53:16 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:59:29 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the G0 and G1 properties which is defined as follow:  */
 ;*                                                                     */
@@ -98,7 +98,7 @@
 ;*    E ::sync ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define-method (E node::sync caller g)
-   (E* (sync-nodes node) caller
+   (E (sync-body node) caller
       (E (sync-prelock node) caller
 	 (E (sync-mutex node) caller g))))
 

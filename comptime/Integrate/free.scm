@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Sat Nov 17 08:02:57 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:06:27 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -142,8 +142,8 @@
 ;*    node-free ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-free node::sync free)
-   (with-access::sync node (nodes mutex prelock)
-      (node-free* nodes (node-free prelock (node-free mutex free)))))
+   (with-access::sync node (body mutex prelock)
+      (node-free body (node-free prelock (node-free mutex free)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-free ::app ...                                              */

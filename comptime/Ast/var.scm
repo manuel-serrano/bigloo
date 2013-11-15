@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 15:12:51 1996                          */
-;*    Last change :  Tue Nov 20 18:20:04 2012 (serrano)                */
+;*    Last change :  Thu Nov 14 06:24:07 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The variable class definition                                    */
 ;*=====================================================================*/
@@ -126,7 +126,7 @@
 	      ;; closure field pointing to the global function
 	      (the-closure-global (default #unspecified))
 	      ;; the strength (see funcall node) set by the CFA pass
-	      ;; should be ???, LIGHT, or ELIGH
+	      ;; should be ???, LIGHT, or ELIGHT
 	      (strength::symbol (default '???)))
 
 	   (final-class cfun::fun

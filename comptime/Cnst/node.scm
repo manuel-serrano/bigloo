@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Mon Oct 14 08:22:57 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:56:01 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -123,10 +123,10 @@
 ;*    cnst! ::sync ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (cnst! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (cnst! mutex))
       (set! prelock (cnst! prelock))
-      (cnst*! nodes)
+      (set! body (cnst! body))
       node))
 
 ;*---------------------------------------------------------------------*/

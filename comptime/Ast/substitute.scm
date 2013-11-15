@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Dec 11 09:33:48 2012 (serrano)                */
+;*    Last change :  Mon Nov 11 17:19:38 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -102,9 +102,9 @@
 ;*    do-substitute! ::sync ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (do-substitute! node::sync site)
-   (do-substitute! (sync-mutex node) site)
-   (do-substitute! (sync-prelock node) site)
-   (do-substitute*! (sync-nodes node) site)
+   (sync-mutex-set! node (do-substitute! (sync-mutex node) site))
+   (sync-prelock-set! node (do-substitute! (sync-prelock node) site))
+   (sync-body-set! node (do-substitute! (sync-body node) site))
    node)
 
 ;*---------------------------------------------------------------------*/

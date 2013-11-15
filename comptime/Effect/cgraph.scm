@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 15 10:55:41 1995                          */
-;*    Last change :  Thu Dec 20 18:17:50 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:58:07 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the call-graph                                */
 ;*=====================================================================*/
@@ -50,7 +50,7 @@
 (define-method (call-graph! node::sync owner)
    (call-graph! (sync-mutex node) owner)
    (call-graph! (sync-prelock node) owner)
-   (call-graph*! (sync-nodes node) owner))
+   (call-graph! (sync-body node) owner))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-graph! ::app ...                                            */

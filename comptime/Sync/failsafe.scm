@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:49:33 2012                          */
-;*    Last change :  Mon Nov 19 05:08:18 2012 (serrano)                */
-;*    Copyright   :  2012 Manuel Serrano                               */
+;*    Last change :  Mon Nov 11 10:11:50 2013 (serrano)                */
+;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The property FAILSAFE for a node is true, IFF that node cannot   */
 ;*    raise an exception or invoke an exit.                            */
@@ -44,8 +44,8 @@
 ;*---------------------------------------------------------------------*/
 (define (failsafe-sync? n::sync)
    (when *optim-sync-failsafe?*
-      (with-access::sync n (nodes)
-	 (every (lambda (n) (failsafe? n '())) nodes))))
+      (with-access::sync n (body)
+	 (failsafe? body '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::node ...                                             */
@@ -82,10 +82,10 @@
 ;*    failsafe? ::sync ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (failsafe? n::sync stk)
-   (with-access::sync n (mutex prelock nodes)
+   (with-access::sync n (mutex prelock body)
       (and (failsafe? mutex stk)
 	   (failsafe? prelock stk)
-	   (every (lambda (n) (failsafe? n stk)) nodes))))
+	   (failsafe? body stk))))
 
 ;*---------------------------------------------------------------------*/
 ;*    failsafe? ::app ...                                              */

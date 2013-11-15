@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Nov 23 10:20:59 2012 (serrano)                */
+;*    Last change :  Mon Nov 11 17:17:35 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -80,7 +80,7 @@
 (define-method (occur-node! node::sync)
    (occur-node! (sync-mutex node))
    (occur-node! (sync-prelock node))
-   (occur-node*! (sync-nodes node)))
+   (occur-node! (sync-body node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node! ::app ...                                            */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Sat Nov 17 08:04:13 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:06:57 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -197,10 +197,10 @@
 ;*    glo! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::sync integrator)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (glo! mutex integrator))
       (set! prelock (glo! prelock integrator))
-      (glo*! nodes integrator)
+      (set! body (glo! body integrator))
       node))
 
 ;*---------------------------------------------------------------------*/

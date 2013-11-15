@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sun Nov 10 08:45:18 2013 (serrano)                */
+#*    Last change :  Thu Nov 14 18:42:11 2013 (serrano)                */
 #*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -322,7 +322,7 @@ USER_FILE	= user
 USER_OBJ	= $(USER_FILE:%=User/%.o)
 
 #*--- narrow ----------------------------------------------------------*/
-NARROW_FILE	= walk liveness defuse
+NARROW_FILE	= walk types narrow defuse
 
 NARROW_OBJ	= $(NARROW_FILE:%=Narrow/%.o)
 

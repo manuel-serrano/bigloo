@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 11:36:01 1996                          */
-;*    Last change :  Sat Nov 17 07:49:45 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:58:34 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We spread the computed side-effect properties                    */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 (define-method (spread-side-effect! node::sync)
    (spread-side-effect! (sync-mutex node))
    (spread-side-effect! (sync-prelock node))
-   (spread-side-effect*! (sync-nodes node))
+   (spread-side-effect! (sync-body node))
    #t)
 
 ;*---------------------------------------------------------------------*/

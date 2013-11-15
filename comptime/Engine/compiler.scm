@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Nov  6 18:05:03 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 08:38:46 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -255,7 +255,7 @@
 	    (check-type "initflow" ast #f #f)
 
 	    ;; narrow the variables scope
-	    (when *optim-narrow?*
+	    (when (and *optim-narrow?* (not *call/cc?*))
 	       (set! ast (profile narrow (narrow-walk! ast))))
 	    (stop-on-pass 'narrow (lambda () (write-ast ast)))
 	    (check-sharing "narrow" ast)

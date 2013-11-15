@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Nov  5 07:34:05 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 17:01:45 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -634,10 +634,6 @@
       ((letrec* (and (? list?) ?bindings) . ?body)
        (multiple-value-bind (prelet-bindings letrec-bindings postlet-bindings)
 	  (letrec*-split-bindings bindings)
-;* 	  (tprint "all vars=" (map (lambda (x) (if (pair? x) (car x) x)) bindings)) */
-;* 	  (tprint "prelet-simple=" (map car prelet-bindings))          */
-;* 	  (tprint "letrec*-comp=" (map car letrec-bindings))           */
-;* 	  (tprint "postlet-simple=" (map car postlet-bindings) "\n")   */
 	  (if (and (null? prelet-bindings) (null? postlet-bindings))
 	      (let->node sexp stack loc site)
 	      (let ((loc (find-location/loc exp loc))

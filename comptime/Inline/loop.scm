@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 11 09:27:29 1996                          */
-;*    Last change :  Sat Nov 17 07:56:45 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:00:49 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The loop unrolling module.                                       */
 ;*=====================================================================*/
@@ -67,7 +67,7 @@
 (define-method (find-let-fun? node::sync)
    (or (find-let-fun? (sync-mutex node))
        (find-let-fun? (sync-prelock node))
-       (find-let-fun?* (sync-nodes node))))
+       (find-let-fun? (sync-body node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-let-fun? ::app ...                                          */
@@ -239,10 +239,10 @@
 ;*    nest-loop! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (nest-loop! node::sync var nester)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (nest-loop! mutex var nester))
       (set! prelock (nest-loop! prelock var nester))
-      (nest-loop!* nodes var nester)
+      (set! body (nest-loop! body var nester))
       node))
 
 ;*---------------------------------------------------------------------*/

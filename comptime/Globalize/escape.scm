@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:02:16 1996                          */
-;*    Last change :  Sat Nov 17 07:51:37 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Nov 13 06:41:03 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The escape property computation                                  */
 ;*=====================================================================*/
@@ -53,9 +53,7 @@
 ;*    set-escaping-fun! ::variable ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (set-escaping-fun! variable::variable)
-   (error "set-escaping-fun!"
-	  "Illegal variable"
-	  (cons variable (shape variable))))
+   (error "set-escaping-fun!" "Illegal variable" (shape variable)))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-escaping-fun! ...                                            */
@@ -116,7 +114,7 @@
 (define-method (escape! node::sync o)
    (escape! (sync-mutex node) o)
    (escape! (sync-prelock node) o)
-   (escape*! (sync-nodes node) o))
+   (escape! (sync-body node) o))
 
 ;*---------------------------------------------------------------------*/
 ;*    escape! ::app ...                                                */

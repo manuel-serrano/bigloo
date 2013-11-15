@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Tue Dec 11 17:39:39 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 16:40:27 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -141,19 +141,12 @@
 ;*    coerce! ::sync ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::sync caller to safe)
-   (with-access::sync node (type nodes mutex prelock)
+   (with-access::sync node (type body mutex prelock)
       (set! mutex (coerce! mutex caller *mutex* safe))
       (set! prelock (coerce! prelock caller *pair-nil* safe))
-      (let loop ((nodes nodes))
-	 (let ((n (car nodes)))
-	    (if (null? (cdr nodes))
-		(begin
-		   (set-car! nodes (coerce! n caller to safe))
-		   (set! type (strict-node-type to type))
-		   node)
-		(begin
-		   (set-car! nodes (coerce! n caller (get-type n) safe))
-		   (loop (cdr nodes))))))))
+      (set! body (coerce! body caller to safe))
+      (set! type (strict-node-type to type))
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::extern ...                                             */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 12:54:32 1996                          */
-;*    Last change :  Sat Nov 17 08:23:38 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:10:05 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The comparison of two nodes.                                     */
 ;*=====================================================================*/
@@ -77,7 +77,7 @@
 	(eq? (node-type node) (node-type node2))
 	(same-node? (sync-mutex node) (sync-mutex node2) alias)
 	(same-node? (sync-prelock node) (sync-prelock node2) alias)
-	(same-node*? (sync-nodes node) (sync-nodes node2) alias)))
+	(same-node*? (sync-body node) (sync-body node2) alias)))
 
 ;*---------------------------------------------------------------------*/
 ;*    same-node? ::app-ly ...                                          */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Sat Nov 17 07:54:43 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:31:26 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -196,10 +196,10 @@
 ;*    glo! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::sync integrator)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (glo! mutex integrator))
       (set! prelock (glo! prelock integrator))
-      (glo*! nodes integrator)
+      (set! body (glo! body integrator))
       node))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Fri Nov 23 10:23:45 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:53:22 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -138,14 +138,10 @@
 ;*    cfa! ::sync ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::sync)
-   (with-access::sync node (nodes mutex prelock)
-      (cfa! mutex)
+   (with-access::sync node (body mutex prelock)
       (cfa! prelock)
-      (let loop ((n nodes)
-		 (approx #unspecified))
-	 (if (null? n)
-	     approx
-	     (loop (cdr n) (cfa! (car n)))))))
+      (cfa! mutex)
+      (cfa! body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa! ::app-ly ...                                                */

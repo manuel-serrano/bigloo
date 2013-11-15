@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Nov 23 10:24:08 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 09:53:47 2013 (serrano)                */
+;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election for light closures.                                */
 ;*=====================================================================*/
@@ -160,10 +160,10 @@
 ;*    type-node! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (type-node! mutex)
       (type-node! prelock)
-      (type-node*! nodes)))
+      (type-node! body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::app ...                                             */

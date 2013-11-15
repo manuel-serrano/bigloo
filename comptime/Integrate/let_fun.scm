@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 09:38:46 1995                          */
-;*    Last change :  Sat Nov 17 08:03:41 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:06:42 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which remove displaced         */
 ;*    local functions and which adds the integrated ones.              */
@@ -157,10 +157,10 @@
 ;*    displace-let-fun-node! ::sync ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (displace-let-fun-node! node::sync hosts)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (displace-let-fun-node! mutex hosts)
       (displace-let-fun-node! prelock hosts)
-      (for-each (lambda (node) (displace-let-fun-node! node hosts)) nodes)))
+      (displace-let-fun-node! body hosts)))
 
 ;*---------------------------------------------------------------------*/
 ;*    displace-let-fun-node! ::app ...                                 */

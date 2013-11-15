@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Sat Nov 17 07:40:26 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Mon Nov 11 09:58:23 2013 (serrano)                */
+;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
 ;*    does it set a vector or a global variable, ...).                 */
@@ -321,7 +321,7 @@
 (define-method (body-effect! node::sync effect::feffect)
    (body-effect! (sync-mutex node) effect)
    (body-effect! (sync-prelock node) effect)
-   (body-effect*! (sync-nodes node) effect))
+   (body-effect! (sync-body node) effect))
 
 ;*---------------------------------------------------------------------*/
 ;*    body-effect! ::funcall ...                                       */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Nov 17 08:19:38 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 11 10:10:35 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -102,10 +102,10 @@
 ;*    node-typec! ::sync ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (node-typec! mutex))
       (set! prelock (node-typec! prelock))
-      (node-typec*! nodes)
+      (set! body (node-typec! body))
       node))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Fri Nov 23 10:23:29 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Mon Nov 11 10:32:43 2013 (serrano)                */
+;*    Copyright   :  2000-13 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
@@ -111,13 +111,12 @@
 ;*    cleanup-node! ::sync ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (cleanup-node! node::sync)
-   (with-access::sync node (nodes mutex prelock type)
+   (with-access::sync node (body mutex prelock type)
       (cleanup-node! mutex)
       (cleanup-node! prelock)
-      (when (pair? nodes)
-	 (for-each cleanup-node! nodes)
-	 (when (eq? type *_*)
-	    (set! type (node-type (car (last-pair nodes))))))))
+      (cleanup-node! body)
+      (when (eq? type *_*)
+	 (set! type (node-type body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cleanup-node! ::setq ...                                         */

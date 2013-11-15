@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Fri Nov 23 10:21:45 2012 (serrano)                */
+;*    Last change :  Mon Nov 11 09:46:46 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -76,7 +76,7 @@
 (define-method (shrink-node! node::sync)
    (shrink-node! (sync-mutex node))
    (shrink-node! (sync-prelock node))
-   (shrink-node*! (sync-nodes node))
+   (shrink-node! (sync-body node))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

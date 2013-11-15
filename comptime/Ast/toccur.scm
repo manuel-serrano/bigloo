@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Jan  2 12:17:17 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:47:08 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -87,7 +87,7 @@
 (define-method (occur-node! node::sync)
    (occur-node! (sync-mutex node))
    (occur-node! (sync-prelock node))
-   (occur-node*! (sync-nodes node)))
+   (occur-node! (sync-body node)))
 
 ;*---------------------------------------------------------------------*/
 ;*    occur-node! ::app ...                                            */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Sep  9 09:21:35 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 10:09:17 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -94,10 +94,10 @@
 ;*    node-copy! ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-copy! node::sync)
-   (with-access::sync node (nodes mutex prelock)
+   (with-access::sync node (body mutex prelock)
       (set! mutex (node-copy! mutex))
       (set! prelock (node-copy! prelock))
-      (node-copy*! nodes)
+      (set! body (node-copy! body))
       node))
 
 ;*---------------------------------------------------------------------*/

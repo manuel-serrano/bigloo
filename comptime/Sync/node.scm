@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Tue Jan 29 09:48:19 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 17:20:58 2013 (serrano)                */
 ;*    Copyright   :  2012-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
@@ -126,7 +126,7 @@
    (define (failsafe-sync->sequence node)
       ;; (tprint "FAILSAFE synchronize " *src-files*)
       ;; no exception raised, avoid pushing/poping mutexes
-      (with-access::sync node (loc nodes mutex type prelock)
+      (with-access::sync node (loc body mutex type prelock)
 	 (let* ((tmp (make-local-svar (gensym 'tmp) type))
 		(lock (if (atom? prelock)
 			  (app `(,mlock ,mutex) loc)
@@ -136,16 +136,10 @@
 			 (loc loc)
 			 (type type)
 			 (variable tmp)))
-		(sbody (if (and (pair? nodes) (null? (cdr nodes)))
-			   (car nodes)
-			   (instantiate::sequence
-			      (loc loc)
-			      (type type)
-			      (nodes nodes))))
 		(lbody (instantiate::let-var
 			  (loc loc)
 			  (type type)
-			  (bindings (list (cons tmp sbody)))
+			  (bindings (list (cons tmp body)))
 			  (body (instantiate::sequence
 				   (loc loc)
 				   (type type)
@@ -158,7 +152,7 @@
    (define (effect-sync->sequence node)
       ;; (tprint "FULL synchronize " *src-files*)
       ;; exceptions potentially raised, slow path compilation
-      (with-access::sync node (loc nodes mutex type prelock)
+      (with-access::sync node (loc body mutex type prelock)
 	 (let* ((tmp (make-local-svar (gensym 'tmp) type))
 		(top (make-local-svar (gensym 'top) *obj*))
 		(topref (instantiate::var
@@ -176,16 +170,10 @@
 			 (loc loc)
 			 (type type)
 			 (variable tmp)))
-		(sbody (if (and (pair? nodes) (null? (cdr nodes)))
-			   (car nodes)
-			   (instantiate::sequence
-			      (loc loc)
-			      (type type)
-			      (nodes nodes))))
 		(lbody (instantiate::let-var
 			  (loc loc)
 			  (type type)
-			  (bindings (list (cons tmp sbody)))
+			  (bindings (list (cons tmp body)))
 			  (body (instantiate::sequence
 				   (loc loc)
 				   (type type)

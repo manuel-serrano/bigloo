@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Sun Nov 10 17:31:43 2013 (serrano)                */
+;*    Last change :  Mon Nov 11 09:42:16 2013 (serrano)                */
 ;*    Copyright   :  2000-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -161,16 +161,10 @@
 ;*    check-node-type ::sync ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::sync)
-   (with-access::sync node (mutex prelock nodes type)
+   (with-access::sync node (mutex prelock body type)
       (check-node-type mutex)
       (check-node-type prelock)
-      (if (pair? nodes)
-	  (begin
-	     (for-each check-node-type nodes)
-	     (unless (subtype? (node-type (car (last-pair nodes))) type)
-		(err node (node-type (car (last-pair nodes))) type)))
-	  (unless (eqtype? type *unspec*)
-	     (err node type *unspec*)))))
+      (check-node-type body)))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-type ::setq ...                                       */
