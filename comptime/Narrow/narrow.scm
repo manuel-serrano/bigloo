@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Fri Nov 15 07:02:18 2013 (serrano)                */
+;*    Last change :  Sun Nov 17 17:22:39 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
@@ -31,7 +31,6 @@
 	    engine_param
 	    narrow_types
 	    narrow_defuse)
-   (static  (wide-class sfun/escape::sfun))
    (export  (narrow-function! ::variable)))
 
 ;*---------------------------------------------------------------------*/
@@ -72,11 +71,6 @@
 ;*    narrow! ::let-var ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (narrow! n::let-var)
-   
-   (define (escape-procedure? v)
-      (with-access::variable v (value)
-	 (isa? value sfun/escape)))
-   
    (with-trace 1 "narrow"
       (trace-item "n=" (shape n))
       (with-access::let-var n (bindings body)

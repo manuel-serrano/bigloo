@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Nov 11 08:38:46 2013 (serrano)                */
+;*    Last change :  Sun Nov 17 14:26:03 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -79,6 +79,7 @@
 	    bdb_walk
 	    prof_walk
 	    narrow_walk
+	    tlift_walk
 	    cc_cc
 	    cc_ld
 	    backend_backend
@@ -331,7 +332,7 @@
 	    (check-sharing "fail" ast)
 	    (check-type "fail" ast #f #f)
 
-	    ;; compute type information based on the explicit type test found
+	    ;; compute type informationa based on the explicit type tests found
 	    ;; in the source code.
 	    (when *optim-dataflow-types?*
 	       (if *call/cc?*
@@ -343,6 +344,13 @@
 	    (check-sharing "dataflow" ast)
 	    (check-type "dataflow" ast #f #f)
 
+	    ;; tlift the variables scope
+	    (when *optim-type-lifting?*
+	       (set! ast (profile tlift (tlift-walk! ast))))
+	    (stop-on-pass 'tlift (lambda () (write-ast ast)))
+	    (check-sharing "tlift" ast)
+	    (check-type "tlift" ast #f #f)
+	    
 	    ;; the globalization stage
 	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
 	    (stop-on-pass 'globalize (lambda () (write-ast ast)))
