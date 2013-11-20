@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Mon Nov 18 15:56:10 2013 (serrano)                */
+;*    Last change :  Wed Nov 20 12:04:57 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
@@ -168,7 +168,6 @@
 		       n)
 		      ((defassign? (car nodes) locals uses)
 		       (trace-item "new let=" (shape (car nodes)))
-		       (tprint "SETQ->LET: " (shape (car nodes)))
 		       (set-car! nodes (setq->let nodes type locals))
 		       (set-cdr! nodes '())
 		       n)
