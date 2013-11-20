@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Nov 17 14:26:03 2013 (serrano)                */
+;*    Last change :  Wed Nov 20 18:23:32 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -238,16 +238,17 @@
 	 ;; check if inlined code correspond to library functions
 	 (backend-check-inlines (the-backend))
 
-	 ;; stop after performing syntax check and write no output.
-	 ;; this is usefull for use with Flycheck and Flymake
-	 (stop-on-pass 'syntax-check (lambda () #unspecified))
-	 
 	 ;; ok, now we build the ast
 	 (let ((ast (profile ast (build-ast units))))
 	    (stop-on-pass 'ast (lambda () (write-ast ast)))
 	    (check-sharing "ast" ast)
 	    (check-type "ast" ast #f #f)
 
+	    ;; stop after performing syntax check and building ast
+	    ;; and write no output. this is usefull for use with
+	    ;; Flycheck and Flymake
+	    (stop-on-pass 'syntax-check (lambda () #unspecified))
+	 
 	    ;; compute the global init property
 	    (when *optim-initflow?*
 	       (set! ast (profile initflow (initflow-walk! ast))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Oct  8 11:42:06 2013 (serrano)                */
+;*    Last change :  Wed Nov 20 16:16:48 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -838,7 +838,7 @@
 	  (error "utf8-substring"
 		 (string-append "Illegal end index \"" string "\"")
 		 end))
-	 ((=fx start (-fx end 1))
+	 ((=fx start end)
 	  "")
 	 (else
 	  (let loop ((r 0)

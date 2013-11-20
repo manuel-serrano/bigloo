@@ -54,7 +54,7 @@ execution, the hashtable tries to expand itself more than
 incorrect hashtable uses because excessive expansion is generally the
 signs of an incorrect behavior. Excessive expansions, cause the
 garbage collector to crash at some point. This debugging feature can
-be disable by specifies a negative max length, in which case, no check
+be disabled by specifying a negative max length, in which case, no check
 is performed at runtime.
 
 The argument @var{bucket-expansion} controls how @var{max-bucket-len} is

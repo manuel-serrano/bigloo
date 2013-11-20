@@ -789,7 +789,7 @@ as if printed with write.
 @item @code{~r} A return (@code{#\Return}) is inserted.
 @item @code{~v} The corresponding value is inserted into the string 
 as if printed with display followed by a newline. This tag is hence
-equivalent to the sequence @code{~v~n}.
+equivalent to the sequence @code{~a~n}.
 @item @code{~c} The corresponding value must be a character and is
 inserted into the string as if printed with write-char.
 @item @code{~x}, @code{~o}, @code{~b}  The corresponding value must

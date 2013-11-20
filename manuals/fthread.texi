@@ -76,7 +76,7 @@ a shared resource which is dispatched to several programs. The term
 concurrently competing to gain access to the processor, in order to
 execute.
 
-Threads are a basic mean for concurrent programming, and are widely
+Threads are a basic means for concurrent programming, and are widely
 used in operating systems. At language level, threads offer a way to
 structure programs by decomposing systems in several concurrent
 components; in this respect, threads are useful for modularity.
@@ -141,18 +141,18 @@ The former thread-start function can be rewritten as follow:
 
 @deffn {SRFI-18 function} thread-start! @var{thread} [@var{scheduler}]
 Runs a thread created with @code{make-thread}. If @var{scheduler} is
-provided, the @var{thread} is started this particular scheduler. Otherwise,
+provided, the @var{thread} is started in this particular scheduler. Otherwise,
 it is started in the current scheduler (see Section @ref{Scheduler}).
 Threads are started at the beginning of @emph{reactions} 
 (see Section @ref{Scheduler}).
 @end deffn
 
 @deffn {SRFI-18 function} thread-yield!
-The current thread @emph{cooperates}. That is, it is suspend for the
+The current thread @emph{cooperates}. That is, it is suspended for the
 @emph{reaction} and the scheduler selects a new thread to be resumed. The
 scheduler resumes the next avaliable thread. If there is only one
 thread started in the scheduler, the same thread is resumed. 
-A @emph{reaction} correspond to the invocation of a @code{scheduler-react!}
+A @emph{reaction} corresponds to the invocation of a @code{scheduler-react!}
 call (see Section @ref{Scheduler}).
 @end deffn
 
@@ -182,8 +182,8 @@ Terminates @var{thread} at the end of the current reaction.
 @end deffn
 
 @deffn {SRFI-18 function} thread-join! @var{thread} [@var{timeout} [@var{timeout-val}]]
-The current thread waits until the @var{thread} terminates or until
-the @var{timeout} is reached (when supplied). If the @var{timeout} is
+The current thread waits until @var{thread} terminates or until
+@var{timeout} is reached (when supplied). If the @var{timeout} is
 reached, @code{thread-join!} returns @var{timeout-val}. If @var{thread}
 terminates, @code{thread-join!} returns the end-result of the @var{thread}
 or the end-exception if that thread terminates abnormally.
@@ -228,7 +228,7 @@ a thread is not eligible to get the processor by the scheduler.
 @deffn {Bigloo function} thread-await! @var{signal} [@var{timeout}]
 
 Blocks the thread until @var{signal} has been broadcast or until
-@var{timeout} is elapsed. The function @code{thread-await!} returns
+@var{timeout} has elapsed. The function @code{thread-await!} returns
 the value associated with the previous emissions of the signal that
 took place during the reaction.
 
@@ -253,13 +253,13 @@ took place during the reaction.
 @end smalllisp
 
 The function @code{thread-await!} cannot be used to intercept all the signals
-broadcasted during a reaction. This is illustrated by the following example
-were obviously @code{thread-await!} cannot intercept the emission of the
+broadcast during a reaction. This is illustrated by the following example
+where obviously @code{thread-await!} cannot intercept the emission of the
 signal:
 
 @smalllisp
 (thread-start! (instantiate::fthread (body (lambda () 
-                                              (tread-await! 'foo)
+                                              (thread-await! 'foo)
                                               (broadcast! 'foo 1)))))
 (thread-start! (instantiate::fthread (body (lambda () 
                                               (broadcast! 'foo 2)))))
@@ -505,7 +505,7 @@ application to create a scheduler.
 @end deffn
 
 @deffn {Bigloo function} scheduler-react! [@var{scheduler}]
-Executes all the treads started (see @code{thread-start!}, 
+Executes all the threads started (see @code{thread-start!}, 
 Section @ref{Thread}) in the scheduler until all the threads are
 blocked. A thread is blocked if the has explicitly yield the processor 
 (@code{thread-yield!} and @code{thread-sleep!}) or because it is waiting

@@ -53,7 +53,7 @@ for a description of how to connect compiled and interpreted code).
 
 By default the evaluator assumes that operators from the standard
 library (e.g., @code{+}, @code{car}) are immutable. Hence, it optimizes
-these operators calls. This optimization can be disables using
+these operators's calls. This optimization can be disabled using
 the @code{bigloo-eval-strict-module} parameter described in
 the chapter describing the parameters (see @pxref{Parameters}). 
 
