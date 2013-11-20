@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Nov 11 17:01:45 2013 (serrano)                */
+;*    Last change :  Wed Nov 20 07:12:57 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -546,7 +546,7 @@
    (define (simple? v comp-vars forward-vars)
       (let loop ((v v))
 	 (cond
-	    ((pair? v) (every loop v))
+	    ((pair? v) (or (eq? (car v) 'quote) (every loop v)))
 	    ((memq v comp-vars) #f)
 	    ((memq v forward-vars) #f)
 	    (else #t))))
@@ -559,6 +559,8 @@
 	 ((eq? sexp var)
 	  #f)
 	 ((not (pair? sexp))
+	  #t)
+	 ((eq? (car sexp) 'quote)
 	  #t)
 	 (else
 	  (and (free-in-sexp var (car sexp))

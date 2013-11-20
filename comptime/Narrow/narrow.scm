@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Sun Nov 17 17:22:39 2013 (serrano)                */
+;*    Last change :  Mon Nov 18 15:56:10 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
@@ -49,15 +49,6 @@
    (with-access::variable v (value)
       (with-access::sfun value (body)
 	 (set! body (narrow! body)))))
-
-;*---------------------------------------------------------------------*/
-;*    mark-captured-local ::node ...                                   */
-;*    -------------------------------------------------------------    */
-;*    Mark local captured local variables as non eligible for          */
-;*    optimization.                                                    */
-;*---------------------------------------------------------------------*/
-(define-walk-method (mark-captured-local n::node binder::int)
-   (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
 ;*    narrow! ::node ...                                               */
@@ -191,7 +182,6 @@
 			  (for-each (lambda (l)
 				       (when (isa? l local/narrow)
 					  (with-access::local/narrow l ((b binder))
-					     (set! b -1)
 					     (set! b (+fx binder 1)))))
 			     deads)
 			  (set-car! nodes

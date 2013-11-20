@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Mon Oct 18 08:33:25 2010 (serrano)                */
+;*    Last change :  Wed Nov 20 07:10:36 2013 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -176,6 +176,13 @@
 	   r)))
 
 ;*---------------------------------------------------------------------*/
+;*    test-letrec*9 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*9)
+   (define bar (list '(1 . 2)))
+   (cdar bar))
+
+;*---------------------------------------------------------------------*/
 ;*    test-letrec ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (test-letrec)
@@ -195,4 +202,5 @@
    (test "letrec*.5" (test-letrec*5) 0)
    (test "letrec*.6" (test-letrec*6) 0)
    (test "letrec*.7" (test-letrec*7) 1)
-   (test "letrec*.8" (test-letrec*8) 1))
+   (test "letrec*.8" (test-letrec*8) 1)
+   (test "letrec*.9" (test-letrec*9) 2))
