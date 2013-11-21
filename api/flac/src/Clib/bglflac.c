@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Thu Nov 21 08:03:50 2013 (serrano)                */
+/*    Last change :  Thu Nov 21 08:44:35 2013 (serrano)                */
 /*    Copyright   :  2011-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -412,6 +412,10 @@ bgl_error_callback( const FLAC__StreamDecoder *decoder,
    if( status != FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH ) {
       bgl_flac_error( "flac-decoder", msg, obj );
    } else {
+#if( defined( FLAC_DEBUG ) )
       fprintf( stderr, "flac crc mismatch: %ld\n", dbg_countread );
+#else
+      bgl_flac_error( "flac-decoder", msg, obj );
+#endif      
    }
 }
