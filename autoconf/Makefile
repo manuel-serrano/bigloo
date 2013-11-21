@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sun Jul  7 18:51:49 2013 (serrano)                */
+#*    Last change :  Thu Nov 21 08:23:08 2013 (serrano)                */
 #*    Copyright   :  1997-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -37,7 +37,7 @@ POPULATION	= Makefile \
                   readline ldextraopt \
                   socket getaddrinfo getifaddrs gethwaddrs socklen setsockopt \
                   inet_aton inet_pton \
-                  unixsocket info cctest ccoptim ccdiv0 \
+                  unixsocket info cctest ccoptim ccbracket ccdiv0 \
                   ccprof termio termios installinfo installinfodir dlopen \
                   user xemacsbin gmaketest ccpic ccpic2 \
                   ziptest javatest jartest \

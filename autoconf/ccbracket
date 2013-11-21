@@ -1,0 +1,108 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/ccbracket                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Thu Nov 21 08:33:08 2013 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Checking the C compiler bracket nesting capacity                 */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=""
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Generate the C file                                              */
+#*---------------------------------------------------------------------*/
+depth=1020;
+
+echo "int foo( int i0 ) {" > $file.c
+
+i=0;
+while expr $i "<" $depth > /dev/null; do
+  ni=`expr $i + 1`  
+  echo "{ int i$ni = i$i + 1;" >> $file.c
+  i=$ni
+done
+
+echo "return i$ni;" >> $file.c
+
+while expr $i ">" 0 > /dev/null; do
+  echo "}" >> $file.c
+  i=`expr $i - 1`  
+done
+
+cat >> $file.c <<EOF
+}
+
+main( int argc, char *argv[] ) {
+ return foo( 0 ) != 
+EOF
+
+echo "$depth;" >> $file.c
+echo "}" >> $file.c
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout"
+
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"; res=$?
+else
+   res=1;
+fi
+
+if [ "$res" = "0" ]; then
+   \rm -f $file.*
+   echo $cflags
+   exit 0
+fi
+
+cflags="$cflags -fbracket-depth=1024";
+
+compile="$CC $cflags $file.c -o $aout"
+
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"; res=$?
+else
+   res=1;
+fi
+
+if [ "$res" = "0" ]; then
+   \rm -f $file.*
+   echo $cflags
+   exit 0
+fi
+
+exit $res

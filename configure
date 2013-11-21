@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov  6 14:54:47 2013 (serrano)                */
+#*    Last change :  Thu Nov 21 08:24:14 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -698,6 +698,9 @@ while : ; do
       extralibs="";
       cstrip="no";;
 
+    --clang)
+      cflags="-fbracket-depth=1024 $cflags";;
+
     --strip=no)
       cstrip="no";
       strip="no";;
@@ -927,7 +930,8 @@ while : ; do
       echo "   --emacs=file" >&2;
       echo "   --xemacs=file (deprecated, use \"--emacs\" option)" >&2;
       echo "   --indent=file" >&2;
-      echo "   --icc (configure for icc)"  >&2;
+      echo "   --icc (configure for icc, Intel C compiler)"  >&2;
+      echo "   --clang (configure for clang LLVM C compiler)"  >&2;
       echo "   --mv=cmd [default $shell_mv]" >&2;
       echo "   --rm=dmd [default $shell_rm]" >&2;
       echo "" >&2;
@@ -2151,6 +2155,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Tell what we are doing
   echo ""
   echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
+
+  # The C compiler options
+  cflags=`$autoconf ccbracket --cflags="$cflags"` || exit 1
 
   # The pointer alignment
   alignment=`$autoconf alignment` || exit 1
