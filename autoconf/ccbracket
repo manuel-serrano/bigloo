@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Thu Nov 21 08:33:08 2013 (serrano)                */
+#*    Last change :  Thu Nov 21 13:43:13 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler bracket nesting capacity                 */
 #*=====================================================================*/
@@ -44,7 +44,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Generate the C file                                              */
 #*---------------------------------------------------------------------*/
-depth=1020;
+depth=256;
 
 echo "int foo( int i0 ) {" > $file.c
 
@@ -65,7 +65,7 @@ done
 cat >> $file.c <<EOF
 }
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
  return foo( 0 ) != 
 EOF
 
