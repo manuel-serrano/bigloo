@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Mon Nov 11 09:42:32 2013 (serrano)                */
+;*    Last change :  Sat Nov 23 10:48:28 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -367,14 +367,16 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::make-box)
    (node->sexp-hook node)
-   `(make-box ,(node->sexp (make-box-value node))))
+   `(,(shape-typed-node 'make-box (node-type node))
+     ,(node->sexp (make-box-value node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::box-ref ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::box-ref)
    (node->sexp-hook node)
-   `(,(shape-typed-node 'box-ref (node-type node)) ,(node->sexp (box-ref-var node))))
+   `(,(shape-typed-node 'box-ref (node-type node))
+     ,(node->sexp (box-ref-var node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::box-set! ...                                        */

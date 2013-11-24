@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Wed Nov 20 07:13:27 2013 (serrano)                */
+;*    Last change :  Thu Nov 21 16:18:55 2013 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -183,6 +183,18 @@
    (cdar bar))
 
 ;*---------------------------------------------------------------------*/
+;*    test-narrow ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    This definition corresponds to the expansion of a letrec*        */
+;*---------------------------------------------------------------------*/
+(define (test-narrow)
+   (let ((x #f)
+	 (y #t))
+      (set! x (lambda () y))
+      (set! y 5)
+      (x)))
+
+;*---------------------------------------------------------------------*/
 ;*    test-letrec ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (test-letrec)
@@ -203,4 +215,5 @@
    (test "letrec*.6" (test-letrec*6) 0)
    (test "letrec*.7" (test-letrec*7) 1)
    (test "letrec*.8" (test-letrec*8) 1)
-   (test "letrec*.9" (test-letrec*9) 2))
+   (test "letrec*.9" (test-letrec*9) 2)
+   (test "narrow" (test-narrow) 5))

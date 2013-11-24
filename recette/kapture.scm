@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Fri Apr  1 11:43:03 2011 (serrano)                */
+;*    Last change :  Sun Nov 24 07:27:58 2013 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/
@@ -159,7 +159,26 @@
 
 (define (lightfuncall-foo f)
    (if (f) 1 2))
-  
+
+;*---------------------------------------------------------------------*/
+;*    integrate-type ...                                               */
+;*---------------------------------------------------------------------*/
+(define (integrate-type::pair-nil locals::pair-nil node-or-nodes)
+   
+   (define (kill-used-in-node n)
+      (set! locals (remq n locals)))
+
+   (when (pair? locals)
+      (cond
+	 ((null? node-or-nodes)
+	  #unspecified)
+	 ((pair? node-or-nodes)
+	  (for-each kill-used-in-node node-or-nodes))
+	 (else
+	  (kill-used-in-node node-or-nodes))))
+
+   locals)
+
 ;*---------------------------------------------------------------------*/
 ;*    test-kapture ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -173,4 +192,5 @@
    (test "nesting.1" ((plante-7 7)) 7)
    (test "nesting.2" (plante-8 8) 8)
    (test "dataflow" (dataflow '(1)) 2)
-   (test "light-funcall" (lightfuncall) 3))
+   (test "light-funcall" (lightfuncall) 3)
+   #;(test "integrate-type" (integrate-type (list 1 2 4) (list 4 6 67)) '(1 2)))

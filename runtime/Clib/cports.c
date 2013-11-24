@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Jul 29 09:28:50 2013 (serrano)                */
+/*    Last change :  Sat Nov 23 12:39:41 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2768,4 +2768,26 @@ bgl_password( char *prompt ) {
    if( tty ) fclose( tty );
    
    return string_to_bstring_len( s, i );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_port_isatty ...                                              */
+/*---------------------------------------------------------------------*/
+bool_t
+bgl_port_isatty( obj_t port ) {
+   if( OUTPUT_PORTP( port ) ) {
+      switch( OUTPUT_PORT( port ).stream_type ) {
+	 case BGL_STREAM_TYPE_FD:
+	    return isatty( PORT_FD( port ) );
+	    break;
+	 case BGL_STREAM_TYPE_FILE:
+	    return isatty( fileno( PORT_FILE( port ) ) );
+	    break;
+	 case BGL_STREAM_TYPE_CHANNEL: 
+	    return 0;
+      }
+   } else {
+      return 0;
+   }
 }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Thu Nov 14 21:29:30 2013 (serrano)                */
+;*    Last change :  Sat Nov 23 07:03:49 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property.                                           */
@@ -25,20 +25,21 @@
 	    ast_env
 	    module_module
 	    engine_param
-	    narrow_types)
-   (export (defuse-locals ::node ::pair-nil)))
+	    narrow_types
+	    narrow_set)
+   (export (defuse-sfun! ::sfun)
+	   (generic defuse ::node)))
 
 ;*---------------------------------------------------------------------*/
-;*    defuse-locals ...                                                */
+;*    defuse-sfun! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (defuse-locals n::node locals::pair-nil)
-   (for-each (lambda (l)
-		(when (isa? l local/narrow)
-		   (with-access::local/narrow l (%count)
-		      (set! %count 0))))
-      locals)
-   (defuse n))
-   
+(define (defuse-sfun! value::sfun)
+   (with-access::sfun value (args body)
+      (for-each (lambda (l)
+		   (widen!::local/narrow l))
+	 args)
+      (defuse body)))
+
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::node ...                                                */
 ;*    -------------------------------------------------------------    */
@@ -53,10 +54,8 @@
 ;*    defuse ::var ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::var)
-   (with-access::var n (variable)
-      (if (isa? variable local/narrow)
-	  (values '() (list variable))
-	  (values '() '()))))
+   (with-access::var n ((v variable))
+      (values '() (if (isa? v local/narrow) (list v) '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse* ...                                                      */
@@ -91,7 +90,16 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sequence)
    (with-access::sequence n (nodes)
-      (defuse-sequence nodes)))
+      (multiple-value-bind (def use)
+	 (defuse-sequence nodes)
+	 (defuse
+	    (widen!::sequence/narrow n
+	       (def def)
+	       (use use))))))
+
+(define-method (defuse n::sequence/narrow)
+   (with-access::sequence/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::app ...                                                 */
@@ -100,7 +108,16 @@
    (with-access::app n (fun args)
       (multiple-value-bind (d u)
 	 (defuse fun)
-	 (defuse* args d u))))
+	 (multiple-value-bind (def use)
+	    (defuse* args d u)
+	    (defuse 
+	       (widen!::app/narrow n
+		  (def def)
+		  (use use)))))))
+
+(define-method (defuse n::app/narrow)
+   (with-access::app/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::app-ly ...                                              */
@@ -111,7 +128,14 @@
 	 (defuse fun)
 	 (multiple-value-bind (defarg usearg)
 	    (defuse arg)
-	    (values (union deffun defarg) (union usefun usearg))))))
+	    (defuse 
+	       (widen!::app-ly/narrow n
+		  (def (union deffun defarg))
+		  (use (union usefun usearg))))))))
+
+(define-method (defuse n::app-ly/narrow)
+   (with-access::app-ly/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::funcall ...                                             */
@@ -120,7 +144,16 @@
    (with-access::funcall n (fun args)
       (multiple-value-bind (d u)
 	 (defuse fun)
-	 (defuse* args d u))))
+	 (multiple-value-bind (def use)
+	    (defuse* args d u)
+	    (defuse 
+	       (widen!::funcall/narrow n
+		  (def def)
+		  (use use)))))))
+
+(define-method (defuse n::funcall/narrow)
+   (with-access::funcall/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::extern ...                                              */
@@ -143,11 +176,18 @@
    (with-access::setq n (var value)
       (multiple-value-bind (defvalue usevalue)
 	 (defuse value)
-	 (with-access::var var (variable)
-	    (if (isa? variable local/narrow)
-		(values (cons variable defvalue) usevalue)
-		(values defvalue usevalue))))))
+	 (with-access::var var ((v variable))
+	    (when (isa? v local/narrow)
+	       (set! defvalue (add v defvalue)))
+	    (defuse
+	       (widen!::setq/narrow n
+		  (def defvalue)
+		  (use usevalue)))))))
 
+(define-method (defuse n::setq/narrow)
+   (with-access::setq/narrow n (def use)
+      (values def use)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::conditional ...                                         */
 ;*---------------------------------------------------------------------*/
@@ -159,9 +199,15 @@
 	    (defuse true)
 	    (multiple-value-bind (deffalse usefalse)
 	       (defuse false)
-	       (values (union deftest (intersection deftrue deffalse))
-		  (union usetest (disjonction (union usetrue usefalse) deftest))))))))
-	 
+	       (defuse
+		  (widen!::conditional/narrow n
+		     (def (union deftest (intersection deftrue deffalse)))
+		     (use (union usetest (disjonction (union usetrue usefalse) deftest))))))))))
+
+(define-method (defuse n::conditional/narrow)
+   (with-access::conditional/narrow n (def use)
+      (values def use)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::fail ...                                                */
 ;*---------------------------------------------------------------------*/
@@ -173,8 +219,14 @@
 	    (defuse msg)
 	    (multiple-value-bind (defobj useobj)
 	       (defuse obj)
-	       (values (union defproc defmsg defobj)
-		  (union useproc usemsg useobj)))))))
+	       (defuse
+		  (widen!::fail/narrow n
+		     (def (union defproc defmsg defobj))
+		     (use (union useproc usemsg useobj)))))))))
+
+(define-method (defuse n::fail/narrow)
+   (with-access::fail/narrow n (def use)
+      (values def use)))
       
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::select ...                                              */
@@ -192,9 +244,15 @@
 			    (set! defs (cons def defs))
 			    (set! uses (cons use uses))))
 	       clauses)
-	    (values (union deftest (apply intersection defs))
-	       (union usetest (disjonction (apply union uses) deftest)))))))
+	    (defuse
+	       (widen!::select/narrow n
+		  (def (union deftest (apply intersection defs)))
+		  (use (union usetest (disjonction (apply union uses) deftest)))))))))
 
+(define-method (defuse n::select/narrow)
+   (with-access::select/narrow n (def use)
+      (values def use)))
+      
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::set-ex-it ...                                           */
 ;*---------------------------------------------------------------------*/
@@ -204,8 +262,15 @@
 	 (defuse var)
 	 (multiple-value-bind (defbody usebody)
 	    (defuse body)
-	    (values (union defvar defbody) (union usevar usebody))))))
+	    (defuse
+	       (widen!::set-ex-it/narrow n
+		  (def (union defvar defbody))
+		  (use (union usevar usebody))))))))
 
+(define-method (defuse n::set-ex-it/narrow)
+   (with-access::set-ex-it/narrow n (def use)
+      (values def use)))
+      
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::jump-ex-it ...                                          */
 ;*---------------------------------------------------------------------*/
@@ -215,8 +280,15 @@
 	 (defuse exit)
 	 (multiple-value-bind (defvalue usevalue)
 	    (defuse value)
-	    (values (union defexit defvalue) (union useexit usevalue))))))
+	    (defuse
+	       (widen!::jump-ex-it/narrow n
+		  (def (union defexit defvalue))
+		  (use (union useexit usevalue))))))))
 
+(define-method (defuse n::jump-ex-it/narrow)
+   (with-access::jump-ex-it/narrow n (def use)
+      (values def use)))
+      
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::make-box ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -229,10 +301,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::box-ref)
    (with-access::box-ref n (var)
-      (with-access::var var (variable)
-	 (if (isa? variable local/narrow)
-	     (values '() (list variable))
-	     (values '() '())))))
+      (defuse var)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::box-set! ...                                            */
@@ -241,38 +310,32 @@
    (with-access::box-set! n (var value)
       (multiple-value-bind (defvalue usevalue)
 	 (defuse value)
-	 (with-access::var var (variable)
-	    (if (isa? variable local/narrow)
-		(values (cons variable defvalue) usevalue)
-		(values defvalue usevalue))))))
+	 (multiple-value-bind (defvar usevar)
+	    (defuse var)
+	    (defuse
+	       (widen!::box-set!/narrow n
+		  (def (union defvalue defvar))
+		  (use (union usevalue usevar))))))))
+
+(define-method (defuse n::box-set!/narrow)
+   (with-access::box-set!/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::sync ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (defuse n::sync)
    (with-access::sync n (mutex prelock body)
-      (defuse-sequence (list prelock mutex body))))
+      (multiple-value-bind (def use)
+	 (defuse-sequence (list prelock mutex body))
+	 (defuse
+	    (widen!::sync/narrow n
+	       (def def)
+	       (use use))))))
 
-;*---------------------------------------------------------------------*/
-;*    defuse ::let-fun ...                                             */
-;*---------------------------------------------------------------------*/
-(define-method (defuse n::let-fun)
-   (with-access::let-fun n (locals body)
-      ;; this is a conservative approach, we assume all functions called
-      ;; for use but none called for def
-      (let ((usebindings '()))
-	 (for-each (lambda (fun)
-		      (with-access::local fun (value)
-			 (with-access::sfun value (body)
-			    (multiple-value-bind (def use)
-			       (defuse body)
-			       (set! usebindings (union use usebindings))))))
-	    locals)
-	 (multiple-value-bind (defbody usebody)
-	    (defuse body)
-	    (values
-	       defbody
-	       (union usebindings usebody))))))
+(define-method (defuse n::sync/narrow)
+   (with-access::sync/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
 ;*    defuse ::let-var ...                                             */
@@ -284,6 +347,7 @@
       (let ((defbindings '())
 	    (usebindings '()))
 	 (for-each (lambda (b)
+		      (widen!::local/narrow (car b))
 		      (multiple-value-bind (def use)
 			 (defuse (cdr b))
 			 (set! defbindings (union def defbindings))
@@ -291,79 +355,39 @@
 	    bindings)
 	 (multiple-value-bind (defbody usebody)
 	    (defuse body)
-	    (values
-	       (union defbindings defbody)
-	       (union usebindings (disjonction usebody defbindings)))))))
+	    (defuse
+	       (widen!::let-var/narrow n
+		  (def (union defbindings defbody))
+		  (use (union usebindings (disjonction usebody defbindings)))))))))
+
+(define-method (defuse n::let-var/narrow)
+   (with-access::let-var/narrow n (def use)
+      (values def use)))
 
 ;*---------------------------------------------------------------------*/
-;*    variable-reset! ...                                              */
+;*    defuse ::let-fun ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (variable-reset! v)
-   (with-access::local/narrow v (%count)
-      (set! %count 0)))
+(define-method (defuse n::let-fun)
+   (with-access::let-fun n (locals body)
+      ;; this is a conservative approach, we assume all functions called
+      ;; for use but none called for def
+      (let ((defbindings '())
+	    (usebindings '()))
+	 (for-each (lambda (fun)
+		      (multiple-value-bind (def use)
+			 (with-access::local fun (value)
+			    (defuse-sfun! value))
+			 (set! defbindings (union def defbindings))
+			 (set! usebindings (union use usebindings))))
+	    locals)
+	 (multiple-value-bind (defbody usebody)
+	    (defuse body)
+	    (defuse
+	       (widen!::let-fun/narrow n
+		  (def (union defbody defbindings))
+		  (use (union usebody usebindings))))))))
 
-;*---------------------------------------------------------------------*/
-;*    union ...                                                        */
-;*    -------------------------------------------------------------    */
-;*    union of N lists of local variables                              */
-;*---------------------------------------------------------------------*/
-(define (union . ls)
-   
-   (define res '())
-   
-   (define (variable-mark! v)
-      (with-access::local/narrow v (%count)
-	 (when (=fx %count 0)
-	    (set! %count 1)
-	    (set! res (cons v res)))))
+(define-method (defuse n::let-fun/narrow)
+   (with-access::let-fun/narrow n (def use)
+      (values def use)))
 
-   (for-each (lambda (l) (for-each variable-mark! l)) ls)
-   (for-each variable-reset! res)
-   res)
-
-;*---------------------------------------------------------------------*/
-;*    intersection ...                                                 */
-;*    -------------------------------------------------------------    */
-;*    intersection of N lists of local variables                       */
-;*---------------------------------------------------------------------*/
-(define (intersection . ls)
-   
-   (define (variable-mark! v)
-      (with-access::local/narrow v (%count)
-	 (set! %count (+fx 1 %count))))
-   
-   (define (mark-list! l)
-      (for-each variable-mark! l))
-   
-   (for-each mark-list! ls)
-   (let* ((%count (length ls))
-	  (res (filter (lambda (l)
-			  (with-access::local/narrow l ((c %count))
-			     (=fx c %count)))
-		  (car ls))))
-      (for-each (lambda (l) (for-each variable-reset! l)) ls)
-      res))
-
-;*---------------------------------------------------------------------*/
-;*    disjonction ...                                                  */
-;*    -------------------------------------------------------------    */
-;*    disjonction of 2 lists of local variables                        */
-;*---------------------------------------------------------------------*/
-(define (disjonction l1 l2)
-   
-   (define (variable-mark! v)
-      (with-access::local/narrow v (%count)
-	 (set! %count (+fx 1 %count))))
-   
-   (for-each variable-mark! l2)
-   (let ((res (filter (lambda (v)
-			 (with-access::local/narrow v (%count)
-			    (=fx %count 0)))
-		 l1)))
-      (for-each variable-reset! l2)
-      res))
-   
-
-   
-   
-   

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Tue Dec 18 11:06:42 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Sat Nov 23 12:42:20 2013 (serrano)                */
+;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
 ;*=====================================================================*/
@@ -150,6 +150,16 @@
    (apply trace-color -30 o))
 
 ;*---------------------------------------------------------------------*/
+;*    tty-trace-color ...                                              */
+;*---------------------------------------------------------------------*/
+(define (tty-trace-color col::int . o)
+   (if (output-port-isatty? (trace-port))
+       (apply trace-color col o)
+       (with-output-to-string
+	  (lambda ()
+	     (for-each display-circle o)))))
+
+;*---------------------------------------------------------------------*/
 ;*    trace-string ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (trace-string o)
@@ -166,7 +176,7 @@
 	 (when (>=fx (bigloo-debug) (trace-alist-get al 'margin-level))
 	    (let ((p (trace-port)))
 	       (display (trace-alist-get al 'margin) p)
-	       (display (trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
+	       (display (tty-trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
 	       (for-each (lambda (a) (display-circle a p)) args)
 	       (newline p))))))
 
@@ -180,14 +190,14 @@
       (if (>=fx (bigloo-debug) lvl)
 	  (let* ((d (trace-alist-get al 'depth))
 		 (om (trace-alist-get al 'margin))
-		 (ma (trace-color d "  |")))
+		 (ma (tty-trace-color d "  |")))
 	     (synchronize (trace-mutex)
 		(with-output-to-port (trace-port)
 		   (lambda ()
 		      (display (trace-alist-get al 'margin))
 		      (display (if (=fx d 0)
-				   (trace-color d "+ " lbl)
-				   (trace-color d "--+ " lbl)))
+				   (tty-trace-color d "+ " lbl)
+				   (tty-trace-color d "--+ " lbl)))
 		      (newline))))
 	     (trace-alist-set! al 'depth (+fx d 1))
 	     (trace-alist-set! al 'margin (string-append om ma))

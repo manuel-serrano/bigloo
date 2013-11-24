@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Mon Nov 11 09:42:16 2013 (serrano)                */
+;*    Last change :  Sat Nov 23 19:46:07 2013 (serrano)                */
 ;*    Copyright   :  2000-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -74,7 +74,7 @@
 (define (err node t1 t2)
    (user-error/location (node-loc node)
 			(format "check-node-type (~a)" *check-type-pass*)
-			(format "Inconsistent type, \"~a\" expected, \"~a\" provided" (shape t2) (shape t1))
+			(format "Inconsistent type [~a], \"~a\" expected, \"~a\" provided" (typeof node) (shape t2) (shape t1))
 			(shape node)))
 
 ;*---------------------------------------------------------------------*/
@@ -111,7 +111,8 @@
 	 (unless (sfun? (variable-value variable))
 	    (unless (or (subtype? type vtype)
 			(and (tclass? vtype) (subtype? vtype type)))
-	       (tprint "ERR: type1=" (shape type) " type2=" (shape vtype)
+	       (tprint "ERR: " (shape node)
+		  " type1=" (shape type) " type2=" (shape vtype)
 		  " eq=" (eq? type vtype) " sub=" (subtype? type vtype)
 		  " check-full=" *check-full*)
 	       (err node type vtype))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Mon Jul 29 08:40:10 2013 (serrano)                */
+;*    Last change :  Sat Nov 23 12:38:44 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -143,6 +143,7 @@
 	    (macro c-rename-file::int (::string ::string) "rename")
 	    (macro c-mkdir::bool (::string ::long) "!BGL_MKDIR")
 	    
+	    (macro $port-isatty?::bool (::output-port) "bgl_port_isatty")
  	    (macro c-output-port-name::bstring (::output-port) "OUTPUT_PORT_NAME")
  	    (macro c-input-port-name::bstring (::input-port) "INPUT_PORT_NAME")
 
@@ -421,6 +422,7 @@
 	    (inline reset-eof::bool ::input-port)
 	    (inline output-port-name::bstring ::output-port)
 	    (inline output-port-position::long ::output-port)
+	    (inline output-port-isatty?::bool ::output-port)
 	    (inline set-output-port-position! ::output-port ::long)
 	    (set-input-port-position! ::input-port ::long)
 	    (inline input-port-position::long ::input-port)
@@ -1203,6 +1205,14 @@
 (define-inline (output-port-position port)
    (c-output-port-position port))
 
+;*---------------------------------------------------------------------*/
+;*    output-port-isatty? ...                                          */
+;*---------------------------------------------------------------------*/
+(define-inline (output-port-isatty? port)
+   (cond-expand
+      (bigloo-c ($port-isatty? port))
+      (else #t)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    input-port-name ...                                              */
 ;*---------------------------------------------------------------------*/
