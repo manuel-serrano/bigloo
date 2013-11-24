@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Sun Nov 24 08:14:53 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 18:18:10 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
@@ -70,7 +70,7 @@
 			   ((eq? vtype *_*) *obj*)
 			   ((bigloo-type? vtype) vtype)
 			   ((eq? (local-access (car formals)) 'read) vtype)
-			   (else *obj*)))
+			   (else (get-bigloo-type vtype))))
 		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o-n (cons (car formals) var)))
 	     (local-access-set! var 'cell-integrate)
@@ -89,14 +89,11 @@
 	  (instantiate::let-var
 	     (loc loc)
 	     (body body)
-	     (type (strict-node-type (node-type body) *_*))
+	     (type (node-type body))
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
 				     (a-make-cell (instantiate::var
-						     (type (strict-node-type
-							    (variable-type
-							     (car o-n))
-							     *_*))
+						     (type (variable-type (car o-n)))
 						     (loc loc)
 						     (variable (car o-n)))
 						  (car o-n))))
@@ -112,8 +109,8 @@
       (local-access-set! variable 'cell-integrate)
       (svar/Iinfo-celled?-set! (variable-value variable) #t)
       (instantiate::make-box
-	 (type (strict-node-type *cell* *_*))
-	 (vtype (variable-type variable))
+	 (type *cell*)
+	 (vtype (get-bigloo-type (variable-type variable)))
 	 (loc loc)
 	 (value node))))
     
@@ -158,29 +155,26 @@
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::var integrator)
    (let* ((variable (var-variable node))
-	  (vtype (variable-type variable))
-	  (alpha (variable-fast-alpha variable)))
-      (cond
-	 ((local? alpha)
-	  (var-variable-set! node alpha)
-	  (node-type-set! node (variable-type alpha))
-	  (glo! node integrator))
-	 ((global? variable)
-	  node)
-	 ((integrate-celled? variable)
-	  (local-access-set! variable 'cell-integrate)
-	  ;; when the variable is boxed (i.e., mutated), we have to use the
-	  ;; static type of the variable, because it might be that another
-	  ;; local function changes the dynamic type of the variable
-	  ;; (same problem in the globalization stage)
-	  (node-type-set! node *obj*)
-	  (instantiate::box-ref
-	     (loc (node-loc node))
-	     (type (variable-type (var-variable node)))
-	     (vtype vtype)
-	     (var node)))
-	 (else
-	  node))))
+	  (vtype (variable-type variable)))
+      (let loop ((variable variable))
+	 (let ((alpha (variable-fast-alpha variable)))
+	    (cond
+	       ((local? alpha)
+		(var-variable-set! node alpha)
+		(node-type-set! node (variable-type alpha))
+		(loop alpha))
+	       ((global? variable)
+		node)
+	       ((integrate-celled? variable)
+		(local-access-set! variable 'cell-integrate)
+		(node-type-set! node (get-bigloo-type vtype))
+		(instantiate::box-ref
+		   (loc (node-loc node))
+		   (type (get-bigloo-type (node-type node)))
+		   (vtype (get-bigloo-type vtype))
+		   (var node)))
+	       (else
+		node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    glo! ::closure ...                                               */
@@ -240,8 +234,7 @@
 			  (var   (if (local? alpha) alpha kap)))
 		      (loop (cons (instantiate::var
 				     (loc loc)
-				     (type (strict-node-type
-					    (variable-type var) *_*))
+				     (type (variable-type var))
 				     (variable var))
 				  new-actuals)
 			    (cdr kaptured))))))
@@ -305,17 +298,16 @@
 			     (kaptured? #f))
 			  (instantiate::let-var
 			     (loc loc)
-			     (type (strict-node-type *unspec* *_*))
+			     (type *unspec*)
 			     (bindings (list (cons a-var value)))
 			     (body (instantiate::box-set!
 				      (loc loc)
-				      (type (strict-node-type *unspec* *_*))
+				      (type *unspec*)
 				      (var (setq-var node))
-				      (vtype vtype)
+				      (vtype (get-bigloo-type vtype))
 				      (value (instantiate::var
 						(loc loc)
-						(type (strict-node-type
-						       (variable-type a-var) *_*))
+						(type (variable-type a-var))
 						(variable a-var)))))))
 		       node)))))))
 

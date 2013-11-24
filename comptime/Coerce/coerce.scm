@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sun Nov 24 08:00:36 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 17:48:49 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -487,28 +487,22 @@
 ;*    coerce! ::make-box ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::make-box caller to safe)
-   (with-access::make-box node (value)
-      (set! value (coerce! value caller *obj* safe))
+   (with-access::make-box node (value vtype)
+      (set! value (coerce! value caller vtype safe))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::box-ref ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::box-ref caller to safe)
-   (with-access::box-ref node (var type)
-      ;; CARE: MS 24nov2013
-      (convert! node *obj* to safe)
-      ;; (convert! node type to safe)
-      ))
+   (with-access::box-ref node (var type vtype)
+      (convert! node vtype to safe)))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::box-set! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::box-set! caller to safe)
-   (with-access::box-set! node (var value )
-      ;; CARE: MS 24nov2013
-       (local-type-set! (var-variable var) *obj*)
-       (set! value (coerce! value caller *obj* safe))
-      ;; (set! value (coerce! value caller type safe))
-      (convert! node *unspec* to safe)))
+   (with-access::box-set! node (var value vtype type)
+      (set! value (coerce! value caller vtype safe))
+      (convert! node type to safe)))
 

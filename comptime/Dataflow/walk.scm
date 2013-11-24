@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Sun Nov 24 08:00:19 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 18:17:25 2013 (serrano)                */
 ;*    Copyright   :  2010-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
@@ -291,8 +291,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::box-ref env)
    (with-access::box-ref node (var)
-      ;; CARE: MS 24nov2013
-      (node-type-set! var *obj*)
       env))
 
 ;*---------------------------------------------------------------------*/
@@ -300,8 +298,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (dataflow-node! node::box-set! env)
    (with-access::box-set! node (var value)
-      ;; CARE: MS 24nov2013
-      (node-type-set! var *obj*)
       (dataflow-node! value env)))
 
 ;*---------------------------------------------------------------------*/

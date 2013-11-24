@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Sat Nov 17 07:33:08 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Nov 24 18:19:32 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
 ;*=====================================================================*/
@@ -59,7 +59,8 @@
 	   (get-object-type)
 	   (get-class-type)
 	   (get-default-c-type::type)
-	   (get-bigloo-type::type ::type)))
+	   (get-bigloo-type::type ::type)
+	   (get-bigloo-defined-type::type ::type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    install-type-cache! ...                                          */
@@ -219,4 +220,11 @@
       ((eq? type *string*) *bstring*)
       (else *obj*)))
       
+;*---------------------------------------------------------------------*/
+;*    get-bigloo-defined-type ...                                      */
+;*---------------------------------------------------------------------*/
+(define (get-bigloo-defined-type t::type)
+   (if (eq? t *_*)
+       *obj*
+       (get-bigloo-type t)))
       

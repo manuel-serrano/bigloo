@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Sun Nov 24 08:15:41 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 18:21:21 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
@@ -65,7 +65,12 @@
 	 ((not (celled? (car formals)))
 	  (loop celled (cdr formals)))
 	 (else
-	  (let* ((var (make-local-svar (local-id (car formals)) *obj*))
+	  (let* ((vtype (local-type (car formals)))
+		 (ntype (cond
+			   ((eq? vtype *_*) *obj*)
+			   ((bigloo-type? vtype) vtype)
+			   (else (get-bigloo-type vtype))))
+		 (var (make-local-svar (local-id (car formals)) ntype))
 		 (o-n (cons (car formals) var)))
 	     (widen!::local/cell var)
 	     (loop (cons o-n celled) (cdr formals)))))))
@@ -80,13 +85,11 @@
 	  (instantiate::let-var
 	     (loc loc)
 	     (body body)
-	     (type (strict-node-type (node-type body) *_*))
+	     (type (node-type body))
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
 				     (a-make-cell (instantiate::var
-						     (type (strict-node-type
-							    (variable-type (car o-n))
-							    *_*))
+						     (type (variable-type (car o-n)))
 						     (loc loc)
 						     (variable (car o-n)))
 						  (car o-n))))
@@ -100,8 +103,8 @@
       (local-access-set! variable 'cell-callcc)
       (widen!::local/cell variable)
       (instantiate::make-box
-	 (type (strict-node-type *cell* *_*))
-	 (vtype (variable-type variable))
+	 (type *cell*)
+	 (vtype (get-bigloo-defined-type (variable-type variable)))
 	 (loc loc)
 	 (value node))))
    
@@ -146,16 +149,17 @@
 	     (cond
 		((local? alpha)
 		 (var-variable-set! node alpha)
+		 (node-type-set! node (variable-type alpha))
 		 (callcc! node))
 		((global? var)
 		 node)
 		((not (celled? var))
 		 node)
 		(else
-		 (node-type-set! node *obj*)
+		 (node-type-set! node (get-bigloo-defined-type vtype))
 		 (instantiate::box-ref
 		    (type *obj*)
-		    (vtype vtype)
+		    (vtype (get-bigloo-defined-type vtype))
 		    (loc (node-loc node))
 		    (var node))))))))
 
@@ -238,16 +242,16 @@
 		 (let ((a-var (make-local-svar 'aux *obj*))
 		       (loc   (node-loc node)))
 		    (instantiate::let-var
-		       (type     (strict-node-type *unspec* *_*))
+		       (type     *unspec*)
 		       (loc      loc)
 		       (bindings (list (cons a-var (setq-value node))))
 		       (body     (instantiate::box-set!
-				    (type (strict-node-type *unspec* *_*))
-				    (vtype vtype)
+				    (type *unspec*)
+				    (vtype (get-bigloo-defined-type vtype))
 				    (loc loc)
 				    (var (setq-var node))
 				    (value (instantiate::var
-					      (type (strict-node-type (variable-type a-var) *_*))
+					      (type (variable-type a-var))
 					      (loc loc)
 					      (variable a-var)))))))))))))
 
