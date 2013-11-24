@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Sun Nov 24 08:16:57 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 19:46:05 2013 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/
@@ -193,4 +193,4 @@
    (test "nesting.2" (plante-8 8) 8)
    (test "dataflow" (dataflow '(1)) 2)
    (test "light-funcall" (lightfuncall) 3)
-   #;(test "integrate-type" (integrate-type (list 1 2 4) (list 4 6 67)) '(1 2)))
+   (test "integrate-type" (integrate-type (list 1 2 4) (list 4 6 67)) '(1 2)))

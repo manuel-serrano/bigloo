@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Sat Nov 23 19:46:54 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 19:24:37 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
@@ -62,7 +62,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    kill-used ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (kill-used::pair-nil locals node-or-nodes)
+(define (kill-used::pair-nil locals::pair-nil node-or-nodes)
    
    (define (kill-used-in-node n)
       (multiple-value-bind (def use)
