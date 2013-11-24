@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (3.9b)
-;; Inria -- Sophia Antipolis     Fri Nov 23 09:35:17 CET 2012 
+;; Bigloo (4.1a)
+;; Inria -- Sophia Antipolis     Sun Nov 24 08:08:37 CET 2013 
 ;; (bigloo -classgen Ast/node.scm -o Ast/nodetype.sch)
 ;; ==========================================================
 
@@ -11,7 +11,7 @@
 ;; node
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-node::node loc1657::obj type1658::type)
+    (inline make-node::node loc1653::obj type1654::type)
     (inline node?::bool ::obj)
     (node-nil::node)
     (inline node-type::type ::node)
@@ -21,7 +21,7 @@
 ;; node/effect
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-node/effect::node/effect loc1652::obj type1653::type side-effect1654::obj key1655::obj)
+    (inline make-node/effect::node/effect loc1647::obj type1648::type side-effect1649::obj key1650::obj)
     (inline node/effect?::bool ::obj)
     (node/effect-nil::node/effect)
     (inline node/effect-key::obj ::node/effect)
@@ -35,7 +35,7 @@
 ;; atom
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-atom::atom loc1648::obj type1649::type value1650::obj)
+    (inline make-atom::atom loc1643::obj type1644::type value1645::obj)
     (inline atom?::bool ::obj)
     (atom-nil::atom)
     (inline atom-value::obj ::atom)
@@ -47,7 +47,7 @@
 ;; var
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-var::var loc1644::obj type1645::type variable1646::variable)
+    (inline make-var::var loc1639::obj type1640::type variable1641::variable)
     (inline var?::bool ::obj)
     (var-nil::var)
     (inline var-variable::variable ::var)
@@ -59,7 +59,7 @@
 ;; closure
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-closure::closure loc1640::obj type1641::type variable1642::variable)
+    (inline make-closure::closure loc1635::obj type1636::type variable1637::variable)
     (inline closure?::bool ::obj)
     (closure-nil::closure)
     (inline closure-variable::variable ::closure)
@@ -71,7 +71,7 @@
 ;; kwote
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-kwote::kwote loc1636::obj type1637::type value1638::obj)
+    (inline make-kwote::kwote loc1631::obj type1632::type value1633::obj)
     (inline kwote?::bool ::obj)
     (kwote-nil::kwote)
     (inline kwote-value::obj ::kwote)
@@ -82,7 +82,7 @@
 ;; sequence
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sequence::sequence loc1629::obj type1630::type side-effect1631::obj key1632::obj nodes1633::obj unsafe1634::bool)
+    (inline make-sequence::sequence loc1624::obj type1625::type side-effect1626::obj key1627::obj nodes1628::obj unsafe1629::bool)
     (inline sequence?::bool ::obj)
     (sequence-nil::sequence)
     (inline sequence-unsafe::bool ::sequence)
@@ -98,7 +98,7 @@
 ;; app
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-app::app loc1622::obj type1623::type side-effect1624::obj key1625::obj fun1626::var args1627::obj)
+    (inline make-app::app loc1617::obj type1618::type side-effect1619::obj key1620::obj fun1621::var args1622::obj)
     (inline app?::bool ::obj)
     (app-nil::app)
     (inline app-args::obj ::app)
@@ -116,7 +116,7 @@
 ;; app-ly
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-app-ly::app-ly loc1614::obj type1615::type fun1616::node arg1620::node)
+    (inline make-app-ly::app-ly loc1610::obj type1611::type fun1612::node arg1615::node)
     (inline app-ly?::bool ::obj)
     (app-ly-nil::app-ly)
     (inline app-ly-arg::node ::app-ly)
@@ -130,7 +130,7 @@
 ;; funcall
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-funcall::funcall loc1607::obj type1608::type fun1609::node args1610::obj strength1611::symbol functions1612::obj)
+    (inline make-funcall::funcall loc1603::obj type1604::type fun1605::node args1606::obj strength1607::symbol functions1608::obj)
     (inline funcall?::bool ::obj)
     (funcall-nil::funcall)
     (inline funcall-functions::obj ::funcall)
@@ -148,7 +148,7 @@
 ;; extern
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-extern::extern loc1600::obj type1601::type side-effect1602::obj key1603::obj expr*1604::pair-nil effect1605::obj)
+    (inline make-extern::extern loc1596::obj type1597::type side-effect1598::obj key1599::obj expr*1600::pair-nil effect1601::obj)
     (inline extern?::bool ::obj)
     (extern-nil::extern)
     (inline extern-effect::obj ::extern)
@@ -166,7 +166,7 @@
 ;; pragma
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pragma::pragma loc1592::obj type1593::type side-effect1594::obj key1595::obj expr*1596::pair-nil effect1597::obj format1598::bstring)
+    (inline make-pragma::pragma loc1588::obj type1589::type side-effect1590::obj key1591::obj expr*1592::pair-nil effect1593::obj format1594::bstring)
     (inline pragma?::bool ::obj)
     (pragma-nil::pragma)
     (inline pragma-format::bstring ::pragma)
@@ -185,7 +185,7 @@
 ;; private
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-private::private loc1584::obj type1585::type side-effect1586::obj key1587::obj expr*1588::pair-nil effect1589::obj c-format1590::bstring)
+    (inline make-private::private loc1580::obj type1581::type side-effect1582::obj key1583::obj expr*1584::pair-nil effect1585::obj c-format1586::bstring)
     (inline private?::bool ::obj)
     (private-nil::private)
     (inline private-c-format::bstring ::private)
@@ -204,7 +204,7 @@
 ;; getfield
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-getfield::getfield loc1573::obj type1574::type side-effect1575::obj key1576::obj expr*1577::pair-nil effect1578::obj c-format1579::bstring fname1580::bstring ftype1581::type otype1582::type)
+    (inline make-getfield::getfield loc1569::obj type1570::type side-effect1571::obj key1572::obj expr*1573::pair-nil effect1574::obj c-format1575::bstring fname1576::bstring ftype1577::type otype1578::type)
     (inline getfield?::bool ::obj)
     (getfield-nil::getfield)
     (inline getfield-otype::type ::getfield)
@@ -228,7 +228,7 @@
 ;; setfield
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-setfield::setfield loc1562::obj type1563::type side-effect1564::obj key1565::obj expr*1566::pair-nil effect1567::obj c-format1568::bstring fname1569::bstring ftype1570::type otype1571::type)
+    (inline make-setfield::setfield loc1558::obj type1559::type side-effect1560::obj key1561::obj expr*1562::pair-nil effect1563::obj c-format1564::bstring fname1565::bstring ftype1566::type otype1567::type)
     (inline setfield?::bool ::obj)
     (setfield-nil::setfield)
     (inline setfield-otype::type ::setfield)
@@ -252,7 +252,7 @@
 ;; widening
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-widening::widening loc1553::obj type1554::type side-effect1555::obj key1556::obj expr*1557::pair-nil effect1558::obj c-format1559::bstring otype1560::type)
+    (inline make-widening::widening loc1549::obj type1550::type side-effect1551::obj key1552::obj expr*1553::pair-nil effect1554::obj c-format1555::bstring otype1556::type)
     (inline widening?::bool ::obj)
     (widening-nil::widening)
     (inline widening-otype::type ::widening)
@@ -273,7 +273,7 @@
 ;; new
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-new::new loc1544::obj type1545::type side-effect1546::obj key1547::obj expr*1548::pair-nil effect1549::obj c-format1550::bstring args-type1551::pair-nil)
+    (inline make-new::new loc1540::obj type1541::type side-effect1542::obj key1543::obj expr*1544::pair-nil effect1545::obj c-format1546::bstring args-type1547::pair-nil)
     (inline new?::bool ::obj)
     (new-nil::new)
     (inline new-args-type::pair-nil ::new)
@@ -294,7 +294,7 @@
 ;; valloc
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-valloc::valloc loc1534::obj type1535::type side-effect1536::obj key1537::obj expr*1538::pair-nil effect1539::obj c-format1540::bstring ftype1541::type otype1542::type)
+    (inline make-valloc::valloc loc1530::obj type1531::type side-effect1532::obj key1533::obj expr*1534::pair-nil effect1535::obj c-format1536::bstring ftype1537::type otype1538::type)
     (inline valloc?::bool ::obj)
     (valloc-nil::valloc)
     (inline valloc-otype::type ::valloc)
@@ -317,7 +317,7 @@
 ;; vref
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-vref::vref loc1522::obj type1523::type side-effect1524::obj key1525::obj expr*1526::pair-nil effect1527::obj c-format1528::bstring ftype1529::type otype1530::type vtype1531::type unsafe1532::bool)
+    (inline make-vref::vref loc1518::obj type1519::type side-effect1520::obj key1521::obj expr*1522::pair-nil effect1523::obj c-format1524::bstring ftype1525::type otype1526::type vtype1527::type unsafe1528::bool)
     (inline vref?::bool ::obj)
     (vref-nil::vref)
     (inline vref-unsafe::bool ::vref)
@@ -343,7 +343,7 @@
 ;; vset!
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-vset!::vset! loc1510::obj type1511::type side-effect1512::obj key1513::obj expr*1514::pair-nil effect1515::obj c-format1516::bstring ftype1517::type otype1518::type vtype1519::type unsafe1520::bool)
+    (inline make-vset!::vset! loc1506::obj type1507::type side-effect1508::obj key1509::obj expr*1510::pair-nil effect1511::obj c-format1512::bstring ftype1513::type otype1514::type vtype1515::type unsafe1516::bool)
     (inline vset!?::bool ::obj)
     (vset!-nil::vset!)
     (inline vset!-unsafe::bool ::vset!)
@@ -369,7 +369,7 @@
 ;; vlength
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-vlength::vlength loc1501::obj type1502::type side-effect1503::obj key1504::obj expr*1505::pair-nil effect1506::obj c-format1507::bstring vtype1508::type)
+    (inline make-vlength::vlength loc1497::obj type1498::type side-effect1499::obj key1500::obj expr*1501::pair-nil effect1502::obj c-format1503::bstring vtype1504::type)
     (inline vlength?::bool ::obj)
     (vlength-nil::vlength)
     (inline vlength-vtype::type ::vlength)
@@ -390,7 +390,7 @@
 ;; instanceof
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-instanceof::instanceof loc1492::obj type1493::type side-effect1494::obj key1495::obj expr*1496::pair-nil effect1497::obj c-format1498::bstring class1499::type)
+    (inline make-instanceof::instanceof loc1488::obj type1489::type side-effect1490::obj key1491::obj expr*1492::pair-nil effect1493::obj c-format1494::bstring class1495::type)
     (inline instanceof?::bool ::obj)
     (instanceof-nil::instanceof)
     (inline instanceof-class::type ::instanceof)
@@ -411,7 +411,7 @@
 ;; cast-null
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cast-null::cast-null loc1484::obj type1485::type side-effect1486::obj key1487::obj expr*1488::pair-nil effect1489::obj c-format1490::bstring)
+    (inline make-cast-null::cast-null loc1480::obj type1481::type side-effect1482::obj key1483::obj expr*1484::pair-nil effect1485::obj c-format1486::bstring)
     (inline cast-null?::bool ::obj)
     (cast-null-nil::cast-null)
     (inline cast-null-c-format::bstring ::cast-null)
@@ -430,7 +430,7 @@
 ;; cast
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cast::cast loc1478::obj type1479::type arg1482::node)
+    (inline make-cast::cast loc1474::obj type1475::type arg1478::node)
     (inline cast?::bool ::obj)
     (cast-nil::cast)
     (inline cast-arg::node ::cast)
@@ -442,7 +442,7 @@
 ;; setq
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-setq::setq loc1473::obj type1474::type var1475::var value1476::node)
+    (inline make-setq::setq loc1468::obj type1469::type var1470::var value1471::node)
     (inline setq?::bool ::obj)
     (setq-nil::setq)
     (inline setq-value::node ::setq)
@@ -456,7 +456,7 @@
 ;; conditional
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-conditional::conditional loc1465::obj type1466::type side-effect1467::obj key1468::obj test1469::node true1470::node false1471::node)
+    (inline make-conditional::conditional loc1460::obj type1461::type side-effect1462::obj key1463::obj test1464::node true1465::node false1466::node)
     (inline conditional?::bool ::obj)
     (conditional-nil::conditional)
     (inline conditional-false::node ::conditional)
@@ -476,7 +476,7 @@
 ;; fail
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fail::fail loc1459::obj type1460::type proc1461::node msg1462::node obj1463::node)
+    (inline make-fail::fail loc1453::obj type1454::type proc1455::node msg1456::node obj1457::node)
     (inline fail?::bool ::obj)
     (fail-nil::fail)
     (inline fail-obj::node ::fail)
@@ -492,7 +492,7 @@
 ;; select
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-select::select loc1451::obj type1452::type side-effect1453::obj key1454::obj test1455::node clauses1456::obj item-type1457::type)
+    (inline make-select::select loc1445::obj type1446::type side-effect1447::obj key1448::obj test1449::node clauses1450::obj item-type1451::type)
     (inline select?::bool ::obj)
     (select-nil::select)
     (inline select-item-type::type ::select)
@@ -510,7 +510,7 @@
 ;; let-fun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-let-fun::let-fun loc1444::obj type1445::type side-effect1446::obj key1447::obj locals1448::obj body1449::node)
+    (inline make-let-fun::let-fun loc1437::obj type1438::type side-effect1439::obj key1440::obj locals1441::obj body1442::node)
     (inline let-fun?::bool ::obj)
     (let-fun-nil::let-fun)
     (inline let-fun-body::node ::let-fun)
@@ -528,7 +528,7 @@
 ;; let-var
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-let-var::let-var loc1436::obj type1437::type side-effect1438::obj key1439::obj bindings1440::obj body1441::node removable?1442::bool)
+    (inline make-let-var::let-var loc1428::obj type1429::type side-effect1430::obj key1431::obj bindings1432::obj body1433::node removable?1434::bool)
     (inline let-var?::bool ::obj)
     (let-var-nil::let-var)
     (inline let-var-removable?::bool ::let-var)
@@ -548,7 +548,7 @@
 ;; set-ex-it
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-set-ex-it::set-ex-it loc1431::obj type1432::type var1433::var body1434::node)
+    (inline make-set-ex-it::set-ex-it loc1423::obj type1424::type var1425::var body1426::node)
     (inline set-ex-it?::bool ::obj)
     (set-ex-it-nil::set-ex-it)
     (inline set-ex-it-body::node ::set-ex-it)
@@ -562,7 +562,7 @@
 ;; jump-ex-it
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-jump-ex-it::jump-ex-it loc1426::obj type1427::type exit1428::node value1429::node)
+    (inline make-jump-ex-it::jump-ex-it loc1418::obj type1419::type exit1420::node value1421::node)
     (inline jump-ex-it?::bool ::obj)
     (jump-ex-it-nil::jump-ex-it)
     (inline jump-ex-it-value::node ::jump-ex-it)
@@ -576,9 +576,11 @@
 ;; make-box
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-make-box::make-box loc1420::obj type1421::type side-effect1422::obj key1423::obj value1424::node)
+    (inline make-make-box::make-box loc1411::obj type1412::type side-effect1413::obj key1414::obj value1415::node vtype1416::type)
     (inline make-box?::bool ::obj)
     (make-box-nil::make-box)
+    (inline make-box-vtype::type ::make-box)
+    (inline make-box-vtype-set! ::make-box ::type)
     (inline make-box-value::node ::make-box)
     (inline make-box-value-set! ::make-box ::node)
     (inline make-box-key::obj ::make-box)
@@ -592,9 +594,11 @@
 ;; box-ref
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-box-ref::box-ref loc1414::obj type1415::type side-effect1416::obj key1417::obj var1418::var)
+    (inline make-box-ref::box-ref loc1404::obj type1405::type side-effect1406::obj key1407::obj var1408::var vtype1409::type)
     (inline box-ref?::bool ::obj)
     (box-ref-nil::box-ref)
+    (inline box-ref-vtype::type ::box-ref)
+    (inline box-ref-vtype-set! ::box-ref ::type)
     (inline box-ref-var::var ::box-ref)
     (inline box-ref-var-set! ::box-ref ::var)
     (inline box-ref-key::obj ::box-ref)
@@ -608,9 +612,11 @@
 ;; box-set!
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-box-set!::box-set! loc1409::obj type1410::type var1411::var value1412::node)
+    (inline make-box-set!::box-set! loc1397::obj type1398::type var1399::var value1400::node vtype1401::type)
     (inline box-set!?::bool ::obj)
     (box-set!-nil::box-set!)
+    (inline box-set!-vtype::type ::box-set!)
+    (inline box-set!-vtype-set! ::box-set! ::type)
     (inline box-set!-value::node ::box-set!)
     (inline box-set!-value-set! ::box-set! ::node)
     (inline box-set!-var::var ::box-set!)
@@ -622,7 +628,7 @@
 ;; sync
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sync::sync loc1403::obj type1404::type mutex1405::node prelock1406::node body1407::node)
+    (inline make-sync::sync loc1391::obj type1392::type mutex1393::node prelock1394::node body1395::node)
     (inline sync?::bool ::obj)
     (sync-nil::sync)
     (inline sync-body::node ::sync)
@@ -638,7 +644,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; node
-(define-inline (make-node::node loc1657::obj type1658::type) (instantiate::node (loc loc1657) (type type1658)))
+(define-inline (make-node::node loc1653::obj type1654::type) (instantiate::node (loc loc1653) (type type1654)))
 (define-inline (node?::bool obj::obj) ((@ isa? __object) obj (@ node ast_node)))
 (define (node-nil::node) (class-nil (@ node ast_node)))
 (define-inline (node-type::type o::node) (with-access::node o (type) type))
@@ -647,7 +653,7 @@
 (define-inline (node-loc-set! o::node v::obj) (with-access::node o (loc) (set! loc v)))
 
 ;; node/effect
-(define-inline (make-node/effect::node/effect loc1652::obj type1653::type side-effect1654::obj key1655::obj) (instantiate::node/effect (loc loc1652) (type type1653) (side-effect side-effect1654) (key key1655)))
+(define-inline (make-node/effect::node/effect loc1647::obj type1648::type side-effect1649::obj key1650::obj) (instantiate::node/effect (loc loc1647) (type type1648) (side-effect side-effect1649) (key key1650)))
 (define-inline (node/effect?::bool obj::obj) ((@ isa? __object) obj (@ node/effect ast_node)))
 (define (node/effect-nil::node/effect) (class-nil (@ node/effect ast_node)))
 (define-inline (node/effect-key::obj o::node/effect) (with-access::node/effect o (key) key))
@@ -660,7 +666,7 @@
 (define-inline (node/effect-loc-set! o::node/effect v::obj) (with-access::node/effect o (loc) (set! loc v)))
 
 ;; atom
-(define-inline (make-atom::atom loc1648::obj type1649::type value1650::obj) (instantiate::atom (loc loc1648) (type type1649) (value value1650)))
+(define-inline (make-atom::atom loc1643::obj type1644::type value1645::obj) (instantiate::atom (loc loc1643) (type type1644) (value value1645)))
 (define-inline (atom?::bool obj::obj) ((@ isa? __object) obj (@ atom ast_node)))
 (define (atom-nil::atom) (class-nil (@ atom ast_node)))
 (define-inline (atom-value::obj o::atom) (with-access::atom o (value) value))
@@ -671,7 +677,7 @@
 (define-inline (atom-loc-set! o::atom v::obj) (with-access::atom o (loc) (set! loc v)))
 
 ;; var
-(define-inline (make-var::var loc1644::obj type1645::type variable1646::variable) (instantiate::var (loc loc1644) (type type1645) (variable variable1646)))
+(define-inline (make-var::var loc1639::obj type1640::type variable1641::variable) (instantiate::var (loc loc1639) (type type1640) (variable variable1641)))
 (define-inline (var?::bool obj::obj) ((@ isa? __object) obj (@ var ast_node)))
 (define (var-nil::var) (class-nil (@ var ast_node)))
 (define-inline (var-variable::variable o::var) (with-access::var o (variable) variable))
@@ -682,7 +688,7 @@
 (define-inline (var-loc-set! o::var v::obj) (with-access::var o (loc) (set! loc v)))
 
 ;; closure
-(define-inline (make-closure::closure loc1640::obj type1641::type variable1642::variable) (instantiate::closure (loc loc1640) (type type1641) (variable variable1642)))
+(define-inline (make-closure::closure loc1635::obj type1636::type variable1637::variable) (instantiate::closure (loc loc1635) (type type1636) (variable variable1637)))
 (define-inline (closure?::bool obj::obj) ((@ isa? __object) obj (@ closure ast_node)))
 (define (closure-nil::closure) (class-nil (@ closure ast_node)))
 (define-inline (closure-variable::variable o::closure) (with-access::closure o (variable) variable))
@@ -693,7 +699,7 @@
 (define-inline (closure-loc-set! o::closure v::obj) (with-access::closure o (loc) (set! loc v)))
 
 ;; kwote
-(define-inline (make-kwote::kwote loc1636::obj type1637::type value1638::obj) (instantiate::kwote (loc loc1636) (type type1637) (value value1638)))
+(define-inline (make-kwote::kwote loc1631::obj type1632::type value1633::obj) (instantiate::kwote (loc loc1631) (type type1632) (value value1633)))
 (define-inline (kwote?::bool obj::obj) ((@ isa? __object) obj (@ kwote ast_node)))
 (define (kwote-nil::kwote) (class-nil (@ kwote ast_node)))
 (define-inline (kwote-value::obj o::kwote) (with-access::kwote o (value) value))
@@ -704,7 +710,7 @@
 (define-inline (kwote-loc-set! o::kwote v::obj) (with-access::kwote o (loc) (set! loc v)))
 
 ;; sequence
-(define-inline (make-sequence::sequence loc1629::obj type1630::type side-effect1631::obj key1632::obj nodes1633::obj unsafe1634::bool) (instantiate::sequence (loc loc1629) (type type1630) (side-effect side-effect1631) (key key1632) (nodes nodes1633) (unsafe unsafe1634)))
+(define-inline (make-sequence::sequence loc1624::obj type1625::type side-effect1626::obj key1627::obj nodes1628::obj unsafe1629::bool) (instantiate::sequence (loc loc1624) (type type1625) (side-effect side-effect1626) (key key1627) (nodes nodes1628) (unsafe unsafe1629)))
 (define-inline (sequence?::bool obj::obj) ((@ isa? __object) obj (@ sequence ast_node)))
 (define (sequence-nil::sequence) (class-nil (@ sequence ast_node)))
 (define-inline (sequence-unsafe::bool o::sequence) (with-access::sequence o (unsafe) unsafe))
@@ -721,7 +727,7 @@
 (define-inline (sequence-loc-set! o::sequence v::obj) (with-access::sequence o (loc) (set! loc v)))
 
 ;; app
-(define-inline (make-app::app loc1622::obj type1623::type side-effect1624::obj key1625::obj fun1626::var args1627::obj) (instantiate::app (loc loc1622) (type type1623) (side-effect side-effect1624) (key key1625) (fun fun1626) (args args1627)))
+(define-inline (make-app::app loc1617::obj type1618::type side-effect1619::obj key1620::obj fun1621::var args1622::obj) (instantiate::app (loc loc1617) (type type1618) (side-effect side-effect1619) (key key1620) (fun fun1621) (args args1622)))
 (define-inline (app?::bool obj::obj) ((@ isa? __object) obj (@ app ast_node)))
 (define (app-nil::app) (class-nil (@ app ast_node)))
 (define-inline (app-args::obj o::app) (with-access::app o (args) args))
@@ -738,7 +744,7 @@
 (define-inline (app-loc-set! o::app v::obj) (with-access::app o (loc) (set! loc v)))
 
 ;; app-ly
-(define-inline (make-app-ly::app-ly loc1614::obj type1615::type fun1616::node arg1620::node) (instantiate::app-ly (loc loc1614) (type type1615) (fun fun1616) (arg arg1620)))
+(define-inline (make-app-ly::app-ly loc1610::obj type1611::type fun1612::node arg1615::node) (instantiate::app-ly (loc loc1610) (type type1611) (fun fun1612) (arg arg1615)))
 (define-inline (app-ly?::bool obj::obj) ((@ isa? __object) obj (@ app-ly ast_node)))
 (define (app-ly-nil::app-ly) (class-nil (@ app-ly ast_node)))
 (define-inline (app-ly-arg::node o::app-ly) (with-access::app-ly o (arg) arg))
@@ -751,7 +757,7 @@
 (define-inline (app-ly-loc-set! o::app-ly v::obj) (with-access::app-ly o (loc) (set! loc v)))
 
 ;; funcall
-(define-inline (make-funcall::funcall loc1607::obj type1608::type fun1609::node args1610::obj strength1611::symbol functions1612::obj) (instantiate::funcall (loc loc1607) (type type1608) (fun fun1609) (args args1610) (strength strength1611) (functions functions1612)))
+(define-inline (make-funcall::funcall loc1603::obj type1604::type fun1605::node args1606::obj strength1607::symbol functions1608::obj) (instantiate::funcall (loc loc1603) (type type1604) (fun fun1605) (args args1606) (strength strength1607) (functions functions1608)))
 (define-inline (funcall?::bool obj::obj) ((@ isa? __object) obj (@ funcall ast_node)))
 (define (funcall-nil::funcall) (class-nil (@ funcall ast_node)))
 (define-inline (funcall-functions::obj o::funcall) (with-access::funcall o (functions) functions))
@@ -768,7 +774,7 @@
 (define-inline (funcall-loc-set! o::funcall v::obj) (with-access::funcall o (loc) (set! loc v)))
 
 ;; extern
-(define-inline (make-extern::extern loc1600::obj type1601::type side-effect1602::obj key1603::obj expr*1604::pair-nil effect1605::obj) (instantiate::extern (loc loc1600) (type type1601) (side-effect side-effect1602) (key key1603) (expr* expr*1604) (effect effect1605)))
+(define-inline (make-extern::extern loc1596::obj type1597::type side-effect1598::obj key1599::obj expr*1600::pair-nil effect1601::obj) (instantiate::extern (loc loc1596) (type type1597) (side-effect side-effect1598) (key key1599) (expr* expr*1600) (effect effect1601)))
 (define-inline (extern?::bool obj::obj) ((@ isa? __object) obj (@ extern ast_node)))
 (define (extern-nil::extern) (class-nil (@ extern ast_node)))
 (define-inline (extern-effect::obj o::extern) (with-access::extern o (effect) effect))
@@ -785,7 +791,7 @@
 (define-inline (extern-loc-set! o::extern v::obj) (with-access::extern o (loc) (set! loc v)))
 
 ;; pragma
-(define-inline (make-pragma::pragma loc1592::obj type1593::type side-effect1594::obj key1595::obj expr*1596::pair-nil effect1597::obj format1598::bstring) (instantiate::pragma (loc loc1592) (type type1593) (side-effect side-effect1594) (key key1595) (expr* expr*1596) (effect effect1597) (format format1598)))
+(define-inline (make-pragma::pragma loc1588::obj type1589::type side-effect1590::obj key1591::obj expr*1592::pair-nil effect1593::obj format1594::bstring) (instantiate::pragma (loc loc1588) (type type1589) (side-effect side-effect1590) (key key1591) (expr* expr*1592) (effect effect1593) (format format1594)))
 (define-inline (pragma?::bool obj::obj) ((@ isa? __object) obj (@ pragma ast_node)))
 (define (pragma-nil::pragma) (class-nil (@ pragma ast_node)))
 (define-inline (pragma-format::bstring o::pragma) (with-access::pragma o (format) format))
@@ -804,7 +810,7 @@
 (define-inline (pragma-loc-set! o::pragma v::obj) (with-access::pragma o (loc) (set! loc v)))
 
 ;; private
-(define-inline (make-private::private loc1584::obj type1585::type side-effect1586::obj key1587::obj expr*1588::pair-nil effect1589::obj c-format1590::bstring) (instantiate::private (loc loc1584) (type type1585) (side-effect side-effect1586) (key key1587) (expr* expr*1588) (effect effect1589) (c-format c-format1590)))
+(define-inline (make-private::private loc1580::obj type1581::type side-effect1582::obj key1583::obj expr*1584::pair-nil effect1585::obj c-format1586::bstring) (instantiate::private (loc loc1580) (type type1581) (side-effect side-effect1582) (key key1583) (expr* expr*1584) (effect effect1585) (c-format c-format1586)))
 (define-inline (private?::bool obj::obj) ((@ isa? __object) obj (@ private ast_node)))
 (define (private-nil::private) (class-nil (@ private ast_node)))
 (define-inline (private-c-format::bstring o::private) (with-access::private o (c-format) c-format))
@@ -823,7 +829,7 @@
 (define-inline (private-loc-set! o::private v::obj) (with-access::private o (loc) (set! loc v)))
 
 ;; getfield
-(define-inline (make-getfield::getfield loc1573::obj type1574::type side-effect1575::obj key1576::obj expr*1577::pair-nil effect1578::obj c-format1579::bstring fname1580::bstring ftype1581::type otype1582::type) (instantiate::getfield (loc loc1573) (type type1574) (side-effect side-effect1575) (key key1576) (expr* expr*1577) (effect effect1578) (c-format c-format1579) (fname fname1580) (ftype ftype1581) (otype otype1582)))
+(define-inline (make-getfield::getfield loc1569::obj type1570::type side-effect1571::obj key1572::obj expr*1573::pair-nil effect1574::obj c-format1575::bstring fname1576::bstring ftype1577::type otype1578::type) (instantiate::getfield (loc loc1569) (type type1570) (side-effect side-effect1571) (key key1572) (expr* expr*1573) (effect effect1574) (c-format c-format1575) (fname fname1576) (ftype ftype1577) (otype otype1578)))
 (define-inline (getfield?::bool obj::obj) ((@ isa? __object) obj (@ getfield ast_node)))
 (define (getfield-nil::getfield) (class-nil (@ getfield ast_node)))
 (define-inline (getfield-otype::type o::getfield) (with-access::getfield o (otype) otype))
@@ -848,7 +854,7 @@
 (define-inline (getfield-loc-set! o::getfield v::obj) (with-access::getfield o (loc) (set! loc v)))
 
 ;; setfield
-(define-inline (make-setfield::setfield loc1562::obj type1563::type side-effect1564::obj key1565::obj expr*1566::pair-nil effect1567::obj c-format1568::bstring fname1569::bstring ftype1570::type otype1571::type) (instantiate::setfield (loc loc1562) (type type1563) (side-effect side-effect1564) (key key1565) (expr* expr*1566) (effect effect1567) (c-format c-format1568) (fname fname1569) (ftype ftype1570) (otype otype1571)))
+(define-inline (make-setfield::setfield loc1558::obj type1559::type side-effect1560::obj key1561::obj expr*1562::pair-nil effect1563::obj c-format1564::bstring fname1565::bstring ftype1566::type otype1567::type) (instantiate::setfield (loc loc1558) (type type1559) (side-effect side-effect1560) (key key1561) (expr* expr*1562) (effect effect1563) (c-format c-format1564) (fname fname1565) (ftype ftype1566) (otype otype1567)))
 (define-inline (setfield?::bool obj::obj) ((@ isa? __object) obj (@ setfield ast_node)))
 (define (setfield-nil::setfield) (class-nil (@ setfield ast_node)))
 (define-inline (setfield-otype::type o::setfield) (with-access::setfield o (otype) otype))
@@ -873,7 +879,7 @@
 (define-inline (setfield-loc-set! o::setfield v::obj) (with-access::setfield o (loc) (set! loc v)))
 
 ;; widening
-(define-inline (make-widening::widening loc1553::obj type1554::type side-effect1555::obj key1556::obj expr*1557::pair-nil effect1558::obj c-format1559::bstring otype1560::type) (instantiate::widening (loc loc1553) (type type1554) (side-effect side-effect1555) (key key1556) (expr* expr*1557) (effect effect1558) (c-format c-format1559) (otype otype1560)))
+(define-inline (make-widening::widening loc1549::obj type1550::type side-effect1551::obj key1552::obj expr*1553::pair-nil effect1554::obj c-format1555::bstring otype1556::type) (instantiate::widening (loc loc1549) (type type1550) (side-effect side-effect1551) (key key1552) (expr* expr*1553) (effect effect1554) (c-format c-format1555) (otype otype1556)))
 (define-inline (widening?::bool obj::obj) ((@ isa? __object) obj (@ widening ast_node)))
 (define (widening-nil::widening) (class-nil (@ widening ast_node)))
 (define-inline (widening-otype::type o::widening) (with-access::widening o (otype) otype))
@@ -894,7 +900,7 @@
 (define-inline (widening-loc-set! o::widening v::obj) (with-access::widening o (loc) (set! loc v)))
 
 ;; new
-(define-inline (make-new::new loc1544::obj type1545::type side-effect1546::obj key1547::obj expr*1548::pair-nil effect1549::obj c-format1550::bstring args-type1551::pair-nil) (instantiate::new (loc loc1544) (type type1545) (side-effect side-effect1546) (key key1547) (expr* expr*1548) (effect effect1549) (c-format c-format1550) (args-type args-type1551)))
+(define-inline (make-new::new loc1540::obj type1541::type side-effect1542::obj key1543::obj expr*1544::pair-nil effect1545::obj c-format1546::bstring args-type1547::pair-nil) (instantiate::new (loc loc1540) (type type1541) (side-effect side-effect1542) (key key1543) (expr* expr*1544) (effect effect1545) (c-format c-format1546) (args-type args-type1547)))
 (define-inline (new?::bool obj::obj) ((@ isa? __object) obj (@ new ast_node)))
 (define (new-nil::new) (class-nil (@ new ast_node)))
 (define-inline (new-args-type::pair-nil o::new) (with-access::new o (args-type) args-type))
@@ -915,7 +921,7 @@
 (define-inline (new-loc-set! o::new v::obj) (with-access::new o (loc) (set! loc v)))
 
 ;; valloc
-(define-inline (make-valloc::valloc loc1534::obj type1535::type side-effect1536::obj key1537::obj expr*1538::pair-nil effect1539::obj c-format1540::bstring ftype1541::type otype1542::type) (instantiate::valloc (loc loc1534) (type type1535) (side-effect side-effect1536) (key key1537) (expr* expr*1538) (effect effect1539) (c-format c-format1540) (ftype ftype1541) (otype otype1542)))
+(define-inline (make-valloc::valloc loc1530::obj type1531::type side-effect1532::obj key1533::obj expr*1534::pair-nil effect1535::obj c-format1536::bstring ftype1537::type otype1538::type) (instantiate::valloc (loc loc1530) (type type1531) (side-effect side-effect1532) (key key1533) (expr* expr*1534) (effect effect1535) (c-format c-format1536) (ftype ftype1537) (otype otype1538)))
 (define-inline (valloc?::bool obj::obj) ((@ isa? __object) obj (@ valloc ast_node)))
 (define (valloc-nil::valloc) (class-nil (@ valloc ast_node)))
 (define-inline (valloc-otype::type o::valloc) (with-access::valloc o (otype) otype))
@@ -938,7 +944,7 @@
 (define-inline (valloc-loc-set! o::valloc v::obj) (with-access::valloc o (loc) (set! loc v)))
 
 ;; vref
-(define-inline (make-vref::vref loc1522::obj type1523::type side-effect1524::obj key1525::obj expr*1526::pair-nil effect1527::obj c-format1528::bstring ftype1529::type otype1530::type vtype1531::type unsafe1532::bool) (instantiate::vref (loc loc1522) (type type1523) (side-effect side-effect1524) (key key1525) (expr* expr*1526) (effect effect1527) (c-format c-format1528) (ftype ftype1529) (otype otype1530) (vtype vtype1531) (unsafe unsafe1532)))
+(define-inline (make-vref::vref loc1518::obj type1519::type side-effect1520::obj key1521::obj expr*1522::pair-nil effect1523::obj c-format1524::bstring ftype1525::type otype1526::type vtype1527::type unsafe1528::bool) (instantiate::vref (loc loc1518) (type type1519) (side-effect side-effect1520) (key key1521) (expr* expr*1522) (effect effect1523) (c-format c-format1524) (ftype ftype1525) (otype otype1526) (vtype vtype1527) (unsafe unsafe1528)))
 (define-inline (vref?::bool obj::obj) ((@ isa? __object) obj (@ vref ast_node)))
 (define (vref-nil::vref) (class-nil (@ vref ast_node)))
 (define-inline (vref-unsafe::bool o::vref) (with-access::vref o (unsafe) unsafe))
@@ -965,7 +971,7 @@
 (define-inline (vref-loc-set! o::vref v::obj) (with-access::vref o (loc) (set! loc v)))
 
 ;; vset!
-(define-inline (make-vset!::vset! loc1510::obj type1511::type side-effect1512::obj key1513::obj expr*1514::pair-nil effect1515::obj c-format1516::bstring ftype1517::type otype1518::type vtype1519::type unsafe1520::bool) (instantiate::vset! (loc loc1510) (type type1511) (side-effect side-effect1512) (key key1513) (expr* expr*1514) (effect effect1515) (c-format c-format1516) (ftype ftype1517) (otype otype1518) (vtype vtype1519) (unsafe unsafe1520)))
+(define-inline (make-vset!::vset! loc1506::obj type1507::type side-effect1508::obj key1509::obj expr*1510::pair-nil effect1511::obj c-format1512::bstring ftype1513::type otype1514::type vtype1515::type unsafe1516::bool) (instantiate::vset! (loc loc1506) (type type1507) (side-effect side-effect1508) (key key1509) (expr* expr*1510) (effect effect1511) (c-format c-format1512) (ftype ftype1513) (otype otype1514) (vtype vtype1515) (unsafe unsafe1516)))
 (define-inline (vset!?::bool obj::obj) ((@ isa? __object) obj (@ vset! ast_node)))
 (define (vset!-nil::vset!) (class-nil (@ vset! ast_node)))
 (define-inline (vset!-unsafe::bool o::vset!) (with-access::vset! o (unsafe) unsafe))
@@ -992,7 +998,7 @@
 (define-inline (vset!-loc-set! o::vset! v::obj) (with-access::vset! o (loc) (set! loc v)))
 
 ;; vlength
-(define-inline (make-vlength::vlength loc1501::obj type1502::type side-effect1503::obj key1504::obj expr*1505::pair-nil effect1506::obj c-format1507::bstring vtype1508::type) (instantiate::vlength (loc loc1501) (type type1502) (side-effect side-effect1503) (key key1504) (expr* expr*1505) (effect effect1506) (c-format c-format1507) (vtype vtype1508)))
+(define-inline (make-vlength::vlength loc1497::obj type1498::type side-effect1499::obj key1500::obj expr*1501::pair-nil effect1502::obj c-format1503::bstring vtype1504::type) (instantiate::vlength (loc loc1497) (type type1498) (side-effect side-effect1499) (key key1500) (expr* expr*1501) (effect effect1502) (c-format c-format1503) (vtype vtype1504)))
 (define-inline (vlength?::bool obj::obj) ((@ isa? __object) obj (@ vlength ast_node)))
 (define (vlength-nil::vlength) (class-nil (@ vlength ast_node)))
 (define-inline (vlength-vtype::type o::vlength) (with-access::vlength o (vtype) vtype))
@@ -1013,7 +1019,7 @@
 (define-inline (vlength-loc-set! o::vlength v::obj) (with-access::vlength o (loc) (set! loc v)))
 
 ;; instanceof
-(define-inline (make-instanceof::instanceof loc1492::obj type1493::type side-effect1494::obj key1495::obj expr*1496::pair-nil effect1497::obj c-format1498::bstring class1499::type) (instantiate::instanceof (loc loc1492) (type type1493) (side-effect side-effect1494) (key key1495) (expr* expr*1496) (effect effect1497) (c-format c-format1498) (class class1499)))
+(define-inline (make-instanceof::instanceof loc1488::obj type1489::type side-effect1490::obj key1491::obj expr*1492::pair-nil effect1493::obj c-format1494::bstring class1495::type) (instantiate::instanceof (loc loc1488) (type type1489) (side-effect side-effect1490) (key key1491) (expr* expr*1492) (effect effect1493) (c-format c-format1494) (class class1495)))
 (define-inline (instanceof?::bool obj::obj) ((@ isa? __object) obj (@ instanceof ast_node)))
 (define (instanceof-nil::instanceof) (class-nil (@ instanceof ast_node)))
 (define-inline (instanceof-class::type o::instanceof) (with-access::instanceof o (class) class))
@@ -1034,7 +1040,7 @@
 (define-inline (instanceof-loc-set! o::instanceof v::obj) (with-access::instanceof o (loc) (set! loc v)))
 
 ;; cast-null
-(define-inline (make-cast-null::cast-null loc1484::obj type1485::type side-effect1486::obj key1487::obj expr*1488::pair-nil effect1489::obj c-format1490::bstring) (instantiate::cast-null (loc loc1484) (type type1485) (side-effect side-effect1486) (key key1487) (expr* expr*1488) (effect effect1489) (c-format c-format1490)))
+(define-inline (make-cast-null::cast-null loc1480::obj type1481::type side-effect1482::obj key1483::obj expr*1484::pair-nil effect1485::obj c-format1486::bstring) (instantiate::cast-null (loc loc1480) (type type1481) (side-effect side-effect1482) (key key1483) (expr* expr*1484) (effect effect1485) (c-format c-format1486)))
 (define-inline (cast-null?::bool obj::obj) ((@ isa? __object) obj (@ cast-null ast_node)))
 (define (cast-null-nil::cast-null) (class-nil (@ cast-null ast_node)))
 (define-inline (cast-null-c-format::bstring o::cast-null) (with-access::cast-null o (c-format) c-format))
@@ -1053,7 +1059,7 @@
 (define-inline (cast-null-loc-set! o::cast-null v::obj) (with-access::cast-null o (loc) (set! loc v)))
 
 ;; cast
-(define-inline (make-cast::cast loc1478::obj type1479::type arg1482::node) (instantiate::cast (loc loc1478) (type type1479) (arg arg1482)))
+(define-inline (make-cast::cast loc1474::obj type1475::type arg1478::node) (instantiate::cast (loc loc1474) (type type1475) (arg arg1478)))
 (define-inline (cast?::bool obj::obj) ((@ isa? __object) obj (@ cast ast_node)))
 (define (cast-nil::cast) (class-nil (@ cast ast_node)))
 (define-inline (cast-arg::node o::cast) (with-access::cast o (arg) arg))
@@ -1064,7 +1070,7 @@
 (define-inline (cast-loc-set! o::cast v::obj) (with-access::cast o (loc) (set! loc v)))
 
 ;; setq
-(define-inline (make-setq::setq loc1473::obj type1474::type var1475::var value1476::node) (instantiate::setq (loc loc1473) (type type1474) (var var1475) (value value1476)))
+(define-inline (make-setq::setq loc1468::obj type1469::type var1470::var value1471::node) (instantiate::setq (loc loc1468) (type type1469) (var var1470) (value value1471)))
 (define-inline (setq?::bool obj::obj) ((@ isa? __object) obj (@ setq ast_node)))
 (define (setq-nil::setq) (class-nil (@ setq ast_node)))
 (define-inline (setq-value::node o::setq) (with-access::setq o (value) value))
@@ -1077,7 +1083,7 @@
 (define-inline (setq-loc-set! o::setq v::obj) (with-access::setq o (loc) (set! loc v)))
 
 ;; conditional
-(define-inline (make-conditional::conditional loc1465::obj type1466::type side-effect1467::obj key1468::obj test1469::node true1470::node false1471::node) (instantiate::conditional (loc loc1465) (type type1466) (side-effect side-effect1467) (key key1468) (test test1469) (true true1470) (false false1471)))
+(define-inline (make-conditional::conditional loc1460::obj type1461::type side-effect1462::obj key1463::obj test1464::node true1465::node false1466::node) (instantiate::conditional (loc loc1460) (type type1461) (side-effect side-effect1462) (key key1463) (test test1464) (true true1465) (false false1466)))
 (define-inline (conditional?::bool obj::obj) ((@ isa? __object) obj (@ conditional ast_node)))
 (define (conditional-nil::conditional) (class-nil (@ conditional ast_node)))
 (define-inline (conditional-false::node o::conditional) (with-access::conditional o (false) false))
@@ -1096,7 +1102,7 @@
 (define-inline (conditional-loc-set! o::conditional v::obj) (with-access::conditional o (loc) (set! loc v)))
 
 ;; fail
-(define-inline (make-fail::fail loc1459::obj type1460::type proc1461::node msg1462::node obj1463::node) (instantiate::fail (loc loc1459) (type type1460) (proc proc1461) (msg msg1462) (obj obj1463)))
+(define-inline (make-fail::fail loc1453::obj type1454::type proc1455::node msg1456::node obj1457::node) (instantiate::fail (loc loc1453) (type type1454) (proc proc1455) (msg msg1456) (obj obj1457)))
 (define-inline (fail?::bool obj::obj) ((@ isa? __object) obj (@ fail ast_node)))
 (define (fail-nil::fail) (class-nil (@ fail ast_node)))
 (define-inline (fail-obj::node o::fail) (with-access::fail o (obj) obj))
@@ -1111,7 +1117,7 @@
 (define-inline (fail-loc-set! o::fail v::obj) (with-access::fail o (loc) (set! loc v)))
 
 ;; select
-(define-inline (make-select::select loc1451::obj type1452::type side-effect1453::obj key1454::obj test1455::node clauses1456::obj item-type1457::type) (instantiate::select (loc loc1451) (type type1452) (side-effect side-effect1453) (key key1454) (test test1455) (clauses clauses1456) (item-type item-type1457)))
+(define-inline (make-select::select loc1445::obj type1446::type side-effect1447::obj key1448::obj test1449::node clauses1450::obj item-type1451::type) (instantiate::select (loc loc1445) (type type1446) (side-effect side-effect1447) (key key1448) (test test1449) (clauses clauses1450) (item-type item-type1451)))
 (define-inline (select?::bool obj::obj) ((@ isa? __object) obj (@ select ast_node)))
 (define (select-nil::select) (class-nil (@ select ast_node)))
 (define-inline (select-item-type::type o::select) (with-access::select o (item-type) item-type))
@@ -1130,7 +1136,7 @@
 (define-inline (select-loc-set! o::select v::obj) (with-access::select o (loc) (set! loc v)))
 
 ;; let-fun
-(define-inline (make-let-fun::let-fun loc1444::obj type1445::type side-effect1446::obj key1447::obj locals1448::obj body1449::node) (instantiate::let-fun (loc loc1444) (type type1445) (side-effect side-effect1446) (key key1447) (locals locals1448) (body body1449)))
+(define-inline (make-let-fun::let-fun loc1437::obj type1438::type side-effect1439::obj key1440::obj locals1441::obj body1442::node) (instantiate::let-fun (loc loc1437) (type type1438) (side-effect side-effect1439) (key key1440) (locals locals1441) (body body1442)))
 (define-inline (let-fun?::bool obj::obj) ((@ isa? __object) obj (@ let-fun ast_node)))
 (define (let-fun-nil::let-fun) (class-nil (@ let-fun ast_node)))
 (define-inline (let-fun-body::node o::let-fun) (with-access::let-fun o (body) body))
@@ -1147,7 +1153,7 @@
 (define-inline (let-fun-loc-set! o::let-fun v::obj) (with-access::let-fun o (loc) (set! loc v)))
 
 ;; let-var
-(define-inline (make-let-var::let-var loc1436::obj type1437::type side-effect1438::obj key1439::obj bindings1440::obj body1441::node removable?1442::bool) (instantiate::let-var (loc loc1436) (type type1437) (side-effect side-effect1438) (key key1439) (bindings bindings1440) (body body1441) (removable? removable?1442)))
+(define-inline (make-let-var::let-var loc1428::obj type1429::type side-effect1430::obj key1431::obj bindings1432::obj body1433::node removable?1434::bool) (instantiate::let-var (loc loc1428) (type type1429) (side-effect side-effect1430) (key key1431) (bindings bindings1432) (body body1433) (removable? removable?1434)))
 (define-inline (let-var?::bool obj::obj) ((@ isa? __object) obj (@ let-var ast_node)))
 (define (let-var-nil::let-var) (class-nil (@ let-var ast_node)))
 (define-inline (let-var-removable?::bool o::let-var) (with-access::let-var o (removable?) removable?))
@@ -1166,7 +1172,7 @@
 (define-inline (let-var-loc-set! o::let-var v::obj) (with-access::let-var o (loc) (set! loc v)))
 
 ;; set-ex-it
-(define-inline (make-set-ex-it::set-ex-it loc1431::obj type1432::type var1433::var body1434::node) (instantiate::set-ex-it (loc loc1431) (type type1432) (var var1433) (body body1434)))
+(define-inline (make-set-ex-it::set-ex-it loc1423::obj type1424::type var1425::var body1426::node) (instantiate::set-ex-it (loc loc1423) (type type1424) (var var1425) (body body1426)))
 (define-inline (set-ex-it?::bool obj::obj) ((@ isa? __object) obj (@ set-ex-it ast_node)))
 (define (set-ex-it-nil::set-ex-it) (class-nil (@ set-ex-it ast_node)))
 (define-inline (set-ex-it-body::node o::set-ex-it) (with-access::set-ex-it o (body) body))
@@ -1179,7 +1185,7 @@
 (define-inline (set-ex-it-loc-set! o::set-ex-it v::obj) (with-access::set-ex-it o (loc) (set! loc v)))
 
 ;; jump-ex-it
-(define-inline (make-jump-ex-it::jump-ex-it loc1426::obj type1427::type exit1428::node value1429::node) (instantiate::jump-ex-it (loc loc1426) (type type1427) (exit exit1428) (value value1429)))
+(define-inline (make-jump-ex-it::jump-ex-it loc1418::obj type1419::type exit1420::node value1421::node) (instantiate::jump-ex-it (loc loc1418) (type type1419) (exit exit1420) (value value1421)))
 (define-inline (jump-ex-it?::bool obj::obj) ((@ isa? __object) obj (@ jump-ex-it ast_node)))
 (define (jump-ex-it-nil::jump-ex-it) (class-nil (@ jump-ex-it ast_node)))
 (define-inline (jump-ex-it-value::node o::jump-ex-it) (with-access::jump-ex-it o (value) value))
@@ -1192,9 +1198,11 @@
 (define-inline (jump-ex-it-loc-set! o::jump-ex-it v::obj) (with-access::jump-ex-it o (loc) (set! loc v)))
 
 ;; make-box
-(define-inline (make-make-box::make-box loc1420::obj type1421::type side-effect1422::obj key1423::obj value1424::node) (instantiate::make-box (loc loc1420) (type type1421) (side-effect side-effect1422) (key key1423) (value value1424)))
+(define-inline (make-make-box::make-box loc1411::obj type1412::type side-effect1413::obj key1414::obj value1415::node vtype1416::type) (instantiate::make-box (loc loc1411) (type type1412) (side-effect side-effect1413) (key key1414) (value value1415) (vtype vtype1416)))
 (define-inline (make-box?::bool obj::obj) ((@ isa? __object) obj (@ make-box ast_node)))
 (define (make-box-nil::make-box) (class-nil (@ make-box ast_node)))
+(define-inline (make-box-vtype::type o::make-box) (with-access::make-box o (vtype) vtype))
+(define-inline (make-box-vtype-set! o::make-box v::type) (with-access::make-box o (vtype) (set! vtype v)))
 (define-inline (make-box-value::node o::make-box) (with-access::make-box o (value) value))
 (define-inline (make-box-value-set! o::make-box v::node) (with-access::make-box o (value) (set! value v)))
 (define-inline (make-box-key::obj o::make-box) (with-access::make-box o (key) key))
@@ -1207,9 +1215,11 @@
 (define-inline (make-box-loc-set! o::make-box v::obj) (with-access::make-box o (loc) (set! loc v)))
 
 ;; box-ref
-(define-inline (make-box-ref::box-ref loc1414::obj type1415::type side-effect1416::obj key1417::obj var1418::var) (instantiate::box-ref (loc loc1414) (type type1415) (side-effect side-effect1416) (key key1417) (var var1418)))
+(define-inline (make-box-ref::box-ref loc1404::obj type1405::type side-effect1406::obj key1407::obj var1408::var vtype1409::type) (instantiate::box-ref (loc loc1404) (type type1405) (side-effect side-effect1406) (key key1407) (var var1408) (vtype vtype1409)))
 (define-inline (box-ref?::bool obj::obj) ((@ isa? __object) obj (@ box-ref ast_node)))
 (define (box-ref-nil::box-ref) (class-nil (@ box-ref ast_node)))
+(define-inline (box-ref-vtype::type o::box-ref) (with-access::box-ref o (vtype) vtype))
+(define-inline (box-ref-vtype-set! o::box-ref v::type) (with-access::box-ref o (vtype) (set! vtype v)))
 (define-inline (box-ref-var::var o::box-ref) (with-access::box-ref o (var) var))
 (define-inline (box-ref-var-set! o::box-ref v::var) (with-access::box-ref o (var) (set! var v)))
 (define-inline (box-ref-key::obj o::box-ref) (with-access::box-ref o (key) key))
@@ -1222,9 +1232,11 @@
 (define-inline (box-ref-loc-set! o::box-ref v::obj) (with-access::box-ref o (loc) (set! loc v)))
 
 ;; box-set!
-(define-inline (make-box-set!::box-set! loc1409::obj type1410::type var1411::var value1412::node) (instantiate::box-set! (loc loc1409) (type type1410) (var var1411) (value value1412)))
+(define-inline (make-box-set!::box-set! loc1397::obj type1398::type var1399::var value1400::node vtype1401::type) (instantiate::box-set! (loc loc1397) (type type1398) (var var1399) (value value1400) (vtype vtype1401)))
 (define-inline (box-set!?::bool obj::obj) ((@ isa? __object) obj (@ box-set! ast_node)))
 (define (box-set!-nil::box-set!) (class-nil (@ box-set! ast_node)))
+(define-inline (box-set!-vtype::type o::box-set!) (with-access::box-set! o (vtype) vtype))
+(define-inline (box-set!-vtype-set! o::box-set! v::type) (with-access::box-set! o (vtype) (set! vtype v)))
 (define-inline (box-set!-value::node o::box-set!) (with-access::box-set! o (value) value))
 (define-inline (box-set!-value-set! o::box-set! v::node) (with-access::box-set! o (value) (set! value v)))
 (define-inline (box-set!-var::var o::box-set!) (with-access::box-set! o (var) var))
@@ -1235,7 +1247,7 @@
 (define-inline (box-set!-loc-set! o::box-set! v::obj) (with-access::box-set! o (loc) (set! loc v)))
 
 ;; sync
-(define-inline (make-sync::sync loc1403::obj type1404::type mutex1405::node prelock1406::node body1407::node) (instantiate::sync (loc loc1403) (type type1404) (mutex mutex1405) (prelock prelock1406) (body body1407)))
+(define-inline (make-sync::sync loc1391::obj type1392::type mutex1393::node prelock1394::node body1395::node) (instantiate::sync (loc loc1391) (type type1392) (mutex mutex1393) (prelock prelock1394) (body body1395)))
 (define-inline (sync?::bool obj::obj) ((@ isa? __object) obj (@ sync ast_node)))
 (define (sync-nil::sync) (class-nil (@ sync ast_node)))
 (define-inline (sync-body::node o::sync) (with-access::sync o (body) body))

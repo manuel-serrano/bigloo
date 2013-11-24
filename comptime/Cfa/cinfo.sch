@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (3.7b)
-;; Inria -- Sophia Antipolis     Mon Nov 14 16:42:36 CET 2011 
-;; (bigloo.new -classgen Cfa/cinfo.scm)
+;; Bigloo (4.1a)
+;; Inria -- Sophia Antipolis     Sun Nov 24 08:08:37 CET 2013 
+;; (bigloo -classgen Cfa/cinfo.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; approx
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-approx::approx type1760::type type-locked?1761::bool allocs1762::obj top?1763::bool lost-stamp1764::long dup1765::obj)
+    (inline make-approx::approx type1735::type type-locked?1736::bool allocs1737::obj top?1738::bool lost-stamp1739::long dup1740::obj)
     (inline approx?::bool ::obj)
     (approx-nil::approx)
     (inline approx-dup::obj ::approx)
@@ -28,7 +28,7 @@
 ;; cfun/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cfun/Cinfo::cfun/Cinfo arity1747::long side-effect1748::obj predicate-of1749::obj stack-allocator1750::obj top?1751::bool the-closure1752::obj effect1753::obj args-type1754::obj macro?1755::bool infix?1756::bool method1757::pair-nil approx1758::approx)
+    (inline make-cfun/Cinfo::cfun/Cinfo arity1720::long side-effect1721::obj predicate-of1722::obj stack-allocator1723::obj top?1725::bool the-closure1726::obj effect1727::obj failsafe1728::obj args-type1729::obj macro?1730::bool infix?1731::bool method1732::pair-nil approx1733::approx)
     (inline cfun/Cinfo?::bool ::obj)
     (cfun/Cinfo-nil::cfun/Cinfo)
     (inline cfun/Cinfo-approx::approx ::cfun/Cinfo)
@@ -38,6 +38,8 @@
     (inline cfun/Cinfo-infix?-set! ::cfun/Cinfo ::bool)
     (inline cfun/Cinfo-macro?::bool ::cfun/Cinfo)
     (inline cfun/Cinfo-args-type::obj ::cfun/Cinfo)
+    (inline cfun/Cinfo-failsafe::obj ::cfun/Cinfo)
+    (inline cfun/Cinfo-failsafe-set! ::cfun/Cinfo ::obj)
     (inline cfun/Cinfo-effect::obj ::cfun/Cinfo)
     (inline cfun/Cinfo-effect-set! ::cfun/Cinfo ::obj)
     (inline cfun/Cinfo-the-closure::obj ::cfun/Cinfo)
@@ -55,7 +57,7 @@
 ;; extern-sfun/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-extern-sfun/Cinfo::extern-sfun/Cinfo arity1726::long side-effect1727::obj predicate-of1728::obj stack-allocator1729::obj top?1730::bool the-closure1731::obj effect1732::obj property1733::obj args1734::obj args-name1735::obj body1736::obj class1737::obj dsssl-keywords1738::obj loc1739::obj optionals1740::obj keys1741::obj the-closure-global1742::obj strength1743::symbol polymorphic?1744::bool approx1745::approx)
+    (inline make-extern-sfun/Cinfo::extern-sfun/Cinfo arity1698::long side-effect1699::obj predicate-of1700::obj stack-allocator1701::obj top?1702::bool the-closure1703::obj effect1704::obj failsafe1705::obj property1706::obj args1707::obj args-name1708::obj body1709::obj class1710::obj dsssl-keywords1711::obj loc1712::obj optionals1713::obj keys1714::obj the-closure-global1715::obj strength1716::symbol polymorphic?1717::bool approx1718::approx)
     (inline extern-sfun/Cinfo?::bool ::obj)
     (extern-sfun/Cinfo-nil::extern-sfun/Cinfo)
     (inline extern-sfun/Cinfo-approx::approx ::extern-sfun/Cinfo)
@@ -80,6 +82,8 @@
     (inline extern-sfun/Cinfo-args-set! ::extern-sfun/Cinfo ::obj)
     (inline extern-sfun/Cinfo-property::obj ::extern-sfun/Cinfo)
     (inline extern-sfun/Cinfo-property-set! ::extern-sfun/Cinfo ::obj)
+    (inline extern-sfun/Cinfo-failsafe::obj ::extern-sfun/Cinfo)
+    (inline extern-sfun/Cinfo-failsafe-set! ::extern-sfun/Cinfo ::obj)
     (inline extern-sfun/Cinfo-effect::obj ::extern-sfun/Cinfo)
     (inline extern-sfun/Cinfo-effect-set! ::extern-sfun/Cinfo ::obj)
     (inline extern-sfun/Cinfo-the-closure::obj ::extern-sfun/Cinfo)
@@ -97,7 +101,7 @@
 ;; intern-sfun/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-intern-sfun/Cinfo::intern-sfun/Cinfo arity1704::long side-effect1705::obj predicate-of1706::obj stack-allocator1707::obj top?1708::bool the-closure1709::obj effect1710::obj property1711::obj args1712::obj args-name1713::obj body1714::obj class1715::obj dsssl-keywords1716::obj loc1717::obj optionals1718::obj keys1719::obj the-closure-global1720::obj strength1721::symbol polymorphic?1722::bool approx1723::approx stamp1724::long)
+    (inline make-intern-sfun/Cinfo::intern-sfun/Cinfo arity1675::long side-effect1676::obj predicate-of1677::obj stack-allocator1678::obj top?1679::bool the-closure1680::obj effect1681::obj failsafe1682::obj property1683::obj args1684::obj args-name1685::obj body1686::obj class1687::obj dsssl-keywords1688::obj loc1689::obj optionals1690::obj keys1691::obj the-closure-global1692::obj strength1693::symbol polymorphic?1694::bool approx1695::approx stamp1696::long)
     (inline intern-sfun/Cinfo?::bool ::obj)
     (intern-sfun/Cinfo-nil::intern-sfun/Cinfo)
     (inline intern-sfun/Cinfo-stamp::long ::intern-sfun/Cinfo)
@@ -124,6 +128,8 @@
     (inline intern-sfun/Cinfo-args-set! ::intern-sfun/Cinfo ::obj)
     (inline intern-sfun/Cinfo-property::obj ::intern-sfun/Cinfo)
     (inline intern-sfun/Cinfo-property-set! ::intern-sfun/Cinfo ::obj)
+    (inline intern-sfun/Cinfo-failsafe::obj ::intern-sfun/Cinfo)
+    (inline intern-sfun/Cinfo-failsafe-set! ::intern-sfun/Cinfo ::obj)
     (inline intern-sfun/Cinfo-effect::obj ::intern-sfun/Cinfo)
     (inline intern-sfun/Cinfo-effect-set! ::intern-sfun/Cinfo ::obj)
     (inline intern-sfun/Cinfo-the-closure::obj ::intern-sfun/Cinfo)
@@ -141,7 +147,7 @@
 ;; scnst/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-scnst/Cinfo::scnst/Cinfo node1699::obj class1700::obj loc1701::obj approx1702::approx)
+    (inline make-scnst/Cinfo::scnst/Cinfo node1670::obj class1671::obj loc1672::obj approx1673::approx)
     (inline scnst/Cinfo?::bool ::obj)
     (scnst/Cinfo-nil::scnst/Cinfo)
     (inline scnst/Cinfo-approx::approx ::scnst/Cinfo)
@@ -154,7 +160,7 @@
 ;; pre-clo-env
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-clo-env::pre-clo-env loc1697::obj)
+    (inline make-pre-clo-env::pre-clo-env loc1668::obj)
     (inline pre-clo-env?::bool ::obj)
     (pre-clo-env-nil::pre-clo-env)
     (inline pre-clo-env-loc::obj ::pre-clo-env)
@@ -163,21 +169,21 @@
 ;; svar/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-svar/Cinfo::svar/Cinfo loc1693::obj approx1694::approx clo-env?1695::bool)
+    (inline make-svar/Cinfo::svar/Cinfo loc1663::obj approx1664::approx clo-env?1665::bool stamp1666::long)
     (inline svar/Cinfo?::bool ::obj)
     (svar/Cinfo-nil::svar/Cinfo)
+    (inline svar/Cinfo-stamp::long ::svar/Cinfo)
+    (inline svar/Cinfo-stamp-set! ::svar/Cinfo ::long)
     (inline svar/Cinfo-clo-env?::bool ::svar/Cinfo)
     (inline svar/Cinfo-clo-env?-set! ::svar/Cinfo ::bool)
     (inline svar/Cinfo-approx::approx ::svar/Cinfo)
     (inline svar/Cinfo-loc::obj ::svar/Cinfo)
-    (inline svar/Cinfo-loc-set! ::svar/Cinfo ::obj)
-    (inline svar/Cinfo-stamp::long ::svar/Cinfo)
-    (inline svar/Cinfo-stamp-set! ::svar/Cinfo ::long))))
+    (inline svar/Cinfo-loc-set! ::svar/Cinfo ::obj))))
 
 ;; cvar/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cvar/Cinfo::cvar/Cinfo macro?1690::bool approx1691::approx)
+    (inline make-cvar/Cinfo::cvar/Cinfo macro?1660::bool approx1661::approx)
     (inline cvar/Cinfo?::bool ::obj)
     (cvar/Cinfo-nil::cvar/Cinfo)
     (inline cvar/Cinfo-approx::approx ::cvar/Cinfo)
@@ -186,7 +192,7 @@
 ;; sexit/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sexit/Cinfo::sexit/Cinfo handler1686::obj detached?1687::bool approx1688::approx)
+    (inline make-sexit/Cinfo::sexit/Cinfo handler1656::obj detached?1657::bool approx1658::approx)
     (inline sexit/Cinfo?::bool ::obj)
     (sexit/Cinfo-nil::sexit/Cinfo)
     (inline sexit/Cinfo-approx::approx ::sexit/Cinfo)
@@ -198,7 +204,7 @@
 ;; reshaped-local
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-reshaped-local::reshaped-local id1673::symbol name1674::obj type1675::type value1676::value access1677::obj fast-alpha1678::obj removable1679::obj occurrence1680::long occurrencew1681::long user?1682::bool key1683::long binding-value1684::obj)
+    (inline make-reshaped-local::reshaped-local id1642::symbol name1643::obj type1645::type value1646::value access1647::obj fast-alpha1648::obj removable1649::obj occurrence1650::long occurrencew1651::long user?1652::bool key1653::long binding-value1654::obj)
     (inline reshaped-local?::bool ::obj)
     (reshaped-local-nil::reshaped-local)
     (inline reshaped-local-binding-value::obj ::reshaped-local)
@@ -226,9 +232,11 @@
 ;; reshaped-global
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-reshaped-global::reshaped-global id1651::symbol name1652::obj type1655::type value1656::value access1657::obj fast-alpha1658::obj removable1659::obj occurrence1660::long occurrencew1661::long user?1662::bool module1663::symbol import1664::obj evaluable?1665::bool eval?1666::bool library1667::obj pragma1668::obj src1669::obj jvm-type-name1670::bstring init1671::obj)
+    (inline make-reshaped-global::reshaped-global id1621::symbol name1622::obj type1623::type value1624::value access1625::obj fast-alpha1626::obj removable1627::obj occurrence1628::long occurrencew1629::long user?1630::bool module1631::symbol import1632::obj evaluable?1633::bool eval?1634::bool library1635::obj pragma1636::obj src1637::obj jvm-type-name1638::bstring init1639::obj alias1640::obj)
     (inline reshaped-global?::bool ::obj)
     (reshaped-global-nil::reshaped-global)
+    (inline reshaped-global-alias::obj ::reshaped-global)
+    (inline reshaped-global-alias-set! ::reshaped-global ::obj)
     (inline reshaped-global-init::obj ::reshaped-global)
     (inline reshaped-global-init-set! ::reshaped-global ::obj)
     (inline reshaped-global-jvm-type-name::bstring ::reshaped-global)
@@ -270,7 +278,7 @@
 ;; atom/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-atom/Cinfo::atom/Cinfo loc1646::obj type1647::type value1648::obj approx1649::approx)
+    (inline make-atom/Cinfo::atom/Cinfo loc1616::obj type1617::type value1618::obj approx1619::approx)
     (inline atom/Cinfo?::bool ::obj)
     (atom/Cinfo-nil::atom/Cinfo)
     (inline atom/Cinfo-approx::approx ::atom/Cinfo)
@@ -283,7 +291,7 @@
 ;; kwote/node
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-kwote/node::kwote/node loc1641::obj type1642::type value1643::obj node1644::node)
+    (inline make-kwote/node::kwote/node loc1611::obj type1612::type value1613::obj node1614::node)
     (inline kwote/node?::bool ::obj)
     (kwote/node-nil::kwote/node)
     (inline kwote/node-node::node ::kwote/node)
@@ -295,7 +303,7 @@
 ;; kwote/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-kwote/Cinfo::kwote/Cinfo loc1636::obj type1637::type value1638::obj approx1639::approx)
+    (inline make-kwote/Cinfo::kwote/Cinfo loc1605::obj type1606::type value1607::obj approx1608::approx)
     (inline kwote/Cinfo?::bool ::obj)
     (kwote/Cinfo-nil::kwote/Cinfo)
     (inline kwote/Cinfo-approx::approx ::kwote/Cinfo)
@@ -307,7 +315,7 @@
 ;; app-ly/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-app-ly/Cinfo::app-ly/Cinfo loc1630::obj type1631::type fun1632::node arg1633::node approx1634::approx)
+    (inline make-app-ly/Cinfo::app-ly/Cinfo loc1599::obj type1600::type fun1601::node arg1602::node approx1603::approx)
     (inline app-ly/Cinfo?::bool ::obj)
     (app-ly/Cinfo-nil::app-ly/Cinfo)
     (inline app-ly/Cinfo-approx::approx ::app-ly/Cinfo)
@@ -322,7 +330,7 @@
 ;; funcall/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-funcall/Cinfo::funcall/Cinfo loc1619::obj type1620::type fun1621::node args1622::obj strength1623::symbol functions1624::obj approx1625::approx va-approx1626::approx arity-error-noticed?1627::bool type-error-noticed?1628::bool)
+    (inline make-funcall/Cinfo::funcall/Cinfo loc1587::obj type1588::type fun1589::node args1590::obj strength1591::symbol functions1592::obj approx1593::approx va-approx1594::approx arity-error-noticed?1595::bool type-error-noticed?1596::bool)
     (inline funcall/Cinfo?::bool ::obj)
     (funcall/Cinfo-nil::funcall/Cinfo)
     (inline funcall/Cinfo-type-error-noticed?::bool ::funcall/Cinfo)
@@ -346,7 +354,7 @@
 ;; setq/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-setq/Cinfo::setq/Cinfo loc1613::obj type1614::type var1615::var value1616::node approx1617::approx)
+    (inline make-setq/Cinfo::setq/Cinfo loc1581::obj type1582::type var1583::var value1584::node approx1585::approx)
     (inline setq/Cinfo?::bool ::obj)
     (setq/Cinfo-nil::setq/Cinfo)
     (inline setq/Cinfo-approx::approx ::setq/Cinfo)
@@ -361,7 +369,7 @@
 ;; conditional/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-conditional/Cinfo::conditional/Cinfo loc1604::obj type1605::type side-effect1606::obj key1607::obj test1608::node true1609::node false1610::node approx1611::approx)
+    (inline make-conditional/Cinfo::conditional/Cinfo loc1572::obj type1573::type side-effect1574::obj key1575::obj test1576::node true1577::node false1578::node approx1579::approx)
     (inline conditional/Cinfo?::bool ::obj)
     (conditional/Cinfo-nil::conditional/Cinfo)
     (inline conditional/Cinfo-approx::approx ::conditional/Cinfo)
@@ -382,7 +390,7 @@
 ;; fail/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fail/Cinfo::fail/Cinfo loc1597::obj type1598::type proc1599::node msg1600::node obj1601::node approx1602::approx)
+    (inline make-fail/Cinfo::fail/Cinfo loc1565::obj type1566::type proc1567::node msg1568::node obj1569::node approx1570::approx)
     (inline fail/Cinfo?::bool ::obj)
     (fail/Cinfo-nil::fail/Cinfo)
     (inline fail/Cinfo-approx::approx ::fail/Cinfo)
@@ -399,7 +407,7 @@
 ;; select/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-select/Cinfo::select/Cinfo loc1588::obj type1589::type side-effect1590::obj key1591::obj test1592::node clauses1593::obj item-type1594::type approx1595::approx)
+    (inline make-select/Cinfo::select/Cinfo loc1556::obj type1557::type side-effect1558::obj key1559::obj test1560::node clauses1561::obj item-type1562::type approx1563::approx)
     (inline select/Cinfo?::bool ::obj)
     (select/Cinfo-nil::select/Cinfo)
     (inline select/Cinfo-approx::approx ::select/Cinfo)
@@ -418,7 +426,7 @@
 ;; set-ex-it/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-set-ex-it/Cinfo::set-ex-it/Cinfo loc1582::obj type1583::type var1584::var body1585::node approx1586::approx)
+    (inline make-set-ex-it/Cinfo::set-ex-it/Cinfo loc1550::obj type1551::type var1552::var body1553::node approx1554::approx)
     (inline set-ex-it/Cinfo?::bool ::obj)
     (set-ex-it/Cinfo-nil::set-ex-it/Cinfo)
     (inline set-ex-it/Cinfo-approx::approx ::set-ex-it/Cinfo)
@@ -433,7 +441,7 @@
 ;; jump-ex-it/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-jump-ex-it/Cinfo::jump-ex-it/Cinfo loc1576::obj type1577::type exit1578::node value1579::node approx1580::approx)
+    (inline make-jump-ex-it/Cinfo::jump-ex-it/Cinfo loc1544::obj type1545::type exit1546::node value1547::node approx1548::approx)
     (inline jump-ex-it/Cinfo?::bool ::obj)
     (jump-ex-it/Cinfo-nil::jump-ex-it/Cinfo)
     (inline jump-ex-it/Cinfo-approx::approx ::jump-ex-it/Cinfo)
@@ -448,9 +456,11 @@
 ;; pre-make-box
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-pre-make-box::pre-make-box loc1570::obj type1571::type side-effect1572::obj key1573::obj value1574::node)
+    (inline make-pre-make-box::pre-make-box loc1537::obj type1538::type side-effect1539::obj key1540::obj value1541::node vtype1542::type)
     (inline pre-make-box?::bool ::obj)
     (pre-make-box-nil::pre-make-box)
+    (inline pre-make-box-vtype::type ::pre-make-box)
+    (inline pre-make-box-vtype-set! ::pre-make-box ::type)
     (inline pre-make-box-value::node ::pre-make-box)
     (inline pre-make-box-value-set! ::pre-make-box ::node)
     (inline pre-make-box-key::obj ::pre-make-box)
@@ -464,10 +474,12 @@
 ;; make-box/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-make-box/Cinfo::make-box/Cinfo loc1562::obj type1563::type side-effect1564::obj key1565::obj value1566::node approx1567::approx)
+    (inline make-make-box/Cinfo::make-box/Cinfo loc1528::obj type1529::type side-effect1530::obj key1531::obj value1532::node vtype1533::type approx1535::approx)
     (inline make-box/Cinfo?::bool ::obj)
     (make-box/Cinfo-nil::make-box/Cinfo)
     (inline make-box/Cinfo-approx::approx ::make-box/Cinfo)
+    (inline make-box/Cinfo-vtype::type ::make-box/Cinfo)
+    (inline make-box/Cinfo-vtype-set! ::make-box/Cinfo ::type)
     (inline make-box/Cinfo-value::node ::make-box/Cinfo)
     (inline make-box/Cinfo-value-set! ::make-box/Cinfo ::node)
     (inline make-box/Cinfo-key::obj ::make-box/Cinfo)
@@ -481,12 +493,14 @@
 ;; make-box/O-Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-make-box/O-Cinfo::make-box/O-Cinfo loc1554::obj type1555::type side-effect1556::obj key1557::obj value1558::node approx1559::approx value-approx1560::approx)
+    (inline make-make-box/O-Cinfo::make-box/O-Cinfo loc1519::obj type1520::type side-effect1521::obj key1522::obj value1523::node vtype1524::type approx1525::approx value-approx1526::approx)
     (inline make-box/O-Cinfo?::bool ::obj)
     (make-box/O-Cinfo-nil::make-box/O-Cinfo)
     (inline make-box/O-Cinfo-value-approx::approx ::make-box/O-Cinfo)
     (inline make-box/O-Cinfo-approx::approx ::make-box/O-Cinfo)
     (inline make-box/O-Cinfo-approx-set! ::make-box/O-Cinfo ::approx)
+    (inline make-box/O-Cinfo-vtype::type ::make-box/O-Cinfo)
+    (inline make-box/O-Cinfo-vtype-set! ::make-box/O-Cinfo ::type)
     (inline make-box/O-Cinfo-value::node ::make-box/O-Cinfo)
     (inline make-box/O-Cinfo-value-set! ::make-box/O-Cinfo ::node)
     (inline make-box/O-Cinfo-key::obj ::make-box/O-Cinfo)
@@ -500,10 +514,12 @@
 ;; box-set!/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-box-set!/Cinfo::box-set!/Cinfo loc1548::obj type1549::type var1550::var value1551::node approx1552::approx)
+    (inline make-box-set!/Cinfo::box-set!/Cinfo loc1511::obj type1512::type var1513::var value1514::node vtype1516::type approx1517::approx)
     (inline box-set!/Cinfo?::bool ::obj)
     (box-set!/Cinfo-nil::box-set!/Cinfo)
     (inline box-set!/Cinfo-approx::approx ::box-set!/Cinfo)
+    (inline box-set!/Cinfo-vtype::type ::box-set!/Cinfo)
+    (inline box-set!/Cinfo-vtype-set! ::box-set!/Cinfo ::type)
     (inline box-set!/Cinfo-value::node ::box-set!/Cinfo)
     (inline box-set!/Cinfo-value-set! ::box-set!/Cinfo ::node)
     (inline box-set!/Cinfo-var::var ::box-set!/Cinfo)
@@ -515,10 +531,12 @@
 ;; box-ref/Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-box-ref/Cinfo::box-ref/Cinfo loc1541::obj type1542::type side-effect1543::obj key1544::obj var1545::var approx1546::approx)
+    (inline make-box-ref/Cinfo::box-ref/Cinfo loc1503::obj type1504::type side-effect1505::obj key1506::obj var1507::var vtype1508::type approx1509::approx)
     (inline box-ref/Cinfo?::bool ::obj)
     (box-ref/Cinfo-nil::box-ref/Cinfo)
     (inline box-ref/Cinfo-approx::approx ::box-ref/Cinfo)
+    (inline box-ref/Cinfo-vtype::type ::box-ref/Cinfo)
+    (inline box-ref/Cinfo-vtype-set! ::box-ref/Cinfo ::type)
     (inline box-ref/Cinfo-var::var ::box-ref/Cinfo)
     (inline box-ref/Cinfo-var-set! ::box-ref/Cinfo ::var)
     (inline box-ref/Cinfo-key::obj ::box-ref/Cinfo)
@@ -532,10 +550,12 @@
 ;; box-set!/O-Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-box-set!/O-Cinfo::box-set!/O-Cinfo loc1535::obj type1536::type var1537::var value1538::node approx1539::approx)
+    (inline make-box-set!/O-Cinfo::box-set!/O-Cinfo loc1496::obj type1497::type var1498::var value1499::node vtype1500::type approx1501::approx)
     (inline box-set!/O-Cinfo?::bool ::obj)
     (box-set!/O-Cinfo-nil::box-set!/O-Cinfo)
     (inline box-set!/O-Cinfo-approx::approx ::box-set!/O-Cinfo)
+    (inline box-set!/O-Cinfo-vtype::type ::box-set!/O-Cinfo)
+    (inline box-set!/O-Cinfo-vtype-set! ::box-set!/O-Cinfo ::type)
     (inline box-set!/O-Cinfo-value::node ::box-set!/O-Cinfo)
     (inline box-set!/O-Cinfo-value-set! ::box-set!/O-Cinfo ::node)
     (inline box-set!/O-Cinfo-var::var ::box-set!/O-Cinfo)
@@ -547,10 +567,12 @@
 ;; box-ref/O-Cinfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-box-ref/O-Cinfo::box-ref/O-Cinfo loc1528::obj type1529::type side-effect1530::obj key1531::obj var1532::var approx1533::approx)
+    (inline make-box-ref/O-Cinfo::box-ref/O-Cinfo loc1486::obj type1487::type side-effect1488::obj key1489::obj var1491::var vtype1493::type approx1494::approx)
     (inline box-ref/O-Cinfo?::bool ::obj)
     (box-ref/O-Cinfo-nil::box-ref/O-Cinfo)
     (inline box-ref/O-Cinfo-approx::approx ::box-ref/O-Cinfo)
+    (inline box-ref/O-Cinfo-vtype::type ::box-ref/O-Cinfo)
+    (inline box-ref/O-Cinfo-vtype-set! ::box-ref/O-Cinfo ::type)
     (inline box-ref/O-Cinfo-var::var ::box-ref/O-Cinfo)
     (inline box-ref/O-Cinfo-var-set! ::box-ref/O-Cinfo ::var)
     (inline box-ref/O-Cinfo-key::obj ::box-ref/O-Cinfo)
@@ -564,7 +586,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; approx
-(define-inline (make-approx::approx type1760::type type-locked?1761::bool allocs1762::obj top?1763::bool lost-stamp1764::long dup1765::obj) (instantiate::approx (type type1760) (type-locked? type-locked?1761) (allocs allocs1762) (top? top?1763) (lost-stamp lost-stamp1764) (dup dup1765)))
+(define-inline (make-approx::approx type1735::type type-locked?1736::bool allocs1737::obj top?1738::bool lost-stamp1739::long dup1740::obj) (instantiate::approx (type type1735) (type-locked? type-locked?1736) (allocs allocs1737) (top? top?1738) (lost-stamp lost-stamp1739) (dup dup1740)))
 (define-inline (approx?::bool obj::obj) ((@ isa? __object) obj (@ approx cfa_info)))
 (define (approx-nil::approx) (class-nil (@ approx cfa_info)))
 (define-inline (approx-dup::obj o::approx) (with-access::approx o (dup) dup))
@@ -581,7 +603,7 @@
 (define-inline (approx-type-set! o::approx v::type) (with-access::approx o (type) (set! type v)))
 
 ;; cfun/Cinfo
-(define-inline (make-cfun/Cinfo::cfun/Cinfo arity1747::long side-effect1748::obj predicate-of1749::obj stack-allocator1750::obj top?1751::bool the-closure1752::obj effect1753::obj args-type1754::obj macro?1755::bool infix?1756::bool method1757::pair-nil approx1758::approx) (instantiate::cfun/Cinfo (arity arity1747) (side-effect side-effect1748) (predicate-of predicate-of1749) (stack-allocator stack-allocator1750) (top? top?1751) (the-closure the-closure1752) (effect effect1753) (args-type args-type1754) (macro? macro?1755) (infix? infix?1756) (method method1757) (approx approx1758)))
+(define-inline (make-cfun/Cinfo::cfun/Cinfo arity1720::long side-effect1721::obj predicate-of1722::obj stack-allocator1723::obj top?1725::bool the-closure1726::obj effect1727::obj failsafe1728::obj args-type1729::obj macro?1730::bool infix?1731::bool method1732::pair-nil approx1733::approx) (instantiate::cfun/Cinfo (arity arity1720) (side-effect side-effect1721) (predicate-of predicate-of1722) (stack-allocator stack-allocator1723) (top? top?1725) (the-closure the-closure1726) (effect effect1727) (failsafe failsafe1728) (args-type args-type1729) (macro? macro?1730) (infix? infix?1731) (method method1732) (approx approx1733)))
 (define-inline (cfun/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ cfun/Cinfo cfa_info)))
 (define (cfun/Cinfo-nil::cfun/Cinfo) (class-nil (@ cfun/Cinfo cfa_info)))
 (define-inline (cfun/Cinfo-approx::approx o::cfun/Cinfo) (with-access::cfun/Cinfo o (approx) approx))
@@ -594,6 +616,8 @@
 (define-inline (cfun/Cinfo-macro?-set! o::cfun/Cinfo v::bool) (with-access::cfun/Cinfo o (macro?) (set! macro? v)))
 (define-inline (cfun/Cinfo-args-type::obj o::cfun/Cinfo) (with-access::cfun/Cinfo o (args-type) args-type))
 (define-inline (cfun/Cinfo-args-type-set! o::cfun/Cinfo v::obj) (with-access::cfun/Cinfo o (args-type) (set! args-type v)))
+(define-inline (cfun/Cinfo-failsafe::obj o::cfun/Cinfo) (with-access::cfun/Cinfo o (failsafe) failsafe))
+(define-inline (cfun/Cinfo-failsafe-set! o::cfun/Cinfo v::obj) (with-access::cfun/Cinfo o (failsafe) (set! failsafe v)))
 (define-inline (cfun/Cinfo-effect::obj o::cfun/Cinfo) (with-access::cfun/Cinfo o (effect) effect))
 (define-inline (cfun/Cinfo-effect-set! o::cfun/Cinfo v::obj) (with-access::cfun/Cinfo o (effect) (set! effect v)))
 (define-inline (cfun/Cinfo-the-closure::obj o::cfun/Cinfo) (with-access::cfun/Cinfo o (the-closure) the-closure))
@@ -610,7 +634,7 @@
 (define-inline (cfun/Cinfo-arity-set! o::cfun/Cinfo v::long) (with-access::cfun/Cinfo o (arity) (set! arity v)))
 
 ;; extern-sfun/Cinfo
-(define-inline (make-extern-sfun/Cinfo::extern-sfun/Cinfo arity1726::long side-effect1727::obj predicate-of1728::obj stack-allocator1729::obj top?1730::bool the-closure1731::obj effect1732::obj property1733::obj args1734::obj args-name1735::obj body1736::obj class1737::obj dsssl-keywords1738::obj loc1739::obj optionals1740::obj keys1741::obj the-closure-global1742::obj strength1743::symbol polymorphic?1744::bool approx1745::approx) (instantiate::extern-sfun/Cinfo (arity arity1726) (side-effect side-effect1727) (predicate-of predicate-of1728) (stack-allocator stack-allocator1729) (top? top?1730) (the-closure the-closure1731) (effect effect1732) (property property1733) (args args1734) (args-name args-name1735) (body body1736) (class class1737) (dsssl-keywords dsssl-keywords1738) (loc loc1739) (optionals optionals1740) (keys keys1741) (the-closure-global the-closure-global1742) (strength strength1743) (polymorphic? polymorphic?1744) (approx approx1745)))
+(define-inline (make-extern-sfun/Cinfo::extern-sfun/Cinfo arity1698::long side-effect1699::obj predicate-of1700::obj stack-allocator1701::obj top?1702::bool the-closure1703::obj effect1704::obj failsafe1705::obj property1706::obj args1707::obj args-name1708::obj body1709::obj class1710::obj dsssl-keywords1711::obj loc1712::obj optionals1713::obj keys1714::obj the-closure-global1715::obj strength1716::symbol polymorphic?1717::bool approx1718::approx) (instantiate::extern-sfun/Cinfo (arity arity1698) (side-effect side-effect1699) (predicate-of predicate-of1700) (stack-allocator stack-allocator1701) (top? top?1702) (the-closure the-closure1703) (effect effect1704) (failsafe failsafe1705) (property property1706) (args args1707) (args-name args-name1708) (body body1709) (class class1710) (dsssl-keywords dsssl-keywords1711) (loc loc1712) (optionals optionals1713) (keys keys1714) (the-closure-global the-closure-global1715) (strength strength1716) (polymorphic? polymorphic?1717) (approx approx1718)))
 (define-inline (extern-sfun/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ extern-sfun/Cinfo cfa_info)))
 (define (extern-sfun/Cinfo-nil::extern-sfun/Cinfo) (class-nil (@ extern-sfun/Cinfo cfa_info)))
 (define-inline (extern-sfun/Cinfo-approx::approx o::extern-sfun/Cinfo) (with-access::extern-sfun/Cinfo o (approx) approx))
@@ -639,6 +663,8 @@
 (define-inline (extern-sfun/Cinfo-args-set! o::extern-sfun/Cinfo v::obj) (with-access::extern-sfun/Cinfo o (args) (set! args v)))
 (define-inline (extern-sfun/Cinfo-property::obj o::extern-sfun/Cinfo) (with-access::extern-sfun/Cinfo o (property) property))
 (define-inline (extern-sfun/Cinfo-property-set! o::extern-sfun/Cinfo v::obj) (with-access::extern-sfun/Cinfo o (property) (set! property v)))
+(define-inline (extern-sfun/Cinfo-failsafe::obj o::extern-sfun/Cinfo) (with-access::extern-sfun/Cinfo o (failsafe) failsafe))
+(define-inline (extern-sfun/Cinfo-failsafe-set! o::extern-sfun/Cinfo v::obj) (with-access::extern-sfun/Cinfo o (failsafe) (set! failsafe v)))
 (define-inline (extern-sfun/Cinfo-effect::obj o::extern-sfun/Cinfo) (with-access::extern-sfun/Cinfo o (effect) effect))
 (define-inline (extern-sfun/Cinfo-effect-set! o::extern-sfun/Cinfo v::obj) (with-access::extern-sfun/Cinfo o (effect) (set! effect v)))
 (define-inline (extern-sfun/Cinfo-the-closure::obj o::extern-sfun/Cinfo) (with-access::extern-sfun/Cinfo o (the-closure) the-closure))
@@ -655,7 +681,7 @@
 (define-inline (extern-sfun/Cinfo-arity-set! o::extern-sfun/Cinfo v::long) (with-access::extern-sfun/Cinfo o (arity) (set! arity v)))
 
 ;; intern-sfun/Cinfo
-(define-inline (make-intern-sfun/Cinfo::intern-sfun/Cinfo arity1704::long side-effect1705::obj predicate-of1706::obj stack-allocator1707::obj top?1708::bool the-closure1709::obj effect1710::obj property1711::obj args1712::obj args-name1713::obj body1714::obj class1715::obj dsssl-keywords1716::obj loc1717::obj optionals1718::obj keys1719::obj the-closure-global1720::obj strength1721::symbol polymorphic?1722::bool approx1723::approx stamp1724::long) (instantiate::intern-sfun/Cinfo (arity arity1704) (side-effect side-effect1705) (predicate-of predicate-of1706) (stack-allocator stack-allocator1707) (top? top?1708) (the-closure the-closure1709) (effect effect1710) (property property1711) (args args1712) (args-name args-name1713) (body body1714) (class class1715) (dsssl-keywords dsssl-keywords1716) (loc loc1717) (optionals optionals1718) (keys keys1719) (the-closure-global the-closure-global1720) (strength strength1721) (polymorphic? polymorphic?1722) (approx approx1723) (stamp stamp1724)))
+(define-inline (make-intern-sfun/Cinfo::intern-sfun/Cinfo arity1675::long side-effect1676::obj predicate-of1677::obj stack-allocator1678::obj top?1679::bool the-closure1680::obj effect1681::obj failsafe1682::obj property1683::obj args1684::obj args-name1685::obj body1686::obj class1687::obj dsssl-keywords1688::obj loc1689::obj optionals1690::obj keys1691::obj the-closure-global1692::obj strength1693::symbol polymorphic?1694::bool approx1695::approx stamp1696::long) (instantiate::intern-sfun/Cinfo (arity arity1675) (side-effect side-effect1676) (predicate-of predicate-of1677) (stack-allocator stack-allocator1678) (top? top?1679) (the-closure the-closure1680) (effect effect1681) (failsafe failsafe1682) (property property1683) (args args1684) (args-name args-name1685) (body body1686) (class class1687) (dsssl-keywords dsssl-keywords1688) (loc loc1689) (optionals optionals1690) (keys keys1691) (the-closure-global the-closure-global1692) (strength strength1693) (polymorphic? polymorphic?1694) (approx approx1695) (stamp stamp1696)))
 (define-inline (intern-sfun/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ intern-sfun/Cinfo cfa_info)))
 (define (intern-sfun/Cinfo-nil::intern-sfun/Cinfo) (class-nil (@ intern-sfun/Cinfo cfa_info)))
 (define-inline (intern-sfun/Cinfo-stamp::long o::intern-sfun/Cinfo) (with-access::intern-sfun/Cinfo o (stamp) stamp))
@@ -686,6 +712,8 @@
 (define-inline (intern-sfun/Cinfo-args-set! o::intern-sfun/Cinfo v::obj) (with-access::intern-sfun/Cinfo o (args) (set! args v)))
 (define-inline (intern-sfun/Cinfo-property::obj o::intern-sfun/Cinfo) (with-access::intern-sfun/Cinfo o (property) property))
 (define-inline (intern-sfun/Cinfo-property-set! o::intern-sfun/Cinfo v::obj) (with-access::intern-sfun/Cinfo o (property) (set! property v)))
+(define-inline (intern-sfun/Cinfo-failsafe::obj o::intern-sfun/Cinfo) (with-access::intern-sfun/Cinfo o (failsafe) failsafe))
+(define-inline (intern-sfun/Cinfo-failsafe-set! o::intern-sfun/Cinfo v::obj) (with-access::intern-sfun/Cinfo o (failsafe) (set! failsafe v)))
 (define-inline (intern-sfun/Cinfo-effect::obj o::intern-sfun/Cinfo) (with-access::intern-sfun/Cinfo o (effect) effect))
 (define-inline (intern-sfun/Cinfo-effect-set! o::intern-sfun/Cinfo v::obj) (with-access::intern-sfun/Cinfo o (effect) (set! effect v)))
 (define-inline (intern-sfun/Cinfo-the-closure::obj o::intern-sfun/Cinfo) (with-access::intern-sfun/Cinfo o (the-closure) the-closure))
@@ -702,7 +730,7 @@
 (define-inline (intern-sfun/Cinfo-arity-set! o::intern-sfun/Cinfo v::long) (with-access::intern-sfun/Cinfo o (arity) (set! arity v)))
 
 ;; scnst/Cinfo
-(define-inline (make-scnst/Cinfo::scnst/Cinfo node1699::obj class1700::obj loc1701::obj approx1702::approx) (instantiate::scnst/Cinfo (node node1699) (class class1700) (loc loc1701) (approx approx1702)))
+(define-inline (make-scnst/Cinfo::scnst/Cinfo node1670::obj class1671::obj loc1672::obj approx1673::approx) (instantiate::scnst/Cinfo (node node1670) (class class1671) (loc loc1672) (approx approx1673)))
 (define-inline (scnst/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ scnst/Cinfo cfa_info)))
 (define (scnst/Cinfo-nil::scnst/Cinfo) (class-nil (@ scnst/Cinfo cfa_info)))
 (define-inline (scnst/Cinfo-approx::approx o::scnst/Cinfo) (with-access::scnst/Cinfo o (approx) approx))
@@ -715,27 +743,27 @@
 (define-inline (scnst/Cinfo-node-set! o::scnst/Cinfo v::obj) (with-access::scnst/Cinfo o (node) (set! node v)))
 
 ;; pre-clo-env
-(define-inline (make-pre-clo-env::pre-clo-env loc1697::obj) (instantiate::pre-clo-env (loc loc1697)))
+(define-inline (make-pre-clo-env::pre-clo-env loc1668::obj) (instantiate::pre-clo-env (loc loc1668)))
 (define-inline (pre-clo-env?::bool obj::obj) ((@ isa? __object) obj (@ pre-clo-env cfa_info)))
 (define (pre-clo-env-nil::pre-clo-env) (class-nil (@ pre-clo-env cfa_info)))
 (define-inline (pre-clo-env-loc::obj o::pre-clo-env) (with-access::pre-clo-env o (loc) loc))
 (define-inline (pre-clo-env-loc-set! o::pre-clo-env v::obj) (with-access::pre-clo-env o (loc) (set! loc v)))
 
 ;; svar/Cinfo
-(define-inline (make-svar/Cinfo::svar/Cinfo loc1693::obj approx1694::approx clo-env?1695::bool) (instantiate::svar/Cinfo (loc loc1693) (approx approx1694) (clo-env? clo-env?1695)))
+(define-inline (make-svar/Cinfo::svar/Cinfo loc1663::obj approx1664::approx clo-env?1665::bool stamp1666::long) (instantiate::svar/Cinfo (loc loc1663) (approx approx1664) (clo-env? clo-env?1665) (stamp stamp1666)))
 (define-inline (svar/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ svar/Cinfo cfa_info)))
 (define (svar/Cinfo-nil::svar/Cinfo) (class-nil (@ svar/Cinfo cfa_info)))
+(define-inline (svar/Cinfo-stamp::long o::svar/Cinfo) (with-access::svar/Cinfo o (stamp) stamp))
+(define-inline (svar/Cinfo-stamp-set! o::svar/Cinfo v::long) (with-access::svar/Cinfo o (stamp) (set! stamp v)))
 (define-inline (svar/Cinfo-clo-env?::bool o::svar/Cinfo) (with-access::svar/Cinfo o (clo-env?) clo-env?))
 (define-inline (svar/Cinfo-clo-env?-set! o::svar/Cinfo v::bool) (with-access::svar/Cinfo o (clo-env?) (set! clo-env? v)))
 (define-inline (svar/Cinfo-approx::approx o::svar/Cinfo) (with-access::svar/Cinfo o (approx) approx))
 (define-inline (svar/Cinfo-approx-set! o::svar/Cinfo v::approx) (with-access::svar/Cinfo o (approx) (set! approx v)))
 (define-inline (svar/Cinfo-loc::obj o::svar/Cinfo) (with-access::svar/Cinfo o (loc) loc))
 (define-inline (svar/Cinfo-loc-set! o::svar/Cinfo v::obj) (with-access::svar/Cinfo o (loc) (set! loc v)))
-(define-inline (svar/Cinfo-stamp::long o::svar/Cinfo) (with-access::svar/Cinfo o (stamp) stamp))
-(define-inline (svar/Cinfo-stamp-set! o::svar/Cinfo v::long) (with-access::svar/Cinfo o (stamp) (set! stamp v)))
 
 ;; cvar/Cinfo
-(define-inline (make-cvar/Cinfo::cvar/Cinfo macro?1690::bool approx1691::approx) (instantiate::cvar/Cinfo (macro? macro?1690) (approx approx1691)))
+(define-inline (make-cvar/Cinfo::cvar/Cinfo macro?1660::bool approx1661::approx) (instantiate::cvar/Cinfo (macro? macro?1660) (approx approx1661)))
 (define-inline (cvar/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ cvar/Cinfo cfa_info)))
 (define (cvar/Cinfo-nil::cvar/Cinfo) (class-nil (@ cvar/Cinfo cfa_info)))
 (define-inline (cvar/Cinfo-approx::approx o::cvar/Cinfo) (with-access::cvar/Cinfo o (approx) approx))
@@ -744,7 +772,7 @@
 (define-inline (cvar/Cinfo-macro?-set! o::cvar/Cinfo v::bool) (with-access::cvar/Cinfo o (macro?) (set! macro? v)))
 
 ;; sexit/Cinfo
-(define-inline (make-sexit/Cinfo::sexit/Cinfo handler1686::obj detached?1687::bool approx1688::approx) (instantiate::sexit/Cinfo (handler handler1686) (detached? detached?1687) (approx approx1688)))
+(define-inline (make-sexit/Cinfo::sexit/Cinfo handler1656::obj detached?1657::bool approx1658::approx) (instantiate::sexit/Cinfo (handler handler1656) (detached? detached?1657) (approx approx1658)))
 (define-inline (sexit/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ sexit/Cinfo cfa_info)))
 (define (sexit/Cinfo-nil::sexit/Cinfo) (class-nil (@ sexit/Cinfo cfa_info)))
 (define-inline (sexit/Cinfo-approx::approx o::sexit/Cinfo) (with-access::sexit/Cinfo o (approx) approx))
@@ -755,7 +783,7 @@
 (define-inline (sexit/Cinfo-handler-set! o::sexit/Cinfo v::obj) (with-access::sexit/Cinfo o (handler) (set! handler v)))
 
 ;; reshaped-local
-(define-inline (make-reshaped-local::reshaped-local id1673::symbol name1674::obj type1675::type value1676::value access1677::obj fast-alpha1678::obj removable1679::obj occurrence1680::long occurrencew1681::long user?1682::bool key1683::long binding-value1684::obj) (instantiate::reshaped-local (id id1673) (name name1674) (type type1675) (value value1676) (access access1677) (fast-alpha fast-alpha1678) (removable removable1679) (occurrence occurrence1680) (occurrencew occurrencew1681) (user? user?1682) (key key1683) (binding-value binding-value1684)))
+(define-inline (make-reshaped-local::reshaped-local id1642::symbol name1643::obj type1645::type value1646::value access1647::obj fast-alpha1648::obj removable1649::obj occurrence1650::long occurrencew1651::long user?1652::bool key1653::long binding-value1654::obj) (instantiate::reshaped-local (id id1642) (name name1643) (type type1645) (value value1646) (access access1647) (fast-alpha fast-alpha1648) (removable removable1649) (occurrence occurrence1650) (occurrencew occurrencew1651) (user? user?1652) (key key1653) (binding-value binding-value1654)))
 (define-inline (reshaped-local?::bool obj::obj) ((@ isa? __object) obj (@ reshaped-local cfa_info)))
 (define (reshaped-local-nil::reshaped-local) (class-nil (@ reshaped-local cfa_info)))
 (define-inline (reshaped-local-binding-value::obj o::reshaped-local) (with-access::reshaped-local o (binding-value) binding-value))
@@ -784,9 +812,11 @@
 (define-inline (reshaped-local-id-set! o::reshaped-local v::symbol) (with-access::reshaped-local o (id) (set! id v)))
 
 ;; reshaped-global
-(define-inline (make-reshaped-global::reshaped-global id1651::symbol name1652::obj type1655::type value1656::value access1657::obj fast-alpha1658::obj removable1659::obj occurrence1660::long occurrencew1661::long user?1662::bool module1663::symbol import1664::obj evaluable?1665::bool eval?1666::bool library1667::obj pragma1668::obj src1669::obj jvm-type-name1670::bstring init1671::obj) (instantiate::reshaped-global (id id1651) (name name1652) (type type1655) (value value1656) (access access1657) (fast-alpha fast-alpha1658) (removable removable1659) (occurrence occurrence1660) (occurrencew occurrencew1661) (user? user?1662) (module module1663) (import import1664) (evaluable? evaluable?1665) (eval? eval?1666) (library library1667) (pragma pragma1668) (src src1669) (jvm-type-name jvm-type-name1670) (init init1671)))
+(define-inline (make-reshaped-global::reshaped-global id1621::symbol name1622::obj type1623::type value1624::value access1625::obj fast-alpha1626::obj removable1627::obj occurrence1628::long occurrencew1629::long user?1630::bool module1631::symbol import1632::obj evaluable?1633::bool eval?1634::bool library1635::obj pragma1636::obj src1637::obj jvm-type-name1638::bstring init1639::obj alias1640::obj) (instantiate::reshaped-global (id id1621) (name name1622) (type type1623) (value value1624) (access access1625) (fast-alpha fast-alpha1626) (removable removable1627) (occurrence occurrence1628) (occurrencew occurrencew1629) (user? user?1630) (module module1631) (import import1632) (evaluable? evaluable?1633) (eval? eval?1634) (library library1635) (pragma pragma1636) (src src1637) (jvm-type-name jvm-type-name1638) (init init1639) (alias alias1640)))
 (define-inline (reshaped-global?::bool obj::obj) ((@ isa? __object) obj (@ reshaped-global cfa_info)))
 (define (reshaped-global-nil::reshaped-global) (class-nil (@ reshaped-global cfa_info)))
+(define-inline (reshaped-global-alias::obj o::reshaped-global) (with-access::reshaped-global o (alias) alias))
+(define-inline (reshaped-global-alias-set! o::reshaped-global v::obj) (with-access::reshaped-global o (alias) (set! alias v)))
 (define-inline (reshaped-global-init::obj o::reshaped-global) (with-access::reshaped-global o (init) init))
 (define-inline (reshaped-global-init-set! o::reshaped-global v::obj) (with-access::reshaped-global o (init) (set! init v)))
 (define-inline (reshaped-global-jvm-type-name::bstring o::reshaped-global) (with-access::reshaped-global o (jvm-type-name) jvm-type-name))
@@ -827,7 +857,7 @@
 (define-inline (reshaped-global-id-set! o::reshaped-global v::symbol) (with-access::reshaped-global o (id) (set! id v)))
 
 ;; atom/Cinfo
-(define-inline (make-atom/Cinfo::atom/Cinfo loc1646::obj type1647::type value1648::obj approx1649::approx) (instantiate::atom/Cinfo (loc loc1646) (type type1647) (value value1648) (approx approx1649)))
+(define-inline (make-atom/Cinfo::atom/Cinfo loc1616::obj type1617::type value1618::obj approx1619::approx) (instantiate::atom/Cinfo (loc loc1616) (type type1617) (value value1618) (approx approx1619)))
 (define-inline (atom/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ atom/Cinfo cfa_info)))
 (define (atom/Cinfo-nil::atom/Cinfo) (class-nil (@ atom/Cinfo cfa_info)))
 (define-inline (atom/Cinfo-approx::approx o::atom/Cinfo) (with-access::atom/Cinfo o (approx) approx))
@@ -840,7 +870,7 @@
 (define-inline (atom/Cinfo-loc-set! o::atom/Cinfo v::obj) (with-access::atom/Cinfo o (loc) (set! loc v)))
 
 ;; kwote/node
-(define-inline (make-kwote/node::kwote/node loc1641::obj type1642::type value1643::obj node1644::node) (instantiate::kwote/node (loc loc1641) (type type1642) (value value1643) (node node1644)))
+(define-inline (make-kwote/node::kwote/node loc1611::obj type1612::type value1613::obj node1614::node) (instantiate::kwote/node (loc loc1611) (type type1612) (value value1613) (node node1614)))
 (define-inline (kwote/node?::bool obj::obj) ((@ isa? __object) obj (@ kwote/node cfa_info)))
 (define (kwote/node-nil::kwote/node) (class-nil (@ kwote/node cfa_info)))
 (define-inline (kwote/node-node::node o::kwote/node) (with-access::kwote/node o (node) node))
@@ -853,7 +883,7 @@
 (define-inline (kwote/node-loc-set! o::kwote/node v::obj) (with-access::kwote/node o (loc) (set! loc v)))
 
 ;; kwote/Cinfo
-(define-inline (make-kwote/Cinfo::kwote/Cinfo loc1636::obj type1637::type value1638::obj approx1639::approx) (instantiate::kwote/Cinfo (loc loc1636) (type type1637) (value value1638) (approx approx1639)))
+(define-inline (make-kwote/Cinfo::kwote/Cinfo loc1605::obj type1606::type value1607::obj approx1608::approx) (instantiate::kwote/Cinfo (loc loc1605) (type type1606) (value value1607) (approx approx1608)))
 (define-inline (kwote/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ kwote/Cinfo cfa_info)))
 (define (kwote/Cinfo-nil::kwote/Cinfo) (class-nil (@ kwote/Cinfo cfa_info)))
 (define-inline (kwote/Cinfo-approx::approx o::kwote/Cinfo) (with-access::kwote/Cinfo o (approx) approx))
@@ -866,7 +896,7 @@
 (define-inline (kwote/Cinfo-loc-set! o::kwote/Cinfo v::obj) (with-access::kwote/Cinfo o (loc) (set! loc v)))
 
 ;; app-ly/Cinfo
-(define-inline (make-app-ly/Cinfo::app-ly/Cinfo loc1630::obj type1631::type fun1632::node arg1633::node approx1634::approx) (instantiate::app-ly/Cinfo (loc loc1630) (type type1631) (fun fun1632) (arg arg1633) (approx approx1634)))
+(define-inline (make-app-ly/Cinfo::app-ly/Cinfo loc1599::obj type1600::type fun1601::node arg1602::node approx1603::approx) (instantiate::app-ly/Cinfo (loc loc1599) (type type1600) (fun fun1601) (arg arg1602) (approx approx1603)))
 (define-inline (app-ly/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ app-ly/Cinfo cfa_info)))
 (define (app-ly/Cinfo-nil::app-ly/Cinfo) (class-nil (@ app-ly/Cinfo cfa_info)))
 (define-inline (app-ly/Cinfo-approx::approx o::app-ly/Cinfo) (with-access::app-ly/Cinfo o (approx) approx))
@@ -881,7 +911,7 @@
 (define-inline (app-ly/Cinfo-loc-set! o::app-ly/Cinfo v::obj) (with-access::app-ly/Cinfo o (loc) (set! loc v)))
 
 ;; funcall/Cinfo
-(define-inline (make-funcall/Cinfo::funcall/Cinfo loc1619::obj type1620::type fun1621::node args1622::obj strength1623::symbol functions1624::obj approx1625::approx va-approx1626::approx arity-error-noticed?1627::bool type-error-noticed?1628::bool) (instantiate::funcall/Cinfo (loc loc1619) (type type1620) (fun fun1621) (args args1622) (strength strength1623) (functions functions1624) (approx approx1625) (va-approx va-approx1626) (arity-error-noticed? arity-error-noticed?1627) (type-error-noticed? type-error-noticed?1628)))
+(define-inline (make-funcall/Cinfo::funcall/Cinfo loc1587::obj type1588::type fun1589::node args1590::obj strength1591::symbol functions1592::obj approx1593::approx va-approx1594::approx arity-error-noticed?1595::bool type-error-noticed?1596::bool) (instantiate::funcall/Cinfo (loc loc1587) (type type1588) (fun fun1589) (args args1590) (strength strength1591) (functions functions1592) (approx approx1593) (va-approx va-approx1594) (arity-error-noticed? arity-error-noticed?1595) (type-error-noticed? type-error-noticed?1596)))
 (define-inline (funcall/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ funcall/Cinfo cfa_info)))
 (define (funcall/Cinfo-nil::funcall/Cinfo) (class-nil (@ funcall/Cinfo cfa_info)))
 (define-inline (funcall/Cinfo-type-error-noticed?::bool o::funcall/Cinfo) (with-access::funcall/Cinfo o (type-error-noticed?) type-error-noticed?))
@@ -906,7 +936,7 @@
 (define-inline (funcall/Cinfo-loc-set! o::funcall/Cinfo v::obj) (with-access::funcall/Cinfo o (loc) (set! loc v)))
 
 ;; setq/Cinfo
-(define-inline (make-setq/Cinfo::setq/Cinfo loc1613::obj type1614::type var1615::var value1616::node approx1617::approx) (instantiate::setq/Cinfo (loc loc1613) (type type1614) (var var1615) (value value1616) (approx approx1617)))
+(define-inline (make-setq/Cinfo::setq/Cinfo loc1581::obj type1582::type var1583::var value1584::node approx1585::approx) (instantiate::setq/Cinfo (loc loc1581) (type type1582) (var var1583) (value value1584) (approx approx1585)))
 (define-inline (setq/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ setq/Cinfo cfa_info)))
 (define (setq/Cinfo-nil::setq/Cinfo) (class-nil (@ setq/Cinfo cfa_info)))
 (define-inline (setq/Cinfo-approx::approx o::setq/Cinfo) (with-access::setq/Cinfo o (approx) approx))
@@ -921,7 +951,7 @@
 (define-inline (setq/Cinfo-loc-set! o::setq/Cinfo v::obj) (with-access::setq/Cinfo o (loc) (set! loc v)))
 
 ;; conditional/Cinfo
-(define-inline (make-conditional/Cinfo::conditional/Cinfo loc1604::obj type1605::type side-effect1606::obj key1607::obj test1608::node true1609::node false1610::node approx1611::approx) (instantiate::conditional/Cinfo (loc loc1604) (type type1605) (side-effect side-effect1606) (key key1607) (test test1608) (true true1609) (false false1610) (approx approx1611)))
+(define-inline (make-conditional/Cinfo::conditional/Cinfo loc1572::obj type1573::type side-effect1574::obj key1575::obj test1576::node true1577::node false1578::node approx1579::approx) (instantiate::conditional/Cinfo (loc loc1572) (type type1573) (side-effect side-effect1574) (key key1575) (test test1576) (true true1577) (false false1578) (approx approx1579)))
 (define-inline (conditional/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ conditional/Cinfo cfa_info)))
 (define (conditional/Cinfo-nil::conditional/Cinfo) (class-nil (@ conditional/Cinfo cfa_info)))
 (define-inline (conditional/Cinfo-approx::approx o::conditional/Cinfo) (with-access::conditional/Cinfo o (approx) approx))
@@ -942,7 +972,7 @@
 (define-inline (conditional/Cinfo-loc-set! o::conditional/Cinfo v::obj) (with-access::conditional/Cinfo o (loc) (set! loc v)))
 
 ;; fail/Cinfo
-(define-inline (make-fail/Cinfo::fail/Cinfo loc1597::obj type1598::type proc1599::node msg1600::node obj1601::node approx1602::approx) (instantiate::fail/Cinfo (loc loc1597) (type type1598) (proc proc1599) (msg msg1600) (obj obj1601) (approx approx1602)))
+(define-inline (make-fail/Cinfo::fail/Cinfo loc1565::obj type1566::type proc1567::node msg1568::node obj1569::node approx1570::approx) (instantiate::fail/Cinfo (loc loc1565) (type type1566) (proc proc1567) (msg msg1568) (obj obj1569) (approx approx1570)))
 (define-inline (fail/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ fail/Cinfo cfa_info)))
 (define (fail/Cinfo-nil::fail/Cinfo) (class-nil (@ fail/Cinfo cfa_info)))
 (define-inline (fail/Cinfo-approx::approx o::fail/Cinfo) (with-access::fail/Cinfo o (approx) approx))
@@ -959,7 +989,7 @@
 (define-inline (fail/Cinfo-loc-set! o::fail/Cinfo v::obj) (with-access::fail/Cinfo o (loc) (set! loc v)))
 
 ;; select/Cinfo
-(define-inline (make-select/Cinfo::select/Cinfo loc1588::obj type1589::type side-effect1590::obj key1591::obj test1592::node clauses1593::obj item-type1594::type approx1595::approx) (instantiate::select/Cinfo (loc loc1588) (type type1589) (side-effect side-effect1590) (key key1591) (test test1592) (clauses clauses1593) (item-type item-type1594) (approx approx1595)))
+(define-inline (make-select/Cinfo::select/Cinfo loc1556::obj type1557::type side-effect1558::obj key1559::obj test1560::node clauses1561::obj item-type1562::type approx1563::approx) (instantiate::select/Cinfo (loc loc1556) (type type1557) (side-effect side-effect1558) (key key1559) (test test1560) (clauses clauses1561) (item-type item-type1562) (approx approx1563)))
 (define-inline (select/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ select/Cinfo cfa_info)))
 (define (select/Cinfo-nil::select/Cinfo) (class-nil (@ select/Cinfo cfa_info)))
 (define-inline (select/Cinfo-approx::approx o::select/Cinfo) (with-access::select/Cinfo o (approx) approx))
@@ -980,7 +1010,7 @@
 (define-inline (select/Cinfo-loc-set! o::select/Cinfo v::obj) (with-access::select/Cinfo o (loc) (set! loc v)))
 
 ;; set-ex-it/Cinfo
-(define-inline (make-set-ex-it/Cinfo::set-ex-it/Cinfo loc1582::obj type1583::type var1584::var body1585::node approx1586::approx) (instantiate::set-ex-it/Cinfo (loc loc1582) (type type1583) (var var1584) (body body1585) (approx approx1586)))
+(define-inline (make-set-ex-it/Cinfo::set-ex-it/Cinfo loc1550::obj type1551::type var1552::var body1553::node approx1554::approx) (instantiate::set-ex-it/Cinfo (loc loc1550) (type type1551) (var var1552) (body body1553) (approx approx1554)))
 (define-inline (set-ex-it/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ set-ex-it/Cinfo cfa_info)))
 (define (set-ex-it/Cinfo-nil::set-ex-it/Cinfo) (class-nil (@ set-ex-it/Cinfo cfa_info)))
 (define-inline (set-ex-it/Cinfo-approx::approx o::set-ex-it/Cinfo) (with-access::set-ex-it/Cinfo o (approx) approx))
@@ -995,7 +1025,7 @@
 (define-inline (set-ex-it/Cinfo-loc-set! o::set-ex-it/Cinfo v::obj) (with-access::set-ex-it/Cinfo o (loc) (set! loc v)))
 
 ;; jump-ex-it/Cinfo
-(define-inline (make-jump-ex-it/Cinfo::jump-ex-it/Cinfo loc1576::obj type1577::type exit1578::node value1579::node approx1580::approx) (instantiate::jump-ex-it/Cinfo (loc loc1576) (type type1577) (exit exit1578) (value value1579) (approx approx1580)))
+(define-inline (make-jump-ex-it/Cinfo::jump-ex-it/Cinfo loc1544::obj type1545::type exit1546::node value1547::node approx1548::approx) (instantiate::jump-ex-it/Cinfo (loc loc1544) (type type1545) (exit exit1546) (value value1547) (approx approx1548)))
 (define-inline (jump-ex-it/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ jump-ex-it/Cinfo cfa_info)))
 (define (jump-ex-it/Cinfo-nil::jump-ex-it/Cinfo) (class-nil (@ jump-ex-it/Cinfo cfa_info)))
 (define-inline (jump-ex-it/Cinfo-approx::approx o::jump-ex-it/Cinfo) (with-access::jump-ex-it/Cinfo o (approx) approx))
@@ -1010,9 +1040,11 @@
 (define-inline (jump-ex-it/Cinfo-loc-set! o::jump-ex-it/Cinfo v::obj) (with-access::jump-ex-it/Cinfo o (loc) (set! loc v)))
 
 ;; pre-make-box
-(define-inline (make-pre-make-box::pre-make-box loc1570::obj type1571::type side-effect1572::obj key1573::obj value1574::node) (instantiate::pre-make-box (loc loc1570) (type type1571) (side-effect side-effect1572) (key key1573) (value value1574)))
+(define-inline (make-pre-make-box::pre-make-box loc1537::obj type1538::type side-effect1539::obj key1540::obj value1541::node vtype1542::type) (instantiate::pre-make-box (loc loc1537) (type type1538) (side-effect side-effect1539) (key key1540) (value value1541) (vtype vtype1542)))
 (define-inline (pre-make-box?::bool obj::obj) ((@ isa? __object) obj (@ pre-make-box cfa_info)))
 (define (pre-make-box-nil::pre-make-box) (class-nil (@ pre-make-box cfa_info)))
+(define-inline (pre-make-box-vtype::type o::pre-make-box) (with-access::pre-make-box o (vtype) vtype))
+(define-inline (pre-make-box-vtype-set! o::pre-make-box v::type) (with-access::pre-make-box o (vtype) (set! vtype v)))
 (define-inline (pre-make-box-value::node o::pre-make-box) (with-access::pre-make-box o (value) value))
 (define-inline (pre-make-box-value-set! o::pre-make-box v::node) (with-access::pre-make-box o (value) (set! value v)))
 (define-inline (pre-make-box-key::obj o::pre-make-box) (with-access::pre-make-box o (key) key))
@@ -1025,11 +1057,13 @@
 (define-inline (pre-make-box-loc-set! o::pre-make-box v::obj) (with-access::pre-make-box o (loc) (set! loc v)))
 
 ;; make-box/Cinfo
-(define-inline (make-make-box/Cinfo::make-box/Cinfo loc1562::obj type1563::type side-effect1564::obj key1565::obj value1566::node approx1567::approx) (instantiate::make-box/Cinfo (loc loc1562) (type type1563) (side-effect side-effect1564) (key key1565) (value value1566) (approx approx1567)))
+(define-inline (make-make-box/Cinfo::make-box/Cinfo loc1528::obj type1529::type side-effect1530::obj key1531::obj value1532::node vtype1533::type approx1535::approx) (instantiate::make-box/Cinfo (loc loc1528) (type type1529) (side-effect side-effect1530) (key key1531) (value value1532) (vtype vtype1533) (approx approx1535)))
 (define-inline (make-box/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ make-box/Cinfo cfa_info)))
 (define (make-box/Cinfo-nil::make-box/Cinfo) (class-nil (@ make-box/Cinfo cfa_info)))
 (define-inline (make-box/Cinfo-approx::approx o::make-box/Cinfo) (with-access::make-box/Cinfo o (approx) approx))
 (define-inline (make-box/Cinfo-approx-set! o::make-box/Cinfo v::approx) (with-access::make-box/Cinfo o (approx) (set! approx v)))
+(define-inline (make-box/Cinfo-vtype::type o::make-box/Cinfo) (with-access::make-box/Cinfo o (vtype) vtype))
+(define-inline (make-box/Cinfo-vtype-set! o::make-box/Cinfo v::type) (with-access::make-box/Cinfo o (vtype) (set! vtype v)))
 (define-inline (make-box/Cinfo-value::node o::make-box/Cinfo) (with-access::make-box/Cinfo o (value) value))
 (define-inline (make-box/Cinfo-value-set! o::make-box/Cinfo v::node) (with-access::make-box/Cinfo o (value) (set! value v)))
 (define-inline (make-box/Cinfo-key::obj o::make-box/Cinfo) (with-access::make-box/Cinfo o (key) key))
@@ -1042,13 +1076,15 @@
 (define-inline (make-box/Cinfo-loc-set! o::make-box/Cinfo v::obj) (with-access::make-box/Cinfo o (loc) (set! loc v)))
 
 ;; make-box/O-Cinfo
-(define-inline (make-make-box/O-Cinfo::make-box/O-Cinfo loc1554::obj type1555::type side-effect1556::obj key1557::obj value1558::node approx1559::approx value-approx1560::approx) (instantiate::make-box/O-Cinfo (loc loc1554) (type type1555) (side-effect side-effect1556) (key key1557) (value value1558) (approx approx1559) (value-approx value-approx1560)))
+(define-inline (make-make-box/O-Cinfo::make-box/O-Cinfo loc1519::obj type1520::type side-effect1521::obj key1522::obj value1523::node vtype1524::type approx1525::approx value-approx1526::approx) (instantiate::make-box/O-Cinfo (loc loc1519) (type type1520) (side-effect side-effect1521) (key key1522) (value value1523) (vtype vtype1524) (approx approx1525) (value-approx value-approx1526)))
 (define-inline (make-box/O-Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ make-box/O-Cinfo cfa_info)))
 (define (make-box/O-Cinfo-nil::make-box/O-Cinfo) (class-nil (@ make-box/O-Cinfo cfa_info)))
 (define-inline (make-box/O-Cinfo-value-approx::approx o::make-box/O-Cinfo) (with-access::make-box/O-Cinfo o (value-approx) value-approx))
 (define-inline (make-box/O-Cinfo-value-approx-set! o::make-box/O-Cinfo v::approx) (with-access::make-box/O-Cinfo o (value-approx) (set! value-approx v)))
 (define-inline (make-box/O-Cinfo-approx::approx o::make-box/O-Cinfo) (with-access::make-box/O-Cinfo o (approx) approx))
 (define-inline (make-box/O-Cinfo-approx-set! o::make-box/O-Cinfo v::approx) (with-access::make-box/O-Cinfo o (approx) (set! approx v)))
+(define-inline (make-box/O-Cinfo-vtype::type o::make-box/O-Cinfo) (with-access::make-box/O-Cinfo o (vtype) vtype))
+(define-inline (make-box/O-Cinfo-vtype-set! o::make-box/O-Cinfo v::type) (with-access::make-box/O-Cinfo o (vtype) (set! vtype v)))
 (define-inline (make-box/O-Cinfo-value::node o::make-box/O-Cinfo) (with-access::make-box/O-Cinfo o (value) value))
 (define-inline (make-box/O-Cinfo-value-set! o::make-box/O-Cinfo v::node) (with-access::make-box/O-Cinfo o (value) (set! value v)))
 (define-inline (make-box/O-Cinfo-key::obj o::make-box/O-Cinfo) (with-access::make-box/O-Cinfo o (key) key))
@@ -1061,11 +1097,13 @@
 (define-inline (make-box/O-Cinfo-loc-set! o::make-box/O-Cinfo v::obj) (with-access::make-box/O-Cinfo o (loc) (set! loc v)))
 
 ;; box-set!/Cinfo
-(define-inline (make-box-set!/Cinfo::box-set!/Cinfo loc1548::obj type1549::type var1550::var value1551::node approx1552::approx) (instantiate::box-set!/Cinfo (loc loc1548) (type type1549) (var var1550) (value value1551) (approx approx1552)))
+(define-inline (make-box-set!/Cinfo::box-set!/Cinfo loc1511::obj type1512::type var1513::var value1514::node vtype1516::type approx1517::approx) (instantiate::box-set!/Cinfo (loc loc1511) (type type1512) (var var1513) (value value1514) (vtype vtype1516) (approx approx1517)))
 (define-inline (box-set!/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ box-set!/Cinfo cfa_info)))
 (define (box-set!/Cinfo-nil::box-set!/Cinfo) (class-nil (@ box-set!/Cinfo cfa_info)))
 (define-inline (box-set!/Cinfo-approx::approx o::box-set!/Cinfo) (with-access::box-set!/Cinfo o (approx) approx))
 (define-inline (box-set!/Cinfo-approx-set! o::box-set!/Cinfo v::approx) (with-access::box-set!/Cinfo o (approx) (set! approx v)))
+(define-inline (box-set!/Cinfo-vtype::type o::box-set!/Cinfo) (with-access::box-set!/Cinfo o (vtype) vtype))
+(define-inline (box-set!/Cinfo-vtype-set! o::box-set!/Cinfo v::type) (with-access::box-set!/Cinfo o (vtype) (set! vtype v)))
 (define-inline (box-set!/Cinfo-value::node o::box-set!/Cinfo) (with-access::box-set!/Cinfo o (value) value))
 (define-inline (box-set!/Cinfo-value-set! o::box-set!/Cinfo v::node) (with-access::box-set!/Cinfo o (value) (set! value v)))
 (define-inline (box-set!/Cinfo-var::var o::box-set!/Cinfo) (with-access::box-set!/Cinfo o (var) var))
@@ -1076,11 +1114,13 @@
 (define-inline (box-set!/Cinfo-loc-set! o::box-set!/Cinfo v::obj) (with-access::box-set!/Cinfo o (loc) (set! loc v)))
 
 ;; box-ref/Cinfo
-(define-inline (make-box-ref/Cinfo::box-ref/Cinfo loc1541::obj type1542::type side-effect1543::obj key1544::obj var1545::var approx1546::approx) (instantiate::box-ref/Cinfo (loc loc1541) (type type1542) (side-effect side-effect1543) (key key1544) (var var1545) (approx approx1546)))
+(define-inline (make-box-ref/Cinfo::box-ref/Cinfo loc1503::obj type1504::type side-effect1505::obj key1506::obj var1507::var vtype1508::type approx1509::approx) (instantiate::box-ref/Cinfo (loc loc1503) (type type1504) (side-effect side-effect1505) (key key1506) (var var1507) (vtype vtype1508) (approx approx1509)))
 (define-inline (box-ref/Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ box-ref/Cinfo cfa_info)))
 (define (box-ref/Cinfo-nil::box-ref/Cinfo) (class-nil (@ box-ref/Cinfo cfa_info)))
 (define-inline (box-ref/Cinfo-approx::approx o::box-ref/Cinfo) (with-access::box-ref/Cinfo o (approx) approx))
 (define-inline (box-ref/Cinfo-approx-set! o::box-ref/Cinfo v::approx) (with-access::box-ref/Cinfo o (approx) (set! approx v)))
+(define-inline (box-ref/Cinfo-vtype::type o::box-ref/Cinfo) (with-access::box-ref/Cinfo o (vtype) vtype))
+(define-inline (box-ref/Cinfo-vtype-set! o::box-ref/Cinfo v::type) (with-access::box-ref/Cinfo o (vtype) (set! vtype v)))
 (define-inline (box-ref/Cinfo-var::var o::box-ref/Cinfo) (with-access::box-ref/Cinfo o (var) var))
 (define-inline (box-ref/Cinfo-var-set! o::box-ref/Cinfo v::var) (with-access::box-ref/Cinfo o (var) (set! var v)))
 (define-inline (box-ref/Cinfo-key::obj o::box-ref/Cinfo) (with-access::box-ref/Cinfo o (key) key))
@@ -1093,11 +1133,13 @@
 (define-inline (box-ref/Cinfo-loc-set! o::box-ref/Cinfo v::obj) (with-access::box-ref/Cinfo o (loc) (set! loc v)))
 
 ;; box-set!/O-Cinfo
-(define-inline (make-box-set!/O-Cinfo::box-set!/O-Cinfo loc1535::obj type1536::type var1537::var value1538::node approx1539::approx) (instantiate::box-set!/O-Cinfo (loc loc1535) (type type1536) (var var1537) (value value1538) (approx approx1539)))
+(define-inline (make-box-set!/O-Cinfo::box-set!/O-Cinfo loc1496::obj type1497::type var1498::var value1499::node vtype1500::type approx1501::approx) (instantiate::box-set!/O-Cinfo (loc loc1496) (type type1497) (var var1498) (value value1499) (vtype vtype1500) (approx approx1501)))
 (define-inline (box-set!/O-Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ box-set!/O-Cinfo cfa_info)))
 (define (box-set!/O-Cinfo-nil::box-set!/O-Cinfo) (class-nil (@ box-set!/O-Cinfo cfa_info)))
 (define-inline (box-set!/O-Cinfo-approx::approx o::box-set!/O-Cinfo) (with-access::box-set!/O-Cinfo o (approx) approx))
 (define-inline (box-set!/O-Cinfo-approx-set! o::box-set!/O-Cinfo v::approx) (with-access::box-set!/O-Cinfo o (approx) (set! approx v)))
+(define-inline (box-set!/O-Cinfo-vtype::type o::box-set!/O-Cinfo) (with-access::box-set!/O-Cinfo o (vtype) vtype))
+(define-inline (box-set!/O-Cinfo-vtype-set! o::box-set!/O-Cinfo v::type) (with-access::box-set!/O-Cinfo o (vtype) (set! vtype v)))
 (define-inline (box-set!/O-Cinfo-value::node o::box-set!/O-Cinfo) (with-access::box-set!/O-Cinfo o (value) value))
 (define-inline (box-set!/O-Cinfo-value-set! o::box-set!/O-Cinfo v::node) (with-access::box-set!/O-Cinfo o (value) (set! value v)))
 (define-inline (box-set!/O-Cinfo-var::var o::box-set!/O-Cinfo) (with-access::box-set!/O-Cinfo o (var) var))
@@ -1108,11 +1150,13 @@
 (define-inline (box-set!/O-Cinfo-loc-set! o::box-set!/O-Cinfo v::obj) (with-access::box-set!/O-Cinfo o (loc) (set! loc v)))
 
 ;; box-ref/O-Cinfo
-(define-inline (make-box-ref/O-Cinfo::box-ref/O-Cinfo loc1528::obj type1529::type side-effect1530::obj key1531::obj var1532::var approx1533::approx) (instantiate::box-ref/O-Cinfo (loc loc1528) (type type1529) (side-effect side-effect1530) (key key1531) (var var1532) (approx approx1533)))
+(define-inline (make-box-ref/O-Cinfo::box-ref/O-Cinfo loc1486::obj type1487::type side-effect1488::obj key1489::obj var1491::var vtype1493::type approx1494::approx) (instantiate::box-ref/O-Cinfo (loc loc1486) (type type1487) (side-effect side-effect1488) (key key1489) (var var1491) (vtype vtype1493) (approx approx1494)))
 (define-inline (box-ref/O-Cinfo?::bool obj::obj) ((@ isa? __object) obj (@ box-ref/O-Cinfo cfa_info)))
 (define (box-ref/O-Cinfo-nil::box-ref/O-Cinfo) (class-nil (@ box-ref/O-Cinfo cfa_info)))
 (define-inline (box-ref/O-Cinfo-approx::approx o::box-ref/O-Cinfo) (with-access::box-ref/O-Cinfo o (approx) approx))
 (define-inline (box-ref/O-Cinfo-approx-set! o::box-ref/O-Cinfo v::approx) (with-access::box-ref/O-Cinfo o (approx) (set! approx v)))
+(define-inline (box-ref/O-Cinfo-vtype::type o::box-ref/O-Cinfo) (with-access::box-ref/O-Cinfo o (vtype) vtype))
+(define-inline (box-ref/O-Cinfo-vtype-set! o::box-ref/O-Cinfo v::type) (with-access::box-ref/O-Cinfo o (vtype) (set! vtype v)))
 (define-inline (box-ref/O-Cinfo-var::var o::box-ref/O-Cinfo) (with-access::box-ref/O-Cinfo o (var) var))
 (define-inline (box-ref/O-Cinfo-var-set! o::box-ref/O-Cinfo v::var) (with-access::box-ref/O-Cinfo o (var) (set! var v)))
 (define-inline (box-ref/O-Cinfo-key::obj o::box-ref/O-Cinfo) (with-access::box-ref/O-Cinfo o (key) key))

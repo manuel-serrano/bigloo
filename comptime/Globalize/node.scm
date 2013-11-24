@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Mon Nov 11 10:31:26 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 08:11:21 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -115,6 +115,7 @@
       (svar/Ginfo-celled?-set! (variable-value variable) #t)
       (instantiate::make-box
 	 (type (strict-node-type *cell* *_*))
+	 (vtype (variable-type variable))
 	 (loc loc)
 	 (value node))))
    
@@ -150,6 +151,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::var integrator)
    (let* ((variable (var-variable node))
+	  (vtype (variable-type variable))
 	  (alpha (variable-fast-alpha variable)))
       (cond
 	 ((local? alpha)
@@ -168,6 +170,7 @@
 	     (node-type-set! node ntype)
 	     (instantiate::box-ref
 		(loc (node-loc node))
+		(vtype vtype)
 		(type (strict-node-type (node-type node) vtype))
 		(var node))))
 	 (else
@@ -311,7 +314,8 @@
 (define-method (glo! node::setq integrator)
    (with-access::setq node (value)
       (set! value (glo! value integrator))
-      (let ((var (var-variable (setq-var node))))
+      (let* ((var (var-variable (setq-var node)))
+	     (vtype (variable-type var)))
 	 (let loop ((var   var)
 		    (alpha (variable-fast-alpha var)))
 	    (if (local? alpha)
@@ -334,6 +338,7 @@
 			     (body (instantiate::box-set!
 				      (loc loc)
 				      (type (strict-node-type *unspec* *_*))
+				      (vtype vtype)
 				      (var (setq-var node))
 				      (value (instantiate::var
 						(loc loc)

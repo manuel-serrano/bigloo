@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Mon Nov 11 09:49:37 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 08:15:41 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
@@ -101,6 +101,7 @@
       (widen!::local/cell variable)
       (instantiate::make-box
 	 (type (strict-node-type *cell* *_*))
+	 (vtype (variable-type variable))
 	 (loc loc)
 	 (value node))))
    
@@ -134,7 +135,8 @@
 ;*    callcc! ::var ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (callcc! node::var)
-   (let ((var (var-variable node)))
+   (let* ((var (var-variable node))
+	  (vtype (variable-type var)))
       (let loop ((var   var)
 		 (alpha (variable-fast-alpha var)))
 	 (if (local? alpha)
@@ -153,6 +155,7 @@
 		 (node-type-set! node *obj*)
 		 (instantiate::box-ref
 		    (type *obj*)
+		    (vtype vtype)
 		    (loc (node-loc node))
 		    (var node))))))))
 
@@ -218,7 +221,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (callcc! node::setq)
    (setq-value-set! node (callcc! (setq-value node)))
-   (let ((var (var-variable (setq-var node))))
+   (let* ((var (var-variable (setq-var node)))
+	  (vtype (variable-type var)))
       (let loop ((var   var)
 		 (alpha (variable-fast-alpha var)))
 	 (if (local? alpha)
@@ -239,6 +243,7 @@
 		       (bindings (list (cons a-var (setq-value node))))
 		       (body     (instantiate::box-set!
 				    (type (strict-node-type *unspec* *_*))
+				    (vtype vtype)
 				    (loc loc)
 				    (var (setq-var node))
 				    (value (instantiate::var

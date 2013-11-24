@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Mon Nov 11 09:44:00 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 08:09:21 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -243,16 +243,19 @@
 
 	   ;; the make-box construction
 	   (final-class make-box::node/effect
-	      value::node)
+	      value::node
+	      vtype::type)
 
 	   ;; the box-ref
 	   (final-class box-ref::node/effect
-	      var::var)
+	      var::var
+	      vtype::type)
 
 	   ;; the box-set!
 	   (final-class box-set!::node
 	      var::var
-	      value::node)
+	      value::node
+	      vtype::type)
 
 	   ;; synchronization
 	   (final-class sync::node

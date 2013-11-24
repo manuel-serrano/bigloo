@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Mon Nov 11 16:40:27 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 08:00:36 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -495,15 +495,20 @@
 ;*    coerce! ::box-ref ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::box-ref caller to safe)
-   (with-access::box-ref node (var)
-      (convert! node *obj* to safe)))
+   (with-access::box-ref node (var type)
+      ;; CARE: MS 24nov2013
+      (convert! node *obj* to safe)
+      ;; (convert! node type to safe)
+      ))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::box-set! ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::box-set! caller to safe)
-   (with-access::box-set! node (var value)
-      (local-type-set! (var-variable var) *obj*)
-      (set! value (coerce! value caller *obj* safe))
+   (with-access::box-set! node (var value )
+      ;; CARE: MS 24nov2013
+       (local-type-set! (var-variable var) *obj*)
+       (set! value (coerce! value caller *obj* safe))
+      ;; (set! value (coerce! value caller type safe))
       (convert! node *unspec* to safe)))
 

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 11 10:37:55 1992                          */
-;*    Last change :  Sun Nov 24 07:27:58 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 08:16:57 2013 (serrano)                */
 ;*                                                                     */
 ;*    Des tests de capture de variables                                */
 ;*---------------------------------------------------------------------*/

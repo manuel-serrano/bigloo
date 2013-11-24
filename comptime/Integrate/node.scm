@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Mon Nov 11 10:06:57 2013 (serrano)                */
+;*    Last change :  Sun Nov 24 08:14:53 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
@@ -113,6 +113,7 @@
       (svar/Iinfo-celled?-set! (variable-value variable) #t)
       (instantiate::make-box
 	 (type (strict-node-type *cell* *_*))
+	 (vtype (variable-type variable))
 	 (loc loc)
 	 (value node))))
     
@@ -157,6 +158,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (glo! node::var integrator)
    (let* ((variable (var-variable node))
+	  (vtype (variable-type variable))
 	  (alpha (variable-fast-alpha variable)))
       (cond
 	 ((local? alpha)
@@ -175,6 +177,7 @@
 	  (instantiate::box-ref
 	     (loc (node-loc node))
 	     (type (variable-type (var-variable node)))
+	     (vtype vtype)
 	     (var node)))
 	 (else
 	  node))))
@@ -284,7 +287,8 @@
 (define-method (glo! node::setq integrator)
    (with-access::setq node (value)
       (set! value (glo! value integrator))
-      (let ((var (var-variable (setq-var node))))
+      (let* ((var (var-variable (setq-var node)))
+	     (vtype (variable-type var)))
 	 (let loop ((var   var)
 		    (alpha (variable-fast-alpha var)))
 	    (if (local? alpha)
@@ -307,6 +311,7 @@
 				      (loc loc)
 				      (type (strict-node-type *unspec* *_*))
 				      (var (setq-var node))
+				      (vtype vtype)
 				      (value (instantiate::var
 						(loc loc)
 						(type (strict-node-type
