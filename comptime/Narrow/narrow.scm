@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Sun Nov 24 19:24:37 2013 (serrano)                */
+;*    Last change :  Mon Nov 25 08:16:55 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
@@ -154,7 +154,8 @@
 	    (trace-item "locals=" (shape locals))
 	    (with-access::setq n (var value)
 	       (with-access::var var ((v variable))
-		  (and (isa? v local/narrow) (memq v locals)))))))
+		  (and (isa? v local/narrow)
+		       (memq v (kill-used locals value))))))))
    
    (define (copy-local variable)
       (with-access::variable variable (value id type)
