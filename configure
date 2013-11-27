@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov 21 08:24:14 2013 (serrano)                */
+#*    Last change :  Wed Nov 27 18:55:56 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -318,7 +318,11 @@ buildsh=
 
 #*--- bglpkg compilation ----------------------------------------------*/
 # valid values are "no", "yes" or "force"
-enable_bgpkg="yes"
+enable_bglpkg="yes"
+
+#*--- pcre configuration ----------------------------------------------*/
+# valid values are "no", "yes"
+enable_configure_pcre="yes"
 
 #*---------------------------------------------------------------------*/
 #*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
@@ -829,6 +833,9 @@ while : ; do
     --disable-bglpkg)
       enable_bglpkg="no";;
 
+    --no-prce|--disable-pcre)
+      enable_configure_pcre="no";;
+
     --enable-srfi27)
       srfi27force="yes";;
 
@@ -952,7 +959,8 @@ while : ; do
       echo "   --cygwin-dos-path=[dos path]" >&2;
       echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
       echo "   --no-share (disable shared libraries support)" >&2;
-      echo "   --no-gmp (disable gmp libraries support)" >&2;
+      echo "   --no-gmp (disable gmp library support)" >&2;
+      echo "   --no-pcre (disable prce library support)" >&2;
       echo "   --no-ldpreload" >&2;
       echo "   --sharedbde=yes|no [default no] (link Bde tools against shared libraries)" >&2;
       echo "   --sharedcompiler=yes|no [default no] (link Bigloo against shared libraries)" >&2;
@@ -977,6 +985,7 @@ while : ; do
       echo "   --enable-gstreamer-thread" >&2;
       echo "   --disable-gstreamer-thread" >&2;
       echo "   --disable-gmp (see --no-gmp)" >&2;
+      echo "   --disable-pcre (see --no-pcre)" >&2;
       echo "   --customgmp=yes|no [default yes]" >&2;
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
       echo "" >&2;
@@ -2095,7 +2104,11 @@ havemixer=`$autoconf mixer` || exit 1
 #*---------------------------------------------------------------------*/
 if [ "$regexp " = " " ]; then
   # find out the C library for pcre
-  pcrelibs=`$autoconf pcre --cflags="$cflags"` || exit 1;
+  if [ "$enable_configure_pcre " = "yes " ]; then
+    pcrelibs=`$autoconf pcre --cflags="$cflags"` || exit 1;
+  else
+    pcrelibs=no
+  fi
 
   if [ "$pcrelibs " != "no " ]; then
     featureflags="-srfi enable-pcre $featureflags";
