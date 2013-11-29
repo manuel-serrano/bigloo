@@ -9,6 +9,7 @@ public class output_port extends obj
    public Object chook = bigloo.foreign.BUNSPEC;
    public Object fhook = bigloo.foreign.BUNSPEC;
    public Object flushbuf = bigloo.foreign.BUNSPEC;
+   public boolean isclosed = false;
 
    public output_port()
       {
@@ -50,6 +51,7 @@ public class output_port extends obj
    public Object close()
       {
 	 try {
+	    isclosed = true;
 	    out.close();
 	 } catch( Throwable _ ) {
 	    ;

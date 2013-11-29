@@ -453,6 +453,12 @@ According to R5RS, the value returned is unspecified. However, if
 returned is the string consisting of all characters sent to the port.
 @end deffn
 
+@deffn {procedure} closed-input-port? input-port
+@deffnx {procedure} closed-output-port? output-port
+Predicates that return @code{#t} if and if their associated port is closed.
+Return @code{#f} otherwise.
+@end deffn
+
 @deffn {bigloo procedure} input-port-name input-port
 Returns the name of the file used to open the @var{input-port}.
 @end deffn

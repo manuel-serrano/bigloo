@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Nov 23 12:39:41 2013 (serrano)                */
+/*    Last change :  Fri Nov 29 20:50:16 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -749,6 +749,11 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
 obj_t
 output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err ) {
    if( PORT( port ).kindof == KINDOF_CLOSED ) {
+      C_OUTPUT_PORT_SYSTEM_FAILURE(
+	 BGL_IO_PORT_ERROR,
+	 "flush",
+	 "closed output port",
+	 port );
       return BFALSE;
    } else {
       obj_t buf = OUTPUT_PORT( port ).buf;
@@ -803,7 +808,7 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	    ssize_t (*syswrite)(void *, void *, size_t) =
 	       OUTPUT_PORT( port ).syswrite;
 	    long n = syswrite( port, str, slen );
-	    
+
 	    if( n < 0 && err ) {
 	       OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
 

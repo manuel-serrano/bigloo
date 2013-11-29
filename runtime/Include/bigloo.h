@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Sep 29 14:36:02 2013 (serrano)                */
+/*    Last change :  Fri Nov 29 20:22:34 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2004,6 +2004,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (INPUT_PORT_FILLBARRIER( o ) = (v - RGC_BUFFER_AVAILABLE( o )))
 
 #define INPUT_PORT_CLOSEP( o ) \
+    (PORT( o ).kindof == KINDOF_CLOSED)
+
+#define OUTPUT_PORT_CLOSEP( o ) \
     (PORT( o ).kindof == KINDOF_CLOSED)
 
 #define BGL_INPUT_PORT_BUFFER( o ) \

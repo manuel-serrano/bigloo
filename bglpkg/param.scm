@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 13 09:36:33 2006                          */
-;*    Last change :  Sun Nov  4 09:03:52 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Last change :  Fri Nov 29 21:11:07 2013 (serrano)                */
+;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bglpkg-bigloo params                                             */
 ;*=====================================================================*/
@@ -117,7 +117,7 @@
 (define-parameter bglpkg-suffixes
    '("snow" "bgl" "scm")
    (lambda (v)
-      (unless (and (list? v) (every? string? v))
+      (unless (and (list? v) (every string? v))
 	 (error 'bglpkg-suffixes-set! "Illegal suffixes" v))
       v))
 
@@ -236,7 +236,7 @@
 (define-parameter bglpkg-sync-urls
    '("http://hop.inria.fr/hop/scmpkg/sync")
    (lambda (v)
-      (unless (every? string? v)
+      (unless (every string? v)
 	 (error 'bglpkg-sync-url "Illegal string list" v))
       v))
 
@@ -274,7 +274,7 @@
 (define-parameter bglpkg-tunings
    '("bigloo")
    (lambda (v)
-      (unless (every? string? v)
+      (unless (every string? v)
 	 (error 'bglpkg-tuning-set! "Illegal tuning list" v))
       v))
 
@@ -339,10 +339,10 @@
    '()
    (lambda (v)
       (if (and (list? v)
-	       (every? (lambda (e)
-			  (and (pair? e)
-			       (symbol? (car e))
-			       (procedure? (cdr e))))
+	       (every (lambda (e)
+			 (and (pair? e)
+			      (symbol? (car e))
+			      (procedure? (cdr e))))
 		       v))
 	  v
 	  (error 'bglpkg-language-preprocessor "Illegal preprocessors" v))))
@@ -356,11 +356,11 @@
      (hop . ".hop"))
    (lambda (v)
       (if (and (list? v)
-	       (every? (lambda (e)
-			  (and (pair? e)
-			       (symbol? (car e))
-			       (string? (cdr e))))
-		       v))
+	       (every (lambda (e)
+			 (and (pair? e)
+			      (symbol? (car e))
+			      (string? (cdr e))))
+		  v))
 	  v
 	  (error 'bglpkg-language-suffix "Illegal suffix" v))))
 
@@ -376,7 +376,7 @@
 (define-parameter bglpkg-search-path
    '(".")
    (lambda (v)
-      (if (not (and (list? v) (every? string? v)))
+      (if (not (and (list? v) (every string? v)))
 	  (error 'bglpkg-search-path-set! "Illegal path" v)
 	  v)))
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 12 13:32:52 2004                          */
-;*    Last change :  Tue May 29 15:56:43 2007 (serrano)                */
-;*    Copyright   :  2004-07 Manuel Serrano                            */
+;*    Last change :  Fri Nov 29 21:11:58 2013 (serrano)                */
+;*    Copyright   :  2004-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bglpkg command line parsing                                      */
 ;*=====================================================================*/
@@ -268,7 +268,7 @@
 		      (let ((sexp (read (current-input-port))))
 			 (with-handler
 			    (lambda (e)
-			       (if (&eval-warning? e)
+			       (if (isa? e &eval-warning)
 				   (begin
 				      (warning-notify e)
 				      #unspecified)

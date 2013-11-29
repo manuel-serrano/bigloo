@@ -5421,6 +5421,11 @@ public final class foreign
 	 return o.other_eof;
       }
 
+   public static boolean CLOSED_OUTPUT_PORT(output_port o)
+      {
+	 return o.isclosed;
+      }
+
    public static int INPUT_PORT_FILEPOS(input_port p)
       {
 	 return p.filepos;

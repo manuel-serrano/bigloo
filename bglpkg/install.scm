@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 31 09:12:56 2006                          */
-;*    Last change :  Wed Nov 14 13:10:58 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Last change :  Fri Nov 29 21:15:18 2013 (serrano)                */
+;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Install (once extracted) a ScmPkg package for Bigloo.            */
 ;*=====================================================================*/
@@ -27,6 +27,41 @@
 
    (export  (bglpkg-install ::%sqlite ::pair-nil)
 	    (bglpkg-install-package ::bstring  ::pair-nil)))
+
+;*---------------------------------------------------------------------*/
+;*    pkginfo-name ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (pkginfo-name p)
+   (with-access::pkginfo p (name)
+      name))
+
+;*---------------------------------------------------------------------*/
+;*    pkginfo-fail ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (pkginfo-fail p)
+   (with-access::pkginfo p (fail)
+      fail))
+
+;*---------------------------------------------------------------------*/
+;*    pkginfo-source ...                                               */
+;*---------------------------------------------------------------------*/
+(define (pkginfo-source p)
+   (with-access::pkginfo p (source)
+      source))
+
+;*---------------------------------------------------------------------*/
+;*    pkginfo-exceptions ...                                           */
+;*---------------------------------------------------------------------*/
+(define (pkginfo-exceptions p)
+   (with-access::pkginfo p (exceptions)
+      exceptions))
+
+;*---------------------------------------------------------------------*/
+;*    pkginfo-macros ...                                               */
+;*---------------------------------------------------------------------*/
+(define (pkginfo-macros p)
+   (with-access::pkginfo p (macros)
+      macros))
 
 ;*---------------------------------------------------------------------*/
 ;*    bglpkg-install ...                                               */
@@ -73,7 +108,7 @@
 ;*---------------------------------------------------------------------*/
 (define (install-inner db arguments)
    (let ((packages (package-list db arguments)))
-      (when (and (any? pkginfo-fail packages)
+      (when (and (any pkginfo-fail packages)
 		 (not (bglpkg-force-action)))
 	 (error 'main
 		"Some packages are known to fail, use -F to force action"

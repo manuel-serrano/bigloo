@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  3 10:52:01 2007                          */
-;*    Last change :  Wed May 30 07:45:15 2007 (serrano)                */
-;*    Copyright   :  2007 Manuel Serrano                               */
+;*    Last change :  Fri Nov 29 21:13:30 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with packages                                            */
 ;*=====================================================================*/
@@ -136,7 +136,7 @@
                                                       FROM package
                                                       WHERE (p.name=name)))"
 				name))))
-		(unless (pkginfo? pkg)
+		(unless (isa? pkg pkginfo)
 		   (error 'get-package
 			  "Cannot find package"
 			  (if version (format "~a v~a" name version) name)))

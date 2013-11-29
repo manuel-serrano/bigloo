@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Nov 23 12:38:44 2013 (serrano)                */
+;*    Last change :  Fri Nov 29 20:21:43 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -121,6 +121,8 @@
 		   "BGL_INPUT_PORT_BUFSIZ")
 	    (macro c-closed-input-port?::bool (::obj)
 		   "INPUT_PORT_CLOSEP")
+	    (macro $closed-output-port?::bool (::obj)
+		   "OUTPUT_PORT_CLOSEP")
 
 	    (macro c-output-port-position::long (::output-port)
 		   "BGL_OUTPUT_PORT_FILEPOS")
@@ -267,6 +269,8 @@
 	       
 	       (method static c-closed-input-port?::bool (::input-port)
 		       "CLOSED_RGC_BUFFER")
+	       (method static $closed-output-port?::bool (::output-port)
+		       "CLOSED_OUTPUT_PORT")
 	       (method static $close-output-port::obj (::output-port)
 		       "bgl_close_output_port")
 	       (method static c-get-output-string::bstring (::output-port)
@@ -434,6 +438,7 @@
 	    (inline input-port-name::bstring ::input-port)
 	    (inline input-port-length::elong ::input-port)
 	    (inline output-port-close-hook::obj ::output-port)
+	    (inline closed-output-port?::bool ::output-port)
 	    (output-port-close-hook-set! ::output-port ::procedure)
 	    (inline output-port-flush-hook::obj ::output-port)
 	    (output-port-flush-hook-set! ::output-port ::obj)
@@ -1230,6 +1235,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (output-port-close-hook port)
    (c-output-port-chook port))
+
+;*---------------------------------------------------------------------*/
+;*    closed-output-port? ...                                          */
+;*---------------------------------------------------------------------*/
+(define-inline (closed-output-port? port)
+   ($closed-output-port? port))
 
 ;*---------------------------------------------------------------------*/
 ;*    output-port-close-hook-set! ...                                  */
