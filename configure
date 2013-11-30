@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 27 18:55:56 2013 (serrano)                */
+#*    Last change :  Sat Nov 30 20:32:51 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -318,7 +318,7 @@ buildsh=
 
 #*--- bglpkg compilation ----------------------------------------------*/
 # valid values are "no", "yes" or "force"
-enable_bglpkg="yes"
+enable_bglpkg="no"
 
 #*--- pcre configuration ----------------------------------------------*/
 # valid values are "no", "yes"
