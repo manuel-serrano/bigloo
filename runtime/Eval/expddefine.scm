@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Fri Sep 27 16:25:03 2013 (serrano)                */
+;*    Last change :  Sun Dec  1 18:16:01 2013 (serrano)                */
 ;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -25,6 +25,7 @@
 	    __param
 	    __thread
 	    __reader
+	    __dsssl
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -251,7 +252,8 @@
        (let* ((loc (get-source-location x))
 	      (pf (parse-formal-ident fun loc))
 	      (id (car pf))
-	      (pa (map+ (lambda (i) (parse-formal-ident i loc)) (cons f0 formals)))
+	      (pa (map+ (lambda (i) (parse-formal-ident i loc))
+		     (cons f0 formals)))
 	      (def (gensym id))
 	      (epa (expand-args pa e))
 	      (va (and (not (null? formals))
@@ -270,33 +272,44 @@
 		       id))
 	      (met-body `(,met ,@(map+ (lambda (a)
 					 (if (pair? a) (car a) a))
-				      epa))))
-	  (if (all? symbol? (cdr (cadr x)))
-	      (e `(begin
-		     (define ,fun
-			(procedure->generic
-			 (lambda ,(cons f0 formals)
-			    (let ((,def (lambda ()
-					   ,(if va
-						(cons 'apply def-body)
-						def-body))))
-			       (let ((,met (and (object? ,(caar pa))
-						(find-method ,(caar pa) ,id))))
-				  (if (procedure? ,met)
-				      ,(if va (cons 'apply met-body) met-body)
-				      (,def)))))))
-		     (register-generic!
-		      ,id
-		      (lambda ,(cons f0 formals)
-			 ,(if (pair? body)
-			      `(begin ,@body)
-			      `(error ,(symbol->string (car pf))
-				      "No method for this object"
-				      ',(car (car pa)))))
-		      #f
-		      ,(symbol->string id)))
-		 e)
-	      (expand-error fun "Illegal formal arguments for generic function" x))))
+				      epa)))
+	      (proc (cond
+		      ((all? symbol? (cdr (cadr x)))
+		       `(lambda ,(cons f0 formals)
+			   (let ((,def (lambda ()
+					  ,(if va
+					       (cons 'apply def-body)
+					       def-body))))
+			      (let ((,met (and (object? ,(caar pa))
+					       (find-method ,(caar pa) ,id))))
+				 (if (procedure? ,met)
+				     ,(if va (cons 'apply met-body) met-body)
+				     (,def))))))
+		      ((and (list? formals) (any dsssl-named-constant? formals))
+		       (let ((args (gensym 'args)))
+			  `(lambda (,f0 . ,args)
+			      (let ((,def (lambda ()
+					     (apply def-body ,f0 ,args))))
+				 (let ((,met (and (object? ,(caar pa))
+						  (find-method ,(caar pa) ,id))))
+				    (if (procedure? ,met)
+					(apply ,met ,f0 ,args)))))))
+		      (else
+		       (expand-error fun
+			  "Illegal formal arguments for generic function"
+			  x)))))
+	  (e `(begin
+		 (define ,fun (procedure->generic ,proc))
+		 (register-generic! ,id
+		    (lambda ,(cons f0 formals)
+		       ,(if (pair? body)
+			    `(begin ,@body)
+			    `(error ,(symbol->string (car pf))
+				"No method for this object"
+				',(car (car pa)))))
+		    #f
+		    ,(symbol->string id)))
+	     e)))
       (else
        (expand-error "define-generic" "Illegal form" x))))
 
