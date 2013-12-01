@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Sep 11 11:24:16 2013 (serrano)                */
+;*    Last change :  Sun Dec  1 09:09:58 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -621,41 +621,44 @@
 	 (global-type-set! g *obj*)
 	 (global-evaluable?-set! g #f)
 	 g)))
-   
+
+;*---------------------------------------------------------------------*/
+;*    parse-fun-args ...                                               */
+;*---------------------------------------------------------------------*/
+(define (parse-fun-args args src loc)
+   (let loop ((args  args)
+	      (res   '()))
+      (cond
+	 ((null? args)
+	  (reverse! res))
+	 ((not (pair? args)) 
+	  (let* ((pid  (check-id (parse-id args loc) src))
+		 (id   (car pid))
+		 (type (cdr pid)))
+	     ;; there is no need to check the last
+	     ;; n-ary formal argument because it will
+	     ;; be checked when defining the global variable
+	     (reverse! (cons (make-user-local-svar id type) res))))
+	 ((dsssl-named-constant? (car args))
+	  (let ((arg (dsssl-find-first-formal args)))
+	     (if arg
+		 (reverse! (cons (make-user-local-svar arg *obj*) res))
+		 (reverse! res))))
+	 (else
+	  (let* ((pid  (check-id (parse-id (car args) loc) src))
+		 (id   (car pid))
+		 (type (cdr pid)))
+	     (loop (cdr args)
+		(cons (if (user-symbol? id)
+			  (make-user-local-svar id type)
+			  (make-local-svar id type))
+		   res)))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    make-sfun-noopt-definition ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (make-sfun-noopt-definition id module args body src class loc)
-   (let ((locals (let loop ((args  args)
-			    (res   '()))
-		    (cond
-		       ((null? args)
-			(reverse! res))
-		       ((not (pair? args)) 
-			(let* ((pid  (check-id (parse-id args loc) src))
-			       (id   (car pid))
-			       (type (cdr pid)))
-			   ;; there is no need to check the last
-			   ;; n-ary formal argument because it will
-			   ;; be checked when defining the global variable
-			   (reverse! (cons (make-user-local-svar id type)
-					   res))))
-		       ((dsssl-named-constant? (car args))
-			(let ((arg (dsssl-find-first-formal args)))
-			   (if arg
-			       (reverse!
-				(cons (make-user-local-svar arg *obj*) res))
-			       (reverse! res))))
-		       (else
-			(let* ((pid  (check-id (parse-id (car args) loc)
-					       src))
-			       (id   (car pid))
-			       (type (cdr pid)))
-			   (loop (cdr args)
-				 (cons (if (user-symbol? id)
-					   (make-user-local-svar id type)
-					   (make-local-svar id type))
-				       res)))))))
+   (let ((locals (parse-fun-args args src loc))
 	 (body (make-dsssl-function-prelude id args body user-error)))
       (list (def-global-sfun! id args locals module class src 'now body))))
 
@@ -704,96 +707,108 @@
 ;*---------------------------------------------------------------------*/
 (define (make-generic-definition id module args body src gdefs)
    (trace ast "make-generic-definition: " id " " module " " args " " body
-	  #\Newline)
-   (let* ((loc    (find-location src))
-	  (locals (if (null? args)
-		      (user-error id
-				  "Illegal generic definition (first argument missing)"
-				  src)
-		      (let loop ((args args)
-				 (res  '()))
-			 (cond
-			    ((null? args)
-			     (reverse! res))
-			    ((not (pair? args))
-			     (let* ((pid  (check-id (parse-id args loc) src))
-				    (id   (car pid))
-				    (type (cdr pid)))
-				;; there is no need to check the last
-				;; n-ary formal argument because it will
-				;; be checked when defining the global variable
-				(reverse! (cons (make-user-local-svar id type)
-						res))))
-			    (else
-			     (let* ((pid  (check-id (parse-id (car args) loc)
-						    src))
-				    (id   (car pid))
-				    (type (cdr pid)))
-				(loop (cdr args)
-				      (cons (make-user-local-svar id type)
-					    res))))))))
-	  (pid     (check-id (parse-id id loc) src))
-	  (name    (gensym (car pid)))
-	  (type    (cdr pid))
-	  (def     `(labels ((,name ,args
-		       ;; use a label instead of a plain lambda expression
-		       ;; in order to give that default function
-		       ;; a pleasant debug identifier
-		       ,@(if (pair? body)
-			     body
-			     `(((@ error __error)
-				',name "No method for this object"
-				,(id-of-id (car args) (find-location src)))))))
+      #\Newline)
+   (if (not (and (pair? args) (symbol? (car args))))
+       (begin
+	  (error-sexp->node "Bad generic formal argument" src
+	     (find-location src))
+	  (list #unspecified))
+       (let* ((loc (find-location src))
+;* 	  (locals (if (null? args)                                     */
+;* 		      (user-error id                                   */
+;* 			 "Illegal generic definition (first argument missing)" */
+;* 			 src)                                          */
+;* 		      (let loop ((args args)                           */
+;* 				 (res  '()))                           */
+;* 			 (cond                                         */
+;* 			    ((null? args)                              */
+;* 			     (reverse! res))                           */
+;* 			    ((not (pair? args))                        */
+;* 			     (let* ((pid  (check-id (parse-id args loc) src)) */
+;* 				    (id   (car pid))                   */
+;* 				    (type (cdr pid)))                  */
+;* 				;; there is no need to check the last  */
+;* 				;; n-ary formal argument because it will */
+;* 				;; be checked when defining the global variable */
+;* 				(reverse! (cons (make-user-local-svar id type) */
+;* 					     res))))                   */
+;* 			    (else                                      */
+;* 			     (let* ((pid  (check-id (parse-id (car args) loc) */
+;* 					     src))                     */
+;* 				    (id   (car pid))                   */
+;* 				    (type (cdr pid)))                  */
+;* 				(loop (cdr args)                       */
+;* 				   (cons (make-user-local-svar id type) */
+;* 				      res))))))))                      */
+	      (locals (parse-fun-args args src loc))
+	      (pid (check-id (parse-id id loc) src))
+	      (name (gensym (car pid)))
+	      (type (cdr pid))
+	      (def `(labels ((,name ,args
+				;; use labels instead of a plain lambda expr
+				;; in order to give that default function
+				;; a pleasant debug identifier
+				,@(if (pair? body)
+				      body
+				      `(((@ error __error)
+					 ',name "No method for this object"
+					 ,(id-of-id (car args) (find-location src)))))))
 		       ,name))
-	  (gbody   (make-generic-body id locals args src))
-	  (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody)))
-      (trace (ast 2) "  body: " body #\Newline)
-      (mark-method! name)
-      (let* ((o-unit (get-generic-unit))
-	     (type (local-type (car locals)))
-	     (gen `(register-generic!
-		    (@ ,(global-id generic) ,module)
-		    ,(epairify-propagate-loc def loc)
-		    ,(if (tclass? type) (tclass-holder type) #f)
-		    ,(symbol->string name)))
-	     (sexp* (list generic gen)))
-	 (if (not (unit? o-unit))
-	     sexp*
-	     (begin
-		(unit-sexp*-add! o-unit sexp*)
-		(list #unspecified))))))
-	 	
-;*---------------------------------------------------------------------*/
-;*    make-method-definition ...                                       */
-;*---------------------------------------------------------------------*/
-(define (make-method-definition id args body src)
-   (let* ((loc    (find-location src))
-	  (locals (let loop ((args args)
-			     (res  '()))
-		     (cond
-			((null? args)
-			 (reverse! res))
-			((not (pair? args))
-			 (let* ((pid  (check-id (parse-id args loc) src))
-				(id   (car pid))
-				(type (cdr pid)))
-			    ;; there is no need to check the last
-			    ;; n-ary formal argument because it will
-			    ;; be checked when defining the global variable
-			    (reverse! (cons (make-local-svar id type) res))))
-			(else
-			 (let* ((pid  (check-id (parse-id (car args) loc) src))
-				(id   (car pid))
-				(type (cdr pid)))
-			    (loop (cdr args)
-				  (cons (make-local-svar id type) res))))))))
-      (if (not (check-method-definition id args	locals src))
-	  (list #unspecified)
-	  (let ((o-unit (get-method-unit))
-		(sexp* (make-method-body id args locals body src)))
+	      (gbody   (make-generic-body id locals args src))
+	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody)))
+	  (trace (ast 2) "  body: " body #\Newline)
+	  (mark-method! name)
+	  (let* ((o-unit (get-generic-unit))
+		 (type (local-type (car locals)))
+		 (gen `(register-generic!
+			  (@ ,(global-id generic) ,module)
+			  ,(epairify-propagate-loc def loc)
+			  ,(if (tclass? type) (tclass-holder type) #f)
+			  ,(symbol->string name)))
+		 (sexp* (list generic gen)))
 	     (if (not (unit? o-unit))
 		 sexp*
 		 (begin
 		    (unit-sexp*-add! o-unit sexp*)
 		    (list #unspecified)))))))
+	 	
+;*---------------------------------------------------------------------*/
+;*    make-method-definition ...                                       */
+;*---------------------------------------------------------------------*/
+(define (make-method-definition id args body src)
+   (if (not (and (pair? args) (symbol? (car args))))
+       (begin
+	  (error-sexp->node "Bad method formal argument" src
+	     (find-location src))
+	  (list #unspecified))
+       (let* ((loc (find-location src))
+	      (locals (parse-fun-args args src loc)))
+;* 	      (locals (let loop ((args args)                           */
+;* 				 (res  '()))                           */
+;* 			 (cond                                         */
+;* 			    ((null? args)                              */
+;* 			     (reverse! res))                           */
+;* 			    ((not (pair? args))                        */
+;* 			     (let* ((pid  (check-id (parse-id args loc) src)) */
+;* 				    (id   (car pid))                   */
+;* 				    (type (cdr pid)))                  */
+;* 				;; there is no need to check the last  */
+;* 				;; n-ary formal argument because it will */
+;* 				;; be checked when defining the global variable */
+;* 				(reverse! (cons (make-local-svar id type) res)))) */
+;* 			    (else                                      */
+;* 			     (let* ((pid  (check-id (parse-id (car args) loc) src)) */
+;* 				    (id   (car pid))                   */
+;* 				    (type (cdr pid)))                  */
+;* 				(loop (cdr args)                       */
+;* 				   (cons (make-local-svar id type) res)))))))) */
+	  (if (not (check-method-definition id args locals src))
+	      (list #unspecified)
+	      (let ((o-unit (get-method-unit))
+		    (sexp* (make-method-body id args locals body src)))
+		 (if (not (unit? o-unit))
+		     sexp*
+		     (begin
+			(unit-sexp*-add! o-unit sexp*)
+			(list #unspecified))))))))
 	     
