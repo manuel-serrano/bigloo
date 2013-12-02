@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Nov 21 16:13:49 2013 (serrano)                */
+;*    Last change :  Mon Dec  2 13:47:54 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -462,10 +462,10 @@
        (set! *optim-narrow?* #t))
       (("-fno-narrow" (help "Disable scope narrowing"))
        (set! *optim-narrow?* #f))
-      (("-ftlift" (help "Enable type lifting"))
-       (set! *optim-type-lifting?* #t))
-      (("-fno-tlift" (help "Disable type lifting"))
-       (set! *optim-type-lifting?* #f))
+;*       (("-ftlift" (help "Enable type lifting"))                     */
+;*        (set! *optim-type-lifting?* #t))                             */
+;*       (("-fno-tlift" (help "Disable type lifting"))                 */
+;*        (set! *optim-type-lifting?* #f))                             */
       (("-fsync-failsafe" (help "Enable failsafe synchronize optimization"))
        (set! *optim-sync-failsafe?* #t))
       (("-fno-sync-failsafe" (help "Disable failsafe synchronize optimization"))
