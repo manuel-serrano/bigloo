@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Tue Mar 20 14:10:57 2012 (serrano)                */
+;*    Last change :  Mon Dec  2 12:29:47 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -327,6 +327,15 @@
       res))
 
 ;*---------------------------------------------------------------------*/
+;*    dsssl-method ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (dsssl-method o::titi #!key (x 10) a #!rest rest)
+   (+ x (if a a 0) (length rest)))
+
+(define-method (dsssl-method o::toto #!key (x 10) a #!rest rest)
+   (- (call-next-method) (+ x (if a a 0) (length rest))))
+
+;*---------------------------------------------------------------------*/
 ;*    test-object ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (test-object)
@@ -449,5 +458,13 @@
 	 (test "default field value.4" (+fx (car x) (car y)) (car z))))
    (let ((o3 (instantiate::def-gee)))
       (with-access::def-gee o3 (x y z)
-	 (test "default field value.5" (+fx (car x) (car y)) (car z)))))
+	 (test "default field value.5" (+fx (car x) (car y)) (car z))))
+   (let ((ti (instantiate::titi))
+	 (to (instantiate::toto (y #\c) (yy #\a) (z 10) (t 10))))
+      (test "dsssl generic.1" (dsssl-method ti :x 20) 20)
+      (test "dsssl generic.2" (dsssl-method ti :x 20 :a -10) 10)
+      (test "dsssl generic.3" (dsssl-method ti :x 20 :a -10 :z 4 5 6) 14)
+      (test "dsssl generic.4" (dsssl-method to :x 20) 0)
+      (test "dsssl generic.5" (dsssl-method to :x 20 :a -10) 00)
+      (test "dsssl generic.6" (dsssl-method to :x 20 :a -10 4 5 6) 0)))
       

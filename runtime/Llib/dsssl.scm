@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Fri Nov  8 10:55:31 2013 (serrano)                */
+;*    Last change :  Mon Dec  2 10:13:51 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -419,7 +419,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    dsssl-formals->scheme-formals ...                                */
 ;*    -------------------------------------------------------------    */
-;*    This function parses a formal argument list and removes          */
+;*    This function parses a formal arguments list and removes         */
 ;*    the DSSSL named constant in order to construct a regular Scheme  */
 ;*    formal parameter list.                                           */
 ;*      eg:   x y #!optional z #!rest r #!key k -> x y . z             */
@@ -427,7 +427,7 @@
 ;*    Otherwise, they are untyped.                                     */
 ;*    -------------------------------------------------------------    */
 ;*    This function does not check the whole correctness of the        */
-;*    formal parameter list. It only checks until the first            */
+;*    formal parameters list. It only checks until the first           */
 ;*    DSSSL formal parameter is found.                                 */
 ;*---------------------------------------------------------------------*/
 (define (dsssl-formals->scheme-typed-formals formals err typed)

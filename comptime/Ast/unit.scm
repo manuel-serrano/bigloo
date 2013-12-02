@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Sun Dec  1 09:09:58 2013 (serrano)                */
+;*    Last change :  Mon Dec  2 10:22:55 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -334,11 +334,9 @@
        (make-generic-definition var *module* args exp sexp gdefs))
       ((define-method (?var . ?args) . ?exp)
        (make-method-definition var
-			       args
-			       (normalize-progn/error exp
-						      sexp
-						      (find-location (cddr sexp)))
-			       sexp))
+	  args
+	  (normalize-progn/error exp sexp (find-location (cddr sexp)))
+	  sexp))
       (else
        (list sexp))))
 
@@ -714,32 +712,6 @@
 	     (find-location src))
 	  (list #unspecified))
        (let* ((loc (find-location src))
-;* 	  (locals (if (null? args)                                     */
-;* 		      (user-error id                                   */
-;* 			 "Illegal generic definition (first argument missing)" */
-;* 			 src)                                          */
-;* 		      (let loop ((args args)                           */
-;* 				 (res  '()))                           */
-;* 			 (cond                                         */
-;* 			    ((null? args)                              */
-;* 			     (reverse! res))                           */
-;* 			    ((not (pair? args))                        */
-;* 			     (let* ((pid  (check-id (parse-id args loc) src)) */
-;* 				    (id   (car pid))                   */
-;* 				    (type (cdr pid)))                  */
-;* 				;; there is no need to check the last  */
-;* 				;; n-ary formal argument because it will */
-;* 				;; be checked when defining the global variable */
-;* 				(reverse! (cons (make-user-local-svar id type) */
-;* 					     res))))                   */
-;* 			    (else                                      */
-;* 			     (let* ((pid  (check-id (parse-id (car args) loc) */
-;* 					     src))                     */
-;* 				    (id   (car pid))                   */
-;* 				    (type (cdr pid)))                  */
-;* 				(loop (cdr args)                       */
-;* 				   (cons (make-user-local-svar id type) */
-;* 				      res))))))))                      */
 	      (locals (parse-fun-args args src loc))
 	      (pid (check-id (parse-id id loc) src))
 	      (name (gensym (car pid)))
@@ -783,25 +755,6 @@
 	  (list #unspecified))
        (let* ((loc (find-location src))
 	      (locals (parse-fun-args args src loc)))
-;* 	      (locals (let loop ((args args)                           */
-;* 				 (res  '()))                           */
-;* 			 (cond                                         */
-;* 			    ((null? args)                              */
-;* 			     (reverse! res))                           */
-;* 			    ((not (pair? args))                        */
-;* 			     (let* ((pid  (check-id (parse-id args loc) src)) */
-;* 				    (id   (car pid))                   */
-;* 				    (type (cdr pid)))                  */
-;* 				;; there is no need to check the last  */
-;* 				;; n-ary formal argument because it will */
-;* 				;; be checked when defining the global variable */
-;* 				(reverse! (cons (make-local-svar id type) res)))) */
-;* 			    (else                                      */
-;* 			     (let* ((pid  (check-id (parse-id (car args) loc) src)) */
-;* 				    (id   (car pid))                   */
-;* 				    (type (cdr pid)))                  */
-;* 				(loop (cdr args)                       */
-;* 				   (cons (make-local-svar id type) res)))))))) */
 	  (if (not (check-method-definition id args locals src))
 	      (list #unspecified)
 	      (let ((o-unit (get-method-unit))

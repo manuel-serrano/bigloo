@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Wed Sep 11 11:22:56 2013 (serrano)                */
+;*    Last change :  Mon Dec  2 11:37:41 2013 (serrano)                */
 ;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
@@ -36,7 +36,10 @@
    (let* ((id (id-of-id ident (find-location src)))
 	  (met (gensym 'next-method))
 	  (arity (global-arity args))
-	  (args-id (map local-id locals))
+	  (dsssl (dsssl-method? args))
+	  (args-id (if dsssl
+		       (pair->list (dsssl-formals->scheme-typed-formals args error #f))
+		       (map local-id locals)))
 	  (type (local-type (car locals)))
 	  (m-id (gensym (symbol-append id '- (type-id type)))))
       (cond
@@ -56,17 +59,26 @@
 							  ,id
 							  (@ ,(global-id holder)
 							     ,module))))
-					      ,(if (>=fx arity 0)
-						   `(,met ,@args-id)
-						   `(apply ,met (cons* ,@args-id))))))
-				  ,body))
+					      ,(cond
+						  ((>=fx arity 0)
+						   `(,met ,@args-id))
+						  (dsssl
+						   `(apply ,met (cons* ,@args-id)))
+						  (else
+						   `(apply ,met (cons* ,@args-id)))))))
+				  ,(if dsssl
+				       (make-dsssl-function-prelude ident args body error)
+				       body)))
 			(ebody (if (epair? src)
 				   (econs (car body) (cdr body) (cer src))
 				   body))
 			(tm-id (if (bigloo-type? (global-type generic))
 				   (make-typed-ident m-id (type-id (global-type generic)))
 				   m-id))
-			(bdg   `(,tm-id ,args ,ebody))
+			(bdg   `(,tm-id ,(if dsssl
+					     (dsssl-formals->scheme-typed-formals args error #f)
+					     args)
+				   ,ebody))
 			(ebdg  (if (epair? src)
 				   (econs (car bdg) (cdr bdg) (cer src))
 				   bdg)))
@@ -83,6 +95,22 @@
 				 (@ ,(global-id holder) ,module)
 				 ,m-id
 				 ,(symbol->string ident))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    dsssl-method? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (dsssl-method? args)
+   (and (list? args) (any dsssl-named-constant? args)))
+
+
+;*---------------------------------------------------------------------*/
+;*    pair->list ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (pair->list p)
+   (cond
+      ((pair? p) (cons (car p) (pair->list (cdr p))))
+      ((null? p) '())
+      (else (list p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *methods* ...                                                    */
