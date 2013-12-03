@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Dec  2 14:33:17 2013 (serrano)                */
+#*    Last change :  Tue Dec  3 12:03:23 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -48,8 +48,10 @@ _BGL_OBJECTS	=
 _SRFI_OBJECTS	= srfi1
 
 _OBJECTS	= $(_BGL_OBJECTS) $(_SRFI_OBJECTS)
-OBJECTS		= $(_OBJECTS:%=objs/%.o)
-EOBJECTS	= objs/make_lib.o
+SAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_s/%.o)
+SAFE_EOBJECTS	= objs/objs_s/make_lib.o
+UNSAFE_OBJECTS	= $(_OBJECTS:%=objs/objs_u/%.o)
+UNSAFE_EOBJECTS	= objs/objs_u/make_lib.o
 
 BGL_CLASSES	= $(_OBJECTS:%=$(CLASS_DIR)/%.class)
 BGL_ECLASSES	= $(CLASS_EDIR)/make_lib.class
@@ -117,8 +119,11 @@ include ../../Makefile.api-safe
 #*---------------------------------------------------------------------*/
 #*    The implicit rules                                               */
 #*---------------------------------------------------------------------*/
-objs/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
+objs/objs_s/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
 	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
+
+objs/objs_u/%.o: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
+	$(BIGLOO) -suffix srfi $(EFLAGS) $(BAPIFLAGS) $(BAPIUNSAFEFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" $^ -o $@ -c
 
 $(CLASS_DIR)/%.class: $(BIGLOO_SRC_DIR)/%.bgl $(BIGLOO_SRC_DIR)/%.srfi
 	$(BIGLOO) -suffix srfi -jvm  $(EFLAGS) $(BJVMFLAGS) $(BAPIFLAGS) -c -jvm-purify $^ -o $@
