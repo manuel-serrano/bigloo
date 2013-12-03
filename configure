@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Nov 30 20:32:51 2013 (serrano)                */
+#*    Last change :  Tue Dec  3 08:41:04 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -833,7 +833,7 @@ while : ; do
     --disable-bglpkg)
       enable_bglpkg="no";;
 
-    --no-prce|--disable-pcre)
+    --no-pcre|--disable-pcre)
       enable_configure_pcre="no";;
 
     --enable-srfi27)
