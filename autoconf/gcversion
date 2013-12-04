@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Thu Sep 23 15:34:17 2010 (serrano)                */
+#*    Last change :  Wed Dec  4 07:27:06 2013 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the GC version                                             */
 #*=====================================================================*/
@@ -53,6 +53,24 @@ fi
 #*---------------------------------------------------------------------*/
 #*    Test1                                                            */
 #*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <gc.h>
+#include <stdio.h>
+
+main( int argc, char *argv[] ) {
+   printf( "%d%d%d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR, GC_VERSION_MICRO );
+   return 0;
+}
+EOF
+
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout"
+   ret_code=$?
+   rm -f $aout
+   rm -f $file.*
+   exit $ret_code;
+fi
+
 cat > $file.c <<EOF
 #include <gc.h>
 #include <stdio.h>
