@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Nov 17 11:01:22 2013 (serrano)                */
+;*    Last change :  Tue Dec 10 10:51:21 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -34,6 +34,7 @@
 	    *init-mode*
 	    *object-init-mode*
 	    *dlopen-init*
+	    *dlopen-init-gc*
 	    *max-c-token-length*
 	    *c-split-string*
 	    *max-c-foreign-arity*
@@ -798,6 +799,9 @@
    'stagged)
 (param-define *dlopen-init*
    "Emit a standard Bigloo dynamic loading init entry point"
+   #f)
+(param-define *dlopen-init-gc*
+   "Emit a standard GC init call when initialization the module"
    #f)
 (param-define *max-c-token-length*
    "Max C token length"

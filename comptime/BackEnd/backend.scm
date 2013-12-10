@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Mon Nov 14 16:38:56 2011 (serrano)                */
-;*    Copyright   :  2003-11 Manuel Serrano                            */
+;*    Last change :  Tue Dec 10 11:00:01 2013 (serrano)                */
+;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/
@@ -58,7 +58,8 @@
 	   (generic backend-cnst-table-name ::backend ::int)
 	   (generic backend-link-objects ::backend ::pair-nil)
 	   (generic backend-instr-reset-registers::pair-nil ::backend ::obj)
-	   (generic backend-check-inlines ::backend))
+	   (generic backend-check-inlines ::backend)
+	   (generic backend-gc-init ::backend))
 
    (export (set-backend! ::symbol)
 	   (the-backend)
@@ -142,4 +143,10 @@
 ;*    backend-check-inlines ::backend ...                              */
 ;*---------------------------------------------------------------------*/
 (define-generic (backend-check-inlines b::backend)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    backend-gc-init ::backend ...                                    */
+;*---------------------------------------------------------------------*/
+(define-generic (backend-gc-init b::backend)
    #unspecified)

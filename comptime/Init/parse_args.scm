@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Dec  2 13:47:54 2013 (serrano)                */
+;*    Last change :  Tue Dec 10 10:50:47 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -260,6 +260,8 @@
        (set! *dlopen-init* #t))
       (("-dload-init-sym" ?name (help "Emit a Bigloo dynamic loading entry point, named NAME"))
        (set! *dlopen-init* name))
+      (("-dload-init-gc" (help "For GC initialization for dynamic code"))
+       (set! *dlopen-init-gc* #t))
       (("-heapsize" ?size (help "Set the initial heap size value (in megabyte)"))
        (set! *user-heap-size* (string->integer size)))
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Wed Sep 18 10:35:17 2013 (serrano)                */
+;*    Last change :  Tue Dec 10 16:10:26 2013 (serrano)                */
 ;*    Copyright   :  2003-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -344,3 +344,8 @@
        (eq? (type-id t1) (type-id t2))
        (string=? (type-name t1) (type-name t2)) ))
 
+;*---------------------------------------------------------------------*/
+;*    backend-gc-init ::cvm ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (backend-gc-init b::cvm)
+   '(pragma "BGL_GC_INIT()"))

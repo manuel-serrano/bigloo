@@ -38,6 +38,7 @@
      extern int GC_gc_no;
      extern int GC_size( void * );
      extern void GC_init();
+     extern void bgl_gc_init();
      extern void GC_expand_hp( size_t );
      extern void GC_register_displacement( int );
      extern void GC_debug_register_displacement( int );
@@ -55,6 +56,12 @@
        extern void GC_profile_start();
 #    endif
 #  endif
+
+#if( BGL_GC_VERSION < 740 )
+#  define BGL_GC_INIT() GC_init()
+#else
+#  define BGL_GC_INIT() bgl_gc_init()
+#endif
 
 #if( BGL_GC_VERSION < 720 )
 #  define GC_NO_INTERIOR_POINTERS() 0
@@ -127,8 +134,8 @@
 
 #  define INIT_ALLOCATION( size ) \
      ( GC_NO_INTERIOR_POINTERS(), \
-       GC_init(), \
-       GC_expand_hp( size ), \
+       BGL_GC_INIT(), \
+       (size > 0 ? GC_expand_hp( size ) : 0), \
        STRUCT_DISPLACEMENT(), \
        PAIR_DISPLACEMENT(), \
        VECTOR_DISPLACEMENT(), \
