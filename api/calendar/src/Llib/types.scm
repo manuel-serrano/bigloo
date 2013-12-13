@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:22:30 2005                          */
-;*    Last change :  Fri Feb 12 18:59:18 2010 (serrano)                */
-;*    Copyright   :  2005-10 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:01:12 2013 (serrano)                */
+;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Calendar types                                                   */
 ;*=====================================================================*/
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __calendar_types
+   
+   (option (set! *dlopen-init-gc* #t))
    
    (export (class calendar
 	      (name::bstring read-only (default ""))

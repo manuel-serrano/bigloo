@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Apr 20 18:23:31 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:14:52 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Pthread init file.                                           */
 ;*=====================================================================*/
@@ -13,12 +13,12 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'pthread
-		  :basename "bigloopthread"
-		  :srfi '(pthread @PTHREAD_TIMEDJOIN@)
-		  :module-init '__pth_thread
-		  :module-eval '__pth_makelib
-		  :class-init "bigloo.pthread.pthread"
-		  :class-eval "bigloo.pthread.make_lib")
+   :basename "bigloopthread"
+   :srfi '(pthread @PTHREAD_TIMEDJOIN@)
+   :module-init '__pth_thread
+   :module-eval '__pth_makelib
+   :class-init "bigloo.pthread.pthread"
+   :class-eval "bigloo.pthread.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Register the srfi                                                */

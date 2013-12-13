@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri May 24 17:49:11 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:03:39 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public FairThreads implementation.                           */
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __ft_thread
+
+   (option (set! *dlopen-init-gc* #t))
 
    (library pthread)
    

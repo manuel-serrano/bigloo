@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Apr 20 15:57:51 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:03:12 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The fthread init file.                                           */
 ;*=====================================================================*/
@@ -13,10 +13,10 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'fthread
-		  :basename "bigloofthread"
-                  :module-init '__ft_thread
-		  :srfi '(fthread)
-		  :module-eval '__fthread_makelib)
+   :srfi '(fthread)
+   :basename "bigloofthread"
+   :module-init '__ft_thread
+   :module-eval '__fthread_makelib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

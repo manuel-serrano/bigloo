@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Sun Nov 18 15:07:42 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:10:09 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of PHIDGET applications.                        */
 ;*=====================================================================*/
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __phidget
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (include "pdg.sch")
 
    (import __phidget_types

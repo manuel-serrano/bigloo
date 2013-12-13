@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sat Feb 10 07:38:58 2007 (serrano)                */
-;*    Copyright   :  2001-07 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:13:05 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The PKGCOMP init file.                                           */
 ;*=====================================================================*/
@@ -13,9 +13,9 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'pkgcomp
-		  :srfi '(pkgcomp)
-		  :basename "bigloopkgcomp"
-		  :module-init '@configure
-		  :module-eval '@makelib
-		  :class-init "bigloo.pkgcomp.configure"
-		  :class-eval "bigloo.pkgcomp.make_lib")
+   :srfi '(pkgcomp)
+   :basename "bigloopkgcomp"
+   :module-init '@configure
+   :module-eval '@makelib
+   :class-init "bigloo.pkgcomp.configure"
+   :class-eval "bigloo.pkgcomp.make_lib")

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:36:04 2007                          */
-;*    Last change :  Fri Jun 25 08:06:56 2010 (serrano)                */
-;*    Copyright   :  2007-10 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:04:51 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The generic OO api for mailboxes (e.g., imap or maildir).        */
 ;*=====================================================================*/
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __mail_mailbox
+   
+   (option (set! *dlopen-init-gc* #t))
    
    (export (class &mailbox-error::&error)
 	   

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sat Feb 23 19:44:49 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:51:19 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo WAV facilities                                        */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __wav_wav
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (library multimedia)
 
    (export (class wavinfo::musicinfo

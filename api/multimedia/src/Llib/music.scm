@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Thu Mar 14 09:48:34 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:05:23 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __multimedia-music
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (export (class music
 	      (music-init)
 	      

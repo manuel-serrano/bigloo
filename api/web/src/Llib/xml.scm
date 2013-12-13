@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Tue Jul 23 10:28:48 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:51:44 2013 (serrano)                */
 ;*    Copyright   :  2005-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __web_xml
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (export (xml-parse::pair-nil port::input-port
 				#!key
 				(content-length 0)

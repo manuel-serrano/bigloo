@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 11 15:24:57 2006                          */
-;*    Last change :  Wed May 30 07:48:21 2007 (serrano)                */
-;*    Copyright   :  2006-07 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:13:39 2013 (serrano)                */
+;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Pkgcomp configuration                                            */
 ;*=====================================================================*/
@@ -14,6 +14,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module @configure
+   (option (set! *dlopen-init-gc* #t))
    (include "configure.sch")
    (export  (pkgcomp-version::bstring)
 	    (pkgcomp-languages::pair-nil)

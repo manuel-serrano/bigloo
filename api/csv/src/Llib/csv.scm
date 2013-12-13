@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Fri Feb 24 07:27:09 2012 (serrano)                */
-;*    Copyright   :  2011-12 Joseph Donaldson                          */
+;*    Last change :  Fri Dec 13 12:02:26 2013 (serrano)                */
+;*    Copyright   :  2011-13 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
 ;*=====================================================================*/
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module csv
+
+   (option (set! *dlopen-init-gc* #t))
    
    (include "csv.sch")
    

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/csv/src/Llib/csv.scm             */
+;*    serrano/prgm/project/bigloo/api/csv/src/Misc/csv.init.in         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
-;*    Last change :  Fri Feb 24 07:14:07 2012 (serrano)                */
-;*    Copyright   :  2011-12 Joseph Donaldson                          */
+;*    Last change :  Fri Dec 13 12:02:19 2013 (serrano)                */
+;*    Copyright   :  2011-13 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
 ;*=====================================================================*/
@@ -15,5 +15,6 @@
 (declare-library! 'csv 
    :srfi '(csv)
    :basename "bigloocsv"
+   :module-init 'csv
    :module-eval '__csv_make_lib)
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Nov  6 12:28:36 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:00:32 2013 (serrano)                */
 ;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for AVAHI                                     */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __avahi_avahi
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (library pthread)
     
    (include

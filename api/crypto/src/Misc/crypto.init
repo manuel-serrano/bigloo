@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*        adapted :  Florian Loitsch                                   */
-;*    Copyright   :  2001-09 Manuel Serrano, Florian Loitsch           */
+;*    Copyright   :  2001-13 Manuel Serrano, Florian Loitsch           */
 ;*    -------------------------------------------------------------    */
 ;*    The crypto init file.                                            */
 ;*=====================================================================*/
@@ -12,6 +12,6 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'crypto
-		  :basename "bigloocrypto"
-		  :module-init '__crypto-ciphers
-		  :module-eval '__crypto-makelib)
+   :basename "bigloocrypto"
+   :module-init '__crypto-ciphers
+   :module-eval '__crypto-makelib)

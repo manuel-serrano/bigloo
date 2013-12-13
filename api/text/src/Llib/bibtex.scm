@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct 12 14:57:58 2001                          */
-;*    Last change :  Thu Aug 29 09:40:45 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:50:31 2013 (serrano)                */
 ;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A BibTeX parser, produces a list of UTF-8 entries.               */
@@ -13,6 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __text_bibtex
+   (option (set! *dlopen-init-gc* #t))
    (export (bibtex::pair-nil obj)
 	   (bibtex-string::pair-nil ::bstring)
 	   (bibtex-port::pair-nil ::input-port)

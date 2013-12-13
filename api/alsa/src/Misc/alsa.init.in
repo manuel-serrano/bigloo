@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/alsa/src/Misc/alsa.init.in                */
+;*    serrano/prgm/project/bigloo/api/alsa/src/Misc/alsa.init.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Apr 20 19:46:00 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Tue Dec 10 16:35:41 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The ALSA init file.                                              */
 ;*=====================================================================*/
@@ -13,10 +13,10 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'alsa
-		  :srfi '(alsa)
-		  :basename "biglooalsa"
-		  :module-init '__alsa_alsa
-		  :module-eval '__alsa_makelib)
+   :srfi '(alsa)
+   :basename "biglooalsa"
+   :module-init '__alsa_alsa
+   :module-eval '__alsa_makelib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compile and Link options                                         */
@@ -25,14 +25,14 @@
    (bigloo-compile
     ;; alsa includes
     (set! *additional-include-foreign*
-	  (cons "alsa/asoundlib.h" *additional-include-foreign*))
+       (cons "alsa/asoundlib.h" *additional-include-foreign*))
     ;; required multimedia
     (set! *additional-bigloo-libraries*
-	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
+       (cons* 'bigloomultimedia *additional-bigloo-libraries*))
     ;; alsa C compilation options
     (set! *cc-options*
-	  (string-append "@ALSACFLAGS@ " *cc-options*))
+       (string-append "@ALSACFLAGS@ " *cc-options*))
     ;; alsa libraries
     (set! *ld-post-options*
-	  (string-append "@ALSALIBS@ " *ld-post-options*))))
+       (string-append "@ALSALIBS@ " *ld-post-options*))))
 

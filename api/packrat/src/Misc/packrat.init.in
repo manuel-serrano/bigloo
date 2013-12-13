@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Mon Apr 20 08:52:45 2009 (serrano)                */
-;*    Copyright   :  2001-09 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:06:55 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Packrat init file.                                           */
 ;*=====================================================================*/
@@ -13,12 +13,12 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'packrat
-		  :srfi '(packrat)
-		  :basename "bigloopackrat"
-		  :module-init '__packrat
-		  :module-eval '__packrat_makelib
-		  :class-init "bigloo.packrat.bibtex"
-		  :class-eval "bigloo.packrat.make_lib")
+   :srfi '(packrat)
+   :basename "bigloopackrat"
+   :module-init '__packrat
+   :module-eval '__packrat_makelib
+   :class-init "bigloo.packrat.bibtex"
+   :class-eval "bigloo.packrat.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

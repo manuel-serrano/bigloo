@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*        adapted :  Florian Loitsch                                   */
-;*    Copyright   :  2001-09 Manuel Serrano, Florian Loitsch           */
+;*    Copyright   :  2001-13 Manuel Serrano, Florian Loitsch           */
 ;*    -------------------------------------------------------------    */
 ;*    The openpgp init file                                            */
 ;*=====================================================================*/
@@ -12,9 +12,9 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'openpgp
-		  :basename "biglooopenpgp"
-		  :module-init '__openpgp-facade
-		  :module-eval '__openpgp-makelib)
+   :basename "biglooopenpgp"
+   :module-init '__openpgp-facade
+   :module-eval '__openpgp-makelib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

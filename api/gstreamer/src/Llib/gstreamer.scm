@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 30 08:29:37 2007                          */
-;*    Last change :  Sun Nov 18 15:02:28 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:04:13 2013 (serrano)                */
+;*    Copyright   :  2007-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Init and cleanup of GSTREAMER applications.                      */
 ;*=====================================================================*/
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __gstreamer_gstreamer
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (library pthread)
    
    (include "gst.sch")

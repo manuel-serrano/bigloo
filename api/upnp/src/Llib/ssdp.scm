@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr  8 08:20:16 2013                          */
-;*    Last change :  Mon Apr 22 08:07:13 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:50:55 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    UPnP Simple Service Discovery protocol                           */
@@ -16,6 +16,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __upnp_ssdp
+   
+   (option (set! *dlopen-init-gc* #t))
    
    (library web)
    

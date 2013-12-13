@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Tue Jun 20 10:09:43 2006 (serrano)                */
-;*    Copyright   :  2001-06 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:49:50 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The SSL init file.                                               */
 ;*=====================================================================*/
@@ -13,12 +13,12 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'ssl
-		  :srfi '(ssl)
-		  :basename "bigloossl"
-		  :module-init '__ssl_ssl
-		  :module-eval '__ssl_makelib
-		  :class-init "bigloo.ssl.ssl"
-		  :class-eval "bigloo.ssl.make_lib")
+   :srfi '(ssl)
+   :basename "bigloossl"
+   :module-init '__ssl_ssl
+   :module-eval '__ssl_makelib
+   :class-init "bigloo.ssl.ssl"
+   :class-eval "bigloo.ssl.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

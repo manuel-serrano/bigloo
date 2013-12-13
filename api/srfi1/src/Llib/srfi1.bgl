@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 21:27:38 1999                          */
-;*    Last change :  Mon Jul  5 10:35:11 2010 (serrano)                */
+;*    Last change :  Fri Dec 13 12:48:32 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo module clause for the srfi1 implementation            */
 ;*=====================================================================*/
@@ -13,7 +13,8 @@
 ;*---------------------------------------------------------------------*/
 (module __srfi1
    
-   (option (set! *dlopen-init* "bgl_dload_init_s_srfi1"))
+   (option (set! *dlopen-init-gc* #t)
+           (set! *dlopen-init* "bgl_dload_init_s_srfi1"))
    
    (export (xcons::pair d a)
 	   (make-list::pair-nil ::int . el)

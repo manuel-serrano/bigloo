@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/phone/src/Misc/phone.init                 */
+;*    serrano/prgm/project/bigloo/api/phone/src/Misc/phone.init        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Apr 20 15:51:09 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:12:33 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Phone init file.                                             */
 ;*=====================================================================*/
@@ -13,6 +13,6 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'phone
-		  :basename "bigloophone"
-		  :module-init '__phone
-		  :module-eval '__phone-makelib)
+   :basename "bigloophone"
+   :module-init '__phone
+   :module-eval '__phone-makelib)

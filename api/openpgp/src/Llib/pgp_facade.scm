@@ -1,4 +1,5 @@
 (module __openpgp-facade
+   (option (set! *dlopen-init-gc* #t))
    (import __openpgp-logic
 	   __openpgp-composition
 	   __openpgp-packets

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/sqlite/src/Misc/sqlite.init      */
+;*    .../prgm/project/bigloo/api/sqlite/src/Misc/sqlite.init.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Thu Nov 10 15:41:09 2005 (serrano)                */
-;*    Copyright   :  2001-05 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:15:26 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The SQLITE init file.                                            */
 ;*=====================================================================*/
@@ -13,12 +13,12 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'sqlite
-		  :srfi '(@SQLITESRFI@)
-		  :basename "bigloosqlite"
-		  :module-init '__sqlite_sqlite
-		  :module-eval '__sqlite_makelib
-		  :class-init "bigloo.sqlite.sqlite"
-		  :class-eval "bigloo.sqlite.make_lib")
+   :srfi '(@SQLITESRFI@)
+   :basename "bigloosqlite"
+   :module-init '__sqlite_sqlite
+   :module-eval '__sqlite_makelib
+   :class-init "bigloo.sqlite.sqlite"
+   :class-eval "bigloo.sqlite.make_lib")
 
 ;*---------------------------------------------------------------------*/
 ;*    Link option                                                      */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Tue Dec 11 20:17:09 2012 (serrano)                */
-;*    Copyright   :  2002-12 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:49:07 2013 (serrano)                */
+;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public srfi18 Thread implementation.                         */
 ;*=====================================================================*/
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __srfi18_thread
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (library pthread)
    
    (import  __srfi18_backend)

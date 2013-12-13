@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri May 24 17:49:48 2013 (serrano)                */
+;*    Last change :  Fri Dec 13 12:15:09 2013 (serrano)                */
 ;*    Copyright   :  2002-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __pth_thread
 
+   (option (set! *dlopen-init-gc* #t))
+   
    (import  __pth_backend)
    
    (include "pthread.sch")

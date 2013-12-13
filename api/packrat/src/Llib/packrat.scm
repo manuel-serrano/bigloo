@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Tony Garnock-Jones <tonyg@kcbbs.gen.nz>           */
 ;*    Creation    :  Mon Apr 20 08:01:06 2009                          */
-;*    Last change :  Mon Apr 20 08:03:14 2009 (serrano)                */
-;*    Copyright   :  2004, 2005-09 T. Garnock-Jones & 2005 LShift Ltd. */
+;*    Last change :  Fri Dec 13 12:07:35 2013 (serrano)                */
+;*    Copyright   :  2004, 2005-13 T. Garnock-Jones & 2005 LShift Ltd. */
 ;*    -------------------------------------------------------------    */
 ;*    Packrat Parser Library                                           */
 ;*=====================================================================*/
@@ -38,61 +38,62 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __packrat
-    (library srfi1)
-    (include "packrat.sch")
-    (export parse-result?
-	    parse-result-successful?
-	    parse-result-semantic-value
-	    parse-result-next
-	    parse-result-error
-	    
-	    parse-results?
-	    parse-results-position
-	    parse-results-base
-	    parse-results-next
-	    
-	    parse-error?
-	    parse-error-position
-	    parse-error-expected
-	    parse-error-messages
-	    
-	    make-parse-position
-	    parse-position?
-	    parse-position-file
-	    parse-position-line
-	    parse-position-column
-	    
-	    top-parse-position
-	    update-parse-position
-	    parse-position->string
-	    
-	    ;;empty-results
-	    ;;make-results
-	    
-	    make-error-expected
-	    make-error-message
-	    make-result
-	    make-expected-result
-	    make-message-result
-	    
-	    prepend-base
-	    prepend-semantic-value
-	    
-	    base-generator->results
-	    results->result
-	    
-	    parse-position>?
-	    parse-error-empty?
-	    merge-parse-errors
-	    merge-result-errors
+   (option (set! *dlopen-init-gc* #t))
+   (library srfi1)
+   (include "packrat.sch")
+   (export parse-result?
+	   parse-result-successful?
+	   parse-result-semantic-value
+	   parse-result-next
+	   parse-result-error
 	   
-	    parse-results-token-kind
-	    parse-results-token-value
-
-	    packrat-check-base
-	    packrat-check
-	    packrat-or
-	    packrat-unless))
+	   parse-results?
+	   parse-results-position
+	   parse-results-base
+	   parse-results-next
+	   
+	   parse-error?
+	   parse-error-position
+	   parse-error-expected
+	   parse-error-messages
+	   
+	   make-parse-position
+	   parse-position?
+	   parse-position-file
+	   parse-position-line
+	   parse-position-column
+	   
+	   top-parse-position
+	   update-parse-position
+	   parse-position->string
+	   
+	   ;;empty-results
+	   ;;make-results
+	   
+	   make-error-expected
+	   make-error-message
+	   make-result
+	   make-expected-result
+	   make-message-result
+	   
+	   prepend-base
+	   prepend-semantic-value
+	   
+	   base-generator->results
+	   results->result
+	   
+	   parse-position>?
+	   parse-error-empty?
+	   merge-parse-errors
+	   merge-result-errors
+	   
+	   parse-results-token-kind
+	   parse-results-token-value
+	   
+	   packrat-check-base
+	   packrat-check
+	   packrat-or
+	   packrat-unless))
 
 ;;-- BEGIN PORTABLE BODY
 

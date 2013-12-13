@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../project/bigloo/api/flac/src/Misc/flac.init.in                */
+;*    serrano/prgm/project/bigloo/api/flac/src/Misc/flac.init.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Apr 20 19:46:00 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:02:42 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The FLAC init file.                                              */
 ;*=====================================================================*/
@@ -13,10 +13,10 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'flac
-		  :srfi '(flac)
-		  :basename "biglooflac"
-		  :module-init '__flac_flac
-		  :module-eval '__flac_makelib)
+   :srfi '(flac)
+   :basename "biglooflac"
+   :module-init '__flac_flac
+   :module-eval '__flac_makelib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compile and Link options                                         */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Sun Apr 20 19:46:00 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:03:56 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The GSTREAMER init file.                                         */
 ;*=====================================================================*/
@@ -13,12 +13,12 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'gstreamer
-		  :srfi (if @GSTREAMERAUDIO@
-			    '(gstreamer gstreamer-audio)
-			    '(gstreamer))
-		  :basename "bigloogstreamer"
-		  :module-init '__gstreamer_gstreamer
-		  :module-eval '__gstreamer_makelib)
+   :srfi (if @GSTREAMERAUDIO@
+	     '(gstreamer gstreamer-audio)
+	     '(gstreamer))
+   :basename "bigloogstreamer"
+   :module-init '__gstreamer_gstreamer
+   :module-eval '__gstreamer_makelib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compile and Link options                                         */

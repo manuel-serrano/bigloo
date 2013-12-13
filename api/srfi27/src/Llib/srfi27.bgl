@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr 20 11:14:27 2009                          */
-;*    Last change :  Thu Nov 12 16:17:48 2009 (serrano)                */
-;*    Copyright   :  2009 Manuel Serrano                               */
+;*    Last change :  Fri Dec 13 12:49:36 2013 (serrano)                */
+;*    Copyright   :  2009-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo implementation of SRFI-27                                 */
 ;*=====================================================================*/
@@ -13,19 +13,19 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __srfi27
+   (option (set! *dlopen-init-gc* #t))
    (include "srfi27.sch") 
-   (export
-    random-integer
-    random-real
-    default-random-source
-    (make-random-source)
-    random-source?
-    (random-source-state-ref s)
-    (random-source-state-set! s state)
-    (random-source-randomize! s)
-    (random-source-pseudo-randomize! s i j)
-    (random-source-make-integers s)
-    (random-source-make-reals s . unit)))
+   (export random-integer
+	   random-real
+	   default-random-source
+	   (make-random-source)
+	   random-source?
+	   (random-source-state-ref s)
+	   (random-source-state-set! s state)
+	   (random-source-randomize! s)
+	   (random-source-pseudo-randomize! s i j)
+	   (random-source-make-integers s)
+	   (random-source-make-reals s . unit)))
 
 ;*---------------------------------------------------------------------*/
 ;*    $random-source ...                                               */

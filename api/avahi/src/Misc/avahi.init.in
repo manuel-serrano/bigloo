@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Wed Dec 14 09:02:39 2011 (serrano)                */
-;*    Copyright   :  2001-11 Manuel Serrano                            */
+;*    Last change :  Fri Dec 13 12:00:05 2013 (serrano)                */
+;*    Copyright   :  2001-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The AVAHI init file.                                             */
 ;*=====================================================================*/
@@ -13,10 +13,10 @@
 ;*    The library                                                      */
 ;*---------------------------------------------------------------------*/
 (declare-library! 'avahi
-		  :srfi '(avahi)
-		  :basename "biglooavahi"
-		  :module-init '__avahi_avahi
-		  :module-eval '__avahi_makelib)
+   :srfi '(avahi)
+   :basename "biglooavahi"
+   :module-init '__avahi_avahi
+   :module-eval '__avahi_makelib)
 
 ;*---------------------------------------------------------------------*/
 ;*    Compile and Link options                                         */
