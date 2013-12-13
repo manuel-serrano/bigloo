@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Sun Dec  9 15:24:04 2012 (serrano)                */
+/*    Last change :  Fri Dec 13 18:23:59 2013 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -39,10 +39,10 @@ BGL_RUNTIME_DEF long heap_size = DEFAULT_HEAP_SIZE;
 extern void cref();
 extern void memshow();
 extern void bgl_init_eval_cnst();
-extern obj_t c_constant_string_to_string();
-extern obj_t c_error();
+extern obj_t c_constant_string_to_string( char * );
+extern void c_error( char *, char *, int );
 extern void bgl_init_objects();
-extern obj_t bigloo_exit_apply();
+extern obj_t bigloo_exit_apply( obj_t );
 extern void *bgl_callcc_get_top_of_stack( void * );
 extern void bgl_end_io();
 extern void GC_set_all_interior_pointers( int );

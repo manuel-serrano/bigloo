@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Thu Apr 11 17:13:57 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:31:13 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -58,6 +58,7 @@ extern long  bgl_list_length( obj_t );
 extern char *bgl_string_to_gc_cstring( obj_t );
 extern obj_t string_to_bstring( char * );
 extern ssize_t bgl_syswrite( obj_t, char *, size_t );
+extern obj_t make_string_sans_fill( int );
 
 /*---------------------------------------------------------------------*/
 /*    Prototypes                                                       */

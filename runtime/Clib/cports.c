@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Nov 30 11:08:49 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:24:59 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -210,8 +210,8 @@ BGL_RUNTIME_DEF long default_io_bufsiz;
 /*    External definitions.                                            */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
-extern obj_t make_string();
-extern obj_t make_string_sans_fill();
+extern obj_t make_string( int, unsigned char );
+extern obj_t make_string_sans_fill( int );
 
 /*---------------------------------------------------------------------*/
 /*    Prototypes                                                       */

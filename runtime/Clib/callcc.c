@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Tue Apr  2 18:37:24 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:27:12 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -25,7 +25,7 @@ extern int flush_regs_in_stack();
 extern long glob_dummy;
 
 extern obj_t make_fx_procedure();
-extern obj_t c_constant_string_to_string();
+extern obj_t c_constant_string_to_string( char * );
 
 static obj_t callcc_restore_stack();
 extern obj_t unwind_stack_until( struct exitd *, obj_t, obj_t, obj_t );

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sun Apr 14 07:49:32 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:32:09 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -129,13 +129,14 @@ debug_socket_segv( char *fun, unsigned char *ptr, int len ) {
 extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t bgl_close_input_port( obj_t );
 extern long bgl_read( obj_t, char *, long );
-extern obj_t make_vector();
+extern obj_t make_vector( int, obj_t );
 extern unsigned char get_hash_number( char * );
 extern unsigned char bgl_get_hash_number_len( char *, int, int );
 extern bool_t bigloo_strcmp( obj_t o1, obj_t o2 );
 extern bool_t bgl_dns_enable_cache();
 extern long bgl_dns_cache_validity_timeout();
 extern ssize_t bgl_syswrite( obj_t, char *, size_t );
+extern obj_t make_string_sans_fill( int );
 
 #ifndef _BGL_WIN32_VER
 extern int dup( int );

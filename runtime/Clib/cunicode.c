@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Mon Oct  7 11:12:38 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:30:45 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -14,8 +14,8 @@
 /*    Importations                                                     */
 /*---------------------------------------------------------------------*/
 extern bool_t ucs2_lower( ucs2_t );
-extern obj_t integer_to_string();
-extern obj_t make_string();
+extern obj_t integer_to_string( long, long );
+extern obj_t make_string( int, unsigned char );
 extern ucs2_t ucs2_tolower( ucs2_t );
 extern obj_t bgl_real_to_string( double );
 

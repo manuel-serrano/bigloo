@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 29 20:22:34 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:33:47 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3269,8 +3269,8 @@ BGL_RUNTIME_DECL obj_t bgl_socket_accept( obj_t, bool_t, obj_t, obj_t );
 BGL_RUNTIME_DECL long bgl_socket_accept_many( obj_t, bool_t, obj_t, obj_t, obj_t );
    
 BGL_RUNTIME_DECL obj_t bgl_gethostname();
-BGL_RUNTIME_DECL obj_t bgl_socket_hostname();
-BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname();
+BGL_RUNTIME_DECL obj_t bgl_socket_hostname( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_getsockopt( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_setsockopt( obj_t, obj_t, obj_t );
    

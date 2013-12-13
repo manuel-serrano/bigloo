@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Apr  2 07:46:36 2013 (serrano)                */
+/*    Last change :  Fri Dec 13 18:37:04 2013 (serrano)                */
 /*    Copyright   :  2002-13 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -24,7 +24,7 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL void bgl_multithread_dynamic_denv_register();
+BGL_RUNTIME_DECL void bgl_multithread_dynamic_denv_register( obj_t (*)() );
 BGL_RUNTIME_DECL obj_t bgl_remq_bang( obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
