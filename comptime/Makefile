@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Nov 22 09:48:32 2013 (serrano)                */
+#*    Last change :  Tue Dec 17 11:02:55 2013 (serrano)                */
 #*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -182,8 +182,7 @@ INITFLOW_OBJ	= $(INITFLOW_FILE:%=Initflow/%.o)
 
 #*--- globalize -------------------------------------------------------*/
 GLOBALIZE_FILE	= walk ginfo escape gn node free kapture \
-                  integration integration28c \
-                  new_body loc2glo gloclo clocto globalize
+                  integration new_body loc2glo gloclo clocto globalize
 
 GLOBALIZE_OBJ	= $(GLOBALIZE_FILE:%=Globalize/%.o)
 

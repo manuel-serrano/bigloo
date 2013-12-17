@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Dec 10 10:50:47 2013 (serrano)                */
+;*    Last change :  Tue Dec 17 11:01:35 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -482,9 +482,6 @@
        (set! *global-tail-call?* #t))
       (("-fno-global-tailc" (help "Disable global tail-call optimization"))
        (set! *global-tail-call?* #f))
-      ;; closure integration scheme
-      (("-fold-closure-integration" (help "Enable old closure integration technique"))
-       (set! *globalize-integrate-28c* #t))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))

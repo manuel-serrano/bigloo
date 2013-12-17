@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:45:58 1995                          */
-;*    Last change :  Tue Oct  3 09:47:32 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Dec 17 11:02:18 2013 (serrano)                */
+;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `globalization' process                                      */
 ;*=====================================================================*/
@@ -27,7 +27,6 @@
 	    globalize_kapture
 	    globalize_gn
 	    globalize_integration
-	    globalize_integration-28c
 	    globalize_new-body
 	    globalize_local->global
 	    globalize_global-closure
@@ -68,9 +67,7 @@
 	     "   G1 : " (shape *G1*)
 	     #\Newline)
       ;; we compute the integration property
-      (if *globalize-integrate-28c*
-	  (set-integration-28c! global *E* *G0* *G1*)
-	  (set-integration! global *E* *G0* *G1*))
+      (set-integration! global *E* *G0* *G1*)
       ;; we computed the really globalised functions.
       (let ((G (let loop ((G1 *G1*)
 			  (G  *E*))

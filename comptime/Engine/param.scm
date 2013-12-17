@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Dec 10 10:51:21 2013 (serrano)                */
+;*    Last change :  Tue Dec 17 11:01:43 2013 (serrano)                */
 ;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -223,7 +223,6 @@
 	    *saw-register-allocation-functions*
 	    *saw-no-register-allocation-functions*
 	    *global-tail-call?*
-	    *globalize-integrate-28c*
 	    *builtin-allocators*
 	    *eval-options*
 	    *allow-type-redefinition*
@@ -1084,13 +1083,6 @@
 ;*---------------------------------------------------------------------*/
 (param-define *global-tail-call?*
    "Do we apply the self-global-tail-call stage?"
-   #f)
-
-;*---------------------------------------------------------------------*/
-;*    *globalize-integrate-28c* ...                                    */
-;*---------------------------------------------------------------------*/
-(param-define *globalize-integrate-28c*
-   "Enable the old closure integration technique (deprecated)"
    #f)
 
 ;*---------------------------------------------------------------------*/
