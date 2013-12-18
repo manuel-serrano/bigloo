@@ -1891,6 +1891,10 @@ public final class foreign
 	 return chars;
       }
 
+   public static int bgl_utf8_locale_compare3( byte[] left, byte[] right ) {
+      return 0;
+   }
+
    //////
    // PROCESS
    //////

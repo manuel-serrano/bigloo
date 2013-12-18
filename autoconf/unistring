@@ -1,0 +1,91 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/unistring                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Jose Romildo                                      */
+#*    Creation    :  Sat Nov 11 13:27:23 1995                          */
+#*    Last change :  Wed Dec 18 17:55:39 2013 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host gmp library.                                  */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+unistringlib="unistring"
+type=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --type=*|-type=*)
+      type="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest.$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout -l$unistringlib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <unistr.h>
+#include <uninorm.h>
+#include <string.h>
+
+int main( int argc, char *argv[] ) {
+   int res;
+   int len = strlen( argv[ 1 ] );
+   u8_normcoll( (uint8_t *)argv[ 1 ], len, (uint8_t *)argv[ 1 ], len, 
+                UNINORM_NFKC, &res );
+   return res;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout aaa aaa"
+   ret_code=$?
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   if [ $ret_code = 0 ]; then
+     echo "$unistringlib"
+   else
+     echo "no"
+   fi
+   exit $ret_code
+else
+   \rm -f $file.*
+   echo "no"
+   exit 0
+fi
+

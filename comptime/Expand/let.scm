@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 19 08:29:58 1992                          */
-;*    Last change :  Sun Nov 10 09:42:39 2013 (serrano)                */
+;*    Last change :  Tue Dec 17 11:38:27 2013 (serrano)                */
 ;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Let expansions.                                                  */
@@ -102,22 +102,23 @@
 ;*    expand-letrec ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (expand-letrec x e)
-   (define (expand-rec e bindings body)
+   
+   (define (expand-rec e bdgs body)
       (let ((vars (map (lambda (x)
 			  (match-case x
 			     ((?- ?val) (begin (set-car! (cdr x) (e val e)) x))
 			     ((? symbol?) (list x #unspecified))
 			     (else (error #f "Illegal `letrec' binding" x))))
-		       bindings)))
+		     bdgs)))
 	 (with-lexical (map car vars)
-		       '_
-		       (find-location x)
-		       (lambda ()
-			  `(,(car x) ,vars
-			      ,(e (expand-progn body) e))))))
+	    '_
+	    (find-location x)
+	    (lambda ()
+	       `(,(car x) ,vars ,(e (expand-progn body) e))))))
+
    (let ((old-internal internal-definition?))
       (set! internal-definition? #t)
-      (let* ((e   (internal-begin-expander e))
+      (let* ((e (internal-begin-expander e))
 	     (res (match-case x
 		     ((?- () . (and ?body (not ())))
 		      (set-car! x 'let)

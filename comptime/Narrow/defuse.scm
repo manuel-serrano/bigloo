@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Sat Nov 23 07:03:49 2013 (serrano)                */
+;*    Last change :  Tue Dec 17 11:11:16 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property.                                           */
@@ -45,7 +45,6 @@
 ;*    -------------------------------------------------------------    */
 ;*    Returns two values: def x use                                    */
 ;*    Does not store anything in the node                              */
-;*    Only consider local/defuse variables                             */
 ;*---------------------------------------------------------------------*/
 (define-generic (defuse n::node)
    (values '() '()))

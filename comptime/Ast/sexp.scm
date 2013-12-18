@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Nov 11 17:17:47 2013 (serrano)                */
+;*    Last change :  Tue Dec 17 11:38:37 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -328,7 +328,6 @@
        (let->node exp stack loc 'value))
       ((letrec* . ?-)
        (letrec*->node exp stack loc 'value))
-						     
 ;*--- labels ----------------------------------------------------------*/
       (((or labels (? labels-sym?)) . ?-)
        (labels->node exp stack loc 'value))

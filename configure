@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec  4 09:04:09 2013 (serrano)                */
+#*    Last change :  Wed Dec 18 17:53:26 2013 (serrano)                */
 #*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -136,6 +136,13 @@ gmpsrc=$GMPSRC
 gmpconfigureopt=
 
 srfi27force=no
+
+#*--- unistring version (left blank for autoconfiguration)    ---------*/
+unistring=
+unistringforce=no
+customunistring=no
+unistringsrc=$UNISTRINGSRC
+unistringconfigureopt=
 
 #*--- socket library (left empty for automatic configuration) ---------*/
 socketlibs=
@@ -828,6 +835,25 @@ while : ; do
     --gmpconfigureopt=*)
       gmpconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --no-unistring|--disable-unistring)
+      unistring="no";;
+
+    --enable-unistring)
+      unistring=""
+      unistringforce="yes";;
+
+    --customunistring=yes|--customunistring)
+      customunistring=yes;;
+
+    --customunistring=no)
+      customunistring=no;;
+
+    --unistringsrc=*)
+      unistringsrc="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --unistringconfigureopt=*)
+      unistringconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --enable-bglpkg)
       enable_bglpkg="force";;
 
@@ -961,6 +987,7 @@ while : ; do
       echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
       echo "   --no-share (disable shared libraries support)" >&2;
       echo "   --no-gmp (disable gmp library support)" >&2;
+      echo "   --no-unistring (disable unistring library support)" >&2;
       echo "   --no-pcre (disable prce library support)" >&2;
       echo "   --no-ldpreload" >&2;
       echo "   --sharedbde=yes|no [default no] (link Bde tools against shared libraries)" >&2;
@@ -986,9 +1013,12 @@ while : ; do
       echo "   --enable-gstreamer-thread" >&2;
       echo "   --disable-gstreamer-thread" >&2;
       echo "   --disable-gmp (see --no-gmp)" >&2;
+      echo "   --disable-unistring (see --no-unistring)" >&2;
       echo "   --disable-pcre (see --no-pcre)" >&2;
       echo "   --customgmp=yes|no [default yes]" >&2;
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
+      echo "   --customunistring=yes|no [default yes]" >&2;
+      echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
       echo "" >&2;
       echo "Configuration settings:"  >&2;
       echo "   --bigloo.h[=file]" >&2;
@@ -1912,6 +1942,21 @@ if [ "$customgmp " = "yes " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    UNISTRING configuration                                          */
+#*---------------------------------------------------------------------*/
+#* if [ "$customunistring " = "yes " ]; then                           */
+#*   echo ""                                                           */
+#*   echo "Preparing and configuring custom unistring ($unistringsrc)..." */
+#*   echo "+ unistring configuration ($unistringsrc)..." >> $configurelog */
+#*                                                                     */
+#*   unistring=`basename $unistringsrc .tar.gz`                 */
+#*   unistring=`basename $unistring .tgz`                */
+#*                                                                     */
+#*   (cd unistring && UNISTRING=$unistringsrc; export UNISTRING && . ./install-unistring) || exit 1 */
+#*   (cd unistring; . ./configure-unistring) || exit 1                 */
+#* fi                                                                  */
+
+#*---------------------------------------------------------------------*/
 #*    Benchmark mode                                                   */
 #*---------------------------------------------------------------------*/
 if [ "$mode" = "benchmark" ]; then
@@ -2342,6 +2387,30 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     havegmp=0;
   fi
 
+  # Is unistring available?
+  if [ "$customunistring" != "no" ]; then
+    haveunistring=1;
+    featureflags="-srfi enable-unistring $featureflags";
+    extralibs="-lbigloounistring-$release $extralibs"
+  elif [ "$unistring " = " " ]; then
+    unistring=`$autoconf unistring` || exit 1
+
+    if [ $unistring = "no" ]; then
+      haveunistring=0;
+      if [ $unistringforce = "yes" ]; then
+	echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
+	echo "Aborting";
+ 	exit 1;
+      fi
+    else
+      haveunistring=1;
+      featureflags="-srfi enable-unistring $featureflags";
+      extralibs="-l$unistring $extralibs"
+    fi
+  else
+    haveunistring=0;
+  fi
+
   # Where to find the socket api
   socketlibs=`$autoconf socket --lib="$socketlibs"` || exit 1
   socklen=`$autoconf socklen --lib="$socketlibs"` || exit 1
@@ -2747,6 +2816,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_STRTOULL@|$have_strtoull|" \
               -e "s|@BGL_STRTOULL@|$strtoull|" \
               -e "s|@BGL_HAVE_GMP@|$havegmp|" \
+              -e "s|@BGL_HAVE_UNISTRING@|$haveunistring|" \
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
               -e "s|@HAVE_SETENV@|$setenv|" \
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
@@ -3124,6 +3194,14 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "CUSTOMGMP=$gmpversion" >> $makefile_cfg
   else
     echo "GMPCUSTOM=no" >> $makefile_cfg
+  fi
+
+  # The UNISTRING library
+  if [ "$customunistring " = "yes " ]; then
+    echo "UNISTRINGCUSTOM=yes" >> $makefile_cfg
+    echo "CUSTOMUNISTRING=$unistring" >> $makefile_cfg
+  else
+    echo "UNISTRINGCUSTOM=no" >> $makefile_cfg
   fi
 
   # additional bigloo compiler link flags (some architecture such as AIX
@@ -3815,6 +3893,7 @@ echo "  shared library builder................ $ld" >> $configurelog
 echo "  options for building static libs...... $arflags" >> $configurelog
 echo "  socket libraries...................... $socketlibs" >> $configurelog
 echo "  gmp version........................... $gmpversion" >> $configurelog
+echo "  unistring version..................... $unistring" >> $configurelog
 echo "  pthread libraries..................... $pthreadlibs" >> $configurelog
 echo "  openssl libraries..................... $openssllibs" >> $configurelog
 echo "  sqlite libraries...................... $sqlitelibs" >> $configurelog
@@ -3935,6 +4014,11 @@ if [ "$summary" = "yes" ]; then
     echo "  bignum support.............. scheme implementation"
   else
     echo "  bignum support.............. gmp ($gmpversion)"
+  fi
+  if [ "$unistring" = "no" ]; then
+    echo "  unistring support........... basic"
+  else
+    echo "  unistring support........... $gmpversion"
   fi
   echo
   echo "Directories where Bigloo will be installed:"

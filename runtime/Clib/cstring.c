@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Thu Jun 13 19:10:31 2013 (serrano)                */
+/*    Last change :  Wed Dec 18 18:19:40 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -12,6 +12,11 @@
 #include <string.h>
 #include <errno.h>
 #include <bigloo.h>
+
+#if( BGL_HAVE_UNISTRING )
+#  include <unistr.h>
+#  include <uninorm.h>
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -1234,5 +1239,28 @@ bgl_strtoull( const char *ptr, char **endptr, int base ) {
   if( base != 10 )
     C_FAILURE( "cstring", "cannot convert from base other than 10", BINT( base ) );
   return (BGL_LONGLONG_T)strtod( ptr, endptr );
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_strcoll ...                                                  */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_UNISTRING )
+int
+bgl_strcoll( obj_t left, obj_t right ) {
+   int res;
+   fprintf( stderr, "str1=%s %d str2=%s %d\n",
+	    BSTRING_TO_STRING( left ), STRING_LENGTH( left ),
+	    BSTRING_TO_STRING( right ), STRING_LENGTH( right ) );
+   if( -1 == u8_normcoll( BSTRING_TO_STRING( left ), STRING_LENGTH( left ),
+			  BSTRING_TO_STRING( right ), STRING_LENGTH( right ),
+			  UNINORM_NFC, &res ) ) {
+      C_FAILURE( "utf8-locale-compare3", strerror( errno ), left );
+      return 0;
+   } else {
+      fprintf( stderr, "res=%d\n", res );
+      return res;
+   }
 }
 #endif

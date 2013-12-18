@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Mon Nov 25 08:16:55 2013 (serrano)                */
+;*    Last change :  Tue Dec 17 11:31:30 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
@@ -192,7 +192,7 @@
 		(set-cdr! nodes '())
 		ns))
 	    (else 
-	     (multiple-value-bind (def use cap)
+	     (multiple-value-bind (def use)
 		(defuse (car nodes))
 		(let ((defs (kill-used locals (cdr nodes))))
 		   (with-trace 3 "narrow-scope! ::sequence, node"
@@ -216,7 +216,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (narrow-scope! n::conditional locals::pair-nil)
    (with-access::conditional n (test true false)
-      (multiple-value-bind (deftest usetest captest)
+      (multiple-value-bind (deftest usetest)
 	 (defuse test)
 	 (let ((defs (kill-used locals (list true false))))
 	    (set! test (narrow-scope! test defs))
@@ -230,7 +230,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (narrow-scope! n::select locals::pair-nil)
    (with-access::select n (test clauses)
-      (multiple-value-bind (deftest usetest captest)
+      (multiple-value-bind (deftest usetest)
 	 (defuse test)
 	 (let ((defs (kill-used locals (map cdr clauses))))
 	    (set! test (narrow-scope! test defs))
@@ -246,11 +246,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (narrow-scope! n::sync locals::pair-nil)
    (with-access::sync n (mutex prelock body)
-      (multiple-value-bind (defprelock useprelock capprelock)
+      (multiple-value-bind (defprelock useprelock)
 	 (defuse prelock)
-	 (multiple-value-bind (defmutex usemutex capmutex)
+	 (multiple-value-bind (defmutex usemutex)
 	    (defuse mutex)
-	    (multiple-value-bind (defbody usebody capbody)
+	    (multiple-value-bind (defbody usebody)
 	       (defuse body)
 	       (let ((pdefs (kill-used locals (list mutex body))))
 		  (set! prelock (narrow-scope! prelock pdefs))
@@ -272,7 +272,7 @@
 	 (with-trace 4 "narrow-scope! ::let-var, binding.1"
 	    (for-each (lambda (b)
 			 (trace-item "b=" (shape b))
-			 (multiple-value-bind (def use cap)
+			 (multiple-value-bind (def use)
 			    (defuse (cdr b))
 			    (let ((bdefs (kill-used locals
 					    (cons body
@@ -286,11 +286,10 @@
 	    (with-trace 4 "narrow-scope! ::let-var, binding.2"
 	       (for-each (lambda (b)
 			    (trace-item "b=" (shape b))
-			    (multiple-value-bind (def use cap)
+			    (multiple-value-bind (def use)
 			       (defuse (cdr b))
 			       (trace-item "def=" (shape def))
-			       (trace-item "use=" (shape use))
-			       (trace-item "cap=" (shape cap)))
+			       (trace-item "use=" (shape use)))
 			    (set! locals (kill-used locals (cdr b))))
 		  bindings))
 	    (with-trace 2 "narrow-scope! ::let-var, body"
@@ -319,7 +318,7 @@
 			  funs)))
 	    (with-access::local fun (value)
 	       (with-access::sfun value ((fbody body) args)
-		  (multiple-value-bind (def use cap)
+		  (multiple-value-bind (def use)
 		     (defuse fbody)
 		     (let* ((locals (append args locals))
 			    (fdef (kill-used locals (cons body others))))

@@ -136,6 +136,9 @@
 #undef BGL_HAVE_GMP
 #define BGL_HAVE_GMP @BGL_HAVE_GMP@
 
+#undef BGL_HAVE_UNISTRING
+#define BGL_HAVE_UNISTRING @BGL_HAVE_UNISTRING@
+
 #undef HAVE_SIGCHLD
 #define HAVE_SIGCHLD @HAVE_SIGCHLD@
 
@@ -516,6 +519,17 @@ extern union scmobj * an_object;
 #  define BGL_ECONNRESET WSAECONNRESET
 #else
 #  define BGL_ECONNRESET ECONNRESET
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    BGL_UTF8_LOCALE_COMPARE3 ...                                     */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_UNISTRING )
+#  define BGL_UTF8_LOCALE_COMPARE3( s1, s2 ) \
+   bgl_strcoll( s1, s2 )
+#else
+#  define BGL_UTF8_LOCALE_COMPARE3( s1, s2 ) \
+   strcoll( BSTRING_TO_STRING( s1 ), BSTRING_TO_STRING( s2 ) )
 #endif
 
 #endif

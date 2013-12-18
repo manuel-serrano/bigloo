@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Dec 10 11:16:28 2013 (serrano)                */
+#*    Last change :  Wed Dec 18 17:04:40 2013 (serrano)                */
 #*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -186,7 +186,7 @@ C_SCM_R5RS	= $(R5RS:%=R5rs/%.c)
 LLIB		= bexit type bigloo object error struct os hash weakhash \
                   tvector bit binary foreign dsssl ucs2 weakptr \
                   unicode process socket custom date \
-                  param thread trace bconfigure mmap srfi4 module
+                  param thread trace bconfigure mmap srfi4 module i18n
 
 SCM_LLIB	= $(LLIB:%=Llib/%.scm)
 C_SCM_LLIB	= $(LLIB:%=Llib/%.c)
