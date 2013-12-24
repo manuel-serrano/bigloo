@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Dec 18 17:04:40 2013 (serrano)                */
+#*    Last change :  Thu Dec 19 08:16:52 2013 (serrano)                */
 #*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -102,7 +102,7 @@ CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
                   cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregexp \
-                  cobject
+                  cobject ci18n
 
 C_CLIB		= $(CLIB:%=Clib/%.c)
 

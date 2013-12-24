@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 18 17:02:42 2013                          */
-;*    Last change :  Wed Dec 18 18:05:11 2013 (serrano)                */
+;*    Last change :  Tue Dec 24 12:01:29 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    i18n support                                                     */
@@ -50,10 +50,11 @@
 	       (method static $utf8-locale-compare3::int (::bstring ::bstring)
 		  "bgl_utf8_locale_compare3")))
    
-   (export  (inline utf8-locale-compare3::int ::bstring ::bstring)))
+   (export  (inline utf8-string-locale-compare3::int ::bstring ::bstring)))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-locale-compare3 ...                                         */
+;*    utf8-string-locale-compare3 ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (utf8-locale-compare3 left right)
+(define-inline (utf8-string-locale-compare3 left right)
    ($utf8-locale-compare3 left right))
+

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Fri Dec  9 11:51:09 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Fri Dec 20 07:11:03 2013 (serrano)                */
+;*    Copyright   :  2011-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
 ;*=====================================================================*/
@@ -146,7 +146,8 @@
 		(string-set! new j (string-ref re i))
 		(loop (+fx i 1) (+fx j 1)))))))
 
-   (let ((c (count re)))
+   (let* ((re (if (string-prefix? "(*UTF8)" re) (substring re 7) re))
+	  (c (count re)))
       (if (=fx c 0)
 	  re
 	  (normalize re c))))

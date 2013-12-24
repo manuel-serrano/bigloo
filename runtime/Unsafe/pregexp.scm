@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Fri Dec  9 11:09:04 2011 (serrano)                */
+;*    Last change :  Fri Dec 20 07:15:28 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -741,6 +741,7 @@
 
 (define %pregexp
   (lambda (s)
+    (when (string-prefix? "(*UTF8)" s) (set! s (substring s 7)))
     (set! *pregexp-space-sensitive?* #t) ;in case it got corrupted
     (list ':sub (car (pregexp-read-pattern s 0 (string-length s))))))
 
