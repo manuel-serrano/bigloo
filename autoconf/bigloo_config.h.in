@@ -525,10 +525,10 @@ extern union scmobj * an_object;
 /*    BGL_UTF8_LOCALE_COMPARE3 ...                                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_HAVE_UNISTRING )
-#  define BGL_UTF8_LOCALE_COMPARE3( s1, s2 ) \
+#  define BGL_UTF8_STRING_LOCALE_COMPARE3( s1, s2 ) \
    bgl_strcoll( s1, s2 )
 #else
-#  define BGL_UTF8_LOCALE_COMPARE3( s1, s2 ) \
+#  define BGL_UTF8_STRING_LOCALE_COMPARE3( s1, s2 ) \
    strcoll( BSTRING_TO_STRING( s1 ), BSTRING_TO_STRING( s2 ) )
 #endif
 
