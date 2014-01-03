@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Thu Dec 19 08:16:41 2013 (serrano)                */
+/*    Last change :  Sun Dec 29 07:54:30 2013 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -205,7 +205,13 @@ blit_string( obj_t s1, int offset1, obj_t s2, int offset2, int len ) {
 
    return BUNSPEC;
 }
-	
+
+/*---------------------------------------------------------------------*/
+/*    static char                                                      */
+/*    letters ...                                                      */
+/*---------------------------------------------------------------------*/
+static char letters[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+
 /*---------------------------------------------------------------------*/
 /*    integer_to_string ...                                            */
 /*---------------------------------------------------------------------*/
@@ -215,7 +221,6 @@ integer_to_string( long x, long radix ) {
    char *s;
    long ax;
    int bits = (x <= 0 ? 1 : 0);
-   char letters[] = "0123456789abcdef";
 
    for( ax = x; ax != 0; ax /= radix )
       bits++;
@@ -241,7 +246,6 @@ unsigned_to_string( long x, long radix ) {
    char *s;
    unsigned long ax;
    int bits = (x == 0 ? 1 : 0);
-   char letters[] = "0123456789abcdef";
 
    for( ax = x; ax > 0; ax /= radix )
       bits++;

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Sat Jun 30 07:25:36 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Thu Jan  2 11:37:06 2014 (serrano)                */
+;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -106,10 +106,10 @@
    
    (export  (inline date?::bool ::obj)
 	    (make-date #!key
-		       (nsec 0) (sec 1) (min 1) (hour 1)
+		       (nsec 0) (sec 0) (min 0) (hour 0)
 		       (day 1) (month 1) (year 1970)
 		       timezone (dst -1))
-	    (date-copy date #!key sec min hour day month year)
+	    (date-copy date #!key sec min hour day month year timezone)
 	    
 	    (inline integer->second::elong ::long)
 	    
@@ -178,10 +178,10 @@
 ;*    argument, but its value is currently discarded!                  */
 ;*---------------------------------------------------------------------*/
 (define (make-date #!key
-                   (nsec 0)
-		   (sec 1) (min 1) (hour 1)
-		   (day 1) (month 1) (year 1970)
-		   timezone (dst -1))
+	   (nsec 0)
+	   (sec 0) (min 0) (hour 0)
+	   (day 1) (month 1) (year 1970)
+	   timezone (dst -1))
    (if (integer? timezone)
        (c-date-new sec min hour day month year timezone #t dst)
        (c-date-new sec min hour day month year 0 #f dst)))
@@ -189,16 +189,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    date-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (date-copy date #!key sec min hour day month year)
+(define (date-copy date #!key sec min hour day month year timezone)
    (c-date-new (or sec (date-second date))
-	       (or min (date-minute date))
-	       (or hour (date-hour date))
-	       (or day (date-day date))
-	       (or month (date-month date))
-	       (or year (date-year date))
-	       0
-	       #f
-	       (date-is-dst date)))
+      (or min (date-minute date))
+      (or hour (date-hour date))
+      (or day (date-day date))
+      (or month (date-month date))
+      (or year (date-year date))
+      (or timezone (date-timezone date))
+      (or timezone (not (= (date-timezone date) 0)))
+      (date-is-dst date)))
       
 ;*---------------------------------------------------------------------*/
 ;*    integer->second ...                                              */

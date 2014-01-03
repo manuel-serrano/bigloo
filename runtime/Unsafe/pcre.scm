@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Fri Dec  9 11:50:51 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Fri Jan  3 12:57:43 2014 (serrano)                */
+;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 
             __evenv)
 
-   (extern ($regcomp::regexp (::bstring) "bgl_regcomp")
+   (extern ($regcomp::regexp (::bstring ::obj) "bgl_regcomp")
            ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
            ($regfree::obj (::regexp) "bgl_regfree")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
@@ -54,7 +54,7 @@
                  "BGL_REGEXPP")
               (method static $regexp-pattern::bstring (::obj)
                  "BGL_REGEXP_PAT")
-	      (method static $regcomp::regexp (::bstring)
+	      (method static $regcomp::regexp (::bstring ::obj)
 		 "bgl_regcomp")
 	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int)
 		 "bgl_regmatch")
@@ -63,7 +63,7 @@
  
    (export (inline regexp?::bool ::obj)
            (inline regexp-pattern::bstring ::regexp)
-           (pregexp ::bstring)
+           (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat ::bstring . opt-args)
            (pregexp-match pat ::bstring . opt-args)
            (pregexp-replace::bstring pat ::bstring ins::bstring)
@@ -98,8 +98,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp re)
-   ($regcomp re))
+(define (pregexp re . opt-args)
+   ($regcomp re opt-args))
 
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */

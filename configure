@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 18 17:53:26 2013 (serrano)                */
-#*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Jan  3 12:30:38 2014 (serrano)                */
+#*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -2166,7 +2166,7 @@ if [ "$regexp " = " " ]; then
   fi
 fi
 
-echo ";; generated file, don't edit" > runtime/Unsafe/regexp.scm
+echo ";; generated file, don't edit (`date`)" > runtime/Unsafe/regexp.scm
 cat runtime/Unsafe/$regexp.scm >>  runtime/Unsafe/regexp.scm
 
 if [ -f runtime/objs/obj_u/Unsafe/$regexp.c ]; then

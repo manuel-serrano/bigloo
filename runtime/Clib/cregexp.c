@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Wed Feb 15 17:05:25 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Fri Jan  3 13:47:26 2014 (serrano)                */
+/*    Copyright   :  2011-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/
@@ -32,10 +32,10 @@ bgl_make_regexp( obj_t pat ) {
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_regcomp( obj_t pat ) {
+bgl_regcomp( obj_t pat, obj_t _ ) {
    obj_t re = bgl_make_regexp( pat );
    int err;
-   
+
    if( !(err = regcomp( &(BGL_REGEXP_PREG( re )),
 			BSTRING_TO_STRING( pat ),
 			REG_EXTENDED )) ) {
@@ -117,18 +117,74 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int end ) {
 #if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
 #include <pcre.h>
 
+static obj_t utf8_symbol = BUNSPEC;
+static obj_t javascript_symbol = BUNSPEC;
+static obj_t caseless_symbol = BUNSPEC;
+static obj_t multiline_symbol = BUNSPEC;
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_pcre_options_init ...                                        */
+/*---------------------------------------------------------------------*/
+void
+bgl_pcre_options_init() {
+   if( utf8_symbol == BUNSPEC ) {
+      utf8_symbol = string_to_symbol( "UTF8");
+      javascript_symbol = string_to_symbol( "JAVASCRIPT_COMPAT" );
+      caseless_symbol = string_to_symbol( "CASELESS" );
+      multiline_symbol = string_to_symbol( "MULTILINE" );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_pcre_options ...                                             */
+/*---------------------------------------------------------------------*/
+static int
+bgl_pcre_options( obj_t args ) {
+   int options = 0;
+
+   if( PAIRP( args ) ) {
+      bgl_pcre_options_init();
+   
+      while( PAIRP( args ) ) {
+	 if( CAR( args ) == utf8_symbol ) {
+	    options |= PCRE_UTF8;
+	 } else if( CAR( args ) == javascript_symbol ) {
+	    options |= PCRE_JAVASCRIPT_COMPAT;
+	 } else if( CAR( args ) == caseless_symbol ) {
+	    options |= PCRE_CASELESS;
+	 } else if( CAR( args ) == multiline_symbol ) {
+	    options |= PCRE_MULTILINE | PCRE_NEWLINE_ANY;
+	 } else {
+	    if( CAR( args ) != BFALSE ) {
+	       C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp",
+				 "Illegal PCRE option", CAR( args ) );
+	       return 0;
+	    }
+	 }
+
+	 args = CDR( args );
+      }
+   }
+
+   return options;
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_regcomp( obj_t pat ) {
+bgl_regcomp( obj_t pat, obj_t optargs ) {
    obj_t re = bgl_make_regexp( pat );
    const char *error;
    int erroffset;
-
+   int options = bgl_pcre_options( optargs );
+   
    if( BGL_REGEXP_PREG( re ) =
-       pcre_compile( BSTRING_TO_STRING( pat ), 0, &error, &erroffset, NULL ) ) {
+       pcre_compile( BSTRING_TO_STRING( pat ), options,
+		     &error, &erroffset, NULL ) ) {
       BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PREG( re ), 0, &error );
 
       pcre_fullinfo( BGL_REGEXP_PREG( re ),
@@ -153,7 +209,6 @@ bgl_regcomp( obj_t pat ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_regfree( obj_t o ) {
-//   pcre_free_study( BGL_REGEXP( o ).study );
    pcre_free( BGL_REGEXP_PREG( o ) );
    
    return BUNSPEC;

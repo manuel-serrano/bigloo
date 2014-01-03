@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Fri Dec 20 07:11:03 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Fri Jan  3 12:29:20 2014 (serrano)                */
+;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
 ;*=====================================================================*/
@@ -43,7 +43,7 @@
 
             __evenv)
 
-   (extern ($regcomp::regexp (::bstring) "bgl_regcomp")
+   (extern ($regcomp::regexp (::bstring ::obj) "bgl_regcomp")
            ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
            ($regfree::obj (::regexp) "bgl_regfree")
 	   (macro $regexp?::bool (::obj) "BGL_REGEXPP")
@@ -57,7 +57,7 @@
  
    (export (inline regexp?::bool ::obj)
            (inline regexp-pattern::bstring ::regexp)
-           (pregexp ::bstring)
+           (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat ::bstring . opt-args)
            (pregexp-match pat ::bstring . opt-args)
            (pregexp-replace::bstring pat ::bstring ins::bstring)
@@ -113,7 +113,7 @@
 			     (else 0)))))
 	       (else
 		(loop (+fx i 1) c))))))
-
+   
    (define (normalize re c)
       (let* ((len (string-length re))
 	     (new (make-string (+fx len c))))
@@ -145,18 +145,17 @@
 	       (else
 		(string-set! new j (string-ref re i))
 		(loop (+fx i 1) (+fx j 1)))))))
-
-   (let* ((re (if (string-prefix? "(*UTF8)" re) (substring re 7) re))
-	  (c (count re)))
+   
+   (let ((c (count re)))
       (if (=fx c 0)
 	  re
 	  (normalize re c))))
-		   
+
 ;*---------------------------------------------------------------------*/
 ;*    pregexp ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp re)
-   ($regcomp (pregexp-normalize re)))
+(define (pregexp re . opt-args)
+   ($regcomp (pregexp-normalize re) opt-args))
 
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */

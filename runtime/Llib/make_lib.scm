@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Wed Dec 18 17:05:06 2013 (serrano)                */
+;*    Last change :  Fri Dec 27 17:59:41 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -83,6 +83,7 @@
  	    (eval-module-set! __evmodule)
 	    (evmodule? __evmodule)
  	    (evmodule-name __evmodule)
+ 	    (evmodule-path __evmodule)
  	    (evmodule-extension __evmodule)
  	    (evmodule-check-unbound __evmodule)
 	    

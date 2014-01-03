@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Oct 24 12:53:17 2013 (serrano)                */
+;*    Last change :  Sun Dec 29 07:55:33 2013 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1403,8 +1403,8 @@
 	  (c-op->string (symbol-append 'c- op->string))
 	  (radixv (gensym 'radix)))
       `(let ((,radixv ,radix))
-	  (case ,radixv
-	     ((2 8 10 16)
+	  (cond
+	     ((and (>=fx ,radixv 2) (<=fx ,radixv 36))
 	      (,c-op->string ,x ,radixv))
 	     (else
 	      (error ,(symbol->string op->string) "Illegal radix" ,radixv))))))
@@ -1415,6 +1415,9 @@
 (define (fixnum->string x #!optional (radix::long 10))
    (integer->string-op fixnum x radix))
 
+;*---------------------------------------------------------------------*/
+;*    integer->string ...                                              */
+;*---------------------------------------------------------------------*/
 (define (integer->string x #!optional (radix::long 10))
    (cond
       ((fixnum? x)

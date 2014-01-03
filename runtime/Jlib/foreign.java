@@ -5203,7 +5203,7 @@ public final class foreign
       return o;
    }
 
-   public static regexp bgl_regcomp(byte[] pat) {
+   public static regexp bgl_regcomp(byte[] pat, Object opt_args ) {
       return new regexp(pat,true);
    }
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Nov  7 15:23:33 2013 (serrano)                */
+;*    Last change :  Fri Dec 27 18:10:34 2013 (serrano)                */
 ;*    Copyright   :  2006-13 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -69,6 +69,7 @@
    (export  evmodule-uninitialized
 	    (evmodule?::bool ::obj)
 	    (evmodule-name::symbol ::obj)
+	    (evmodule-path::obj ::obj)
 	    (evmodule-find-global ::obj ::symbol)
 	    (evmodule-bind-global! ::obj ::symbol ::obj ::obj)
 	    (evmodule-macro-table ::obj)
@@ -136,7 +137,15 @@
 (define (evmodule-name mod)
    (if (evmodule? mod)
        (%evmodule-id mod)
-       (bigloo-type-error 'evmodule-name 'module mod)))
+       (bigloo-type-error "evmodule-name" 'module mod)))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-path ...                                                */
+;*---------------------------------------------------------------------*/
+(define (evmodule-path mod)
+   (if (evmodule? mod)
+       (%evmodule-path mod)
+       (bigloo-type-error "evmodule-path" 'module mod)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-macro-table ...                                         */
@@ -144,7 +153,7 @@
 (define (evmodule-macro-table mod)
    (if (evmodule? mod)
        (%evmodule-macros mod)
-       (bigloo-type-error 'evmodule-macro-table 'module mod)))
+       (bigloo-type-error "evmodule-macro-table" 'module mod)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-extension ...                                           */
@@ -152,7 +161,7 @@
 (define (evmodule-extension mod)
    (if (evmodule? mod)
        (%evmodule-extension mod)
-       (bigloo-type-error 'evmodule-extension 'module mod)))
+       (bigloo-type-error "evmodule-extension" 'module mod)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-evmodule ...                                                */
@@ -195,7 +204,7 @@
 	   (eq? mod (interaction-environment))
 	   (eq? mod #unspecified))
        ($eval-module-set! mod)
-       (error 'eval-module-set! "Illegal module" mod)))
+       (error "eval-module-set!" "Illegal module" mod)))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-find-module ...                                             */
@@ -470,9 +479,22 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-load ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-load ident paths loc)
-   (let ((load (or (bigloo-load-module) evmodule-loadq)))
-      (for-each load paths))
+(define (evmodule-load mod ident paths loc)
+   
+   (define (user-load-module)
+      (let ((proc (bigloo-load-module)))
+	 (when (procedure? proc)
+	    (cond
+	       ((correct-arity? proc 2)
+		proc)
+	       ((correct-arity? proc 1)
+		(lambda (path _) (proc path)))
+	       (else
+		(error "evmodule-load"
+		   "incorect user module loader" proc))))))
+
+   (let ((load (or (user-load-module) evmodule-loadq)))
+      (for-each (lambda (p) (load p mod)) paths))
    (let ((mod (eval-find-module ident)))
       (if (evmodule? mod)
 	  (begin
@@ -492,7 +514,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-loadq ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (evmodule-loadq file)
+(define (evmodule-loadq file mod)
    (let* ((path (file-name-unix-canonicalize file))
 	  (cv (make-condition-variable (gensym 'loadq)))
 	  (cell (cons path cv)))
@@ -536,7 +558,7 @@
 
    (define (load-module)
       (unwind-protect
-	 (import-module (evmodule-load ident path loc))
+	 (import-module (evmodule-load mod ident path loc))
 	 ($eval-module-set! mod)))
    
    (let ((mod2 (eval-find-module ident)))
@@ -662,7 +684,7 @@
 	     (fprint (current-error-port)
 		     "*** loading module `" ident "' [" path "]..."))
 	  (unwind-protect
-	     (from-module (evmodule-load ident path loc))
+	     (from-module (evmodule-load mod ident path loc))
 	     ($eval-module-set! mod))))))
 
 ;*---------------------------------------------------------------------*/
@@ -829,7 +851,6 @@
 	 ;; Step2: evaluate import and from clauses.
 	 (evmodule-step2 mod iclauses loc)
 	 ;; step3: evaluate classes and build the module body (with includes).
-;* 	 (evmodule-step3 mod mclauses loc)                             */
 	 (evmodule-step3 mod iclauses loc)
 	 ;; returns the include expressions
 	 `(begin ,@iexprs))))

@@ -96,7 +96,7 @@ Four procedures @code{pregexp}, @code{pregexp-match-positions},
 @code{pregexp-replace*} enable compilation and matching of regular
 expressions.
 
-@deffn {bigloo procedure} pregexp U-regexp
+@deffn {bigloo procedure} pregexp U-regexp . opt-args
 The procedure @code{pregexp} takes a U-regexp, which is a
 string, and returns an S-regexp, which is a tree.  
 
@@ -106,6 +106,9 @@ string, and returns an S-regexp, which is a tree.
 
 @noindent There is rarely any need to look at the S-regexps 
 returned by @code{pregexp}.
+
+The @var{opt-args} specifies how the regular expression is to be matched.
+Until documented the argument should be the empty list.
 @end deffn
 
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 18 17:02:42 2013                          */
-;*    Last change :  Tue Dec 24 13:16:40 2013 (serrano)                */
+;*    Last change :  Tue Dec 24 13:51:10 2013 (serrano)                */
 ;*    Copyright   :  2013 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    i18n support                                                     */
@@ -78,7 +78,7 @@
    ($utf8-string-locale-compare3 left right))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-string-locale-upcase ...                                           */
+;*    utf8-string-locale-upcase ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-upcase str)
    (cond-expand
@@ -86,7 +86,7 @@
       (else ($utf8-string-locale-upcase str))))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-string-locale-downcase ...                                         */
+;*    utf8-string-locale-downcase ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-downcase str)
    (cond-expand
@@ -94,7 +94,7 @@
       (else ($utf8-string-locale-downcase str))))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-string-locale-capitalize ...                                       */
+;*    utf8-string-locale-capitalize ...                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-locale-capitalize str)
    (cond-expand

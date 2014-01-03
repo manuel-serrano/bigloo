@@ -25,7 +25,7 @@ by @code{make-date}, @code{current-date}, or @code{seconds->date}. It
 returns @code{#f} otherwise.
 @end deffn
 
-@deffn {bigloo procedure} make-date #!key (sec 0) (min 0) (hour 0) (day 0) (month 0) (year 1970) timezone (dst -1)
+@deffn {bigloo procedure} make-date #!key (nsec 0) (sec 0) (min 0) (hour 0) (day 1) (month 1) (year 1970) timezone (dst -1)
 Creates a @code{date} object from the integer values passed as argument.
 
 The argument @var{timezone}, if provided, is expressed in minute.
@@ -41,12 +41,12 @@ available, @code{0} when daylight saving is disabled, @code{1} when daylight
 saving is enabled.
 @end deffn
 
-@deffn {bigloo procedure} date-copy date #!key sec min hour day month year
+@deffn {bigloo procedure} date-copy date #!key sec min hour day month year timezone
 Creates a new date from the argument @var{date}. 
 
 Example:
 @smalllisp
-(date-copy (current-date) 1 0 0)
+(date-copy (current-date) :sec 32 :min 24 :day 5)
 @end smalllisp
 
 @end deffn
@@ -76,6 +76,10 @@ Construct a textual representation of the date passed in argument
 
 @deffn {bigloo procedure} date-second date
 Returns the number of seconds of a date, in the range @code{0...59}.
+@end deffn
+
+@deffn {bigloo procedure} date-nanosecond date
+Returns the number of nano seconds of a date.
 @end deffn
 
 @deffn {bigloo procedure} date-minute date
@@ -109,7 +113,7 @@ Returns the year of a date.
 @end deffn
 
 @deffn {bigloo procedure} date-timezone date
-Returns the timezone of a date.
+Returns the timezone (in seconds) of a date.
 @end deffn
 
 @deffn {bigloo procedure} date-is-dst date

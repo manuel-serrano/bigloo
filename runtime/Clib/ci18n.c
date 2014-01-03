@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec 19 08:16:32 2013                          */
-/*    Last change :  Tue Dec 24 13:20:43 2013 (serrano)                */
+/*    Last change :  Tue Dec 24 14:15:50 2013 (serrano)                */
 /*    Copyright   :  2013 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C i18n implementation                                            */
@@ -43,20 +43,25 @@ bgl_utf8_string_locale_upcase( obj_t str ) {
    
 #if( BGL_HAVE_UNISTRING )
    uint8_t *src = BSTRING_TO_STRING( str );
-   obj_t res = make_string_sans_fill( len );
-   uint8_t *buf = BSTRING_TO_STRING( res );
+   size_t buflen;
+   uint8_t *buf;
+   obj_t res;
+
+   buf = u8_toupper( src, len, NULL, NULL, NULL, &buflen );
+   res = string_to_bstring_len( (char *)buf, buflen );
+   free( buf );
    
-   u8_toupper( src, len, uc_locale_language(), NULL, buf, len );
+   return bgl_string_shrink( res, buflen );
 #else
-   obj_t res = string_locale_to_bstring_locale_len( BSTRING_TO_STRING( str ), len );
+   obj_t res = string_to_bstring_len( BSTRING_TO_STRING( str ), len );
    offset_t i;
 
    for( i = 0; i < len; i++ ) {
       res[ i ] = toupper( res[ i ] );
    }
-#endif   
 
    return res;
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -67,23 +72,28 @@ BGL_RUNTIME_DEF
 obj_t
 bgl_utf8_string_locale_downcase( obj_t str ) {
    size_t len = STRING_LENGTH( str );
-   
+
 #if( BGL_HAVE_UNISTRING )
    uint8_t *src = BSTRING_TO_STRING( str );
-   obj_t res = make_string_sans_fill( len );
-   uint8_t *buf = BSTRING_TO_STRING( res );
+   size_t buflen;
+   uint8_t *buf;
+   obj_t res;
+
+   buf = u8_tolower( src, len, NULL, NULL, NULL, &buflen );
+   res = string_to_bstring_len( (char *)buf, buflen );
+   free( buf );
    
-   u8_tolower( src, len, uc_locale_language(), NULL, buf, len );
+   return bgl_string_shrink( res, buflen );
 #else
-   obj_t res = string_locale_to_bstring_locale_len( BSTRING_TO_STRING( str ), len );
+   obj_t res = string_to_bstring_len( BSTRING_TO_STRING( str ), len );
    offset_t i;
 
    for( i = 0; i < len; i++ ) {
       res[ i ] = tolower( res[ i ] );
    }
-#endif   
 
    return res;
+#endif   
 }
 
 /*---------------------------------------------------------------------*/
@@ -97,13 +107,16 @@ bgl_utf8_string_locale_capitalize( obj_t str ) {
    
 #if( BGL_HAVE_UNISTRING )
    uint8_t *src = BSTRING_TO_STRING( str );
-   obj_t res = make_string_sans_fill( len );
-   uint8_t *buf = BSTRING_TO_STRING( res );
-   
-   u8_totitle( src, len, uc_locale_language(), NULL, buf, len );
+   size_t buflen;
+   uint8_t *buf;
+   obj_t res;
 
-   return res;
+   buf = u8_totitle( src, len, NULL, NULL, NULL, &buflen );
+   res = string_to_bstring_len( (char *)buf, buflen );
+   free( buf );
+   
+   return bgl_string_shrink( res, buflen );
 #else
-   return string_locale_to_bstring_locale_len( BSTRING_TO_STRING( str ), len );
+   return string_to_bstring_len( BSTRING_TO_STRING( str ), len );
 #endif   
 }

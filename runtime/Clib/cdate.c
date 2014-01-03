@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Wed Dec 19 09:08:01 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Thu Jan  2 11:58:20 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
@@ -95,9 +95,16 @@ bgl_make_date( int s, int m, int hr, int mday, int mon, int year, long tz, bool_
 
    t = mktime( &tm );
 
-   if( istz ) t = t - BGL_TIMEZONE + tz;
+   if( istz ) {
+      obj_t date;
 
-   return bgl_seconds_to_date( t );
+      date = bgl_seconds_to_date( t );
+      date->date_t.timezone = tz;
+
+      return date;
+   } else {
+      return bgl_seconds_to_date( t );
+   }
 }
 
 /*---------------------------------------------------------------------*/

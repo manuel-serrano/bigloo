@@ -798,7 +798,7 @@ as if printed with display followed by a newline. This tag is hence
 equivalent to the sequence @code{~a~n}.
 @item @code{~c} The corresponding value must be a character and is
 inserted into the string as if printed with write-char.
-@item @code{~x}, @code{~o}, @code{~b}  The corresponding value must
+@item @code{~d}, @code{~x}, @code{~o}, @code{~b}  The corresponding value must
 must be a number and is printed with radix 16, 8 or 2.
 @item @code{~l} If the corresponding value is a proper list, its items 
 are inserted into the string, separated by whitespaces, without the 
