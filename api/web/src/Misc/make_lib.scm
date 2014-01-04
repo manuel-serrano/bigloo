@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Fri May 28 10:41:52 2010 (serrano)                */
-;*    Copyright   :  2001-10 Manuel Serrano                            */
+;*    Last change :  Sat Jan  4 14:43:57 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
 	   __web_html
 	   __web_css
 	   __web_css-ast
-	   __web_date)
+	   __web_date
+	   __web_json)
 
    (eval   (class &webdav-access-control-exception)
 	   (class css-uri)
