@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/avahi.scm)                                                        */
 /*   Bigloo (4.1a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Sat Jan 4 16:07:37 CET 2014         */
+/*   Inria -- Sophia Antipolis (c)       Sun Jan 5 10:34:09 CET 2014         */
 /*===========================================================================*/
 /* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/4.1a -unsafe -safee -srfi avahi -copt -D_REENTRANT -copt -fPIC -copt -IClib -copt  Llib/avahi.scm -o Clib/bglavahi.h -hgen)*/
 

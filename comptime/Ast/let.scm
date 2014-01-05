@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Dec 18 20:48:28 2013 (serrano)                */
+;*    Last change :  Sun Jan  5 09:44:48 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -859,9 +859,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    function? ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    does val contain a lambda definition (possibly nested)           */
+;*    does exp contain a lambda definition (possibly nested)           */
 ;*---------------------------------------------------------------------*/
 (define (function? exp)
+
+   (define (any* pred lst)
+      (when (pair? lst)
+	 (or (pred (car lst)) (any* pred (cdr lst)))))
+
    (match-case exp
       ((quote . ?-)
        #f)
@@ -869,6 +874,6 @@
        (or (eq? var 'lambda)
 	   (eq? (fast-id-of-id var #f) 'lambda)
 	   (function? var)
-	   (any function? args)))
+	   (any* function? args)))
       (else
-       #f)))   
+       #f)))
