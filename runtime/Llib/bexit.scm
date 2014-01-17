@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Thu Jul 18 13:00:40 2013 (serrano)                */
+;*    Last change :  Fri Jan 17 08:03:11 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -151,31 +151,37 @@
 ;*---------------------------------------------------------------------*/
 (define (unwind-until! exitd val)
    (if (pair? exitd)
-       (unwind-stack-until! (car exitd) #f val (cdr exitd))
+       (begin
+	  (tprint "UNWIND-UNTIL, got one exitd=" (typeof exitd) " val="
+	     (typeof val))
+	  (unwind-stack-until! (car exitd) #f val (cdr exitd)))
        (unwind-stack-until! exitd #f val #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    unwind-stack-until! ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    This function unwind a stack until an exit is found or the       */
-;*    stack bottom is reached. In such a case, the proc arg is called. */
+;*    This function unwinds a stack until an exit is found or the      */
+;*    stack bottom is reached, in which case, the proc arg is called.  */
 ;*    This function is used by unwind-until! (introduced by any        */
 ;*    unwind-protect) and by call/cc.                                  */
 ;*---------------------------------------------------------------------*/
-(define (unwind-stack-until! exitd estamp val proc)
+(define (unwind-stack-until! exitd estamp val proc-bottom)
    (let loop ()
       (let ((exitd-top ($get-exitd-top)))
 	 (if ($exitd-bottom? exitd-top)
-	     (if (procedure? proc)
-		 (proc val)
+	     (if (procedure? proc-bottom)
+		 (proc-bottom val)
 		 (let ((hdl ($get-uncaught-exception-handler)))
 		    ((if (procedure? hdl)
 			 hdl
 			 default-uncaught-exception-handler)
 		     val)))
 	     (begin
+		;; execute the unwind protects pushed above the exitd block
 		(exitd-exec-and-pop-protects! exitd-top)
+		;; then, remove the exitd block from the stack
 		(pop-exit!)
+		;; unwind the stack
 		(cond  
 		   ((and (eq? exitd-top exitd) 
 			 (or (not (fixnum? estamp))
@@ -189,7 +195,7 @@
 		   ((not (exitd-user? exitd-top))
 		    (let ((p ($get-exitd-val)))
 		       (set-car! (car p) exitd)
-		       (set-cdr! (car p) proc)
+		       (set-cdr! (car p) proc-bottom)
 		       (set-cdr! p val)
 		       (jump-exit ($exitd->exit exitd-top) p))
 		    #unspecified)
@@ -205,12 +211,26 @@
       ((procedure? p) (p))))
       
 ;*---------------------------------------------------------------------*/
+;*    Remove and then execute all the exec and protect on the          */
+;*    -------------------------------------------------------------    */
+;*    exitd block.                                                     */
 ;*    exitd-exec-and-pop-protects! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (exitd-exec-and-pop-protects! exitd)
-   (for-each exitd-exec-protect ($exitd-protectn exitd))
-   (exitd-exec-protect ($exitd-protect1 exitd))
-   (exitd-exec-protect ($exitd-protect0 exitd)))
+   (let loop ((l ($exitd-protectn exitd)))
+      (when (pair? l)
+	 (let ((p (car l)))
+	    ($exitd-protectn-set! exitd (cdr l))
+	    (exitd-exec-protect p)
+	    (loop (cdr l)))))
+   (let ((p ($exitd-protect1 exitd)))
+      (when p
+	 ($exitd-protect1-set! exitd #f)
+	 (exitd-exec-protect p)))
+   (let ((p ($exitd-protect0 exitd)))
+      ;; don't need to test protect0, it is always true
+      ($exitd-protect0-set! exitd #f)
+      (exitd-exec-protect p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    exitd-push-protect! ...                                          */

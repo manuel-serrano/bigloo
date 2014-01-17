@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Jan 29 16:18:12 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jan 17 07:17:17 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -99,27 +99,6 @@
 			   ,tmp))))
 	    (replace! x (e new e)))))
 
-   (define (old-expander exp cleanup)
-      (let* ((val (mark-symbol-non-user! (gensym 'val)))
-	     (an-exit (mark-symbol-non-user! (gensym 'an_exit)))
-	     (valbis (mark-symbol-non-user! (gensym 'val)))
-	     (eexp (e exp e))
-	     (aux `(let ((,valbis ,eexp))
-		      (pop-exit!)
-		      ,valbis))
-	     (eaux (if (epair? eexp)
-		       (econs (car aux) (cdr aux) (cer eexp))
-		       aux)))
-	 (let ((new `(let ((,val (set-exit (,an-exit)
-				    (let ()
-				       (push-exit! ,an-exit 0)
-				       ,aux))))
-			,(e (expand-progn cleanup) e)
-			(if (val-from-exit? ,val)
-			    ((@ unwind-until! __bexit) (car ,val) (cdr ,val))
-			    ,val))))
-	    (replace! x new))))
-   
    (match-case x
       ((?- ?exp . (and (? pair?) ?cleanup))
        (new-expander exp cleanup))

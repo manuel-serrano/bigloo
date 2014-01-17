@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Thu Aug  1 06:43:34 2013 (serrano)                */
+;*    Last change :  Fri Jan 17 08:00:29 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -182,6 +182,15 @@
       ((car l) #t)))
 
 ;*---------------------------------------------------------------------*/
+;*    test-multiple-return ...                                         */
+;*---------------------------------------------------------------------*/
+(define (test-multiple-return)
+   (bind-exit (return)
+      (unwind-protect
+	 (return 1111)
+	 (return 2222))))
+
+;*---------------------------------------------------------------------*/
 ;*    test-bind-exit ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (test-bind-exit)
@@ -205,5 +214,6 @@
    (test "unwind.3" (eval '(bind-exit (exit) (unwind-protect 10 9))) 10)
    (test "trace stack.1" (test-stack-traces) #t)
    (test "trace stack.2" (test-trace-stack) #t)
-   (test "trace stack.3" (test-trace-stack2) #t))
+   (test "trace stack.3" (test-trace-stack2) #t)
+   (test "multiple-return" (test-multiple-return) 2222))
 	 

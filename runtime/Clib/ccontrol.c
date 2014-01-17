@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Fri Dec 13 18:26:32 2013 (serrano)                */
+/*    Last change :  Mon Jan 13 16:35:13 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -82,7 +82,7 @@ make_va_procedure( obj_t (*entry)(), int arity, int size ) {
 static obj_t
 generic_entry( obj_t proc, ... ) {
    va_list argl;
-   obj_t optional, tail;
+   obj_t optional;
    obj_t runner;
 
    va_start( argl, proc );

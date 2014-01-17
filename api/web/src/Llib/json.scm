@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Sat Jan  4 15:06:38 2014 (serrano)                */
+;*    Last change :  Mon Jan 13 07:06:03 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -172,9 +172,13 @@
 	       (proc "json-parse")
 	       (msg (format "wrong argument \"~s\"" name))
 	       (obj proc)))))
+
+   (define last-token #f)
    
    (define (read-token)
-      (read/rp *json-lexer* o))
+      (let ((t (read/rp *json-lexer* o)))
+	 (set! last-token t)
+	 t))
 
    (define (parse-token type)
       (let ((token (read-token)))
@@ -212,7 +216,6 @@
 		(let* ((key (cadr token))
 		       (val (parse-text #f))
 		       (res (if reviver (reviver object key val) val)))
-		   (tprint "object key=" key " val=" (typeof val))
 		   (when res
 		      (object-set object key res))
 		   (loop)))
@@ -256,11 +259,11 @@
    (check-procedure parse-error 3 :parse-error)
    (when reviver (check-procedure reviver 3 :reviver))
 
-   (let loop ((val (parse-text #f)))
+   (let ((val (parse-text #f)))
       (let ((token (parse-text 'EOS)))
 	 (when token
-	    (parse-error (format "Illegal trailing token" (car token))
-	       (cadr token) (caddr token))))
+	    (parse-error (format "Illegal trailing token \"~a\"" token)
+	       (cadr last-token) (caddr last-token))))
       val))
 
 

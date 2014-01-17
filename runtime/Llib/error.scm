@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Nov  5 08:18:29 2013 (serrano)                */
+;*    Last change :  Wed Jan 15 20:26:28 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -367,7 +367,7 @@
 		r))
 	  (begin
 	     (default-exception-handler val)
-	     (the_failure "raise" "uncaught execption" val)))))
+	     (the_failure "raise" "uncaught exception" val)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-exception-handler ...                                    */
