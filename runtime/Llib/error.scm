@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Jan 15 20:26:28 2014 (serrano)                */
+;*    Last change :  Sun Jan 19 22:20:17 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -333,7 +333,11 @@
 (define (with-exception-handler handler thunk)
    (if (correct-arity? handler 1)
        (let ((old-handlers ($get-error-handler)))
-	  ($set-error-handler! (cons handler old-handlers))
+	  ($set-error-handler!
+	     (cons (lambda (e)
+		      ($set-error-handler! old-handlers)
+		      (handler e))
+		old-handlers))
 	  (unwind-protect
 	     (if (correct-arity? thunk 0)
 		 (thunk)
@@ -356,9 +360,9 @@
    (let ((handlers ($get-error-handler)))
       (if (pair? handlers)
 	  (let ((hdls (cdr handlers)))
-	     ($set-error-handler! hdls)
+	     ;; ($set-error-handler! hdls)
 	     (let ((r ((car handlers) val)))
-		($set-error-handler! hdls)
+		;; ($set-error-handler! hdls)
 		(when (isa? val &error)
 		   (with-access::&error val (fname location)
 			 (error/location "raise"

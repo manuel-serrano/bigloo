@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 16 15:41:47 1993                          */
-;*    Last change :  Fri Jan 11 11:18:22 2013 (serrano)                */
+;*    Last change :  Sun Jan 19 21:52:09 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test le fonctionnement des `error-handler'                    */
 ;*---------------------------------------------------------------------*/
@@ -423,5 +423,12 @@
 		     (set! x (cons 4 x))))
 	       (set! x (cons 5 x)))
 	    x)
-	 '(5 1 4 2 3)))
+	 '(5 1 4 2 3))
+   (test "with-handler/unwind-protect.4"
+      (with-handler
+	 (lambda (e) e)
+	 (unwind-protect
+	    (raise 1)
+	    (raise 2)))
+      2))
  

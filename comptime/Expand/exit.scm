@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Fri Jan 17 07:17:17 2014 (serrano)                */
+;*    Last change :  Sun Jan 19 21:50:42 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -117,16 +117,16 @@
 	   (escape (gensym 'escape))
 	   (hdl (gensym 'handler)))
 	(e `(let ((,res #unspecified)
-		  (,hdl ,handler))
-	       (if (bind-exit (,escape)
+                  (,hdl ,handler))
+               (if (bind-exit (,escape)
 		      (let ((,ohs ($get-error-handler)))
 			 (unwind-protect
 			    (begin
 			       ($set-error-handler!
-				(cons (lambda (e)
-					 (set! ,res e)
-					 (,escape #t))
-				      ,ohs))
+				  (cons (lambda (e)
+					   (set! ,res e)
+					   (,escape #t))
+				     ,ohs))
 			       (set! ,res (begin ,@body))
 			       #f)
 			    ($set-error-handler! ,ohs))))
