@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec 19 08:16:32 2013                          */
-/*    Last change :  Tue Dec 24 14:15:50 2013 (serrano)                */
-/*    Copyright   :  2013 Manuel Serrano                               */
+/*    Last change :  Tue Jan 21 07:38:10 2014 (serrano)                */
+/*    Copyright   :  2013-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C i18n implementation                                            */
 /*=====================================================================*/
@@ -53,11 +53,12 @@ bgl_utf8_string_locale_upcase( obj_t str ) {
    
    return bgl_string_shrink( res, buflen );
 #else
-   obj_t res = string_to_bstring_len( BSTRING_TO_STRING( str ), len );
-   offset_t i;
+   char *src = BSTRING_TO_STRING( str );
+   obj_t res = make_string_sans_fill( len );
+   long i;
 
    for( i = 0; i < len; i++ ) {
-      res[ i ] = toupper( res[ i ] );
+      STRING_SET( res, i, toupper( src[ i ] ) );
    }
 
    return res;
@@ -85,11 +86,12 @@ bgl_utf8_string_locale_downcase( obj_t str ) {
    
    return bgl_string_shrink( res, buflen );
 #else
-   obj_t res = string_to_bstring_len( BSTRING_TO_STRING( str ), len );
-   offset_t i;
+   char *src = BSTRING_TO_STRING( str );
+   obj_t res = make_string_sans_fill( len );
+   long i;
 
    for( i = 0; i < len; i++ ) {
-      res[ i ] = tolower( res[ i ] );
+      STRING_SET( res, i, tolower( src[ i ] ) );
    }
 
    return res;
