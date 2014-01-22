@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 15 15:04:42 1992                          */
-;*    Last change :  Tue Nov 15 07:57:10 2011 (serrano)                */
-;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 22 08:02:24 2014 (serrano)                */
+;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The trace management                                             */
 ;*=====================================================================*/
@@ -19,7 +19,8 @@
 	   (stop-trace)
 	   *trace-port*
 	   (trace-satisfy? mask level)
-	   (print-trace . args)))
+	   (print-trace . args)
+	   (trace-tab ::int)))
 
 ;*---------------------------------------------------------------------*/
 ;*    L'initialisation des variables locales                           */
@@ -29,6 +30,16 @@
 (define *level*      0)
 (define *trace-mode* #t)
 
+(define-macro (make-margin len)
+   (let loop ((len len)
+	      (acc '()))
+      (if (=fx len 0)
+	  `',(list->vector (cons "" acc))
+	  (loop (-fx len 1) (cons (make-string len #\space) acc)))))
+
+(define *margins*
+   (make-margin 10))
+     
 ;*---------------------------------------------------------------------*/
 ;*    start-trace ...                                                  */
 ;*---------------------------------------------------------------------*/
@@ -73,4 +84,11 @@
       (for-each (lambda (e) (display-circle e *trace-port*)) exp)
       (flush-output-port *trace-port*)))
        
-	 
+;*---------------------------------------------------------------------*/
+;*    trace-tab ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (trace-tab len)
+   (when *trace-mode*
+      (if (<fx len (vector-length *margins*))
+	  (vector-ref *margins* len)
+	  (make-string len #\space))))

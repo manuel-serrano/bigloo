@@ -11,7 +11,7 @@
 ;; sfun/Ginfo
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun/Ginfo::sfun/Ginfo arity1309::long side-effect1310::obj predicate-of1311::obj stack-allocator1312::obj top?1313::bool the-closure1314::obj effect1315::obj property1316::obj args1317::obj args-name1318::obj body1319::obj class1320::obj dsssl-keywords1321::obj loc1322::obj optionals1323::obj keys1324::obj the-closure-global1325::obj strength1326::symbol G?1327::bool cfrom1328::obj cfrom*1329::obj cto1330::obj cto*1331::obj cfunction1332::obj integrator1333::obj imark1334::obj owner1335::obj integrated1336::obj plugged-in1337::obj mark1338::long free-mark1339::obj the-global1340::obj kaptured1341::obj new-body1342::obj bmark1343::long umark1344::long free1345::obj bound1346::obj)
+    (inline make-sfun/Ginfo::sfun/Ginfo arity1309::long side-effect1310::obj predicate-of1311::obj stack-allocator1312::obj top?1313::bool the-closure1314::obj effect1315::obj property1316::obj args1317::obj args-name1318::obj body1319::obj class1320::obj dsssl-keywords1321::obj loc1322::obj optionals1323::obj keys1324::obj the-closure-global1325::obj strength1326::symbol G?1327::bool cfrom1328::obj cfrom*1329::obj cto1330::obj cto*1331::obj efunctions1332::obj integrator1333::obj imark1334::obj owner1335::obj integrated1336::obj plugged-in1337::obj mark1338::long free-mark1339::obj the-global1340::obj kaptured1341::obj new-body1342::obj bmark1343::long umark1344::long free1345::obj bound1346::obj)
     (inline sfun/Ginfo?::bool ::obj)
     (sfun/Ginfo-nil::sfun/Ginfo)
     (inline sfun/Ginfo-bound::obj ::sfun/Ginfo)
@@ -42,8 +42,8 @@
     (inline sfun/Ginfo-imark-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-integrator::obj ::sfun/Ginfo)
     (inline sfun/Ginfo-integrator-set! ::sfun/Ginfo ::obj)
-    (inline sfun/Ginfo-cfunction::obj ::sfun/Ginfo)
-    (inline sfun/Ginfo-cfunction-set! ::sfun/Ginfo ::obj)
+    (inline sfun/Ginfo-efunctions::obj ::sfun/Ginfo)
+    (inline sfun/Ginfo-efunctions-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-cto*::obj ::sfun/Ginfo)
     (inline sfun/Ginfo-cto*-set! ::sfun/Ginfo ::obj)
     (inline sfun/Ginfo-cto::obj ::sfun/Ginfo)
@@ -205,7 +205,7 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; sfun/Ginfo
-(define-inline (make-sfun/Ginfo::sfun/Ginfo arity1309::long side-effect1310::obj predicate-of1311::obj stack-allocator1312::obj top?1313::bool the-closure1314::obj effect1315::obj property1316::obj args1317::obj args-name1318::obj body1319::obj class1320::obj dsssl-keywords1321::obj loc1322::obj optionals1323::obj keys1324::obj the-closure-global1325::obj strength1326::symbol G?1327::bool cfrom1328::obj cfrom*1329::obj cto1330::obj cto*1331::obj cfunction1332::obj integrator1333::obj imark1334::obj owner1335::obj integrated1336::obj plugged-in1337::obj mark1338::long free-mark1339::obj the-global1340::obj kaptured1341::obj new-body1342::obj bmark1343::long umark1344::long free1345::obj bound1346::obj) (instantiate::sfun/Ginfo (arity arity1309) (side-effect side-effect1310) (predicate-of predicate-of1311) (stack-allocator stack-allocator1312) (top? top?1313) (the-closure the-closure1314) (effect effect1315) (property property1316) (args args1317) (args-name args-name1318) (body body1319) (class class1320) (dsssl-keywords dsssl-keywords1321) (loc loc1322) (optionals optionals1323) (keys keys1324) (the-closure-global the-closure-global1325) (strength strength1326) (G? G?1327) (cfrom cfrom1328) (cfrom* cfrom*1329) (cto cto1330) (cto* cto*1331) (cfunction cfunction1332) (integrator integrator1333) (imark imark1334) (owner owner1335) (integrated integrated1336) (plugged-in plugged-in1337) (mark mark1338) (free-mark free-mark1339) (the-global the-global1340) (kaptured kaptured1341) (new-body new-body1342) (bmark bmark1343) (umark umark1344) (free free1345) (bound bound1346)))
+(define-inline (make-sfun/Ginfo::sfun/Ginfo arity1309::long side-effect1310::obj predicate-of1311::obj stack-allocator1312::obj top?1313::bool the-closure1314::obj effect1315::obj property1316::obj args1317::obj args-name1318::obj body1319::obj class1320::obj dsssl-keywords1321::obj loc1322::obj optionals1323::obj keys1324::obj the-closure-global1325::obj strength1326::symbol G?1327::bool cfrom1328::obj cfrom*1329::obj cto1330::obj cto*1331::obj efunctions1332::obj integrator1333::obj imark1334::obj owner1335::obj integrated1336::obj plugged-in1337::obj mark1338::long free-mark1339::obj the-global1340::obj kaptured1341::obj new-body1342::obj bmark1343::long umark1344::long free1345::obj bound1346::obj) (instantiate::sfun/Ginfo (arity arity1309) (side-effect side-effect1310) (predicate-of predicate-of1311) (stack-allocator stack-allocator1312) (top? top?1313) (the-closure the-closure1314) (effect effect1315) (property property1316) (args args1317) (args-name args-name1318) (body body1319) (class class1320) (dsssl-keywords dsssl-keywords1321) (loc loc1322) (optionals optionals1323) (keys keys1324) (the-closure-global the-closure-global1325) (strength strength1326) (G? G?1327) (cfrom cfrom1328) (cfrom* cfrom*1329) (cto cto1330) (cto* cto*1331) (efunctions efunctions1332) (integrator integrator1333) (imark imark1334) (owner owner1335) (integrated integrated1336) (plugged-in plugged-in1337) (mark mark1338) (free-mark free-mark1339) (the-global the-global1340) (kaptured kaptured1341) (new-body new-body1342) (bmark bmark1343) (umark umark1344) (free free1345) (bound bound1346)))
 (define-inline (sfun/Ginfo?::bool obj::obj) ((@ isa? __object) obj (@ sfun/Ginfo globalize_ginfo)))
 (define (sfun/Ginfo-nil::sfun/Ginfo) (class-nil (@ sfun/Ginfo globalize_ginfo)))
 (define-inline (sfun/Ginfo-bound::obj o::sfun/Ginfo) (with-access::sfun/Ginfo o (bound) bound))
@@ -236,8 +236,8 @@
 (define-inline (sfun/Ginfo-imark-set! o::sfun/Ginfo v::obj) (with-access::sfun/Ginfo o (imark) (set! imark v)))
 (define-inline (sfun/Ginfo-integrator::obj o::sfun/Ginfo) (with-access::sfun/Ginfo o (integrator) integrator))
 (define-inline (sfun/Ginfo-integrator-set! o::sfun/Ginfo v::obj) (with-access::sfun/Ginfo o (integrator) (set! integrator v)))
-(define-inline (sfun/Ginfo-cfunction::obj o::sfun/Ginfo) (with-access::sfun/Ginfo o (cfunction) cfunction))
-(define-inline (sfun/Ginfo-cfunction-set! o::sfun/Ginfo v::obj) (with-access::sfun/Ginfo o (cfunction) (set! cfunction v)))
+(define-inline (sfun/Ginfo-efunctions::obj o::sfun/Ginfo) (with-access::sfun/Ginfo o (efunctions) efunctions))
+(define-inline (sfun/Ginfo-efunctions-set! o::sfun/Ginfo v::obj) (with-access::sfun/Ginfo o (efunctions) (set! efunctions v)))
 (define-inline (sfun/Ginfo-cto*::obj o::sfun/Ginfo) (with-access::sfun/Ginfo o (cto*) cto*))
 (define-inline (sfun/Ginfo-cto*-set! o::sfun/Ginfo v::obj) (with-access::sfun/Ginfo o (cto*) (set! cto* v)))
 (define-inline (sfun/Ginfo-cto::obj o::sfun/Ginfo) (with-access::sfun/Ginfo o (cto) cto))

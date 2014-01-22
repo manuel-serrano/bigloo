@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Mon Nov 11 09:59:14 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 21 18:48:48 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -63,18 +63,19 @@
 ;*    free-variable? ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (free-variable? local)
-   (let ((info (local-value local)))
-      (cond
-	 ((svar/Ginfo? info)
-	  (not (eq? (svar/Ginfo-free-mark info) *round*)))
-	 ((sfun/Ginfo? info)
-	  (not (eq? (sfun/Ginfo-free-mark info) *round*)))
-	 ((sexit/Ginfo? info)
-	  (not (eq? (sexit/Ginfo-free-mark info) *round*)))
-	 (else
-	  (error "free-variable?"
-		 "Unknown variable type"
-		 (cons local (shape local)))))))
+   (when (local? local)
+      (let ((info (local-value local)))
+	 (cond
+	    ((svar/Ginfo? info)
+	     (not (eq? (svar/Ginfo-free-mark info) *round*)))
+	    ((sfun/Ginfo? info)
+	     (not (eq? (sfun/Ginfo-free-mark info) *round*)))
+	    ((sexit/Ginfo? info)
+	     (not (eq? (sexit/Ginfo-free-mark info) *round*)))
+	    (else
+	     (error "free-variable?"
+		"Unknown variable type"
+		(cons local (shape local))))))))
        
 ;*---------------------------------------------------------------------*/
 ;*    get-free-vars ...                                                */

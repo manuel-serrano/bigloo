@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 11:03:12 1995                          */
-;*    Last change :  Thu Aug  9 07:07:20 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 22 08:46:01 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the list of the kaptured variables for each           */
 ;*    globalized function. The used method is very close to            */
@@ -29,9 +29,10 @@
 ;*    set-kaptured! ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (set-kaptured! local*)
-   (for-each (lambda (local)
-		(set-one-kaptured! local local))
-	     local*))
+;*    (for-each (lambda (local)                                        */
+;* 		(set-one-kaptured-old! local local))                   */
+;*       local*))                                                      */
+   (for-each set-one-kaptured! local*))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-one-kaptured! ...                                            */
@@ -45,7 +46,7 @@
 ;*    are just interested in computed cto of local globalized          */
 ;*    functions.                                                       */
 ;*---------------------------------------------------------------------*/
-(define (set-one-kaptured! local locking)
+(define (set-one-kaptured-old! local locking)
    (trace (integrate 2) "### set-one-kaptured: " (shape local) " [locking:"
 	  (shape locking) #\]
 	  #\Newline)
@@ -113,7 +114,7 @@
 			  (cdr cto)
 			  setter?))
 		   ((sfun/Iinfo-G? (local-value (car cto)))
-		    (let ((other-kaptured (set-one-kaptured! (car cto)
+		    (let ((other-kaptured (set-one-kaptured-old! (car cto)
 							     locking)))
 		       (if (not (vector-ref other-kaptured 0))
 			   (loop (cons (vector-ref other-kaptured 2) kaptured)
@@ -129,6 +130,74 @@
 			  (cdr cto)
 			  setter?)))))))))
 
+;*---------------------------------------------------------------------*/
+;*    set-one-kaptured! ...                                            */
+;*    -------------------------------------------------------------    */
+;*    This function computes the set of kaptured variables and         */
+;*    the future globalized body.                                      */
+;*    -------------------------------------------------------------    */
+;*    Take care: `get-free-vars' also compute the list `cto'. There    */
+;*    is `a priori' no reason for this but the reason we do it now     */
+;*    is that we compute a restricted subset of the real `cto', we     */
+;*    are just interested in computed cto of local globalized          */
+;*    functions.                                                       */
+;*---------------------------------------------------------------------*/
+(define (set-one-kaptured! local)
+   (trace (integrate 2) "### set-one-kaptured: " (shape local)
+      #\Newline)
+   (let ((info (local-value local))
+	 (kaptured (get-one-kaptured local '())))
+      (sfun/Iinfo-kaptured-set! info kaptured)
+      (for-each (lambda (local)
+		   (svar/Iinfo-kaptured?-set!
+		      (local-value local)
+		      #t))
+	 kaptured)))
+
+;*---------------------------------------------------------------------*/
+;*    local-cto ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (local-cto local::local)
+   (let* ((info (local-value local))
+	  (cto (sfun/Iinfo-cto info)))
+      (if (or (pair? cto) (null? cto))
+	  cto
+	  (let ((body (sfun-body info)))
+	     (sfun/Iinfo-cto-set! info '())
+	     (set-cto! body local)
+	     (sfun/Iinfo-cto info)))))
+
+;*---------------------------------------------------------------------*/
+;*    get-one-kaptured ...                                             */
+;*---------------------------------------------------------------------*/
+(define (get-one-kaptured local stack)
+   (trace (integrate 2) "### get-one-kaptured: " (shape local)
+      #\Newline)
+   (let* ((info (local-value local))
+	  (kaptured (sfun/Iinfo-kaptured info)))
+      (cond
+	 ((or (pair? kaptured) (null? kaptured))
+	  kaptured)
+	 ((memq local stack)
+	  '())
+	 (else
+	  (let loop ((kaptured '())
+		     (cto (local-cto local))
+		     (nstack (cons local stack)))
+	     (cond
+		((null? cto)
+		 (let* ((body (sfun-body info))
+			(free (get-free-vars body local))
+			(fkaptured (free-from kaptured local)))
+		    (union (cons free fkaptured))))
+		((sfun/Iinfo-G? (local-value (car cto)))
+		 (let ((other-kaptured (get-one-kaptured (car cto) nstack)))
+		    (loop (cons other-kaptured kaptured)
+		       (cdr cto)
+		       (cons (car cto) nstack))))
+		(else
+		 (loop kaptured (cdr cto) nstack))))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    *union-round* ...                                                */
 ;*---------------------------------------------------------------------*/

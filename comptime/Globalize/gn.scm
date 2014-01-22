@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:54:22 1995                          */
-;*    Last change :  Mon Nov 11 09:59:29 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 22 07:44:32 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the G0 and G1 properties which is defined as follow:  */
 ;*                                                                     */
@@ -269,13 +269,11 @@
        'done
        (let ((caller-info (local-value caller)))
 	  (trace (globalize 3) "save-fun!: "
-		 (shape caller) " " (shape callee)
-		 #\Newline)
-	  (if (not (memq callee (sfun/Ginfo-cfunction caller-info)))
-	      (sfun/Ginfo-cfunction-set! caller-info
-					 (cons callee
-					       (sfun/Ginfo-cfunction
-						caller-info))))
+	     (shape caller) " " (shape callee)
+	     #\Newline)
+	  (if (not (memq callee (sfun/Ginfo-efunctions caller-info)))
+	      (sfun/Ginfo-efunctions-set! caller-info
+		 (cons callee (sfun/Ginfo-efunctions caller-info))))
 	  'done)))
 	  
 ;*---------------------------------------------------------------------*/

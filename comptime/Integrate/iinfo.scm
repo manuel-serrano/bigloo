@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 28 14:06:46 1996                          */
-;*    Last change :  Mon Nov 14 17:13:27 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 22 08:41:46 2014 (serrano)                */
+;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The extension for the integrate pass.                            */
 ;*=====================================================================*/
@@ -50,7 +50,7 @@
 	      ;; the list of variables which calls the fun
 	      (cfrom (default '()))
 	      ;; the list of variables which are called.
-	      (cto (default '()))
+	      (cto (default #unspecified))
 	      ;; the K property
 	      (K (default '()))
 	      ;; the K* property

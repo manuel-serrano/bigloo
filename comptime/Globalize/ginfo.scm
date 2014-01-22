@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:03:24 1996                          */
-;*    Last change :  Mon Nov 14 17:08:00 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 22 07:44:22 2014 (serrano)                */
+;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The definition of the info structures for the globalization      */
 ;*=====================================================================*/
@@ -29,7 +29,7 @@
 	       ;; transitive closure of cto
 	       (cto* (default #f))
 	       ;; the list of E functions
-	       (cfunction (default '()))
+	       (efunctions (default '()))
 	       ;; a place to be integrated
 	       (integrator (default #unspecified))
 	       ;; a place to be integrated (see globalize_integration)
