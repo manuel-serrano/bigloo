@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Fri Jan 17 08:03:11 2014 (serrano)                */
+;*    Last change :  Fri Jan 24 14:20:29 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -211,10 +211,10 @@
       ((procedure? p) (p))))
       
 ;*---------------------------------------------------------------------*/
-;*    Remove and then execute all the exec and protect on the          */
-;*    -------------------------------------------------------------    */
-;*    exitd block.                                                     */
 ;*    exitd-exec-and-pop-protects! ...                                 */
+;*    -------------------------------------------------------------    */
+;*    Remove and then execute all the exec and protect on the          */
+;*    exitd block.                                                     */
 ;*---------------------------------------------------------------------*/
 (define (exitd-exec-and-pop-protects! exitd)
    (let loop ((l ($exitd-protectn exitd)))
