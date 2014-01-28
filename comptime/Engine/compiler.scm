@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Nov 20 18:23:32 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jan 28 05:37:28 2014 (serrano)                */
+;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -79,7 +79,6 @@
 	    bdb_walk
 	    prof_walk
 	    narrow_walk
-	    tlift_walk
 	    cc_cc
 	    cc_ld
 	    backend_backend
@@ -256,13 +255,6 @@
 	    (check-sharing "initflow" ast)
 	    (check-type "initflow" ast #f #f)
 
-	    ;; narrow the variables scope
-	    (when (and *optim-narrow?* (not *call/cc?*))
-	       (set! ast (profile narrow (narrow-walk! ast))))
-	    (stop-on-pass 'narrow (lambda () (write-ast ast)))
-	    (check-sharing "narrow" ast)
-	    (check-type "narrow" ast #f #f)
-	    
 	    ;; we make a heap on `mkheap' mode
 	    (stop-on-pass 'make-heap (lambda () (make-heap)))
 	    
@@ -345,13 +337,6 @@
 	    (check-sharing "dataflow" ast)
 	    (check-type "dataflow" ast #f #f)
 
-	    ;; tlift the variables scope
-	    (when *optim-type-lifting?*
-	       (set! ast (profile tlift (tlift-walk! ast))))
-	    (stop-on-pass 'tlift (lambda () (write-ast ast)))
-	    (check-sharing "tlift" ast)
-	    (check-type "tlift" ast #f #f)
-	    
 	    ;; the globalization stage
 	    (set! ast (profile glo (globalize-walk! ast 'globalization)))
 	    (stop-on-pass 'globalize (lambda () (write-ast ast)))
