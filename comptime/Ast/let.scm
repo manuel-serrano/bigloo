@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Jan  5 09:44:48 2014 (serrano)                */
+;*    Last change :  Tue Jan 28 09:39:30 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -535,195 +535,8 @@
 ;*    	      (f3 (lambda (x) ...)))                                   */
 ;*    	body))                                                         */
 ;*---------------------------------------------------------------------*/
-(define (letrec*-sans-tail->node sexp stack loc site)
-
-   (define (quote? v)
-      (and (pair? v) (eq? (car v) 'quote)))
-   
-   (define (atom? v)
-      (or (number? v) (string? v) (boolean? v) (quote? v) (cnst? v)))
-
-   (define (simple? v comp-vars forward-vars)
-      (let loop ((v v))
-	 (cond
-	    ((pair? v) (or (eq? (car v) 'quote) (every loop v)))
-	    ((memq v comp-vars) #f)
-	    ((memq v forward-vars) #f)
-	    (else #t))))
-
-   (define (free-in-sexp var sexp)
-      (cond
-	 ((eq? sexp var)
-	  #f)
-	 ((not (pair? sexp))
-	  #t)
-	 ((eq? (car sexp) 'quote)
-	  #t)
-	 (else
-	  (and (free-in-sexp var (car sexp))
-	       (free-in-sexp var (cdr sexp))))))
-
-   (define (free-in-bindings var bindings)
-      (every (lambda (b)
-		(free-in-sexp var (cadr b)))
-	 bindings))
-   
-   (define (letrec*-split-bindings bindings)
-      (let ((comp-vars '())
-	    (let-bindings '())
-	    (tmp-bindings '())
-	    (forward-vars (map (lambda (x)
-				  (if (pair? x)
-				      (fast-id-of-id (car x) loc)
-				      (fast-id-of-id x loc)))
-			     bindings)))
-	 ;; first stage, isolate the prelet-bindings
-	 (for-each (lambda (b)
-		      (match-case b
-			 (((and ?var (? symbol?)) (? atom?))
-			  (set! let-bindings (cons b let-bindings)))
-			 (((and ?var (? symbol?)) ((? function?) . ?-))
-			  (set! comp-vars (cons var comp-vars))
-			  (set! tmp-bindings (cons b tmp-bindings)))
-			 (((and ?var (? symbol?)) ?value)
-			  (if (simple? value comp-vars forward-vars)
-			      (set! let-bindings (cons b let-bindings))
-			      (begin
-				 (set! comp-vars
-				    (cons (fast-id-of-id var loc) comp-vars))
-				 (set! tmp-bindings (cons b tmp-bindings)))))
-			 ((? symbol?)
-			  (set! let-bindings (cons b let-bindings)))
-			 (else
-			  (set! tmp-bindings (cons b tmp-bindings))))
-		      (set! forward-vars (cdr forward-vars)))
-	    bindings)
-	 (if (>=fx *optim* 2)
-	     ;; second stage, isolate the postlet-bindings, as its complexity
-	     ;; depends on the size of the binding values, it is executed
-	     ;; only in optimizing mode
-	     (let loop ((bindings tmp-bindings)
-			(postlet-bindings '()))
-		(if (null? bindings)
-		    (values (reverse! let-bindings)
-		       '()
-		       postlet-bindings)
-		    (let ((b (car bindings)))
-		       (match-case b
-			  (((and ?var (? symbol?)) ((? function?) . ?-))
-			   (values (reverse! let-bindings)
-			      (reverse! bindings)
-			      postlet-bindings))
-			  (((and ?var (? symbol?)) ?-)
-			   (if (free-in-bindings var bindings)
-			       (loop (cdr bindings)
-				  (cons b postlet-bindings))
-			       (values (reverse! let-bindings)
-				  (reverse! bindings)
-				  postlet-bindings)))
-			  (else
-			   (values (reverse! let-bindings)
-			      (reverse! bindings)
-			      postlet-bindings))))))
-	     (values (reverse! let-bindings)
-		(reverse! tmp-bindings)
-		'()))))
-
-   (match-case sexp
-      ((letrec* () . ?body)
-       (sexp->node (epairify-propagate-loc `(begin ,@body) loc) stack loc site))
-      ((letrec* (and (? list?) ?bindings) . ?body)
-       (multiple-value-bind (prelet-bindings letrec-bindings postlet-bindings)
-	  (letrec*-split-bindings bindings)
-	  (if (and (null? prelet-bindings) (null? postlet-bindings))
-	      (let->node sexp stack loc site)
-	      (let ((loc (find-location/loc exp loc))
-		    (res (letstar prelet-bindings
-			    `(letrec* ,letrec-bindings
-				,(letstar postlet-bindings `(begin ,@body))))))
-		 (sexp->node
-		    (epairify-propagate-loc res loc)
-		    stack loc site)))))
-      (else
-       (error-sexp->node
-	  (string-append "Illegal 'letrec*' form")
-	  exp
-	  (find-location/loc exp loc)))))
-
-;*---------------------------------------------------------------------*/
-;*    letrec*->node ...                                                */
-;*---------------------------------------------------------------------*/
 (define (letrec*->node sexp stack loc site)
 
-;*    (define (free-in-sexp var sexp)                                  */
-;*       (cond                                                         */
-;* 	 ((eq? sexp var)                                               */
-;* 	  #f)                                                          */
-;* 	 ((not (pair? sexp))                                           */
-;* 	  #t)                                                          */
-;* 	 ((eq? (car sexp) 'quote)                                      */
-;* 	  #t)                                                          */
-;* 	 (else                                                         */
-;* 	  (and (free-in-sexp var (car sexp))                           */
-;* 	       (free-in-sexp var (cdr sexp))))))                       */
-;*                                                                     */
-;*    (define (all-free? vars functions)                               */
-;*       (every (lambda (v)                                            */
-;* 		(every (lambda (f) (free-in-sexp v (cadr f))) functions)) */
-;* 	 vars))                                                        */
-;*                                                                     */
-;*    (define (function-split bindings)                                */
-;*       ;; extract the head bindings that does not bind functions     */
-;*       (let loop ((l bindings)                                       */
-;* 		 (nonfunctions '()))                                   */
-;* 	 (cond                                                         */
-;* 	    ((null? l)                                                 */
-;* 	     (values (reverse nonfunctions) '()))                      */
-;* 	    ((function? (cadr (car l)))                                */
-;* 	     (values (reverse nonfunctions) l))                        */
-;* 	    (else                                                      */
-;* 	     (loop (cdr l) (cons (car l) nonfunctions))))))            */
-;*                                                                     */
-;*    (define (letrec*-split->node bindings body stack loc site)       */
-;*       (let loop ((bindings bindings)                                */
-;* 		 (functions '()))                                      */
-;* 	 (if (null? bindings)                                          */
-;* 	     (if (null? functions)                                     */
-;* 		 (sexp->node (epairify-propagate-loc `(begin ,@body) loc) */
-;* 		    stack loc site)                                    */
-;* 		 (let->node                                            */
-;* 		    (epairify-propagate-loc                            */
-;* 		       `(letrec* ,(reverse functions) ,@body) loc)     */
-;* 		    stack loc site))                                   */
-;* 	     (let ((b (car bindings)))                                 */
-;* 		(cond                                                  */
-;* 		   ((function? (cadr b))                               */
-;* 		    (loop (cdr bindings) (cons b functions)))          */
-;* 		   ((all-free? (map car bindings) functions)           */
-;* 		    ;; split the letrec*                               */
-;* 		    (let->node                                         */
-;* 		       (epairify-propagate-loc                         */
-;* 			  `(letrec* ,(reverse functions)               */
-;* 			      ,(epairify-propagate-loc                 */
-;* 				  `(letrec* ,bindings ,@body)          */
-;* 				  loc))                                */
-;* 			  loc)                                         */
-;* 		       stack loc site))                                */
-;* 		   (else                                               */
-;* 		    (loop (cdr bindings) (cons b functions))))))))     */
-;*                                                                     */
-;*    (define (function-split bindings)                                */
-;*       ;; extract the head bindings that does not bind functions     */
-;*       (let loop ((l bindings)                                       */
-;* 		 (nonfunctions '()))                                   */
-;* 	 (cond                                                         */
-;* 	    ((null? l)                                                 */
-;* 	     (values (reverse nonfunctions) '()))                      */
-;* 	    ((function? (cadr (car l)))                                */
-;* 	     (values (reverse nonfunctions) l))                        */
-;* 	    (else                                                      */
-;* 	     (loop (cdr l) (cons (car l) nonfunctions))))))            */
-;*                                                                     */
    (define (free-vars sexp v vars)
       ;; compute an over approximations of all the
       ;; free vars appearing in sexp
@@ -859,7 +672,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    function? ...                                                    */
 ;*    -------------------------------------------------------------    */
-;*    does exp contain a lambda definition (possibly nested)           */
+;*    Does exp contain a lambda definition (possibly nested)           */
 ;*---------------------------------------------------------------------*/
 (define (function? exp)
 
@@ -870,6 +683,8 @@
    (match-case exp
       ((quote . ?-)
        #f)
+      ((labels ((?id . ?-)) ?id)
+       #t)
       ((?var . (and ?args ??-))
        (or (eq? var 'lambda)
 	   (eq? (fast-id-of-id var #f) 'lambda)
