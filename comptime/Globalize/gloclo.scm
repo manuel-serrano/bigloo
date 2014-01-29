@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Tue Oct  9 08:40:51 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 29 09:44:37 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -77,54 +77,52 @@
 ;*    make-noopt-global-closure ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-noopt-global-closure global)
-   (let ((glo (global/Ginfo-global-closure global)))
-      (if (global? glo)
-	  glo
-	  (let* ((old-fun  (global-value global))
-		 (env      (let ((var (make-local-svar 'env *procedure*)))
-			      (widen!::local/Ginfo var)
-			      var))
-		 (new-args (map (lambda (old)
-				   (let ((new (make-local-svar
-						 (if (local? old)
-						     (local-id old)
-						     (gensym))
-						 (default-type))))
-				      (when (local? old)
-					 (local-user?-set! new (local-user? old)))
-				      (widen!::svar/Ginfo (local-value new))
-				      (widen!::local/Ginfo new)
-				      new))
-				(if (sfun? old-fun)
-				    (sfun-args old-fun)
-				    (if (cfun? old-fun)
-					;; cfun-args-type is a list of type
-					;; not a list of local. It doesn't
-					;; matter. What is important here
-					;; is just the list.
-					(cfun-args-type old-fun)
-					(internal-error "make-global-closure"
-							"Unexpected value"
-							old-fun)))))
-		 (loc      (if (sfun? old-fun)
-			       (if (and (node? (sfun-body old-fun))
-					(node-loc (sfun-body old-fun)))
-				   (node-loc (sfun-body old-fun))
-				   (sfun-loc old-fun))))
-		 (gloclo   (gloclo global env new-args))
-		 (new-fun  (global-value gloclo)))
-	     ;; associate the closure entry point and the function
-	     (sfun-the-closure-global-set! (global-value gloclo) global)
-	     ;; we must set now the info slot of env
-	     (widen!::svar/Ginfo (local-value env))
-	     ;; we ajust the function definition
-	     (widen!::global/Ginfo gloclo (escape? #t))
-	     (with-access::sfun new-fun (body)
-		(set! body (make-noopt-body loc global new-args)))
-	     (trace (globalize 2) "=======> J'ai cree le corps:"
-		    (shape (sfun-body new-fun))
-		    #\Newline)
-	     gloclo))))
+   (let* ((old-fun  (global-value global))
+	  (env      (let ((var (make-local-svar 'env *procedure*)))
+		       (widen!::local/Ginfo var)
+		       var))
+	  (new-args (map (lambda (old)
+			    (let ((new (make-local-svar
+					  (if (local? old)
+					      (local-id old)
+					      (gensym))
+					  (default-type))))
+			       (when (local? old)
+				  (local-user?-set! new (local-user? old)))
+			       (widen!::svar/Ginfo (local-value new))
+			       (widen!::local/Ginfo new)
+			       new))
+		       (if (sfun? old-fun)
+			   (sfun-args old-fun)
+			   (if (cfun? old-fun)
+			       ;; cfun-args-type is a list of type
+			       ;; not a list of local. It doesn't
+			       ;; matter. What is important here
+			       ;; is just the list.
+			       (cfun-args-type old-fun)
+			       (internal-error "make-global-closure"
+				  "Unexpected value"
+				  old-fun)))))
+	  (loc      (if (sfun? old-fun)
+			(if (and (node? (sfun-body old-fun))
+				 (node-loc (sfun-body old-fun)))
+			    (node-loc (sfun-body old-fun))
+			    (sfun-loc old-fun))))
+	  (gloclo   (gloclo global env new-args))
+	  (new-fun  (global-value gloclo)))
+      ;; associate the closure entry point and the function
+      (sfun-the-closure-global-set! (global-value gloclo) global)
+      ;; we must set now the info slot of env
+      (widen!::svar/Ginfo (local-value env))
+      ;; we ajust the function definition
+      (widen!::global/Ginfo gloclo (escape? #t))
+      (with-access::sfun new-fun (body)
+	 (set! body (make-noopt-body loc global new-args)))
+      (trace (globalize 2) "=======> J'ai cree le corps:"
+	 (shape (sfun-body new-fun))
+	 " " (shape gloclo)
+	 #\Newline)
+      gloclo))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-noopt-body ...                                              */

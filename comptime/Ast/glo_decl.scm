@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Nov 21 07:46:09 2012 (serrano)                */
+;*    Last change :  Wed Jan 29 08:22:08 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -68,6 +68,8 @@
 ;*    declare-global-dsssl-sfun! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (declare-global-dsssl-sfun! opts keys id alias args module import class srce srci)
+   (trace (ast 3) "declare-global-dsssl-sfun!: "
+	  (shape id) " opts=" (shape opts) " keys=" (shape keys) #\newline)
    (let* ((arity (global-arity args))
 	  (export? (or (not (eq? import 'static))
 		       (and (memq 'bdb (backend-debug-support (the-backend)))
@@ -139,10 +141,10 @@
 		   (keys keys)))
 	  (old (find-global id))
 	  (global (bind-global! id alias module sfun import srce)))
-      (trace (ast 3) "*** declare-global-sfun!: srce: " srce #\Newline)
-      (trace (ast 3) "*** declare-global-sfun!: loc: " (find-location srce)
+      (trace (ast 3) "*** declare-global-dsssl-sfun!: srce: " srce #\Newline)
+      (trace (ast 3) "*** declare-global-dsssl-sfun!: loc: " (find-location srce)
 	     #\Newline)
-      (trace (ast 4) "   declare-global-sfun!: (instantiate "
+      (trace (ast 4) "   declare-global-dsssl-sfun!: (instantiate "
 	     (shape arity) " " (shape args-type) " " (shape class) #\Newline)
       ;; we set the type of the function
       (cond

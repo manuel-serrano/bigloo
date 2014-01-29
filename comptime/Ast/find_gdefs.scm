@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */
-;*    Last change :  Sat Nov 26 07:04:11 2011 (serrano)                */
+;*    Last change :  Wed Jan 29 08:22:53 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which travers an entire        */
 ;*    unit in order to find the global declared variable and their     */
@@ -329,7 +329,6 @@
 ;*    formal arguments).					       */
 ;*---------------------------------------------------------------------*/
 (define (push-args expr0 list loc)
-   (trace (ast 3) "push-args: " expr0 " " list " " loc #\Newline)
    (let loop ((expr  expr0)
 	      (list  list)
 	      (dsssl #f))

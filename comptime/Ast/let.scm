@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Jan 28 09:39:30 2014 (serrano)                */
+;*    Last change :  Wed Jan 29 08:18:56 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -55,7 +55,7 @@
 ;*---------------------------------------------------------------------*/
 (define (let->node exp stack oloc site)
    (trace (ast 3)
-      "*** LET *******: " exp #\Newline
+      "*** LET *******: " (shape exp) #\Newline
       "            loc: " (find-location/loc exp #f) #\Newline
       "        old-loc: " oloc #\Newline
       "           body: " (match-case exp
@@ -136,7 +136,7 @@
       (trace (ast 3)
 	     "make-generic-let: " (shape exp) #\Newline
 	     "loc: " loc #\Newline
-	     "bloc: " bloc "[exp: " bloc-exp "]" #\Newline
+	     "bloc: " bloc " [exp: " (shape bloc-exp) "]" #\Newline
 	     "loc-bis: " loc-bis #\Newline
 	     "nloc: " nloc #\Newline)
       (let* ((body     (sexp->node body new-stack nloc 'value))

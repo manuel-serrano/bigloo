@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Thu Aug  1 06:43:47 2013 (serrano)                */
+;*    Last change :  Wed Jan 29 09:09:04 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1104,7 +1104,9 @@
    (cond
       ((not (class? class))
        (error name "Illegal class for method" class))
-      ((not (=fx (procedure-arity generic) (procedure-arity method)))
+      ((and (not (=fx (procedure-arity generic) (procedure-arity method)))
+	    (not (and (<fx (procedure-arity generic) 0)
+		      (>fx (procedure-arity generic) (procedure-arity method)))))
        (error name (format "method/generic arity mismatch, expecting ~a"
 		      (procedure-arity generic))
 	  (procedure-arity method)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Mon Dec  2 10:22:55 2013 (serrano)                */
+;*    Last change :  Wed Jan 29 09:57:26 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -75,8 +75,7 @@
    (verbose 2
 	    "      [" (string-downcase (symbol->string (unit-id unit)))
 	    "]" #\Newline)
-   (trace ast "unit->defs: " unit #\Newline)
-   (trace (ast 2) "  " (unit-sexp* unit) #\Newline)
+   (trace (ast 2) "  sexp*=" (map shape (unit-sexp* unit)) #\Newline)
    (let* ((id (unit-id unit))
 	  (weight (unit-weight unit))
 	  (sexp* (unit-sexp* unit))
@@ -211,8 +210,8 @@
       ((begin . ?nsexp*)
        (reverse! (toplevel*->ast nsexp* gdefs)))
       ((define (?var . ?args) . ?exp)
-       (let* ((id     (id-of-id var (find-location sexp)))
-	      (def    (assq id gdefs))
+       (let* ((id (id-of-id var (find-location sexp)))
+	      (def (assq id gdefs))
 	      (global (find-global/module id *module*)))
 	  ;; exported variable are set to be written hence, we don't
 	  ;; have to check here if the variable has been declared has
@@ -226,14 +225,9 @@
 		       (or (not (global? global))
 			   (eq? (global-access global) 'read))))
 	      (make-sfun-definition var
-				    *module*
-				    args
-				    (normalize-progn/error exp
-							   sexp
-							   (find-location
-							    (cddr sexp)))
-				    sexp
-				    'sfun)
+		 *module* args
+		 (normalize-progn/error exp sexp (find-location (cddr sexp)))
+		 sexp 'sfun)
 	      (let ((new-sexp `(set! ,var (lambda ,args ,@exp))))
 		 (replace! sexp new-sexp)
 		 (make-svar-definition var sexp)))))
@@ -246,14 +240,9 @@
 		   (or (not (global? global))
 		       (eq? (global-access global) 'read)))
 	      (make-sfun-definition var
-				    *module*
-				    args
-				    (normalize-progn/error exp
-							   sexp
-							   (find-location
-							    (cddr sexp)))
-				    sexp
-				    'sfun)
+		 *module* args
+		 (normalize-progn/error exp sexp (find-location (cddr sexp)))
+		 sexp 'sfun)
 	      (make-svar-definition var sexp))))
       ((define ?var (begin ?1-exp))
        (set-car! (cddr sexp) 1-exp)
@@ -269,13 +258,13 @@
 		     (cond
 			((global-optional? g)
 			 (user-warning var
-				       "Unable to eta-expand #!optional alias"
-				       sexp)
+			    "Unable to eta-expand #!optional alias"
+			    sexp)
 			 (make-svar-definition var sexp))
 			((global-key? g)
 			 (user-warning var
-				       "Unable to eta-expand #!key alias"
-				       sexp)
+			    "Unable to eta-expand #!key alias"
+			    sexp)
 			 (make-svar-definition var sexp))
 			(else
 			 (let ((def (eta-expanse sexp arity)))
@@ -293,13 +282,13 @@
 		     (cond
 			((global-optional? g)
 			 (user-warning var
-				       "Unable to eta-expand #!optional alias"
-				       sexp)
+			    "Unable to eta-expand #!optional alias"
+			    sexp)
 			 (make-svar-definition var sexp))
 			((global-key? g)
 			 (user-warning var
-				       "Unable to eta-expand #!key alias"
-				       sexp)
+			    "Unable to eta-expand #!key alias"
+			    sexp)
 			 (make-svar-definition var sexp))
 			(else
 			 (let ((def (eta-expanse sexp arity)))
@@ -310,28 +299,19 @@
        (make-svar-definition var sexp))
       ((define-inline ((@ ?var ?module) . ?args) . ?exp)
        (make-sfun-definition var
-			     module
-			     args
-			     (normalize-progn/error exp
-						    sexp
-						    (find-location (cddr sexp)))
-			     
-			     sexp
-			     'sifun))
+	  module args
+	  (normalize-progn/error exp sexp (find-location (cddr sexp)))
+	  sexp 'sifun))
       ((define-inline (?var . ?args) . ?exp)
        (make-sfun-definition var
-			     *module*
-			     args
-			     (normalize-progn/error exp
-						    sexp
-						    (find-location (cddr sexp)))
-			     sexp
-			     'sifun))
+	  *module* args
+	  (normalize-progn/error exp sexp (find-location (cddr sexp)))
+	  sexp 'sifun))
       ((define-generic ((@ ?var ?module) . ?args) . ?exp)
        (warning "define-generic" "form no longer supported" sexp)
-       (make-generic-definition var module args exp sexp gdefs))
+       (make-generic-definition var module args exp sexp))
       ((define-generic (?var . ?args) . ?exp)
-       (make-generic-definition var *module* args exp sexp gdefs))
+       (make-generic-definition var *module* args exp sexp))
       ((define-method (?var . ?args) . ?exp)
        (make-method-definition var
 	  args
@@ -462,38 +442,39 @@
 	       (forms (map local-id (sfun-args (global-value glo))))
 	       (opts (map (lambda (o)
 			     (fast-id-of-id (car o) loc))
-			  (sfun-optionals (global-value glo)))))
+			(sfun-optionals (global-value glo)))))
 	    `(,(let-sym) ,(map (lambda (v i)
-			   `(,v ($vector-ref-ur opt ,i)))
-			(take (sfun-args-name (global-value glo)) arity)
-			(iota arity))
-		(case ($vector-length opt)
-		   ,@(map (lambda (i)
-			     `((,(+fx arity i))
-			       (let* (,@(map (lambda (v j)
-						`(,v ($vector-ref-ur opt ,j)))
-					     (take (drop forms arity) i)
-					     (iota i arity))
-					,@(drop optionals i))
-				  (,glo
-				   ;; required unbound parameters
-				   ,@(map (lambda (j)
-					     `($vector-ref-ur opt ,j))
-					  (iota arity))
-				   ;; optional parameters
-				   ,@opts))))
-			  (iota (+ 1 lopt)))
-		   (else
-		    ,(if *unsafe-arity*
-			 #unspecified
-			  `((@ error __error)
-			    ',id
-			    ,(string-append
-			      "wrong number of arguments: ["
-			      (integer->string arity)
-			      ".." (integer->string (+ arity lopt))
-			      "] expected, provided")
-			    ($vector-length opt))))))))
+				  `(,v ($vector-ref-ur opt ,i)))
+			     (take (sfun-args-name (global-value glo)) arity)
+			     (iota arity))
+			 (case ($vector-length opt)
+			    ,@(map (lambda (i)
+				      `((,(+fx arity i))
+					(let* (,@(map (lambda (v j)
+							 `(,v ($vector-ref-ur opt ,j)))
+						    (take (drop forms arity) i)
+						    (iota i arity))
+						 ,@(drop optionals i))
+					   (,glo
+					      ;; required unbound parameters
+					      ,@(take (sfun-args-name (global-value glo)) arity)
+;* 					      ,@(map (lambda (j)       */
+;* 							`($vector-ref-ur opt ,j)) */
+;* 						   (iota arity))       */
+					      ;; optional parameters
+					      ,@opts))))
+			       (iota (+ 1 lopt)))
+			    (else
+			     ,(if *unsafe-arity*
+				  #unspecified
+				  `((@ error __error)
+				    ',id
+				    ,(string-append
+					"wrong number of arguments: ["
+					(integer->string arity)
+					".." (integer->string (+ arity lopt))
+					"] expected, provided")
+				    ($vector-length opt))))))))
       (let* ((id (symbol-append '_ id))
 	     (opt (make-local-svar 'opt *vector*))
 	     (env (make-local-svar 'env *procedure*))
@@ -703,9 +684,43 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-generic-definition ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (make-generic-definition id module args body src gdefs)
+(define (make-generic-definition id module args body src)
    (trace ast "make-generic-definition: " id " " module " " args " " body
       #\Newline)
+   (let ((opts (dsssl-optionals args))
+	 (keys (dsssl-keys args)))
+      (cond
+	 ((pair? opts)
+	  (make-generic-opt-definition opts id module args body src))
+	 ((pair? keys)
+	  (make-generic-key-definition keys id module args body src))
+	 (else
+	  (make-generic-noopt-definition id module args body src)))))
+
+;*---------------------------------------------------------------------*/
+;*    make-generic-opt-definition ...                                  */
+;*---------------------------------------------------------------------*/
+(define (make-generic-opt-definition optionals id module args body src)
+   (let* ((loc (find-location src))
+	  (gen (make-generic-noopt-definition id module args body src))
+	  (glo (find-global id module))
+	  (clo (make-sfun-opt-closure glo optionals id module args body src 'sfun loc)))
+      (cons clo gen)))
+
+;*---------------------------------------------------------------------*/
+;*    make-generic-key-definition ...                                  */
+;*---------------------------------------------------------------------*/
+(define (make-generic-key-definition keys id module args body src)
+   (let* ((loc (find-location src))
+	  (gen (make-generic-noopt-definition id module args body src))
+	  (glo (find-global id module))
+	  (clo (make-sfun-key-closure glo keys id module args body src 'sfun loc)))
+      (cons clo gen)))
+
+;*---------------------------------------------------------------------*/
+;*    make-generic-noopt-definition ...                                */
+;*---------------------------------------------------------------------*/
+(define (make-generic-noopt-definition id module args body src)
    (if (not (and (pair? args) (symbol? (car args))))
        (begin
 	  (error-sexp->node "Bad generic formal argument" src
@@ -728,7 +743,10 @@
 		       ,name))
 	      (gbody   (make-generic-body id locals args src))
 	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody)))
-	  (trace (ast 2) "  body: " body #\Newline)
+	  (trace (ast 2) " generic " (shape id) #\newline)
+	  (trace (ast 2) "      body: " (shape body) #\Newline)
+	  (trace (ast 2) "      args: " (shape args) #\Newline)
+	  (trace (ast 2) "    locals: " (shape locals) #\Newline)
 	  (mark-method! name)
 	  (let* ((o-unit (get-generic-unit))
 		 (type (local-type (car locals)))

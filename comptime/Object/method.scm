@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May  1 13:58:40 1996                          */
-;*    Last change :  Mon Dec  2 11:37:41 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 29 09:49:22 2014 (serrano)                */
+;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The method management                                            */
 ;*=====================================================================*/
@@ -57,13 +57,12 @@
 					   (let ((,met (find-super-class-method
 							  ,(car args-id)
 							  ,id
-							  (@ ,(global-id holder)
-							     ,module))))
+							  (@ ,(global-id holder) ,module))))
 					      ,(cond
-						  ((>=fx arity 0)
-						   `(,met ,@args-id))
 						  (dsssl
 						   `(apply ,met (cons* ,@args-id)))
+						  ((>=fx arity 0)
+						   `(,met ,@args-id))
 						  (else
 						   `(apply ,met (cons* ,@args-id)))))))
 				  ,(if dsssl

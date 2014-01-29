@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:45:58 1995                          */
-;*    Last change :  Tue Dec 17 11:02:18 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan 29 09:44:28 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `globalization' process                                      */
 ;*=====================================================================*/
@@ -90,10 +90,9 @@
 	 (let loop ((G     G)
 		    (new-G (if (global/Ginfo-escape? global)
 			       (let ((clo (global-closure global
-							  (node-loc
-							   (sfun-body fun)))))
-				  (if (or (global-optional? global)
-					  (global-key? global))
+					     (node-loc (sfun-body fun)))))
+				  (if (and (or (global-optional? global)
+					       (global-key? global)))
 				      ;; optional global functions have
 				      ;; a pre-defined closure (which is
 				      ;; returned by global-closure but that

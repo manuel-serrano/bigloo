@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Sep 11 11:44:11 2013 (serrano)                */
+;*    Last change :  Wed Jan 29 08:26:51 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -108,7 +108,7 @@
 	  (begin
 	     ;; we set the type of the function
 	     (most-defined-type! global type-res)
-	     ;; ane the type of the formals
+	     ;; and the type of the formals
 	     (if (=fx (length locals)
 		      (length (sfun-args (global-value global))))
 		 (let ((types (map (lambda (a)
