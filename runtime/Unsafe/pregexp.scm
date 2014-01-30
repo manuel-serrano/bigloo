@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Thu Jan 30 19:52:32 2014 (serrano)                */
+;*    Last change :  Thu Jan 30 20:27:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -66,7 +66,7 @@
  
    (export (inline regexp?::bool ::obj)
 	   (inline regexp-pattern::bstring ::regexp)
-	   (pregexp ::bstring ::obj)
+	   (pregexp ::bstring . opt-args)
 	   (pregexp-match-positions pat ::bstring . opt-args)
 	   (pregexp-match pat ::bstring . opt-args)
 	   (pregexp-replace::bstring pat ::bstring ins::bstring)
