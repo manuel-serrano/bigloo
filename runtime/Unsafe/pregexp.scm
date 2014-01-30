@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Fri Jan  3 11:53:55 2014 (serrano)                */
+;*    Last change :  Thu Jan 30 19:52:32 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -734,7 +734,7 @@
                 (loop (+ i 1) (string-append r (string c)))))))))
 
 (define pregexp
-   (lambda (s _)
+   (lambda (s . opt-args)
       (let ((re ($make-regexp s)))
 	 ($regexp-preg-set!  re (tree-copy (%pregexp s)))
 	 re)))
