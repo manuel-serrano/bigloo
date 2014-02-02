@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Sun Nov 18 13:49:41 2012 (serrano)                */
+;*    Last change :  Sun Feb  2 10:18:38 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -113,6 +113,7 @@
 	    (set-keyword-plist args-safe)
 	    (cnst->integer args-safe)
 	    (c-string->symbol no-cfa-top nesting fail-safe)
+	    (c-bstring->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol no-cfa-top nesting fail-safe)
 	    (string->symbol-ci no-cfa-top nesting fail-safe)
 	    (getprop side-effect-free nesting fail-safe)
@@ -144,13 +145,13 @@
 ;*    string->symbol ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (string->symbol string)
-   (c-string->symbol string))
+   (c-bstring->symbol string))
 
 ;*---------------------------------------------------------------------*/
 ;*    string->symbol-ci ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (string->symbol-ci string)
-   (c-string->symbol (string-upcase string)))
+   (c-bstring->symbol (string-upcase string)))
 
 ;*---------------------------------------------------------------------*/
 ;*    symbol-append ...                                                */

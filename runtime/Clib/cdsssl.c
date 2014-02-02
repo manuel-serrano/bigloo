@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Wed Dec 19 09:09:00 2012 (serrano)                */
+/*    Last change :  Sun Feb  2 10:45:53 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -80,8 +80,7 @@ bstring_to_keyword( obj_t name ) {
       obj_t run = bucket, back = bucket;
       
       while( !NULLP( run ) &&
-	     strcmp( (const char *)BSTRING_TO_STRING( KEYWORD(CAR( run )).string ),
-		     (const char *)cname ) )
+	     !bigloo_strcmp( KEYWORD(CAR( run )).string, name ) )
          back = run, run = CDR( run );
       
       if( !NULLP( run ) ) {

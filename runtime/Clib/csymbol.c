@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Fri Dec 13 18:25:50 2013 (serrano)                */
+/*    Last change :  Sun Feb  2 10:47:01 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -73,8 +73,8 @@ make_symbol( obj_t name ) {
 /*    obj_t                                                            */
 /*    bstring_to_symbol ...                                            */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-bstring_to_symbol( obj_t name ) {
+static obj_t
+bgl_bstring_to_symbol( obj_t name ) {
    long hash_number;
    obj_t bucket;
    char *cname = BSTRING_TO_STRING( name );
@@ -97,8 +97,7 @@ bstring_to_symbol( obj_t name ) {
       
       while( !NULLP( run ) &&
 	     SYMBOL( CAR( run ) ).string &&
-	     strcmp( (char *)BSTRING_TO_STRING( SYMBOL( CAR( run ) ).string ),
-		     cname ) )
+	     !bigloo_strcmp( SYMBOL( CAR( run ) ).string, name ) )
          back = run, run = CDR( run );
       
       if( !NULLP( run ) ) {
@@ -116,6 +115,17 @@ bstring_to_symbol( obj_t name ) {
       }
    }
 }
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bstring_to_symbol ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bstring_to_symbol( obj_t name ) {
+   return bgl_bstring_to_symbol(
+      string_to_bstring_len(
+	 BSTRING_TO_STRING( name ), STRING_LENGTH( name ) ) );
+}
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -123,7 +133,7 @@ bstring_to_symbol( obj_t name ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_string_to_symbol_len( char *cname, long len ) {
-   return bstring_to_symbol( string_to_bstring_len( cname, len ) );
+   return bgl_bstring_to_symbol( string_to_bstring_len( cname, len ) );
 }
    
 /*---------------------------------------------------------------------*/
@@ -132,7 +142,7 @@ bgl_string_to_symbol_len( char *cname, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 string_to_symbol( char *cname ) {
-   return bstring_to_symbol( string_to_bstring( cname ) );
+   return bgl_bstring_to_symbol( string_to_bstring( cname ) );
 }
 
 /*---------------------------------------------------------------------*/
