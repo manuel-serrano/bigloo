@@ -20,13 +20,26 @@
 	      ((when in-quote?
 		  (: quote quote))
 	       (cons '2quote (string ,quot)))
-	      (quote
+	      (quote 
 		 (begin
 		    (set! in-quote? (not in-quote?))
 		    (cons 'kwote (the-string))))
-	      ((when (not in-quote?)
-		  (+ (or #\space #\tab)))
-	       (cons 'space (the-string)))
+	      ,(cond ((and (or (char=? sep #\space)
+			      (char=? quot #\space))
+			  (or (char=? sep #\tab)
+			      (char=? quot #\tab))) 
+		     `(define ,(gensym 'dummy) #unspecified))
+	       ((or (char=? sep #\space)
+		    (char=? quot #\space))
+		'((when (not in-quote?) (+ #\tab))
+		  (cons 'space (the-string))))
+	       ((or (char=? sep #\tab)
+		    (char=? quot #\tab))
+		'((when (not in-quote?) (+ #\space))
+		  (cons 'space (the-string))))
+	       (else
+		'((when (not in-quote?) (+ (or #\space #\tab)))
+		  (cons 'space (the-string)))))
 	      (separator
 		 'separator)
 	      ((or (: #\return #\newline)
