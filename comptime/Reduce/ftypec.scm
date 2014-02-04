@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Nov 11 10:09:53 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  4 09:59:42 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -27,7 +27,7 @@
 	    ast_node
 	    ast_lvtype
 	    object_class)
-   (export  (reduce-flow-type-check! globals)))
+   (export  (reduce-flow-type-check! globals::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    reduce-flow-type-check! ...                                      */

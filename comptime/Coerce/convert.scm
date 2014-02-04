@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sat Feb 23 14:28:34 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  4 09:18:05 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -341,38 +341,6 @@
 	  (lvtype-node! nnode)
 	  (spread-side-effect! nnode)
 	  nnode)))
-;*        (let ((nnode (top-level-sexp->node `(,coerce-op #unspecified) */
-;* 		       (node-loc node))))                              */
-;* 	  (tprint "nnode=" (shape node) " -> " (shape nnode))          */
-;* 	  (trace coerce                                                */
-;* 		 "   app : " (shape nnode) #\Newline                   */
-;* 		 "   type: " (shape (node-type nnode)) #\Newline       */
-;* 		 "   node: " (shape node) #\Newline                    */
-;* 		 "   type: " (shape (node-type node)) #\Newline        */
-;* 		 "   from: " (shape from) #\Newline)                   */
-;* 	  ;; we have to mark that the node has been converted and is   */
-;* 	  ;; now of the correct type...                                */
-;* 	  (lvtype-node! nnode)                                         */
-;* 	  (spread-side-effect! nnode)                                  */
-;* 	  ;; we apply the conversion                                   */
-;* 	  (cond                                                        */
-;* 	     ((app? nnode)                                             */
-;* 	      (app-args-set! nnode (list node))                        */
-;* 	      nnode)                                                   */
-;* 	     ((let-var? nnode)                                         */
-;* 	      (let ((bdgs (let-var-bindings nnode)))                   */
-;* 		 (if (or (null? bdgs) (not (null? (cdr bdgs))))        */
-;* 		     (internal-error "do-convert"                      */
-;* 				     "Illegal converter"               */
-;* 				     (shape coerce-op))                */
-;* 		     (begin                                            */
-;* 			(local-type-set! (car (car bdgs)) from)        */
-;* 			(set-cdr! (car bdgs) node)                     */
-;* 			nnode))))                                      */
-;* 	     (else                                                     */
-;* 	      (internal-error "do-convert"                             */
-;* 			      "Illegal converter"                      */
-;* 			      (shape coerce-op)))))))                  */
 ;*                                                                     */
 
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Nov 11 10:10:35 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  4 10:29:52 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -28,7 +28,7 @@
 	    ast_lvtype
 	    ast_env
 	    object_class)
-   (export  (reduce-type-check! globals)))
+   (export  (reduce-type-check! globals::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    reduce-type-check! ...                                           */
@@ -282,50 +282,57 @@
 ;*    @ref ../../runtime/Llib/type.scm:pair-nil subtyping@             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::app)
-   (with-access::app node (fun args loc)
+   
+   (define (check-type node typec typea)
+      (with-access::app node (loc)
+	 (let ((type  (get-type node)))
+	    (cond
+	       ((type-less-specific? typec typea)
+		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
+		(trace (reduce 3) "typec: reducing: "
+		   (shape node) " => #t" #\Newline)
+		(let ((node (coerce! (instantiate::atom
+					(loc loc)
+					(type type)
+					(value #t))
+			       #unspecified
+			       type
+			       #f)))
+		   node))
+	       ((type-disjoint? typec typea)
+		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
+		(trace (reduce 3) "typec: reducing: "
+		   (shape node) " => #f ("
+		   (shape typec) " " (shape typea) ")"
+		   #\Newline)
+		(let ((node (coerce! (instantiate::atom
+					(loc loc)
+					(type type)
+					(value #f))
+			       #unspecified
+			       type
+			       #f)))
+		   node))
+	       (else
+		(set! *type-checks-remaining* (+fx 1 *type-checks-remaining*))
+		node)))))
+   
+   (with-access::app node (fun args)
       (node-typec*! args)
       (let* ((var   (var-variable fun))
-	     (typec (fun-predicate-of (variable-value var)))
-	     (type  (get-type node)))
-	 (if (and (pair? args)
+	     (typec (fun-predicate-of (variable-value var))))
+	 (cond
+	    ((and (pair? args)
 		  (null? (cdr args))
 		  (type? typec)
 		  (not (side-effect? (car args))))
-	     (let ((typea (get-type (car args))))
-		(cond
-		   ((type-less-specific? typec typea)
-		    (set! *type-checks-removed*
-			  (+fx 1 *type-checks-removed*))
-		    (trace (reduce 3) "typec: reducing: "
-			   (shape node) " => #t" #\Newline)
-		    (let ((node (coerce! (instantiate::atom
-					    (loc loc)
-					    (type type)
-					    (value #t))
-					 #unspecified
-					 type
-					 #f)))
-		       node))
-		   ((type-disjoint? typec typea)
-		    (set! *type-checks-removed*
-			  (+fx 1 *type-checks-removed*))
-		    (trace (reduce 3) "typec: reducing: "
-			   (shape node) " => #f ("
-			   (shape typec) " " (shape typea) ")"
-			   #\Newline)
-		    (let ((node (coerce! (instantiate::atom
-					    (loc loc)
-					    (type type)
-					    (value #f))
-					 #unspecified
-					 type
-					 #f)))
-		       node))
-		   (else
-		    (set! *type-checks-remaining*
-			  (+fx 1 *type-checks-remaining*))
-		    node)))
-	     node))))
+	     (check-type node typec (get-type (car args))))
+	    ((isa-of node)
+	     =>
+	     (lambda (typec)
+		(check-type node typec (get-type (car args)))))
+	    (else
+	     node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pair-of-pair-nil? ...                                            */

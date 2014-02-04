@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:25:23 1995                          */
-;*    Last change :  Tue Sep  7 09:28:00 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  4 10:03:30 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Reduction optimizations                                      */
 ;*=====================================================================*/
@@ -38,6 +38,8 @@
    (cond
       ((and (pair? type-unsafe) (car type-unsafe))
        (reduce-1occ! globals)
+       (reduce-type-check! globals)
+       (reduce-conditional! globals)
        (pass-postlude (remove-var 'reduce globals)))
       (*optim-dataflow?*
        (reduce-copy! globals)

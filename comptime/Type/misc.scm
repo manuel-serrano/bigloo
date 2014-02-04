@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Wed Mar  7 19:29:00 2012 (serrano)                */
-;*    Copyright   :  2004-12 Manuel Serrano                            */
+;*    Last change :  Tue Feb  4 10:04:21 2014 (serrano)                */
+;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
 ;*=====================================================================*/
@@ -38,6 +38,8 @@
    (cond
       ((eq? t1 t2)
        #t)
+      ((eq? t2 *_*)
+       #f)
       ((or (not (bigloo-type? t1)) (not (bigloo-type? t2)))
        #f)
       ((type-subclass? t2 t1)
@@ -58,6 +60,8 @@
 (define (type-disjoint? t1 t2)
    (cond
       ((eq? t1 t2)
+       #f)
+      ((eq? t2 *_*)
        #f)
       ((or (and (bigloo-type? t1) (not (bigloo-type? t2)))
 	   (and (not (bigloo-type? t1)) (bigloo-type? t2)))
@@ -105,6 +109,17 @@
 ;*    isa-of ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (isa-of node::node)
+   (when (app? node)
+      (unless (global? *isa*)
+	 (set! *isa* (find-global/module 'isa? '__object)))
+      (with-access::app node (fun args)
+	 (when (pair? args)
+	    (when (and (eq? (var-variable fun) *isa*)
+		       (var? (cadr args))
+		       (global? (var-variable (cadr args))))
+	       (find-type (global-id (var-variable (cadr args)))))))))
+
+(define (isa-of-old node::node)
    
    (define (first-arg args)
       (cond
