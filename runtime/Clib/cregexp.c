@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Fri Jan  3 13:47:26 2014 (serrano)                */
+/*    Last change :  Tue Feb  4 19:03:34 2014 (serrano)                */
 /*    Copyright   :  2011-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
@@ -122,6 +122,14 @@ static obj_t javascript_symbol = BUNSPEC;
 static obj_t caseless_symbol = BUNSPEC;
 static obj_t multiline_symbol = BUNSPEC;
 
+#if( !defined( PCRE_JAVASCRIPT_COMPAT ) )
+#  define PCRE_JAVASCRIPT_COMPAT 0
+#endif	    
+
+#if( !defined( PCRE_PCRE_NEWLINE_ANY ) )
+#  define PCRE_NEWLINE_ANY 0
+#endif	    
+
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_pcre_options_init ...                                        */
@@ -150,10 +158,10 @@ bgl_pcre_options( obj_t args ) {
       while( PAIRP( args ) ) {
 	 if( CAR( args ) == utf8_symbol ) {
 	    options |= PCRE_UTF8;
-	 } else if( CAR( args ) == javascript_symbol ) {
-	    options |= PCRE_JAVASCRIPT_COMPAT;
 	 } else if( CAR( args ) == caseless_symbol ) {
 	    options |= PCRE_CASELESS;
+	 } else if( CAR( args ) == javascript_symbol ) {
+	    options |= PCRE_JAVASCRIPT_COMPAT;
 	 } else if( CAR( args ) == multiline_symbol ) {
 	    options |= PCRE_MULTILINE | PCRE_NEWLINE_ANY;
 	 } else {
