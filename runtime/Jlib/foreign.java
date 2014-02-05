@@ -1882,8 +1882,9 @@ public final class foreign
 	    }
 	    else
 	    {
-	       chars[j] = (char) (((b & 0x0F) << 12)
-				  | ((bytes[i + 1] & 0x3F) << 6) | (bytes[i + 2] & 0x3F));
+	       chars[j] =
+		  (char) (((b & 0x0F) << 12)
+			  | ((bytes[i + 1] & 0x3F) << 6) | (bytes[i + 2] & 0x3F));
 	       i += 3;
 	    }
 	 }

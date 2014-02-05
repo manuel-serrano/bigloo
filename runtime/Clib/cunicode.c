@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Fri Dec 13 18:30:45 2013 (serrano)                */
+/*    Last change :  Wed Feb  5 07:39:28 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -649,11 +649,13 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
             ucs2 &= ((ucs2_t)1<<bits) - 1;
 
             if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
-                (ucs2 > 0xfffd) ||
-                !(ucs2 & (~(unsigned long)0<<(bits - 5))) )
+                !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {
+	       // characters fffe and ffff are accepted, see:
+	       // http://www.unicode.org/versions/Unicode5.2.0/ch16.pdf#G19635
                C_FAILURE( "utf8-string->ucs2-string",
                           "Illegal utf8 character encoding",
                           BINT( ucs2 ) );
+	    }
             
             aux[ write ] = ucs2;
          }
