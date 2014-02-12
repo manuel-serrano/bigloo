@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Jan 29 09:57:26 2014 (serrano)                */
+;*    Last change :  Wed Feb 12 09:51:47 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -75,7 +75,8 @@
    (verbose 2
 	    "      [" (string-downcase (symbol->string (unit-id unit)))
 	    "]" #\Newline)
-   (trace (ast 2) "  sexp*=" (map shape (unit-sexp* unit)) #\Newline)
+   (when (pair? (unit-sexp* unit))
+      (trace (ast 2) "  sexp*=" (map shape (unit-sexp* unit)) #\Newline))
    (let* ((id (unit-id unit))
 	  (weight (unit-weight unit))
 	  (sexp* (unit-sexp* unit))

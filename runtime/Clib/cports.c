@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Dec 13 18:24:59 2013 (serrano)                */
+/*    Last change :  Mon Feb 10 12:26:14 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2553,20 +2553,16 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
 
    if( !(in = open( BSTRING_TO_STRING( name ), O_RDONLY, OMOD )) ) {
       BGL_MUTEX_UNLOCK( OUTPUT_PORT( op ).mutex );
-      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			"send-file",
-			strerror( errno ),
-			name );
+      C_SYSTEM_FAILURE(
+	 BGL_IO_PORT_ERROR, "send-file", strerror( errno ), name );
    }
 
    if( sz == -1 ) {
       if( fstat( in, &sin ) ) {
 	 close( in );
 	 BGL_MUTEX_UNLOCK( OUTPUT_PORT( op ).mutex );
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			   "send-file",
-			   strerror( errno ),
-			   name );
+	 C_SYSTEM_FAILURE(
+	    BGL_IO_PORT_ERROR, "send-file", strerror( errno ), name );
       }
       sz = sin.st_size;
    }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Jan 29 08:18:56 2014 (serrano)                */
+;*    Last change :  Wed Feb 12 09:53:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -687,7 +687,7 @@
        #t)
       ((?var . (and ?args ??-))
        (or (eq? var 'lambda)
-	   (eq? (fast-id-of-id var #f) 'lambda)
+	   (and (symbol? var) (eq? (fast-id-of-id var #f) 'lambda))
 	   (function? var)
 	   (any* function? args)))
       (else

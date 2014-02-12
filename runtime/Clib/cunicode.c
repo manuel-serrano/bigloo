@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Wed Feb  5 07:39:28 2014 (serrano)                */
+/*    Last change :  Tue Feb 11 17:41:32 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -628,11 +628,8 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
                        "Illegal first byte",
                        BCHAR( byte ) );
          else {
-            ucs2_t ucs2;
-            int bits;
-            
-            ucs2 = (ucs2_t)byte;
-            bits = 6;
+            ulong ucs2 = (ulong)byte;
+            int bits = 6;
 
             while( byte & 0x40 ) {
                unsigned char next = cutf8[ read++ ];
@@ -646,7 +643,8 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
                byte <<= 1;
                bits += 5;
             }
-            ucs2 &= ((ucs2_t)1<<bits) - 1;
+
+            ucs2 &= (1<<bits) - 1;
 
             if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
                 !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {
@@ -655,9 +653,15 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
                C_FAILURE( "utf8-string->ucs2-string",
                           "Illegal utf8 character encoding",
                           BINT( ucs2 ) );
+	    } else {
+	       if( ucs2 >= 0x10000 ) {
+		  ucs2 -= 0x10000;
+		  aux[ write++ ] = (ucs2_t)((ucs2 >> 10) + 0xd800);
+		  aux[ write ] = (ucs2_t)((ucs2 & 0x3FF) + 0xdc00);
+	       } else {
+		  aux[ write ] = (ucs2_t)ucs2;
+	       }
 	    }
-            
-            aux[ write ] = ucs2;
          }
       }
    }
