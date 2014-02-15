@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Dec  7 13:24:10 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Fri Feb 14 07:45:49 2014 (serrano)                */
+;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
 ;*=====================================================================*/

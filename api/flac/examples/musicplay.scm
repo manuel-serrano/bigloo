@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Wed Feb  1 11:27:44 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Fri Feb 14 07:46:11 2014 (serrano)                */
+;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of FLAC and ALSA.         */
 ;*=====================================================================*/
