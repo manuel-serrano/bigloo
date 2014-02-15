@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Tue Feb 11 17:41:32 2014 (serrano)                */
+/*    Last change :  Sat Feb 15 09:37:09 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -628,7 +628,7 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
                        "Illegal first byte",
                        BCHAR( byte ) );
          else {
-            ulong ucs2 = (ulong)byte;
+            unsigned long ucs2 = (unsigned long)byte;
             int bits = 6;
 
             while( byte & 0x40 ) {

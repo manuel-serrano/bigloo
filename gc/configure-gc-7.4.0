@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gc/configure-gc-7.3alpha2            */
+#*    serrano/prgm/project/bigloo/gc/configure-gc-7.4.0                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Mon Jan 28 13:42:27 2013 (serrano)                */
-#*    Copyright   :  2009-13 Manuel Serrano                            */
+#*    Last change :  Sat Feb 15 09:30:46 2014 (serrano)                */
+#*    Copyright   :  2009-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
@@ -23,7 +23,7 @@ fi
  export CFLAGS="$cgcflags $cgcfinalflags -I$bootdir/lib/$release" && \
  export LDFLAGS=$lflags && \
  export SHELL=$sh && \
- ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes --disable-threads >> configure.log || \
+ ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes --disable-threads --with-libatomic-ops=no >> configure.log || \
  (echo "configure gc fail, see configure.log file." && exit 1)) || exit 1
 
 # configure the collector for multi-threaded applications
@@ -34,7 +34,7 @@ if [ "$threadsupport " != "no " ]; then
    export LDFLAGS=$lflags && \
    export SHELL=$sh && \
    echo "Configuring custom multi-threaded GC..." && \
-   ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt >> configure.log || \
+   ./configure $gcconfiguredir $gcconfigureopt --enable-static=yes $gcconfigurethreadsopt  --with-libatomic-ops=no >> configure.log || \
    (echo "configure gc_fth fail, see configure.log file." && exit 1)) || exit 1
 fi
 

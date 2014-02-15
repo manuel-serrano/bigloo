@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Wed Jan 22 08:31:57 2014 (serrano)                */
+;*    Last change :  Sat Feb 15 08:56:24 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -58,6 +58,7 @@
 	   (file-musictag ::bstring)
 	   (flac-musicinfo ::bstring)
 	   (mp3-musicinfo ::bstring)
+	   (ogg-musicinfo ::bstring)
 	   (file-musicinfo ::bstring)
 
 	   (register-musicinfo-reader! ::procedure)))
@@ -762,7 +763,8 @@
 		    (mmap-read-position mm)
 		    (+fx comment-length (mmap-read-position mm))))
 	      (comment (split-comment comment-string)))
-	  (parse-metadata-block-vorbis-comment-body mm (-elong i 1) (cons comment comments)))))
+	  (parse-metadata-block-vorbis-comment-body mm
+	     (-elong i 1) (cons comment comments)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-metadata-block-vorbis-comment ...                          */
@@ -776,7 +778,8 @@
 		(+fx vendor-length (mmap-read-position mm))))
 	  (user-comment-list-length (ulittlendian4 mm))
 	  (- (assert (user-comment-list-length)
-		(<=fx user-comment-list-length 100)))) ;; 100 is an arbitrary limit
+		;; 100 is an arbitrary limit
+		(<=fx user-comment-list-length 100)))) 
       (parse-metadata-block-vorbis-comment-body mm
 	 user-comment-list-length `((vendor-string . ,vendor-string)))))
 
@@ -787,6 +790,8 @@
 ;*      http://www.xiph.org/vorbis/                                    */
 ;*    The specification this program uses is                           */
 ;*      http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html              */
+;*    See also the wikipedia page for the header format                */
+;*      http://en.wikipedia.org/wiki/Ogg                               */
 ;*---------------------------------------------------------------------*/
 (define (read-ogg-comments path mm)
    
@@ -795,29 +800,51 @@
 		(proc 'read-ogg-comment)
 		(msg msg)
 		(obj path))))
-   
-   (define (local-read-ogg-comments path mm)
+
+   ;; Byte order: Little-endian
+   ;; Offset   Length   Contents
+   ;;   0      4 bytes  "OggS"
+   ;;   4      1 byte   Stream structure version (0x00)
+   ;;   5      1 byte   Packet flag:
+   ;;                     bit 0:  true if page continued
+   ;;                     bit 1:  true if first page
+   ;;                     bit 2:  true if last page
+   ;;                     bit 3..7: reserved
+   ;;   6      8 bytes  The end pcm sample position (64bit integer)
+   ;;  14      4 bytes  Stream serial number
+   ;;  18      4 bytes  Page number
+   ;;  22      4 bytes  Check sum
+   ;;  26      1 byte   Number of segments(s)
+   ;;  27     (s)bytes  Segment table
+   ;;  27+(s) (b)bytes  Body (b := header[27]+header[27+1]+...+header[27+s-1])
+   (define (parse-ogg mm)
+      ;; OggsS; byte 0
       (unless (neq-input-string mm "OggS")
+	 ;; version: byte 5
 	 (unless (char=? #a000 (mmap-get-char mm))
 	    (err "invalid OggS page0"))
 	 (mmap-read-position-set! mm (+fx 21 (mmap-read-position mm)))
+	 ;; page segment: byte 26
 	 (let ((ps (char->integer (mmap-get-char mm))))
-	    ;; ps should be 0 .. 511 and not negative.  is the correct?
+	    (tprint "ps=" ps)
 	    (mmap-read-position-set! mm (+fx ps (mmap-read-position mm)))
 	    (let ((packet-type (mmap-get-char mm)))
+	       (tprint "packet-type=" (char->integer packet-type))
 	       (when (neq-input-string mm "vorbis")
+		  (mmap-read-position-set! mm (-fx (mmap-read-position mm) 6))
+		  (tprint (mmap-get-string mm 6))
 		  (err "invalid ogg vorbis identification"))
 	       (case packet-type
 		  ((#a001)
 		   (mmap-read-position-set! mm (+fx 23 (mmap-read-position mm)))
-		   (local-read-ogg-comments path mm))
+		   (parse-ogg mm))
 		  ((#a003)
 		   (parse-metadata-block-vorbis-comment mm))
 		  (else
 		   (err "invalid ogg vorbis common header")))))))
    
    (mmap-read-position-set! mm #e0)
-   (local-read-ogg-comments path mm))
+   (parse-ogg mm))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-flac-comments ...                                           */
@@ -1079,6 +1106,24 @@
 	     (close-mmap mm)))))
 
 ;*---------------------------------------------------------------------*/
+;*    read-ogg-musicinfo ...                                           */
+;*---------------------------------------------------------------------*/
+(define (read-ogg-musicinfo path mm)
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    ogg-musicinfo ...                                                */
+;*---------------------------------------------------------------------*/
+(define (ogg-musicinfo path)
+   (if (not (file-exists? path))
+       (error/errno $errno-io-file-not-found-error
+	  "ogg-musicinfo" "Can't find file" path)
+       (let ((mm (open-mmap path :write #f)))
+	  (unwind-protect
+	     (read-ogg-musicinfo path mm)
+	     (close-mmap mm)))))
+
+;*---------------------------------------------------------------------*/
 ;*    *musicinfo-readers* ...                                          */
 ;*---------------------------------------------------------------------*/
 (define *musicinfo-readers* '())
@@ -1100,7 +1145,7 @@
       (cond
 	 ((read-flac-musicinfo mm) => id)
 	 ((read-mp3-musicinfo mm) => id)
-	 ((read-ogg-comments path mm) #f)
+	 ((read-ogg-musicinfo path mm) => id)
 	 ((find (lambda (p) (p mm)) *musicinfo-readers*) => (lambda (r) (r mm)))
 	 (else #f)))
    
