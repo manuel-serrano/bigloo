@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Nov 11 10:08:14 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb 15 14:02:38 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -267,6 +267,7 @@
 	  ;; yes
 	  (with-access::conditional body (test)
 	     (set! test (cdar bindings))
+	     (set! bindings '())
 	     (node-1occ! body 1-exp*))
 	  (node-1occ-let-var! node 1-exp*))))
 

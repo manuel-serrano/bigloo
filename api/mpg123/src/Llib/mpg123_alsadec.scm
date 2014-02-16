@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Fri Mar 15 17:11:54 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Sat Feb 15 18:52:10 2014 (serrano)                */
+;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
 ;*=====================================================================*/

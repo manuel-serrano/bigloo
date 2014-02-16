@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:25:23 1995                          */
-;*    Last change :  Tue Feb  4 10:03:30 2014 (serrano)                */
+;*    Last change :  Sat Feb 15 14:00:10 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Reduction optimizations                                      */

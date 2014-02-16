@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Fri Feb 14 07:45:49 2014 (serrano)                */
+;*    Last change :  Sat Feb 15 13:09:13 2014 (serrano)                */
 ;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -822,7 +822,7 @@
 ;*    alsabuffer-seek ::alsammapbuffer ...                             */
 ;*---------------------------------------------------------------------*/
 (define-method (alsabuffer-seek buffer::alsammapbuffer offset)
-   (with-access::alsammapbuffer buffer (%tail mmap %inlen)
+   (with-access::alsammapbuffer buffer (%tail mmap)
       (set! %tail
 	 (cond
 	    ((llong? offset) (llong->fixnum offset))

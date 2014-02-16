@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Sun Nov 24 18:18:10 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb 15 14:10:16 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -214,7 +214,7 @@
 			     (loc loc)
 			     (type (variable-type (the-global fun)))
 			     (variable (the-global fun)))))
-	 ;; we globalize the actuals before adding new one
+	 ;; we globalize the actuals before adding new ones
 	 ;; otherwise, we could produce illegal `cell-ref'
 	 (let liip ((nodes args))
 	    (if (null? nodes)

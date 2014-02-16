@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Feb 12 09:53:02 2014 (serrano)                */
+;*    Last change :  Sun Feb 16 08:43:15 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -268,6 +268,8 @@
    (define (safe-rec-val-optim? val vars::pair-nil)
       (or (safe-rec-val? val)
 	  (cond
+	     ((null? val)
+	      #t)
 	     ((atom? val)
 	      #t)
 	     ((var? val)
@@ -291,7 +293,7 @@
 	     ((extern? val)
 	      (with-access::extern val (expr*)
 		 (every (lambda (e)
-			    (safe-rec-val-optim? e vars))
+			   (safe-rec-val-optim? e vars))
 		    expr*)))
 	     ((conditional? val)
 	      (with-access::conditional val (test true false)
@@ -312,20 +314,20 @@
 		 (and (safe-rec-val-optim? test vars)
 		      (every (lambda (clause)
 				(safe-rec-val-optim? (cdr clause) vars))
-			      clauses))))
+			 clauses))))
 	     ((let-fun? val)
 	      (with-access::let-fun val (body locals)
 		 (and (safe-rec-val-optim? body vars)
 		      (every (lambda (f)
 				(safe-rec-val-optim?
 				   (sfun-body (local-value f)) vars))
-			      locals))))
+			 locals))))
 	     ((let-var? val)
 	      (with-access::let-var val (body bindings)
 		 (and (safe-rec-val-optim? body vars)
 		      (every (lambda (binding)
 				(safe-rec-val-optim? (cdr binding) vars))
-			      bindings))))
+			 bindings))))
 	     ((set-ex-it? val)
 	      (with-access::set-ex-it val (var body)
 		 (and (safe-rec-val-optim? var vars)
@@ -538,7 +540,7 @@
 (define (letrec*->node sexp stack loc site)
 
    (define (free-vars sexp v vars)
-      ;; compute an over approximations of all the
+      ;; compute an over approximation of all the
       ;; free vars appearing in sexp
       (let loop ((sexp sexp)
 		 (res '()))
@@ -556,7 +558,7 @@
 	     (loop (car sexp) (loop (cdr sexp) res))))))
 
    (define (split-function-bindings ebindings)
-      ;; extract the head bindings that does not bind functions
+      ;; extract the head bindings that do not bind functions
       (let loop ((l ebindings)
 		 (nonfunctions '()))
 	 (cond
@@ -571,60 +573,109 @@
       (any (lambda (eb) (memq var (caddr eb))) ebindings))
 
    (define (split-post-bindings ebindings)
-      (let ((letrec*-bindings '())
-	    (post-bindings '()))
-	 (for-each (lambda (e)
-		      (let ((var (cadr e)))
-			 (if (or (function? (cadr (car e)))
-				 (used? var ebindings))
-			     (set! letrec*-bindings (cons e letrec*-bindings))
-			     (set! post-bindings (cons e post-bindings)))))
-	    ebindings)
-	 (values (reverse! letrec*-bindings) (reverse! post-bindings))))
+      (with-trace 2 "split-post-bindings"
+	 (let ((letrec*-bindings '())
+	       (post-bindings '()))
+	    (for-each (lambda (e)
+			 (let ((var (cadr e)))
+			    (if (or (function? (cadr (car e)))
+				    (used? var ebindings))
+				(set! letrec*-bindings (cons e letrec*-bindings))
+				(set! post-bindings (cons e post-bindings)))))
+	       ebindings)
+	    (values (reverse! letrec*-bindings) (reverse! post-bindings)))))
 
    (define (split-pre-bindings ebindings)
-      (let loop ((ebindings ebindings)
-		 (pre-bindings '()))
+      (with-trace 2 "split-pre-bindings"
+	 (let loop ((ebindings ebindings)
+		    (pre-bindings '()))
+	    (cond
+	       ((null? ebindings)
+		(values (reverse! pre-bindings) '()))
+	       ((and (function? (cadr (caar ebindings)))
+		     (any (lambda (var)
+			     (any (lambda (eb)
+				     (eq? (cadr eb) var))
+				(cdr ebindings)))
+			(caddr (car ebindings))))
+		(trace-item "optim fun: " (shape (caar ebindings)))
+		(values (reverse! pre-bindings) ebindings))
+	       ((any (lambda (eb)
+			(memq (cadr eb) (caddr (car ebindings))))
+		   (cdr ebindings))
+		;; one of the variables introduced in the next bindings
+		;; appears free in the value of the current binding
+		(loop (cdr ebindings) (cons (car ebindings) pre-bindings)))
+	       (else
+		(trace-item "optim free: " (shape (caar ebindings)))
+		(values (reverse! (cons (car ebindings) pre-bindings))
+		   (cdr ebindings)))))))
+
+   (define (stage2 ebindings body stack loc site)
+      ;; stage 2, try to put as many variables as possible on head positions
+      (with-trace 2 "letrec*, stage2"
+	 (trace-item "ebindings="
+	    (map (lambda (b) (shape (caar b))) ebindings))
 	 (cond
 	    ((null? ebindings)
-	     (values (reverse! pre-bindings) '()))
-	    ((and (function? (cadr (caar ebindings)))
-		  (any (lambda (var)
-			  (any (lambda (eb)
-				  (eq? (cadr eb) var))
-			     (cdr ebindings)))
-		     (caddr (car ebindings))))
-	     (values (reverse! pre-bindings) ebindings))
+	     (sexp->node body stack loc site))
+	    ((null? (cdr ebindings))
+	     (let->node
+		(epairify-propagate-loc
+		   `(letrec* ,(map car ebindings) ,body)
+		   loc)
+		stack loc site))
 	    (else
-	     (loop (cdr ebindings) (cons (car ebindings) pre-bindings))))))
-
-   (define (stage2 ebindings body)
-      ;; stage 2, try to put as many variables as possible on head positions
-      (multiple-value-bind (pre-bindings letrec*-bindings)
-	 (split-pre-bindings ebindings)
-	 (if (null? pre-bindings)
-	     (epairify-propagate-loc
-		`(letrec* ,(map car letrec*-bindings) ,body)
-		loc)
-	     (epairify-propagate-loc
-		`(letrec* ,(map car pre-bindings)
-		    ,(stage2 letrec*-bindings body))
-		loc))))
+	     (multiple-value-bind (pre-bindings letrec*-bindings)
+		(split-pre-bindings ebindings)
+		(trace-item "pre-bindings="
+		   (map (lambda (x) (shape (caar x))) pre-bindings))
+		(trace-item "rec*="
+		   (map (lambda (x) (shape (caar x))) letrec*-bindings))
+		(cond
+		   ((null? pre-bindings)
+		    (let->node
+		       (epairify-propagate-loc
+			  `(letrec* ,(map car letrec*-bindings) ,body)
+			  loc)
+		       stack loc site))
+		   ((null? letrec*-bindings)
+		    (let->node
+		       (epairify-propagate-loc
+			  `(letrec* ,(map car pre-bindings) ,body)
+			  loc)
+		       stack loc site))
+		   (else
+		    (letrec*->node
+		       (epairify-propagate-loc
+			  `(letrec* ,(map car pre-bindings)
+			      (letrec* ,(map car letrec*-bindings)
+				 ,body))
+			  loc)
+		       stack loc site))))))))
 
    (define (stage1 ebindings body)
       ;; stage 1, try to put as many variables as possible on tail positions
-      (if (null? ebindings)
-	  (sexp->node body stack loc site)
-	  (multiple-value-bind (letrec*-bindings post-bindings)
-	     (split-post-bindings ebindings)
-	     (if (null? post-bindings)
-		 ;; stage 2, try to put on head positions,
-		 ;; as many variables as possible
-		 (let->node (stage2 letrec*-bindings body) stack loc site)
-		 (stage1 letrec*-bindings
-		    (epairify-propagate-loc
-		       (letrecstar (map car post-bindings) body)
-		       loc))))))
+      (with-trace 2 "letrec*, stage1"
+	 (trace-item "ebindings" (map (lambda (b) (shape (caar b))) ebindings))
+	 (cond
+	    ((null? ebindings)
+	     (sexp->node body stack loc site))
+	    (else
+	     (multiple-value-bind (letrec*-bindings post-bindings)
+		(split-post-bindings ebindings)
+		(trace-item "rec*="
+		   (map (lambda (x) (shape (caar x))) letrec*-bindings))
+		(trace-item "post="
+		   (map (lambda (x) (shape (caar x))) post-bindings))
+		(if (null? post-bindings)
+		    ;; stage 2, try to put on head positions,
+		    ;; as many variables as possible
+		    (stage2 letrec*-bindings body stack loc site)
+		    (stage1 letrec*-bindings
+		       (epairify-propagate-loc
+			  (letrecstar (map car post-bindings) body)
+			  loc))))))))
       
    (define (decompose-letrec* bindings body)
       ;; for each bindings, extra the variable name and the set
@@ -635,7 +686,8 @@
 				(list b v (free-vars (cadr b) v vars)))
 			   bindings vars)))
 	 (stage1 ebindings (epairify-propagate-loc `(begin ,@body) loc))))
-      
+
+;*    (tprint "sexp=" sexp)                                            */
    (match-case sexp
       ((letrec* () . ?body)
        ;; not a real letrec*
