@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sat Apr 13 21:34:52 2013 (serrano)                */
+;*    Last change :  Mon Feb 17 10:45:00 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -532,18 +532,21 @@
 ;*    make-datagram-server-socket ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-datagram-server-socket #!optional (port 0))
+   (%socket-init!)
    ($make-datagram-server-socket port))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-unbound-socket ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-datagram-unbound-socket #!optional (family::symbol 'inet))
+   (%socket-init!) 
    ($make-datagram-unbound-socket family))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-datagram-client-socket ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (make-datagram-client-socket hostname port #!optional broadcast)
+   (%socket-init!)
    ($make-datagram-client-socket hostname port broadcast))
 
 ;*---------------------------------------------------------------------*/

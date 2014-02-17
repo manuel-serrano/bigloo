@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <string.h>
+
 #ifdef _MINGW_VER
 #  define _BGL_WIN32_VER
 #  include <io.h>
@@ -39,6 +40,7 @@
 #  include <pwd.h>
 #else
 #define uid_t int
+#define gid_t int
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -192,12 +194,12 @@ c_date() {
 /*---------------------------------------------------------------------*/
 long
 bgl_last_modification_time( char *file ) {
-   struct stat _stat;
+   struct stat _stati;
 
-   if( lstat( file, &_stat ) )
+   if( lstat( file, &_stati ) )
       return -1;
    else
-      return (long)(_stat.st_mtime);
+      return (long)(_stati.st_mtime);
 }
 
 /*---------------------------------------------------------------------*/
@@ -206,12 +208,12 @@ bgl_last_modification_time( char *file ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_file_size( char *file ) {
-   struct stat _stat;
+   struct stat _stati;
 
-   if( stat( file, &_stat ) )
+   if( stat( file, &_stati ) )
       return -1;
    else
-      return (long)_stat.st_size;
+      return (long)_stati.st_size;
 }
 
 /*---------------------------------------------------------------------*/
@@ -220,12 +222,12 @@ bgl_file_size( char *file ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_file_uid( char *file ) {
-   struct stat _stat;
+   struct stat _stati;
 
-   if( lstat( file, &_stat ) )
+   if( lstat( file, &_stati ) )
       return -1;
    else
-      return _stat.st_uid;
+      return _stati.st_uid;
 }
 
 /*---------------------------------------------------------------------*/
@@ -234,12 +236,12 @@ bgl_file_uid( char *file ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_file_gid( char *file ) {
-   struct stat _stat;
+   struct stat _stati;
 
-   if( lstat( file, &_stat ) )
+   if( lstat( file, &_stati ) )
       return -1;
    else
-      return _stat.st_gid;
+      return _stati.st_gid;
 }
 
 /*---------------------------------------------------------------------*/
@@ -248,12 +250,12 @@ bgl_file_gid( char *file ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_file_mode( char *file ) {
-   struct stat _stat;
+   struct stat _stati;
 
-   if( stat( file, &_stat ) )
+   if( stat( file, &_stati ) )
       return -1;
    else
-      return _stat.st_mode;
+      return _stati.st_mode;
 }
 
 /*---------------------------------------------------------------------*/
@@ -262,20 +264,20 @@ bgl_file_mode( char *file ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_file_type( char *file ) {
-   struct stat _stat;
+   struct stat _stati;
 
-   if( lstat( file, &_stat ) ) {
+   if( lstat( file, &_stati ) ) {
       return string_to_symbol( "does-not-exist" );
    }
 
 #if( defined( S_ISLNK ) )
-   if( S_ISLNK( _stat.st_mode ) ) {
+   if( S_ISLNK( _stati.st_mode ) ) {
       return string_to_symbol( "link" );
    }
 #endif   
 
 #if( defined( S_ISREG ) )
-   if( S_ISREG( _stat.st_mode ) ) {
+   if( S_ISREG( _stati.st_mode ) ) {
       static obj_t reg = 0L;
 
       if( !reg ) reg = string_to_symbol( "regular" );
@@ -284,7 +286,7 @@ bgl_file_type( char *file ) {
 #endif   
 
 #if( defined( S_ISDIR ) )
-   if( S_ISDIR( _stat.st_mode ) ) {
+   if( S_ISDIR( _stati.st_mode ) ) {
       static obj_t dir = 0L;
 
       if( !dir ) dir = string_to_symbol( "directory" );
@@ -293,25 +295,25 @@ bgl_file_type( char *file ) {
 #endif   
 
 #if( defined( S_ISBLK ) )
-   if( S_ISBLK( _stat.st_mode ) ) {
+   if( S_ISBLK( _stati.st_mode ) ) {
       return string_to_symbol( "block" );
    }
 #endif   
 
 #if( defined( S_ISCHR ) )
-   if( S_ISCHR( _stat.st_mode ) ) {
+   if( S_ISCHR( _stati.st_mode ) ) {
       return string_to_symbol( "character" );
    }
 #endif   
 
 #if( defined( S_ISFIFO ) )
-   if( S_ISFIFO( _stat.st_mode ) ) {
+   if( S_ISFIFO( _stati.st_mode ) ) {
       return string_to_symbol( "fifo" );
    }
 #endif   
 
 #if( defined( S_ISSOCK ) )
-   if( S_ISSOCK( _stat.st_mode ) ) {
+   if( S_ISSOCK( _stati.st_mode ) ) {
       return string_to_symbol( "socket" );
    }
 #endif

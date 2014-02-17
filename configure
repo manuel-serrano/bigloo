@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jan  3 12:30:38 2014 (serrano)                */
+#*    Last change :  Mon Feb 17 10:22:03 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4016,9 +4016,9 @@ if [ "$summary" = "yes" ]; then
     echo "  bignum support.............. gmp ($gmpversion)"
   fi
   if [ "$unistring" = "no" ]; then
-    echo "  unistring support........... basic"
+    echo "  unistring support........... minimal"
   else
-    echo "  unistring support........... $gmpversion"
+    echo "  unistring support........... lib$unistring"
   fi
   echo
   echo "Directories where Bigloo will be installed:"

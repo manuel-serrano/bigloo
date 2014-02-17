@@ -43,7 +43,7 @@ aout=$TMP/Xactest$USER
 #*    mingw is super clear                                             */
 #*---------------------------------------------------------------------*/
 if [ "$HOSTOS " = "mingw " ]; then
-  echo "-lws2_32" # -lwsock32 -lmswsock"
+  echo 1 #"-lws2_32" 
   exit 0
 fi
 
