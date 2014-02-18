@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Tue Feb  4 19:03:34 2014 (serrano)                */
+/*    Last change :  Tue Feb 18 19:27:15 2014 (serrano)                */
 /*    Copyright   :  2011-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
@@ -126,7 +126,7 @@ static obj_t multiline_symbol = BUNSPEC;
 #  define PCRE_JAVASCRIPT_COMPAT 0
 #endif	    
 
-#if( !defined( PCRE_PCRE_NEWLINE_ANY ) )
+#if( !defined( PCRE_NEWLINE_ANY ) )
 #  define PCRE_NEWLINE_ANY 0
 #endif	    
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec 19 08:16:32 2013                          */
-/*    Last change :  Tue Jan 21 07:38:10 2014 (serrano)                */
+/*    Last change :  Tue Feb 18 19:31:10 2014 (serrano)                */
 /*    Copyright   :  2013-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C i18n implementation                                            */
@@ -17,6 +17,7 @@
 #if( BGL_HAVE_UNISTRING )
 #  include <unistr.h>
 #  include <uninorm.h>
+#  include <unicase.h>
 #  include <locale.h>
 #endif
 
