@@ -3,13 +3,17 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Thu Jan  2 11:58:20 2014 (serrano)                */
+/*    Last change :  Tue Feb 18 15:57:02 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
 #include <string.h>
 #include <bigloo.h>
+#if defined( _MSC_VER) || defined( _MINGW_VER )
+// force 32 bits time values as Bigloo requires sizeof(time_t) == sizeof(long)
+#  define _USE_32BIT_TIME_T 1
+#endif
 #include <time.h>
 #include <ctype.h>
 #include <sys/time.h>
