@@ -57,10 +57,14 @@
 #    endif
 #  endif
 
-#if( BGL_GC_VERSION < 740 )
-#  define BGL_GC_INIT() GC_init()
+#if( BGL_GC_ISCUSTOM ) 
+#  if( BGL_GC_VERSION < 740 )
+#    define BGL_GC_INIT() GC_init()
+#  else
+#    define BGL_GC_INIT() bgl_gc_init()
+#  endif
 #else
-#  define BGL_GC_INIT() bgl_gc_init()
+#  define BGL_GC_INIT() 1
 #endif
 
 #if( BGL_GC_VERSION < 720 )

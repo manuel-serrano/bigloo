@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Feb 20 07:23:34 2014 (serrano)                */
+#*    Last change :  Thu Feb 20 07:55:10 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -17,7 +17,7 @@
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
 release=4.1a
-version=
+version=2
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
 bigloosvn=ssh://hop@hop.inria.fr/bigloo
@@ -216,7 +216,7 @@ customgc=yes
 #gccustom=gc-7.3alpha3-20130330
 gccustom=gc-7.4.0
 gcversion=
-# the following  variable is relevant only when using
+# the following variable is relevant only when using
 # standard (i.e. already existing and operational) Boehm's GC
 # and when customgc=no
 stdgclib=gc
@@ -240,7 +240,6 @@ modfile=644
 #*--- ld shared library option ----------------------------------------*/
 # set $ldopt to `no-share' if you don't want shared library
 ldopt=
-ldoptrpath=
 # set $ldsoname to `blank' if you want to force it empty
 ldsoname=
 ldinstallname=
@@ -944,7 +943,7 @@ while : ; do
       echo "   --customgc=yes|no [default yes]" >&2;
       echo "   --gcprefix=dir (non-custom gc installation prefix (/usr)"  >&2;
       echo "   --gclibdir=dir (non-custom gc library dir (/usr/lib)" >&2;
-      echo "   --gcincdir=dir (non-custon gc include dir (/usr/include/gc)" >&2;
+      echo "   --gcincdir=dir (non-custom gc include dir (/usr/include/gc)" >&2;
       echo "   --gccustomversion=version (custom gc version, e.g., \"gc-7.1\")" >&2;
       echo "   --gccustominstall=[install|skip] (configure and install the gc))" >&2;
       echo "   --gccparallelmark=[yes|no] (configure the gc for parallel mark))" >&2;
@@ -2770,6 +2769,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
+      gciscustom=1
+
+      if [ $customgc != "yes" ]; then
+        gciscustom=0
+      fi
       
       cat autoconf/`basename $p`.in \
         | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit), `date`|" \
@@ -2779,6 +2783,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HOMEURL@|$bigloourl|" \
               -e "s|@BGL_SPECIFIC_VERSION@|$specific|" \
               -e "s|@GC_VERSION@|$gcversion|" \
+              -e "s|@GC_ISCUSTOM@|$gciscustom|" \
               -e "s|@BGL_DEFAULT_BACK_END@|$defaultbackend|" \
               -e "s|@BGL_DEFAULT_A_OUT@|$aout|" \
               -e "s|@BGL_DEFAULT_A_BAT@|$abat|" \
@@ -2938,6 +2943,11 @@ fi
 #*    bigloo_gc.h                                                      */
 #*---------------------------------------------------------------------*/
 if [ $action = "all" -o $action = "bigloo_gc" ]; then
+  customgcbool=1
+  if [ $customgc != "yes" ]; then
+    customgcbool=0
+  fi
+
   echo "/* Generated file, don't edit */" > $bigloo_gc_h
   cat autoconf/bigloo_gc.h.in \
      | sed -e "s|@GC_VERSION@|$gcversion|" >> $bigloo_gc_h
