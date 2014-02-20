@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Feb 17 10:22:03 2014 (serrano)                */
+#*    Last change :  Thu Feb 20 07:23:34 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -240,6 +240,7 @@ modfile=644
 #*--- ld shared library option ----------------------------------------*/
 # set $ldopt to `no-share' if you don't want shared library
 ldopt=
+ldoptrpath=
 # set $ldsoname to `blank' if you want to force it empty
 ldsoname=
 ldinstallname=
@@ -2661,6 +2662,16 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # shared link additional option
   ldsharedopt=`$autoconf ldsharedopt` || exit 1
 
+  # check if -Wl,-rpath=XXX supported by the C compiler
+  if [ "$ld " = "gcc " -a "$ldopt " = "-shared " ]; then
+    ldrpath="-Wl,-rpath=$libdir"
+    xcc=`$autoconf cctest --cc=$cc --cflags="$ldrpath"`
+
+    if [ "$xcc " = "$cc " ]; then
+      ldsharedopt="$ldsharedopt $ldrpath"
+    fi
+  fi
+     
   # bdb configuration
   if [ "$bee" = "partial" ]; then
     havebdb=0
