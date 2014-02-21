@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 21 11:02:39 2014 (serrano)                */
+#*    Last change :  Fri Feb 21 16:51:26 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2607,6 +2607,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       haveshlib=0
       cpicflags="-DBGL_NO_PIC"
     else
+      xldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt -Wl,-rpath=$libdir" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"`
+      if [ "$xldopt" != "no-share" ]; then
+        ldopt="$ldopt -Wl,-rpath=\$(dir \$(LIBDEST))"
+      fi
+
       haveshlib=1
       ldpreload=`$autoconf ldpreload --ld="$ld" --ldlibs="-lc" --ldopt="$ldopt"` || exit 1
     fi
