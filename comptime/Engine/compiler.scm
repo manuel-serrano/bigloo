@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Jan 28 05:37:28 2014 (serrano)                */
+;*    Last change :  Fri Feb 21 07:42:17 2014 (serrano)                */
 ;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -161,14 +161,29 @@
 
       ;; before parsing the modules, declare that we are currently compiling
       (register-srfi! 'bigloo-compile)
-      (when (>=fx (bigloo-compiler-debug) 1) (register-srfi! 'bigloo-debug))
-      (when *unsafe-type* (register-srfi! 'bigloo-unsafe-type))
-      (when *unsafe-range* (register-srfi! 'bigloo-unsafe-range))
-      (when *unsafe-arity* (register-srfi! 'bigloo-unsafe-arity))
-      (when *unsafe-library* (register-srfi! 'bigloo-unsafe-library))
-      (when *unsafe-eval* (register-srfi! 'bigloo-unsafe-eval))
-      (when *unsafe-version* (register-srfi! 'bigloo-unsafe-version))
       (when (eq? *pass* 'classgen) (register-srfi! 'bigloo-class-generate))
+      (when (>=fx (bigloo-compiler-debug) 1) (register-srfi! 'bigloo-debug))
+      (let ((unsafe 0))
+	 (when *unsafe-type*
+	    (set! unsafe (+fx 1 unsafe))
+	    (register-srfi! 'bigloo-unsafe-type))
+	 (when *unsafe-range*
+	    (set! unsafe (+fx 1 unsafe))
+	    (register-srfi! 'bigloo-unsafe-range))
+	 (when *unsafe-arity*
+	    (set! unsafe (+fx 1 unsafe))
+	    (register-srfi! 'bigloo-unsafe-arity))
+	 (when *unsafe-library*
+	    (set! unsafe (+fx 1 unsafe))
+	    (register-srfi! 'bigloo-unsafe-library))
+	 (when *unsafe-eval*
+	    (set! unsafe (+fx 1 unsafe))
+	    (register-srfi! 'bigloo-unsafe-eval))
+	 (when *unsafe-version*
+	    (set! unsafe (+fx 1 unsafe))
+	    (register-srfi! 'bigloo-unsafe-version))
+	 (when (=fx unsafe 6)
+	    (register-srfi! 'bigloo-unsafe)))
 
       ;; we install macros ...
       (install-initial-expander)

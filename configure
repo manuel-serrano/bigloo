@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Feb 20 08:04:48 2014 (serrano)                */
+#*    Last change :  Fri Feb 21 11:02:39 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1833,7 +1833,7 @@ if [ "$action" != "bigloo_config_el" ]; then
     if [ "$gcincdir " = " " ]; then
       gcincdir=/usr/include/gc
     fi
-    gclib=`$autoconf gcstd --cflags="$coflags $lflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
+    gclib=`$autoconf gcstd --cflags="$coflags $lflags $cflags" --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --dlopen=$dlopen` || exit 1
     if [ "$gclib " = " " ]; then
        echo "*** ERROR:configure:Standard GC. Aborting";
        echo "You are trying to configure Bigloo so that it uses an existing"
