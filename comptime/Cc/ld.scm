@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Mon Apr 15 16:25:45 2013 (serrano)                */
-;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb 26 17:36:32 2014 (serrano)                */
+;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
 ;*=====================================================================*/
@@ -119,6 +119,16 @@
 ;*    unix-ld ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (unix-ld name need-to-return)
+
+   (define (rpath-options)
+      (let ((rpathfmt (bigloo-config 'c-compiler-rpath)))
+	 (if (string-null? rpathfmt)
+	     ""
+	     (format " ~( )"
+		(map (lambda (path)
+			(format rpathfmt path))
+		   (delete-duplicates *cflags-rpath*))))))
+   
    (verbose 1 "   . ld (" *cc* ")" #\Newline)
    ;; we add additional, machine specific, link options.
    (let ((staticp (or (not (bigloo-config 'have-shared-library))
@@ -199,6 +209,8 @@
 		       " " *ld-o-option* (unix-filename dest)
 		       ;; cc options
 		       " "  *cc-options*
+		       ;; rpath options
+		       (rpath-options)
 		       ;; optional debug option
 		       (if (or *c-debug* (>fx *bdb-debug* 0))
 			   (string-append " " *ld-debug-option*)

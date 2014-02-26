@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 21 16:51:26 2014 (serrano)                */
+#*    Last change :  Wed Feb 26 16:59:50 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -62,6 +62,7 @@ fi
 bootflags=""
 featureflags=
 coflags=-O3
+crpath=
 
 cstrip=""
 cpicflags="demanded" # Possible values for cpicflags are:
@@ -2667,15 +2668,12 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   ldsharedopt=`$autoconf ldsharedopt` || exit 1
 
   # check if -Wl,-rpath=XXX supported by the C compiler
-  if [ "$ld " = "gcc " -a "$ldopt " = "-shared " ]; then
-    ldrpath="-Wl,-rpath=$libdir"
-    xcc=`$autoconf cctest --cc=$cc --cflags="$ldrpath"`
-
-    if [ "$xcc " = "$cc " ]; then
-      ldsharedopt="$ldsharedopt $ldrpath"
-    fi
+  ldrpath="-Wl,-rpath=$libdir"
+  xcc=`$autoconf cctest --cc=$cc --cflags="$ldrpath"`
+  if [ "$xcc " = "$cc " ]; then
+    crpath="-Wl,-rpath=~a"
   fi
-     
+
   # bdb configuration
   if [ "$bee" = "partial" ]; then
     havebdb=0
@@ -2877,6 +2875,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
               -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
               -e "s|@C_COMPILER_OPTIM_FLAGS@|$coflags $cflags|" \
+              -e "s|@C_COMPILER_RPATH@|$crpath|" \
               -e "s|@C_STRIP_FLAGS@|$csflags|" \
               -e "s|@C_LINKER_STYLE@|$ldstyle|" \
               -e "s|@C_LINKER_O_OPTION@|-o |" \

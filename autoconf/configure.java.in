@@ -48,6 +48,7 @@ public class configure {
   public static final byte[] C_COMPILER_DEBUG_OPTION = "@C_COMPILER_DEBUG_OPTION@".getBytes();
   public static final byte[] C_OBJECT_FILE_EXTENSION = "@C_OBJECT_FILE_EXTENSION@".getBytes();
   public static final byte[] C_COMPILER_OPTIM_FLAGS = "@C_COMPILER_OPTIM_FLAGS@".getBytes();
+  public static final byte[] C_COMPILER_RPATH = "@C_COMPILER_RPATH@".getBytes();
   public static final byte[] C_STRIP_FLAGS = "@C_STRIP_FLAGS@".getBytes();
   public static final byte[] C_LINKER_STYLE = "@C_LINKER_STYLE@".getBytes();
   public static final byte[] C_LINKER_O_OPTION = "@C_LINKER_O_OPTION@".getBytes();

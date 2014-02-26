@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jan 28 05:35:51 2014 (serrano)                */
+;*    Last change :  Wed Feb 26 17:29:30 2014 (serrano)                */
 ;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -657,6 +657,8 @@
        (set! *c-user-header* (append *c-user-header* (list string))))
       (("-cfoot" ?string (help "C foot"))
        (set! *c-user-foot* (append *c-user-foot* (list string))))
+      (("-rpath" ?path (help "Add C runtime-path (rpath)"))
+       (set! *cflags-rpath* (append *cflags-rpath* (list path))))
       ;; link options
       (("-ldopt" ?string (help "Invoke ld with STRING"))
        (set! *ld-options* (string-append string " " *ld-options*)))

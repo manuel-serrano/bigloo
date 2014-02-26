@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Jan 28 05:31:47 2014 (serrano)                */
+;*    Last change :  Wed Feb 26 17:31:24 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -130,6 +130,7 @@
 	    *cflags*
 	    *cflags-optim*
 	    *cflags-prof*
+	    *cflags-rpath*
 	    *stdc*               
 	    *cc-options*       
 	    *rm-tmp-files*       
@@ -385,6 +386,10 @@
 (param-define *cflags-prof*
    "The C compiler profiling option"
    (bigloo-config 'c-prof-flag))
+;; the c compiler rpath option
+(param-define *cflags-rpath*
+   "The C compiler rpath option"
+   (list (bigloo-config 'ld-library-dir)))
 ;; the c compiler -o option
 (param-define *cc-o-option*
    "The C compiler -o option"
