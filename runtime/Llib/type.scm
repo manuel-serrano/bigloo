@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Mar  3 10:08:24 2014 (serrano)                */
+;*    Last change :  Mon Mar  3 16:21:10 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -63,6 +63,14 @@
     (subtype bint "obj_t" (obj))
     (subtype belong "obj_t" (obj))
     (subtype bllong "obj_t" (obj))
+    (subtype bsint8 "obj_t" (obj))
+    (subtype buint8 "obj_t" (obj))
+    (subtype bsint16 "obj_t" (obj))
+    (subtype buint16 "obj_t" (obj))
+    (subtype bsint32 "obj_t" (obj))
+    (subtype buint32 "obj_t" (obj))
+    (subtype bsint64 "obj_t" (obj))
+    (subtype buint64 "obj_t" (obj))
     (subtype bignum "obj_t" (obj))
     (subtype bbool "obj_t" (obj))
     (subtype cnst "obj_t" (obj))

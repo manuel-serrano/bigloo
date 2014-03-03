@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar  3 10:51:57 2014 (serrano)                */
+/*    Last change :  Mon Mar  3 16:25:57 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -156,6 +156,10 @@ extern "C" {
 #define CNST_SHIFT_INT16 16
 #define CNST_SHIFT_UCS2 16
 
+#if( PTR_ALIGNMENT >= 3 )
+#  define CNST_SHIFT_INT32 32
+#endif
+   
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
@@ -176,7 +180,7 @@ extern "C" {
 #endif
 
 #if( PTR_ALIGNMENT >= 3 )
-#   define TAG_INT32     4     /*  int32 tagging            ...100     */
+#   define TAG_VECTOR    4     /*  vector tagging            ...100    */
 #   define TAG_CELL      5     /*  Cells tagging            ...101     */
 #   define TAG_REAL      6     /*  Reals tagging            ...110     */
 #   define TAG_STRING    7     /*  Strings tagging          ...111     */
@@ -286,6 +290,13 @@ extern "C" {
 #define DATAGRAM_SOCKET_TYPE 44
 #define REGEXP_TYPE 45
 #define CLASS_TYPE 46
+#if( !defined( CNST_SHIFT_INT32 ) )
+#  define INT32_TYPE 47
+#  define UINT32_TYPE 48
+#endif
+#define INT64_TYPE 49
+#define UINT64_TYPE 50
+       
 /* OBJECT must be the last defined type because new classes   */
 /* will be allocated TYPE number starting at OBJECT_TYPE + 1. */
 #define OBJECT_TYPE 100
@@ -585,7 +596,7 @@ typedef union scmobj {
       BGL_LONGLONG_T llong;
    } llong_t;
 
-#if( !BGL_TAG_INT32 )
+#if( !CNST_SHIFT_INT32 )
    /* int32 */
    struct bgl_int32 {
       header_t header;
@@ -965,6 +976,17 @@ typedef struct BgL_objectz00_bgl {
 #define BCHARH ((long)BCNST( 4 ))
 #define BUCS2H ((long)BCNST( 5 ))
 
+#define BINT8H ((long)BCNST( 6 ))
+#define BUINT8H ((long)BCNST( 7 ))
+
+#define BINT16H ((long)BCNST( 8 ))
+#define BUINT16H ((long)BCNST( 9 ))
+
+#if( PTR_ALIGNMENT >= 3 )
+#  define BINT32H ((long)BCNST( 10 ))
+#  define BUINT32H ((long)BCNST( 11 ))
+#endif
+   
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */
 /*---------------------------------------------------------------------*/
@@ -1704,7 +1726,7 @@ BGL_RUNTIME_DECL double bgl_infinity();
 #define DOUBLE_TO_LLONG( l ) ((BGL_LONGLONG_T)l)
 
 /*---------------------------------------------------------------------*/
-/*    exact long                                                       */
+/*    Exact long                                                       */
 /*---------------------------------------------------------------------*/
 #define DEFINE_ELONG( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; \
@@ -1725,7 +1747,78 @@ BGL_RUNTIME_DECL double bgl_infinity();
 #define BELONG_TO_LONG( l ) (ELONG( l ).elong)
 
 /*---------------------------------------------------------------------*/
-/*    bignum                                                           */
+/*    Stdint                                                           */
+/*---------------------------------------------------------------------*/
+#define INT8P( o ) \
+   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BINT8H)
+#define UINT8P( o ) \
+   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BUINT8H)
+
+#define INT16P( o ) \
+   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BINT16H)
+#define UINT16P( o ) \
+   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BUINT16H)
+
+#if( defined( CNST_SHIFT_INT32 ) )   
+#  define INT32P( o ) \
+   (((long)(o) & (long)((1 << (CNST_SHIFT_INT32)) -1)) == (long)BINT32H)
+#  define UINT32P( o ) \
+   (((long)(o) & (long)((1 << (CNST_SHIFT_INT32)) -1)) == (long)BUINT32H)
+#else
+#  define INT32P( o ) (POINTERP( o ) && (TYPE( o ) == INT32_TYPE )
+#  define UINT32P( o ) (POINTERP( o ) && (TYPE( o ) == UINT32_TYPE )
+#endif
+   
+#define INT64P( o ) (POINTERP( o ) && (TYPE( o ) == INT64_TYPE )
+#define UINT64P( o ) (POINTERP( o ) && (TYPE( o ) == UINT64_TYPE )
+
+#define INT8_TO_BINT8( i ) \
+   ((obj_t)(BINT8H + ((int8_t)(c) << CNST_SHIFT_INT16))) 
+#define UINT8_TO_BUINT8( i ) \
+   ((obj_t)(BUINT8H + ((uint8_t)(c) << CNST_SHIFT_INT16)))
+
+#define BINT8_TO_INT8( o ) \
+   ((int8_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
+#define BUINT8_TO_UINT8( o ) \
+   ((uint8_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
+
+#define INT16_TO_BINT16( i ) \
+   ((obj_t)(BINT16H + ((int16_t)(c) << CNST_SHIFT_INT16))) 
+#define UINT16_TO_BUINT16( i ) \
+   ((obj_t)(BUINT16H + ((uint16_t)(c) << CNST_SHIFT_INT16))) 
+	    
+#define BINT16_TO_INT16( o ) \
+   ((int16_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
+#define BUINT16_TO_UINT16( o ) \
+   ((uint16_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
+
+#if( defined( CNST_SHIFT_INT32 ) )   
+#  define INT32_TO_BINT32( i ) \
+   ((obj_t)(BINT32H + ((int32_t)(c) << CNST_SHIFT_INT32))) 
+#  define UINT32_TO_BUINT32( i ) \
+   ((obj_t)(BUINT32H + ((uint32_t)(c) << CNST_SHIFT_INT32))) 
+#  define BINT32_TO_INT32( o ) \
+   ((int32_t)((unsigned long)(o) >> CNST_SHIFT_INT32))
+#  define BUINT32_TO_UINT32( o ) \
+   ((uint32_t)((unsigned long)(o) >> CNST_SHIFT_INT32))
+#else
+#  define INT32( o ) CREF( o )->int32_t
+#  define UINT32( o ) CREF( o )->uint32_t
+#  define INT32_TO_BINT32( _1 ) make_bint32( _1 )
+#  define INT32_TO_BUINT32( _1 ) make_buint32( _1 )
+#  define BINT32_TO_INT32( o ) INT32( o ).val
+#  define BUINT32_TO_UINT32( o ) UINT32( o ).val
+#endif
+
+#define INT64( o ) CREF( o )->int64_t
+#define UINT64( o ) CREF( o )->uint64_t
+#define INT64_TO_BINT64( _1 ) make_bint64( _1 )
+#define INT64_TO_BUINT64( _1 ) make_buint64( _1 )
+#define BINT64_TO_INT64( o ) INT64( o ).val
+#define BUINT64_TO_UINT64( o ) UINT64( o ).val
+			   
+/*---------------------------------------------------------------------*/
+/*    Bignum                                                           */
 /*---------------------------------------------------------------------*/
 #  define BIGNUM_SIZE (sizeof( struct bignum ))
 
