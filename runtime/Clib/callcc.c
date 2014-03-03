@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Fri Dec 13 18:27:12 2013 (serrano)                */
+/*    Last change :  Mon Mar  3 08:49:46 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -170,7 +170,7 @@ callcc_install_stack( obj_t kont, obj_t value ) {
    memorycpy  = (void (*)( void*, void*, size_t ))PROCEDURE_REF( kont, 1 );
 
    /* Check the stack before restore */
-   if( (!STACKP( stack )) || (!EQP( CREF( stack ), STACK( stack ).self )) )
+   if( (!STACKP( stack )) || (CREF( stack ) != STACK( stack ).self) )
       C_FAILURE( "apply_continuation",
 		 "not a C stack",
 		 stack );

@@ -1628,7 +1628,7 @@ public final class foreign
 	 return (c & 0xFFFF);
       }
 
-   public static char INT_TO_UCS2(int n)
+   public static char BGL_INT_TO_UCS2(int n)
       {
 	 return (char) n;
       }

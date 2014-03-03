@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Tue Dec 10 11:01:22 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar  3 10:23:03 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -286,6 +286,10 @@
 			 (write-char value *c-port*)))
 		     (write-char #\' *c-port*)))))
        (write-char #\) *c-port*))
+      ((ucs2? value)
+       (display "BUCS2(" *c-port*)
+       (display (ucs2->integer value) *c-port*)
+       (display #\) *c-port*))
       ((eq? value #unspecified)
        (display "BUNSPEC" *c-port*))
       ((cnst? value)

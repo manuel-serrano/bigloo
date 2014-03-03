@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Nov  6 12:27:47 2013 (serrano)                */
+;*    Last change :  Mon Mar  3 10:08:24 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -119,8 +119,6 @@
     (subtype char "unsigned char" (cobj))
     (subtype uchar "unsigned char" (cobj))
     (subtype ucs2 "ucs2_t" (cobj))
-;; MS 7 mars 2007    
-;;    (subtype byte          "signed char"    (cobj))
     (subtype byte "char" (cobj))
     (subtype ubyte "unsigned char" (cobj))
     (subtype short "short" (cobj))

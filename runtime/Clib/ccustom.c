@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Aug 16 16:56:24 1999                          */
-/*    Last change :  Thu May 12 09:14:50 2005 (serrano)                */
+/*    Last change :  Mon Mar  3 09:42:27 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The custom management.                                           */
 /*=====================================================================*/
@@ -65,13 +65,13 @@ create_custom( long len ) {
 
    custom = GC_MALLOC_ATOMIC( CUSTOM_SIZE + len );
 
-   custom->custom_t.header     = MAKE_HEADER( CUSTOM_TYPE, 0 );
-   custom->custom_t.final      = 0L;
+   custom->custom_t.header = MAKE_HEADER( CUSTOM_TYPE, 0 );
+   custom->custom_t.final = 0L;
    custom->custom_t.identifier = 0L;
-   custom->custom_t.equal      = custom_default_equal;
-   custom->custom_t.hash       = custom_default_hash;
+   custom->custom_t.equal = custom_default_equal;
+   custom->custom_t.hash = custom_default_hash;
    custom->custom_t.to_string  = custom_default_to_string;
-   custom->custom_t.output     = custom_default_output;
+   custom->custom_t.output = custom_default_output;
 
    return BREF( custom );
 }
@@ -85,8 +85,7 @@ obj_t
 bgl_custom_nil() {
    static obj_t custom_nil = 0;
    
-   if( !custom_nil ) 
-      custom_nil = create_custom( 0 );
+   if( !custom_nil ) custom_nil = create_custom( 0 );
    
    return custom_nil;
 }

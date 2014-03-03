@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 18 10:24:03 1997                          */
-;*    Last change :  Sat Mar  5 19:37:11 2011 (serrano)                */
+;*    Last change :  Mon Mar  3 08:53:57 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    UCS-2 Characters Scheme management.                              */
 ;*=====================================================================*/
@@ -41,7 +41,7 @@
 	    (c-ucs2-upcase::ucs2 (::ucs2) "ucs2_toupper")
 	    (c-ucs2-downcase::ucs2 (::ucs2) "ucs2_tolower")
 	    (c-ucs2-defined?::bool (::int) "ucs2_definedp")
-	    (macro c-integer->ucs2::ucs2 (::int) "INT_TO_UCS2")
+	    (macro c-integer->ucs2::ucs2 (::int) "BGL_INT_TO_UCS2")
 	    (macro c-ucs2->integer::int (::bucs2) "CUCS2")
 	    (infix macro c-ucs2=?::bool (::ucs2 ::ucs2) "==")
 	    (infix macro c-ucs2<?::bool (::ucs2 ::ucs2) "<")
@@ -69,7 +69,7 @@
 	       (method static c-ucs2-defined?::bool (::int)
 		       "ucs2_definedp")
 	       (method static c-integer->ucs2::ucs2 (::int)
-		       "INT_TO_UCS2")
+		       "BGL_INT_TO_UCS2")
 	       (method static c-ucs2->integer::int (::ucs2)
 		       "CUCS2")
 	       (method static c-ucs2=?::bool (::ucs2 ::ucs2)

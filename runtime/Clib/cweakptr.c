@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Wed Jan  9 08:58:54 2008 (serrano)                */
+/*    Last change :  Mon Mar  3 09:05:24 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C weak pointer managment                                         */
 /*=====================================================================*/
@@ -28,9 +28,7 @@ make_weakptr( obj_t data ) {
 
    // check if data has been allocated by the GC.
    // constants and ints are not pointers
-   if( !CNSTP( data )
-      && !INTEGERP( data )
-      && GC_base( data ) != NULL ) {
+   if( POINTERP( data ) && GC_base( data ) != NULL ) {
       // make a real weak pointer
       ptr = GC_MALLOC_ATOMIC( WEAKPTR_SIZE );
       ptr->weakptr_t.header = MAKE_HEADER( WEAKPTR_TYPE, 0 );
@@ -65,19 +63,14 @@ weakptr_data_set( obj_t ptr, obj_t data ) {
   // check if data has been allocated by the GC.
   // constants and ints are not pointers
   // in theory if old_data is NULL the link was already unregistered by the GC
-  if( old_data != NULL
-     && !CNSTP( old_data )
-     && !INTEGERP( old_data )
-     && GC_base( old_data ) != NULL ) {
+  if( POINTERP( old_data ) && GC_base( old_data ) != NULL ) {
      GC_unregister_disappearing_link( &(ptr->weakptr_t.data) );
   }
 
   // then set it
   // check if data has been allocated by the GC.
   // constants and ints are not pointers
-  if( !CNSTP( data )
-     && !INTEGERP( data )
-     && GC_base( data ) != NULL ) {
+  if( POINTERP( data ) && GC_base( data ) != NULL ) {
      // it's a real weak pointer
      ptr->weakptr_t.data = data;
      GC_general_register_disappearing_link( &(ptr->weakptr_t.data), 

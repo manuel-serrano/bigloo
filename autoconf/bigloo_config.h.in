@@ -4,7 +4,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed May  6 16:23:35 2009 (serrano)                */
+/*    Last change :  Mon Mar  3 07:03:23 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo configuration stuff                                       */
 /*=====================================================================*/
@@ -465,6 +465,13 @@
 #endif
 
 /*---------------------------------------------------------------------*/
+/*    SIGPIPE                                                          */
+/*---------------------------------------------------------------------*/
+#if( !HAVE_SIGPIPE )
+#  define SIGPIPE -1
+#endif
+   
+/*---------------------------------------------------------------------*/
 /*    sigsetmask                                                       */
 /*---------------------------------------------------------------------*/
 #if( HAVE_SIGPROCMASK )
@@ -537,5 +544,89 @@ extern union scmobj * an_object;
 #  define BGL_UTF8_STRING_LOCALE_COMPARE3( s1, s2 ) \
    strcoll( BSTRING_TO_STRING( s1 ), BSTRING_TO_STRING( s2 ) )
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    regex include                                                    */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_REGEX )
+#  include <regex.h>
+#endif   
+   
+/*---------------------------------------------------------------------*/
+/*    GMP include                                                      */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_GMP )
+#  include <gmp.h>
+#endif   
+
+/*---------------------------------------------------------------------*/
+/*    stdint                                                           */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_STDINT )
+#  include <stdint.h>
+#else
+#  if( BGL_HAVE_UNISTDINT )
+#    include <unistdint.h>
+#  else
+#    if( !BGL_HAVE_STDLIBINT && !BGL_HAVE_UNISTDINT )
+/* int8 */   
+typedef signed char int8_t;
+typedef unsigned char uint8_t;
+   
+/* int16 */   
+#      if( sizeof( short ) >= 2 )
+typedef short int16_t;
+typedef unsigned short uint16_t;
+#      else   
+typedef int int16_t;
+typedef unsigned int uint16_t;
+#      endif
+   
+/* int32 */   
+#      if( sizeof( int ) == 4 )
+typedef int int32_t;
+typedef unsigned int uint32_t;
+#      else
+typedef long int32_t;
+typedef unsigned long uint32_t;
+#      endif
+   
+/* int64 */   
+#      if( sizeof( long ) == 8 )
+typedef long int64_t;
+typedef unsigned long uint64_t;
+#      else   
+#        if( BGL_HAVE_LONGLONG )    
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+#        else
+/* MS: don't know what to use on hosts that lack 64bit int */   
+typedef long int64_t;
+typedef unsigned long uint64_t;
+#        endif
+#      endif   
+#    endif
+#  endif   
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    LONG LONG constants                                              */
+/*---------------------------------------------------------------------*/
+#if BGL_HAVE_LONGLONG
+#  if defined( LLONG_MAX )
+#    define BGL_LONGLONG_MAX LLONG_MAX
+#  else
+#    define BGL_LONGLONG_MAX ((BGL_LONGLONG_T) (~0ULL >> 1))
+#  endif
+#  if defined( LLONG_MIN )
+#    define BGL_LONGLONG_MIN LLONG_MIN
+#  else
+#    define BGL_LONGLONG_MIN ((BGL_LONGLONG_T) ((~0ULL >> 1) + 1ULL))
+#  endif
+#else
+#  define BGL_LONGLONG_MAX LONG_MAX
+#  define BGL_LONGLONG_MIN LONG_MIN
+#endif
+
 
 #endif

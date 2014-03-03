@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Sat Jan 12 06:56:46 2013 (serrano)                */
+/*    Last change :  Mon Mar  3 10:43:31 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -341,7 +341,7 @@ obj_t
 bgl_display_ucs2( obj_t o, obj_t op ) {
    ucs2_t ch = CUCS2( o );
    
-   if( UCS2_ISOLATIN1P( ch ) ) {
+   if( ch < (ucs2_t)256 ) {
       obj_t mutex = OUTPUT_PORT( op ).mutex;
       BGL_MUTEX_LOCK( mutex );
       PUTC( op, ch );
@@ -370,7 +370,7 @@ bgl_display_ucs2string( obj_t o, obj_t op ) {
 	 
 #if( UCS2_DISPLAYABLE )
 #else
-      if( UCS2_ISOLATIN1P( ch ) )
+      if( ch < (ucs2_t)256 )
 	 PUTC( op, (char)ch );
 #endif
    }
