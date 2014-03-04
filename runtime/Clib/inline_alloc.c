@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Thu Nov 14 21:56:58 2013 (serrano)                */
+/*    Last change :  Tue Mar  4 08:18:01 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -321,6 +321,136 @@ make_bllong( BGL_LONGLONG_T l ) {
    return BREF( llong );
 }
 
+#if( !BGL_CNST_SHIFT_INT32 )
+/*---------------------------------------------------------------------*/
+/*    alloc_make_bsint32 ...                                           */
+/*---------------------------------------------------------------------*/
+static obj_t
+alloc_make_bsint32( int32_t l ) {
+   obj_t int32;
+
+   int32 = (obj_t)GC_MALLOC_ATOMIC( BGL_SINT32_SIZE );
+   
+   int32->sint32_t.header = MAKE_HEADER( SINT32_TYPE, BGL_SINT32_SIZE );
+   int32->sint32_t.val = l;
+
+   return BREF( int32 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_bsint32 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_bsint32( int32_t l ) {
+   if(( BGL_SINT32_PREALLOC_MIN <= l) && (l < BGL_SINT32_PREALLOC_MAX) ) {
+      return BREF( &bsint32_allocated[ l - BGL_SINT32_PREALLOC_MIN ] );
+   } else {
+      obj_t int32;
+
+      GC_INLINE_ALLOC( int32, BGL_SINT32_SIZE, alloc_make_bsint32( l ) );
+      
+      int32->sint32_t.header = MAKE_HEADER( BGL_SINT32_TYPE, BGL_SINT32_SIZE );
+      int32->sint32_t.val = l;
+
+      return BREF( int32 );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    alloc_make_buint32 ...                                           */
+/*---------------------------------------------------------------------*/
+static obj_t
+alloc_make_buint32( uint32_t l ) {
+   obj_t int32;
+
+   int32 = (obj_t)GC_MALLOC_ATOMIC( BGL_UINT32_SIZE );
+   
+   int32->uint32_t.header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE );
+   int32->uint32_t.val = l;
+
+   return BREF( int32 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_buint32 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_buint32( uint32_t l ) {
+   if(l < BGL_UINT32_PREALLOC_MAX ) {
+      return BREF( &buint32_allocated[ l - BGL_UINT32_PREALLOC_MIN ] );
+   } else {
+      obj_t int32;
+
+      GC_INLINE_ALLOC( int32, BGL_UINT32_SIZE, alloc_make_buint32( l ) );
+      
+      int32->uint32_t.header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE );
+      int32->uint32_t.val = l;
+
+      return BREF( int32 );
+   }
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    alloc_make_bsint64 ...                                           */
+/*---------------------------------------------------------------------*/
+static obj_t
+alloc_make_bsint64( int64_t l ) {
+   obj_t int64;
+
+   int64 = (obj_t)GC_MALLOC_ATOMIC( BGL_SINT64_SIZE );
+   
+   int64->sint64_t.header = MAKE_HEADER( SINT64_TYPE, BGL_SINT64_SIZE );
+   int64->sint64_t.val = l;
+
+   return BREF( int64 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_bsint64 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_bsint64( int64_t l ) {
+   obj_t int64;
+
+   GC_INLINE_ALLOC( int64, BGL_SINT64_SIZE, alloc_make_bsint64( l ) );
+      
+   int64->sint64_t.header = MAKE_HEADER( SINT64_TYPE, BGL_SINT64_SIZE );
+   int64->sint64_t.val = l;
+
+   return BREF( int64 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    alloc_make_buint64 ...                                           */
+/*---------------------------------------------------------------------*/
+static obj_t
+alloc_make_buint64( uint64_t l ) {
+   obj_t int64;
+
+   int64 = (obj_t)GC_MALLOC_ATOMIC( BGL_UINT64_SIZE );
+   
+   int64->uint64_t.header = MAKE_HEADER( UINT64_TYPE, BGL_UINT64_SIZE );
+   int64->uint64_t.val = l;
+
+   return BREF( int64 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_buint64 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_buint64( uint64_t l ) {
+   obj_t int64;
+
+   GC_INLINE_ALLOC( int64, BGL_UINT64_SIZE, alloc_make_buint64( l ) );
+      
+   int64->uint64_t.header = MAKE_HEADER( UINT64_TYPE, BGL_UINT64_SIZE );
+   int64->uint64_t.val = l;
+
+   return BREF( int64 );
+}
+
 #else /* BGL_GC == BGL_BOEHM_GC && BGL_GC_CUSTOM && !defined(BGL_GC_THREADS) */
 
 /*---------------------------------------------------------------------*/
@@ -444,5 +574,83 @@ make_bllong( BGL_LONGLONG_T llong ) {
    a_llong->llong_t.llong = llong;
 	
    return BREF( a_llong );
+}
+
+#if( !BGL_CNST_SHIFT_INT32 )
+/*---------------------------------------------------------------------*/
+/*    bgl_make_bsint32 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_bsint32( int32_t l ) {
+   obj_t a_sint32;
+
+#if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
+   a_sint32 = GC_THREAD_MALLOC_ATOMIC( SINT32_SIZE );
+#else
+   a_sint32 = GC_MALLOC_ATOMIC( SINT32_SIZE );
+#endif
+   
+   a_sint32->sint32_t.header = MAKE_HEADER( SINT32_TYPE, SINT32_SIZE );
+   a_sint32->sint32_t.val = l;
+	
+   return BREF( a_sint32 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_buint32 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_buint32( uint32_t l ) {
+   obj_t a_uint32;
+
+#if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
+   a_uint32 = GC_THREAD_MALLOC_ATOMIC( BGL_UINT32_SIZE );
+#else
+   a_uint32 = GC_MALLOC_ATOMIC( BGL_UINT32_SIZE );
+#endif
+   
+   a_uint32->uint32_t.header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE );
+   a_uint32->uint32_t.val = l;
+	
+   return BREF( a_uint32 );
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_bsint64 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_bsint64( int64_t l ) {
+   obj_t a_sint64;
+
+#if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
+   a_sint64 = GC_THREAD_MALLOC_ATOMIC( BGL_SINT64_SIZE );
+#else
+   a_sint64 = GC_MALLOC_ATOMIC( BGL_SINT64_SIZE );
+#endif
+   
+   a_sint64->sint64_t.header = MAKE_HEADER( SINT64_TYPE, BGL_SINT64_SIZE );
+   a_sint64->sint64_t.val = l;
+	
+   return BREF( a_sint64 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    bgl_make_buint64 ...                                             */
+/*---------------------------------------------------------------------*/
+GC_API obj_t
+bgl_make_buint64( uint64_t l ) {
+   obj_t a_uint64;
+
+#if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
+   a_uint64 = GC_THREAD_MALLOC_ATOMIC( BGL_UINT64_SIZE );
+#else
+   a_uint64 = GC_MALLOC_ATOMIC( BGL_UINT64_SIZE );
+#endif
+   
+   a_uint64->uint64_t.header = MAKE_HEADER( UINT64_TYPE, BGL_UINT64_SIZE );
+   a_uint64->uint64_t.val = l;
+	
+   return BREF( a_uint64 );
 }
 #endif

@@ -423,13 +423,18 @@
 
 (define (basic-type? type::type) ;()
    (with-access::type type (id)
-      (memq id '(double llong ullong
-			elong uelong
-			long ulong
-			int uint
-			char uchar
-			byte ubyte
-			bool string)) ))
+      (memq id '(double
+		 llong ullong
+		 elong uelong
+		 long ulong
+		 int uint
+		 char uchar
+		 byte ubyte
+		 bool string
+		 sint8 uint8
+		 sint16 uint16
+		 sint32 uint32
+		 sint64 uint64)) ))
 
 ;;
 (define (gname var::global) ;()

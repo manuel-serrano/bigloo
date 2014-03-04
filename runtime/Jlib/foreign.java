@@ -483,7 +483,22 @@ public final class foreign
       {
 	 return (short)n.value;
       }
-
+   public static byte BINT_TO_SINT8(bint n)
+      {
+	 return (byte)n.value;
+      }
+   public static short BINT_TO_SINT16(bint n)
+      {
+	 return (short)n.value;
+      }
+   public static int BINT_TO_SINT32(bint n)
+      {
+	 return (int)n.value;
+      }
+   public static long BINT_TO_SINT64(bint n)
+      {
+	 return (long)n.value;
+      }
    public static short LONG_TO_SHORT(int n)
       {
 	 return (short)n;
@@ -645,6 +660,26 @@ public final class foreign
 	 return new bignum(n);
       }
 
+   public static bsint8 BGL_INT8_TO_BSINT8( byte n )
+      {
+	 return new bsint8( n );
+      }
+      
+   public static bsint16 BGL_INT16_TO_BSINT16( short n )
+      {
+	 return new bsint16( n );
+      }
+      
+   public static bsint32 BGL_INT32_TO_BSINT32( int n )
+      {
+	 return new bsint32( n );
+      }
+      
+   public static bsint64 BGL_INT64_TO_BSINT64( long n )
+      {
+	 return new bsint64( n );
+      }
+      
    public static int bgl_bignum_to_long(bignum n)
       {
 	 return n.value.intValue();
@@ -895,6 +930,26 @@ public final class foreign
       }
 
    public static long PLUS_LLONG(long n1, long n2)
+      {
+	 return (n1 + n2);
+      }
+
+   public static byte PLUS_S8(byte n1, byte n2)
+      {
+	 return (byte)(n1 + n2);
+      }
+
+   public static short PLUS_S16(short n1, short n2)
+      {
+	 return (short)(n1 + n2);
+      }
+
+   public static int PLUS_S32(int n1, int n2)
+      {
+	 return (n1 + n2);
+      }
+
+   public static long PLUS_S64(long n1, long n2)
       {
 	 return (n1 + n2);
       }

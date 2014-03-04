@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar  3 16:25:57 2014 (serrano)                */
+/*    Last change :  Tue Mar  4 08:12:43 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -152,12 +152,12 @@ extern "C" {
 #define TAG( val, shift, tag ) ((long)(((long)(val) << shift) | tag))
 #define UNTAG( val, shift, tag ) ((long)((long)(val) >> shift))
 
-#define CNST_SHIFT_CHAR 8
-#define CNST_SHIFT_INT16 16
-#define CNST_SHIFT_UCS2 16
+#define BGL_CNST_SHIFT_CHAR 8
+#define BGL_CNST_SHIFT_INT16 16
+#define BGL_CNST_SHIFT_UCS2 16
 
 #if( PTR_ALIGNMENT >= 3 )
-#  define CNST_SHIFT_INT32 32
+#  define BGL_CNST_SHIFT_INT32 32
 #endif
    
 /*---------------------------------------------------------------------*/
@@ -290,11 +290,11 @@ extern "C" {
 #define DATAGRAM_SOCKET_TYPE 44
 #define REGEXP_TYPE 45
 #define CLASS_TYPE 46
-#if( !defined( CNST_SHIFT_INT32 ) )
-#  define INT32_TYPE 47
+#if( !defined( BGL_CNST_SHIFT_INT32 ) )
+#  define SINT32_TYPE 47
 #  define UINT32_TYPE 48
 #endif
-#define INT64_TYPE 49
+#define SINT64_TYPE 49
 #define UINT64_TYPE 50
        
 /* OBJECT must be the last defined type because new classes   */
@@ -596,12 +596,12 @@ typedef union scmobj {
       BGL_LONGLONG_T llong;
    } llong_t;
 
-#if( !CNST_SHIFT_INT32 )
-   /* int32 */
-   struct bgl_int32 {
+#if( !BGL_CNST_SHIFT_INT32 )
+   /* sint32 */
+   struct bgl_sint32 {
       header_t header;
       int32_t val;
-   } int32_t;
+   } sint32_t;
       
    /* uint32 */
    struct bgl_uint32 {
@@ -610,11 +610,11 @@ typedef union scmobj {
    } uint32_t;
 #endif
    
-   /* int64 */
-   struct bgl_int64 {
+   /* sint64 */
+   struct bgl_sint64 {
       header_t header;
       int64_t val;
-   } int64_t;
+   } sint64_t;
       
    /* uint64 */
    struct bgl_uint64 {
@@ -976,14 +976,14 @@ typedef struct BgL_objectz00_bgl {
 #define BCHARH ((long)BCNST( 4 ))
 #define BUCS2H ((long)BCNST( 5 ))
 
-#define BINT8H ((long)BCNST( 6 ))
+#define BSINT8H ((long)BCNST( 6 ))
 #define BUINT8H ((long)BCNST( 7 ))
 
-#define BINT16H ((long)BCNST( 8 ))
+#define BSINT16H ((long)BCNST( 8 ))
 #define BUINT16H ((long)BCNST( 9 ))
 
 #if( PTR_ALIGNMENT >= 3 )
-#  define BINT32H ((long)BCNST( 10 ))
+#  define BSINT32H ((long)BCNST( 10 ))
 #  define BUINT32H ((long)BCNST( 11 ))
 #endif
    
@@ -1003,23 +1003,23 @@ typedef struct BgL_objectz00_bgl {
 /*    Characters (bytes)                                               */
 /*---------------------------------------------------------------------*/
 #define CHARP( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_CHAR)) -1)) == (long)BCHARH)
+   (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_CHAR)) -1)) == (long)BCHARH)
 
 #define BCHAR( c ) \
-   ((obj_t)(BCHARH + ((unsigned char)(c) << CNST_SHIFT_CHAR)))
+   ((obj_t)(BCHARH + ((unsigned char)(c) << BGL_CNST_SHIFT_CHAR)))
 #define CCHAR( o ) \
-   ((unsigned char)((unsigned long)(o) >> CNST_SHIFT_CHAR))
+   ((unsigned char)((unsigned long)(o) >> BGL_CNST_SHIFT_CHAR))
 
 /*---------------------------------------------------------------------*/
 /*    UCS2/UTF16 characters                                            */
 /*---------------------------------------------------------------------*/
 #define UCS2P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_UCS2)) -1)) == (long)BUCS2H)
+   (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_UCS2)) -1)) == (long)BUCS2H)
 
 #define BUCS2( u ) \
-   ((obj_t)(BUCS2H + ((long)((ucs2_t)(u) << CNST_SHIFT_UCS2))))
+   ((obj_t)(BUCS2H + ((long)((ucs2_t)(u) << BGL_CNST_SHIFT_UCS2))))
 #define CUCS2( o ) \
-   ((ucs2_t)((unsigned long)(o) >> CNST_SHIFT_UCS2))
+   ((ucs2_t)((unsigned long)(o) >> BGL_CNST_SHIFT_UCS2))
 
 #define BGL_INT_TO_UCS2( _i ) ((ucs2_t)(_i))
 
@@ -1749,73 +1749,77 @@ BGL_RUNTIME_DECL double bgl_infinity();
 /*---------------------------------------------------------------------*/
 /*    Stdint                                                           */
 /*---------------------------------------------------------------------*/
-#define INT8P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BINT8H)
-#define UINT8P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BUINT8H)
+#define BGL_SINT8P( o ) \
+   (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BSINT8H)
+#define BGL_UINT8P( o ) \
+   (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BUINT8H)
 
-#define INT16P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BINT16H)
-#define UINT16P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_INT16)) -1)) == (long)BUINT16H)
+#define BGL_SINT16P( o ) \
+   (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BSINT16H)
+#define BGL_UINT16P( o ) \
+   (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BUINT16H)
 
-#if( defined( CNST_SHIFT_INT32 ) )   
-#  define INT32P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_INT32)) -1)) == (long)BINT32H)
-#  define UINT32P( o ) \
-   (((long)(o) & (long)((1 << (CNST_SHIFT_INT32)) -1)) == (long)BUINT32H)
+#if( defined( BGL_CNST_SHIFT_INT32 ) )   
+#  define BGL_SINT32P( o ) \
+   (((long)(o) & (((long)1 << (BGL_CNST_SHIFT_INT32)) -1)) == (long)BSINT32H)
+#  define BGL_UINT32P( o ) \
+   (((long)(o) & (((long)1 << (BGL_CNST_SHIFT_INT32)) -1)) == (long)BUINT32H)
 #else
-#  define INT32P( o ) (POINTERP( o ) && (TYPE( o ) == INT32_TYPE )
-#  define UINT32P( o ) (POINTERP( o ) && (TYPE( o ) == UINT32_TYPE )
+#  define BGL_SINT32P( o ) (POINTERP( o ) && (TYPE( o ) == SINT32_TYPE))
+#  define BGL_UINT32P( o ) (POINTERP( o ) && (TYPE( o ) == UINT32_TYPE))
 #endif
    
-#define INT64P( o ) (POINTERP( o ) && (TYPE( o ) == INT64_TYPE )
-#define UINT64P( o ) (POINTERP( o ) && (TYPE( o ) == UINT64_TYPE )
+#define BGL_SINT64P( o ) (POINTERP( o ) && (TYPE( o ) == SINT64_TYPE))
+#define BGL_UINT64P( o ) (POINTERP( o ) && (TYPE( o ) == UINT64_TYPE))
 
-#define INT8_TO_BINT8( i ) \
-   ((obj_t)(BINT8H + ((int8_t)(c) << CNST_SHIFT_INT16))) 
-#define UINT8_TO_BUINT8( i ) \
-   ((obj_t)(BUINT8H + ((uint8_t)(c) << CNST_SHIFT_INT16)))
+#define BGL_INT8_TO_BSINT8( i ) \
+   ((obj_t)(BSINT8H + ((int8_t)(i) << BGL_CNST_SHIFT_INT16))) 
+#define BGL_UINT8_TO_BUINT8( i ) \
+   ((obj_t)(BUINT8H + ((uint8_t)(i) << BGL_CNST_SHIFT_INT16)))
 
-#define BINT8_TO_INT8( o ) \
-   ((int8_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
-#define BUINT8_TO_UINT8( o ) \
-   ((uint8_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
+#define BGL_BSINT8_TO_INT8( o ) \
+   ((int8_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT16))
+#define BGL_BUINT8_TO_UINT8( o ) \
+   ((uint8_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT16))
 
-#define INT16_TO_BINT16( i ) \
-   ((obj_t)(BINT16H + ((int16_t)(c) << CNST_SHIFT_INT16))) 
-#define UINT16_TO_BUINT16( i ) \
-   ((obj_t)(BUINT16H + ((uint16_t)(c) << CNST_SHIFT_INT16))) 
+#define BGL_INT16_TO_BSINT16( i ) \
+   ((obj_t)(BSINT16H + ((int16_t)(i) << BGL_CNST_SHIFT_INT16))) 
+#define BGL_UINT16_TO_BUINT16( i ) \
+   ((obj_t)(BUINT16H + ((uint16_t)(i) << BGL_CNST_SHIFT_INT16))) 
 	    
-#define BINT16_TO_INT16( o ) \
-   ((int16_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
-#define BUINT16_TO_UINT16( o ) \
-   ((uint16_t)((unsigned long)(o) >> CNST_SHIFT_INT16))
+#define BGL_BSINT16_TO_INT16( o ) \
+   ((int16_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT16))
+#define BGL_BUINT16_TO_UINT16( o ) \
+   ((uint16_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT16))
 
-#if( defined( CNST_SHIFT_INT32 ) )   
-#  define INT32_TO_BINT32( i ) \
-   ((obj_t)(BINT32H + ((int32_t)(c) << CNST_SHIFT_INT32))) 
-#  define UINT32_TO_BUINT32( i ) \
-   ((obj_t)(BUINT32H + ((uint32_t)(c) << CNST_SHIFT_INT32))) 
-#  define BINT32_TO_INT32( o ) \
-   ((int32_t)((unsigned long)(o) >> CNST_SHIFT_INT32))
-#  define BUINT32_TO_UINT32( o ) \
-   ((uint32_t)((unsigned long)(o) >> CNST_SHIFT_INT32))
+#if( defined( BGL_CNST_SHIFT_INT32 ) )   
+#  define BGL_INT32_TO_BSINT32( i ) \
+   ((obj_t)(BSINT32H + ((long)(i) << BGL_CNST_SHIFT_INT32))) 
+#  define BGL_UINT32_TO_BUINT32( i ) \
+   ((obj_t)(BUINT32H + ((long)(i) << BGL_CNST_SHIFT_INT32))) 
+#  define BGL_BSINT32_TO_INT32( o ) \
+   ((int32_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT32))
+#  define BGL_BUINT32_TO_UINT32( o ) \
+   ((uint32_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT32))
 #else
-#  define INT32( o ) CREF( o )->int32_t
-#  define UINT32( o ) CREF( o )->uint32_t
-#  define INT32_TO_BINT32( _1 ) make_bint32( _1 )
-#  define INT32_TO_BUINT32( _1 ) make_buint32( _1 )
-#  define BINT32_TO_INT32( o ) INT32( o ).val
-#  define BUINT32_TO_UINT32( o ) UINT32( o ).val
+#  define BGL_SINT32_SIZE (sizeof( struct sint32 ))
+#  define BGL_UINT32_SIZE (sizeof( struct uint32 ))
+#  define BGL_SINT32( o ) CREF( o )->sint32_t
+#  define BGL_UINT32( o ) CREF( o )->uint32_t
+#  define BGL_INT32_TO_BSINT32( _1 ) bgl_make_bsint32( _1 )
+#  define BGL_UINT32_TO_BUINT32( _1 ) bgl_make_buint32( _1 )
+#  define BGL_BSINT32_TO_INT32( o ) BGL_SINT32( o ).val
+#  define BGL_BUINT32_TO_UINT32( o ) BGL_UINT32( o ).val
 #endif
 
-#define INT64( o ) CREF( o )->int64_t
-#define UINT64( o ) CREF( o )->uint64_t
-#define INT64_TO_BINT64( _1 ) make_bint64( _1 )
-#define INT64_TO_BUINT64( _1 ) make_buint64( _1 )
-#define BINT64_TO_INT64( o ) INT64( o ).val
-#define BUINT64_TO_UINT64( o ) UINT64( o ).val
+#define BGL_SINT64_SIZE (sizeof( struct bgl_sint64 ))
+#define BGL_UINT64_SIZE (sizeof( struct bgl_uint64 ))
+#define BGL_SINT64( o ) CREF( o )->sint64_t
+#define BGL_UINT64( o ) CREF( o )->uint64_t
+#define BGL_INT64_TO_BSINT64( _1 ) bgl_make_bsint64( _1 )
+#define BGL_UINT64_TO_BUINT64( _1 ) bgl_make_buint64( _1 )
+#define BGL_BSINT64_TO_INT64( o ) BGL_SINT64( o ).val
+#define BGL_BUINT64_TO_UINT64( o ) BGL_UINT64( o ).val
 			   
 /*---------------------------------------------------------------------*/
 /*    Bignum                                                           */
@@ -3285,6 +3289,10 @@ BGL_RUNTIME_DECL obj_t make_cell( obj_t );
 BGL_RUNTIME_DECL obj_t make_real( double );
 BGL_RUNTIME_DECL obj_t make_belong( long );
 BGL_RUNTIME_DECL obj_t make_bllong( BGL_LONGLONG_T );
+BGL_RUNTIME_DECL obj_t bgl_make_bsint32( int32_t );
+BGL_RUNTIME_DECL obj_t bgl_make_buint32( uint32_t );
+BGL_RUNTIME_DECL obj_t bgl_make_bsint64( int64_t );
+BGL_RUNTIME_DECL obj_t bgl_make_buint64( uint64_t );
 
 BGL_RUNTIME_DECL obj_t bgl_string_to_bignum( char *, int );
 

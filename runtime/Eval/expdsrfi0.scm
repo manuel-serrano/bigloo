@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue Aug 13 07:27:56 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Tue Mar  4 08:32:50 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -89,6 +89,14 @@
 (define-macro (bigloo-version)
    `',(string->symbol (string-append "bigloo" *bigloo-version*)))
 
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-int-size ...                                              */
+;*---------------------------------------------------------------------*/
+(define-macro (bigloo-int-size)
+   `',(string->symbol
+	 (string-append "bint-" (number->string (bigloo-config 'int-size)))))
+
 ;*---------------------------------------------------------------------*/
 ;*    *srfi-mutex* ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -116,7 +124,7 @@
 		   (bigloo-major-version)
 		   (bigloo-branch-version)
 		   'bigloo
-		   ;;'bigloo-class-sans
+;* 		   (bigloo-int-size)                                   */
 		   '(srfi-0
 		     srfi-2
 		     srfi-4

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Mar  3 10:57:58 2014 (serrano)                */
+#*    Last change :  Tue Mar  4 08:30:22 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2223,6 +2223,12 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # The pointer alignment
   alignment=`$autoconf alignment` || exit 1
 
+  if [ "$alignment" = "3" ]; then 
+    intsize=61
+  else
+    intsize=30
+  fi
+
   # The -O C compiler options
   coflags=`$autoconf ccoptim --cflags="$coflags"` || exit 1
 
@@ -2513,7 +2519,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   long_sign_bit=`$autoconf signbit --type=long --alignment="$alignment"` || exit 1
   elong_sign_bit=`$autoconf signbit --type=long --alignment=0` || exit 1
   llong_sign_bit=`$autoconf signbit --type="$longlong" --alignment=0` || exit 1
-
+  
   # Is sigchld available for us
   sigchld=`$autoconf sigchld` || exit 1
 
@@ -2792,6 +2798,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_DEFAULT_A_BAT@|$abat|" \
               -e "s|@STACK_GROWS_DOWN@|$stackgrows|" \
               -e "s|@PTR_ALIGNMENT@|$alignment|" \
+              -e "s|@INT_SIZE@|$intsize|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \
@@ -2965,7 +2972,6 @@ if [ $action = "all" -o $action = "bigloo_static" ]; then
   echo "" >> $bigloo_static_h
   echo "#define BGL_ELONG_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
   echo "#define BGL_ELONG_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
-  echo "" >> $bigloo_static_h
   echo "static struct elong belong_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
@@ -2974,6 +2980,29 @@ if [ $action = "all" -o $action = "bigloo_static" ]; then
     i=`expr $i + 1`;
   done
   echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), elong: $i } }; " >> $bigloo_static_h
+  echo "" >> $bigloo_static_h
+  echo "#if( !defined( BGL_CNST_SHIFT_INT32 ) )" >> $bigloo_static_h
+  echo "#define BGL_SINT32_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
+  echo "#define BGL_SINT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
+  echo "static struct sint32_t bsint32_allocated[] = { " >> $bigloo_static_h
+  max=`expr $belong_prealloc_max - 1`;
+  i=$belong_prealloc_min
+  while expr $i "<" $max > /dev/null; do
+    echo "  { header: MAKE_HEADER( SINT32_TYPE, SINT32_SIZE ), val: $i }, " >> $bigloo_static_h
+    i=`expr $i + 1`;
+  done
+  echo "  { header: MAKE_HEADER( SINT32_TYPE, SINT32_SIZE ), val: $i } }; " >> $bigloo_static_h
+  echo "" >> $bigloo_static_h
+  echo "#define BGL_UINT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
+  echo "static struct uint32_t buint32_allocated[] = { " >> $bigloo_static_h
+  max=`expr $belong_prealloc_max - 1`;
+  i=0
+  while expr $i "<" $max > /dev/null; do
+    echo "  { header: MAKE_HEADER( UINT32_TYPE, UINT32_SIZE ), val: $i }, " >> $bigloo_static_h
+    i=`expr $i + 1`;
+  done
+  echo "  { header: MAKE_HEADER( UINT32_TYPE, UINT32_SIZE ), val: $i } }; " >> $bigloo_static_h
+  echo "#endif" >> $bigloo_static_h
 fi
 
 #*---------------------------------------------------------------------*/

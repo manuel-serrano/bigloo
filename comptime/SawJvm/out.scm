@@ -216,10 +216,17 @@
      (init_bucs2 (method bucs2 () void "<init>" char))
      ;; Fields/Methods of bigloo.bllong
      (bllong (class () "bigloo.bllong"))
-;     (make_llong (method bllong () bllong "make_llong" string))
      ;; Fields/Methods of bigloo.belong
      (belong (class () "bigloo.belong"))
-;     (make_elong (method belong () belong "make_elong" string))
+     ;; Fields/Methods of bigloo.stdint
+     (bsint8 (class () "bigloo.bsint8"))
+     (buint8 (class () "bigloo.buint8"))
+     (bsint16 (class () "bigloo.bsint16"))
+     (buint16 (class () "bigloo.buint16"))
+     (bsint32 (class () "bigloo.bsint32"))
+     (buint32 (class () "bigloo.buint32"))
+     (bsint64 (class () "bigloo.bsint64"))
+     (buint64 (class () "bigloo.buint64"))
      ;; Fields/Methods of bigloo.bignum
      (bignum (class () "bigloo.bignum"))
      ;; Fields/Methods of bigloo.real

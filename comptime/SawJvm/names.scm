@@ -34,8 +34,8 @@
 	     '(void short int float double) )
    ;; Basic types with specific names
    (for-each (lambda (x s) (type-name-set! (widen!::jvmbasic (find-type x)) s))
-	     '(bool    char byte ubyte ucs2 ushort long uchar llong ullong elong uelong ulong)
-	     '(boolean byte byte byte  char short  int  int   long  long   long  long   int) )
+	     '(bool    char byte ubyte ucs2 ushort long uchar llong ullong elong uelong ulong sint8 uint8 sint16 uint16 sint32 uint32 sint64 uint64)
+	     '(boolean byte byte byte  char short  int  int   long  long   long  long   int   byte  byte  short  short  int    int    long   long ) )
    ;; Upgrade some types to vectors
    (for-each (lambda (v i)
 		(widen!::tvec (find-type v) (item-type (find-type i))) )

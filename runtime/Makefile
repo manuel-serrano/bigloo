@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Dec 19 08:16:52 2013 (serrano)                */
-#*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar  4 09:34:13 2014 (serrano)                */
+#*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -156,7 +156,7 @@ JLIB		= foreign buffer configure stackwriter\
                   s8vector u8vector s16vector u16vector \
                   s32vector u32vector s64vector u64vector \
                   f32vector f64vector \
-                  weakptr regexp bclass \
+                  weakptr regexp bclass bsint8 bsint16 bsint32 bsint64 \
 	          $(JDK_LIBS)
 
 JLIB_SRC	= $(JLIB:%=%.java)
