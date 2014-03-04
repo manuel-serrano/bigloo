@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Tue Mar  4 08:18:01 2014 (serrano)                */
+/*    Last change :  Tue Mar  4 11:17:12 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -257,6 +257,7 @@ make_real( double d ) {
    return BREAL( real );
 }
 
+#if( !BGL_CNST_SHIFT_INT32 )
 /*---------------------------------------------------------------------*/
 /*    alloc_make_belong ...                                            */
 /*---------------------------------------------------------------------*/
@@ -290,6 +291,7 @@ make_belong( long l ) {
       return BREF( elong );
    }
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    alloc_make_bllong ...                                            */
@@ -541,6 +543,7 @@ make_real( double real ) {
 /*---------------------------------------------------------------------*/
 /*    make_belong ...                                                  */
 /*---------------------------------------------------------------------*/
+#if( !BGL_CNST_SHIFT_INT32 )
 GC_API obj_t
 make_belong( long elong ) {
    obj_t a_elong;
@@ -556,6 +559,7 @@ make_belong( long elong ) {
 	
    return BREF( a_elong );
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    make_bllong ...                                                  */

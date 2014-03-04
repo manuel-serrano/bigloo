@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Thu Oct 24 12:52:32 2013 (serrano)                */
-/*    Copyright   :  2003-13 Manuel Serrano                            */
+/*    Last change :  Tue Mar  4 11:19:02 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/

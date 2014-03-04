@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Mar  4 11:01:31 2014 (serrano)                */
+/*    Last change :  Tue Mar  4 11:20:22 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3288,8 +3288,12 @@ BGL_RUNTIME_DECL obj_t make_cell( obj_t );
 BGL_RUNTIME_DECL obj_t make_real( double );
 BGL_RUNTIME_DECL obj_t make_belong( long );
 BGL_RUNTIME_DECL obj_t make_bllong( BGL_LONGLONG_T );
+
+#if( !defined( BGL_CNST_SHIFT_INT32 ) )   
 BGL_RUNTIME_DECL obj_t bgl_make_bsint32( int32_t );
 BGL_RUNTIME_DECL obj_t bgl_make_buint32( uint32_t );
+#endif
+   
 BGL_RUNTIME_DECL obj_t bgl_make_bsint64( int64_t );
 BGL_RUNTIME_DECL obj_t bgl_make_buint64( uint64_t );
 
