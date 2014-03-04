@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue Mar  4 08:32:50 2014 (serrano)                */
+;*    Last change :  Tue Mar  4 09:44:31 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -95,7 +95,7 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (bigloo-int-size)
    `',(string->symbol
-	 (string-append "bint-" (number->string (bigloo-config 'int-size)))))
+	 (string-append "bint" (number->string (bigloo-config 'int-size)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *srfi-mutex* ...                                                 */
@@ -115,6 +115,7 @@
 ;*       - bigloo                                                      */
 ;*       - bigloo<major-num>                                           */
 ;*       - bigloo<major-num><minor-num>                                */
+;*       - bint<integers-bit-size>                                     */
 ;*    -------------------------------------------------------------    */
 ;*    When a library is used for compiling the name of that library    */
 ;*    is added to the supported srfis.                                 */
@@ -124,7 +125,7 @@
 		   (bigloo-major-version)
 		   (bigloo-branch-version)
 		   'bigloo
-;* 		   (bigloo-int-size)                                   */
+		   (bigloo-int-size)
 		   '(srfi-0
 		     srfi-2
 		     srfi-4
