@@ -181,6 +181,28 @@ register. That is:
 (print (eval '(cond-expand (srfi1 'with-srfi1) (else 'nothing))))
    @print{} 'with-srfi1
 @end smalllisp
+
+A property representing actual integers bit size is defined:
+
+@itemize @bullet
+@item @code{bint<integers-bit-size>}
+@end itemize
+
+The frequently defined values are:
+
+@itemize @bullet
+@item @code{bint30}: 32 bits architectures (e.g., x86)
+@item @code{bint32}: JVM 
+@item @code{bint61}: 64 bits architectures (e.g., x86_64)
+@end itemize
+
+Other values could be defined in the future.
+
+Note that the actual value can be obtained with:
+
+@smalllisp
+(bigloo-config 'int-size)
+@end smallisp
 @end deffn
 
 @deffn {bigloo procedure} register-eval-srfi! srfi-name

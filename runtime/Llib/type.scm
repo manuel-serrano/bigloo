@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Mar  4 09:35:57 2014 (serrano)                */
+;*    Last change :  Tue Mar  4 11:08:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -622,6 +622,7 @@
     (coerce bllong llong () ($bllong->llong))
     (coerce llong long () ($llong->long))
     (coerce llong bllong () ($llong->bllong))
+    (coerce sint64 llong () ($sint64->llong))
     (coerce ullong long () ($ullong->long))
     (coerce ullong bllong () ($ullong->bllong))
     (coerce ullong llong () ($ullong->llong))
@@ -923,6 +924,14 @@
 
     (macro $ullong->llong::llong (::ullong) "(BGL_LONGLONG_T)")
     (macro $llong->ullong::ullong (::llong) "(unsigned BGL_LONGLONG_T)")
+    (macro $llong->sint8::sint8 (::long) "(int8_t)")
+    (macro $llong->uint8::uint8 (::long) "(uint8_t)")
+    (macro $llong->sint16::sint16 (::long) "(int16_t)")
+    (macro $llong->uint16::uint16 (::long) "(uint16_t)")
+    (macro $llong->sint32::sint32 (::long) "(int32_t)")
+    (macro $llong->uint32::uint32 (::long) "(uint32_t)")
+    (macro $llong->sint64::sint64 (::long) "(int64_t)")
+    (macro $llong->uint64::uint64 (::long) "(uint64_t)")
 
     (macro $string->bstring::bstring (::string) "string_to_bstring")
     (macro $bstring->string::string (::bstring) "BSTRING_TO_STRING")
@@ -1093,6 +1102,14 @@
        (method static $long->int::int (::long) "LONG_TO_INT")
        (method static $long->uint::uint (::long) "LONG_TO_UINT")
        (method static $long->ulong::ulong (::long) "LONG_TO_ULONG")
+       (method static $long->sint8::sint8 (::long) "LONG_TO_SINT8")
+       (method static $long->uint8::uint8 (::long) "LONG_TO_SINT8")
+       (method static $long->sint16::sint16 (::long) "LONG_TO_SINT16")
+       (method static $long->uint16::uint16 (::long) "LONG_TO_SINT16")
+       (method static $long->sint32::sint32 (::long) "LONG_TO_SINT32")
+       (method static $long->uint32::uint32 (::long) "LONG_TO_SINT32")
+       (method static $long->sint64::sint64 (::long) "LONG_TO_SINT64")
+       (method static $long->uint64::uint64 (::long) "LONG_TO_SINT64")
 
        (method static $ulong->byte::byte (::ulong) "ULONG_TO_BYTE")
        (method static $ulong->ubyte::ubyte (::ulong) "ULONG_TO_UBYTE")
@@ -1156,6 +1173,14 @@
        (method static $bllong->long::long (::bllong) "BLLONG_TO_LONG")
        (method static $ullong->llong::llong (::ullong) "ULLONG_TO_LLONG")
        (method static $llong->ullong::ullong (::llong) "LLONG_TO_ULLONG")
+       (method static $llong->sint8::sint8 (::llong) "LLONG_TO_SINT8")
+       (method static $llong->uint8::uint8 (::llong) "LLONG_TO_SINT8")
+       (method static $llong->sint16::sint16 (::llong) "LLONG_TO_SINT16")
+       (method static $llong->uint16::uint16 (::llong) "LLONG_TO_SINT16")
+       (method static $llong->sint32::sint32 (::llong) "LLONG_TO_SINT32")
+       (method static $llong->uint32::uint32 (::llong) "LLONG_TO_SINT32")
+       (method static $llong->sint64::sint64 (::llong) "LLONG_TO_SINT64")
+       (method static $llong->uint64::uint64 (::llong) "LLONG_TO_SINT64")
 
        (method static $sint8->bsint8::bsint8 (::sint8) "BGL_INT8_TO_BSINT8")
        (method static $uint8->buint8::buint8 (::uint8) "BGL_INT8_TO_BSINT8")

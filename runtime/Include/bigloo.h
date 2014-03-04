@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Mar  4 08:12:43 2014 (serrano)                */
+/*    Last change :  Tue Mar  4 11:01:31 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1723,7 +1723,6 @@ BGL_RUNTIME_DECL double bgl_infinity();
 #define BLLONG_TO_LONG( l ) ((long)BLLONG_TO_LLONG( l ))
 #define LONG_TO_BLLONG( l ) (make_bllong((BGL_LONGLONG_T)l))
 #define LLONG_TO_BLLONG( l ) (make_bllong((BGL_LONGLONG_T)l))
-#define DOUBLE_TO_LLONG( l ) ((BGL_LONGLONG_T)l)
 
 /*---------------------------------------------------------------------*/
 /*    Exact long                                                       */

@@ -528,6 +528,26 @@ public final class foreign
 	 return (byte)n;
       }
 
+   public static byte LONG_TO_SINT8(int n)
+      {
+	 return (byte)n;
+      }
+
+   public static short LONG_TO_SINT16(int n)
+      {
+	 return (short)n;
+      }
+
+   public static int LONG_TO_SINT32(int n)
+      {
+	 return (int)n;
+      }
+
+   public static long LONG_TO_SINT64(long n)
+      {
+	 return (long)n;
+      }
+
    public static byte ULONG_TO_BYTE(int n)
       {
 	 return (byte)n;
@@ -593,6 +613,26 @@ public final class foreign
    public static long BLLONG_TO_LONG(bllong n)
       {
 	 return (long)n.value;
+      }
+
+   public static byte LLONG_TO_SINT8(long n)
+      {
+	 return (byte)n;
+      }
+
+   public static short LLONG_TO_SINT16(long n)
+      {
+	 return (short)n;
+      }
+
+   public static int LLONG_TO_SINT32(long n)
+      {
+	 return (int)n;
+      }
+
+   public static long LLONG_TO_SINT64(long n)
+      {
+	 return (long)n;
       }
 
    public static belong LONG_TO_BELONG(int n)
@@ -1406,6 +1446,16 @@ public final class foreign
       }
 
    public static long FLONUM_TO_LLONG(double n)
+      {
+	 return (long) n;
+      }
+
+   public static long BGL_DOUBLE_TO_SINT64(double n)
+      {
+	 return (long) n;
+      }
+
+   public static double BGL_SINT64_TO_DOUBLE(long n)
       {
 	 return (long) n;
       }

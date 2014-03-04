@@ -42,6 +42,7 @@ Examples:
 @smalllisp
 (bigloo-config) @result{} ((release-number . 3.4b) ... (endianess . little-endian))
 (bigloo-config 'endianess) @result{} little-endian
+(bigloo-config 'int-size) @result{} 61
 @end smalllisp
 
 @end deffn
