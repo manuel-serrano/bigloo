@@ -431,10 +431,10 @@
 		 char uchar
 		 byte ubyte
 		 bool string
-		 sint8 uint8
-		 sint16 uint16
-		 sint32 uint32
-		 sint64 uint64)) ))
+		 int8 uint8
+		 int16 uint16
+		 int32 uint32
+		 int64 uint64)) ))
 
 ;;
 (define (gname var::global) ;()

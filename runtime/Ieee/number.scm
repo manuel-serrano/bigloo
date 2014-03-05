@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Mar  5 08:21:52 2014 (serrano)                */
+;*    Last change :  Wed Mar  5 08:36:34 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -41,16 +41,16 @@
    (include "Ieee/bignum.sch")
    
    (extern  (macro $fixnum->flonum::double (::long)   "(double)")
-	    (macro $flonum->fixnum::long   (::double) "(long)")
+	    (macro $flonum->fixnum::long (::double) "(long)")
 	    
-	    (macro $elong->flonum::double  (::elong)  "(double)")
-	    (macro $flonum->elong::long    (::double) "(long)")
+	    (macro $elong->flonum::double (::elong)  "(double)")
+	    (macro $flonum->elong::long (::double) "(long)")
 	    
-	    (macro $llong->flonum::double  (::llong)  "(double)")
-	    (macro $flonum->llong::llong   (::double) "(BGL_LONGLONG_T)")
+	    (macro $llong->flonum::double (::llong)  "(double)")
+	    (macro $flonum->llong::llong (::double) "(BGL_LONGLONG_T)")
 	    
-	    (macro $flonum->sint64::sint64 (::double) "(int64_t)")
-	    (macro $sint64->flonum::double (::sint64) "(double)")
+	    (macro $flonum->int64::int64 (::double) "(int64_t)")
+	    (macro $int64->flonum::double (::int64) "(double)")
 
 	    (export exact->inexact "bgl_exact_to_inexact")
 	    (export inexact->exact "bgl_inexact_to_exact"))
@@ -58,106 +58,106 @@
    (java    (class foreign
 	       (method static $fixnum->flonum::double (::long)
 		  "FIXNUM_TO_FLONUM")
-	       (method static $flonum->fixnum::long   (::double)
+	       (method static $flonum->fixnum::long (::double)
 		  "FLONUM_TO_FIXNUM")
 	       
 	       (method static $elong->flonum::double (::elong)
 		  "ELONG_TO_FLONUM")
-	       (method static $flonum->elong::elong   (::double)
+	       (method static $flonum->elong::elong (::double)
 		  "FLONUM_TO_ELONG")
 	       
 	       (method static $llong->flonum::double (::llong)
 		  "LLONG_TO_FLONUM")
-	       (method static $flonum->llong::llong   (::double)
+	       (method static $flonum->llong::llong (::double)
 		  "FLONUM_TO_LLONG")
-	       (method static $flonum->sint64::sint64 (::double)
+	       (method static $flonum->int64::int64 (::double)
 		  "BGL_FLONUM_TO_INT64")
-	       (method static $sint64->flonum::double (::sint64)
+	       (method static $int64->flonum::double (::int64)
 		  "BGL_INT64_TO_FLONUM")))
    
-   (export  (number?::bool                  obj)
-	    (inline exact?::bool            z)
-	    (inline inexact?::bool          z)
-	    (complex?::bool                 x)
-	    (rational?::bool                x)
-	    (inline flonum->fixnum::long    ::double)
-	    (inline fixnum->flonum::double  ::long)
-	    (inline fixnum->sint8::sint8    ::long)
-	    (inline fixnum->uint8::uint8    ::long)
-	    (inline sint8->fixnum::long     ::sint8)
-	    (inline uint8->fixnum::long     ::uint8)
-	    (inline fixnum->sint16::sint16  ::long)
-	    (inline fixnum->uint16::uint16  ::long)
-	    (inline sint16->fixnum::long    ::sint16)
-	    (inline uint16->fixnum::long    ::uint16)
-	    (inline fixnum->sint32::sint32  ::long)
-	    (inline fixnum->uint32::uint32  ::long)
-	    (inline sint32->fixnum::long    ::sint32)
-	    (inline uint32->fixnum::long    ::uint32)
-	    (inline fixnum->sint64::sint64  ::long)
-	    (inline fixnum->uint64::uint64  ::long)
-	    (inline sint64->fixnum::long    ::sint64)
-	    (inline uint64->fixnum::long    ::uint64)
-	    (inline fixnum->byte::byte      ::long)
-	    (inline fixnum->ubyte::ubyte    ::long)
-	    (inline byte->fixnum::long      ::byte)
-	    (inline ubyte->fixnum::long     ::byte)
-	    (inline fixnum->elong::elong    ::long)
-	    (inline elong->fixnum::long     ::elong)
-	    (inline fixnum->llong::llong    ::long)
-	    (inline llong->fixnum::long     ::llong)
-	    (inline flonum->elong::elong    ::double)
-	    (inline elong->flonum::double   ::elong)
-	    (inline flonum->llong::llong    ::double)
-	    (inline llong->flonum::double   ::llong)
-	    (inline bignum->flonum::double  ::bignum)
-	    (inline flonum->bignum::bignum  ::double)
-	    (inline flonum->sint64::sint64  ::double)
-	    (inline sint64->flonum::double  ::sint64)
-	    (2=::bool                       x y)
-	    (=::bool                        x y . z)
-	    (2<::bool                       x y) 
-	    (<::bool                        x y . z)
-	    (2>::bool                       x y)
-	    (>::bool                        x y . z)
-	    (2<=::bool                      x y)
-	    (<=::bool                       x y . z)
-	    (2>=::bool                      x y)
-	    (>=::bool                       x y . z)
-	    (zero?::bool                    x)
-	    (positive?::bool                x)
-	    (negative?::bool                x)
-	    (max                            x . y)
-	    (2max                           x y)
-	    (min                            x . y)
-	    (2min                           x y)
-	    (2+                             x y)
-	    (+                              . x)
-	    (2*                             x y)
-	    (*                              . x)
-	    (2-                             x y)
-	    (-                              x . y)
-	    (2/                             x y)
-	    (/                              x . y)
-	    (abs                            x)
-	    (floor                          x)
-	    (ceiling                        x)
-	    (truncate                       x)
-	    (round                          x)
-	    (exp::double                    x) 
-	    (log::double                    x) 
-	    (sin::double                    x) 
-	    (cos::double                    x) 
-	    (tan::double                    x) 
-	    (asin::double                   x) 
-	    (acos::double                   x) 
-	    (atan::double                   x . y) 
-	    (sqrt::double                   x) 
-	    (expt                           x y)
-	    (inline exact->inexact          z)
-	    (inline inexact->exact          z)
-	    (number->string::bstring        x #!optional (radix 10))
-	    (string->number                 ::bstring #!optional (radix 10)))
+   (export  (number?::bool obj)
+	    (inline exact?::bool z)
+	    (inline inexact?::bool z)
+	    (complex?::bool x)
+	    (rational?::bool x)
+	    (inline flonum->fixnum::long ::double)
+	    (inline fixnum->flonum::double ::long)
+	    (inline fixnum->int8::int8 ::long)
+	    (inline fixnum->uint8::uint8 ::long)
+	    (inline int8->fixnum::long ::int8)
+	    (inline uint8->fixnum::long ::uint8)
+	    (inline fixnum->int16::int16 ::long)
+	    (inline fixnum->uint16::uint16 ::long)
+	    (inline int16->fixnum::long ::int16)
+	    (inline uint16->fixnum::long ::uint16)
+	    (inline fixnum->int32::int32 ::long)
+	    (inline fixnum->uint32::uint32 ::long)
+	    (inline int32->fixnum::long ::int32)
+	    (inline uint32->fixnum::long ::uint32)
+	    (inline fixnum->int64::int64 ::long)
+	    (inline fixnum->uint64::uint64 ::long)
+	    (inline int64->fixnum::long ::int64)
+	    (inline uint64->fixnum::long ::uint64)
+	    (inline fixnum->byte::byte ::long)
+	    (inline fixnum->ubyte::ubyte ::long)
+	    (inline byte->fixnum::long ::byte)
+	    (inline ubyte->fixnum::long ::byte)
+	    (inline fixnum->elong::elong ::long)
+	    (inline elong->fixnum::long ::elong)
+	    (inline fixnum->llong::llong ::long)
+	    (inline llong->fixnum::long ::llong)
+	    (inline flonum->elong::elong ::double)
+	    (inline elong->flonum::double ::elong)
+	    (inline flonum->llong::llong ::double)
+	    (inline llong->flonum::double ::llong)
+	    (inline bignum->flonum::double ::bignum)
+	    (inline flonum->bignum::bignum ::double)
+	    (inline flonum->int64::int64 ::double)
+	    (inline int64->flonum::double  ::int64)
+	    (2=::bool x y)
+	    (=::bool x y . z)
+	    (2<::bool x y) 
+	    (<::bool x y . z)
+	    (2>::bool x y)
+	    (>::bool x y . z)
+	    (2<=::bool x y)
+	    (<=::bool x y . z)
+	    (2>=::bool x y)
+	    (>=::bool x y . z)
+	    (zero?::bool x)
+	    (positive?::bool x)
+	    (negative?::bool x)
+	    (max x . y)
+	    (2max x y)
+	    (min x . y)
+	    (2min x y)
+	    (2+ x y)
+	    (+ . x)
+	    (2* x y)
+	    (* . x)
+	    (2- x y)
+	    (- x . y)
+	    (2/ x y)
+	    (/ x . y)
+	    (abs x)
+	    (floor x)
+	    (ceiling x)
+	    (truncate x)
+	    (round x)
+	    (exp::double x) 
+	    (log::double x) 
+	    (sin::double x) 
+	    (cos::double x) 
+	    (tan::double x) 
+	    (asin::double x) 
+	    (acos::double x) 
+	    (atan::double x . y) 
+	    (sqrt::double x) 
+	    (expt x y)
+	    (inline exact->inexact z)
+	    (inline inexact->exact z)
+	    (number->string::bstring x #!optional (radix 10))
+	    (string->number ::bstring #!optional (radix 10)))
 
    (pragma  ($fixnum->flonum side-effect-free args-safe (effect) no-cfa-top)
 	    ($flonum->fixnum side-effect-free args-safe (effect) no-cfa-top)
@@ -167,8 +167,8 @@
 	    ($flonum->llong side-effect-free args-safe (effect) no-cfa-top)
 	    (bignum->flonum side-effect-free no-cfa-top nesting (effect) no-cfa-top)
  	    (flonum->bignum side-effect-free args-safe (effect) no-cfa-top)
-	    (flonum->sint64 side-effect-free args-safe (effect) no-cfa-top)
-	    (sint64->flonum side-effect-free args-safe (effect) no-cfa-top)
+	    (flonum->int64 side-effect-free args-safe (effect) no-cfa-top)
+	    (int64->flonum side-effect-free args-safe (effect) no-cfa-top)
 	    (2= side-effect-free (effect) no-cfa-top)
 	    (= side-effect-free (effect) no-cfa-top)
 	    (2< side-effect-free (effect) no-cfa-top)
@@ -271,10 +271,10 @@
    ($fixnum->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
-;*    fixnum->sint8 ...                                                */
+;*    fixnum->int8 ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum->sint8 x)
-   ($long->sint8 x))
+(define-inline (fixnum->int8 x)
+   ($long->int8 x))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->uint8 ...                                                */
@@ -283,10 +283,10 @@
    ($long->uint8 x))
 
 ;*---------------------------------------------------------------------*/
-;*    sint8->fixnum ...                                                */
+;*    int8->fixnum ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint8->fixnum x)
-   (elong->fixnum ($sint8->elong x)))
+(define-inline (int8->fixnum x)
+   (elong->fixnum ($int8->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint8->fixnum ...                                                */
@@ -295,10 +295,10 @@
    (elong->fixnum ($uint8->elong x)))
 
 ;*---------------------------------------------------------------------*/
-;*    fixnum->sint16 ...                                               */
+;*    fixnum->int16 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum->sint16 x)
-   ($long->sint16 x))
+(define-inline (fixnum->int16 x)
+   ($long->int16 x))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->uint16 ...                                               */
@@ -307,10 +307,10 @@
    ($long->uint16 x))
 
 ;*---------------------------------------------------------------------*/
-;*    sint16->fixnum ...                                               */
+;*    int16->fixnum ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint16->fixnum x)
-   (elong->fixnum ($sint16->elong x)))
+(define-inline (int16->fixnum x)
+   (elong->fixnum ($int16->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint16->fixnum ...                                               */
@@ -319,10 +319,10 @@
    (elong->fixnum ($uint16->elong x)))
 
 ;*---------------------------------------------------------------------*/
-;*    fixnum->sint32 ...                                               */
+;*    fixnum->int32 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum->sint32 x)
-   ($long->sint32 x))
+(define-inline (fixnum->int32 x)
+   ($long->int32 x))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->uint32 ...                                               */
@@ -331,10 +331,10 @@
    ($long->uint32 x))
 
 ;*---------------------------------------------------------------------*/
-;*    sint32->fixnum ...                                               */
+;*    int32->fixnum ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint32->fixnum x)
-   (elong->fixnum ($sint32->elong x)))
+(define-inline (int32->fixnum x)
+   (elong->fixnum ($int32->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint32->fixnum ...                                               */
@@ -343,10 +343,10 @@
    (elong->fixnum ($uint32->elong x)))
 
 ;*---------------------------------------------------------------------*/
-;*    fixnum->sint64 ...                                               */
+;*    fixnum->int64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (fixnum->sint64 x)
-   ($long->sint64 x))
+(define-inline (fixnum->int64 x)
+   ($long->int64 x))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->uint64 ...                                               */
@@ -355,10 +355,10 @@
    ($long->uint64 x))
 
 ;*---------------------------------------------------------------------*/
-;*    sint64->fixnum ...                                               */
+;*    int64->fixnum ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint64->fixnum x)
-   (elong->fixnum ($sint64->elong x)))
+(define-inline (int64->fixnum x)
+   (elong->fixnum ($int64->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint64->fixnum ...                                               */
@@ -451,16 +451,16 @@
    ($bignum->flonum x))
 
 ;*---------------------------------------------------------------------*/
-;*    flonum->sint64 ...                                               */
+;*    flonum->int64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->sint64 x)
-   ($flonum->sint64 x))
+(define-inline (flonum->int64 x)
+   ($flonum->int64 x))
 
 ;*---------------------------------------------------------------------*/
-;*    sint64->flonum ...                                               */
+;*    int64->flonum ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint64->flonum x)
-   ($sint64->flonum x))
+(define-inline (int64->flonum x)
+   ($int64->flonum x))
 
 ;*---------------------------------------------------------------------*/
 ;*    2op :: ...                                                       */

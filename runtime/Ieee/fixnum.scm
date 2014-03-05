@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Mar  5 08:19:58 2014 (serrano)                */
+;*    Last change :  Wed Mar  5 08:37:11 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -35,13 +35,13 @@
    (extern  (macro c-fixnum?::bool (::obj) "INTEGERP")
 	    (macro c-elong?::bool (::obj) "ELONGP")
 	    (macro c-llong?::bool (::obj) "LLONGP")
-	    (macro $sint8?::bool (::obj) "BGL_INT8P")
+	    (macro $int8?::bool (::obj) "BGL_INT8P")
 	    (macro $uint8?::bool (::obj) "BGL_UINT8P")
-	    (macro $sint16?::bool (::obj) "BGL_INT16P")
+	    (macro $int16?::bool (::obj) "BGL_INT16P")
 	    (macro $uint16?::bool (::obj) "BGL_UINT16P")
-	    (macro $sint32?::bool (::obj) "BGL_INT32P")
+	    (macro $int32?::bool (::obj) "BGL_INT32P")
 	    (macro $uint32?::bool (::obj) "BGL_UINT32P")
-	    (macro $sint64?::bool (::obj) "BGL_INT64P")
+	    (macro $int64?::bool (::obj) "BGL_INT64P")
 	    (macro $uint64?::bool (::obj) "BGL_UINT64P")
 	    (macro $minvalfx::long "(LONG_MIN >> TAG_SHIFT)")
 	    (macro $maxvalfx::long "(LONG_MAX >> TAG_SHIFT)")
@@ -52,26 +52,26 @@
 	    (macro $elong->llong::llong (::elong) "(BGL_LONGLONG_T)")
 	    (macro $llong->elong::elong (::llong)  "(long)")
 
-	    (macro $elong->sint8::uint8 (::elong) "(uint8_t)")
+	    (macro $elong->int8::uint8 (::elong) "(uint8_t)")
 	    (macro $elong->uint8::uint8 (::elong) "(uint8_t)")
 	    (macro $uint8->elong::elong (::uint8)  "(long)")
-	    (macro $sint8->elong::elong (::sint8)  "(long)")
+	    (macro $int8->elong::elong (::int8)  "(long)")
 	    
-	    (macro $elong->sint16::uint16 (::elong) "(uint16_t)")
+	    (macro $elong->int16::uint16 (::elong) "(uint16_t)")
 	    (macro $elong->uint16::uint16 (::elong) "(uint16_t)")
 	    (macro $uint16->elong::elong (::uint16)  "(long)")
-	    (macro $sint16->elong::elong (::sint16)  "(long)")
+	    (macro $int16->elong::elong (::int16)  "(long)")
 	    
-	    (macro $elong->sint32::sint32 (::elong) "(int32_t)")
-	    (macro $sint32->elong::elong (::sint32)  "(long)")
+	    (macro $elong->int32::int32 (::elong) "(int32_t)")
+	    (macro $int32->elong::elong (::int32)  "(long)")
 	    (macro $elong->uint32::uint32 (::elong) "(uint32_t)")
 	    (macro $uint32->elong::elong (::uint32)  "(long)")
 	    
-	    (macro $sint64->elong::elong (::sint64)  "(long)")
+	    (macro $int64->elong::elong (::int64)  "(long)")
 	    (macro $uint64->elong::elong (::uint64)  "(long)")
-	    (macro $elong->sint64::sint64 (::elong) "(int64_t)")
-	    (macro $sint64->llong::llong (::sint64)  "(BGL_LONGLONG_T)")
-	    (macro $llong->sint64::sint64 (::llong) "(int64_t)")
+	    (macro $elong->int64::int64 (::elong) "(int64_t)")
+	    (macro $int64->llong::llong (::int64)  "(BGL_LONGLONG_T)")
+	    (macro $llong->int64::int64 (::llong) "(int64_t)")
 	    (macro $llong->uint64::uint64 (::llong) "(uint64_t)")
 	    (macro $uint64->llong::llong (::uint64)  "(BGL_LONGLONG_T)")
 
@@ -95,13 +95,13 @@
  	    (infix macro c-+fx::long (::long ::long) "+")
 	    (infix macro c-+elong::elong (::elong ::elong) "+")
 	    (infix macro c-+llong::llong (::llong ::llong) "+")
- 	    (infix macro $+s8::sint8 (::sint8 ::sint8) "+")
+ 	    (infix macro $+s8::int8 (::int8 ::int8) "+")
  	    (infix macro $+u8::uint8 (::uint8 ::uint8) "+")
- 	    (infix macro $+s16::sint16 (::sint16 ::sint16) "+")
+ 	    (infix macro $+s16::int16 (::int16 ::int16) "+")
  	    (infix macro $+u16::uint16 (::uint16 ::uint16) "+")
- 	    (infix macro $+s32::sint32 (::sint32 ::sint32) "+")
+ 	    (infix macro $+s32::int32 (::int32 ::int32) "+")
  	    (infix macro $+u32::uint32 (::uint32 ::uint32) "+")
- 	    (infix macro $+s64::sint64 (::sint64 ::sint64) "+")
+ 	    (infix macro $+s64::int64 (::int64 ::int64) "+")
  	    (infix macro $+u64::uint64 (::uint64 ::uint64) "+")
  	    (infix macro c--fx::long (::long ::long) "-")
 	    (infix macro c--elong::long (::elong ::elong) "-")
@@ -150,19 +150,19 @@
 		  "ELONGP")
 	       (method static c-llong?::bool (::obj)
 		  "LLONGP")
-	       (method static $sint8?::bool (::obj)
+	       (method static $int8?::bool (::obj)
 		  "BGL_INT8P")
 	       (method static $uint8?::bool (::obj)
 		  "BGL_UINT8P")
-	       (method static $sint16?::bool (::obj)
+	       (method static $int16?::bool (::obj)
 		  "BGL_INT16P")
 	       (method static $uint16?::bool (::obj)
 		  "BGL_UINT16P")
-	       (method static $sint32?::bool (::obj)
+	       (method static $int32?::bool (::obj)
 		  "BGL_INT32P")
 	       (method static $uint32?::bool (::obj)
 		  "BGL_UINT32P")
-	       (method static $sint64?::bool (::obj)
+	       (method static $int64?::bool (::obj)
 		  "BGL_INT64P")
 	       (method static $uint64?::bool (::obj)
 		  "BGL_UINT64P")
@@ -171,39 +171,39 @@
 	       (method static $llong->elong::elong (::llong)
 		  "LLONG_TO_ELONG")
 
-	       (method static $elong->sint8::sint8 (::elong)
+	       (method static $elong->int8::int8 (::elong)
 		  "ELONG_TO_INT8")
-	       (method static $sint8->elong::elong (::sint8)
+	       (method static $int8->elong::elong (::int8)
 		  "INT8_TO_ELONG")
 	       (method static $elong->uint8::uint8 (::elong)
 		  "ELONG_TO_INT8")
 	       (method static $uint8->elong::elong (::uint8)
 		  "INT8_TO_ELONG")
-	       (method static $elong->sint16::sint16 (::elong)
+	       (method static $elong->int16::int16 (::elong)
 		  "ELONG_TO_INT16")
-	       (method static $sint16->elong::elong (::sint16)
+	       (method static $int16->elong::elong (::int16)
 		  "INT16_TO_ELONG")
 	       (method static $elong->uint16::uint16 (::elong)
 		  "ELONG_TO_INT16")
 	       (method static $uint16->elong::elong (::uint16)
 		  "INT16_TO_ELONG")
-	       (method static $elong->sint32::sint32 (::elong)
+	       (method static $elong->int32::int32 (::elong)
 		  "ELONG_TO_INT32")
-	       (method static $sint32->elong::elong (::sint32)
+	       (method static $int32->elong::elong (::int32)
 		  "INT32_TO_ELONG")
 	       (method static $elong->uint32::uint32 (::elong)
 		  "ELONG_TO_INT32")
 	       (method static $uint32->elong::elong (::uint32)
 		  "INT32_TO_ELONG")
-	       (method static $llong->sint64::sint64 (::llong)
+	       (method static $llong->int64::int64 (::llong)
 		  "LLONG_TO_INT64")
-	       (method static $sint64->elong::elong (::sint64)
+	       (method static $int64->elong::elong (::int64)
 		  "INT64_TO_ELONG")
 	       (method static $uint64->elong::elong (::uint64)
 		  "UINT64_TO_ELONG")
-	       (method static $elong->sing64::sint64 (::elong)
+	       (method static $elong->sing64::int64 (::elong)
 		  "ELONG_TO_INT64")
-	       (method static $sint64->llong::llong (::sint64)
+	       (method static $int64->llong::llong (::int64)
 		  "INT64_TO_LLONG")
 	       (method static $llong->uint64::uint64 (::llong)
 		  "LLONG_TO_INT64")
@@ -256,19 +256,19 @@
 		  "PLUS_ELONG")
 	       (method static c-+llong::llong (::llong ::llong)
 		  "PLUS_LLONG")
-	       (method static $+s8::sint8 (::sint8 ::sint8)
+	       (method static $+s8::int8 (::int8 ::int8)
 		  "PLUS_S8")
 	       (method static $+u8::uint8 (::uint8 ::uint8)
 		  "PLUS_S8")
-	       (method static $+s16::sint16 (::sint16 ::sint16)
+	       (method static $+s16::int16 (::int16 ::int16)
 		  "PLUS_S16")
 	       (method static $+u16::uint16 (::uint16 ::uint16)
 		  "PLUS_S16")
-	       (method static $+s32::sint32 (::sint32 ::sint32)
+	       (method static $+s32::int32 (::int32 ::int32)
 		  "PLUS_S32")
 	       (method static $+u32::uint32 (::uint32 ::uint32)
 		  "PLUS_S32")
-	       (method static $+s64::sint64 (::sint64 ::sint64)
+	       (method static $+s64::int64 (::int64 ::int64)
 		  "PLUS_S64")
 	       (method static $+u64::uint64 (::uint64 ::uint64)
 		  "PLUS_S64")
@@ -348,13 +348,13 @@
 	    (inline fixnum?::bool ::obj)
 	    (inline elong?::bool ::obj)
 	    (inline llong?::bool ::obj)
-	    (inline sint8?::bool ::obj)
+	    (inline int8?::bool ::obj)
 	    (inline uint8?::bool ::obj)
-	    (inline sint16?::bool ::obj)
+	    (inline int16?::bool ::obj)
 	    (inline uint16?::bool ::obj)
-	    (inline sint32?::bool ::obj)
+	    (inline int32?::bool ::obj)
 	    (inline uint32?::bool ::obj)
-	    (inline sint64?::bool ::obj)
+	    (inline int64?::bool ::obj)
 	    (inline uint64?::bool ::obj)
 	    (inline bignum?::bool ::obj)
  	    (inline make-elong::belong ::long)
@@ -363,26 +363,26 @@
 	    (inline elong->llong::llong ::elong)
 	    (inline llong->elong::elong ::llong)
 	    
-	    (inline elong->sint32::sint32 ::elong)
+	    (inline elong->int32::int32 ::elong)
 	    (inline elong->uint32::uint32 ::elong)
-	    (inline sint32->elong::elong ::sint32)
+	    (inline int32->elong::elong ::int32)
 	    (inline uint32->elong::elong ::uint32)
 	    
-	    (inline llong->sint64::sint64 ::llong)
+	    (inline llong->int64::int64 ::llong)
 	    (inline llong->uint64::uint64 ::llong)
-	    (inline sint64->llong::llong ::sint64)
+	    (inline int64->llong::llong ::int64)
 	    (inline uint64->llong::llong ::uint64)
-	    (inline sint64->elong::elong ::sint64)
+	    (inline int64->elong::elong ::int64)
 	    (inline uint64->elong::elong ::uint64)
 
-	    (inline sint8->uint8::uint8 ::sint8)
-	    (inline uint8->sint8::sint8 ::uint8)
-	    (inline sint16->uint16::uint16 ::sint16)
-	    (inline uint16->sint16::sint16 ::uint16)
-	    (inline sint32->uint32::uint32 ::sint32)
-	    (inline uint32->sint32::sint32 ::uint32)
-	    (inline sint64->uint64::uint64 ::sint64)
-	    (inline uint64->sint64::sint64 ::uint64)
+	    (inline int8->uint8::uint8 ::int8)
+	    (inline uint8->int8::int8 ::uint8)
+	    (inline int16->uint16::uint16 ::int16)
+	    (inline uint16->int16::int16 ::uint16)
+	    (inline int32->uint32::uint32 ::int32)
+	    (inline uint32->int32::int32 ::uint32)
+	    (inline int64->uint64::uint64 ::int64)
+	    (inline uint64->int64::int64 ::uint64)
 	    
 	    (inline fixnum->bignum::bignum ::long)
 	    (inline bignum->fixnum::long ::bignum)
@@ -450,13 +450,13 @@
 	    (inline +elong::elong ::elong ::elong)
 	    (inline +llong::llong ::llong ::llong)
 	    (inline +bx::bignum ::bignum ::bignum)
- 	    (inline +s8::sint8 ::sint8 ::sint8)
+ 	    (inline +s8::int8 ::int8 ::int8)
  	    (inline +u8::uint8 ::uint8 ::uint8)
- 	    (inline +s16::sint16 ::sint16 ::sint16)
+ 	    (inline +s16::int16 ::int16 ::int16)
  	    (inline +u16::uint16 ::uint16 ::uint16)
- 	    (inline +s32::sint32 ::sint32 ::sint32)
+ 	    (inline +s32::int32 ::int32 ::int32)
  	    (inline +u32::uint32 ::uint32 ::uint32)
- 	    (inline +s64::sint64 ::sint64 ::sint64)
+ 	    (inline +s64::int64 ::int64 ::int64)
  	    (inline +u64::uint64 ::uint64 ::uint64)
  	    (inline -fx::long ::long ::long)
 	    (inline -elong::elong ::elong ::elong)
@@ -527,13 +527,13 @@
 	    (c-fixnum? side-effect-free (predicate-of bint) no-cfa-top nesting args-safe (effect) fail-safe)
 	    (c-elong? side-effect-free (predicate-of belong) no-cfa-top nesting (effect) fail-safe)
 	    (c-llong? side-effect-free (predicate-of bllong) no-cfa-top nesting (effect) fail-safe)
-	    ($sint8? side-effect-free (predicate-of bsint8) no-cfa-top nesting (effect) fail-safe)	
+	    ($int8? side-effect-free (predicate-of bint8) no-cfa-top nesting (effect) fail-safe)	
 	    ($uint8? side-effect-free (predicate-of buint8) no-cfa-top nesting (effect) fail-safe)	
-	    ($sint16? side-effect-free (predicate-of bsint16) no-cfa-top nesting (effect) fail-safe)	
+	    ($int16? side-effect-free (predicate-of bint16) no-cfa-top nesting (effect) fail-safe)	
 	    ($uint16? side-effect-free (predicate-of buint16) no-cfa-top nesting (effect) fail-safe)	
-	    ($sint32? side-effect-free (predicate-of bsint32) no-cfa-top nesting (effect) fail-safe)	
+	    ($int32? side-effect-free (predicate-of bint32) no-cfa-top nesting (effect) fail-safe)	
 	    ($uint32? side-effect-free (predicate-of buint32) no-cfa-top nesting (effect) fail-safe)	
-	    ($sint64? side-effect-free (predicate-of bsint64) no-cfa-top nesting (effect) fail-safe)	
+	    ($int64? side-effect-free (predicate-of bint64) no-cfa-top nesting (effect) fail-safe)	
 	    ($uint64? side-effect-free (predicate-of buint64) no-cfa-top nesting (effect) fail-safe)	
 	    (bignum? side-effect-free no-cfa-top nesting (effect) fail-safe)
  	    ($elong->llong side-effect-free args-safe (effect) fail-safe)
@@ -708,10 +708,10 @@
    (c-llong? obj))
 
 ;*---------------------------------------------------------------------*/
-;*    sint8? ...                                                       */
+;*    int8? ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint8? obj)
-   ($sint8? obj))
+(define-inline (int8? obj)
+   ($int8? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint8? ...                                                       */
@@ -720,10 +720,10 @@
    ($uint8? obj))
 
 ;*---------------------------------------------------------------------*/
-;*    sint16? ...                                                      */
+;*    int16? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint16? obj)
-   ($sint16? obj))
+(define-inline (int16? obj)
+   ($int16? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint16? ...                                                      */
@@ -732,10 +732,10 @@
    ($uint16? obj))
 
 ;*---------------------------------------------------------------------*/
-;*    sint32? ...                                                      */
+;*    int32? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint32? obj)
-   ($sint32? obj))
+(define-inline (int32? obj)
+   ($int32? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint32? ...                                                      */
@@ -744,10 +744,10 @@
    ($uint32? obj))
 
 ;*---------------------------------------------------------------------*/
-;*    sint64? ...                                                      */
+;*    int64? ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint64? obj)
-   ($sint64? obj))
+(define-inline (int64? obj)
+   ($int64? obj))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint64? ...                                                      */
@@ -786,10 +786,10 @@
    ($llong->elong x))
 
 ;*---------------------------------------------------------------------*/
-;*    elong->sint32 ...                                                */
+;*    elong->int32 ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (elong->sint32 n)
-   ($elong->sint32 n))
+(define-inline (elong->int32 n)
+   ($elong->int32 n))
 
 ;*---------------------------------------------------------------------*/
 ;*    elong->uint32 ...                                                */
@@ -798,10 +798,10 @@
    ($elong->uint32 n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint32->elong ...                                                */
+;*    int32->elong ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint32->elong n)
-   ($sint32->elong n))
+(define-inline (int32->elong n)
+   ($int32->elong n))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint32->elong ...                                                */
@@ -810,10 +810,10 @@
    ($uint32->elong n))
 
 ;*---------------------------------------------------------------------*/
-;*    llong->sint64 ...                                                */
+;*    llong->int64 ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (llong->sint64 n)
-   ($llong->sint64 n))
+(define-inline (llong->int64 n)
+   ($llong->int64 n))
 
 ;*---------------------------------------------------------------------*/
 ;*    llong->uint64 ...                                                */
@@ -822,10 +822,10 @@
    ($llong->uint64 n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint64->llong ...                                                */
+;*    int64->llong ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint64->llong n)
-   ($sint64->llong n))
+(define-inline (int64->llong n)
+   ($int64->llong n))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint64->llong ...                                                */
@@ -834,10 +834,10 @@
    ($uint64->llong n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint64->elong ...                                                */
+;*    int64->elong ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint64->elong n)
-   ($sint64->elong n))
+(define-inline (int64->elong n)
+   ($int64->elong n))
 
 ;*---------------------------------------------------------------------*/
 ;*    uint64->elong ...                                                */
@@ -846,52 +846,52 @@
    ($uint64->elong n))
 
 ;*---------------------------------------------------------------------*/
-;*    uint8->sint8 ...                                                 */
+;*    uint8->int8 ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (uint8->sint8 n)
-   ($uint8->sint8 n))
+(define-inline (uint8->int8 n)
+   ($uint8->int8 n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint8->uint8 ...                                                 */
+;*    int8->uint8 ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint8->uint8 n)
-   ($sint8->uint8 n))
+(define-inline (int8->uint8 n)
+   ($int8->uint8 n))
 
 ;*---------------------------------------------------------------------*/
-;*    uint16->sint16 ...                                               */
+;*    uint16->int16 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (uint16->sint16 n)
-   ($uint16->sint16 n))
+(define-inline (uint16->int16 n)
+   ($uint16->int16 n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint16->uint16 ...                                               */
+;*    int16->uint16 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint16->uint16 n)
-   ($sint16->uint16 n))
+(define-inline (int16->uint16 n)
+   ($int16->uint16 n))
 
 ;*---------------------------------------------------------------------*/
-;*    uint32->sint32 ...                                               */
+;*    uint32->int32 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (uint32->sint32 n)
-   ($uint32->sint32 n))
+(define-inline (uint32->int32 n)
+   ($uint32->int32 n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint32->uint32 ...                                               */
+;*    int32->uint32 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint32->uint32 n)
-   ($sint32->uint32 n))
+(define-inline (int32->uint32 n)
+   ($int32->uint32 n))
 
 ;*---------------------------------------------------------------------*/
-;*    uint64->sint64 ...                                               */
+;*    uint64->int64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (uint64->sint64 n)
-   ($uint64->sint64 n))
+(define-inline (uint64->int64 n)
+   ($uint64->int64 n))
 
 ;*---------------------------------------------------------------------*/
-;*    sint64->uint64 ...                                               */
+;*    int64->uint64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (sint64->uint64 n)
-   ($sint64->uint64 n))
+(define-inline (int64->uint64 n)
+   ($int64->uint64 n))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->bignum ...                                               */

@@ -219,13 +219,13 @@
      ;; Fields/Methods of bigloo.belong
      (belong (class () "bigloo.belong"))
      ;; Fields/Methods of bigloo.stdint
-     (bsint8 (class () "bigloo.bsint8"))
+     (bint8 (class () "bigloo.bint8"))
      (buint8 (class () "bigloo.buint8"))
-     (bsint16 (class () "bigloo.bsint16"))
+     (bint16 (class () "bigloo.bint16"))
      (buint16 (class () "bigloo.buint16"))
-     (bsint32 (class () "bigloo.bsint32"))
+     (bint32 (class () "bigloo.bint32"))
      (buint32 (class () "bigloo.buint32"))
-     (bsint64 (class () "bigloo.bsint64"))
+     (bint64 (class () "bigloo.bint64"))
      (buint64 (class () "bigloo.buint64"))
      ;; Fields/Methods of bigloo.bignum
      (bignum (class () "bigloo.bignum"))
