@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Mar  4 08:33:53 2014 (serrano)                */
+;*    Last change :  Wed Mar  5 09:00:38 2014 (serrano)                */
 ;*    Copyright   :  2000-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -95,7 +95,8 @@
 	   (macro $configure-dns-cache-enabled::bool "BGL_DNS_CACHE")
 	   (macro $configure-big-endian::bool "BGL_BIG_ENDIAN")
 	   (macro $configure-regexp-family::string "BGL_REGEXP_FAMILY")
-	   (macro $configure-int-size::int "BGL_INT_SIZE"))
+	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
+	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE"))
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -148,7 +149,8 @@
 	      (field static dns-cache-enabled::bool "BGL_DNS_CACHE")
 	      (field static big-endian::bool "BGL_BIG_ENDIAN")
 	      (field static regexp-family::string "BGL_REGEXP_FAMILY")
-	      (field static int-size::int "BGL_INT_SIZE")
+	      (field static int-size::int "BGL_INT_BIT_SIZE")
+	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
 	      "bigloo.configure"))
 
    (export    (bigloo-config #!optional config)
@@ -220,7 +222,8 @@
      (shell-rm . ,$configure-shell-rm)
      (endianess . ,(if $configure-big-endian 'big-endian 'little-endian))
      (regexp . ,$configure-regexp-family)
-     (int-size . ,$configure-int-size)))
+     (int-size . ,$configure-int-size)
+     (elong-size . ,$configure-elong-size)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */

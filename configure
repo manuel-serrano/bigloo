@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Mar  5 08:21:03 2014 (serrano)                */
+#*    Last change :  Wed Mar  5 09:00:10 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2225,8 +2225,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   if [ "$alignment" = "3" ]; then 
     intsize=61
+    elongsize=64
   else
     intsize=30
+    elongsize=32
   fi
 
   # The -O C compiler options
@@ -2798,7 +2800,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_DEFAULT_A_BAT@|$abat|" \
               -e "s|@STACK_GROWS_DOWN@|$stackgrows|" \
               -e "s|@PTR_ALIGNMENT@|$alignment|" \
-              -e "s|@INT_SIZE@|$intsize|" \
+              -e "s|@INT_BIT_SIZE@|$intsize|" \
+              -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \
