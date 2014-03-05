@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat Aug  3 07:12:11 2013 (serrano)                */
-#*    Copyright   :  1998-2013 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Mar  5 08:01:57 2014 (serrano)                */
+#*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -310,11 +310,12 @@ dobigboot:
         fi
 	@ mkdir -p bin
 	@ mkdir -p lib/$(RELEASE)
-	@ (cd runtime && $(MAKE) bigboot BBFLAGS="-w")
-	@ (cd comptime && $(MAKE) bigboot BBFLAGS="-w -unsafeh")
-	@ (cd runtime && $(MAKE) heap-c BIGLOO=$(BOOTDIR)/bin/bigloo)
-	@ (cd comptime && $(MAKE) BIGLOO=$(BOOTDIR)/bin/bigloo)
-	@ (cd runtime && $(MAKE) clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo)
+	@ $(MAKE) -C runtime bigboot BBFLAGS="-w"
+	@ $(MAKE) -C comptime -i touchall
+	@ $(MAKE) -C comptime bigboot BBFLAGS="-w -unsafeh"
+	@ $(MAKE) -C runtime heap-c BIGLOO=$(BOOTDIR)/bin/bigloo
+	@ $(MAKE) -C comptime BIGLOO=$(BOOTDIR)/bin/bigloo
+	@ $(MAKE) -C runtime clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ echo "Big boot done..."
 	@ echo "-------------------------------"
 

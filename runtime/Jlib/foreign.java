@@ -483,19 +483,19 @@ public final class foreign
       {
 	 return (short)n.value;
       }
-   public static byte BINT_TO_SINT8(bint n)
+   public static byte BINT_TO_INT8(bint n)
       {
 	 return (byte)n.value;
       }
-   public static short BINT_TO_SINT16(bint n)
+   public static short BINT_TO_INT16(bint n)
       {
 	 return (short)n.value;
       }
-   public static int BINT_TO_SINT32(bint n)
+   public static int BINT_TO_INT32(bint n)
       {
 	 return (int)n.value;
       }
-   public static long BINT_TO_SINT64(bint n)
+   public static long BINT_TO_INT64(bint n)
       {
 	 return (long)n.value;
       }
@@ -528,22 +528,22 @@ public final class foreign
 	 return (byte)n;
       }
 
-   public static byte LONG_TO_SINT8(int n)
+   public static byte LONG_TO_INT8(int n)
       {
 	 return (byte)n;
       }
 
-   public static short LONG_TO_SINT16(int n)
+   public static short LONG_TO_INT16(int n)
       {
 	 return (short)n;
       }
 
-   public static int LONG_TO_SINT32(int n)
+   public static int LONG_TO_INT32(int n)
       {
 	 return (int)n;
       }
 
-   public static long LONG_TO_SINT64(long n)
+   public static long LONG_TO_INT64(long n)
       {
 	 return (long)n;
       }
@@ -590,6 +590,32 @@ public final class foreign
 	 return n;
       }
 
+   public static byte ELONG_TO_INT8(long n)
+      {
+	 return (byte)n;
+      }
+   public static long INT8_TO_ELONG(byte n)
+      {
+	 return (long)n;
+      }
+
+   public static short ELONG_TO_INT16(long n)
+      {
+	 return (short)n;
+      }
+   public static long INT16_TO_ELONG(short n)
+      {
+	 return (long)n;
+      }
+
+   public static int ELONG_TO_INT32(long n)
+      {
+	 return (int)n;
+      }
+   public static long INT32_TO_ELONG(int n)
+      {
+	 return (long)n;
+      }
    public static int LLONG_TO_LONG(long n)
       {
 	 return (int)n;
@@ -615,22 +641,35 @@ public final class foreign
 	 return (long)n.value;
       }
 
-   public static byte LLONG_TO_SINT8(long n)
+   public static byte LLONG_TO_INT8(long n)
       {
 	 return (byte)n;
       }
 
-   public static short LLONG_TO_SINT16(long n)
+   public static short LLONG_TO_INT16(long n)
       {
 	 return (short)n;
       }
 
-   public static int LLONG_TO_SINT32(long n)
+   public static int LLONG_TO_INT32(long n)
       {
 	 return (int)n;
       }
 
-   public static long LLONG_TO_SINT64(long n)
+   public static long INT64_TO_ELONG(long n)
+      {
+	 return (long)n;
+      }
+   public static long ELONG_TO_INT64(long n)
+      {
+	 return (long)n;
+      }
+
+   public static long INT64_TO_LLONG(long n)
+      {
+	 return (long)n;
+      }
+   public static long LLONG_TO_INT64(long n)
       {
 	 return (long)n;
       }
@@ -700,24 +739,64 @@ public final class foreign
 	 return new bignum(n);
       }
 
-   public static bsint8 BGL_INT8_TO_BSINT8( byte n )
+   public static bsint8 BGL_INT8_TO_BINT8( byte n )
       {
 	 return new bsint8( n );
       }
       
-   public static bsint16 BGL_INT16_TO_BSINT16( short n )
+   public static byte BGL_BINT8_TO_INT8( bsint8 n )
+      {
+	 return n.value;
+      }
+      
+   public static bsint16 BGL_INT16_TO_BINT16( short n )
       {
 	 return new bsint16( n );
       }
       
-   public static bsint32 BGL_INT32_TO_BSINT32( int n )
+   public static short BGL_BINT16_TO_INT16( bsint16 n )
+      {
+	 return n.value;
+      }
+      
+   public static bsint32 BGL_INT32_TO_BINT32( int n )
       {
 	 return new bsint32( n );
       }
       
-   public static bsint64 BGL_INT64_TO_BSINT64( long n )
+   public static int BGL_BINT32_TO_INT32( bsint32 n )
+      {
+	 return n.value;
+      }
+      
+   public static bsint64 BGL_INT64_TO_BINT64( long n )
       {
 	 return new bsint64( n );
+      }
+
+   public static long BGL_BINT64_TO_INT64( bsint64 n )
+      {
+	 return n.value;
+      }
+      
+   public static byte BGL_INT8_ID( byte n )
+      { 
+	 return n;
+      }
+      
+   public static short BGL_INT16_ID( short n )
+      { 
+	 return n;
+      }
+      
+   public static int BGL_INT32_ID( int n )
+      { 
+	 return n;
+      }
+      
+   public static long BGL_INT64_ID( long n )
+      { 
+	 return n;
       }
       
    public static int bgl_bignum_to_long(bignum n)
@@ -1450,12 +1529,12 @@ public final class foreign
 	 return (long) n;
       }
 
-   public static long BGL_DOUBLE_TO_SINT64(double n)
+   public static long BGL_DOUBLE_TO_INT64(double n)
       {
 	 return (long) n;
       }
 
-   public static double BGL_SINT64_TO_DOUBLE(long n)
+   public static double BGL_INT64_TO_DOUBLE(long n)
       {
 	 return (long) n;
       }

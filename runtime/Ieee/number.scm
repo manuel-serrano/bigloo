@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Tue Mar  4 11:01:35 2014 (serrano)                */
+;*    Last change :  Wed Mar  5 08:21:52 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -71,9 +71,9 @@
 	       (method static $flonum->llong::llong   (::double)
 		  "FLONUM_TO_LLONG")
 	       (method static $flonum->sint64::sint64 (::double)
-		  "BGL_FLONUM_TO_SINT64")
+		  "BGL_FLONUM_TO_INT64")
 	       (method static $sint64->flonum::double (::sint64)
-		  "BGL_SINT64_TO_FLONUM")))
+		  "BGL_INT64_TO_FLONUM")))
    
    (export  (number?::bool                  obj)
 	    (inline exact?::bool            z)
@@ -84,12 +84,20 @@
 	    (inline fixnum->flonum::double  ::long)
 	    (inline fixnum->sint8::sint8    ::long)
 	    (inline fixnum->uint8::uint8    ::long)
+	    (inline sint8->fixnum::long     ::sint8)
+	    (inline uint8->fixnum::long     ::uint8)
 	    (inline fixnum->sint16::sint16  ::long)
 	    (inline fixnum->uint16::uint16  ::long)
+	    (inline sint16->fixnum::long    ::sint16)
+	    (inline uint16->fixnum::long    ::uint16)
 	    (inline fixnum->sint32::sint32  ::long)
 	    (inline fixnum->uint32::uint32  ::long)
+	    (inline sint32->fixnum::long    ::sint32)
+	    (inline uint32->fixnum::long    ::uint32)
 	    (inline fixnum->sint64::sint64  ::long)
 	    (inline fixnum->uint64::uint64  ::long)
+	    (inline sint64->fixnum::long    ::sint64)
+	    (inline uint64->fixnum::long    ::uint64)
 	    (inline fixnum->byte::byte      ::long)
 	    (inline fixnum->ubyte::ubyte    ::long)
 	    (inline byte->fixnum::long      ::byte)
@@ -275,6 +283,18 @@
    ($long->uint8 x))
 
 ;*---------------------------------------------------------------------*/
+;*    sint8->fixnum ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (sint8->fixnum x)
+   (elong->fixnum ($sint8->elong x)))
+
+;*---------------------------------------------------------------------*/
+;*    uint8->fixnum ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (uint8->fixnum x)
+   (elong->fixnum ($uint8->elong x)))
+
+;*---------------------------------------------------------------------*/
 ;*    fixnum->sint16 ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (fixnum->sint16 x)
@@ -285,6 +305,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (fixnum->uint16 x)
    ($long->uint16 x))
+
+;*---------------------------------------------------------------------*/
+;*    sint16->fixnum ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (sint16->fixnum x)
+   (elong->fixnum ($sint16->elong x)))
+
+;*---------------------------------------------------------------------*/
+;*    uint16->fixnum ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (uint16->fixnum x)
+   (elong->fixnum ($uint16->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->sint32 ...                                               */
@@ -299,6 +331,18 @@
    ($long->uint32 x))
 
 ;*---------------------------------------------------------------------*/
+;*    sint32->fixnum ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (sint32->fixnum x)
+   (elong->fixnum ($sint32->elong x)))
+
+;*---------------------------------------------------------------------*/
+;*    uint32->fixnum ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (uint32->fixnum x)
+   (elong->fixnum ($uint32->elong x)))
+
+;*---------------------------------------------------------------------*/
 ;*    fixnum->sint64 ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-inline (fixnum->sint64 x)
@@ -309,6 +353,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (fixnum->uint64 x)
    ($long->uint64 x))
+
+;*---------------------------------------------------------------------*/
+;*    sint64->fixnum ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (sint64->fixnum x)
+   (elong->fixnum ($sint64->elong x)))
+
+;*---------------------------------------------------------------------*/
+;*    uint64->fixnum ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (uint64->fixnum x)
+   (elong->fixnum ($uint64->elong x)))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum->byte ...                                                 */
