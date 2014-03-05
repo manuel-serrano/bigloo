@@ -206,7 +206,7 @@ values of a particular setting can be obtained with:
 @smalllisp
 (bigloo-config 'int-size)
 (bigloo-config 'elong-size)
-@end smallisp
+@end smalllisp
 @end deffn
 
 @deffn {bigloo procedure} register-eval-srfi! srfi-name
