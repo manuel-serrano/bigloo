@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Wed Mar  5 08:21:19 2014 (serrano)                */
+/*    Last change :  Thu Mar  6 13:41:42 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -257,7 +257,6 @@ make_real( double d ) {
    return BREAL( real );
 }
 
-#if( !defined( BGL_CNST_SHIFT_INT32 ) )
 /*---------------------------------------------------------------------*/
 /*    alloc_make_belong ...                                            */
 /*---------------------------------------------------------------------*/
@@ -291,7 +290,6 @@ make_belong( long l ) {
       return BREF( elong );
    }
 }
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    alloc_make_bllong ...                                            */
@@ -325,10 +323,10 @@ make_bllong( BGL_LONGLONG_T l ) {
 
 #if( !defined( BGL_CNST_SHIFT_INT32 ) )
 /*---------------------------------------------------------------------*/
-/*    alloc_make_bsint32 ...                                           */
+/*    alloc_make_bint32 ...                                            */
 /*---------------------------------------------------------------------*/
 static obj_t
-alloc_make_bsint32( int32_t l ) {
+alloc_make_bint32( int32_t l ) {
    obj_t int32;
 
    int32 = (obj_t)GC_MALLOC_ATOMIC( BGL_INT32_SIZE );
@@ -340,16 +338,16 @@ alloc_make_bsint32( int32_t l ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    bgl_make_bsint32 ...                                             */
+/*    bgl_make_bint32 ...                                              */
 /*---------------------------------------------------------------------*/
 GC_API obj_t
-bgl_make_bsint32( int32_t l ) {
+bgl_make_bint32( int32_t l ) {
    if(( BGL_INT32_PREALLOC_MIN <= l) && (l < BGL_INT32_PREALLOC_MAX) ) {
-      return BREF( &bsint32_allocated[ l - BGL_INT32_PREALLOC_MIN ] );
+      return BREF( &bint32_allocated[ l - BGL_INT32_PREALLOC_MIN ] );
    } else {
       obj_t int32;
 
-      GC_INLINE_ALLOC( int32, BGL_INT32_SIZE, alloc_make_bsint32( l ) );
+      GC_INLINE_ALLOC( int32, BGL_INT32_SIZE, alloc_make_bint32( l ) );
       
       int32->sint32_t.header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE );
       int32->sint32_t.val = l;
@@ -394,10 +392,10 @@ bgl_make_buint32( uint32_t l ) {
 #endif
 
 /*---------------------------------------------------------------------*/
-/*    alloc_make_bsint64 ...                                           */
+/*    alloc_make_bint64 ...                                            */
 /*---------------------------------------------------------------------*/
 static obj_t
-alloc_make_bsint64( int64_t l ) {
+alloc_make_bint64( int64_t l ) {
    obj_t int64;
 
    int64 = (obj_t)GC_MALLOC_ATOMIC( BGL_INT64_SIZE );
@@ -409,13 +407,13 @@ alloc_make_bsint64( int64_t l ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    bgl_make_bsint64 ...                                             */
+/*    bgl_make_bint64 ...                                              */
 /*---------------------------------------------------------------------*/
 GC_API obj_t
-bgl_make_bsint64( int64_t l ) {
+bgl_make_bint64( int64_t l ) {
    obj_t int64;
 
-   GC_INLINE_ALLOC( int64, BGL_INT64_SIZE, alloc_make_bsint64( l ) );
+   GC_INLINE_ALLOC( int64, BGL_INT64_SIZE, alloc_make_bint64( l ) );
       
    int64->sint64_t.header = MAKE_HEADER( INT64_TYPE, BGL_INT64_SIZE );
    int64->sint64_t.val = l;
@@ -543,7 +541,6 @@ make_real( double real ) {
 /*---------------------------------------------------------------------*/
 /*    make_belong ...                                                  */
 /*---------------------------------------------------------------------*/
-#if( !defined( BGL_CNST_SHIFT_INT32 ) )
 GC_API obj_t
 make_belong( long elong ) {
    obj_t a_elong;
@@ -559,7 +556,6 @@ make_belong( long elong ) {
 	
    return BREF( a_elong );
 }
-#endif
 
 /*---------------------------------------------------------------------*/
 /*    make_bllong ...                                                  */
@@ -582,10 +578,10 @@ make_bllong( BGL_LONGLONG_T llong ) {
 
 #if( !defined( BGL_CNST_SHIFT_INT32 ) )
 /*---------------------------------------------------------------------*/
-/*    bgl_make_bsint32 ...                                             */
+/*    bgl_make_bint32 ...                                              */
 /*---------------------------------------------------------------------*/
 GC_API obj_t
-bgl_make_bsint32( int32_t l ) {
+bgl_make_bint32( int32_t l ) {
    obj_t a_sint32;
 
 #if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
@@ -621,10 +617,10 @@ bgl_make_buint32( uint32_t l ) {
 #endif
 
 /*---------------------------------------------------------------------*/
-/*    bgl_make_bsint64 ...                                             */
+/*    bgl_make_bint64 ...                                              */
 /*---------------------------------------------------------------------*/
 GC_API obj_t
-bgl_make_bsint64( int64_t l ) {
+bgl_make_bint64( int64_t l ) {
    obj_t a_sint64;
 
 #if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )

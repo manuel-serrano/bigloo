@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Wed Jul 24 14:25:33 2013 (serrano)                */
-;*    Copyright   :  1993-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Mar  7 12:26:52 2014 (serrano)                */
+;*    Copyright   :  1993-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    The module which handle `qualified type <-> module' associations */
+;*    The module which handles `qualified type <-> module' associations*/
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

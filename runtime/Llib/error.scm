@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Jan 19 22:20:17 2014 (serrano)                */
+;*    Last change :  Fri Mar  7 07:55:22 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -1108,8 +1108,6 @@
        "cell")
       ((foreign? obj)
        (string-append "foreign:" (symbol->string (foreign-id obj))))
-      ((cnst? obj)
-       "bcnst")
       ((socket? obj)
        "socket")
       ((datagram-socket? obj)
@@ -1155,6 +1153,24 @@
        "mmap")
       ((regexp? obj)
        "regexp")
+      ((int8? obj)
+       "int8")
+      ((uint8? obj)
+       "uint8")
+      ((int16? obj)
+       "int16")
+      ((uint16? obj)
+       "uint16")
+      ((int32? obj)
+       "int32")
+      ((uint32? obj)
+       "uint32")
+      ((int64? obj)
+       "int64")
+      ((uint64? obj)
+       "uint64")
+      ((cnst? obj)
+       "bcnst")
       (else
        ($foreign-typeof obj))))
 

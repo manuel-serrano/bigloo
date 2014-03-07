@@ -387,6 +387,22 @@ public final class foreign
 	 return (o instanceof bllong);
       }
 
+   public static boolean BGL_INT8P(Object o)
+      {
+	 return (o instanceof bint8);
+      }
+   public static boolean BGL_INT16P(Object o)
+      {
+	 return (o instanceof bint16);
+      }
+   public static boolean BGL_INT32P(Object o)
+      {
+	 return (o instanceof bint32);
+      }
+   public static boolean BGL_INT64P(Object o)
+      {
+	 return (o instanceof bint64);
+      }
    public static boolean BIGNUMP(Object o)
       {
 	 return (o instanceof bignum);
@@ -908,6 +924,23 @@ public final class foreign
 	 return (n1 == n2);
       }
 
+   public static boolean EQ_INT8(byte n1, byte n2)
+      {
+	 return (n1 == n2);
+      }
+   public static boolean EQ_INT16(short n1, short n2)
+      {
+	 return (n1 == n2);
+      }
+   public static boolean EQ_INT32(int n1, int n2)
+      {
+	 return (n1 == n2);
+      }
+   public static boolean EQ_INT64(long n1, long n2)
+      {
+	 return (n1 == n2);
+      }
+
    public static boolean EQ_BIGNUM(bignum n1, bignum n2)
       {
 	 return n1.value.compareTo(n2.value) == 0;
@@ -924,6 +957,23 @@ public final class foreign
       }
 
    public static boolean LT_LLONG(long n1, long n2)
+      {
+	 return (n1 < n2);
+      }
+
+   public static boolean LT_INT8(byte n1, byte n2)
+      {
+	 return (n1 < n2);
+      }
+   public static boolean LT_INT16(short n1, short n2)
+      {
+	 return (n1 < n2);
+      }
+   public static boolean LT_INT32(int n1, int n2)
+      {
+	 return (n1 < n2);
+      }
+   public static boolean LT_INT64(long n1, long n2)
       {
 	 return (n1 < n2);
       }
@@ -948,6 +998,23 @@ public final class foreign
 	 return (n1 <= n2);
       }
 
+   public static boolean LE_INT8(byte n1, byte n2)
+      {
+	 return (n1 <= n2);
+      }
+   public static boolean LE_INT16(short n1, short n2)
+      {
+	 return (n1 <= n2);
+      }
+   public static boolean LE_INT32(int n1, int n2)
+      {
+	 return (n1 <= n2);
+      }
+   public static boolean LE_INT64(long n1, long n2)
+      {
+	 return (n1 <= n2);
+      }
+
    public static boolean LE_BIGNUM(bignum n1, bignum n2)
       {
 	 return n1.value.compareTo(n2.value) <= 0;
@@ -964,6 +1031,23 @@ public final class foreign
       }
 
    public static boolean GT_LLONG(long n1, long n2)
+      {
+	 return (n1 > n2);
+      } 
+
+   public static boolean GT_INT8(byte n1, byte n2)
+      {
+	 return (n1 > n2);
+      }
+   public static boolean GT_INT16(short n1, short n2)
+      {
+	 return (n1 > n2);
+      }
+   public static boolean GT_INT32(int n1, int n2)
+      {
+	 return (n1 > n2);
+      }
+   public static boolean GT_INT64(long n1, long n2)
       {
 	 return (n1 > n2);
       }
@@ -984,6 +1068,23 @@ public final class foreign
       }
 
    public static boolean GE_LLONG(long n1, long n2)
+      {
+	 return (n1 >= n2);
+      }
+
+   public static boolean GE_INT8(byte n1, byte n2)
+      {
+	 return (n1 >= n2);
+      }
+   public static boolean GE_INT16(short n1, short n2)
+      {
+	 return (n1 >= n2);
+      }
+   public static boolean GE_INT32(int n1, int n2)
+      {
+	 return (n1 >= n2);
+      }
+   public static boolean GE_INT64(long n1, long n2)
       {
 	 return (n1 >= n2);
       }
@@ -1123,6 +1224,26 @@ public final class foreign
 	 return (n1 - n2);
       }
 
+   public static byte MINUS_S8(byte n1, byte n2)
+      {
+	 return (byte)(n1 - n2);
+      }
+
+   public static short MINUS_S16(short n1, short n2)
+      {
+	 return (short)(n1 - n2);
+      }
+
+   public static int MINUS_S32(int n1, int n2)
+      {
+	 return (n1 - n2);
+      }
+
+   public static long MINUS_S64(long n1, long n2)
+      {
+	 return (n1 - n2);
+      }
+
    public static bignum MINUS_BIGNUM(bignum n1, bignum n2)
       {
 	 return new bignum(n1.value.subtract(n2.value));
@@ -1172,6 +1293,26 @@ public final class foreign
       }
 
    public static long MUL_LLONG(long n1, long n2)
+      {
+	 return (n1 * n2);
+      }
+
+   public static byte MUL_S8(byte n1, byte n2)
+      {
+	 return (byte)(n1 * n2);
+      }
+
+   public static short MUL_S16(short n1, short n2)
+      {
+	 return (short)(n1 * n2);
+      }
+
+   public static int MUL_S32(int n1, int n2)
+      {
+	 return (n1 * n2);
+      }
+
+   public static long MUL_S64(long n1, long n2)
       {
 	 return (n1 * n2);
       }
@@ -1233,6 +1374,26 @@ public final class foreign
       }
 
    public static long DIV_LLONG(long n1, long n2)
+      {
+	 return (n1 / n2);
+      }
+
+   public static byte DIV_S8(byte n1, byte n2)
+      {
+	 return (byte)(n1 / n2);
+      }
+
+   public static short DIV_S16(short n1, short n2)
+      {
+	 return (short)(n1 / n2);
+      }
+
+   public static int DIV_S32(int n1, int n2)
+      {
+	 return (n1 / n2);
+      }
+
+   public static long DIV_S64(long n1, long n2)
       {
 	 return (n1 / n2);
       }
@@ -1304,6 +1465,26 @@ public final class foreign
       {
 	 return (n1 / n2);
       }
+   
+   public static byte QUOTIENT_S8(byte n1, byte n2)
+      {
+	 return (byte)(n1 / n2);
+      }
+
+   public static short QUOTIENT_S16(short n1, short n2)
+      {
+	 return (short)(n1 / n2);
+      }
+
+   public static int QUOTIENT_S32(int n1, int n2)
+      {
+	 return (n1 / n2);
+      }
+
+   public static long QUOTIENT_S64(long n1, long n2)
+      {
+	 return (n1 / n2);
+      }
 
    public static bignum QUOTIENT_BIGNUM(bignum n1, bignum n2)
       {
@@ -1321,6 +1502,26 @@ public final class foreign
       }
 
    public static long REMAINDER_LLONG(long n1, long n2)
+      {
+	 return (n1 % n2);
+      }
+
+   public static byte REMAINDER_S8(byte n1, byte n2)
+      {
+	 return (byte)(n1 % n2);
+      }
+
+   public static short REMAINDER_S16(short n1, short n2)
+      {
+	 return (short)(n1 % n2);
+      }
+
+   public static int REMAINDER_S32(int n1, int n2)
+      {
+	 return (n1 % n2);
+      }
+
+   public static long REMAINDER_S64(long n1, long n2)
       {
 	 return (n1 % n2);
       }

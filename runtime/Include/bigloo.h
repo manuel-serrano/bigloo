@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Mar  5 08:20:02 2014 (serrano)                */
+/*    Last change :  Thu Mar  6 13:09:39 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1802,7 +1802,7 @@ BGL_RUNTIME_DECL double bgl_infinity();
 #  define BGL_UINT32_SIZE (sizeof( struct bgl_uint32 ))
 #  define BGL_INT32( o ) CREF( o )->sint32_t
 #  define BGL_UINT32( o ) CREF( o )->uint32_t
-#  define BGL_INT32_TO_BINT32( _1 ) bgl_make_bsint32( _1 )
+#  define BGL_INT32_TO_BINT32( _1 ) bgl_make_bint32( _1 )
 #  define BGL_UINT32_TO_BUINT32( _1 ) bgl_make_buint32( _1 )
 #  define BGL_BINT32_TO_INT32( o ) BGL_INT32( o ).val
 #  define BGL_BUINT32_TO_UINT32( o ) BGL_UINT32( o ).val
@@ -1812,7 +1812,7 @@ BGL_RUNTIME_DECL double bgl_infinity();
 #define BGL_UINT64_SIZE (sizeof( struct bgl_uint64 ))
 #define BGL_INT64( o ) CREF( o )->sint64_t
 #define BGL_UINT64( o ) CREF( o )->uint64_t
-#define BGL_INT64_TO_BINT64( _1 ) bgl_make_bsint64( _1 )
+#define BGL_INT64_TO_BINT64( _1 ) bgl_make_bint64( _1 )
 #define BGL_UINT64_TO_BUINT64( _1 ) bgl_make_buint64( _1 )
 #define BGL_BINT64_TO_INT64( o ) BGL_INT64( o ).val
 #define BGL_BUINT64_TO_UINT64( o ) BGL_UINT64( o ).val
@@ -3287,11 +3287,11 @@ BGL_RUNTIME_DECL obj_t make_belong( long );
 BGL_RUNTIME_DECL obj_t make_bllong( BGL_LONGLONG_T );
 
 #if( !defined( BGL_CNST_SHIFT_INT32 ) )   
-BGL_RUNTIME_DECL obj_t bgl_make_bsint32( int32_t );
+BGL_RUNTIME_DECL obj_t bgl_make_bint32( int32_t );
 BGL_RUNTIME_DECL obj_t bgl_make_buint32( uint32_t );
 #endif
    
-BGL_RUNTIME_DECL obj_t bgl_make_bsint64( int64_t );
+BGL_RUNTIME_DECL obj_t bgl_make_bint64( int64_t );
 BGL_RUNTIME_DECL obj_t bgl_make_buint64( uint64_t );
 
 BGL_RUNTIME_DECL obj_t bgl_string_to_bignum( char *, int );

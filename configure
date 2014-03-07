@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Mar  5 09:00:10 2014 (serrano)                */
+#*    Last change :  Thu Mar  6 13:27:16 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2987,7 +2987,7 @@ if [ $action = "all" -o $action = "bigloo_static" ]; then
   echo "#if( !defined( BGL_CNST_SHIFT_INT32 ) )" >> $bigloo_static_h
   echo "#define BGL_INT32_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h
   echo "#define BGL_INT32_PREALLOC_MAX $belong_prealloc_max" >> $bigloo_static_h
-  echo "static struct bgl_sint32 bsint32_allocated[] = { " >> $bigloo_static_h
+  echo "static struct bgl_sint32 bint32_allocated[] = { " >> $bigloo_static_h
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
   while expr $i "<" $max > /dev/null; do

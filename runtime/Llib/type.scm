@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Wed Mar  5 08:37:08 2014 (serrano)                */
+;*    Last change :  Thu Mar  6 17:29:11 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -508,15 +508,15 @@
     (coerce bint uint () ($bint->uint))
     (coerce bint long () ($bint->long))
     (coerce bint ulong () ($bint->ulong))
-    (coerce bint int8 () ($bint->int8))
-    (coerce bint uint8 () ($bint->uint8))
-    (coerce bint int16 () ($bint->int16))
-    (coerce bint uint16 () ($bint->uint16))
-    (coerce bint int32 () ($bint->int32))
-    (coerce bint uint32 () ($bint->uint32))
-    (coerce bint int64 () ($bint->int64))
-    (coerce bint uint64 () ($bint->uint64))
-    (coerce bint bool () ((lambda (x) #t)))
+;*     (coerce bint int8 () ($bint->int8))                             */
+;*     (coerce bint uint8 () ($bint->uint8))                           */
+;*     (coerce bint int16 () ($bint->int16))                           */
+;*     (coerce bint uint16 () ($bint->uint16))                         */
+;*     (coerce bint int32 () ($bint->int32))                           */
+;*     (coerce bint uint32 () ($bint->uint32))                         */
+;*     (coerce bint int64 () ($bint->int64))                           */
+;*     (coerce bint uint64 () ($bint->uint64))                         */
+;*     (coerce bint bool () ((lambda (x) #t)))                         */
 
     ;; int
     (coerce int bool () ((lambda (x::int) #t)))
