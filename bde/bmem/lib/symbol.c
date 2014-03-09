@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Fri Apr 12 19:44:17 2013 (serrano)                */
-/*    Copyright   :  2003-13 Manuel Serrano                            */
+/*    Last change :  Fri Mar  7 18:44:18 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/
@@ -19,6 +19,7 @@ extern void set_alloc_type( int, int  );
 extern void *(*____bgl_get_symtab)();
 extern long (*____get_hash_power_number)( char *, unsigned long );
 extern void *(*____string_to_bstring)( char * );
+extern void *(*____string_to_bstring_len)( char *, unsigned long );
 
 extern int bmem_debug;
 
@@ -51,22 +52,23 @@ make_symbol( obj_t name ) {
 }
    
 /*---------------------------------------------------------------------*/
-/*    bstring_to_symbol ...                                            */
-/*    obj_t --> obj_t                                                  */
+/*    obj_t                                                            */
+/*    bgl_bstring_to_symbol ...                                        */
 /*---------------------------------------------------------------------*/
-obj_t
-bstring_to_symbol( obj_t name ) {
+static obj_t
+bgl_bstring_to_symbol( obj_t name ) {
    long hash_number;
    obj_t bucket;
    char *cname = BSTRING_TO_STRING( name );
 
    hash_number = ____get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
+   
    bucket = VECTOR_REF( ____bgl_get_symtab(), hash_number );
    
    if( NULLP( bucket ) ) {
       obj_t symbol = make_symbol( name );
-      obj_t pair   = MAKE_PAIR( symbol, BNIL );
-      
+      obj_t pair = MAKE_PAIR( symbol, BNIL );
+
       VECTOR_SET( ____bgl_get_symtab(), hash_number, pair );
       
       return symbol;
@@ -74,15 +76,16 @@ bstring_to_symbol( obj_t name ) {
       obj_t run = bucket, back = bucket;
       
       while( !NULLP( run ) &&
-	     strcmp( (char *)BSTRING_TO_STRING( SYMBOL( CAR( run ) ).string ),
-		     cname ) )
+	     SYMBOL( CAR( run ) ).string &&
+	     !bigloo_strcmp( SYMBOL( CAR( run ) ).string, name ) )
          back = run, run = CDR( run );
       
-      if( !NULLP( run ) )
+      if( !NULLP( run ) ) {
          return CAR( run );
+      }
       else {
          obj_t symbol = make_symbol( name );
-	 obj_t pair   = MAKE_PAIR( symbol, BNIL );
+	 obj_t pair = MAKE_PAIR( symbol, BNIL );
 	 
          SET_CDR( back, pair );
 
@@ -90,45 +93,34 @@ bstring_to_symbol( obj_t name ) {
       }
    }
 }
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bstring_to_symbol ...                                            */
+/*---------------------------------------------------------------------*/
+obj_t
+bstring_to_symbol( obj_t name ) {
+   return bgl_bstring_to_symbol(
+      ____string_to_bstring_len(
+	 BSTRING_TO_STRING( name ), STRING_LENGTH( name ) ) );
+}
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_string_to_symbol_len ...                                     */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_string_to_symbol_len( char *cname, long len ) {
+   return bgl_bstring_to_symbol( ____string_to_bstring_len( cname, len ) );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    string_to_symbol ...                                             */
-/*    char * --> obj_t                                                 */
 /*---------------------------------------------------------------------*/
 obj_t
 string_to_symbol( char *cname ) {
-   long hash_number;
-   obj_t bucket;
-
-   hash_number = ____get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
-   bucket = VECTOR_REF( ____bgl_get_symtab(), hash_number );
-
-   if( NULLP( bucket ) ) {
-      obj_t symbol = make_symbol( (obj_t)string_to_bstring( cname ) );
-      obj_t pair   = MAKE_PAIR( symbol, BNIL );
-      
-      VECTOR_SET( ____bgl_get_symtab(), hash_number, pair );
-      
-      return symbol;
-   } else {
-      obj_t run = bucket, back = bucket;
-      
-      while( !NULLP( run ) &&
-	     strcmp( (char *)BSTRING_TO_STRING( SYMBOL( CAR( run ) ).string ),
-		     cname ) )
-         back = run, run = CDR( run );
-      
-      if( !NULLP( run ) )
-         return CAR( run );
-      else {
-         obj_t symbol = make_symbol( (obj_t)string_to_bstring( cname ) );
-	 obj_t pair   = MAKE_PAIR( symbol, BNIL );
-	 
-         SET_CDR( back, pair );
-
-         return symbol;
-      }
-   }
+   return bgl_bstring_to_symbol( ____string_to_bstring( cname ) );
 }
 
 /*---------------------------------------------------------------------*/

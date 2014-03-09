@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Mar  7 11:41:49 2014 (serrano)                */
+;*    Last change :  Sun Mar  9 07:32:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -65,9 +65,11 @@
 	    (macro $elong->int32::int32 (::elong) "(int32_t)")
 	    (macro $int32->elong::elong (::int32)  "(long)")
 	    (macro $elong->uint32::uint32 (::elong) "(uint32_t)")
+	    (macro $int32->llong::llong (::uint32)  "(BGL_LONGLONG_T)")
 	    (macro $uint32->elong::elong (::uint32)  "(long)")
 	    (macro $uint32->llong::llong (::uint32)  "(BGL_LONGLONG_T)")
 	    (macro $llong->uint32::uint32 (::llong)  "(long)")
+	    (macro $llong->int32::int32 (::llong)  "(long)")
 	    
 	    (macro $int64->elong::elong (::int64)  "(long)")
 	    (macro $uint64->elong::elong (::uint64)  "(long)")
@@ -280,8 +282,12 @@
 		  "ELONG_TO_INT32")
 	       (method static $uint32->elong::elong (::uint32)
 		  "INT32_TO_ELONG")
+	       (method static $int32->llong::llong (::int32)
+		  "INT32_TO_LLONG")
 	       (method static $uint32->llong::llong (::uint32)
 		  "INT32_TO_LLONG")
+	       (method static $llong->int32::uint32 (::llong)
+		  "LLONG_TO_INT32")
 	       (method static $llong->uint32::uint32 (::llong)
 		  "LLONG_TO_INT32")
 	       (method static $llong->int64::int64 (::llong)
@@ -611,7 +617,9 @@
 	    (inline elong->uint32::uint32 ::elong)
 	    (inline uint32->elong::elong ::uint32)
 	    
+	    (inline int32->llong::llong ::int32)
 	    (inline uint32->llong::llong ::uint32)
+	    (inline llong->int32::int32 ::llong)
 	    (inline llong->uint32::uint32 ::llong)
 	    
 	    (inline llong->int64::int64 ::llong)
@@ -1395,7 +1403,9 @@
 (define-inline (int32->elong n) ($int32->elong n))
 (define-inline (uint32->elong n) ($uint32->elong n))
 
+(define-inline (int32->llong n) ($int32->llong n))
 (define-inline (uint32->llong n) ($uint32->llong n))
+(define-inline (llong->int32 n) ($llong->int32 n))
 (define-inline (llong->uint32 n) ($llong->uint32 n))
 
 (define-inline (llong->int64 n) ($llong->int64 n))
