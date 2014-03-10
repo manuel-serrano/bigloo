@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Oct 25 18:30:25 2012 (serrano)                */
+;*    Last change :  Mon Mar 10 08:24:27 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -376,9 +376,40 @@
 	      beof)
 	     (else
 	      (read-error "Illegal identifier"
-		 (string-append "#" (symbol->string symbol))
-		 (the-port))))))
-      
+		 (string-append "#" (symbol->string symbol)) (the-port))))))
+
+      ;; stdint
+      ((: "s8:" (? #\-) (+ (in ("09"))))
+       (fixnum->uint8 (string->integer (the-substring 3 0))))
+      ((: "u8:" (+ (in ("09"))))
+       (fixnum->uint8 (string->integer (the-substring 3 0))))
+      ;; stdint
+      ((: "s16:" (? #\-) (+ (in ("09"))))
+       (fixnum->uint16 (string->integer (the-substring 4 0))))
+      ((: "u16:" (+ (in ("09"))))
+       (fixnum->uint16 (string->integer (the-substring 4 0))))
+      ;; stdint
+      ((: "s32:" (? #\-) (+ (in ("09"))))
+       (elong->uint32 (string->elong (the-substring 4 0))))
+      ((: "u32:" (+ (in ("09"))))
+       (cond-expand
+	  (bint61
+	   (elong->uint32 (string->elong (the-substring 4 0))))
+	  (else
+	   (llong->uint32 (string->llong (the-substring 4 0))))))
+      ;; stdint
+      ((: "s64:" (? #\-) (+ (in ("09"))))
+       (fixnum->uint64 (string->llong (the-substring 4 0))))
+      ((: "u64:" (+ (in ("09"))))
+       (let ((s2 (the-substring 5 0))
+	     (s1 (the-substring 4 4)))
+	  (+u64 (llong->uint64 (string->llong s2))
+	     (let loop ((pow (string-length s2))
+			(n1 (fixnum->uint64 (string->integer s1))))
+		(if (=fx pow 0)
+		    n1
+		    (loop (-fx pow 1) (*u64 n1 (fixnum->uint64 10))))))))
+
       ;; constants
       ((: "<" (= 4 (or digit (uncase (in ("AF"))))) ">")
        (make-cnst (string->integer (the-substring 1 5) 16)))

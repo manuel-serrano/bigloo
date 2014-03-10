@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Mon Mar  3 10:10:34 2014 (serrano)                */
+;*    Last change :  Mon Mar 10 08:23:56 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -161,7 +161,7 @@
 	     (rgc-buffer-substring input-port 0 (the-length)))
 	  ;; @deffn the-substring@
 	  (define (the-substring::bstring min::int max::int)
-	     (when (<fx max 0) (set! max (+fx (the-length) max)))
+	     (when (<fx max min) (set! max (+fx (the-length) max)))
 	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
 		 (rgc-buffer-substring input-port min max)
 		 (error "the-substring"
