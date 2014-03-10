@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Mar 10 08:24:27 2014 (serrano)                */
+;*    Last change :  Mon Mar 10 13:53:18 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -402,7 +402,7 @@
        (fixnum->uint64 (string->llong (the-substring 4 0))))
       ((: "u64:" (+ (in ("09"))))
        (let ((s2 (the-substring 5 0))
-	     (s1 (the-substring 4 4)))
+	     (s1 (the-substring 4 5)))
 	  (+u64 (llong->uint64 (string->llong s2))
 	     (let loop ((pow (string-length s2))
 			(n1 (fixnum->uint64 (string->integer s1))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Mon Nov 11 09:56:01 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 10 14:35:14 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -83,7 +83,15 @@
 	      (real? value)
 	      (cnst? value)
 	      (elong? value)
-	      (llong? value))
+	      (llong? value)
+	      (int8? value)
+	      (uint8? value)
+	      (int16? value)
+	      (uint16? value)
+	      (int32? value)
+	      (uint32? value)
+	      (int64? value)
+	      (uint64? value))
 	  (instantiate::atom
 	     (loc loc)
 	     (type (strict-node-type (get-type-atom value) type))
@@ -335,6 +343,22 @@
 		((eq? fun *llong->bllong*)
 		 (if (llong? actual-value)
 		     (cnst-alloc-llong actual-value loc)
+		     node))
+		((eq? fun *int32->bint32*)
+		 (if (int32? actual-value)
+		     (cnst-alloc-int32 actual-value loc)
+		     node))
+		((eq? fun *uint32->buint32*)
+		 (if (uint32? actual-value)
+		     (cnst-alloc-uint32 actual-value loc)
+		     node))
+		((eq? fun *int64->bint64*)
+		 (if (int64? actual-value)
+		     (cnst-alloc-int64 actual-value loc)
+		     node))
+		((eq? fun *uint64->buint64*)
+		 (if (uint64? actual-value)
+		     (cnst-alloc-uint64 actual-value loc)
 		     node))
 		(else
 		 node))))))

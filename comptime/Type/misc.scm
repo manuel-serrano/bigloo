@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Tue Feb  4 10:04:21 2014 (serrano)                */
+;*    Last change :  Mon Mar 10 14:14:03 2014 (serrano)                */
 ;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
@@ -91,6 +91,14 @@
 	 ((long) 4)
 	 ((elong) 4)
 	 ((llong) 5)
+	 ((int8) 6)
+	 ((uint8) 7)
+	 ((int16) 8)
+	 ((uint16) 9)
+	 ((int32) 10)
+	 ((uint32) 11)
+	 ((int64) 12)
+	 ((uint64) 13)
 	 ((double) -1)
 	 ((real) -2)
 	 (else -1)))

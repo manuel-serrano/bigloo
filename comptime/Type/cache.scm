@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Sun Nov 24 18:19:32 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 10 17:58:17 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
 ;*=====================================================================*/
@@ -28,6 +28,22 @@
 	   *belong*
 	   *llong*
 	   *bllong*
+	   *int8*
+	   *bint8*
+	   *uint8*
+	   *buint8*
+	   *int16*
+	   *bint16*
+	   *uint16*
+	   *buint16*
+	   *int32*
+	   *bint32*
+	   *uint32*
+	   *buint32*
+	   *int64*
+	   *bint64*
+	   *uint64*
+	   *buint64*
 	   *bool*
 	   *bbool*
 	   *real*
@@ -78,6 +94,22 @@
    (set! *belong*        (use-type! 'belong #f))
    (set! *llong*         (use-type! 'llong #f))
    (set! *bllong*        (use-type! 'bllong #f))
+   (set! *int8*          (use-type! 'int8 #f))
+   (set! *bint8*         (use-type! 'bint8 #f))
+   (set! *uint8*         (use-type! 'uint8 #f))
+   (set! *buint8*        (use-type! 'buint8 #f))
+   (set! *int16*         (use-type! 'int16 #f))
+   (set! *bint16*        (use-type! 'bint16 #f))
+   (set! *uint16*        (use-type! 'uint16 #f))
+   (set! *buint16*       (use-type! 'buint16 #f))
+   (set! *int32*         (use-type! 'int32 #f))
+   (set! *bint32*        (use-type! 'bint32 #f))
+   (set! *uint32*        (use-type! 'uint32 #f))
+   (set! *buint32*       (use-type! 'buint32 #f))
+   (set! *int64*         (use-type! 'int64 #f))
+   (set! *bint64*        (use-type! 'bint64 #f))
+   (set! *uint64*        (use-type! 'uint64 #f))
+   (set! *buint64*       (use-type! 'buint64 #f))
    (set! *bool*          (use-type! 'bool #f))
    (set! *bbool*         (use-type! 'bbool #f))
    (set! *real*          (use-type! 'double #f))
@@ -125,6 +157,22 @@
 (define *long*          'no-type-yet)
 (define *llong*         'no-type-yet)
 (define *bllong*        'no-type-yet)
+(define *int8*          'no-type-yet)
+(define *bint8*         'no-type-yet)
+(define *uint8*         'no-type-yet)
+(define *buint8*        'no-type-yet)
+(define *int16*         'no-type-yet)
+(define *bint16*        'no-type-yet)
+(define *uint16*        'no-type-yet)
+(define *buint16*       'no-type-yet)
+(define *int32*         'no-type-yet)
+(define *bint32*        'no-type-yet)
+(define *uint32*        'no-type-yet)
+(define *buint32*       'no-type-yet)
+(define *int64*         'no-type-yet)
+(define *bint64*        'no-type-yet)
+(define *uint64*        'no-type-yet)
+(define *buint64*       'no-type-yet)
 (define *elong*         'no-type-yet)
 (define *belong*        'no-type-yet)
 (define *bool*          'no-type-yet)
@@ -214,6 +262,14 @@
       ((or (eq? type *int*) (eq? type *long*)) *bint*)
       ((eq? type *elong*) *belong*)
       ((eq? type *llong*) *bllong*)
+      ((eq? type *int8*) *bint8*)
+      ((eq? type *uint8*) *buint8*)
+      ((eq? type *int16*) *bint16*)
+      ((eq? type *uint16*) *buint16*)
+      ((eq? type *int32*) *bint32*)
+      ((eq? type *uint32*) *buint32*)
+      ((eq? type *int64*) *bint64*)
+      ((eq? type *uint64*) *buint64*)
       ((eq? type *bool*) *bbool*)
       ((eq? type *real*) *breal*)
       ((eq? type *char*) *bchar*)

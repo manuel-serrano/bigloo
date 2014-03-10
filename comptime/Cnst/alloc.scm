@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Oct 28 08:49:34 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 10 15:20:35 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -53,6 +53,10 @@
 	    (cnst-alloc-real::node ::real <loc>)
 	    (cnst-alloc-elong::node ::elong <loc>)
 	    (cnst-alloc-llong::node ::llong <loc>)
+	    (cnst-alloc-int32::node ::int32 <loc>)
+	    (cnst-alloc-uint32::node ::uint32 <loc>)
+	    (cnst-alloc-int64::node ::int64 <loc>)
+	    (cnst-alloc-uint64::node ::uint64 <loc>)
 	    (cnst-alloc-list::node ::pair-nil <loc>)
 	    (cnst-alloc-vector::node ::vector <loc>)
 	    (cnst-alloc-homogenous-vector::node ::obj <loc>)
@@ -117,6 +121,10 @@
 (define *real-env*       '())
 (define *elong-env*      '())
 (define *llong-env*      '())
+(define *int32-env*      '())
+(define *uint32-env*     '())
+(define *int64-env*      '())
+(define *uint64-env*     '())
 (define *symbol-env*     '())
 (define *keyword-env*    '())
 (define *bignum-env*     '())
@@ -576,6 +584,142 @@
 	     (variable old)))
 	 (else
 	  (lib-alloc-llong)))))
+
+;*---------------------------------------------------------------------*/
+;*    cnst-alloc-int32 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (cnst-alloc-int32 int32 loc)
+   (define (lib-alloc-int32)
+      (let ((var (def-global-scnst! (make-typed-ident (gensym 'int32) 'bint32)
+		    *module*
+		    int32
+		    'sint32
+		    loc)))
+	 (set! *int32-env* (cons (cons int32 var) *int32-env*))
+	 (instantiate::var
+	    (loc loc)
+	    (type (variable-type var))
+	    (variable var))))
+   (define (find-int32)
+      (let loop ((list *int32-env*))
+	 (cond
+	    ((null? list)
+	     #f)
+	    ((=s32 (car (car list)) int32)
+	     (cdr (car list)))
+	    (else
+	     (loop (cdr list))))))
+   (let ((old (find-int32)))
+      (cond
+	 (old
+	  (instantiate::var
+	     (loc loc)
+	     (type (variable-type old))
+	     (variable old)))
+	 (else
+	  (lib-alloc-int32)))))
+
+;*---------------------------------------------------------------------*/
+;*    cnst-alloc-uint32 ...                                            */
+;*---------------------------------------------------------------------*/
+(define (cnst-alloc-uint32 uint32 loc)
+   (define (lib-alloc-uint32)
+      (let ((var (def-global-scnst! (make-typed-ident (gensym 'uint32) 'buint32)
+		    *module*
+		    uint32
+		    'suint32
+		    loc)))
+	 (set! *uint32-env* (cons (cons uint32 var) *uint32-env*))
+	 (instantiate::var
+	    (loc loc)
+	    (type (variable-type var))
+	    (variable var))))
+   (define (find-uint32)
+      (let loop ((list *uint32-env*))
+	 (cond
+	    ((null? list)
+	     #f)
+	    ((=u32 (car (car list)) uint32)
+	     (cdr (car list)))
+	    (else
+	     (loop (cdr list))))))
+   (let ((old (find-uint32)))
+      (cond
+	 (old
+	  (instantiate::var
+	     (loc loc)
+	     (type (variable-type old))
+	     (variable old)))
+	 (else
+	  (lib-alloc-uint32)))))
+
+;*---------------------------------------------------------------------*/
+;*    cnst-alloc-int64 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (cnst-alloc-int64 int64 loc)
+   (define (lib-alloc-int64)
+      (let ((var (def-global-scnst! (make-typed-ident (gensym 'int64) 'bint64)
+		    *module*
+		    int64
+		    'sint64
+		    loc)))
+	 (set! *int64-env* (cons (cons int64 var) *int64-env*))
+	 (instantiate::var
+	    (loc loc)
+	    (type (variable-type var))
+	    (variable var))))
+   (define (find-int64)
+      (let loop ((list *int64-env*))
+	 (cond
+	    ((null? list)
+	     #f)
+	    ((=s64 (car (car list)) int64)
+	     (cdr (car list)))
+	    (else
+	     (loop (cdr list))))))
+   (let ((old (find-int64)))
+      (cond
+	 (old
+	  (instantiate::var
+	     (loc loc)
+	     (type (variable-type old))
+	     (variable old)))
+	 (else
+	  (lib-alloc-int64)))))
+
+;*---------------------------------------------------------------------*/
+;*    cnst-alloc-uint64 ...                                            */
+;*---------------------------------------------------------------------*/
+(define (cnst-alloc-uint64 uint64 loc)
+   (define (lib-alloc-uint64)
+      (let ((var (def-global-scnst! (make-typed-ident (gensym 'uint64) 'buint64)
+		    *module*
+		    uint64
+		    'suint64
+		    loc)))
+	 (set! *uint64-env* (cons (cons uint64 var) *uint64-env*))
+	 (instantiate::var
+	    (loc loc)
+	    (type (variable-type var))
+	    (variable var))))
+   (define (find-uint64)
+      (let loop ((list *uint64-env*))
+	 (cond
+	    ((null? list)
+	     #f)
+	    ((=u64 (car (car list)) uint64)
+	     (cdr (car list)))
+	    (else
+	     (loop (cdr list))))))
+   (let ((old (find-uint64)))
+      (cond
+	 (old
+	  (instantiate::var
+	     (loc loc)
+	     (type (variable-type old))
+	     (variable old)))
+	 (else
+	  (lib-alloc-uint64)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst-alloc-list ...                                              */

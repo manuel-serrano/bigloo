@@ -293,6 +293,7 @@
      (java_exception_handler (method foreign () obj "java_exception_handler" throwable exit))
      (setexit (method foreign () obj "setexit"))
      (bgl_string_to_bignum (method foreign () bignum "bgl_string_to_bignum" string))
+     (BINT (method foreign () obj "BINT" int))
      ))
 
 ;   (math (class () "java.lang.Math"))
@@ -497,7 +498,7 @@
 		  (cond ((= n 0.0) '(dconst_0))
 			((= n 1.0) '(dconst_1))
 			(else `(ldc2_w ,n)) ))
-		 ((long elong llong uelong ullong)
+		 ((long elong llong uelong ullong int64 uint64)
 		  (cond ((= n 0) '(lconst_0))
 			((= n 1) '(lconst_1))
 			(else `(ldc2_w ,n)) ))

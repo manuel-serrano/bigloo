@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Fri Mar  7 07:54:45 2014 (serrano)                */
+;*    Last change :  Mon Mar 10 17:09:13 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -697,30 +697,39 @@
 	   (cond-expand
 	      (bigloo-c ($write-dynamic-env ,obj ,port))
 	      (else (display-string "#<dynamic-env>" ,port))))
-	  ((int8? obj)
-	   (display "#s8:" ,port)
-	   (display (int8->fixnum obj) ,port))
-	  ((uint8? obj)
-	   (display "#u8:" ,port)
-	   (display (uint8->fixnum obj) ,port))
-	  ((int16? obj)
-	   (display "#s16:" ,port)
-	   (display (int16->fixnum obj) ,port))
-	  ((uint16? obj)
-	   (display "#u16:" ,port)
-	   (display (uint16->fixnum obj) ,port))
-	  ((int32? obj)
-	   (display "#s32:" ,port)
-	   (display (int32->elong obj) ,port))
-	  ((uint32? obj)
-	   (display "#u32:" ,port)
-	   (display (uint32->elong obj) ,port))
-	  ((int64? obj)
-	   (display "#s64:" ,port)
-	   (display (int64->llong obj) ,port))
-	  ((uint64? obj)
-	   (display "#u64:" ,port)
-	   (display (uint64->llong obj) ,port))
+	  ((int8? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#s8:" ,port))
+	       (display (int8->fixnum ,obj) ,port)))
+	  ((uint8? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#u8:" ,port))
+	       (display (uint8->fixnum ,obj) ,port)))
+	  ((int16? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#s16:" ,port))
+	       (display (int16->fixnum ,obj) ,port)))
+	  ((uint16? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#u16:" ,port))
+	       (display (uint16->fixnum ,obj) ,port)))
+	  ((int32? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#s32:" ,port))
+	       (display (int32->elong ,obj) ,port)))
+	  ((uint32? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#u32:" ,port))
+	       (display (uint32->llong ,obj) ,port)))
+	  ((int64? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#s64:" ,port))
+	       (display (int64->llong ,obj) ,port)))
+	  ((uint64? ,obj)
+	   (begin
+	       ,(when (eq? disp 'write) `(display "#u64:" ,port))
+	       (display (uint64->llong (/u64 ,obj (fixnum->uint64 10))) ,port)
+	       (display (uint64->fixnum (remainderu64 ,obj (fixnum->uint64 10))) ,port)))
 	  ((cnst? obj)
 	   ($write-cnst obj port))
 	  (else

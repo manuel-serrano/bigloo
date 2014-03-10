@@ -755,42 +755,42 @@ public final class foreign
 	 return new bignum(n);
       }
 
-   public static bsint8 BGL_INT8_TO_BINT8( byte n )
+   public static bint8 BGL_INT8_TO_BINT8( byte n )
       {
-	 return new bsint8( n );
+	 return new bint8( n );
       }
       
-   public static byte BGL_BINT8_TO_INT8( bsint8 n )
+   public static byte BGL_BINT8_TO_INT8( bint8 n )
       {
 	 return n.value;
       }
       
-   public static bsint16 BGL_INT16_TO_BINT16( short n )
+   public static bint16 BGL_INT16_TO_BINT16( short n )
       {
-	 return new bsint16( n );
+	 return new bint16( n );
       }
       
-   public static short BGL_BINT16_TO_INT16( bsint16 n )
+   public static short BGL_BINT16_TO_INT16( bint16 n )
       {
 	 return n.value;
       }
       
-   public static bsint32 BGL_INT32_TO_BINT32( int n )
+   public static bint32 BGL_INT32_TO_BINT32( int n )
       {
-	 return new bsint32( n );
+	 return new bint32( n );
       }
       
-   public static int BGL_BINT32_TO_INT32( bsint32 n )
+   public static int BGL_BINT32_TO_INT32( bint32 n )
       {
 	 return n.value;
       }
       
-   public static bsint64 BGL_INT64_TO_BINT64( long n )
+   public static bint64 BGL_INT64_TO_BINT64( long n )
       {
-	 return new bsint64( n );
+	 return new bint64( n );
       }
 
-   public static long BGL_BINT64_TO_INT64( bsint64 n )
+   public static long BGL_BINT64_TO_INT64( bint64 n )
       {
 	 return n.value;
       }

@@ -13,7 +13,7 @@
 ;;
 ;; Size
 ;;
-(define **long-types** '(elong llong uelong ullong double))
+(define **long-types** '(elong llong uelong ullong double int64 uint64))
 
 (define (typeSize::int type::type)
    (let ( (id (type-id type)) )

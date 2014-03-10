@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 19 10:35:59 1995                          */
-;*    Last change :  Wed Mar 30 08:51:30 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 10 15:20:13 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A cache to be able to recognize function call very fast.         */
 ;*=====================================================================*/
@@ -36,6 +36,10 @@
 	    *double->real*
 	    *elong->belong*
 	    *llong->bllong*
+	    *int32->bint32*
+	    *uint32->buint32*
+	    *int64->bint64*
+	    *uint64->buint64*
 	    *list->vector*
 	    *vector-tag-set!*
 	    *string->bignum*
@@ -63,6 +67,10 @@
 (define *double->real* #f)
 (define *elong->belong* #f)
 (define *llong->bllong* #f)
+(define *int32->bint32* #f)
+(define *uint32->buint32* #f)
+(define *int64->bint64* #f)
+(define *uint64->buint64* #f)
 (define *list->vector* #f)
 (define *vector-tag-set!* #f)
 (define *list->struct* #f)
@@ -109,6 +117,14 @@
 		(get-global/module '$elong->belong 'foreign))
 	  (set! *llong->bllong*
 		(get-global/module '$llong->bllong 'foreign))
+	  (set! *int32->bint32*
+		(get-global/module '$int32->bint32 'foreign))
+	  (set! *uint32->buint32*
+		(get-global/module '$uint32->buint32 'foreign))
+	  (set! *int64->bint64*
+		(get-global/module '$int64->bint64 'foreign))
+	  (set! *uint64->buint64*
+		(get-global/module '$uint64->buint64 'foreign))
 	  (set! *list->vector*
 		(find-global 'list->vector))
 	  (set! *vector-tag-set!*

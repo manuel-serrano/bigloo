@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon Nov 11 10:14:39 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 10 14:14:58 2014 (serrano)                */
+;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -34,50 +34,39 @@
 ;*---------------------------------------------------------------------*/
 (define (get-type-atom atom)
    (cond
-      ((null? atom)
-       *bnil*)
-      ((fixnum? atom)
-       *long*)
-      ((bignum? atom)
-       *bignum*)
-      ((real? atom)
-       *real*)
-      ((boolean? atom)
-       *bool*)
-      ((char? atom)
-       *char*)
-      ((string? atom)
-       *bstring*)
-      ((eq? atom #unspecified)
-       *unspec*)
-      ((elong? atom)
-       *elong*)
-      ((llong? atom)
-       *llong*)
-      ((keyword? atom)
-       *keyword*)
-      (else
-       *obj*)))
+      ((null? atom) *bnil*)
+      ((fixnum? atom) *long*)
+      ((bignum? atom) *bignum*)
+      ((real? atom) *real*)
+      ((boolean? atom) *bool*)
+      ((char? atom) *char*)
+      ((string? atom) *bstring*)
+      ((eq? atom #unspecified) *unspec*)
+      ((elong? atom) *elong*)
+      ((llong? atom) *llong*)
+      ((int8? atom) *int8*)
+      ((uint8? atom) *uint8*)
+      ((int16? atom) *int16*)
+      ((uint16? atom) *uint16*)
+      ((int32? atom) *int32*)
+      ((uint32? atom) *uint32*)
+      ((int64? atom) *int64*)
+      ((uint64? atom) *uint64*)
+      ((keyword? atom) *keyword*)
+      (else *obj*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type-kwote ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (get-type-kwote kwote)
    (cond
-      ((symbol? kwote)
-       *symbol*)
-      ((keyword? kwote)
-       *keyword*)
-      ((pair? kwote)
-       *pair*)
-      ((null? kwote)
-       *bnil*)
-      ((vector? kwote)
-       *vector*)
-      ((a-tvector? kwote)
-       (a-tvector-type kwote))
-      (else
-       *obj*)))
+      ((symbol? kwote) *symbol*)
+      ((keyword? kwote) *keyword*)
+      ((pair? kwote) *pair*)
+      ((null? kwote) *bnil*)
+      ((vector? kwote) *vector*)
+      ((a-tvector? kwote) (a-tvector-type kwote))
+      (else *obj*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pair-nil? ...                                                    */

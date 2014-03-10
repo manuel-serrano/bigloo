@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Wed Nov  9 15:44:08 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 10 18:03:23 2014 (serrano)                */
+;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -237,6 +237,14 @@
 	  (emit-cnst-elong node variable))
 	 ((sllong)
 	  (emit-cnst-llong node variable))
+	 ((sint32)
+	  (emit-cnst-int32 node variable))
+	 ((suint32)
+	  (emit-cnst-uint32 node variable))
+	 ((sint64)
+	  (emit-cnst-int64 node variable))
+	 ((suint64)
+	  (emit-cnst-uint64 node variable))
 	 ((sfun)
 	  (emit-cnst-sfun node variable))
 	 ((sgfun)
@@ -365,6 +373,62 @@
 	   (id->name (gensym (global-name global)))
 	   ", "
 	   (llong->c-iso llong)
+	   " );"))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-int32 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-int32 int32 global)
+   (set-variable-name! global)
+   (fprint *c-port*
+	   "DEFINE_INT32( "
+	   (global-name global)
+	   ", "
+	   (id->name (gensym (global-name global)))
+	   ", "
+	   int32
+	   " );"))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-uint32 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-uint32 uint32 global)
+   (set-variable-name! global)
+   (fprint *c-port*
+	   "DEFINE_UINT32( "
+	   (global-name global)
+	   ", "
+	   (id->name (gensym (global-name global)))
+	   ", "
+	   uint32
+	   " );"))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-int64 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-int64 int64 global)
+   (set-variable-name! global)
+   (fprint *c-port*
+	   "DEFINE_INT64( "
+	   (global-name global)
+	   ", "
+	   (id->name (gensym (global-name global)))
+	   ", "
+	   int64
+	   " );"))
+
+;*---------------------------------------------------------------------*/
+;*    emit-cnst-uint64 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (emit-cnst-uint64 uint64 global)
+   (set-variable-name! global)
+   (fprint *c-port*
+	   "DEFINE_UINT64( "
+	   (global-name global)
+	   ", "
+	   (id->name (gensym (global-name global)))
+	   ", "
+	   uint64
 	   " );"))
 
 ;*---------------------------------------------------------------------*/

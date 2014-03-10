@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Fri Mar  7 08:30:25 2014 (serrano)                */
+;*    Last change :  Mon Mar 10 14:25:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1156,6 +1156,22 @@
        (llong->string x radix))
       ((bignum? x)
        (bignum->string x radix))
+      ((int8? x)
+       (integer->string (int8->fixnum x) radix))
+      ((uint8? x)
+       (integer->string (uint8->fixnum x) radix))
+      ((int16? x)
+       (integer->string (int16->fixnum x) radix))
+      ((uint16? x)
+       (integer->string (uint16->fixnum x) radix))
+      ((int32? x)
+       (llong->string (int32->llong x) radix))
+      ((uint32? x)
+       (llong->string (uint32->llong x) radix))
+      ((int64? x)
+       (llong->string (int64->llong x) radix))
+      ((uint64? x)
+       (llong->string (uint64->llong x) radix))
       (else
        (error "number->string" "Argument not a number" x))))
 
