@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Mar  6 17:29:11 2014 (serrano)                */
+;*    Last change :  Tue Mar 11 07:49:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -257,6 +257,38 @@
     (coerce cobj void () ())
     (coerce cobj void* () ())
 
+    ;; -> cobj
+    (coerce bool cobj () ())
+    (coerce string cobj () ())
+    (coerce ucs2 cobj () ())
+    (coerce char cobj () ())
+    (coerce uchar cobj () ())
+    (coerce byte cobj () ())
+    (coerce ubyte cobj () ())
+    (coerce short cobj () ())
+    (coerce ushort cobj () ())
+    (coerce int cobj () ())
+    (coerce uint cobj () ())
+    (coerce long cobj () ())
+    (coerce ulong cobj () ())
+    (coerce elong cobj () ())
+    (coerce uelong cobj () ())
+    (coerce llong cobj () ())
+    (coerce ullong cobj () ())
+    (coerce int8 cobj () ())
+    (coerce uint8 cobj () ())
+    (coerce int16 cobj () ())
+    (coerce uint16 cobj () ())
+    (coerce int32 cobj () ())
+    (coerce uint32 cobj () ())
+    (coerce int64 cobj () ())
+    (coerce uint64 cobj () ())
+    (coerce float cobj () ())
+    (coerce double cobj () ())
+    (coerce file cobj () ())
+    (coerce void cobj () ())
+    (coerce void* cobj () ())
+    
     ;; -> obj
     (coerce bbool obj () ())
     (coerce cnst obj () ())
@@ -279,6 +311,7 @@
     (coerce bucs2 obj () ())
     (coerce bchar obj () ())
     (coerce bint obj () ())
+    (coerce bint bool () ((lambda (x) #t)))
     (coerce belong obj () ())
     (coerce bllong obj () ())
     (coerce bignum obj () ())
@@ -326,38 +359,6 @@
     (coerce class-field vector () ())
     (coerce vector class-field () ())
 
-    ;; -> cobj
-    (coerce bool cobj () ())
-    (coerce string cobj () ())
-    (coerce ucs2 cobj () ())
-    (coerce char cobj () ())
-    (coerce uchar cobj () ())
-    (coerce byte cobj () ())
-    (coerce ubyte cobj () ())
-    (coerce short cobj () ())
-    (coerce ushort cobj () ())
-    (coerce int cobj () ())
-    (coerce uint cobj () ())
-    (coerce long cobj () ())
-    (coerce ulong cobj () ())
-    (coerce elong cobj () ())
-    (coerce uelong cobj () ())
-    (coerce llong cobj () ())
-    (coerce ullong cobj () ())
-    (coerce int8 cobj () ())
-    (coerce uint8 cobj () ())
-    (coerce int16 cobj () ())
-    (coerce uint16 cobj () ())
-    (coerce int32 cobj () ())
-    (coerce uint32 cobj () ())
-    (coerce int64 cobj () ())
-    (coerce uint64 cobj () ())
-    (coerce float cobj () ())
-    (coerce double cobj () ())
-    (coerce file cobj () ())
-    (coerce void cobj () ())
-    (coerce void* cobj () ())
-    
     ;; bool
     (coerce bool bbool () ($bool->bbool))
     (coerce bbool bool () ($bbool->bool))

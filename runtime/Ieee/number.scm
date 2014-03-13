@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Mon Mar 10 14:25:16 2014 (serrano)                */
+;*    Last change :  Tue Mar 11 11:09:58 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -49,8 +49,15 @@
 	    (macro $llong->flonum::double (::llong)  "(double)")
 	    (macro $flonum->llong::llong (::double) "(BGL_LONGLONG_T)")
 	    
+	    (macro $flonum->int32::int32 (::double) "(int32_t)")
+	    (macro $int32->flonum::double (::int32) "(double)")
+	    (macro $flonum->uint32::int32 (::double) "(uint32_t)")
+	    (macro $uint32->flonum::double (::uint32) "(double)")
+	    
 	    (macro $flonum->int64::int64 (::double) "(int64_t)")
 	    (macro $int64->flonum::double (::int64) "(double)")
+	    (macro $flonum->uint64::uint64 (::double) "(uint64_t)")
+	    (macro $uint64->flonum::double (::uint64) "(double)")
 
 	    (export exact->inexact "bgl_exact_to_inexact")
 	    (export inexact->exact "bgl_inexact_to_exact"))
@@ -70,9 +77,23 @@
 		  "LLONG_TO_FLONUM")
 	       (method static $flonum->llong::llong (::double)
 		  "FLONUM_TO_LLONG")
+	       
+	       (method static $flonum->int32::int32 (::double)
+		  "BGL_FLONUM_TO_INT32")
+	       (method static $int32->flonum::double (::int32)
+		  "BGL_INT32_TO_FLONUM")
+	       (method static $flonum->uint32::uint32 (::double)
+		  "BGL_FLONUM_TO_INT32")
+	       (method static $uint32->flonum::double (::uint32)
+		  "BGL_INT32_TO_FLONUM")
+   
 	       (method static $flonum->int64::int64 (::double)
 		  "BGL_FLONUM_TO_INT64")
 	       (method static $int64->flonum::double (::int64)
+		  "BGL_INT64_TO_FLONUM")
+	       (method static $flonum->uint64::uint64 (::double)
+		  "BGL_FLONUM_TO_INT64")
+	       (method static $uint64->flonum::double (::uint64)
 		  "BGL_INT64_TO_FLONUM")))
    
    (export  (number?::bool obj)
@@ -88,8 +109,16 @@
 	    (inline llong->flonum::double ::llong)
 	    (inline bignum->flonum::double ::bignum)
 	    (inline flonum->bignum::bignum ::double)
+	    
+	    (inline flonum->int32::int32 ::double)
+	    (inline int32->flonum::double  ::int32)
+	    (inline flonum->uint32::uint32 ::double)
+	    (inline uint32->flonum::double  ::uint32)
+	    
 	    (inline flonum->int64::int64 ::double)
 	    (inline int64->flonum::double  ::int64)
+	    (inline flonum->uint64::uint64 ::double)
+	    (inline uint64->flonum::double  ::uint64)
 	    (2=::bool x y)
 	    (=::bool x y . z)
 	    (2<::bool x y) 
@@ -143,8 +172,14 @@
 	    ($flonum->llong side-effect-free args-safe (effect) no-cfa-top)
 	    (bignum->flonum side-effect-free no-cfa-top nesting (effect) no-cfa-top)
  	    (flonum->bignum side-effect-free args-safe (effect) no-cfa-top)
+	    (flonum->int32 side-effect-free args-safe (effect) no-cfa-top)
+	    (int32->flonum side-effect-free args-safe (effect) no-cfa-top)
+	    (flonum->uint32 side-effect-free args-safe (effect) no-cfa-top)
+	    (uint32->flonum side-effect-free args-safe (effect) no-cfa-top)
 	    (flonum->int64 side-effect-free args-safe (effect) no-cfa-top)
 	    (int64->flonum side-effect-free args-safe (effect) no-cfa-top)
+	    (flonum->uint64 side-effect-free args-safe (effect) no-cfa-top)
+	    (uint64->flonum side-effect-free args-safe (effect) no-cfa-top)
 	    (2= side-effect-free (effect) no-cfa-top)
 	    (= side-effect-free (effect) no-cfa-top)
 	    (2< side-effect-free (effect) no-cfa-top)
@@ -246,62 +281,44 @@
 ;*---------------------------------------------------------------------*/
 ;*    flonum->fixnum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->fixnum x)
-   ($flonum->fixnum x))
-
-;*---------------------------------------------------------------------*/
-;*    fixnum->flonum ...                                               */
-;*---------------------------------------------------------------------*/
-(define-inline (fixnum->flonum x)
-   ($fixnum->flonum x))
+(define-inline (flonum->fixnum x) ($flonum->fixnum x))
+(define-inline (fixnum->flonum x) ($fixnum->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    flonum->elong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->elong x)
-   ($flonum->elong x))
-
-;*---------------------------------------------------------------------*/
-;*    elong->flonum ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (elong->flonum x)
-   ($elong->flonum x))
+(define-inline (flonum->elong x) ($flonum->elong x))
+(define-inline (elong->flonum x) ($elong->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    flonum->llong ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->llong x)
-   ($flonum->llong x))
-
-;*---------------------------------------------------------------------*/
-;*    llong->flonum ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (llong->flonum x)
-   ($llong->flonum x))
+(define-inline (flonum->llong x) ($flonum->llong x))
+(define-inline (llong->flonum x) ($llong->flonum x))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    flonum->bignum ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->bignum x)
-   ($flonum->bignum x))
+(define-inline (flonum->bignum x) ($flonum->bignum x))
+(define-inline (bignum->flonum x) ($bignum->flonum x))
 
 ;*---------------------------------------------------------------------*/
-;*    bignum->flonum ...                                               */
+;*    flonum->int32 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (bignum->flonum x)
-   ($bignum->flonum x))
+(define-inline (flonum->int32 x) ($flonum->int32 x))
+(define-inline (int32->flonum x) ($int32->flonum x))
+
+(define-inline (flonum->uint32 x) ($flonum->uint32 x))
+(define-inline (uint32->flonum x) ($uint32->flonum x))
 
 ;*---------------------------------------------------------------------*/
 ;*    flonum->int64 ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (flonum->int64 x)
-   ($flonum->int64 x))
+(define-inline (flonum->int64 x) ($flonum->int64 x))
+(define-inline (int64->flonum x) ($int64->flonum x))
 
-;*---------------------------------------------------------------------*/
-;*    int64->flonum ...                                                */
-;*---------------------------------------------------------------------*/
-(define-inline (int64->flonum x)
-   ($int64->flonum x))
+(define-inline (flonum->uint64 x) ($flonum->uint64 x))
+(define-inline (uint64->flonum x) ($uint64->flonum x))
 
 ;*---------------------------------------------------------------------*/
 ;*    2op :: ...                                                       */
