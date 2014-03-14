@@ -1567,6 +1567,26 @@ public final class foreign
 	 return (a1 | a2);
       }
 
+   public static byte BITORINT8(byte a1, byte a2)
+      {
+	 return (byte)(a1 | a2);
+      }
+
+   public static short BITORINT16(short a1, short a2)
+      {
+	 return (short)(a1 | a2);
+      }
+
+   public static int BITORINT32(int a1, int a2)
+      {
+	 return (int)(a1 | a2);
+      }
+
+   public static long BITORINT64(long a1, long a2)
+      {
+	 return (long)(a1 | a2);
+      }
+
    public static int BITAND(int a1, int a2)
       {
 	 return (a1 & a2);
@@ -1580,6 +1600,26 @@ public final class foreign
    public static long BITANDLLONG(long a1, long a2)
       {
 	 return (a1 & a2);
+      }
+
+   public static byte BITANDINT8(byte a1, byte a2)
+      {
+	 return (byte)(a1 & a2);
+      }
+
+   public static short BITANDINT16(short a1, short a2)
+      {
+	 return (short)(a1 & a2);
+      }
+
+   public static int BITANDINT32(int a1, int a2)
+      {
+	 return (int)(a1 & a2);
+      }
+
+   public static long BITANDINT64(long a1, long a2)
+      {
+	 return (long)(a1 & a2);
       }
 
    public static int BITXOR(int a1, int a2)
@@ -1597,6 +1637,26 @@ public final class foreign
 	 return (a1 ^ a2);
       }
 
+   public static byte BITXORINT8(byte a1, byte a2)
+      {
+	 return (byte)(a1 ^ a2);
+      }
+
+   public static short BITXORINT16(short a1, short a2)
+      {
+	 return (short)(a1 ^ a2);
+      }
+
+   public static int BITXORINT32(int a1, int a2)
+      {
+	 return (int)(a1 ^ a2);
+      }
+
+   public static long BITXORINT64(long a1, long a2)
+      {
+	 return (long)(a1 ^ a2);
+      }
+
    public static int BITNOT(int a)
       {
 	 return ~a;
@@ -1610,6 +1670,26 @@ public final class foreign
    public static long BITNOTLLONG(long a)
       {
 	 return ~a;
+      }
+
+   public static byte BITNOTINT8(byte a)
+      {
+	 return (byte)~a;
+      }
+
+   public static short BITNOTINT16(short a)
+      {
+	 return (short)~a;
+      }
+
+   public static int BITNOTINT32(int a)
+      {
+	 return (int)~a;
+      }
+
+   public static long BITNOTINT64(long a)
+      {
+	 return (long)~a;
       }
 
    public static int BITRSH(int a1, int a2)
@@ -1655,6 +1735,46 @@ public final class foreign
    public static long BITLSHLLONG(long a1, int a2)
       {
 	 return (a1 << a2);
+      }
+
+   public static byte BITLSHINT8(byte a1, int a2)
+      {
+	 return (byte)(a1 << a2);
+      }
+
+   public static short BITLSHINT16(short a1, int a2)
+      {
+	 return (short)(a1 << a2);
+      }
+
+   public static int BITLSHINT32(int a1, int a2)
+      {
+	 return (int)(a1 << a2);
+      }
+
+   public static long BITLSHINT64(long a1, int a2)
+      {
+	 return (long)(a1 << a2);
+      }
+
+   public static byte BITRSHINT8(byte a1, int a2)
+      {
+	 return (byte)(a1 >> a2);
+      }
+
+   public static short BITRSHINT16(short a1, int a2)
+      {
+	 return (short)(a1 >> a2);
+      }
+
+   public static int BITRSHINT32(int a1, int a2)
+      {
+	 return (int)(a1 >> a2);
+      }
+
+   public static long BITRSHINT64(long a1, int a2)
+      {
+	 return (a1 >> a2);
       }
 
    //////
