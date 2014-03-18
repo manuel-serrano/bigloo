@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Mon Nov 11 09:53:34 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar 18 11:30:14 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We collect all type and alloc approximations                     */
 ;*=====================================================================*/
@@ -244,8 +244,10 @@
 		 (if (or *optim-cfa-fixnum-arithmetic?*
 			 *optim-cfa-flonum-arithmetic?*)
 		     (if (arithmetic-operator? v)
-			 (widen!::pre-arithmetic-app node
-			    (spec-types (arithmetic-spec-types v))))))))))
+			 (let ((types (arithmetic-spec-types v)))
+			    (when (pair? types)
+			       (widen!::pre-arithmetic-app node
+				  (spec-types types)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-collect! ::valloc ...                                       */
