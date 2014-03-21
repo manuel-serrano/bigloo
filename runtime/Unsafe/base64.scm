@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 29 17:52:57 2004                          */
-;*    Last change :  Mon Mar  3 09:44:00 2014 (serrano)                */
+;*    Last change :  Wed Mar 19 07:15:40 2014 (serrano)                */
 ;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    base64 encoding/decoding                                         */
@@ -190,9 +190,7 @@
 ;*    decode-byte ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (decode-byte::int c::byte)
-   (if (<fx c 0)
-       (error 'base64-decode "Illegal character" (integer->char c))
-       (u8vector-ref byte-table c)))
+   (u8vector-ref byte-table c))
 
 ;*---------------------------------------------------------------------*/
 ;*    decode-char ...                                                  */
