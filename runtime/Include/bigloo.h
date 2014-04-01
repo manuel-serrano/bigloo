@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar 10 16:46:15 2014 (serrano)                */
+/*    Last change :  Tue Mar 25 09:51:24 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -461,7 +461,7 @@ typedef union scmobj {
       union scmobj *flushbuf;
       /* last port error */
       long err;
-      /* mutex to prvent multiwrite */
+      /* mutex to prevent multiwrite */
       union scmobj *mutex;
    } output_port_t;
 
