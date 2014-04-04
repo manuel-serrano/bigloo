@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Wed Mar  5 08:49:18 2014 (serrano)                */
+;*    Last change :  Fri Apr  4 21:39:38 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -92,20 +92,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-int-size ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-macro (bigloo-int-size)
+(define (bigloo-int-size)
    (let ((isize (bigloo-config 'int-size)))
-      `',(string->symbol
-	    (string-append "bint"
-	       (if (number? isize) (number->string isize) "30")))))
+      (string->symbol
+	 (string-append "bint"
+	    (if (number? isize) (number->string isize) "30")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-elong-size ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-macro (bigloo-elong-size)
+(define (bigloo-elong-size)
    (let ((esize (bigloo-config 'elong-size)))
-      `',(string->symbol
-	    (string-append "elong"
-	       (if (number? esize) (number->string esize) "32")))))
+      (string->symbol
+	 (string-append "elong"
+	    (if (number? esize) (number->string esize) "32")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *srfi-mutex* ...                                                 */

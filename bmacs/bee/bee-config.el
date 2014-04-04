@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Tue Mar 26 12:32:14 2013 (serrano)                */
+;*    Last change :  Fri Apr  4 08:13:06 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -187,7 +187,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 	 'ude-font-lock-face-3)
    (cons "~\\|with-hop" 'ude-font-lock-face-8)
    (cons "[$][^( \t\n]*" 'ude-font-lock-face-10)
-   (list (concat "\(\\(let\\|let[*]\\|letrec[*]\\|co-instantiate"
+   (list (concat "\(\\(let\\|let[*]\\|letrec\\|letrec[*]\\|co-instantiate"
 		 "\\|let-values\\|let*-values"
 		 "\\|set[!]\\|with-access\\|instantiate\\|duplicate"
 		 "\\|widen[!]\\|shrink!\\|lambda\\|service\\|labels"
