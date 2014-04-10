@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Thu Jan  2 11:37:06 2014 (serrano)                */
+;*    Last change :  Thu Apr 10 18:31:13 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -450,30 +450,18 @@
 	     (h (/fx tz 60))
 	     (m (remainderfx tz 60)))
 	 (format "~a, ~a ~a ~a ~a:~a:~a ~a~a~a"
-		 (day-aname (date-wday date))
-		 (date-day date)
-		 (month-aname (date-month date))
-		 (date-year date)
-		 (2digits (date-hour date))
-		 (2digits (date-minute date))
-		 (2digits (date-second date))
-		 (if (<fx tz 0) "+" "-")
-		 (2digits (absfx h))
-		 (2digits m))))
+	    (day-aname (date-wday date))
+	    (date-day date)
+	    (month-aname (date-month date))
+	    (date-year date)
+	    (2digits (date-hour date))
+	    (2digits (date-minute date))
+	    (2digits (date-second date))
+	    (if (<fx tz 0) "+" "-")
+	    (2digits (absfx h))
+	    (2digits m))))
    
-   (if (>fx (date-is-dst date) 0)
-       (let* ((dateu (make-date :sec (date-second date)
-			:min (date-minute date)
-			:hour (date-hour date)
-			:day (date-day date)
-			:month (date-month date)
-			:year (date-year date)
-			:timezone 0
-			:dst 0))
-	      (secu (date->seconds dateu))
-	      (sec (date->seconds date)))
-	  (date/timezone date (elong->fixnum (-elong sec secu))))
-       (date/timezone date (date-timezone date))))
+   (date/timezone date (date-timezone date)))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-error ...                                                  */

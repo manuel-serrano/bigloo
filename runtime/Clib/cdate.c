@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Tue Feb 18 15:57:02 2014 (serrano)                */
+/*    Last change :  Thu Apr 10 18:23:31 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -24,6 +24,8 @@
 static obj_t date_mutex = BUNSPEC;
 DEFINE_STRING( date_mutex_name, _2, "date-mutex", 10 );
 
+static bgl_timezone = 23;
+
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_init_date ...                                                */
@@ -38,6 +40,27 @@ bgl_init_date() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_timezone ...                                                 */
+/*---------------------------------------------------------------------*/
+static long
+bgl_get_timezone() {
+   if( bgl_timezone == 23 ) {
+      long s = time( 0 );
+      struct tm *tm = localtime( &s );
+      long m1, h1, d1;
+
+      m1 = tm->tm_min;
+      h1 = tm->tm_hour;
+
+      tm = gmtime( &s );
+      bgl_timezone = (tm->tm_hour - h1) * 3600 + (tm->tm_min - m1);
+   }
+
+   return bgl_timezone;
+}
+       
+/*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    tm_to_date ...                                                   */
 /*---------------------------------------------------------------------*/
@@ -48,7 +71,7 @@ tm_to_date( struct tm *tm ) {
    date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
    date->date_t.header = MAKE_HEADER( DATE_TYPE, 0 );
 
-   date->date_t.timezone = BGL_TIMEZONE;
+   date->date_t.timezone = bgl_get_timezone();
       
    date->date_t.sec = tm->tm_sec;
    date->date_t.min = tm->tm_min;
