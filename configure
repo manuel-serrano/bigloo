@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Mar  6 13:27:16 2014 (serrano)                */
+#*    Last change :  Fri Apr 11 07:34:29 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2565,6 +2565,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   timezone=`$autoconf timezone --cflags="$coflags"` || exit 1
   # The timeval variable
   timeval=`$autoconf timeval --cflags="$coflags"` || exit 1
+  # The gmtoff field
+  gmtoff=`$autoconf gmtoff --cflags="$coflags"` || exit 1
 
   # The -pic C compiler options
   if [ "$cpicflags" = "no" ]; then
@@ -2861,6 +2863,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_SLEEP@|$normalsleep|" \
               -e "s|@BGL_TIMEZONE@|$timezone|" \
               -e "s|@BGL_HAVE_TIMEVAL@|$timeval|" \
+              -e "s|@BGL_HAVE_GMTOFF@|$gmtoff|" \
               -e "s|@HAVE_SHARED_LIBRARY@|$haveshlib|" \
               -e "s|@HAVE_DLOPEN@|$havedlopen|" \
               -e "s|@DLOPEN_LD_OPT@|$dlopen|" \
