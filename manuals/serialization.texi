@@ -18,9 +18,20 @@
 @cindex object dumping
 @cindex Serialization
 
-@deffn {bigloo procedure} string->obj string
+@deffn {bigloo procedure} string->obj string #!optional extension
 This function converts a @var{string} which has been produced by
 @code{obj->string} into a Bigloo object.
+
+New in Bigloo 4.2a: The @var{extension} parameter is used to decode
+@emph{extension} sequences.  Theses sequences of characters are
+introduced by the @code{X} character.  To decode an extension, the
+unserializer starts decoding the item following the @code{X} as a
+regular serialized item. Then, if the @var{extension} parameter is
+bound to a function, the unserializer calls that function and use the
+returned value as the unserialized object. If the @var{extension}
+argument is not a function, the unserializer return the ream
+item.
+
 @end deffn
 
 @deffn {bigloo procedure} obj->string object
