@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec  3 11:33:29 2000                          */
-/*    Last change :  Thu Jul  1 11:04:11 2010 (serrano)                */
-/*    Copyright   :  2000-10 Manuel Serrano                            */
+/*    Last change :  Sat Apr 19 12:19:01 2014 (serrano)                */
+/*    Copyright   :  2000-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The binary port JVM connection                                   */
 /*=====================================================================*/
@@ -116,7 +116,7 @@ public class binary_port extends obj {
 	 file.read( string );
 
 	 /* unserialize the object */
-	 return bigloo.runtime.Unsafe.intext.string_to_obj( string );
+	 return bigloo.runtime.Unsafe.intext.string_to_obj( string, false );
       }
 }
 

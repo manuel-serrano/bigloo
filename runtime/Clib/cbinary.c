@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Fri Dec 13 18:28:46 2013 (serrano)                */
+/*    Last change :  Sat Apr 19 12:19:37 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -48,7 +48,7 @@
 /*    Les recuperations externes                                       */
 /*---------------------------------------------------------------------*/
 extern obj_t obj_to_string( obj_t );
-extern obj_t string_to_obj( obj_t );
+extern obj_t string_to_obj( obj_t, obj_t );
 extern obj_t c_constant_string_to_string( char * );
 extern obj_t make_string_sans_fill( int );
 extern obj_t bgl_string_shrink();
@@ -278,7 +278,7 @@ input_obj( obj_t port ) {
       
       fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file );
 
-      res = string_to_obj( BSTRING( string ) );
+      res = string_to_obj( BSTRING( string ), BFALSE );
 
 #if( defined( BIGLOO_TRACE ) )
       POP_TRACE();
@@ -301,7 +301,7 @@ input_obj( obj_t port ) {
 		
       fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file );
       
-      res = string_to_obj( BSTRING( string ) );
+      res = string_to_obj( BSTRING( string ), BFALSE );
 
       free( string );
 		

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Fri Nov 15 07:02:26 2013 (serrano)                */
+;*    Last change :  Sat Apr 19 12:22:35 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -84,7 +84,7 @@
    
    (export  (set-obj-string-mode! ::obj)
 	    
-	    (string->obj ::bstring)
+	    (string->obj ::bstring #!optional extension)
 	    (obj->string::bstring ::obj)
 	    
 	    (register-custom-serialization! ::bstring ::procedure ::procedure)
@@ -145,7 +145,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string->obj@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (string->obj s)
+(define (string->obj s #!optional extension)
    
    ;; *pointer*
    (define *pointer* 0)
@@ -259,6 +259,13 @@
 	 (if (not (procedure? unserializer))
 	     (error "string->obj" "Can't unserialize custom object" str)
 	     (unserializer str2))))
+
+   ;; read-extension
+   (define (read-extension)
+      (let ((item (read-item)))
+	 (if (procedure? extension)
+	     (extension item)
+	     item)))
 
    ;; read-elong
    (define (read-elong)
@@ -534,6 +541,7 @@
 	    ((#\p) (read-special s *string->process*))
 	    ((#\e) (read-special s *string->process*))
 	    ((#\o) (read-special s *string->opaque*))
+	    ((#\X) (read-extension))
 	    (else (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
    (set! *definitions* 4)
