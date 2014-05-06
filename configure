@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Apr 11 07:34:29 2014 (serrano)                */
+#*    Last change :  Tue May  6 11:44:31 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,7 +39,7 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac wav avahi phidget csv upnp"
+apis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib gstreamer text srfi1 srfi27 packrat crypto openpgp phone alsa mpg123 flac wav avahi phidget csv upnp libuv"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -195,6 +195,11 @@ flaccflags=
 avahi=
 avahilibs=
 avahicflags=
+
+#*--- libuv (left blank for autoconfiguration) ------------------------*/
+libuv=
+libuvlibs=
+libuvcflags=
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
@@ -2188,6 +2193,17 @@ if [ "$avahi " = " " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    libuv                                                            */
+#*---------------------------------------------------------------------*/
+# find out the C library for libuv
+if [ "$libuv " = " " ]; then
+   libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
+   libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
+
+   libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
+fi
+
+#*---------------------------------------------------------------------*/
 #*    phidget                                                          */
 #*---------------------------------------------------------------------*/
 # find out the C library for phidget
@@ -3601,6 +3617,34 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     apis=$napis;
     echo "AVAHILIBS=" >> $makefile_cfg
     echo "AVAHICFLAGS=" >> $makefile_cfg
+  fi
+
+  # LIBUV
+  echo "LIBUV=$libuv" >> $makefile_cfg
+  if [ "$libuv " != "no " ]; then
+    echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
+    echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
+
+    # Patch the code of the LIBUV init file
+    echo ";; automatically generated. Don't edit" >  api/libuv/src/Misc/libuv.init
+    cat api/libuv/src/Misc/libuv.init.in \
+      | sed -e "s|@LIBUVLIBS@|$libuvlibs|g" \
+            -e "s|@LIBUVCFLAGS@|$libuvcflags|g" \
+      >>  api/libuv/src/Misc/libuv.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "libuv" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "LIBUVLIBS=" >> $makefile_cfg
+    echo "LIBUVCFLAGS=" >> $makefile_cfg
   fi
 
   # PHIDGET
