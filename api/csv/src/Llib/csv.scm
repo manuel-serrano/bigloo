@@ -50,10 +50,18 @@
       (field
 	 (()
 	  "")
+	 ((spaces)
+	   spaces)
 	 ((possible-space@a text possible-space@b)
 	  (string-append a text b))
 	 ((possible-space@a escaped possible-space@b)
 	  escaped))
+
+      (spaces
+	 ((space)
+	  space)
+	 ((spaces space)
+	  (string-append spaces space)))
       
       (possible-space
 	 (()

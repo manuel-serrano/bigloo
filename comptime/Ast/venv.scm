@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Aug 22 07:12:42 2013 (serrano)                */
+;*    Last change :  Wed May  7 08:42:50 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -120,11 +120,11 @@
       ;; the parameters type
       (restore-value-types! value)
       ;; we restore the jvm qualified type name
-      (if (and (backend-qualified-types (the-backend))
-	       (not (eq? (global-module new) 'foreign)))
-	  (add-qualified-type! (global-module new)
-			       (global-jvm-type-name new)
-			       (shape new)))))
+      (when (and (backend-qualified-types (the-backend))
+		 (not (eq? (global-module new) 'foreign)))
+	 (add-qualified-type! (global-module new)
+	    (global-jvm-type-name new)
+	    (shape new)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *restored* ...                                                   */

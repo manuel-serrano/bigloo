@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Thu Aug 22 07:14:05 2013 (serrano)                */
-;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May  7 08:42:35 2014 (serrano)                */
+;*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Type environment manipulation                                */
 ;*=====================================================================*/
@@ -142,6 +142,13 @@
 					      (cons coercer
 						    (type-coerce-to old))))))
 		(type-coerce-to new)))
+
+   (define (find-new t)
+      (if (isa? t type)
+	  (with-access::type t (id)
+	     (let ((old (hashtable-get *Tenv* id)))
+		(or old t)))
+	  t))
    
    ;; in a first stage, we bind all new types
    ;; (not rebinding already binded types)
@@ -184,23 +191,24 @@
 	 (lambda (k new)
 	    (let* ((id  (type-id new))
 		   (old (hashtable-get *Tenv* id)))
-	       (if (ctype? old)
-		   (let ((l (type-location old)))
-		      (foreign-accesses-add!
-			 (make-ctype-accesses! old old l)))))))
+	       (when (ctype? old)
+		  (let ((l (type-location old)))
+		     (foreign-accesses-add!
+			(make-ctype-accesses! old old l)))))))
       ;; we have to walk thru the remember list in order to
       ;; setup the correct super class fields
       (for-each (lambda (new)
 		   (when (tclass? new)
+		      ;; super class
 		      (let ((super (tclass-its-super new)))
-			 (if (tclass? super)
-			     (let* ((super-id (tclass-id super))
-				    (old-s (find-type super-id)))
-				(if (not (tclass? old-s))
-				    (error 'add-Tenv
-				       "Can't find super class of"
-				       (tclass-name new))
-				    (tclass-its-super-set! new old-s)))))))
+			 (when (tclass? super)
+			    (let* ((super-id (tclass-id super))
+				   (old-s (find-type super-id)))
+			       (if (not (tclass? old-s))
+				   (error 'add-Tenv
+				      "Can't find super class of"
+				      (tclass-name new))
+				   (tclass-its-super-set! new old-s)))))))
 	 remember-list)
       ;; the tvector traversal
       (for-each (lambda (new)
