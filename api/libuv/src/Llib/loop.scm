@@ -1,0 +1,67 @@
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/loop.scm          */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue May  6 11:51:22 2014                          */
+;*    Last change :  Wed May  7 05:45:28 2014 (serrano)                */
+;*    Copyright   :  2014 Manuel Serrano                               */
+;*    -------------------------------------------------------------    */
+;*    LIBUV loops                                                      */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The module                                                       */
+;*---------------------------------------------------------------------*/
+(module __libuv_loop
+
+   (option (set! *dlopen-init-gc* #t))
+
+   (include "uv.sch")
+
+   (import __libuv_types)
+   
+   (export (uv-default-loop::UvLoop)
+	   (uv-run ::UvLoop #!optional mode)))
+
+;*---------------------------------------------------------------------*/
+;*    default-loop ...                                                 */
+;*---------------------------------------------------------------------*/
+(define default-loop #f)
+
+;*---------------------------------------------------------------------*/
+;*    gc-loops ...                                                     */
+;*---------------------------------------------------------------------*/
+(define gc-loops '())
+(define loop-mutex (make-mutex))
+
+;*---------------------------------------------------------------------*/
+;*    %uv-init ::UvLoop ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (%uv-init o::UvLoop)
+   (with-access::UvLoop o ($builtin)
+      (when ($uv_handle_nilp $builtin)
+	 (set! $builtin ($uv-handle-t ($uv_loop_new))))
+      o))
+
+;*---------------------------------------------------------------------*/
+;*    uv-default-loop ...                                              */
+;*---------------------------------------------------------------------*/
+(define (uv-default-loop)
+   (unless default-loop
+      (set! default-loop
+	 (instantiate::UvLoop
+	    ($builtin ($uv-handle-t ($uv_default_loop))))))
+   default-loop)
+
+;*---------------------------------------------------------------------*/
+;*    uv-run ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (uv-run loop::UvLoop #!optional mode)
+   (with-access::UvLoop loop ($builtin)
+      (unwind-protect
+	 (begin
+	    (set! gc-loops (cons loop gc-loops))
+	    ($uv-run ($uv-loop-t $builtin) (or mode $UV_RUN_DEFAULT)))
+	 (synchronize loop-mutex
+	    (set! gc-loops (remq! loop gc-loops))))
+      loop))
