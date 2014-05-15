@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Tue Sep 24 18:35:51 2013 (serrano)                */
-;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu May 15 18:53:35 2014 (serrano)                */
+;*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -166,14 +166,15 @@
 		    (unwind-protect
 		       (let* ((Envs (input-obj port))
 			      (_ (unless (and (vector? Envs)
-					      (=fx (vector-length Envs) 6))
+					      (=fx (vector-length Envs) 7))
 				    (error heap "Corrupted heap" Envs)))
 			      (target (vector-ref Envs 0))
 			      (version (vector-ref Envs 1))
 			      (specific (vector-ref Envs 2))
 			      (Genv (vector-ref Envs 3))
 			      (Tenv (vector-ref Envs 4))
-			      (includes (vector-ref Envs 5)))
+			      (includes (vector-ref Envs 5))
+			      (ccopts (vector-ref Envs 6)))
 			  ;; check the target languages
 			  (unless (backend-heap-compatible? target)
 			     (error heap
@@ -222,9 +223,12 @@
 					    (global-module new)))
 					(cdr bucket))))
 			  ;; we store the list of includes
-			  (set! *additional-include-foreign*
+			  (unless (eq? *pass* 'make-heap)
+			     (set! *additional-include-foreign*
 				(append *additional-include-foreign*
-					includes))
+				   includes))
+			     (set! *cc-options*
+				(string-append *cc-options* " " ccopts)))
 			  #t)
 		       (close-binary-port port)))))
 	  (let ((m (format "Cannot open heap file ~s" heap)))
