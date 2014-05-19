@@ -174,4 +174,9 @@ public class output_port extends obj
       {
 	 p.write( "#<output_port:" + new String( name ) + ">" );
       }
+
+   public boolean truncate( long size )
+      {
+	 return false;
+      }
 }

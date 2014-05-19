@@ -5155,6 +5155,35 @@ public final class foreign
 		 renameTo(new File(new String(to))) ? 0 : 69);
       }
 
+   public static boolean truncate(byte[] path, long size)
+      {
+	 try {
+	    FileOutputStream stream = new FileOutputStream(new String(path));
+	    try {
+	       return JDK.truncate(stream, size);
+	    } catch( Exception _ ) {
+	       return false;
+	    } finally {
+	       stream.close();
+	    }
+	 } catch( Exception _ ) {
+	    return false;
+	 }
+      }
+
+   public static boolean truncate(output_port port, long size)
+      {
+	 if( port.out instanceof FileOutputStream ) {
+	    try {
+	       return JDK.truncate((FileOutputStream)port.out, size);
+	    } catch( Exception _ ) {
+	       return false;
+	    }
+	 } else {
+	    return false;
+	 }
+      }
+
    public static boolean mkdir(byte[]path, int mode)
       {
 	 return (new File(new String(path))).mkdir();

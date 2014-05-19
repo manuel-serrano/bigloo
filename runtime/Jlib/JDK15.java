@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:14 2008                          */
-/*    Last change :  Mon Apr 27 08:53:12 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Sun May 18 09:37:32 2014 (serrano)                */
+/*    Copyright   :  2008-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.5 specifics                                                */
 /*=====================================================================*/
@@ -63,5 +63,21 @@ public class JDK15 extends JDK {
       if(sch != null)
 	 return sch.socket();
       return null;
+   }
+   
+   public boolean truncateImpl(FileOutputStream stream, long size) {
+      try {
+	 FileChannel outChan = stream.getChannel();
+	 try {
+	    outChan.truncate( size );
+	    return true;
+	 } catch( Exception _ ) {
+	    return false;
+	 } finally {
+	    outChan.close();
+	 }
+      } catch( Exception _ ) {
+	 return false;
+      }
    }
 }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Fri Nov 29 20:21:43 2013 (serrano)                */
+;*    Last change :  Sun May 18 09:32:49 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -143,6 +143,8 @@
 	    (macro c-delete-file::bool (::string) "unlink")
 	    (macro c-delete-directory::bool  (::string) "rmdir")
 	    (macro c-rename-file::int (::string ::string) "rename")
+	    (macro $truncate-file::int (::string ::long) "truncate")
+	    (macro $ftruncate::int (::output-port ::long) "bgl_output_port_truncate")
 	    (macro c-mkdir::bool (::string ::long) "!BGL_MKDIR")
 	    
 	    (macro $port-isatty?::bool (::output-port) "bgl_port_isatty")
@@ -292,6 +294,10 @@
 		       "rmdir")
 	       (method static c-rename-file::int (::string ::string)
 		       "rename")
+	       (method static $truncate-file::int (::string ::long)
+		       "truncate")
+	       (method static $ftruncate::bool (::output-port ::long)
+		       "bgl_output_port_truncate")
 	       (method static c-mkdir::bool (::string ::int)
 		       "mkdir")
 	       
@@ -460,7 +466,9 @@
 	    (inline make-directory::bool ::string)
 	    (make-directories::bool ::bstring)
 	    (inline delete-directory ::string)
-	    (inline rename-file ::string ::string)
+	    (inline rename-file::bool ::string ::string)
+	    (inline truncate-file::bool ::string ::long)
+	    (inline output-port-truncate::bool ::output-port ::long)
 	    (copy-file ::string ::string)
 	    (inline directory?::bool ::string)
 	    (inline directory->list ::string)
@@ -1396,9 +1404,19 @@
 ;*    rename-file ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (rename-file string1 string2)
-   (if (eq? (c-rename-file string1 string2) 0)
-       #t
-       #f))
+   (if (eq? (c-rename-file string1 string2) 0) #t #f))
+
+;*---------------------------------------------------------------------*/
+;*    truncate-file ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (truncate-file path size)
+   ($truncate-file path size))
+
+;*---------------------------------------------------------------------*/
+;*    output-port-truncate ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (output-port-truncate oport size)
+   ($ftruncate oport size))
 
 ;*---------------------------------------------------------------------*/
 ;*    copy-file ...                                                    */

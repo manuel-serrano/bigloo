@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Feb 10 12:26:14 2014 (serrano)                */
+/*    Last change :  Sun May 18 09:33:07 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1832,7 +1832,25 @@ bgl_output_port_seek( obj_t port, long pos ) {
       return BFALSE;
    }
 }
-   
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF boo_t                                            */
+/*    bgl_output_port_truncate ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_output_port_truncate( obj_t port, long pos ) {
+   switch( OUTPUT_PORT( port ).stream_type ) {
+      case BGL_STREAM_TYPE_FD: 
+	 return (ftruncate( PORT_FD( port ), pos ) == 0);
+
+      case BGL_STREAM_TYPE_FILE: 
+	 return (ftruncate( fileno( PORT_FILE( port ) ), pos ) == 0);
+
+      default:
+	 return 0;
+   }
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_input_port_reopen ...                                        */

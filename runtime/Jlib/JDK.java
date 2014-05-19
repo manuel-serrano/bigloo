@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Mon Apr 27 08:53:32 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Sun May 18 09:38:36 2014 (serrano)                */
+/*    Copyright   :  2008-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
 /*=====================================================================*/
@@ -110,5 +110,9 @@ public abstract class JDK {
       } catch( Exception _ ) {
 	 return "".getBytes();
       }
+   }
+
+   public static boolean truncate( FileOutputStream stream, long size ) {
+      return impl.truncate( stream, size );
    }
 }

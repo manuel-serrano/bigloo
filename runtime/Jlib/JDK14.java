@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:04 2008                          */
-/*    Last change :  Mon Apr 27 08:52:56 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Sun May 18 09:37:17 2014 (serrano)                */
+/*    Copyright   :  2008-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.4 specifics                                                */
 /*=====================================================================*/
@@ -64,5 +64,9 @@ public class JDK14 extends JDK {
       if(sch != null)
 	 return sch.socket();
       return null;
+   }
+
+   public boolean truncate(FileOutputStream, long size) {
+      return false;
    }
 }

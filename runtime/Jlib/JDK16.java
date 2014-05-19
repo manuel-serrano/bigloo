@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:26 2008                          */
-/*    Last change :  Mon Apr 27 08:52:51 2009 (serrano)                */
-/*    Copyright   :  2008-09 Manuel Serrano                            */
+/*    Last change :  Sun May 18 09:36:39 2014 (serrano)                */
+/*    Copyright   :  2008-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.6 specifics                                                */
 /*=====================================================================*/
@@ -69,5 +69,21 @@ public class JDK16 extends JDK {
    public byte[] passwordImpl( byte[] prompt ) {
       String p = new String( prompt );
       return new String( System.console().readPassword( p ) ).getBytes();
+   }
+   
+   public boolean truncateImpl(FileOutputStream stream, long size) {
+      try {
+	 FileChannel outChan = stream.getChannel();
+	 try {
+	    outChan.truncate( size );
+	    return true;
+	 } catch( Exception _ ) {
+	    return false;
+	 } finally {
+	    outChan.close();
+	 }
+      } catch( Exception _ ) {
+	 return false;
+      }
    }
 }

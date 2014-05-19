@@ -388,6 +388,13 @@ be located on the same file system. If the renaming succeeds, the result
 is @code{#t}, otherwise it is @code{#f}.
 @end deffn
 
+@deffn {bigloo procedure} truncate-file path size
+Truncates shall cause the regular file named by  path  to
+have a size which shall be equal to length bytes.
+
+Returns @code{#t} on success. Returns @code{#f} otherwise.
+@end deffn
+
 @deffn {bigloo procedure} copy-file string1 string2
 Copies the file @var{string1} into @var{string2}. If the copy succeeds, 
 the result is @code{#t}, otherwise it is @code{#f}.
