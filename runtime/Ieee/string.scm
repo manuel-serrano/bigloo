@@ -1012,10 +1012,22 @@
 		(loop (+fx i 1)))
 	       (else
 		i)))))
+   (define (string-pred-skip s pred)
+      (let ((len (string-length s)))
+	 (let loop ((i start))
+	    (cond
+	       ((>=fx i len)
+		#f)
+	       ((pred (string-ref-ur s i))
+		(loop (+fx i 1)))
+	       (else
+		i)))))
    
    (cond
       ((char? rs)
        (string-char-skip string rs))
+      ((procedure? rs)
+       (string-pred-skip string rs))
       ((not (string? rs))
        (error 'string-skip "Illegal regset" rs))
       ((=fx (string-length rs) 1)
@@ -1066,12 +1078,23 @@
 	     (loop (-fx i 1)))
 	    (else
 	     i))))
+   (define (string-pred-skip s pred)
+      (let loop ((i (-fx start 1)))
+	 (cond
+	    ((<fx i 0)
+	     #f)
+	    ((pred (string-ref-ur s i))
+	     (loop (-fx i 1)))
+	    (else
+	     i))))
    
    (cond
       ((>fx start (string-length s))
        (error 'string-index "index out of bound" start))
       ((char? rs)
        (string-char-skip s rs))
+      ((procedure? rs)
+       (string-pred-skip string rs))
       ((not (string? rs))
        (error 'string-index-right "Illegal regset" rs))
       ((=fx (string-length rs) 1)

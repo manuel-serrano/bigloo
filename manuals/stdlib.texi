@@ -23,7 +23,7 @@ function that are not standard (for instance, various functions used
 to manage a file system). Then, in the following sections
 (@ref{Serialization}, @ref{Bit Manipulation}, and @ref{System Programming}
 Bigloo specific extensions are presented. Bigloo input and output facilities
-constitue a large superset of the standard Scheme definition. For this
+constitute a large superset of the standard Scheme definition. For this
 reason they are presented in a separate section (@ref{Input and Output}).
 
 @menu
@@ -993,7 +993,7 @@ Bigloo knows one more named characters @code{#\tab}, @code{#\return}, and
 
 A new alternate syntax exists for characters:
 @code{#a<ascii-code>}
-where @code{<ascii-code>} is the three digit decimal ascii number
+where @code{<ascii-code>} is the three digit decimal ASCII number
 of the character to be read. Thus, for instance, the character @code{#\space}
 can be written @code{#a032}.
 
@@ -1036,7 +1036,7 @@ can be written @code{#a032}.
 UCS-2 Characters are two byte encoded characters. They can be read with
 the syntax:
 @code{#u<unicode>}
-where @code{<unicode>} is the four digit hexadecimal unicode value
+where @code{<unicode>} is the four digit hexadecimal Unicode value
 of the character to be read. Thus, for instance, the character @code{#\space}
 can be written @code{#u0020}.
 
@@ -1165,8 +1165,8 @@ Returns the first occurrence of a character of @var{char-or-set} in
 If no character is found, @code{string-index} returns @code{#f}.
 @end deffn
 
-@deffn {bigloo procedure} string-skip string charset [start 0]
-@deffnx {bigloo procedure} string-skip-right string charset [start len-1]
+@deffn {bigloo procedure} string-skip string c [start 0]
+@deffnx {bigloo procedure} string-skip-right string c [start len-1]
 @cindex SRFI-13
 
 @code{string-skip} (resp. @code{string-skip-right}) searches through
@@ -1174,18 +1174,18 @@ the @var{string} from the left (resp. right), returning the index of
 the first occurrence of a character which
 
 @itemize @bullet
-@item equals char/char-set/pred (if it is a character);
-@item is in char/char-set/pred (if it is a character set);
-@item satisfies the predicate char/char-set/pred (if it is a procedure). 
+@item is not equal to c (if c is a character);
+@item is not in c (if c is a character set);
+@item does not satisfy the predicate c (if c is a procedure). 
 @end itemize
 
-If no match is found, the functions return false.
+If no such index exists, the functions return false.
 
 The start and end parameters specify the beginning and end indices of
 the search; the search includes the start index, but not the end
 index. Be careful of "fencepost" considerations: when searching
 right-to-left, the first index considered is end-1 whereas when
-searching left-to-right, the first index considered is start That is,
+searching left-to-right, the first index considered is start. That is,
 the start/end indices describe a same half-open interval [start,end).
 
 @end deffn
@@ -1527,7 +1527,7 @@ Convert UCS-2 strings to (or from) UTF-8 encoded ascii strings.
 
 @deffn {bigloo procedure} utf8-string? string [strict @code{#f}]
 Returns @code{#t} if and only if the argument @var{string} is a well formed
-UTF8 string. Otherwise returns @code{#f}.
+UTF-8 string. Otherwise returns @code{#f}.
 
 If the optional argument @var{strict} is @code{#t}, half utf16-surrogates are
 rejected. The optional argument @var{strict} defaults to @code{#f}.
@@ -1535,13 +1535,13 @@ rejected. The optional argument @var{strict} defaults to @code{#f}.
 @end deffn
 
 @deffn {bigloo procedure} utf8-string-length string
-Returns the number of characters of an UTF8 string. It raises an error
-if the string is not a well formed UTF8 string (i.e., it does satisfies
+Returns the number of characters of an UTF-8 string. It raises an error
+if the string is not a well formed UTF-8 string (i.e., it does satisfies
 the @code{utf8-string?} predicate.
 @end deffn
 
 @deffn {bigloo procedure} utf8-string-ref string i
-Returns the character (represented as an UTF8 string) at the position
+Returns the character (represented as an UTF-8 string) at the position
 @var{i} in @var{string}.
 @end deffn
 
@@ -1560,8 +1560,8 @@ The optional argument @var{end} defaults to @code{(utf8-string-length STRING)}.
 characters of @var{STRING} beginning with index @var{START} (inclusive) 
 and ending with index @var{END} (exclusive).
 
-If the argument @var{string} is not a well formed UTF8 string an error
-is raised. Otherwise, the result is also a well formed UTF8 string.
+If the argument @var{string} is not a well formed UTF-8 string an error
+is raised. Otherwise, the result is also a well formed UTF-8 string.
 @end deffn
 
 @deffn {bigloo procedure} iso-latin->utf8 string
@@ -1587,15 +1587,15 @@ as result, the string they receive as argument.
 
 @deffn {bigloo procedure} 8bits->utf8 string table
 @deffnx {bigloo procedure} 8bits->utf8! string table
-@deffnx {bigloo procedure} utf8->8bits string invtable
+@deffnx {bigloo procedure} utf8->8bits string inv-table
 @deffnx {bigloo procedure} utf8->8bits! string inv-table
 These are the general conversion routines used internally by
 @code{iso-latin->utf8} and @code{cp1252->utf8}. They convert any 8
 bits @var{string} into its equivalent UTF-8 representation and vice versa. 
 
 The argument @var{table} should be either @code{#f}, which means that
-the basic (i.e., iso-latin-1) 8bits -> UTF8 converion is
-used, or it must be a vector of at maximun 127 entries
+the basic (i.e., iso-latin-1) 8bits -> UTF-8 conversion is
+used, or it must be a vector of at least 127 entries
 containing strings of characters.  This table contains the encodings for
 the 8 bits characters whose code range from 128 to 255. 
 
@@ -1640,12 +1640,12 @@ CP1252 table can be defined as:
       "\xc5\xb8"))   ;; 0x9f
 @end smalllisp
 
-The argument @var{inv-table} is a inverse table that can be build from
+The argument @var{inv-table} is an inverse table that can be build from
 a table and using the function @code{inverse-utf8-table}.
 @end deffn
 
 @deffn {procedure} inverse-utf8-table vector
-Inverse an UTF8 table into an object suitable for @code{utf8->8bits}
+Inverse an UTF-8 table into an object suitable for @code{utf8->8bits}
 and @code{utf8->8bits!}.
 @end deffn
 
@@ -1808,7 +1808,7 @@ code. For example, @code{(set! x '#u8(1 2 3))} will set x to the object
 heterogeneous vectors must be. Homogeneous vectors can appear in
 quasiquotations but must not contain unquote or unquote-splicing forms
 (i.e. @code{`(,x #u8(1 2))} is legal but @code{`#u8(1 ,x 2)} is not). This
-restriction is to accomodate the many Scheme systems that use the read
+restriction is to accomomdate the many Scheme systems that use the read
 procedure to parse programs.
 
 @item the following predefined procedures are available:

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat May  3 06:54:44 2014 (serrano)                */
+/*    Last change :  Wed May 21 16:23:46 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1613,16 +1613,6 @@ socket_shutdown( obj_t sock, int close_socket ) {
 	 }
       }
 
-      /* Warning: input and output can have already be garbaged :if the   */
-      /* socket is no more used, the input and output are not marked as   */
-      /* used and can (eventually) be released before the call to         */
-      /* shutdown (through free_socket) be done. One way could be to just */
-      /* set SOCKET(sock).{in|out}put to #t and wait that next GC frees   */
-      /* the ports if not already down. However, this will really         */
-      /* disconnect the peer when the GC occurs rather than when the call */
-      /* to shutdown is done. This is not important if this function is   */
-      /* called by the GC, but could be annoying when it is called by the */
-      /* user                                                             */
       if( INPUT_PORTP( SOCKET(sock).input ) ) {
 	 bgl_close_input_port( SOCKET( sock ).input );
 	 /* MS: 26 apr 2008, don't loose the port */
