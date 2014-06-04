@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Mon Apr 22 11:28:13 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Last change :  Wed Jun  4 18:14:32 2014 (serrano)                */
+;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
 ;*=====================================================================*/
@@ -78,7 +78,7 @@
 		     (num (or (+ (in ("09")))
 			      (: (* (in ("09"))) #\. (+ (in ("09"))))))
 		     (+/-num (: (? (in "+-")) num))
-		     (url (+ (or (in "/:!#$%&*-~.") nonascii escape
+		     (url (+ (or (in "_/:!#$%&*-~.") nonascii escape
 				 digit alpha)))
 		     (w (* (in " \t\r\n\f")))
 		     (nl (or (in "\n\r\f") "\r\n"))
