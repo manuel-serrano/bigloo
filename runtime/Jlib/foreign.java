@@ -559,7 +559,7 @@ public final class foreign
 	 return (int)n;
       }
 
-   public static long LONG_TO_INT64(long n)
+   public static long LONG_TO_INT64(int n)
       {
 	 return (long)n;
       }

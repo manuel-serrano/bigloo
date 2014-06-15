@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun Jun 15 10:26:12 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 12:42:12 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -324,25 +324,52 @@
 ;*    integer unboxing                                                 */
 ;*---------------------------------------------------------------------*/
 (define ($subelong->elong x)
-      (cond
-	 ((elong? x) x)
-	 ((int8? x) (fixnum->elong (int8->fixnum x)))
-	 ((uint8? x) (fixnum->elong (uint8->fixnum x)))
-	 ((int16? x) (fixnum->elong (int16->fixnum x)))
-	 ((uint16? x) (fixnum->elong (uint16->fixnum x)))
-	 ((int32? x) (fixnum->elong (int32->fixnum x)))))
+   (cond-expand
+      (bint61
+       (cond
+	  ((elong? x) x)
+	  ((int8? x) (fixnum->elong (int8->fixnum x)))
+	  ((uint8? x) (fixnum->elong (uint8->fixnum x)))
+	  ((int16? x) (fixnum->elong (int16->fixnum x)))
+	  ((uint16? x) (fixnum->elong (uint16->fixnum x)))
+	  ((int32? x) (fixnum->elong (int32->fixnum x)))
+	  ((uint32? x) (fixnum->elong (uint32->fixnum x)))
+	  ((int64? x) (fixnum->elong (int64->fixnum x)))))
+      (else
+       (cond
+	  ((elong? x) x)
+	  ((int8? x) (fixnum->elong (int8->fixnum x)))
+	  ((uint8? x) (fixnum->elong (uint8->fixnum x)))
+	  ((int16? x) (fixnum->elong (int16->fixnum x)))
+	  ((uint16? x) (fixnum->elong (uint16->fixnum x)))
+	  ((int32? x) (fixnum->elong (int32->fixnum x)))))))
 
 (define ($subllong->llong x)
-   (cond
-      ((llong? x) x)
-      ((uint32? x) (uint32->llong x))
-      ((int64? x) (int64->llong x))))
+   (cond-expand
+      (bint61
+       (cond
+	  ((llong? x) x)
+	  ((uint32? x) (uint32->llong x))
+	  ((int64? x) (int64->llong x))))
+      (else
+       (cond
+	  ((llong? x) x)
+	  ((uint32? x) (uint32->llong x))
+	  ((int64? x) (int64->llong x))))))
 
 (define ($subelong? x)
-   (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)))
+   (cond-expand
+      (bint61
+       (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)))
+      (else
+       (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)))))
 
 (define ($subllong? x)
-   (or (llong? x) (uint32? x) (int64? x)))
+   (cond-expand
+      (bint61
+       (or (llong? x) (uint32? x) (int64? x)))
+      (else
+       (or (llong? x) (uint32? x) (int64? x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    2op :: ...                                                       */

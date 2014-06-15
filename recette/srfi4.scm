@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Mon Aug 16 11:21:44 2010 (serrano)                */
+;*    Last change :  Sun Jun 15 11:29:13 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -100,5 +100,5 @@
    (test-hvector s64 #l-7)
    (test-hvector u64 #l8)
    (test-hvector f32 -1.0)
-   (test-hvector f64 1.0))
-   
+   (test-hvector f64 1.0)
+   )

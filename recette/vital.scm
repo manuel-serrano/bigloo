@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Sun Jun 15 09:19:25 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 11:29:10 2014 (serrano)                */
 ;*    Copyright   :  2002-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -466,6 +466,16 @@
    (test "write.3" (vital:write3 "foobar") 1)
    (test "write.4" (vital:write (string->symbol "01234")) '|01234|)
    (test "flonum" (real? (string->obj (obj->string 0.5))) #t)
+   (let ((o '(#s8:0 #s8:1 #s8:-1 #u8:0 #u8:1 #u8:250
+	      #s16:0 #s16:1 #s16:-1 #u16:0 #u16:1 #u16:250
+	      #s16:15000 #s16:-15000 #u16:30000
+	      #s32:0 #s32:1 #s32:-1 #u32:0 #u32:1 #u32:250
+	      #s32:15000 #s32:-15000 #u32:30000
+	      #s32:70000 #s32:-70000 #u32:70000
+	      #s64:0 #s64:1 #s64:-1 #u64:0 #u64:1 #u64:250
+	      #s64:15000 #s64:-15000 #u64:30000
+	      #s64:70000 #s64:-70000 #u64:70000)))
+      (test "stding" (string->obj (obj->string o)) o))
    (let* ((append! (lambda (x y)
 		      (if (null? x)
 			  y

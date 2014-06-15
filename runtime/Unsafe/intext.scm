@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sat Apr 19 12:22:35 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 11:28:06 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -498,6 +498,42 @@
 	 (procedure-attr-set! p (read-item))
 	 p))
 
+   ;; stdint
+   (define (read-int8 s)
+      (fixnum->int8 (read-word s 1)))
+   (define (read-uint8 s)
+      (fixnum->uint8 (read-word s 1)))
+
+   (define (read-int16 s)
+      (fixnum->int16 (read-word s 2)))
+   (define (read-uint16 s)
+      (fixnum->uint16 (read-word s 2)))
+
+   (define (read-int32 s)
+      (fixnum->int32 (read-word s 4)))
+   (define (read-uint32 s)
+      (fixnum->uint32 (read-word s 4)))
+
+   (define (read-int64 s)
+      (let ((acc::int64 #s64:0))
+	 (string-guard! 8)
+	 (for i 0 8
+	    (let ((d (string-ref s *pointer*)))
+	       (set! acc (+s64 (*s64 #s64:256 acc)
+			    (fixnum->int64 (char->integer d))))
+	       (set! *pointer* (+fx *pointer* 1))))
+	 acc))
+
+   (define (read-uint64 s)
+      (let ((acc::uint64 #u64:0))
+	 (string-guard! 8)
+	 (for i 0 8
+	    (let ((d (string-ref s *pointer*)))
+	       (set! acc (+u64 (*u64 #u64:256 acc)
+			    (fixnum->int64 (char->integer d))))
+	       (set! *pointer* (+fx *pointer* 1))))
+	 acc))
+   
    ;; read-item
    (define (read-item)
       (string-guard! 1)
@@ -542,6 +578,14 @@
 	    ((#\e) (read-special s *string->process*))
 	    ((#\o) (read-special s *string->opaque*))
 	    ((#\X) (read-extension))
+	    ((#\b) (read-int8 s))
+	    ((#\B) (read-uint8 s))
+	    ((#\s) (read-int16 s))
+	    ((#\S) (read-uint16 s))
+	    ((#\i) (read-int32 s))
+	    ((#\I) (read-uint32 s))
+	    ((#\l) (read-int64 s))
+	    ((#\W) (read-uint64 s))
 	    (else (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
 
    (set! *definitions* 4)
@@ -648,6 +692,22 @@
       (let loop ((i (-fx size 1)))
 	 (when (>=fx i 0)
 	    (let ((d (bit-and (bit-rsh m (*fx 8 i)) #xff)))
+	       (print-int-as-char d)
+	       (loop (-fx i 1))))))
+   
+   ;; print-int64
+   (define (print-int64 m)
+      (let loop ((i (-fx 8 1)))
+	 (when (>=fx i 0)
+	    (let ((d (int64->fixnum (bit-ands64 (bit-rshs64 m (*fx 8 i)) #xff))))
+	       (print-int-as-char d)
+	       (loop (-fx i 1))))))
+   
+   ;; print-uint64
+   (define (print-uint64 m)
+      (let loop ((i (-fx 8 1)))
+	 (when (>=fx i 0)
+	    (let ((d (uint64->fixnum (bit-andu64 (bit-urshu64 m (*fx 8 i)) #xff))))
 	       (print-int-as-char d)
 	       (loop (-fx i 1))))))
    
@@ -895,6 +955,30 @@
 	  (!print-markup #\T))
 	 ((eq? item #f)
 	  (!print-markup #\F))
+	 ((int8? item)
+	  (!print-markup #\b)
+	  (print-word/size (int8->fixnum item) 1))
+	 ((uint8? item)
+	  (!print-markup #\B)
+	  (print-word/size (uint8->fixnum item) 1))
+	 ((int16? item)
+	  (!print-markup #\s)
+	  (print-word/size (int16->fixnum item) 2))
+	 ((uint16? item)
+	  (!print-markup #\S)
+	  (print-word/size (uint16->fixnum item) 2))
+	 ((int32? item)
+	  (!print-markup #\i)
+	  (print-word/size (int32->fixnum item) 4))
+	 ((uint32? item)
+	  (!print-markup #\I)
+	  (print-word/size (uint32->fixnum item) 4))
+	 ((int64? item)
+	  (!print-markup #\l)
+	  (print-int64 item))
+	 ((uint64? item)
+	  (!print-markup #\W)
+	  (print-uint64 item))
 	 ((cnst? item)
 	  (!print-markup #\<)
 	  (print-fixnum (cnst->integer item)))

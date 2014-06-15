@@ -22,11 +22,11 @@
 ;* 		((uint8? v)  (w (pool-int    classfile (uint8->fixnum v)))) */
 ;* 		((int16? v)  (w (pool-int    classfile (int16->fixnum v)))) */
 ;* 		((uint16? v) (w (pool-int    classfile (uint16->fixnum v)))) */
-;* 		((int32? v)  (w (pool-elong  classfile (int32->elong v)))) */
-;* 		((uint32? v) (w (pool-elong  classfile (uint32->elong v)))) */
+		((int32? v)  (w (pool-int32  classfile v)))
+		((uint32? v) (w (pool-uint32 classfile v)))
 		((flonum? v) (w (pool-float  classfile v)))
 		((string? v) (w (pool-string classfile v)))
-		(else (jas-error classfile "bad immediate value (lcd)" v)) )))
+		(else (jas-error classfile "bad immediate value (ldc)" v)) )))
       ((20) ; LDC2
        (let ( (v (car args)) )
 	  (cond ((fixnum? v) (cons 20 (u2 (pool-long   classfile v))))
