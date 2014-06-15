@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Sun Jun 15 06:26:46 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 10:26:28 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to def (define) a       */
 ;*    global variable (i.e. in the module language compilation).       */
@@ -162,16 +162,16 @@
 	      (if (equal? (dsssl-optionals args) (sfun-optionals old-value))
 		  old
 		  (mismatch-error
-		   old src-exp
-		   "(incompatible DSSSL #!optional prototype)")))
+		     old src-exp
+		     "(incompatible DSSSL #!optional prototype)")))
 	     ((dsssl-key-only-prototype? args)
 	      (if (equal? (dsssl-keys args) (sfun-keys old-value))
 		  old
 		  (mismatch-error
-		   old src-exp
-		   "(incompatible DSSSL #!key prototype)")))
+		     old src-exp
+		     "(incompatible DSSSL #!key prototype)")))
 	     ((not (equal? (sfun-dsssl-keywords old-value)
-			   (dsssl-formals args)))
+		      (dsssl-formals args)))
 	      (mismatch-error old src-exp "(incompatible Dsssl prototype)"))))
 	 (else
 	  (let loop ((locals locals)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon Mar 10 17:09:13 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 10:18:41 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -728,7 +728,8 @@
 	  ((uint64? ,obj)
 	   (begin
 	       ,(when (eq? disp 'write) `(display "#u64:" ,port))
-	       (display (uint64->llong (/u64 ,obj (fixnum->uint64 10))) ,port)
+	       (let ((v (/u64 ,obj (fixnum->uint64 10))))
+		  (when (>u64 v #u64:0) (display (uint64->llong v) ,port)))
 	       (display (uint64->fixnum (remainderu64 ,obj (fixnum->uint64 10))) ,port)))
 	  ((cnst? obj)
 	   ($write-cnst obj port))

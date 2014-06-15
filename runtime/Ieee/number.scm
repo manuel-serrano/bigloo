@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun Jun 15 07:09:05 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 10:26:12 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -430,6 +430,8 @@
 	   (cond
 	      ((fixnum? ,y)
 	       (,opuint64 ,x (fixnum->uint64 ,y)))
+	      ((uint64? ,y)
+	       (,opuint64 ,x ,y))
 	      ((flonum? ,y)
 	       (,opfl ($uint64->flonum ,x) ,y))
 	      (($subllong? ,y)
@@ -439,7 +441,7 @@
 	      ((bignum? ,y)
 	       (,opbx ($uint64->bignum ,x) ,y))
 	      (else
-	       (error ',op "not a number" ,y))))
+	       (error ',op "not a number5" ,y))))
  	  ((bignum? ,x)
  	   (cond
  	      ((bignum? ,y)
