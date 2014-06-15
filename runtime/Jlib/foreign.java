@@ -632,6 +632,10 @@ public final class foreign
       {
 	 return (long)n;
       }
+   public static long INT32_TO_LLONG(int n)
+      {
+	 return (long)n;
+      }
    public static int LLONG_TO_LONG(long n)
       {
 	 return (int)n;

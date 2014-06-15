@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Mar 10 13:53:18 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 06:18:54 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -380,17 +380,17 @@
 
       ;; stdint
       ((: "s8:" (? #\-) (+ (in ("09"))))
-       (fixnum->uint8 (string->integer (the-substring 3 0))))
+       (fixnum->int8 (string->integer (the-substring 3 0))))
       ((: "u8:" (+ (in ("09"))))
        (fixnum->uint8 (string->integer (the-substring 3 0))))
       ;; stdint
       ((: "s16:" (? #\-) (+ (in ("09"))))
-       (fixnum->uint16 (string->integer (the-substring 4 0))))
+       (fixnum->int16 (string->integer (the-substring 4 0))))
       ((: "u16:" (+ (in ("09"))))
        (fixnum->uint16 (string->integer (the-substring 4 0))))
       ;; stdint
       ((: "s32:" (? #\-) (+ (in ("09"))))
-       (elong->uint32 (string->elong (the-substring 4 0))))
+       (elong->int32 (string->elong (the-substring 4 0))))
       ((: "u32:" (+ (in ("09"))))
        (cond-expand
 	  (bint61
@@ -399,7 +399,7 @@
 	   (llong->uint32 (string->llong (the-substring 4 0))))))
       ;; stdint
       ((: "s64:" (? #\-) (+ (in ("09"))))
-       (fixnum->uint64 (string->llong (the-substring 4 0))))
+       (fixnum->int64 (string->llong (the-substring 4 0))))
       ((: "u64:" (+ (in ("09"))))
        (let ((s2 (the-substring 5 0))
 	     (s1 (the-substring 4 5)))

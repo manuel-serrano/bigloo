@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Sun Nov 18 15:06:56 2012 (serrano)                */
+;*    Last change :  Sat Jun 14 06:56:45 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -129,7 +129,7 @@
 			     ((f32 f64)
 			      (let test ((i 0))
 				 (or (=fx i lobj1)
-				     (and (= (get obj1 i) (get obj2 i))
+				     (and (=fl (get obj1 i) (get obj2 i))
 					  (test (+fx i 1))))))
 			     ((s8 u8 s16 u16 s32 u32)
 			      (let test ((i 0))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Mar  4 11:19:02 2014 (serrano)                */
+/*    Last change :  Sun Jun 15 05:42:30 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -141,6 +141,38 @@ bgl_llong_to_bignum( const BGL_LONGLONG_T n ) {
 #else
    mp_size_t size = 0;
    unsigned BGL_LONGLONG_T vl = (unsigned BGL_LONGLONG_T) (n < 0 ? -n : n);
+      
+   do {
+      BXLIMBS( x )[ size ] = (mp_limb_t) (vl & GMP_NUMB_MASK);
+      size++;
+      vl >>= GMP_NUMB_BITS;
+   } while( vl );
+
+   BXSIZ( x ) = n > 0 ? size : (n < 0 ? -size : 0);
+#endif
+   
+   return x;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_uint64_to_bignum ...                                         */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_uint64_to_bignum( const uint64_t n ) {
+   obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
+   
+#if BGL_LONGLONG_LIMBS == 1
+   if( n < 0 ) {
+      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) -n;
+      BXSIZ( x ) = -1;
+   } else {
+      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
+      BXSIZ( x ) = (n!=0);
+   }
+#else
+   mp_size_t size = 0;
+   uint64_t vl = (uint64_t) (n < 0 ? -n : n);
       
    do {
       BXLIMBS( x )[ size ] = (mp_limb_t) (vl & GMP_NUMB_MASK);

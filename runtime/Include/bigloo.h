@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Mar 25 09:51:24 2014 (serrano)                */
+/*    Last change :  Sun Jun 15 07:49:47 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1790,7 +1790,7 @@ BGL_RUNTIME_DECL double bgl_infinity();
 
 #if( defined( BGL_CNST_SHIFT_INT32 ) )   
 #  define DEFINE_INT32( name, aux, num ) \
-   const obj_t name = intBGL_INT32_TO_BINT32( num )
+   const obj_t name = BGL_INT32_TO_BINT32( num )
 #  define DEFINE_UINT32( name, aux, num ) \
    const obj_t name = BGL_UINT32_TO_BUINT32( num )
    

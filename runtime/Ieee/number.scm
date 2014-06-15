@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Tue Mar 11 11:09:58 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 07:09:05 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -37,7 +37,7 @@
 	    __bignum
 	    
 	    __evenv)
-   
+
    (include "Ieee/bignum.sch")
    
    (extern  (macro $fixnum->flonum::double (::long)   "(double)")
@@ -321,6 +321,30 @@
 (define-inline (uint64->flonum x) ($uint64->flonum x))
 
 ;*---------------------------------------------------------------------*/
+;*    integer unboxing                                                 */
+;*---------------------------------------------------------------------*/
+(define ($subelong->elong x)
+      (cond
+	 ((elong? x) x)
+	 ((int8? x) (fixnum->elong (int8->fixnum x)))
+	 ((uint8? x) (fixnum->elong (uint8->fixnum x)))
+	 ((int16? x) (fixnum->elong (int16->fixnum x)))
+	 ((uint16? x) (fixnum->elong (uint16->fixnum x)))
+	 ((int32? x) (fixnum->elong (int32->fixnum x)))))
+
+(define ($subllong->llong x)
+   (cond
+      ((llong? x) x)
+      ((uint32? x) (uint32->llong x))
+      ((int64? x) (int64->llong x))))
+
+(define ($subelong? x)
+   (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)))
+
+(define ($subllong? x)
+   (or (llong? x) (uint32? x) (int64? x)))
+
+;*---------------------------------------------------------------------*/
 ;*    2op :: ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-macro (2op op x y)
@@ -329,6 +353,7 @@
 	 (opfl (symbol-append op 'fl))
 	 (opelong (symbol-append op 'elong))
 	 (opllong (symbol-append op 'llong))
+	 (opuint64 (symbol-append op 'u64))
 	 (oppost 'begin))
       (case op
 	 ((+ - * /)
@@ -343,10 +368,12 @@
 	       (,opfx ,x ,y))
 	      ((flonum? ,y)
 	       (,opfl ($fixnum->flonum ,x) ,y))
-	      ((elong? ,y)
-	       (,opelong (fixnum->elong ,x) ,y))
-	      ((llong? y)
-	       (,opllong (fixnum->llong ,x) ,y))
+	      (($subelong? ,y)
+	       (,opelong (fixnum->elong ,x) ($subelong->elong ,y)))
+	      (($subllong? ,y)
+	       (,opllong (fixnum->llong ,x) ($subllong->llong ,y)))
+	      ((uint64? ,y)
+	       (,opuint64 (llong->uint64 (fixnum->llong ,x)) ,y))
 	      ((bignum? ,y)
 	       (,oppost (,opbx (fixnum->bignum ,x) ,y)))
 	      (else
@@ -357,40 +384,60 @@
 	       (,opfl ,x ,y))
 	      ((fixnum? ,y)
 	       (,opfl ,x ($fixnum->flonum ,y)))
-	      ((elong? y)
-	       (,opfl ,x ($elong->flonum ,y)))
-	      ((llong? y)
-	       (,opfl ,x ($llong->flonum ,y)))
+	      (($subelong? ,y)
+	       (,opfl ,x ($elong->flonum ($subelong->elong ,y))))
+	      (($subllong? ,y)
+	       (,opfl ,x ($llong->flonum ($subllong->llong ,y))))
+	      ((uint64? ,y)
+	       (,opfl ,x (uint64->flonum ,y)))
 	      ((bignum? ,y)
 	       (,opfl ,x (bignum->flonum ,y)))
 	      (else
 	       (error ',op "not a number" ,y))))
-	  ((elong? ,x)
+	  (($subelong? ,x)
 	   (cond
 	      ((fixnum? ,y)
-	       (,opelong ,x (fixnum->elong ,y)))
+	       (,opelong ($subelong->elong ,x) (fixnum->elong ,y)))
+	      (($subelong? ,y)
+	       (,opelong ($subelong->elong ,x) ($subelong->elong ,y)))
 	      ((flonum? ,y)
-	       (,opfl ($elong->flonum ,x) ,y))
-	      ((elong? ,y)
-	       (,opelong ,x ,y))
-	      ((llong? ,y)
-	       (,opllong ($elong->llong ,x) ,y))
+	       (,opfl ($elong->flonum ($subelong->elong ,x)) ,y))
+	      (($subllong? ,y)
+	       (,opllong ($elong->llong ($subelong->elong ,x)) ($subllong->llong ,y)))
+	      ((uint64? ,y)
+	       (,opuint64 (llong->uint64 ($elong->llong ($subelong->elong ,x))) ,y))
 	      ((bignum? ,y)
-	       (,opbx (elong->bignum ,x) ,y))
+	       (,opbx (elong->bignum ($subelong->elong ,x)) ,y))
 	      (else
 	       (error ',op "not a number" ,y))))
-	  ((llong? ,x)
+	  (($subllong? ,x)
 	   (cond
 	      ((fixnum? ,y)
-	       (,opllong ,x (fixnum->llong ,y)))
-	      ((flonum? y)
+	       (,opllong ($subllong->llong ,x) (fixnum->llong ,y)))
+	      ((flonum? ,y)
 	       (,opfl ($llong->flonum ,x) ,y))
-	      ((elong? ,y)
-	       (,opllong ,x ($elong->llong ,y)))
-	      ((llong? ,y)
-	       (,opllong ,x ,y))
+	      (($subllong? ,y)
+	       (,opllong ($subllong->llong ,x) ($subllong->llong ,y)))
+	      (($subelong? ,y)
+	       (,opllong ($subllong->llong ,x) ($elong->llong ($subelong->elong ,y))))
 	      ((bignum? ,y)
-	       (,opbx (llong->bignum ,x) ,y))
+	       (,opbx (llong->bignum ($subllong->llong ,x)) ,y))
+	      ((uint64? ,y)
+	       (,opuint64 (llong->uint64 ,x) ,y))
+	      (else
+	       (error ',op "not a number" ,y))))
+	  ((uint64? ,x)
+	   (cond
+	      ((fixnum? ,y)
+	       (,opuint64 ,x (fixnum->uint64 ,y)))
+	      ((flonum? ,y)
+	       (,opfl ($uint64->flonum ,x) ,y))
+	      (($subllong? ,y)
+	       (,opuint64 ,x (llong->uint64 ($subllong->llong ,y))))
+	      (($subelong? ,y)
+	       (,opuint64 ,x (llong->uint64 ($elong->llong ($subelong->elong ,y)))))
+	      ((bignum? ,y)
+	       (,opbx ($uint64->bignum ,x) ,y))
 	      (else
 	       (error ',op "not a number" ,y))))
  	  ((bignum? ,x)
@@ -401,10 +448,12 @@
  	       (,oppost (,opbx ,x (fixnum->bignum ,y))))
  	      ((flonum? ,y)
  	       (,opfl (bignum->flonum ,x) ,y))
- 	      ((elong? ,y)
- 	       (,opbx ,x (elong->bignum ,y)))
- 	      ((llong? y)
- 	       (,opbx ,x (llong->bignum ,y)))
+ 	      (($subelong? ,y)
+ 	       (,opbx ,x (elong->bignum ($subelong->elong ,y))))
+ 	      (($subllong? ,y)
+ 	       (,opbx ,x (llong->bignum ($subllong->llong ,y))))
+	      ((uint64? ,y)
+ 	       (,opbx ,x ($uint64->bignum ,y)))
  	      (else
  	       (error ',op "not a number" ,y))))
 	  (else
@@ -562,6 +611,8 @@
    (if (>llong x y) x y))
 (define-inline (2maxbx x y)
    (if (>bx x y) x y))
+(define-inline (2maxu64 x y)
+   (if (>u64 x y) x y))
 
 ;*---------------------------------------------------------------------*/
 ;*    2max ...                                                         */
@@ -592,6 +643,8 @@
    (if (>llong x y) y x))
 (define-inline (2minbx x y)
    (if (>bx x y) y x))
+(define-inline (2minu64 x y)
+   (if (>u64 x y) y x))
 
 ;*---------------------------------------------------------------------*/
 ;*    2min ...                                                         */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 11 11:28:42 2008                          */
-;*    Last change :  Thu Oct 24 12:51:42 2013 (serrano)                */
-;*    Copyright   :  2008-13 Manuel Serrano                            */
+;*    Last change :  Sun Jun 15 07:08:26 2014 (serrano)                */
+;*    Copyright   :  2008-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo native api                                                */
 ;*=====================================================================*/
@@ -20,6 +20,7 @@
 	($fixnum->bignum::bignum (::long) "bgl_long_to_bignum")
 	($elong->bignum::bignum (::elong) "bgl_long_to_bignum")
 	($llong->bignum::bignum (::llong) "bgl_llong_to_bignum")
+	($uint64->bignum::bignum (::uint64) "bgl_uint64_to_bignum")
 	($bignum->fixnum::long (::bignum) "bgl_bignum_to_long")
 	($bignum->elong::elong (::bignum) "bgl_bignum_to_long")
 	($bignum->llong::llong (::bignum) "bgl_bignum_to_llong")
@@ -81,6 +82,8 @@
 	    (method static $elong->bignum::bignum (::elong)
 		    "ELONG_TO_BIGNUM")
 	    (method static $llong->bignum::bignum (::llong)
+		    "LLONG_TO_BIGNUM")
+	    (method static $uint64->bignum::bignum (::uint64)
 		    "LLONG_TO_BIGNUM")
 	    (method static $bignum->fixnum::long (::bignum)
 		    "bgl_bignum_to_long")
@@ -168,6 +171,7 @@
 	($fixnum->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
 	($elong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
 	($llong->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
+	($uint64->bignum side-effect-free no-cfa-top nesting (effect) fail-safe)
 	($oddbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($evenbx? side-effect-free no-cfa-top nesting args-safe (effect) fail-safe)
 	($bignum-cmp side-effect-free no-cfa-top nesting (effect) fail-safe)

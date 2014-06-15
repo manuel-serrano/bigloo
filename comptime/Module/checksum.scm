@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Thu Aug 21 08:38:45 1997                          */
-;*    Last change :  Wed Jan 16 10:27:00 2008 (serrano)                */
-;*    Copyright   :  1997-2008 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun 14 06:50:12 2014 (serrano)                */
+;*    Copyright   :  1997-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute checksum for modules in order to be able to check,    */
 ;*    at module initialization time, that modules are coherent. Only   */
@@ -126,6 +126,24 @@
        (bit-xor checksum
 		(bit-xorllong (bit-rshllong clause 32)
 			      (bit-rshllong (bit-lshllong clause 32) 32))))
+      ((int8? clause)
+       (bit-xor checksum (int8->fixnum clause)))
+      ((uint8? clause)
+       (bit-xor checksum (uint8->fixnum clause)))
+      ((int16? clause)
+       (bit-xor checksum (int16->fixnum clause)))
+      ((uint16? clause)
+       (bit-xor checksum (uint16->fixnum clause)))
+      ((int32? clause)
+       (bit-xor checksum (int32->fixnum clause)))
+      ((uint32? clause)
+       (bit-xor checksum (uint32->fixnum clause)))
+      ((int64? clause)
+       (bit-xor checksum (int64->fixnum clause)))
+      ((uint64? clause)
+       (bit-xor checksum (uint64->fixnum clause)))
+      ((int32? clause)
+       (bit-xor checksum (int32->fixnum clause)))
       (else
        (warning "module checksum:Unknown clause" clause " -- "
 		(find-runtime-type clause))

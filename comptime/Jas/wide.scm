@@ -17,16 +17,25 @@
        (let ( (v (car args)) )
 	  (define (w n) (if (<fx n #x100) (list 18 n) (cons 19 (u2 n))))
 	  (cond ((fixnum? v) (w (pool-int    classfile v)))
-		((flonum? v)  (w (pool-float  classfile v)))
-		((string? v)  (w (pool-string classfile v)))
-		(else (jas-error classfile "bad immediate value" v)) )))
+		;; MS-JVM 4/6
+;* 		((int8? v)   (w (pool-int    classfile (int8->fixnum v)))) */
+;* 		((uint8? v)  (w (pool-int    classfile (uint8->fixnum v)))) */
+;* 		((int16? v)  (w (pool-int    classfile (int16->fixnum v)))) */
+;* 		((uint16? v) (w (pool-int    classfile (uint16->fixnum v)))) */
+;* 		((int32? v)  (w (pool-elong  classfile (int32->elong v)))) */
+;* 		((uint32? v) (w (pool-elong  classfile (uint32->elong v)))) */
+		((flonum? v) (w (pool-float  classfile v)))
+		((string? v) (w (pool-string classfile v)))
+		(else (jas-error classfile "bad immediate value (lcd)" v)) )))
       ((20) ; LDC2
        (let ( (v (car args)) )
 	  (cond ((fixnum? v) (cons 20 (u2 (pool-long   classfile v))))
-		((flonum? v)  (cons 20 (u2 (pool-double classfile v))))
+		((flonum? v) (cons 20 (u2 (pool-double classfile v))))
 		((elong? v)  (cons 20 (u2 (pool-elong classfile v))))
 		((llong? v)  (cons 20 (u2 (pool-llong classfile v))))
-		(else (jas-error classfile "bad immediate value" v)) )))
+		((uint64? v) (cons 20 (u2 (pool-llong classfile (uint64->llong v)))))
+		((int64? v)  (cons 20 (u2 (pool-llong classfile (int64->llong v)))))
+		(else (jas-error classfile "bad immediate value (ldc2)" v)) )))
       ((21 22 23 24 25 54 55 56 57 58) ; XLOAD XSTORE
        (let* ( (index (car args))
 	       (base  (if (>fx cop 50) 54 21))

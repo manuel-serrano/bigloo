@@ -103,14 +103,29 @@
        (match-case args
 	  (((? fixnum?)) (cons cop args))
 	  (((? elong?)) (list cop (elong->fixnum (car args))))
+	  (((? uint32?)) (list cop (uint32->fixnum (car args))))
+	  (((? int32?)) (list cop (int32->fixnum (car args))))
+	  (((? int16?)) (list cop (int16->fixnum (car args))))
+	  (((? uint16?)) (list cop (uint16->fixnum (car args))))
+	  (((? int8?)) (list cop (int8->fixnum (car args))))
+	  (((? uint8?)) (list cop (uint8->fixnum (car args))))
 	  (else (syntax-error classfile cop args)) ))
       ((18 19) ; LDC
        (match-case args
 	  (((or (? fixnum?) (? flonum?) (? string?))) (cons 18 args))
+	  ;; MS-JVM 2/6
+;* 	  (((or (? int8?) (? uint8?) (? int16?) (? uint16?))) (cons 18 args)) */
+;* 	  (((or (? int32?) (? uint32?))) (cons 18 args))               */
 	  (else (syntax-error classfile cop args)) ))
       ((20) ; LDC2
        (match-case args
-	  (((or (? fixnum?) (? flonum?) (? elong?) (? llong?))) (cons 20 args))
+	  (((or (? fixnum?) (? flonum?) (? elong?) (? llong?)))
+	   (cons 20 args))
+	  ;; MS-JVM 3/6
+;* 	  (((or (? uint32?) (? int32?)))                                 */
+;* 	   (cons 20 args))                                             */
+	  (((or (? uint64?) (? int64?)))
+	   (cons 20 args))
 	  (else (syntax-error classfile cop args)) ))
       ((21 22 23 24 25 54 55 56 57 58 169) ; XLOAD XSTORE RET
        (match-case args

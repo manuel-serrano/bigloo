@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Nov  1 18:55:48 2013 (serrano)                */
+;*    Last change :  Sun Jun 15 07:02:50 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1078,6 +1078,7 @@
 	     (loop (-fx i 1)))
 	    (else
 	     i))))
+   
    (define (string-pred-skip s pred)
       (let loop ((i (-fx start 1)))
 	 (cond

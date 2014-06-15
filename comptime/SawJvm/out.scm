@@ -287,6 +287,10 @@
      (double_to_real (method foreign () real "DOUBLE_TO_REAL" double))
      (elong_to_belong (method foreign () belong "ELONG_TO_BELONG" long))
      (llong_to_bllong (method foreign () bllong "LLONG_TO_BLLONG" long))
+     (BGL_INT8_TO_BINT8 (method foreign () bint8 "BGL_INT8_TO_BINT8" byte))
+     (BGL_INT16_TO_BINT16 (method foreign () bint16 "BGL_INT16_TO_BINT16" short))
+     (BGL_INT32_TO_BINT32 (method foreign () bint32 "BGL_INT32_TO_BINT32" int))
+     (BGL_INT64_TO_BINT64 (method foreign () bint64 "BGL_INT64_TO_BINT64" long))
 ;*      (bgl_condvar_wait (method foreign () boolean "bgl_condvar_wait" condvar mutex)) */
      (jumpexit (method foreign () obj "jumpexit" obj obj))
      (debug_handler (method foreign () obj "debug_handler" bexception exit))

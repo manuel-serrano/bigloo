@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Tue Jul 16 18:31:28 2013 (serrano)                */
+;*    Last change :  Sun Jun 15 09:19:39 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -60,6 +60,22 @@
    (test "=.27" (= 1. #l2) #f)
    (test "=.28" (= #l1 1.) #t)
    (test "=.29" (= #l2 3.) #f)
+   (test "=.30" (= #l2 #s64:2) #t)
+   (test "=.31" (= #l2 #u64:2) #t)
+   (test "=.32" (= #l2 #s32:2) #t)
+   (test "=.33" (= #l2 #u32:2) #t)
+   (test "=.34" (= #l2 #s16:2) #t)
+   (test "=.35" (= #l2 #u16:2) #t)
+   (test "=.36" (= #l2 #s8:2) #t)
+   (test "=.37" (= #l2 #u8:2) #t)
+   (test "=.38" (= #s64:2 #l2) #t)
+   (test "=.39" (= #u64:2 #l2) #t)
+   (test "=.40" (= #s32:2 #l2) #t)
+   (test "=.41" (= #u32:2 #l2) #t)
+   (test "=.42" (= #s16:2 #l2) #t)
+   (test "=.43" (= #u16:2 #l2) #t)
+   (test "=.44" (= #s8:2 #l2) #t)
+   (test "=.45" (= #u8:2 #l2) #t)
    (test "<.1" (< 1 2) #t)
    (test "<.2" (< 1 1) #f) 
    (test "<.3" (< 2 1) #f)

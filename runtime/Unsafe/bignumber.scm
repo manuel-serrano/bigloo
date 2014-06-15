@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Thu Oct 24 12:46:57 2013 (serrano)                */
-;*    Copyright   :  2006-13 Marc Feeley                               */
+;*    Last change :  Sun Jun 15 05:46:15 2014 (serrano)                */
+;*    Copyright   :  2006-14 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -94,6 +94,7 @@
 	       (export $bignum->llong "bgl_bignum_to_llong")
 	       (export $elong->bignum "bgl_elong_to_bignum")
 	       (export $llong->bignum "bgl_llong_to_bignum")
+	       (export $uint64->bignum "bgl_uint64_to_bignum")
 	       (export $bignum-cmp "bgl_bignum_cmp")
 	       (export $zerobx? "BXZERO")
 	       (export $positivebx? "BXPOSITIVE")
@@ -128,6 +129,7 @@
 	       ($bignum->llong::llong ::bignum)
 	       ($elong->bignum::bignum ::elong)
 	       ($llong->bignum::bignum ::llong)
+	       ($uint64->bignum::bignum ::uint64)
 	       ($bignum-cmp::int ::bignum ::bignum)
 	       ($zerobx?::bool ::bignum)
 	       ($positivebx?::bool ::bignum)
@@ -203,6 +205,8 @@
    (quotientelong (*elong #e-2 (expt #e2 30)) #e16384))
 
 (define (bignum-llong-radix)
+   (expt #l2 30))
+(define (bignum-uint64-radix)
    (expt #l2 30))
 (define (bignum-min-llong)
    (*llong #l-2 (expt #l2 30)))
@@ -317,6 +321,26 @@
 			   i
 			   (-fx 0 ($llong->long (remainderllong x ($long->llong (bignum-radix))))))
 			  (loop2 (+fx i 1) (quotientllong x (bignum-radix))))
+		       r)))))))
+
+(define ($uint64->bignum n)
+   (let ((neg-n (if (<u64 n #u64:0) n (-u64 #u64:0 n))))
+      ;; computing with negative n avoids overflow
+      (let loop1 ((nb-digits 0) (x::uint64 neg-n))
+	 (if (not (=u64 x #u64:0))
+	     (loop1 (+fx nb-digits 1) (quotientu64 x (bignum-uint64-radix)))
+	     (let ((r (make-bignum (+fx nb-digits 1))))
+		(if (<u64 n #u64:0)
+		    (bignum-set-neg! r)
+		    (bignum-set-nonneg! r))
+		(let loop2 ((i 1) (x neg-n))
+		   (if (not (=u64 x #u64:0))
+		       (begin
+			  (bignum-digit-set!
+			   r
+			   i
+			   (-fx 0 ($llong->long (remainderu64 x ($long->u64 (bignum-radix))))))
+			  (loop2 (+fx i 1) (quotientu64 x (bignum-radix))))
 		       r)))))))
 
 (define preallocated-bignums

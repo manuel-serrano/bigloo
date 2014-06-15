@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Mon Jan 13 07:06:03 2014 (serrano)                */
+;*    Last change :  Fri Jun  6 11:02:41 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -77,11 +77,11 @@
       
       ;; floating-point constant
       ((or (: (? #\-) (+ digit)
-	      (: (in #\e #\E) (? (in #\- #\+)) (+ digit))
-	      (? (in #\f #\F #\l #\L)))
+		      (: (in #\e #\E) (? (in #\- #\+)) (+ digit))
+		      (? (in #\f #\F #\l #\L)))
 	   (: (? #\-) (or (: (+ digit) #\. (* digit)) (: #\. (+ digit)))
-	      (? (: (in #\e #\E) (? (in #\- #\+)) (+ digit)))
-	      (? (in #\f #\F #\l #\L))))
+		      (? (: (in #\e #\E) (? (in #\- #\+)) (+ digit)))
+		      (? (in #\f #\F #\l #\L))))
        (return 'CONSTANT (the-flonum)))
       
       ;; string constant
@@ -110,7 +110,7 @@
        (let ((c (the-failure)))
 	  (if (eof-object? c)
 	      (return 'EOS c)
-	      (return 'ERROR c))))))
+	      (return 'ERROR (format "<~a>~a" c (read-chars (the-port) 10))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ucs2->utf8 ...                                                   */
@@ -225,7 +225,7 @@
 		(object-return object))
 	       (else
 		(parse-error
-		   (format "syntax error, wrong token \"~a\"" (car token))
+		   (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
 		   (cadr token)
 		   (caddr token)))))))
    
@@ -241,12 +241,12 @@
 		(cadr token))
 	       ((ERROR)
 		(parse-error
-		   (format "syntax error, wrong token \"~a\"" (car token))
+		   (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
 		   (cadr token) (caddr token)))
 	       (else
 		(unless (eq? (car token) end) 
 		   (parse-error
-		      (format "illegal token, wrong token \"~a\"" (car token))
+		      (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
 		      (cadr token)
 		      (caddr token))))))))
 
@@ -262,7 +262,8 @@
    (let ((val (parse-text #f)))
       (let ((token (parse-text 'EOS)))
 	 (when token
-	    (parse-error (format "Illegal trailing token \"~a\"" token)
+	    (parse-error (format "Illegal JSON trailing ~a token: \"~a\""
+			    (car token) (cadr token))
 	       (cadr last-token) (caddr last-token))))
       val))
 

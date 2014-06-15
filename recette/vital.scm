@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Wed Sep 21 09:46:17 2011 (serrano)                */
-;*    Copyright   :  2002-11 Manuel Serrano                            */
+;*    Last change :  Sun Jun 15 09:19:25 2014 (serrano)                */
+;*    Copyright   :  2002-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -397,6 +397,7 @@
    (test "eqv? symbol.4" (eqv? 'a 'b) #f)
    (test "equal.1?" (equal? (cons 1 2) (cons 1 2)) #t)
    (test "equal.2?" (equal? (cons 2 2) (cons 1 2)) #f)
+   (test "equal.3?" (equal? (list #s8:1 #u8:2 #s16:-1 #u16:45 #s32:6 #u32:2 #s64:-56 #u64:1234) (list 1 2 -1 45 6 #l2 #l-56 #l1234)) #t)
    (test "define" bar 'toto)
    (test "application" ((lambda args 2)) 2)
    (test "application" ((lambda args 2) 1 2 3 4) 2)
