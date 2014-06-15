@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun Jun 15 12:42:12 2014 (serrano)                */
+;*    Last change :  Sun Jun 15 12:50:48 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -347,10 +347,7 @@
 (define ($subllong->llong x)
    (cond-expand
       (bint61
-       (cond
-	  ((llong? x) x)
-	  ((uint32? x) (uint32->llong x))
-	  ((int64? x) (int64->llong x))))
+       x)
       (else
        (cond
 	  ((llong? x) x)
@@ -360,14 +357,15 @@
 (define ($subelong? x)
    (cond-expand
       (bint61
-       (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)))
+       (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)
+	   (uint32? x) (int64? x)))
       (else
        (or (elong? x) (int8? x) (uint8? x) (int16? x) (uint16? x) (int32? x)))))
 
 (define ($subllong? x)
    (cond-expand
       (bint61
-       (or (llong? x) (uint32? x) (int64? x)))
+       (llong? x))
       (else
        (or (llong? x) (uint32? x) (int64? x)))))
 
