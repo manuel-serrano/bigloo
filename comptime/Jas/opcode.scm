@@ -113,17 +113,12 @@
       ((18 19) ; LDC
        (match-case args
 	  (((or (? fixnum?) (? flonum?) (? string?))) (cons 18 args))
-	  ;; MS-JVM 2/6
-;* 	  (((or (? int8?) (? uint8?) (? int16?) (? uint16?))) (cons 18 args)) */
 	  (((or (? int32?) (? uint32?))) (cons 18 args))
 	  (else (syntax-error classfile cop args)) ))
       ((20) ; LDC2
        (match-case args
 	  (((or (? fixnum?) (? flonum?) (? elong?) (? llong?)))
 	   (cons 20 args))
-	  ;; MS-JVM 3/6
-;* 	  (((or (? uint32?) (? int32?)))                                 */
-;* 	   (cons 20 args))                                             */
 	  (((or (? uint64?) (? int64?)))
 	   (cons 20 args))
 	  (else (syntax-error classfile cop args)) ))

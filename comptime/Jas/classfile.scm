@@ -68,6 +68,8 @@
     (pool-elong::int            ::classfile ::elong)
     (pool-int32::int            ::classfile ::int32)
     (pool-uint32::int           ::classfile ::uint32)
+    (pool-int64::int            ::classfile ::int64)
+    (pool-uint64::int           ::classfile ::uint64)
     (pool-float::int            ::classfile ::float)
     (pool-long::int             ::classfile ::long)
     (pool-llong::int            ::classfile ::llong)
@@ -260,6 +262,12 @@
 
 (define (pool-uint32 classfile n)
    (pool-int classfile (uint32->fixnum n)))
+
+(define (pool-int64 classfile n)
+   (pool-llong classfile (uint64->llong n)))
+
+(define (pool-uint64 classfile n)
+   (pool-llong classfile (uint64->llong n)))
 
 (define (pool-float classfile n)
    (pool-get! classfile 4 (f2 n)) )
