@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Jun 16 17:53:14 2014 (serrano)                */
+;*    Last change :  Mon Jun 16 17:54:26 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -339,7 +339,7 @@
 			  (bignum-digit-set!
 			   r
 			   i
-			   (-fx 0 ($llong->long (remainderu64 x ($long->uint64 (bignum-radix))))))
+			   (-fx 0 (uint64->fixnum (remainderu64 x ($long->uint64 (bignum-radix))))))
 			  (loop2 (+fx i 1) (quotientu64 x (bignum-radix))))
 		       r)))))))
 
