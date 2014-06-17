@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Sat Jun 14 06:56:45 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 09:26:13 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -120,27 +120,15 @@
        (let ((lobj1 ($hvector-length obj1)))
 	  (and ($hvector? obj2)
 	       (=fx ($hvector-length obj2) lobj1)
-	       (multiple-value-bind (tag1 _ get _)
+	       (multiple-value-bind (tag1 _ get _ cmp)
 		  (homogeneous-vector-info obj1)
-		  (multiple-value-bind (tag2 _ _ _)
+		  (multiple-value-bind (tag2 _ _ _ _)
 		     (homogeneous-vector-info obj2)
 		     (and (eq? tag1 tag2)
-			  (case tag1
-			     ((f32 f64)
-			      (let test ((i 0))
-				 (or (=fx i lobj1)
-				     (and (=fl (get obj1 i) (get obj2 i))
-					  (test (+fx i 1))))))
-			     ((s8 u8 s16 u16 s32 u32)
-			      (let test ((i 0))
-				 (or (=fx i lobj1)
-				     (and (=fx (get obj1 i) (get obj2 i))
-					  (test (+fx i 1))))))
-			     (else
-			      (let test ((i 0))
-				 (or (=fx i lobj1)
-				     (and (=llong (get obj1 i) (get obj2 i))
-					  (test (+fx i 1)))))))))))))
+			  (let test ((i 0))
+			     (or (=fx i lobj1)
+				 (and (cmp (get obj1 i) (get obj2 i))
+				      (test (+fx i 1)))))))))))
       ((c-flonum? obj1)
        #f)
       (($struct? obj1)

@@ -1781,6 +1781,26 @@ public final class foreign
 	 return (a1 >> a2);
       }
 
+   public static byte BITURSHINT8(byte a1, int a2)
+      {
+	 return (byte)(a1 >>> a2);
+      }
+
+   public static short BITURSHINT16(short a1, int a2)
+      {
+	 return (short)(a1 >>> a2);
+      }
+
+   public static int BITURSHINT32(int a1, int a2)
+      {
+	 return (int)(a1 >>> a2);
+      }
+
+   public static long BITURSHINT64(long a1, int a2)
+      {
+	 return (a1 >>> a2);
+      }
+
    //////
    // FLOAT
    //////
@@ -4000,7 +4020,16 @@ public final class foreign
       v.objs[l] = o;
    }
    
-   
+   public static int BGL_S32S8VREF(s8vector v, int l) {
+      return v.objs[l]<<24 + v.objs[l+1]<<16 + v.objs[l+2]<<8 + v.objs[l+3];
+   }
+   public static void BGL_S32S8VSET(s8vector v, int l, int o) {
+      v.objs[l] = (byte)(o>>24);
+      v.objs[l+1] = (byte)(o>>16 & 0xff);
+      v.objs[l+2] = (byte)(o>>8 & 0xff);
+      v.objs[l+3] = (byte)(o & 0xff);
+   }
+
    //////
    // TVECTOR
    //////

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Mon Mar 10 17:58:17 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 13:53:10 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
@@ -62,6 +62,7 @@
 	   *symbol*
 	   *keyword*
 	   *vector*
+	   *hvectors*
 	   *struct*
 	   *unspec*
 	   *procedure*
@@ -128,6 +129,17 @@
    (set! *symbol*        (use-type! 'symbol #f))
    (set! *keyword*       (use-type! 'keyword #f))
    (set! *vector*        (use-type! 'vector #f))
+   (set! *hvectors*       (list
+			     (use-type! 's8vector #f)
+			     (use-type! 'u8vector #f)
+			     (use-type! 's16vector #f)
+			     (use-type! 'u16vector #f)
+			     (use-type! 's32vector #f)
+			     (use-type! 'u32vector #f)
+			     (use-type! 's64vector #f)
+			     (use-type! 'u64vector #f)
+			     (use-type! 'f32vector #f)
+			     (use-type! 'f64vector #f)))
    (set! *struct*        (use-type! 'struct #f))
    (set! *procedure*     (use-type! 'procedure #f))
    (set! *procedure-el*  (use-type! 'procedure-el #f))
@@ -193,6 +205,7 @@
 (define *list*          'no-type-yet)
 (define *bnil*          'no-type-yet)
 (define *vector*        'no-type-yet)
+(define *hvectors*      'no-type-yet)
 (define *struct*        'no-type-yet)
 (define *procedure*     'no-type-yet)
 (define *procedure-el*  'no-type-yet)

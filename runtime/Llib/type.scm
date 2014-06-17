@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Mar 11 07:49:02 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 20:00:23 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -509,6 +509,7 @@
     (coerce bint uint () ($bint->uint))
     (coerce bint long () ($bint->long))
     (coerce bint ulong () ($bint->ulong))
+    
 ;*     (coerce bint int8 () ($bint->int8))                             */
 ;*     (coerce bint uint8 () ($bint->uint8))                           */
 ;*     (coerce bint int16 () ($bint->int16))                           */
@@ -517,7 +518,6 @@
 ;*     (coerce bint uint32 () ($bint->uint32))                         */
 ;*     (coerce bint int64 () ($bint->int64))                           */
 ;*     (coerce bint uint64 () ($bint->uint64))                         */
-;*     (coerce bint bool () ((lambda (x) #t)))                         */
 
     ;; int
     (coerce int bool () ((lambda (x::int) #t)))
@@ -1028,7 +1028,7 @@
     (macro $int64->bint64::bint64 (::int64) "BGL_INT64_TO_BINT64")
     (macro $bint64->int64::int64 (::bint64) "BGL_BINT64_TO_INT64")
     (macro $uint64->buint64::buint64 (::uint64) "BGL_UINT64_TO_BUINT64")
-    (macro $buint64->uint64::uint64 (::buint64) "BGL_BUINT64_TO_UINT64")
+    (macro $buint64->uint64::uint64 (::buint64) "BGL_BINT64_TO_INT64")
     
     (macro $uint8->int8::int8 (::uint8) "(int8_t)")
     (macro $int8->uint8::uint8 (::int8) "(uint8_t)")
@@ -1038,6 +1038,8 @@
     (macro $int32->uint32::uint32 (::int32) "(uint32_t)")
     (macro $uint64->int64::int64 (::uint64) "(int64_t)")
     (macro $int64->uint64::uint64 (::int64) "(uint64_t)")
+
+    (macro $uint32->ulong::ulong (::uint32) "(ulong)")
     
     (macro $obj->void*::void* (::foreign) "FOREIGN_TO_COBJ")
     ($void*->obj::foreign (::void*) "void_star_to_obj"))
@@ -1120,6 +1122,7 @@
        (method static $int->uint::uint (::int) "INT_TO_UINT")
        (method static $int->long::long (::int) "<inlined>")
        (method static $int->ulong::ulong (::int) "INT_TO_ULONG")
+       (method static $int->uint8::uint8 (::int) "INT_TO_UINT")
 
        (method static $uint->byte::byte (::uint) "UINT_TO_BYTE")
        (method static $uint->ubyte::ubyte (::uint) "UINT_TO_UBYTE")
@@ -1128,7 +1131,7 @@
        (method static $uint->int::uint (::uint) "UINT_TO_INT")
        (method static $uint->long::long (::uint) "UINT_TO_LONG")
        (method static $uint->ulong::ulong (::uint) "UINT_TO_ULONG")
-
+	  
        (method static $long->byte::byte (::long) "LONG_TO_BYTE")
        (method static $long->ubyte::ubyte (::long) "LONG_TO_UBYTE")
        (method static $long->char::char (::long) "LONG_TO_CHAR")
@@ -1152,8 +1155,10 @@
        (method static $ulong->short::short (::ulong) "ULONG_TO_SHORT")
        (method static $ulong->ushort::ushort (::ulong) "ULONG_TO_USHORT")
        (method static $ulong->int::int (::ulong) "ULONG_TO_INT")
-       (method static $ulong->uint::uint (::ulong) "ULONG_TO_UINT")
+       (method static $ulong->uint::uint (::ulong) "ULONG_TO_INT")
        (method static $ulong->long::long (::ulong) "ULONG_TO_LONG")
+       (method static $ulong->uint8::ulong (::uint8) "ULONG_TO_INT")
+       (method static $ulong->uint32::ulong (::uint32) "ULONG_TO_INT")
 
        (method static $string->bstring::bstring (::string) "string_to_bstring")
        (method static $bstring->string::string (::bstring) "BSTRING_TO_STRING")
@@ -1232,7 +1237,7 @@
        (method static $int64->bint64::bint64 (::int64) "BGL_INT64_TO_BINT64")
        (method static $bint64->int64::int64 (::bint64) "BGL_BINT64_TO_INT64")
        (method static $uint64->buint64::buint64 (::uint64) "BGL_INT64_TO_BINT64")
-       (method static $buint64->uint64::uint64 (::buint64) "BGL_BUINT64_TO_INT64")
+       (method static $buint64->uint64::uint64 (::buint64) "BGL_BINT64_TO_INT64")
 
        (method static $uint8->int8::int8 (::uint8) "BGL_INT8_ID")
        (method static $int8->uint8::uint8 (::int8) "BGL_INT8_ID")
@@ -1242,6 +1247,8 @@
        (method static $int32->uint32::uint32 (::int32) "BGL_INT32_ID")
        (method static $uint64->int64::int64 (::uint64) "BGL_INT64_ID")
        (method static $int64->uint64::uint64 (::int64) "BGL_INT64_ID")
+
+       (method static $uint32->ulong::ulong (::uint32) "BGL_INT32_ID")
     
        (method static $obj->void*::cobj (::void*) "FOREIGN_TO_COBJ")
        (method static $void*->obj::foreign (::void*) "void_star_to_obj")))

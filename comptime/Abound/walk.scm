@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Jan  8 11:49:48 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 16:33:50 2014 (serrano)                */
 ;*    Copyright   :  2010-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
@@ -26,6 +26,7 @@
 	    ast_sexp
 	    ast_private
 	    ast_lvtype
+	    ast_dump
 	    backend_backend)
    (export  (abound-walk! globals)))
 
@@ -47,6 +48,26 @@
 (define *string-set!* #unspecified)
 (define *struct-ref* #unspecified)
 (define *struct-set!* #unspecified)
+(define *s8vector-ref* #unspecified)
+(define *u8vector-ref* #unspecified)
+(define *s16vector-ref* #unspecified)
+(define *u16vector-ref* #unspecified)
+(define *s32vector-ref* #unspecified)
+(define *u32vector-ref* #unspecified)
+(define *s64vector-ref* #unspecified)
+(define *u64vector-ref* #unspecified)
+(define *f32vector-ref* #unspecified)
+(define *f64vector-ref* #unspecified)
+(define *s8vector-set!* #unspecified)
+(define *u8vector-set!* #unspecified)
+(define *s16vector-set!* #unspecified)
+(define *u16vector-set!* #unspecified)
+(define *s32vector-set!* #unspecified)
+(define *u32vector-set!* #unspecified)
+(define *s64vector-set!* #unspecified)
+(define *u64vector-set!* #unspecified)
+(define *f32vector-set!* #unspecified)
+(define *f64vector-set!* #unspecified)
 
 ;*---------------------------------------------------------------------*/
 ;*    init-cache! ...                                                  */
@@ -56,6 +77,26 @@
    (set! *string-set!* (find-global '$string-set! 'foreign))
    (set! *struct-ref* (find-global '$struct-ref 'foreign))
    (set! *struct-set!* (find-global '$struct-set! 'foreign))
+   (set! *s8vector-ref* (find-global '$s8vector-ref 'foreign))
+   (set! *u8vector-ref* (find-global '$u8vector-ref 'foreign))
+   (set! *s16vector-ref* (find-global '$s16vector-ref 'foreign))
+   (set! *u16vector-ref* (find-global '$u16vector-ref 'foreign))
+   (set! *s32vector-ref* (find-global '$s32vector-ref 'foreign))
+   (set! *u32vector-ref* (find-global '$u32vector-ref 'foreign))
+   (set! *s64vector-ref* (find-global '$s64vector-ref 'foreign))
+   (set! *u64vector-ref* (find-global '$u64vector-ref 'foreign))
+   (set! *f32vector-ref* (find-global '$f32vector-ref 'foreign))
+   (set! *f64vector-ref* (find-global '$f64vector-ref 'foreign))
+   (set! *s8vector-set!* (find-global '$s8vector-set! 'foreign))
+   (set! *u8vector-set!* (find-global '$u8vector-set! 'foreign))
+   (set! *s16vector-set!* (find-global '$s16vector-set! 'foreign))
+   (set! *u16vector-set!* (find-global '$u16vector-set! 'foreign))
+   (set! *s32vector-set!* (find-global '$s32vector-set! 'foreign))
+   (set! *u32vector-set!* (find-global '$u32vector-set! 'foreign))
+   (set! *s64vector-set!* (find-global '$s64vector-set! 'foreign))
+   (set! *u64vector-set!* (find-global '$u64vector-set! 'foreign))
+   (set! *f32vector-set!* (find-global '$f32vector-set! 'foreign))
+   (set! *f64vector-set!* (find-global '$f64vector-set! 'foreign))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -134,6 +175,45 @@
 	     (let ((node (abound-string-access node)))
 		(lvtype-node! node)
 		node))
+	    ((or (eq? v *s8vector-ref*)
+		 (eq? v *s16vector-ref*)
+		 (eq? v *s32vector-ref*)
+		 (eq? v *s64vector-ref*)
+		 (eq? v *u8vector-ref*)
+		 (eq? v *u16vector-ref*)
+		 (eq? v *u32vector-ref*)
+		 (eq? v *u64vector-ref*)
+		 (eq? v *f32vector-ref*)
+		 (eq? v *f64vector-ref*))
+	     (lvtype-node
+		(with-access::app node (fun args loc)
+		   (array-ref node (car args) (cadr args) loc
+		      (global-type v)
+		      (cadr (cfun-args-type (global-value v)))
+		      (car (cfun-args-type (global-value v)))
+		      (lambda (node v i)
+			 (duplicate::app node
+			    (args (list v i))))))))
+	    ((or (eq? v *s8vector-set!*)
+		 (eq? v *s16vector-set!*)
+		 (eq? v *s32vector-set!*)
+		 (eq? v *s64vector-set!*)
+		 (eq? v *u8vector-set!*)
+		 (eq? v *u16vector-set!*)
+		 (eq? v *u32vector-set!*)
+		 (eq? v *u64vector-set!*)
+		 (eq? v *f32vector-set!*)
+		 (eq? v *f64vector-set!*))
+	     (lvtype-node
+		(with-access::app node (fun args loc)
+		   (array-set! node (car args) (cadr args) loc
+		      (caddr (cfun-args-type (global-value v)))
+		      (cadr (cfun-args-type (global-value v)))
+		      (car (cfun-args-type (global-value v)))
+		      (lambda (node vec i)
+			 (with-access::app node (args)
+			    (duplicate::app node
+			       (args (list vec i (caddr args))))))))))
 	    (else
 	     node)))))
 
@@ -168,29 +248,9 @@
 (define-method (abound-node node::vref)
 
    (define (abound-vref node)
-      (with-access::vref node (expr* loc ftype otype vtype unsafe)
-	 (let ((v (mark-symbol-non-user! (gensym 'v)))
-	       (i (mark-symbol-non-user! (gensym 'i)))
-	       (l (mark-symbol-non-user! (gensym 'l)))
-	       (lname (when (location? loc) (location-full-fname loc)))
-	       (lpos (when (location? loc) (location-pos loc))))
-	    (top-level-sexp->node
-	     `(let ((,(make-typed-ident v (type-id vtype))
-		     ,(car expr*))
-		    (,(make-typed-ident i (type-id otype))
-		     ,(cadr expr*)))
-		 (let ((,(make-typed-ident l (type-id otype))
-			,(if (eq? vtype *vector*)
-			     `($vector-length ,v)
-			     `($tvector-length ,v))))
-		    (if ($vector-bound-check? ,i ,l)
-			,(duplicate::vref node
-			    (expr* (list v i)))
-			(failure
-			 ((@ index-out-of-bounds-error __error)
-			  ,lname ,lpos "vector-ref" ,v ,l ,i)
-			 #f #f))))
-	     loc))))
+      (with-access::vref node (expr* loc ftype otype vtype)
+	 (array-ref node (car expr*) (cadr expr*) loc ftype otype vtype 
+	    (lambda (node v i) (duplicate::vref node (expr* (list v i)))))))
 
    (call-next-method)
    (with-access::vref node (unsafe)
@@ -201,32 +261,48 @@
 	     node))))
 
 ;*---------------------------------------------------------------------*/
+;*    array-ref ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (array-ref node vec off loc ftype otype vtype dup)
+   (let ((v (mark-symbol-non-user! (gensym 'v)))
+	 (i (mark-symbol-non-user! (gensym 'i)))
+	 (l (mark-symbol-non-user! (gensym 'l)))
+	 (lname (when (location? loc) (location-full-fname loc)))
+	 (lpos (when (location? loc) (location-pos loc))))
+      (top-level-sexp->node
+	 `(let ((,(make-typed-ident v (type-id vtype)) ,vec)
+		(,(make-typed-ident i (type-id otype)) ,off))
+	     (let ((,(make-typed-ident l (type-id otype))
+		    ,(cond
+			((eq? vtype *vector*)
+			 `($vector-length ,v))
+			((memq vtype *hvectors*)
+			 `($hvector-length ,v))
+			(else
+			 `($tvector-length ,v)))))
+		(if ($vector-bound-check? ,i ,l)
+		    ,(dup node v i)
+		    (failure
+		       ((@ index-out-of-bounds-error __error)
+			,lname ,lpos
+			,(string-append
+			    (symbol->string! (type-id vtype)) "-ref")
+			,v ,l ,i)
+		       #f #f))))
+	 loc)))
+
+;*---------------------------------------------------------------------*/
 ;*    abound-node ::vset! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (abound-node node::vset!)
 
    (define (abound-vset node)
-      (with-access::vset! node (expr* loc ftype otype vtype unsafe)
-	 (let ((v (mark-symbol-non-user! (gensym 'v)))
-	       (i (mark-symbol-non-user! (gensym 'i)))
-	       (l (mark-symbol-non-user! (gensym 'l)))
-	       (lname (when (location? loc) (location-full-fname loc)))
-	       (lpos (when (location? loc) (location-pos loc))))
-	    (top-level-sexp->node
-	     `(let ((,(make-typed-ident v (type-id vtype)) ,(car expr*))
-		    (,(make-typed-ident i (type-id otype)) ,(cadr expr*)))
-		 (let ((,(make-typed-ident l (type-id otype))
-			,(if (eq? vtype *vector*)
-			     `($vector-length ,v)
-			     `($tvector-length ,v))))
-		    (if ($vector-bound-check? ,i ,l)
-			,(duplicate::vset! node
-			    (expr* (list v i (caddr expr*))))
-			(failure
-			 ((@ index-out-of-bounds-error __error)
-			  ,lname ,lpos "vector-set!" ,v ,l ,i)
-			 #f #f))))
-	     loc))))
+      (with-access::vset! node (expr* loc ftype otype vtype)
+	 (array-set! node (car expr*) (cadr expr*) loc ftype otype vtype
+	    (lambda (node v i)
+	       (with-access::vset! node (expr*)
+		  (duplicate::vset! node
+		     (expr* (list v i (caddr expr*)))))))))
 
    (call-next-method)
    (with-access::vset! node (unsafe)
@@ -236,6 +312,37 @@
 	     (lvtype-node! node)
 	     node))))
 
+;*---------------------------------------------------------------------*/
+;*    array-set! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (array-set! node vec off loc ftype otype vtype dup)
+   (let ((v (mark-symbol-non-user! (gensym 'v)))
+	 (i (mark-symbol-non-user! (gensym 'i)))
+	 (l (mark-symbol-non-user! (gensym 'l)))
+	 (lname (when (location? loc) (location-full-fname loc)))
+	 (lpos (when (location? loc) (location-pos loc))))
+      (top-level-sexp->node
+	 `(let ((,(make-typed-ident v (type-id vtype)) ,vec)
+		(,(make-typed-ident i (type-id otype)) ,off))
+	     (let ((,(make-typed-ident l (type-id otype))
+		    ,(cond
+			((eq? vtype *vector*)
+			 `($vector-length ,v))
+			((memq vtype *hvectors*)
+			 `($hvector-length ,v))
+			(else
+			 `($tvector-length ,v)))))
+		(if ($vector-bound-check? ,i ,l)
+		    ,(dup node v i)
+		    (failure
+		       ((@ index-out-of-bounds-error __error)
+			,lname ,lpos
+			,(string-append
+			    (symbol->string! (type-id vtype)) "-set!")
+			,v ,l ,i)
+		       #f #f))))
+	 loc)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    abound-node ::cast ...                                           */
 ;*---------------------------------------------------------------------*/

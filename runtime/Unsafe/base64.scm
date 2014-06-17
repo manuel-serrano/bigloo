@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 29 17:52:57 2004                          */
-;*    Last change :  Wed Mar 19 07:15:40 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 15:19:46 2014 (serrano)                */
 ;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    base64 encoding/decoding                                         */
@@ -190,7 +190,7 @@
 ;*    decode-byte ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (decode-byte::int c::byte)
-   (u8vector-ref byte-table c))
+   (int8->fixnum (u8vector-ref byte-table c)))
 
 ;*---------------------------------------------------------------------*/
 ;*    decode-char ...                                                  */
@@ -329,13 +329,13 @@
 	  (if (eq? count counte)
 	      s
 	      (raise (instantiate::&io-parse-error
-			(proc 'pem-decode-port)
+			(proc "pem-decode-port")
 			(msg "Illegal PEM markup")
 			(obj (list s count counte)))))))
       (else
        (let ((c (the-failure)))
 	  (raise (instantiate::&io-parse-error
-		    (proc 'pem-decode-port)
+		    (proc "pem-decode-port")
 		    (msg "Illegal character in PEM markup")
 		    (obj (format "{~a}~a" c (read-line (the-port))))))))))
 
@@ -347,7 +347,7 @@
       ;; check the correctness of the closing markup
       (if (not (char=? c #\-))
 	  (raise (instantiate::&io-parse-error
-		    (proc 'pem-decode-port)
+		    (proc "pem-decode-port")
 		    (msg "Illegal character")
 		    (obj (format "{~a}~a" c (read-line ip)))))
 	  (let ((end (read/rp pem-markup-grammar ip 1)))
@@ -356,7 +356,7 @@
 		     #t
 		     (raise
 		      (instantiate::&io-parse-error
-			 (proc 'pem-decode-port)
+			 (proc "pem-decode-port")
 			 (msg "PEM begin/end markup mismatch")
 			 (obj end))))))))
    ;; read the PEM header
@@ -367,7 +367,7 @@
 		      (hook (substring start 7 (string-length start)) c)))
 	  (raise
 	   (instantiate::&io-parse-error
-	      (proc 'pem-decode-prot)
+	      (proc "pem-decode-port")
 	      (msg "Illegal PEM begin markup")
 	      (obj start))))))
 

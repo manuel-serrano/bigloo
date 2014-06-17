@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Tue Dec 11 09:34:44 2012 (serrano)                */
+;*    Last change :  Tue Jun 17 16:09:20 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -562,7 +562,7 @@
 	     (type (strict-node-type *_* (global-type variable)))
 	     (c-format (string-append gname "($1,$2)"))
 	     (expr* args)
-	     (unsafe (eq? (global-id variable) '$vector-ref-ur))
+	     (unsafe (string-suffix? "-ur" (symbol->string! (global-id variable))))
 	     (vtype (car (cfun-args-type (global-value variable))))
 	     (ftype (global-type variable))
 	     (otype (cadr (cfun-args-type (global-value variable))))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Apr 17 07:52:47 2012 (serrano)                */
-;*    Copyright   :  2008-12 Manuel Serrano                            */
+;*    Last change :  Tue Jun 17 17:28:44 2014 (serrano)                */
+;*    Copyright   :  2008-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
 ;*    -------------------------------------------------------------    */
@@ -45,10 +45,10 @@
 	   __evenv
 	   __os
 	   __srfi4)
-   
+
    (import __param
 	   __hmac)
-   
+
    (export (sha1sum::bstring ::obj)
 	   (sha1sum-mmap::bstring ::mmap)
 	   (sha1sum-string::bstring ::bstring)
@@ -73,49 +73,36 @@
 ;*    u32 ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-macro (u32 hi lo)
-   `(bit-or (bit-lsh ,hi 16) ,lo))
+   `(bit-oru32 (bit-lshu32 (fixnum->uint32 ,hi) 16) (fixnum->uint32 ,lo)))
 
 ;*---------------------------------------------------------------------*/
 ;*    u16 ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define-macro (u16 hi lo)
-   `(bit-or (bit-lsh ,hi 8) ,lo))
+   `(uint32->fixnum (bit-oru32 (bit-lshu32 ,hi 8) ,lo)))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32-hi ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define-macro (u32-hi w)
-   `(bit-ursh ,w 16))
+   `(uint32->fixnum (bit-urshu32 ,w 16)))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32-low ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-macro (u32-lo w)
-   `(bit-and ,w (-fx (bit-lsh 1 16) 1)))
+   `(uint32->fixnum (bit-andu32 ,w #u32:65535)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rotl32 ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (rotl32::ulong x::ulong n::int)
-   (bit-or (bit-lsh x n) (bit-ursh x (-fx 32 n))))
-
-;*---------------------------------------------------------------------*/
-;*    u32->string ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (u32->string w::ulong)
-   (let* ((r (make-string 8 #\0))
-	  (s1 (integer->string (u32-hi w) 16))
-	  (l1 (string-length s1))
-	  (s2 (integer->string (u32-lo w) 16))
-	  (l2 (string-length s2)))
-      (blit-string! s1 0 r (-fx 4 l1) l1)
-      (blit-string! s2 0 r (+fx 4 (-fx 4 l2)) l2)
-      r))
+(define (rotl32::uint32 x::uint32 n::int)
+   (bit-oru32 (bit-lshu32 x n) (bit-urshu32 x (-fx 32 n))))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32-fill! ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (u32-fill! str offset w::ulong)
+(define (u32-fill! str offset w::uint32)
    (let* ((s1 (integer->string (u32-hi w) 16))
 	  (l1 (string-length s1))
 	  (s2 (integer->string (u32-lo w) 16))
@@ -126,7 +113,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    u160->string ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (u160->string w0::ulong w1::ulong w2::ulong w3::ulong w4::ulong)
+(define (u160->string w0::uint32 w1::uint32 w2::uint32 w3::uint32 w4::uint32)
    (let ((r (make-string 40 #\0)))
       (u32-fill! r 0 w0)
       (u32-fill! r 8 w1)
@@ -149,40 +136,41 @@
 ;*---------------------------------------------------------------------*/
 ;*    u32string-ref ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (u32string-ref::ulong s::bstring i::int)
+(define (u32string-ref::uint32 s::bstring i::int)
    (let ((len (string-length s)))
       (cond
-	 ((<fx i len) (char->integer (string-ref s i)))
-	 ((=fx i len) #x80)
-	 (else 0))))
+	 ((<fx i len) (fixnum->uint32 (char->integer (string-ref s i))))
+	 ((=fx i len) #u32:128)
+	 (else #u32:0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32mmap-ref ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (u32mmap-ref::ulong s::mmap i::elong)
+(define (u32mmap-ref::uint32 s::mmap i::elong)
    (let ((len (mmap-length s)))
       (cond
-	 ((<fx i len) (char->integer (mmap-ref s i)))
-	 ((=fx i len) #x80)
-	 (else 0))))
+	 ((<fx i len) (fixnum->uint32 (char->integer (mmap-ref s i))))
+	 ((=fx i len) #u32:128)
+	 (else #u32:0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32matrix-ref ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (u32matrix-ref::ulong m::vector i::int j::int)
+(define (u32matrix-ref::uint32 m::vector i::int j::int)
    (u32vector-ref (vector-ref m i) j))
 
 ;*---------------------------------------------------------------------*/
 ;*    f ...                                                            */
 ;*---------------------------------------------------------------------*/
-(define (f::ulong s::int x::ulong y::ulong z::ulong)
+(define (f::uint32 s::int x::uint32 y::uint32 z::uint32)
    (case s
       ((0)
-       (bit-xor (bit-and x y) (bit-and (bit-not x) z)))
+       (bit-xoru32 (bit-andu32 x y) (bit-andu32 (bit-notu32 x) z)))
       ((1 3)
-       (bit-xor x (bit-xor y z)))
+       (bit-xoru32 x (bit-xoru32 y z)))
       (else
-       (bit-xor (bit-xor (bit-and x y) (bit-and x z)) (bit-and y z)))))
+       (bit-xoru32
+	  (bit-xoru32 (bit-andu32 x y) (bit-andu32 x z)) (bit-andu32 y z)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sha1 ...                                                         */
@@ -200,11 +188,11 @@
 	 (u32vector-set! vec 15 v15))
       
       ;; set initial hash value
-      (let* ((h0::ulong (u32 #x6745 #x2301))
-	     (h1::ulong (u32 #xEFCD #xAB89))
-	     (h2::ulong (u32 #x98BA #xDCFE))
-	     (h3::ulong (u32 #x1032 #x5476))
-	     (h4::ulong (u32 #xC3D2 #xE1F0)))
+      (let* ((h0::uint32 (u32 #x6745 #x2301))
+	     (h1::uint32 (u32 #xEFCD #xAB89))
+	     (h2::uint32 (u32 #x98BA #xDCFE))
+	     (h3::uint32 (u32 #x1032 #x5476))
+	     (h4::uint32 (u32 #xC3D2 #xE1F0)))
 	 
 	 ;; HASH computation
 	 (for (i 0 N)
@@ -213,40 +201,40 @@
 	    (for (t 0 16)
 	       (u32vector-set! W t (u32matrix-ref M i t)))
 	    (for (t 16 80)
-	       (let* ((w0::ulong (u32vector-ref W (-fx t 3)))
-		      (w1::ulong (u32vector-ref W (-fx t 8)))
-		      (w2::ulong (u32vector-ref W (-fx t 14)))
-		      (w3::ulong (u32vector-ref W (-fx t 16)))
-		      (v::ulong (bit-xor w0 (bit-xor w1 (bit-xor w2 w3)))))
+	       (let* ((w0::uint32 (u32vector-ref W (-fx t 3)))
+		      (w1::uint32 (u32vector-ref W (-fx t 8)))
+		      (w2::uint32 (u32vector-ref W (-fx t 14)))
+		      (w3::uint32 (u32vector-ref W (-fx t 16)))
+		      (v (bit-xoru32 w0 (bit-xoru32 w1 (bit-xoru32 w2 w3)))))
 		  (u32vector-set! W t (rotl32 v 1))))
 	    
 	    ;; 2 - initialize five working variables a, b, c, d, e
 	    ;; with previous hash value
-	    (let ((a::ulong h0)
-		  (b::ulong h1)
-		  (c::ulong h2)
-		  (d::ulong h3)
-		  (e::ulong h4))
+	    (let ((a::uint32 h0)
+		  (b::uint32 h1)
+		  (c::uint32 h2)
+		  (d::uint32 h3)
+		  (e::uint32 h4))
 	       
 	       ;; 3 - main loop
 	       (for (t 0 80)
 		  (let* ((s (/fx t 20))
-			 (a5::ulong (rotl32 a 5))
-			 (f::ulong (f s b c d))
-			 (k::ulong (u32vector-ref K s))
-			 (w::ulong (u32vector-ref W t))
-			 (y::ulong (+fx a5 (+fx f (+fx e (+fx k w))))))
+			 (a5::uint32 (rotl32 a 5))
+			 (f::uint32 (f s b c d))
+			 (k::uint32 (u32vector-ref K s))
+			 (w::uint32 (u32vector-ref W t))
+			 (y::uint32 (+u32 a5 (+u32 f (+u32 e (+u32 k w))))))
 		     (set! e d)
 		     (set! d c)
 		     (set! c (rotl32 b 30))
 		     (set! b a)
-		     (set! a (bit-and y (u32 #xffff #xffff)))))
+		     (set! a (bit-andu32 y (u32 #xffff #xffff)))))
 	       
-	       (set! h0 (bit-and (+fx h0 a) (u32 #xffff #xffff)))
-	       (set! h1 (bit-and (+fx h1 b) (u32 #xffff #xffff)))
-	       (set! h2 (bit-and (+fx h2 c) (u32 #xffff #xffff)))
-	       (set! h3 (bit-and (+fx h3 d) (u32 #xffff #xffff)))
-	       (set! h4 (bit-and (+fx h4 e) (u32 #xffff #xffff)))))
+	       (set! h0 (bit-andu32 (+u32 h0 a) (u32 #xffff #xffff)))
+	       (set! h1 (bit-andu32 (+u32 h1 b) (u32 #xffff #xffff)))
+	       (set! h2 (bit-andu32 (+u32 h2 c) (u32 #xffff #xffff)))
+	       (set! h3 (bit-andu32 (+u32 h3 d) (u32 #xffff #xffff)))
+	       (set! h4 (bit-andu32 (+u32 h4 e) (u32 #xffff #xffff)))))
 	 
 	 (u160->string h0 h1 h2 h3 h4))))
 
@@ -265,10 +253,10 @@
 	 (let ((vec (make-u32vector 16)))
 	    (for (j 0 16)
 	       (let* ((n::int (+fx (*fx i 64) (*fx j 4)))
-		      (v0::ulong (u32string-ref str n))
-		      (v1::ulong (u32string-ref str (+fx n 1)))
-		      (v2::ulong (u32string-ref str (+fx n 2)))
-		      (v3::ulong (u32string-ref str (+fx n 3)))
+		      (v0::uint32 (u32string-ref str n))
+		      (v1::uint32 (u32string-ref str (+fx n 1)))
+		      (v2::uint32 (u32string-ref str (+fx n 2)))
+		      (v3::uint32 (u32string-ref str (+fx n 3)))
 		      (v (u32 (u16 v0 v1) (u16 v2 v3))))
 		  (u32vector-set! vec j v))
 	       (vector-set! M i vec))))
@@ -290,10 +278,10 @@
 	 (let ((vec (make-u32vector 16)))
 	    (for (j 0 16)
 	       (let* ((n::elong (+fx (*fx i 64) (*fx j 4)))
-		      (v0::ulong (u32mmap-ref str n))
-		      (v1::ulong (u32mmap-ref str (+fx n 1)))
-		      (v2::ulong (u32mmap-ref str (+fx n 2)))
-		      (v3::ulong (u32mmap-ref str (+fx n 3)))
+		      (v0::uint32 (u32mmap-ref str n))
+		      (v1::uint32 (u32mmap-ref str (+fx n 1)))
+		      (v2::uint32 (u32mmap-ref str (+fx n 2)))
+		      (v3::uint32 (u32mmap-ref str (+fx n 3)))
 		      (v (u32 (u16 v0 v1) (u16 v2 v3))))
 		  (u32vector-set! vec j v))
 	       (vector-set! M i vec))))
@@ -319,10 +307,10 @@
 	    (when (<fx l 64) (string-set! buf l #a128))
 	    (for (j 0 16)
 	       (let* ((n::int (*fx j 4))
-		      (v0::ulong (char->integer (string-ref buf n)))
-		      (v1::ulong (char->integer (string-ref buf (+fx n 1))))
-		      (v2::ulong (char->integer (string-ref buf (+fx n 2))))
-		      (v3::ulong (char->integer (string-ref buf (+fx n 3))))
+		      (v0::uint32 (char->integer (string-ref buf n)))
+		      (v1::uint32 (char->integer (string-ref buf (+fx n 1))))
+		      (v2::uint32 (char->integer (string-ref buf (+fx n 2))))
+		      (v3::uint32 (char->integer (string-ref buf (+fx n 3))))
 		      (v (u32 (u16 v0 v1) (u16 v2 v3))))
 		  (u32vector-set! vec j v)))
 	    (if (<fx l 64)
@@ -332,7 +320,7 @@
 		       (M (list->vector
 			     (reverse!
 				(if (>fx N (+fx 1 nL))
-				    (cons* (make-u32vector 16 0) vec L)
+				    (cons* (make-u32vector 16 #u32:0) vec L)
 				    (cons vec L))))))
 		   (sha1 nlen M))
 		(loop nlen (cons vec L) (+fx nL 1)))))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Jun 15 11:28:06 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 09:25:10 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -298,11 +298,13 @@
 	 (case (read-symbol)
 	    ((s8)
 	     (let ((res (make-s8vector len)))
-		(for i 0 len (s8vector-set! res i (read-word s bsize)))
+		(for i 0 len
+		   (s8vector-set! res i (fixnum->int8 (read-word s bsize))))
 		res))
 	    ((u8)
 	     (let ((res (make-u8vector len)))
-		(for i 0 len (u8vector-set! res i (read-word s bsize)))
+		(for i 0 len
+		   (u8vector-set! res i (fixnum->uint8 (read-word s bsize))))
 		res))
 	    ((s16)
 	     (let ((res (make-s16vector len)))
@@ -711,12 +713,20 @@
 	       (print-int-as-char d)
 	       (loop (-fx i 1))))))
    
-   ;; print-long-word/size
-   (define (print-long-word/size m::llong size)
+   ;; print-int64-word/size
+   (define (print-int64-word/size m::int64 size)
       (let loop ((i (-fx size 1)))
 	 (when (>=fx i 0)
-	    (let ((d (llong->fixnum
-		      (bit-andllong (bit-rshllong m (*fx 8 i)) #l255))))
+	    (let ((d (int64->fixnum
+		      (bit-ands64 (bit-rshs64 m (*fx 8 i)) #s64:255))))
+	       (print-int-as-char d)
+	       (loop (-fx i 1))))))
+
+   (define (print-uint64-word/size m::uint64 size)
+      (let loop ((i (-fx size 1)))
+	 (when (>=fx i 0)
+	    (let ((d (uint64->fixnum
+			(bit-andu64 (bit-urshu64 m (*fx 8 i)) #u64:255))))
 	       (print-int-as-char d)
 	       (loop (-fx i 1))))))
    
@@ -884,7 +894,7 @@
    
    ;; print-hvector
    (define (print-hvector item mark)
-      (multiple-value-bind (tag bsize ref _)
+      (multiple-value-bind (tag bsize ref _ _)
 	 (homogeneous-vector-info item)
 	 (let ((len ($hvector-length item)))
 	    (!print-markup #\h)
@@ -892,10 +902,30 @@
 	    (print-word bsize)
 	    (print-string #\" (symbol->string! tag))
 	    (case tag
-	       ((s8 u8 s16 u16 s32 u32)
-		(for i 0 len (print-word/size (ref item i) bsize)))
-	       ((s64 u64)
-		(for i 0 len (print-long-word/size (ref item i) bsize)))
+	       ((s8)
+		(for i 0 len
+		   (print-word/size (int8->fixnum (s8vector-ref item i)) 1)))
+	       ((u8)
+		(for i 0 len
+		   (print-word/size (uint8->fixnum (u8vector-ref item i)) 1)))
+	       ((s16)
+		(for i 0 len
+		   (print-word/size (int16->fixnum (s16vector-ref item i)) 2)))
+	       ((u16)
+		(for i 0 len
+		   (print-word/size (uint16->fixnum (u16vector-ref item i)) 2)))
+	       ((s32)
+		(for i 0 len
+		   (print-word/size (int32->fixnum (s32vector-ref item i)) 4)))
+	       ((u32)
+		(for i 0 len
+		   (print-word/size (uint32->fixnum (u32vector-ref item i)) 4)))
+	       ((s64)
+		(for i 0 len
+		   (print-int64-word/size (s64vector-ref item i) 8)))
+	       ((u64)
+		(for i 0 len
+		   (print-uint64-word/size (u64vector-ref item i) 8)))
 	       ((f32 f64)
 		(for i 0 len
 		     (let ((s (real->string (ref item i))))

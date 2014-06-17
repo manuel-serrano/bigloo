@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 11:06:41 1995                          */
-;*    Last change :  Fri Mar 14 10:02:04 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 17:10:32 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bit management                                                   */
 ;*=====================================================================*/
@@ -224,13 +224,13 @@
 	       (method static c-biturshllong::ullong (::ullong ::int)
 		  "BITURSHLLONG")
 	       (method static $biturshu8::uint8 (::uint8 ::int)
-		  "BITRSHINT8")
+		  "BITURSHINT8")
 	       (method static $biturshu16::int16 (::uint16 ::int)
-		  "BITRSHINT16")
+		  "BITURSHINT16")
 	       (method static $biturshu32::uint32 (::uint32 ::uint32)
-		  "BITRSHINT32")
+		  "BITURSHINT32")
 	       (method static $biturshu64::int64 (::uint64 ::int)
-		  "BITRSHINT64")
+		  "BITURSHINT64")
 	       
 	       (method static c-bitlsh::long (::long ::int)
 		  "BITLSH")

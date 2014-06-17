@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Sun Jun 15 10:18:41 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 08:50:29 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -1003,7 +1003,7 @@
 ;*    write/display-hvector ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (write/display-hvector svec port disp)
-   (multiple-value-bind (id _ vref _)
+   (multiple-value-bind (id _ vref _ _)
       (homogeneous-vector-info svec)
       ($display-char #\# port)
       (display-symbol id port)

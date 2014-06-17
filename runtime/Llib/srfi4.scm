@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Tue Aug 28 14:55:21 2012 (serrano)                */
-;*    Copyright   :  2006-12 Manuel Serrano                            */
+;*    Last change :  Tue Jun 17 19:49:09 2014 (serrano)                */
+;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
 ;*=====================================================================*/
@@ -27,6 +27,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -62,59 +63,113 @@
 	   (macro $hvector-ident::int (::obj) "BGL_HVECTOR_IDENT")
 
 	   (macro $hvector-length::long (::obj) "BGL_HVECTOR_LENGTH")
-	   (macro $hvector-bound-check?::bool (::int ::int) "BOUND_CHECK")
 
-	   (macro $alloc-s8vector::s8vector (::long) "BGL_ALLOC_S8VECTOR")
-	   (macro $alloc-u8vector::u8vector (::long) "BGL_ALLOC_U8VECTOR")
-	   (macro $alloc-s16vector::s16vector (::long) "BGL_ALLOC_S16VECTOR")
-	   (macro $alloc-u16vector::u16vector (::long) "BGL_ALLOC_U16VECTOR")
-	   (macro $alloc-s32vector::s32vector (::long) "BGL_ALLOC_S32VECTOR")
-	   (macro $alloc-u32vector::u32vector (::long) "BGL_ALLOC_U32VECTOR")
-	   (macro $alloc-s64vector::s64vector (::long) "BGL_ALLOC_S64VECTOR")
-	   (macro $alloc-u64vector::u64vector (::long) "BGL_ALLOC_U64VECTOR")
-	   (macro $alloc-f32vector::f32vector (::long) "BGL_ALLOC_F32VECTOR")
-	   (macro $alloc-f64vector::f64vector (::long) "BGL_ALLOC_F64VECTOR")
+	   (macro $alloc-s8vector::s8vector (::int32) "BGL_ALLOC_S8VECTOR")
+	   (macro $alloc-u8vector::u8vector (::int32) "BGL_ALLOC_U8VECTOR")
+	   (macro $alloc-s16vector::s16vector (::int32) "BGL_ALLOC_S16VECTOR")
+	   (macro $alloc-u16vector::u16vector (::int32) "BGL_ALLOC_U16VECTOR")
+	   (macro $alloc-s32vector::s32vector (::int32) "BGL_ALLOC_S32VECTOR")
+	   (macro $alloc-u32vector::u32vector (::int32) "BGL_ALLOC_U32VECTOR")
+	   (macro $alloc-s64vector::s64vector (::int32) "BGL_ALLOC_S64VECTOR")
+	   (macro $alloc-u64vector::u64vector (::int32) "BGL_ALLOC_U64VECTOR")
+	   (macro $alloc-f32vector::f32vector (::int32) "BGL_ALLOC_F32VECTOR")
+	   (macro $alloc-f64vector::f64vector (::int32) "BGL_ALLOC_F64VECTOR")
 
-	   (macro $s8vector-ref::byte (::s8vector ::long)
+	   (macro $s8vector-ref::int8 (::s8vector ::long)
 		  "BGL_S8VREF")
-	   (macro $s8vector-set!::void (::s8vector ::long ::byte)
+	   (macro $s8vector-set!::void (::s8vector ::long ::int8)
 		  "BGL_S8VSET")
-	   (macro $u8vector-ref::ubyte (::u8vector ::long)
+	   (macro $s8vector-ref-ur::int8 (::s8vector ::long)
+		  "BGL_S8VREF")
+	   (macro $s8vector-set-ur!::void (::s8vector ::long ::int8)
+		  "BGL_S8VSET")
+	   
+	   (macro $u8vector-ref::uint8 (::u8vector ::long)
 		  "BGL_U8VREF")
-	   (macro $u8vector-set!::void (::u8vector ::long ::ubyte)
+	   (macro $u8vector-set!::void (::u8vector ::long ::uint8)
 		  "BGL_U8VSET")
-	   (macro $s16vector-ref::short (::s16vector ::long)
+	   (macro $u8vector-ref-ur::uint8 (::u8vector ::long)
+		  "BGL_U8VREF")
+	   (macro $u8vector-set-ur!::void (::u8vector ::long ::uint8)
+		  "BGL_U8VSET")
+	   
+	   (macro $s16vector-ref::int16 (::s16vector ::long)
 		  "BGL_S16VREF")
-	   (macro $s16vector-set!::void (::s16vector ::long ::short)
+	   (macro $s16vector-set!::void (::s16vector ::long ::int16)
 		  "BGL_S16VSET")
-	   (macro $u16vector-ref::ushort (::u16vector ::long)
+	   (macro $s16vector-ref-ur::int16 (::s16vector ::long)
+		  "BGL_S16VREF")
+	   (macro $s16vector-set-ur!::void (::s16vector ::long ::int16)
+		  "BGL_S16VSET")
+	   
+	   (macro $u16vector-ref::uint16 (::u16vector ::long)
 		  "BGL_U16VREF")
-	   (macro $u16vector-set!::void (::u16vector ::long ::ushort)
+	   (macro $u16vector-set!::void (::u16vector ::long ::uint16)
 		  "BGL_U16VSET")
-	   (macro $s32vector-ref::long (::s32vector ::long)
+	   (macro $u16vector-ref-ur::uint16 (::u16vector ::long)
+		  "BGL_U16VREF")
+	   (macro $u16vector-set-ur!::void (::u16vector ::long ::uint16)
+		  "BGL_U16VSET")
+	   
+	   (macro $s32vector-ref::int32 (::s32vector ::long)
 		  "BGL_S32VREF")
-	   (macro $s32vector-set!::void (::s32vector ::long ::long)
+	   (macro $s32vector-set!::void (::s32vector ::long ::int32)
 		  "BGL_S32VSET")
-	   (macro $u32vector-ref::ulong (::u32vector ::long)
+	   (macro $s32vector-ref-ur::int32 (::s32vector ::long)
+		  "BGL_S32VREF")
+	   (macro $s32vector-set-ur!::void (::s32vector ::long ::int32)
+		  "BGL_S32VSET")
+	   
+	   (macro $u32vector-ref::uint32 (::u32vector ::long)
 		  "BGL_U32VREF")
-	   (macro $u32vector-set!::void (::u32vector ::long ::ulong)
+	   (macro $u32vector-set!::void (::u32vector ::long ::uint32)
 		  "BGL_U32VSET")
-	   (macro $s64vector-ref::llong (::s64vector ::long)
+	   (macro $u32vector-ref-ur::uint32 (::u32vector ::long)
+		  "BGL_U32VREF")
+	   (macro $u32vector-set-ur!::void (::u32vector ::long ::uint32)
+		  "BGL_U32VSET")
+	   
+	   (macro $s64vector-ref::int64 (::s64vector ::long)
 		  "BGL_S64VREF")
-	   (macro $s64vector-set!::void (::s64vector ::long ::llong)
+	   (macro $s64vector-set!::void (::s64vector ::long ::int64)
 		  "BGL_S64VSET")
-	   (macro $u64vector-ref::ullong (::u64vector ::long)
+	   (macro $s64vector-ref-ur::int64 (::s64vector ::long)
+		  "BGL_S64VREF")
+	   (macro $s64vector-set-ur!::void (::s64vector ::long ::int64)
+		  "BGL_S64VSET")
+	   
+	   (macro $u64vector-ref::uint64 (::u64vector ::long)
 		  "BGL_U64VREF")
-	   (macro $u64vector-set!::void (::u64vector ::long ::ullong)
+	   (macro $u64vector-set!::void (::u64vector ::long ::uint64)
 		  "BGL_U64VSET")
+	   (macro $u64vector-ref-ur::uint64 (::u64vector ::long)
+		  "BGL_U64VREF")
+	   (macro $u64vector-set-ur!::void (::u64vector ::long ::uint64)
+		  "BGL_U64VSET")
+	   
 	   (macro $f32vector-ref::float (::f32vector ::long)
 		  "BGL_F32VREF")
 	   (macro $f32vector-set!::void (::f32vector ::long ::float)
 		  "BGL_F32VSET")
+	   (macro $f32vector-ref-ur::float (::f32vector ::long)
+		  "BGL_F32VREF")
+	   (macro $f32vector-set-ur!::void (::f32vector ::long ::float)
+		  "BGL_F32VSET")
+	   
 	   (macro $f64vector-ref::double (::f64vector ::long)
 		  "BGL_F64VREF")
 	   (macro $f64vector-set!::void (::f64vector ::long ::double)
-		  "BGL_F64VSET"))
+		  "BGL_F64VSET")
+	   (macro $f64vector-ref-ur::double (::f64vector ::long)
+		  "BGL_F64VREF")
+	   (macro $f64vector-set-ur!::void (::f64vector ::long ::double)
+		  "BGL_F64VSET")
+	   
+	   (macro $s32/s8vector-ref::int32 (::s8vector ::long)
+		  "BGL_S32VREF")
+	   (macro $s32/s8vector-set!::int32 (::s8vector ::long ::int32)
+		  "BGL_S32VREF")
+	   )
 
    (java   (class foreign
 	      (method static $hvector?::bool (::obj)
@@ -149,8 +204,6 @@
 	      
 	      (method static $hvector-length::long (::obj)
 		      "BGL_HVECTOR_LENGTH")
-	      (method static $hvector-bound-check?::bool (::int ::int)
-		      "BOUND_CHECK")
 	      
 	      (method static $alloc-s8vector::s8vector (::long)
 		      "BGL_ALLOC_S8VECTOR")
@@ -173,46 +226,102 @@
 	      (method static $alloc-f64vector::f64vector (::long)
 		      "BGL_ALLOC_F64VECTOR")
 	      
-	      (method static $s8vector-ref::byte (::s8vector ::long)
+	      (method static $s8vector-ref::int8 (::s8vector ::long)
 		      "BGL_S8VREF")
-	      (method static $s8vector-set!::void (::s8vector ::long ::byte)
+	      (method static $s8vector-set!::void (::s8vector ::long ::int8)
 		      "BGL_S8VSET")
-	      (method static $u8vector-ref::ubyte (::u8vector ::long)
+	      (method static $s8vector-ref-ur::int8 (::s8vector ::long)
+		      "BGL_S8VREF")
+	      (method static $s8vector-set-ur!::void (::s8vector ::long ::int8)
+		      "BGL_S8VSET")
+	      
+	      (method static $u8vector-ref::uint8 (::u8vector ::long)
 		      "BGL_U8VREF")
-	      (method static $u8vector-set!::void (::u8vector ::long ::ubyte)
+	      (method static $u8vector-set!::void (::u8vector ::long ::uint8)
 		      "BGL_U8VSET")
-	      (method static $s16vector-ref::short (::s16vector ::long)
+	      (method static $u8vector-ref-ur::uint8 (::u8vector ::long)
+		      "BGL_U8VREF")
+	      (method static $u8vector-set-ur!::void (::u8vector ::long ::uint8)
+		      "BGL_U8VSET")
+	      
+	      (method static $s16vector-ref::int16 (::s16vector ::long)
 		      "BGL_S16VREF")
-	      (method static $s16vector-set!::void (::s16vector ::long ::short)
+	      (method static $s16vector-set!::void (::s16vector ::long ::int16)
 		      "BGL_S16VSET")
-	      (method static $u16vector-ref::ushort (::u16vector ::long)
+	      (method static $s16vector-ref-ur::int16 (::s16vector ::long)
+		      "BGL_S16VREF")
+	      (method static $s16vector-set-ur!::void (::s16vector ::long ::int16)
+		      "BGL_S16VSET")
+	      
+	      (method static $u16vector-ref::uint16 (::u16vector ::long)
 		      "BGL_U16VREF")
-	      (method static $u16vector-set!::void (::u16vector ::long ::ushort)
+	      (method static $u16vector-set!::void (::u16vector ::long ::uint16)
 		      "BGL_U16VSET")
-	      (method static $s32vector-ref::long (::s32vector ::long)
+	      (method static $u16vector-ref-ur::uint16 (::u16vector ::long)
+		      "BGL_U16VREF")
+	      (method static $u16vector-set-ur!::void (::u16vector ::long ::uint16)
+		      "BGL_U16VSET")
+	      
+	      (method static $s32vector-ref::int32 (::s32vector ::long)
 		      "BGL_S32VREF")
-	      (method static $s32vector-set!::void (::s32vector ::long ::long)
+	      (method static $s32vector-set!::void (::s32vector ::long ::int32)
 		      "BGL_S32VSET")
-	      (method static $u32vector-ref::ulong (::u32vector ::long)
+	      (method static $s32vector-ref-ur::int32 (::s32vector ::long)
+		      "BGL_S32VREF")
+	      (method static $s32vector-set-ur!::void (::s32vector ::long ::int32)
+		      "BGL_S32VSET")
+	      
+	      (method static $u32vector-ref::uint32 (::u32vector ::long)
 		      "BGL_U32VREF")
-	      (method static $u32vector-set!::void (::u32vector ::long ::ulong)
+	      (method static $u32vector-set!::void (::u32vector ::long ::uint32)
 		      "BGL_U32VSET")
-    	      (method static $s64vector-ref::llong (::s64vector ::long)
+	      (method static $u32vector-ref-ur::uint32 (::u32vector ::long)
+		      "BGL_U32VREF")
+	      (method static $u32vector-set-ur!::void (::u32vector ::long ::uint32)
+		      "BGL_U32VSET")
+	      
+    	      (method static $s64vector-ref::int64 (::s64vector ::long)
 		     "BGL_S64VREF")
-	      (method static $s64vector-set!::void (::s64vector ::long ::llong)
+	      (method static $s64vector-set!::void (::s64vector ::long ::int64)
 		     "BGL_S64VSET")
-	      (method static $u64vector-ref::ullong (::u64vector ::long)
+    	      (method static $s64vector-ref-ur::int64 (::s64vector ::long)
+		     "BGL_S64VREF")
+	      (method static $s64vector-set-ur!::void (::s64vector ::long ::int64)
+		     "BGL_S64VSET")
+	      
+	      (method static $u64vector-ref::uint64 (::u64vector ::long)
 		     "BGL_U64VREF")
-	      (method static $u64vector-set!::void (::u64vector ::long ::ullong)
+	      (method static $u64vector-set!::void (::u64vector ::long ::uint64)
 		     "BGL_U64VSET")
+	      (method static $u64vector-ref-ur::uint64 (::u64vector ::long)
+		     "BGL_U64VREF")
+	      (method static $u64vector-set-ur!::void (::u64vector ::long ::uint64)
+		     "BGL_U64VSET")
+	      
 	      (method static $f32vector-ref::float (::f32vector ::long)
 		      "BGL_F32VREF")
 	      (method static $f32vector-set!::void (::f32vector ::long ::float)
 		      "BGL_F32VSET")
+	      (method static $f32vector-ref-ur::float (::f32vector ::long)
+		      "BGL_F32VREF")
+	      (method static $f32vector-set-ur!::void (::f32vector ::long ::float)
+		      "BGL_F32VSET")
+	      
 	      (method static $f64vector-ref::double (::f64vector ::long)
 		      "BGL_F64VREF")
 	      (method static $f64vector-set!::void (::f64vector ::long ::double)
-		      "BGL_F64VSET")))
+		      "BGL_F64VSET")
+	      (method static $f64vector-ref-ur::double (::f64vector ::long)
+		      "BGL_F64VREF")
+	      (method static $f64vector-set-ur!::void (::f64vector ::long ::double)
+		      "BGL_F64VSET")
+	      
+
+	      (method static $s32/s8vector-ref::int32 (::s8vector ::long)
+		      "BGL_S32S8VREF")
+	      (method static $s32/s8vector-set!::void (::s8vector ::long ::int32)
+		      "BGL_S32S8VSET")
+	      ))
 
    (export (inline homogeneous-vector? ::obj)
 	   (inline s8vector?::bool ::obj)
@@ -228,16 +337,16 @@
 
 	   (homogeneous-vector-info ::obj)
 
-	   (make-s8vector::s8vector ::long #!optional (init 0))
-	   (make-u8vector::u8vector ::long #!optional (init 0))
-	   (make-s16vector::s16vector ::long #!optional (init 0))
-	   (make-u16vector::u16vector ::long #!optional (init 0))
-	   (make-s32vector::s32vector ::long #!optional (init 0))
-	   (make-u32vector::u32vector ::long #!optional (init 0))
-	   (make-s64vector::s64vector ::long #!optional (init #l0))
-	   (make-u64vector::u64vector ::long #!optional (init #l0))
-	   (make-f32vector::f32vector ::long #!optional (init 0.0))
-	   (make-f64vector::f64vector ::long #!optional (init 0.0))
+	   (make-s8vector::s8vector ::long #!optional (init::int8 #s8:0))
+	   (make-u8vector::u8vector ::long #!optional (init::uint8 #u8:0))
+	   (make-s16vector::s16vector ::long #!optional (init::int16 #s16:0))
+	   (make-u16vector::u16vector ::long #!optional (init::uint16 #u16:0))
+	   (make-s32vector::s32vector ::long #!optional (init::int32 #s32:0))
+	   (make-u32vector::u32vector ::long #!optional (init::uint32 #u32:0))
+	   (make-s64vector::s64vector ::long #!optional (init::int64 #s64:0))
+	   (make-u64vector::u64vector ::long #!optional (init::uint64 #u64:0))
+	   (make-f32vector::f32vector ::long #!optional (init::float 0.0))
+	   (make-f64vector::f64vector ::long #!optional (init::double 0.0))
 
 	   (s8vector::s8vector . obj)
 	   (u8vector::u8vector . obj)
@@ -283,22 +392,24 @@
 	   (f32vector->list::pair-nil ::f32vector)
 	   (f64vector->list::pair-nil ::f64vector)
 
-	   (inline s8vector-ref::byte ::s8vector ::long)
-	   (inline s8vector-set! ::s8vector ::long ::byte)
-	   (inline u8vector-ref::ubyte ::u8vector ::long)
-	   (inline u8vector-set! ::u8vector ::long ::ubyte)
-	   (inline s16vector-ref::short ::s16vector ::long)
-	   (inline s16vector-set! ::s16vector ::long ::short)
-	   (inline u16vector-ref::ushort ::u16vector ::long)
-	   (inline u16vector-set! ::u16vector ::long ::ushort)
-	   (inline s32vector-ref::long ::s32vector ::long)
-	   (inline s32vector-set! ::s32vector ::long ::long)
-	   (inline u32vector-ref::ulong ::u32vector ::long)
-	   (inline u32vector-set! ::u32vector ::long ::ulong)
-	   (inline s64vector-ref::llong ::s64vector ::long)
-	   (inline s64vector-set! ::s64vector ::long ::llong)
-	   (inline u64vector-ref::ullong ::u64vector ::long)
-	   (inline u64vector-set! ::u64vector ::long ::ullong)
+	   (hvector-range-error ::bstring ::obj ::long)
+	   
+	   (inline s8vector-ref::int8 ::s8vector ::long)
+	   (inline s8vector-set! ::s8vector ::long ::int8)
+	   (inline u8vector-ref::uint8 ::u8vector ::long)
+	   (inline u8vector-set! ::u8vector ::long ::uint8)
+	   (inline s16vector-ref::int16 ::s16vector ::long)
+	   (inline s16vector-set! ::s16vector ::long ::int16)
+	   (inline u16vector-ref::uint16 ::u16vector ::long)
+	   (inline u16vector-set! ::u16vector ::long ::uint16)
+	   (inline s32vector-ref::int32 ::s32vector ::long)
+	   (inline s32vector-set! ::s32vector ::long ::int32)
+	   (inline u32vector-ref::uint32 ::u32vector ::long)
+	   (inline u32vector-set! ::u32vector ::long ::uint32)
+	   (inline s64vector-ref::int64 ::s64vector ::long)
+	   (inline s64vector-set! ::s64vector ::long ::int64)
+	   (inline u64vector-ref::uint64 ::u64vector ::long)
+	   (inline u64vector-set! ::u64vector ::long ::uint64)
 	   (inline f32vector-ref::float ::f32vector ::long)
 	   (inline f32vector-set! ::f32vector ::long ::float)
 	   (inline f64vector-ref::double ::f64vector ::long)
@@ -344,30 +455,29 @@
 	  ;; the function $hvector-ident assumes a strict ordering
 	  ;; for hvector type definitions (see bigloo.h)
 	  ((0)
-	   (values 's8 1 s8vector-ref s8vector-set!))
+	   (values 's8 1 s8vector-ref s8vector-set! =s8))
 	  ((1)
-	   (values 'u8 1 u8vector-ref u8vector-set!))
+	   (values 'u8 1 u8vector-ref u8vector-set! =u8))
 	  ((2)
-	   (values 's16 2 s16vector-ref s16vector-set!))
+	   (values 's16 2 s16vector-ref s16vector-set! =s16))
 	  ((3)
-	   (values 'u16 2 u16vector-ref u16vector-set!))
+	   (values 'u16 2 u16vector-ref u16vector-set! =u16))
 	  ((4)
-	   (values 's32 4 s32vector-ref s32vector-set!))
+	   (values 's32 4 s32vector-ref s32vector-set! =s32))
 	  ((5)
-	   (values 'u32 4 u32vector-ref u32vector-set!))
+	   (values 'u32 4 u32vector-ref u32vector-set! =u32))
 	  ((6)
-	   (values 's64 8 s64vector-ref s64vector-set!))
+	   (values 's64 8 s64vector-ref s64vector-set! =s64))
 	  ((7)
-	   (values 'u64 8 u64vector-ref u64vector-set!))
+	   (values 'u64 8 u64vector-ref u64vector-set! =u64))
 	  ((8)
-	   (values 'f32 4 f32vector-ref f32vector-set!))
+	   (values 'f32 4 f32vector-ref f32vector-set! =fl))
 	  ((9)
-	   (values 'f64 8 f64vector-ref f64vector-set!))
+	   (values 'f64 8 f64vector-ref f64vector-set! =fl))
 	  (else
-	   (error 'homogeneous-vector-info
-		  "Illegal hvector ident"
-		  ($hvector-ident o))))
-       (bigloo-type-error 'homogeneous-vector-info "hvector" o)))
+	   (error "homogeneous-vector-info" "Illegal hvector ident"
+	      ($hvector-ident o))))
+       (bigloo-type-error "homogeneous-vector-info" "hvector" o)))
 
 ;*---------------------------------------------------------------------*/
 ;*    hvector-length ...                                               */
@@ -399,11 +509,16 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (define-make-hvector sign sz init)
    (let* ((tid (symbol-append sign
-			      (string->symbol (integer->string sz)) 'vector))
+		  (string->symbol (integer->string sz)) 'vector))
 	  (make (symbol-append 'make- tid))
+	  (tinit (string->symbol
+		    (if (eq? sign 'f)
+			(if (eq? sz 32) "init::float" "init::double")
+			(format "init::~a~a"
+			   (if (eq? sign 's) "int" "uint") sz))))
 	  (aid (symbol-append '$alloc- tid))
 	  (vsetid (symbol-append '$ tid '-set!)))
-      `(define (,make len #!optional (init ,init))
+      `(define (,make len #!optional (,tinit ,init))
 	  (let ((v (,aid len)))
 	     (let loop ((i 0))
 		(when (<fx i len)
@@ -411,193 +526,98 @@
 		   (loop (+fx i 1))))
 	     v))))
 
-(define-make-hvector s 8 0)
-(define-make-hvector u 8 0)
-(define-make-hvector s 16 0)
-(define-make-hvector u 16 0)
-(define-make-hvector s 32 0)
-(define-make-hvector u 32 0)
-(define-make-hvector s 64 #l0)
-(define-make-hvector u 64 #l0)
+(define-make-hvector s 8 #s8:0)
+(define-make-hvector u 8 #u8:0)
+(define-make-hvector s 16 #s16:0)
+(define-make-hvector u 16 #u16:0)
+(define-make-hvector s 32 #s32:0)
+(define-make-hvector u 32 #u32:0)
+(define-make-hvector s 64 #s64:0)
+(define-make-hvector u 64 #u64:0)
 (define-make-hvector f 32 0.0)
 (define-make-hvector f 64 0.0)
 
 ;*---------------------------------------------------------------------*/
+;*    hvector-range-error ...                                          */
+;*---------------------------------------------------------------------*/
+(define (hvector-range-error fun v k)
+   (error fun
+      (string-append "index out of range [0.."
+	 (integer->string (-fx ($hvector-length v) 1))
+	 "]")
+      k))
+   
+;*---------------------------------------------------------------------*/
 ;*    hvector-ref                                                      */
 ;*---------------------------------------------------------------------*/
 (define-inline (s8vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s8vector-ref v k)
-       (error '$s8vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s8vector-ref v k))
 
 (define-inline (u8vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u8vector-ref v k)
-       (error '$u8vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u8vector-ref v k))
 
 (define-inline (s16vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s16vector-ref v k)
-       (error '$s16vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s16vector-ref v k))
 
 (define-inline (u16vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u16vector-ref v k)
-       (error '$u16vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u16vector-ref v k))
 
 (define-inline (s32vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s32vector-ref v k)
-       (error '$s32vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s32vector-ref v k))
 
 (define-inline (u32vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u32vector-ref v k)
-       (error '$u32vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u32vector-ref v k))
 
 (define-inline (s64vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s64vector-ref v k)
-       (error '$s64vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s64vector-ref v k))
 
 (define-inline (u64vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))                
-       ($u64vector-ref v k)                                         
-       (error '$u64vector-ref                                       
- 	      (string-append "index out of range [0.."                 
- 			     (integer->string (-fx ($hvector-length v) 1))
- 			     "]")                                      
- 	      k)))                                                     
+   ($u64vector-ref v k))
 
 (define-inline (f32vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($f32vector-ref v k)
-       (error '$f32vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($f32vector-ref v k))
 
 (define-inline (f64vector-ref v k)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($f64vector-ref v k)
-       (error '$f64vector-ref
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($f64vector-ref v k))
 
+(define-inline (s32/s8vector-ref v k)
+   ($s32/s8vector-ref v k))
+   
 ;*---------------------------------------------------------------------*/
 ;*    hvector-set! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (s8vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s8vector-set! v k val)
-       (error '$s8vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s8vector-set! v k val))
+
 (define-inline (u8vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u8vector-set! v k val)
-       (error '$u8vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u8vector-set! v k val))
+
 (define-inline (s16vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s16vector-set! v k val)
-       (error '$s16vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s16vector-set! v k val))
+
 (define-inline (u16vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u16vector-set! v k val)
-       (error '$u16vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u16vector-set! v k val))
+
 (define-inline (s32vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s32vector-set! v k val)
-       (error '$s32vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s32vector-set! v k val))
+
 (define-inline (u32vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u32vector-set! v k val)
-       (error '$u32vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u32vector-set! v k val))
+
 (define-inline (s64vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($s64vector-set! v k val)
-       (error '$s64vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($s64vector-set! v k val))
+
 (define-inline (u64vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($u64vector-set! v k val)
-       (error '$u64vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($u64vector-set! v k val))
+
 (define-inline (f32vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($f32vector-set! v k val)
-       (error '$f32vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($f32vector-set! v k val))
+
 (define-inline (f64vector-set! v k val)
-   (if ($hvector-bound-check? k ($hvector-length v))
-       ($f64vector-set! v k val)
-       (error '$f64vector-set!
-	      (string-append "index out of range [0.."
-			     (integer->string (-fx ($hvector-length v) 1))
-			     "]")
-	      k)))
+   ($f64vector-set! v k val))
+
+(define-inline (s32/s8vector-set! v k val)
+   ($s32/s8vector-set! v k val))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-hvector->list ...                                         */
@@ -626,7 +646,9 @@
 			      (string->symbol (integer->string sz)) 'vector))
 	  (list-> (symbol-append 'list-> tid))
 	  (cid (symbol-append '$alloc- tid))
-	  (vsetid (symbol-append '$ tid '-set!)))
+	  (vsetid (symbol-append '$ tid '-set!))
+	  (name (if (eq? sign 's) "fixnum->int" "fixnum->uint"))
+	  (conv (string->symbol (string-append name (integer->string sz)))))
       `(define (,list-> x)
 	  (let* ((len (length x))
 		 (vec (,cid len)))
@@ -635,7 +657,8 @@
 		(if (=fx i len)
 		    vec
 		    (begin
-		       (,vsetid vec i (car l))
+		       (,vsetid vec i
+			  (if (fixnum? (car l)) (,conv (car l)) (car l)))
 		       (loop (+fx i 1) (cdr l)))))))))
 
 (define-hvector define-list->hvector)

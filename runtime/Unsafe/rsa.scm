@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Tue Apr 17 07:53:25 2012 (serrano)                */
-;*    Copyright   :  2005-12 Chris Veness                              */
+;*    Last change :  Tue Jun 17 08:15:39 2014 (serrano)                */
+;*    Copyright   :  2005-14 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Message encryption and decryption based on the RSA asymmetric    */
 ;*    cipher.                                                          */
@@ -66,6 +66,12 @@
 	   
 	   (rsa-encrypt-string ::bstring ::obj)
 	   (rsa-decrypt-string ::bstring ::obj)))
+
+;*---------------------------------------------------------------------*/
+;*    u8vector-ref ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-macro (u8vector-ref vec i)
+   `(uint8->fixnum ((@ u8vector-ref __srfi4) ,vec ,i)))
 
 ;*---------------------------------------------------------------------*/
 ;*    rsa-key ...                                                      */

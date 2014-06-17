@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Mar 12 07:08:43 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 16:41:06 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -295,7 +295,7 @@
 	       (method static $int64->elong::elong (::int64)
 		  "INT64_TO_ELONG")
 	       (method static $uint64->elong::elong (::uint64)
-		  "UINT64_TO_ELONG")
+		  "INT64_TO_ELONG")
 	       (method static $elong->sing64::int64 (::elong)
 		  "ELONG_TO_INT64")
 	       (method static $int64->llong::llong (::int64)

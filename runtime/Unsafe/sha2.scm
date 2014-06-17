@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Aug 28 14:56:19 2012 (serrano)                */
-;*    Copyright   :  2008-12 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Tue Jun 17 17:28:49 2014 (serrano)                */
+;*    Copyright   :  2008-14 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -83,8 +83,6 @@
 	   __hmac
 	   __tvector)
 
-;*    (import __r4_output_6_10_3)                                      */
-
    (from   __srfi4)
    
    (export (sha256sum::bstring ::obj)
@@ -94,6 +92,18 @@
 	   (sha256sum-file::bstring ::bstring)
 	   
 	   (hmac-sha256sum-string::bstring ::bstring ::bstring)))
+
+;*---------------------------------------------------------------------*/
+;*    u32vector-set! ...                                               */
+;*---------------------------------------------------------------------*/
+(define-macro (u32vector-set! vec i val)
+   `((@ u32vector-set! __srfi4) ,vec ,i ($ulong->uint32 ,val)))
+
+;*---------------------------------------------------------------------*/
+;*    u32vector-ref ...                                                */
+;*---------------------------------------------------------------------*/
+(define-macro (u32vector-ref vec i)
+   `($uint32->ulong ((@ u32vector-ref __srfi4) ,vec ,i)))
 
 ;*---------------------------------------------------------------------*/
 ;*    u32 ...                                                          */
@@ -532,7 +542,7 @@
 ;*---------------------------------------------------------------------*/
 (define (sha256sum-port p)
 
-   (define buf (make-u32vector 4 0))
+   (define buf (make-u32vector 4))
 
    (define len 0)
 
@@ -549,7 +559,7 @@
 			      (u32vector-set! buf j 0)
 			      (liip (+fx j 1)))))
 		    (begin
-		       (u32vector-set! buf i c)
+		       (u32vector-set! buf i ($byte->ulong c))
 		       (loop (+fx i 1))))))))
 
    (define (fill-word32-port! v32::u32vector i::long p::input-port n::long)

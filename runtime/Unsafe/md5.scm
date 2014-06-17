@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  6 14:35:24 2005                          */
-;*    Last change :  Tue Apr 17 07:52:27 2012 (serrano)                */
-;*    Copyright   :  2002-12 Manuel Serrano                            */
+;*    Last change :  Tue Jun 17 08:01:46 2014 (serrano)                */
+;*    Copyright   :  2002-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MD5 encryption                                                   */
 ;*    -------------------------------------------------------------    */
@@ -143,21 +143,31 @@
    (bit-and a b))
 
 ;*---------------------------------------------------------------------*/
+;*    u32 ...                                                          */
+;*---------------------------------------------------------------------*/
+(define-macro (u32 . l)
+;*    (list->s32vector (map (lambda (x) (fixnum->uint32 x)) l)))       */
+   `(let ((v (make-s32vector ,(length l))))
+       ,@(map (lambda (x i) `(s32vector-set! v ,i ,(fixnum->uint32 x)))
+	  l (iota (length l)))
+       v))
+
+;*---------------------------------------------------------------------*/
 ;*    masks ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define masks
-   '#u32(#x0 #x1 #x3 #x7 #xF #x1F #x3F #x7F #xFF
-	     #x1FF #x3FF #x7FF #xFFF #x1FFF #x3FFF #x7FFF #xFFFF))
+   '#(#x0 #x1 #x3 #x7 #xF #x1F #x3F #x7F #xFF
+      #x1FF #x3FF #x7FF #xFFF #x1FFF #x3FFF #x7FFF #xFFFF))
 
 ;*---------------------------------------------------------------------*/
 ;*    rot ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (rot::long hi::long lo::long s::long)
    (make-word
-    (bit-or (bit-lsh (bit-and hi (u32vector-ref masks (-fx 16 s))) s)
-	    (bit-and (bit-rsh lo (-fx 16 s)) (u32vector-ref masks s)))
-    (bit-or (bit-lsh (bit-and lo (u32vector-ref masks (-fx 16 s))) s)
-	    (bit-and (bit-rsh hi (-fx 16 s)) (u32vector-ref masks s)))))
+    (bit-or (bit-lsh (bit-and hi (vector-ref masks (-fx 16 s))) s)
+	    (bit-and (bit-rsh lo (-fx 16 s)) (vector-ref masks s)))
+    (bit-or (bit-lsh (bit-and lo (vector-ref masks (-fx 16 s))) s)
+	    (bit-and (bit-rsh hi (-fx 16 s)) (vector-ref masks s)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bit-lshw ...                                                     */
@@ -332,10 +342,10 @@
 ;*    For performance concerns, this *must* be implement as a macro.   */
 ;*---------------------------------------------------------------------*/
 (define-macro (%step3-common)
-   '(let* ((A (s32vector-ref R 0))
-	   (B (s32vector-ref R 1))
-	   (C (s32vector-ref R 2))
-	   (D (s32vector-ref R 3))
+   '(let* ((A (int32->fixnum (s32vector-ref R 0)))
+	   (B (int32->fixnum (s32vector-ref R 1)))
+	   (C (int32->fixnum (s32vector-ref R 2)))
+	   (D (int32->fixnum (s32vector-ref R 3)))
 	   
 	   (A (+w B (bit-lshw (+w4 A (F B C D) s0 (make-word 55146 42104)) 7)))
 	   (D (+w A (bit-lshw (+w4 D (F A B C) s1 (make-word 59591 46934)) 12)))
@@ -405,10 +415,14 @@
 	   (C (+w D (bit-lshw (+w4 C (II D A B) s2 (make-word 10967 53947)) 15)))
 	   (B (+w C (bit-lshw (+w4 B (II C D A) s9 (make-word 60294 54161)) 21))))
        
-       (s32vector-set! R 0 (+w A (s32vector-ref R 0)))
-       (s32vector-set! R 1 (+w B (s32vector-ref R 1)))
-       (s32vector-set! R 2 (+w C (s32vector-ref R 2)))
-       (s32vector-set! R 3 (+w D (s32vector-ref R 3)))))
+       (s32vector-set! R 0
+	  (fixnum->int32 (+w A (int32->fixnum (s32vector-ref R 0)))))
+       (s32vector-set! R 1
+	  (fixnum->int32 (+w B (int32->fixnum (s32vector-ref R 1)))))
+       (s32vector-set! R 2
+	  (fixnum->int32 (+w C (int32->fixnum (s32vector-ref R 2)))))
+       (s32vector-set! R 3
+	  (fixnum->int32 (+w D (int32->fixnum (s32vector-ref R 3)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    step3-string ...                                                 */
@@ -539,6 +553,7 @@
 ;*    step5 ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (step5 a b c d)
+   
    (define (string-hex-at! r i h)
       (let ((s "0123456789abcdef"))
 	 (if (>=fx h 16)
@@ -546,11 +561,14 @@
 		(string-set! r (+fx i 1) (string-ref s (bit-and h #xf)))
 		(string-set! r i (string-ref s (bit-and (bit-rsh h 4) #xf))))
 	     (string-set! r (+fx i 1) (string-ref s h)))))
-   (define (string-word-at! r i w)
-      (string-hex-at! r i (bit-and (word-lo w) #xff))
-      (string-hex-at! r (+fx i 2) (bit-and (bit-rsh (word-lo w) 8) #xff))
-      (string-hex-at! r (+fx i 4) (bit-and (word-hi w) #xff))
-      (string-hex-at! r (+fx i 6) (bit-and (bit-rsh (word-hi w) 8) #xff)))
+   
+   (define (string-word-at! r i w::int32)
+      (let ((w::long (int32->fixnum w)))
+	 (string-hex-at! r i (bit-and (word-lo w) #xff))
+	 (string-hex-at! r (+fx i 2) (bit-and (bit-rsh (word-lo w) 8) #xff))
+	 (string-hex-at! r (+fx i 4) (bit-and (word-hi w) #xff))
+	 (string-hex-at! r (+fx i 6) (bit-and (bit-rsh (word-hi w) 8) #xff))))
+   
    (let ((s (make-string 32 #\0)))
       (string-word-at! s 0 a)
       (string-word-at! s 8 b)
