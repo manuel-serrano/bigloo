@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Mon Jun 16 17:54:26 2014 (serrano)                */
+;*    Last change :  Tue Jun 17 20:24:04 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -219,15 +219,15 @@
 (define (make-bignum::bignum len::int)
    ($make-bignum (make-u16vector len)))
 (define (bignum-length bn::bignum)
-   (u16vector-length ($bignum-u16vect bn)))
+   (uint16->fixnum (u16vector-length ($bignum-u16vect bn))))
 (define (bignum-sign bn::bignum)
-   (u16vector-ref ($bignum-u16vect bn) 0))
+   (uint16->fixnum (u16vector-ref ($bignum-u16vect bn) 0)))
 (define (bignum-sign-set! bn::bignum sign::int)
-   (u16vector-set! ($bignum-u16vect bn) 0 sign))
+   (u16vector-set! ($bignum-u16vect bn) 0 (fixnum->uint16 sign)))
 (define (bignum-digit-ref bn::bignum i::int)
-   (u16vector-ref ($bignum-u16vect bn) i))
+   (uint16->fixnum (u16vector-ref ($bignum-u16vect bn) i)))
 (define (bignum-digit-set! bn::bignum i::int digit::int)
-   (u16vector-set! ($bignum-u16vect bn) i digit))
+   (u16vector-set! ($bignum-u16vect bn) i (fixnum->uint16 digit)))
 (define (bignum-set-neg! bn::bignum)
    (bignum-sign-set! bn 0))
 (define (bignum-set-nonneg! bn::bignum)
