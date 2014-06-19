@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Tue Jun 17 20:00:23 2014 (serrano)                */
+;*    Last change :  Thu Jun 19 16:04:17 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1039,7 +1039,7 @@
     (macro $uint64->int64::int64 (::uint64) "(int64_t)")
     (macro $int64->uint64::uint64 (::int64) "(uint64_t)")
 
-    (macro $uint32->ulong::ulong (::uint32) "(ulong)")
+    (macro $uint32->ulong::ulong (::uint32) "(unsigned long)")
     
     (macro $obj->void*::void* (::foreign) "FOREIGN_TO_COBJ")
     ($void*->obj::foreign (::void*) "void_star_to_obj"))

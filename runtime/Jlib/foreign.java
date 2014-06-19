@@ -4020,10 +4020,10 @@ public final class foreign
       v.objs[l] = o;
    }
    
-   public static int BGL_S32S8VREF(s8vector v, int l) {
+   public static int BGL_S32U8VREF(u8vector v, int l) {
       return v.objs[l]<<24 + v.objs[l+1]<<16 + v.objs[l+2]<<8 + v.objs[l+3];
    }
-   public static void BGL_S32S8VSET(s8vector v, int l, int o) {
+   public static void BGL_S32U8VSET(u8vector v, int l, int o) {
       v.objs[l] = (byte)(o>>24);
       v.objs[l+1] = (byte)(o>>16 & 0xff);
       v.objs[l+2] = (byte)(o>>8 & 0xff);

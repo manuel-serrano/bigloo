@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Tue Jun 17 19:49:09 2014 (serrano)                */
+;*    Last change :  Thu Jun 19 08:51:34 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -165,10 +165,10 @@
 	   (macro $f64vector-set-ur!::void (::f64vector ::long ::double)
 		  "BGL_F64VSET")
 	   
-	   (macro $s32/s8vector-ref::int32 (::s8vector ::long)
+	   (macro $s32/u8vector-ref::int32 (::u8vector ::long)
 		  "BGL_S32VREF")
-	   (macro $s32/s8vector-set!::int32 (::s8vector ::long ::int32)
-		  "BGL_S32VREF")
+	   (macro $s32/u8vector-set!::void (::u8vector ::long ::int32)
+		  "BGL_S32VSET")
 	   )
 
    (java   (class foreign
@@ -317,10 +317,10 @@
 		      "BGL_F64VSET")
 	      
 
-	      (method static $s32/s8vector-ref::int32 (::s8vector ::long)
-		      "BGL_S32S8VREF")
-	      (method static $s32/s8vector-set!::void (::s8vector ::long ::int32)
-		      "BGL_S32S8VSET")
+	      (method static $s32/u8vector-ref::int32 (::u8vector ::long)
+		      "BGL_S32U8VREF")
+	      (method static $s32/u8vector-set!::void (::u8vector ::long ::int32)
+		      "BGL_S32U8VSET")
 	      ))
 
    (export (inline homogeneous-vector? ::obj)
@@ -580,8 +580,8 @@
 (define-inline (f64vector-ref v k)
    ($f64vector-ref v k))
 
-(define-inline (s32/s8vector-ref v k)
-   ($s32/s8vector-ref v k))
+(define-inline (s32/u8vector-ref v k)
+   ($s32/u8vector-ref v k))
    
 ;*---------------------------------------------------------------------*/
 ;*    hvector-set! ...                                                 */
@@ -616,8 +616,8 @@
 (define-inline (f64vector-set! v k val)
    ($f64vector-set! v k val))
 
-(define-inline (s32/s8vector-set! v k val)
-   ($s32/s8vector-set! v k val))
+(define-inline (s32/u8vector-set! v k val)
+   ($s32/u8vector-set! v k val))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-hvector->list ...                                         */
