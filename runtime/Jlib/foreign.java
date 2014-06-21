@@ -4020,6 +4020,14 @@ public final class foreign
       v.objs[l] = o;
    }
    
+   public static int BGL_S16U8VREF(u8vector v, int l) {
+      return v.objs[l+2]<<8 + v.objs[l+3];
+   }
+   public static void BGL_S16U8VSET(u8vector v, int l, int o) {
+      v.objs[l] = (byte)(o>>8 & 0xff);
+      v.objs[l+1] = (byte)(o & 0xff);
+   }
+
    public static int BGL_S32U8VREF(u8vector v, int l) {
       return v.objs[l]<<24 + v.objs[l+1]<<16 + v.objs[l+2]<<8 + v.objs[l+3];
    }
@@ -4030,6 +4038,48 @@ public final class foreign
       v.objs[l+3] = (byte)(o & 0xff);
    }
 
+   public static void BGL_SU8VECTOR_COPY(u8vector t, int ts, u8vector s, int ss, int se ) {
+      int len = se - ss;
+      for( int i = 0; i < len; i++ ) {
+	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      }
+   }
+   
+   public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se ) {
+      int len = se - ss;
+      for( int i = 0; i < len; i++ ) {
+	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      }
+   }
+   
+   public static void BGL_SU32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se ) {
+      int len = se - ss;
+      for( int i = 0; i < len; i++ ) {
+	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      }
+   }
+   
+   public static void BGL_SU64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se ) {
+      int len = se - ss;
+      for( int i = 0; i < len; i++ ) {
+	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      }
+   }
+   
+   public static void BGL_F32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se ) {
+      int len = se - ss;
+      for( int i = 0; i < len; i++ ) {
+	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      }
+   }
+   
+   public static void BGL_F64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se ) {
+      int len = se - ss;
+      for( int i = 0; i < len; i++ ) {
+	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      }
+   }
+   
    //////
    // TVECTOR
    //////

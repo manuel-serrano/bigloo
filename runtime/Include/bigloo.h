@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Jun 15 07:49:47 2014 (serrano)                */
+/*    Last change :  Sat Jun 21 09:24:11 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2008,6 +2008,30 @@ BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
 #define BGL_ALLOC_F64VECTOR( len ) \
    alloc_hvector( len, sizeof( double ), F64VECTOR_TYPE )
 
+#define BGL_SU8VECTOR_COPY( target, tstart, source, sstart, ssend ) \
+   memcpy( (void *)&BGL_S8VREF( target, tstart ), (void *)&BGL_S8VREF( source, sstart ), \
+	   (ssend - sstart) )
+   
+#define BGL_SU16VECTOR_COPY( target, tstart, source, sstart, ssend ) \
+   memcpy( (void *)&BGL_S16VREF( target, tstart ), (void *)&BGL_S16VREF( source, sstart ), \
+      (ssend - sstart) * 2 )
+   
+#define BGL_SU32VECTOR_COPY( target, tstart, source, sstart, ssend ) \
+   memcpy( (void *)&BGL_S32VREF( target, tstart ), (void *)&BGL_S32VREF( source, sstart ), \
+      (ssend - sstart) * 4 )
+   
+#define BGL_SU64VECTOR_COPY( target, tstart, source, sstart, ssend ) \
+   memcpy( (void *)&BGL_S64VREF( target, tstart ), (void *)&BGL_S64VREF( source, sstart ), \
+      (ssend - sstart) * 8 )
+   
+#define BGL_F32VECTOR_COPY( target, tstart, source, sstart, ssend ) \
+   memcpy( (void *)&BGL_F32VREF( target, tstart ), (void *)&BGL_F32VREF( source, sstart ), \
+      (ssend - sstart) * 4 )
+   
+#define BGL_F64VECTOR_COPY( target, tstart, source, sstart, ssend ) \
+   memcpy( (void *)&BGL_F64VREF( target, tstart ), (void *)&BGL_F64VREF( source, sstart ), \
+      (ssend - sstart) * 8 )
+   
 /*---------------------------------------------------------------------*/
 /*    Ports                                                            */
 /*---------------------------------------------------------------------*/

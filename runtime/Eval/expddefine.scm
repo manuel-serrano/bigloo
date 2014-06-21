@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Mon Dec  2 10:20:58 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Fri Jun 20 08:30:16 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/
@@ -344,6 +344,7 @@
    (match-case x
       ((?- (?fun ?f0 . ?formals) . (and ?body (not ())))
        (let* ((loc (get-source-location x))
+	      (pf (parse-formal-ident fun loc))
 	      (p0 (parse-formal-ident f0 loc))
 	      (rest (get-args formals loc))
 	      (va (and (not (null? formals))
@@ -355,7 +356,7 @@
 		  (let* ((tformals (dsssl-formals->scheme-typed-formals formals error #t))
 			 (uformals (dsssl-formals->scheme-typed-formals formals error #f))
 			 (res `(generic-add-eval-method!
-				  ,fun
+				  ,(car pf)
 				  ,(cdr p0)
 				  ,(e `(lambda ,(expand-args (cons f0 tformals) e)
 					  (define (call-next-method)
@@ -373,7 +374,7 @@
 				  ',f0)))
 		     (evepairify res x))
 		  (let* ((res `(generic-add-eval-method!
-				  ,fun
+				  ,(car pf)
 				  ,(cdr p0)
 				  ,(e `(lambda ,(expand-args (cons f0 formals) e)
 					  (define (call-next-method)

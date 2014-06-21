@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Thu Jun 19 08:51:34 2014 (serrano)                */
+;*    Last change :  Sat Jun 21 09:14:37 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -45,7 +45,7 @@
 	    __r5_control_features_6_4
 	    
 	    __evenv)
-
+   
    (extern (macro $hvector?::bool (::obj) "BGL_HVECTORP")
 	   (macro $s8vector?::bool (::obj) "BGL_S8VECTORP")
 	   (macro $u8vector?::bool (::obj) "BGL_U8VECTORP")
@@ -59,11 +59,11 @@
 	   (macro $u64vector?::bool (::obj) "BGL_U64VECTORP")
 	   (macro $f32vector?::bool (::obj) "BGL_F32VECTORP")
 	   (macro $f64vector?::bool (::obj) "BGL_F64VECTORP")
-
+	   
 	   (macro $hvector-ident::int (::obj) "BGL_HVECTOR_IDENT")
-
+	   
 	   (macro $hvector-length::long (::obj) "BGL_HVECTOR_LENGTH")
-
+	   
 	   (macro $alloc-s8vector::s8vector (::int32) "BGL_ALLOC_S8VECTOR")
 	   (macro $alloc-u8vector::u8vector (::int32) "BGL_ALLOC_U8VECTOR")
 	   (macro $alloc-s16vector::s16vector (::int32) "BGL_ALLOC_S16VECTOR")
@@ -74,7 +74,7 @@
 	   (macro $alloc-u64vector::u64vector (::int32) "BGL_ALLOC_U64VECTOR")
 	   (macro $alloc-f32vector::f32vector (::int32) "BGL_ALLOC_F32VECTOR")
 	   (macro $alloc-f64vector::f64vector (::int32) "BGL_ALLOC_F64VECTOR")
-
+	   
 	   (macro $s8vector-ref::int8 (::s8vector ::long)
 		  "BGL_S8VREF")
 	   (macro $s8vector-set!::void (::s8vector ::long ::int8)
@@ -165,164 +165,232 @@
 	   (macro $f64vector-set-ur!::void (::f64vector ::long ::double)
 		  "BGL_F64VSET")
 	   
+	   (macro $s16/u8vector-ref::int16 (::u8vector ::long)
+		  "BGL_S16VREF")
+	   (macro $s16/u8vector-set!::void (::u8vector ::long ::int16)
+		  "BGL_S16VSET")
+	   (macro $u16/u8vector-ref::uint16 (::u8vector ::long)
+		  "BGL_U16VREF")
+	   (macro $u16/u8vector-set!::void (::u8vector ::long ::uint16)
+		  "BGL_U16VSET")
+	   
 	   (macro $s32/u8vector-ref::int32 (::u8vector ::long)
 		  "BGL_S32VREF")
 	   (macro $s32/u8vector-set!::void (::u8vector ::long ::int32)
 		  "BGL_S32VSET")
-	   )
+	   (macro $u32/u8vector-ref::uint32 (::u8vector ::long)
+		  "BGL_U32VREF")
+	   (macro $u32/u8vector-set!::void (::u8vector ::long ::uint32)
+		  "BGL_U32VSET")
 
+	   (macro $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
+		  "BGL_SU8VECTOR_COPY")
+	   (macro $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
+		  "BGL_SU8VECTOR_COPY")
+	   (macro $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
+		  "BGL_SU16VECTOR_COPY")
+	   (macro $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)
+		  "BGL_SU16VECTOR_COPY")
+	   (macro $s32vector-copy!::void (::s32vector ::long ::s32vector ::long ::long)
+		  "BGL_SU32VECTOR_COPY")
+	   (macro $u32vector-copy!::void (::u32vector ::long ::u32vector ::long ::long)
+		  "BGL_SU32VECTOR_COPY")
+	   (macro $s64vector-copy!::void (::s64vector ::long ::s64vector ::long ::long)
+		  "BGL_SU64VECTOR_COPY")
+	   (macro $u64vector-copy!::void (::u64vector ::long ::u64vector ::long ::long)
+		  "BGL_SU64VECTOR_COPY")
+	   (macro $f32vector-copy!::void (::f32vector ::long ::f32vector ::long ::long)
+		  "BGL_F32VECTOR_COPY")
+	   (macro $f64vector-copy!::void (::f64vector ::long ::f64vector ::long ::long)
+		  "BGL_F64VECTOR_COPY")
+	   )
+   
    (java   (class foreign
 	      (method static $hvector?::bool (::obj)
-		      "BGL_HVECTORP")
+		 "BGL_HVECTORP")
 	      (method static $s8vector?::bool (::obj)
-		      "BGL_S8VECTORP")
+		 "BGL_S8VECTORP")
 	      (method static $u8vector?::bool (::obj)
-		      "BGL_U8VECTORP")
+		 "BGL_U8VECTORP")
 	      (method static $s16vector?::bool (::obj)
-		      "BGL_S16VECTORP")
+		 "BGL_S16VECTORP")
 	      (method static $u16vector?::bool (::obj)
-		      "BGL_U16VECTORP")
+		 "BGL_U16VECTORP")
 	      (method static $s32vector?::bool (::obj)
-		      "BGL_S32VECTORP")
+		 "BGL_S32VECTORP")
 	      (method static $u32vector?::bool (::obj)
-		      "BGL_U32VECTORP")
+		 "BGL_U32VECTORP")
 	      (method static $s32vector?::bool (::obj)
-		      "BGL_S32VECTORP")
+		 "BGL_S32VECTORP")
 	      (method static $u32vector?::bool (::obj)
-		      "BGL_U32VECTORP")
+		 "BGL_U32VECTORP")
 	      (method static $s64vector?::bool (::obj)
-		      "BGL_S64VECTORP")
+		 "BGL_S64VECTORP")
 	      (method static $u64vector?::bool (::obj)
-		      "BGL_U64VECTORP")
+		 "BGL_U64VECTORP")
 	      (method static $f32vector?::bool (::obj)
-		      "BGL_F32VECTORP")
+		 "BGL_F32VECTORP")
 	      (method static $f64vector?::bool (::obj)
-		      "BGL_F64VECTORP")
+		 "BGL_F64VECTORP")
 	      
 	      (method static $hvector-ident::int (::obj)
-		      "BGL_HVECTOR_IDENT")
+		 "BGL_HVECTOR_IDENT")
 	      
 	      (method static $hvector-length::long (::obj)
-		      "BGL_HVECTOR_LENGTH")
+		 "BGL_HVECTOR_LENGTH")
 	      
 	      (method static $alloc-s8vector::s8vector (::long)
-		      "BGL_ALLOC_S8VECTOR")
+		 "BGL_ALLOC_S8VECTOR")
 	      (method static $alloc-u8vector::u8vector (::long)
-		      "BGL_ALLOC_U8VECTOR")
+		 "BGL_ALLOC_U8VECTOR")
 	      (method static $alloc-s16vector::s16vector (::long)
-		      "BGL_ALLOC_S16VECTOR")
+		 "BGL_ALLOC_S16VECTOR")
 	      (method static $alloc-u16vector::u16vector (::long)
-		      "BGL_ALLOC_U16VECTOR")
+		 "BGL_ALLOC_U16VECTOR")
 	      (method static $alloc-s32vector::s32vector (::long)
-		      "BGL_ALLOC_S32VECTOR")
+		 "BGL_ALLOC_S32VECTOR")
 	      (method static $alloc-u32vector::u32vector (::long)
-		      "BGL_ALLOC_U32VECTOR")
+		 "BGL_ALLOC_U32VECTOR")
 	      (method static $alloc-s64vector::s64vector (::long)
-		      "BGL_ALLOC_S64VECTOR")
+		 "BGL_ALLOC_S64VECTOR")
 	      (method static $alloc-u64vector::u64vector (::long)
-		      "BGL_ALLOC_U64VECTOR")
+		 "BGL_ALLOC_U64VECTOR")
 	      (method static $alloc-f32vector::f32vector (::long)
-		      "BGL_ALLOC_F32VECTOR")
+		 "BGL_ALLOC_F32VECTOR")
 	      (method static $alloc-f64vector::f64vector (::long)
-		      "BGL_ALLOC_F64VECTOR")
+		 "BGL_ALLOC_F64VECTOR")
 	      
 	      (method static $s8vector-ref::int8 (::s8vector ::long)
-		      "BGL_S8VREF")
+		 "BGL_S8VREF")
 	      (method static $s8vector-set!::void (::s8vector ::long ::int8)
-		      "BGL_S8VSET")
+		 "BGL_S8VSET")
 	      (method static $s8vector-ref-ur::int8 (::s8vector ::long)
-		      "BGL_S8VREF")
+		 "BGL_S8VREF")
 	      (method static $s8vector-set-ur!::void (::s8vector ::long ::int8)
-		      "BGL_S8VSET")
+		 "BGL_S8VSET")
 	      
 	      (method static $u8vector-ref::uint8 (::u8vector ::long)
-		      "BGL_U8VREF")
+		 "BGL_U8VREF")
 	      (method static $u8vector-set!::void (::u8vector ::long ::uint8)
-		      "BGL_U8VSET")
+		 "BGL_U8VSET")
 	      (method static $u8vector-ref-ur::uint8 (::u8vector ::long)
-		      "BGL_U8VREF")
+		 "BGL_U8VREF")
 	      (method static $u8vector-set-ur!::void (::u8vector ::long ::uint8)
-		      "BGL_U8VSET")
+		 "BGL_U8VSET")
 	      
 	      (method static $s16vector-ref::int16 (::s16vector ::long)
-		      "BGL_S16VREF")
+		 "BGL_S16VREF")
 	      (method static $s16vector-set!::void (::s16vector ::long ::int16)
-		      "BGL_S16VSET")
+		 "BGL_S16VSET")
 	      (method static $s16vector-ref-ur::int16 (::s16vector ::long)
-		      "BGL_S16VREF")
+		 "BGL_S16VREF")
 	      (method static $s16vector-set-ur!::void (::s16vector ::long ::int16)
-		      "BGL_S16VSET")
+		 "BGL_S16VSET")
 	      
 	      (method static $u16vector-ref::uint16 (::u16vector ::long)
-		      "BGL_U16VREF")
+		 "BGL_U16VREF")
 	      (method static $u16vector-set!::void (::u16vector ::long ::uint16)
-		      "BGL_U16VSET")
+		 "BGL_U16VSET")
 	      (method static $u16vector-ref-ur::uint16 (::u16vector ::long)
-		      "BGL_U16VREF")
+		 "BGL_U16VREF")
 	      (method static $u16vector-set-ur!::void (::u16vector ::long ::uint16)
-		      "BGL_U16VSET")
+		 "BGL_U16VSET")
 	      
 	      (method static $s32vector-ref::int32 (::s32vector ::long)
-		      "BGL_S32VREF")
+		 "BGL_S32VREF")
 	      (method static $s32vector-set!::void (::s32vector ::long ::int32)
-		      "BGL_S32VSET")
+		 "BGL_S32VSET")
 	      (method static $s32vector-ref-ur::int32 (::s32vector ::long)
-		      "BGL_S32VREF")
+		 "BGL_S32VREF")
 	      (method static $s32vector-set-ur!::void (::s32vector ::long ::int32)
-		      "BGL_S32VSET")
+		 "BGL_S32VSET")
 	      
 	      (method static $u32vector-ref::uint32 (::u32vector ::long)
-		      "BGL_U32VREF")
+		 "BGL_U32VREF")
 	      (method static $u32vector-set!::void (::u32vector ::long ::uint32)
-		      "BGL_U32VSET")
+		 "BGL_U32VSET")
 	      (method static $u32vector-ref-ur::uint32 (::u32vector ::long)
-		      "BGL_U32VREF")
+		 "BGL_U32VREF")
 	      (method static $u32vector-set-ur!::void (::u32vector ::long ::uint32)
-		      "BGL_U32VSET")
+		 "BGL_U32VSET")
 	      
     	      (method static $s64vector-ref::int64 (::s64vector ::long)
-		     "BGL_S64VREF")
+		 "BGL_S64VREF")
 	      (method static $s64vector-set!::void (::s64vector ::long ::int64)
-		     "BGL_S64VSET")
+		 "BGL_S64VSET")
     	      (method static $s64vector-ref-ur::int64 (::s64vector ::long)
-		     "BGL_S64VREF")
+		 "BGL_S64VREF")
 	      (method static $s64vector-set-ur!::void (::s64vector ::long ::int64)
-		     "BGL_S64VSET")
+		 "BGL_S64VSET")
 	      
 	      (method static $u64vector-ref::uint64 (::u64vector ::long)
-		     "BGL_U64VREF")
+		 "BGL_U64VREF")
 	      (method static $u64vector-set!::void (::u64vector ::long ::uint64)
-		     "BGL_U64VSET")
+		 "BGL_U64VSET")
 	      (method static $u64vector-ref-ur::uint64 (::u64vector ::long)
-		     "BGL_U64VREF")
+		 "BGL_U64VREF")
 	      (method static $u64vector-set-ur!::void (::u64vector ::long ::uint64)
-		     "BGL_U64VSET")
+		 "BGL_U64VSET")
 	      
 	      (method static $f32vector-ref::float (::f32vector ::long)
-		      "BGL_F32VREF")
+		 "BGL_F32VREF")
 	      (method static $f32vector-set!::void (::f32vector ::long ::float)
-		      "BGL_F32VSET")
+		 "BGL_F32VSET")
 	      (method static $f32vector-ref-ur::float (::f32vector ::long)
-		      "BGL_F32VREF")
+		 "BGL_F32VREF")
 	      (method static $f32vector-set-ur!::void (::f32vector ::long ::float)
-		      "BGL_F32VSET")
+		 "BGL_F32VSET")
 	      
 	      (method static $f64vector-ref::double (::f64vector ::long)
-		      "BGL_F64VREF")
+		 "BGL_F64VREF")
 	      (method static $f64vector-set!::void (::f64vector ::long ::double)
-		      "BGL_F64VSET")
+		 "BGL_F64VSET")
 	      (method static $f64vector-ref-ur::double (::f64vector ::long)
-		      "BGL_F64VREF")
+		 "BGL_F64VREF")
 	      (method static $f64vector-set-ur!::void (::f64vector ::long ::double)
-		      "BGL_F64VSET")
+		 "BGL_F64VSET")
 	      
-
+	      
+	      (method static $s16/u8vector-ref::int16 (::u8vector ::long)
+		 "BGL_S16U8VREF")
+	      (method static $s16/u8vector-set!::void (::u8vector ::long ::int16)
+		 "BGL_S16U8VSET")
+	      (method static $u16/u8vector-ref::int16 (::u8vector ::long)
+		 "BGL_S16U8VREF")
+	      (method static $u16/u8vector-set!::void (::u8vector ::long ::int16)
+		 "BGL_S16U8VSET")
+	      
 	      (method static $s32/u8vector-ref::int32 (::u8vector ::long)
-		      "BGL_S32U8VREF")
+		 "BGL_S32U8VREF")
 	      (method static $s32/u8vector-set!::void (::u8vector ::long ::int32)
-		      "BGL_S32U8VSET")
+		 "BGL_S32U8VSET")
+	      (method static $u32/u8vector-ref::int32 (::u8vector ::long)
+		 "BGL_S32U8VREF")
+	      (method static $u32/u8vector-set!::void (::u8vector ::long ::int32)
+		 "BGL_S32U8VSET")
+	      
+	      (method static $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
+		 "BGL_SU8VECTOR_COPY")
+	      (method static $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
+		 "BGL_SU8VECTOR_COPY")
+	      (method static $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
+		 "BGL_SU16VECTOR_COPY")
+	      (method static $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)
+		 "BGL_SU16VECTOR_COPY")
+	      (method static $s32vector-copy!::void (::s32vector ::long ::s32vector ::long ::long)
+		 "BGL_SU32VECTOR_COPY")
+	      (method static $u32vector-copy!::void (::u32vector ::long ::u32vector ::long ::long)
+		 "BGL_SU32VECTOR_COPY")
+	      (method static $s64vector-copy!::void (::s64vector ::long ::s64vector ::long ::long)
+		 "BGL_SU64VECTOR_COPY")
+	      (method static $u64vector-copy!::void (::u64vector ::long ::u64vector ::long ::long)
+		 "BGL_SU64VECTOR_COPY")
+	      (method static $f32vector-copy!::void (::f32vector ::long ::f32vector ::long ::long)
+		 "BGL_F32VECTOR_COPY")
+	      (method static $f64vector-copy!::void (::f64vector ::long ::f64vector ::long ::long)
+		 "BGL_F64VECTOR_COPY")
 	      ))
-
+   
    (export (inline homogeneous-vector? ::obj)
 	   (inline s8vector?::bool ::obj)
 	   (inline u8vector?::bool ::obj)
@@ -334,9 +402,9 @@
 	   (inline u64vector?::bool ::obj)
 	   (inline f32vector?::bool ::obj)
 	   (inline f64vector?::bool ::obj)
-
+	   
 	   (homogeneous-vector-info ::obj)
-
+	   
 	   (make-s8vector::s8vector ::long #!optional (init::int8 #s8:0))
 	   (make-u8vector::u8vector ::long #!optional (init::uint8 #u8:0))
 	   (make-s16vector::s16vector ::long #!optional (init::int16 #s16:0))
@@ -347,7 +415,7 @@
 	   (make-u64vector::u64vector ::long #!optional (init::uint64 #u64:0))
 	   (make-f32vector::f32vector ::long #!optional (init::float 0.0))
 	   (make-f64vector::f64vector ::long #!optional (init::double 0.0))
-
+	   
 	   (s8vector::s8vector . obj)
 	   (u8vector::u8vector . obj)
 	   (s16vector::s16vector . obj)
@@ -358,7 +426,7 @@
 	   (u64vector::u64vector . obj)
 	   (f32vector::f32vector . obj)
 	   (f64vector::f64vector . obj)
-
+	   
 	   (inline s8vector-length::long ::s8vector)
 	   (inline u8vector-length::long ::u8vector)
 	   (inline s16vector-length::long ::s16vector)
@@ -369,7 +437,7 @@
 	   (inline u64vector-length::long ::u64vector)
 	   (inline f32vector-length::long ::f32vector)
 	   (inline f64vector-length::long ::f64vector)
-
+	   
 	   (list->s8vector::s8vector ::pair-nil)
 	   (list->u8vector::u8vector ::pair-nil)
 	   (list->s16vector::s16vector ::pair-nil)
@@ -380,7 +448,7 @@
 	   (list->u64vector::u64vector ::pair-nil)
 	   (list->f32vector::f32vector ::pair-nil)
 	   (list->f64vector::f64vector ::pair-nil)
-
+	   
 	   (s8vector->list::pair-nil ::s8vector)
 	   (u8vector->list::pair-nil ::u8vector)
 	   (s16vector->list::pair-nil ::s16vector)
@@ -391,7 +459,7 @@
 	   (u64vector->list::pair-nil ::u64vector)
 	   (f32vector->list::pair-nil ::f32vector)
 	   (f64vector->list::pair-nil ::f64vector)
-
+	   
 	   (hvector-range-error ::bstring ::obj ::long)
 	   
 	   (inline s8vector-ref::int8 ::s8vector ::long)
@@ -413,7 +481,28 @@
 	   (inline f32vector-ref::float ::f32vector ::long)
 	   (inline f32vector-set! ::f32vector ::long ::float)
 	   (inline f64vector-ref::double ::f64vector ::long)
-	   (inline f64vector-set! ::f64vector ::long ::double)))
+	   (inline f64vector-set! ::f64vector ::long ::double)
+	   
+	   (s8vector-copy! target::s8vector tstart::long source::s8vector
+	      #!optional (sstart 0) (send (s8vector-length source)))
+	   (u8vector-copy! target::u8vector tstart::long source::u8vector
+	      #!optional (sstart 0) (send (u8vector-length source)))
+	   (s16vector-copy! target::s16vector tstart::long source::s16vector
+	      #!optional (sstart 0) (send (s16vector-length source)))
+	   (u16vector-copy! target::u16vector tstart::long source::u16vector
+	      #!optional (sstart 0) (send (u16vector-length source)))
+	   (s32vector-copy! target::s32vector tstart::long source::s32vector
+	      #!optional (sstart 0) (send (s32vector-length source)))
+	   (u32vector-copy! target::u32vector tstart::long source::u32vector
+	      #!optional (sstart 0) (send (u32vector-length source)))
+	   (s64vector-copy! target::s64vector tstart::long source::s64vector
+	      #!optional (sstart 0) (send (s64vector-length source)))
+	   (u64vector-copy! target::u64vector tstart::long source::u64vector
+	      #!optional (sstart 0) (send (u64vector-length source)))
+	   (f32vector-copy! target::f32vector tstart::long source::f32vector
+	      #!optional (sstart 0) (send (f32vector-length source)))
+	   (f64vector-copy! target::f64vector tstart::long source::f64vector
+	      #!optional (sstart 0) (send (f64vector-length source)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-hvector ...                                               */
@@ -662,3 +751,37 @@
 		       (loop (+fx i 1) (cdr l)))))))))
 
 (define-hvector define-list->hvector)
+
+;*---------------------------------------------------------------------*/
+;*    vector-copy! ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-macro (define-vector-copy! sign sz)
+   (let* ((tid (symbol-append sign
+		  (string->symbol (integer->string sz)) 'vector))
+	  (list-> (symbol-append 'list-> tid))
+	  (cid (symbol-append '$alloc- tid))
+	  (vsetid (symbol-append '$ tid '-set!))
+	  (name (if (eq? sign 's) "fixnum->int" "fixnum->uint"))
+	  (conv (string->symbol (string-append name (integer->string sz))))
+	  (getlen (string->symbol (format "~a~avector-length" sign sz)))
+	  (copy! (string->symbol (format "~a~avector-copy!" sign sz)))
+	  ($copy! (symbol-append '$ copy!)))
+      `(define (,copy! target tstart source
+		  #!optional (sstart 0) (send (,getlen source)))
+	  ,(unless *unsafe-range*
+	      `(cond
+		  ((<fx tstart 0)
+		   (error ,(symbol->string copy!) "Illegal target start index" tstart))
+		  ((<fx sstart 0)
+		   (error ,(symbol->string copy!) "Illegal source start index" sstart))
+		  ((>=fx send (,getlen source))
+		   (error ,(symbol->string copy!) "Illegal source end index" send))
+		  ((<fx send start)
+		   (error ,(symbol->string copy!) "Illegal source end index" send))
+		  
+		  ((>= (-fx send start) (,getlen target))
+		   (error ,(symbol->string copy!) "Illegal source length"  (-fx send start))))
+	      `(,$copy! target tstart source sstart send)))))
+
+
+(define-hvector define-vector-copy!)
