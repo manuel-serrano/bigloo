@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Sat Jun 21 09:04:06 2014 (serrano)                */
+;*    Last change :  Sat Jun 21 10:10:10 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -101,7 +101,7 @@
 	    (inline vector-tag-set! ::vector ::int)
 	    (copy-vector::vector ::vector ::int)
 	    (vector-copy::vector ::vector . args)
-	    (vector-copy! ::vector ::long source::vector #!optional (sstart 0) (send (vector-length source)))
+	    (vector-copy! ::vector ::long source #!optional (sstart 0) (send (vector-length source)))
 	    (vector-append::vector ::vector . args)
 	    (sort ::obj ::obj)
 	    (vector-map::vector ::procedure ::vector . rests)
