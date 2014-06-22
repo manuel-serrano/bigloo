@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Sat Jun 21 09:14:37 2014 (serrano)                */
+;*    Last change :  Sun Jun 22 08:29:04 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -182,6 +182,25 @@
 		  "BGL_U32VREF")
 	   (macro $u32/u8vector-set!::void (::u8vector ::long ::uint32)
 		  "BGL_U32VSET")
+
+	   (macro $s64/u8vector-ref::int64 (::u8vector ::long)
+		  "BGL_S64VREF")
+	   (macro $s64/u8vector-set!::void (::u8vector ::long ::int64)
+		  "BGL_S64VSET")
+	   (macro $u64/u8vector-ref::uint64 (::u8vector ::long)
+		  "BGL_U64VREF")
+	   (macro $u64/u8vector-set!::void (::u8vector ::long ::uint64)
+		  "BGL_U64VSET")
+
+	   (macro $f32/u8vector-ref::float (::u8vector ::long)
+		  "BGL_F32VREF")
+	   (macro $f32/u8vector-set!::void (::u8vector ::long ::float)
+		  "BGL_F32VSET")
+	   
+	   (macro $f64/u8vector-ref::double (::u8vector ::long)
+		  "BGL_F64VREF")
+	   (macro $f64/u8vector-set!::void (::u8vector ::long ::double)
+		  "BGL_F64VSET")
 
 	   (macro $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
 		  "BGL_SU8VECTOR_COPY")
@@ -368,6 +387,25 @@
 		 "BGL_S32U8VREF")
 	      (method static $u32/u8vector-set!::void (::u8vector ::long ::int32)
 		 "BGL_S32U8VSET")
+
+	      (method static $s64/u8vector-ref::int64 (::u8vector ::long)
+		 "BGL_S64U8VREF")
+	      (method static $s64/u8vector-set!::void (::u8vector ::long ::int64)
+		 "BGL_S64U8VSET")
+	      (method static $u64/u8vector-ref::int64 (::u8vector ::long)
+		 "BGL_S64U8VREF")
+	      (method static $u64/u8vector-set!::void (::u8vector ::long ::int64)
+		 "BGL_S64U8VSET")
+
+	      (method static $f32/8vector-ref::float (::u8vector ::long)
+		 "BGL_F32U8VREF")
+	      (method static $f32/8vector-set!::void (::u8vector ::long ::float)
+		 "BGL_F32U8VREF")
+	      
+	      (method static $f64/8vector-ref::double (::u8vector ::long)
+		 "BGL_F64U8VREF")
+	      (method static $f64/8vector-set!::void (::u8vector ::long ::double)
+		 "BGL_F64U8VREF")
 	      
 	      (method static $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
 		 "BGL_SU8VECTOR_COPY")
