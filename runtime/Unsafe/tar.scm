@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 23 17:07:04 2006                          */
-;*    Last change :  Mon Jul  2 19:22:07 2012 (serrano)                */
-;*    Copyright   :  2006-12 Manuel Serrano                            */
+;*    Last change :  Mon Jun 23 12:54:47 2014 (serrano)                */
+;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Read TAR files (rfc1505)                                         */
 ;*    -------------------------------------------------------------    */
@@ -71,7 +71,7 @@
 	   (tar-read-header #!optional (port (current-input-port)))
 	   (tar-read-block ::obj #!optional (p (current-input-port)))
 	   (tar-round-up-to-record-size::long ::obj)
-	   (untar ::obj #!key (directory (pwd)) file)))
+	   (untar ::obj #!key (directory (pwd)) file (files '()))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tar-error ...                                                    */
@@ -250,12 +250,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    untar ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (untar ip #!key (directory (pwd)) file)
+(define (untar ip #!key (directory (pwd)) file (files '()))
    (cond
       ((not (input-port? ip))
        (bigloo-type-error 'untar "input-port" ip))
       ((string? file)
-       (untar-file ip file))
+       (untar-files ip (list file)))
+      ((and (pair? files) (list? files) (every string? files))
+       (untar-files ip files))
       (else
        (untar-directory ip (if (string? directory) directory (pwd))))))
 
@@ -308,9 +310,9 @@
 			  (obj name))))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    untar-file ...                                                   */
+;*    untar-files ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (untar-file ip::input-port file::bstring)
+(define (untar-files ip::input-port files::pair-nil)
    (let loop ()
       (let ((h (tar-read-header ip)))
 	 (when (isa? h tar-header)
@@ -321,7 +323,7 @@
 		  ((normal)
 		   (let ((b (tar-read-block h ip))
 			 (n name))
-		      (if (string=? n file)
+		      (if (member n files)
 			  b
 			  (loop))))
 		  (else
