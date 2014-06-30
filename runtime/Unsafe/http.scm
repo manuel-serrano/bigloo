@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Mon Apr  8 16:07:27 2013 (serrano)                */
-;*    Copyright   :  2007-13 Manuel Serrano                            */
+;*    Last change :  Wed Jun 25 06:54:22 2014 (serrano)                */
+;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
 ;*=====================================================================*/
@@ -191,6 +191,9 @@
        ;; a request with a variable length body
        (display-line out)
        (send-chars body out))
+      ((procedure? body)
+       (display-line out)
+       (body out))
       (else
        ;; a request without a body
        (display-line out)))

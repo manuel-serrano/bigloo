@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Fri Jun  6 11:02:41 2014 (serrano)                */
+;*    Last change :  Fri Jun 27 12:10:38 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -20,7 +20,7 @@
    (export (json-parse o::input-port #!key
 	      array-alloc array-set array-return
 	      object-alloc object-set object-return
-	      parse-error reviver)))
+	      parse-error reviver expr)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return ...                                                       */
@@ -163,7 +163,7 @@
 (define (json-parse o::input-port #!key
 	   array-alloc array-set array-return
 	   object-alloc object-set object-return
-	   parse-error reviver)
+	   parse-error reviver expr)
 
    (define (check-procedure proc arity name)
       (unless (and (procedure? proc) (correct-arity? proc arity))
@@ -185,8 +185,8 @@
 	 (if (eq? (car token) type)
 	     token
 	     (parse-error (format "token \"~a\" expected" type)
-		(cadr token)
-		(caddr token)))))
+		(caddr token)
+		(cadddr token)))))
    
    (define (parse-array array)
       (let ((val (parse-text 'ANGLE-CLO)))
@@ -205,7 +205,7 @@
 			     (loop (+fx i 1))))
 			 (else
 			  (parse-error "syntax error"
-			     (cadr token) (caddr token))))))))))
+			     (caddr token) (cadddr token))))))))))
 
    (define (parse-object object)
       (let loop ()
@@ -214,10 +214,12 @@
 	       ((STRING)
 		(parse-token 'COLON)
 		(let* ((key (cadr token))
-		       (val (parse-text #f))
-		       (res (if reviver (reviver object key val) val)))
-		   (when res
-		      (object-set object key res))
+		       (val (parse-text #f)))
+		   (if reviver
+		       (let ((res (if reviver (reviver object key val) val)))
+			  (when res
+			     (object-set object key res)))
+		       (object-set object key val))
 		   (loop)))
 	       ((COMMA)
 		(loop))
@@ -226,8 +228,8 @@
 	       (else
 		(parse-error
 		   (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
-		   (cadr token)
-		   (caddr token)))))))
+		   (caddr token)
+		   (cadddr token)))))))
    
    (define (parse-text end)
       (let loop ()
@@ -242,13 +244,13 @@
 	       ((ERROR)
 		(parse-error
 		   (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
-		   (cadr token) (caddr token)))
+		   (caddr token) (cadddr token)))
 	       (else
-		(unless (eq? (car token) end) 
+		(unless (eq? (car token) end)
 		   (parse-error
 		      (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
-		      (cadr token)
-		      (caddr token))))))))
+		      (caddr token)
+		      (cadddr token))))))))
 
    (check-procedure array-alloc 0 :array-alloc)
    (check-procedure array-set 3 :array-set)
@@ -260,11 +262,12 @@
    (when reviver (check-procedure reviver 3 :reviver))
 
    (let ((val (parse-text #f)))
-      (let ((token (parse-text 'EOS)))
-	 (when token
-	    (parse-error (format "Illegal JSON trailing ~a token: \"~a\""
-			    (car token) (cadr token))
-	       (cadr last-token) (caddr last-token))))
+      (unless expr
+	 (let ((token (parse-text 'EOS)))
+	    (when token
+	       (parse-error (format "Illegal JSON trailing ~a token: \"~a\""
+			       (car token) (cadr token))
+		  (cadr last-token) (caddr last-token)))))
       val))
 
 
