@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Tue Apr 17 07:43:47 2012 (serrano)                */
+;*    Last change :  Wed Jul  2 16:30:28 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -430,6 +430,7 @@
         ((lambda)                                            pp-lambda)
         ((let* letrec)                                       pp-let)
 	((define define-inline define-method define-generic) pp-define)
+	((module)                                            pp-define)
 	((defun de)                                          pp-defun)
         ((if set!)                                           pp-if)
         ((cond)                                              pp-cond)

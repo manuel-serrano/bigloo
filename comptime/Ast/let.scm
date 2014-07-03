@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Feb 16 08:43:15 2014 (serrano)                */
+;*    Last change :  Thu Jul  3 09:07:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -572,18 +572,80 @@
    (define (used? var ebindings)
       (any (lambda (eb) (memq var (caddr eb))) ebindings))
 
+   (define (op? val)
+      (memq val '(+ - *
+		  +fx -fx *fx
+		  +elong -elong *elong
+		  +llong -llong *llong
+		  +s8 -s8 *s8
+		  +u8 -u8 *u8
+		  +s16 -s16 *s16
+		  +u16 -u16 *u16
+		  +s32 -s32 *s32
+		  +u32 -u32 *u32
+		  +s64 -s64 *s64
+		  +u64 -u64 *u64
+		  +f32 -f32 *f32
+		  +f64 -f64 *f64
+
+		  > >= < <= =
+		  >fx >=fx <fx <=fx =fx
+		  >elong >=elong <elong <=elong =elong
+		  >llong >=llong <llong <=llong =llong
+		  >s8 >=s8 <s8 <=s8 =s8
+		  >u8 >=u8 <u8 <=u8 =u8
+		  >s16 >=s16 <s16 <=s16 =s16
+		  >u16 >=u16 <u16 <=u16 =u16
+		  >s32 >=s32 <s32 <=s32 =s32
+		  >u32 >=u32 <u32 <=u32 =u32
+		  >s64 >=s64 <s64 <=s64 =s64
+		  >u64 >=u64 <u64 <=u64 =u64
+		  >f32 >=f32 <f32 <=f32 =f32
+		  >f64 >=f64 <f64 <=f64 =f64
+
+		  eq? equal?
+		  
+		  bit-lsh bit-rsh bit-ursh bit-not bit-xor
+		  bit-lshelong bit-rshelong bit-urshelong bit-notelong bit-xorelong
+		  bit-lshs8 bit-rshs8 bit-urshs8 bit-nots8 bit-xors8
+		  bit-lshu8 bit-rshu8 bit-urshu8 bit-notu8 bit-xoru8
+		  bit-lshs16 bit-rshs16 bit-urshs16 bit-nots16 bit-xors16
+		  bit-lshu16 bit-rshu16 bit-urshu16 bit-notu16 bit-xoru16
+		  bit-lshs32 bit-rshs32 bit-urshs32 bit-nots32 bit-xors32
+		  bit-lshu32 bit-rshu32 bit-urshu32 bit-notu32 bit-xoru32
+		  bit-lshs64 bit-rshs64 bit-urshs64 bit-nots64 bit-xors64
+		  bit-lshu64 bit-rshu64 bit-urshu64 bit-notu64 bit-xoru64)))
+   
+   (define (side-effect-ebinding? e)
+      (let loop ((val (cadr (car e))))
+	 (match-case val
+	    ((? function?) #f)
+	    ((or (? number?) (? string?)) #f)
+	    ((? symbol?) #f)
+	    (((kwote quote) . ?-) #f)
+	    (((? op?) ?e1 ?e2) (or (loop e1) (loop e2)))
+	    (((kwote not) ?e) (loop e))
+	    ((if ?test ?then ?else) (or (loop test) (loop then) (loop else)))
+	    (else #t))))
+   
    (define (split-post-bindings ebindings)
       (with-trace 2 "split-post-bindings"
 	 (let ((letrec*-bindings '())
 	       (post-bindings '()))
-	    (for-each (lambda (e)
-			 (let ((var (cadr e)))
-			    (if (or (function? (cadr (car e)))
-				    (used? var ebindings))
-				(set! letrec*-bindings (cons e letrec*-bindings))
-				(set! post-bindings (cons e post-bindings)))))
-	       ebindings)
-	    (values (reverse! letrec*-bindings) (reverse! post-bindings)))))
+	    (let loop ((es ebindings)
+		       (rec*-bindings '())
+		       (post-bindings '()))
+	       (if (null? es)
+		   (values (reverse! rec*-bindings) (reverse! post-bindings))
+		   (let* ((e (car es))
+			  (var (cadr e))
+			  (val (cadr (car e)))
+			  (rest (cdr es)))
+		      (if (or (function? val)
+			      (used? var ebindings)
+			      (any side-effect-ebinding? rest))
+			  (loop rest (cons e rec*-bindings) post-bindings)
+			  (loop rest rec*-bindings (cons e post-bindings)))))))))
 
    (define (split-pre-bindings ebindings)
       (with-trace 2 "split-pre-bindings"
@@ -657,7 +719,7 @@
    (define (stage1 ebindings body)
       ;; stage 1, try to put as many variables as possible on tail positions
       (with-trace 2 "letrec*, stage1"
-	 (trace-item "ebindings" (map (lambda (b) (shape (caar b))) ebindings))
+	 (trace-item "ebindings=" (map (lambda (b) (shape (caar b))) ebindings))
 	 (cond
 	    ((null? ebindings)
 	     (sexp->node body stack loc site))
@@ -687,7 +749,6 @@
 			   bindings vars)))
 	 (stage1 ebindings (epairify-propagate-loc `(begin ,@body) loc))))
 
-;*    (tprint "sexp=" sexp)                                            */
    (match-case sexp
       ((letrec* () . ?body)
        ;; not a real letrec*

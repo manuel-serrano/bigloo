@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Tue Dec 17 18:20:03 2013 (serrano)                */
+;*    Last change :  Thu Jul  3 08:25:26 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -222,6 +222,17 @@
       (foo)))
 
 ;*---------------------------------------------------------------------*/
+;*    test-letrec*13 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*13)
+   (define x (begin (set! v 0) 0))
+   (define y (begin (set! v 1) 1))
+   (define z y)
+   v)
+
+(define v 45)
+
+;*---------------------------------------------------------------------*/
 ;*    test-narrow ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    This definition corresponds to the expansion of a letrec*        */
@@ -258,4 +269,5 @@
    (test "letrec*.10" (test-letrec*10 3) #f)
    (test "letrec*.11" (test-letrec*11 3) 22)
    (test "letrec*.12" (test-letrec*12) 10)
+   (test "letrec*.13" (test-letrec*13) 1)
    (test "narrow" (test-narrow) 5))
