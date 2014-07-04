@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Mar  7 07:55:22 2014 (serrano)                */
+;*    Last change :  Fri Jul  4 05:15:14 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -662,7 +662,7 @@
 				    (+fx lnum 1)
 				    opos)))))
 		   (close-input-port port))
-		(values file #f #f #f)))))
+		(values file #f point #f)))))
    
    (define (location-line-col file line col)
       (if (and (>=fx line 0) (>=fx col 0))
@@ -931,9 +931,23 @@
 	     ;; got a localized stack frame
 	     (multiple-value-bind (file lnum lpoint lstring)
 		(location-line-num loc)
-		(if (and (string? file) (string? lstring))
-		    (display-source file lnum lpoint lstring)
-		    (loop (cdr stack)))))
+		(cond
+		   ((and (string? file) (string? lstring))
+		    (display-source file lnum lpoint lstring))
+		   ((and (string? file) (integer? lpoint))
+		    (if (integer? lnum)
+			(fprint (current-error-port)
+			   "File ~s, line ~d, character ~d\n"
+			   (relative-file-name file)
+			   lnum
+			   lpoint)
+			(fprint (current-error-port)
+			   "File ~s, line ~d, character ~d\n"
+			   (relative-file-name file)
+			   lnum
+			   lpoint)))
+		   (else
+		    (loop (cdr stack))))))
 	    (else
 	     (loop (cdr stack)))))))
 
