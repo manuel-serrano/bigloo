@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jul  4 05:15:14 2014 (serrano)                */
+;*    Last change :  Sat Jul  5 06:55:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -936,15 +936,14 @@
 		    (display-source file lnum lpoint lstring))
 		   ((and (string? file) (integer? lpoint))
 		    (if (integer? lnum)
-			(fprint (current-error-port)
+			(fprintf (current-error-port)
 			   "File ~s, line ~d, character ~d\n"
 			   (relative-file-name file)
 			   lnum
 			   lpoint)
-			(fprint (current-error-port)
-			   "File ~s, line ~d, character ~d\n"
+			(fprintf (current-error-port)
+			   "File ~s, character ~d\n"
 			   (relative-file-name file)
-			   lnum
 			   lpoint)))
 		   (else
 		    (loop (cdr stack))))))
@@ -1098,6 +1097,8 @@
        "bbool")
       ((null? obj)
        "bnil")
+      ((eq? obj #unspecified)
+       "unspecified")
       ((epair? obj)
        "epair")
       ((pair? obj)
