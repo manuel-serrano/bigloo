@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Thu Apr 10 18:31:13 2014 (serrano)                */
+;*    Last change :  Tue Jul  8 13:45:43 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -197,7 +197,7 @@
       (or month (date-month date))
       (or year (date-year date))
       (or timezone (date-timezone date))
-      (or timezone (not (= (date-timezone date) 0)))
+      (integer? timezone)
       (date-is-dst date)))
       
 ;*---------------------------------------------------------------------*/
@@ -492,13 +492,13 @@
 	     (read/rp time-grammar (the-port))
 	     (let ((zone (read/rp zone-grammar (the-port))))
 		(make-date :sec second
-		   :min minute
-		   :hour hour
-		   :month month
-		   :year (if (<fx year 100) (+fx year 2000) year)
-		   :day day
-		   :timezone zone
-		   :dst 0)))))
+			    :min minute
+			    :hour hour
+			    :month month
+			    :year (if (<fx year 100) (+fx year 2000) year)
+			    :day day
+			    :timezone zone
+			    :dst 0)))))
       ((+ digit)
        (let* ((day (the-fixnum))
 	      (month (read/rp month-grammar (the-port)))
