@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Wed May 14 10:16:01 2014 (serrano)                */
+;*    Last change :  Thu Jul 10 12:25:15 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -18,7 +18,8 @@
 	   __libuv_loop
 	   __libuv_timer
 	   __libuv_handle
-	   __libuv_async)
+	   __libuv_async
+	   __libuv_fs)
 
    (eval   (export-all)
 

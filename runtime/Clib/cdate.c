@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Tue Jul  8 14:12:31 2014 (serrano)                */
+/*    Last change :  Sun Jul 13 07:02:54 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -132,7 +132,7 @@ bgl_make_date( int s, int m, int hr, int mday, int mon, int year, long tz, bool_
       date = bgl_seconds_to_date( t );
       if( date->date_t.timezone != tz ) {
 	 t += 60 * (date->date_t.timezone -tz);
-	 t = mktime( &t );
+	 date = bgl_seconds_to_date( t );
 	 date->date_t.timezone = tz;
       }
 

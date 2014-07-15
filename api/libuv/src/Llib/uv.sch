@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Wed May 14 10:29:29 2014 (serrano)                */
+;*    Last change :  Thu Jul 10 11:38:15 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -71,7 +71,12 @@
       (infix macro $uv_async_nil::$uv_async_t () "0L")
       
       ($bgl_uv_async_new::$uv_async_t (::UvAsync ::UvLoop) "bgl_uv_async_new")
-      (macro $uv_async_send::void (::$uv_async_t) "uv_async_send")))
+      (macro $uv_async_send::void (::$uv_async_t) "uv_async_send")
+
+      ;; fs
+      (macro $uv-rename-file::void (::string ::string ::procedure ::UvLoop)
+	     "bgl_uv_rename_file")
+      ))
 
 
 

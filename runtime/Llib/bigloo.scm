@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sun Nov 18 14:55:22 2012 (serrano)                */
+;*    Last change :  Sun Jul 13 06:59:36 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -544,7 +544,7 @@
 	       (values id module))))
       (cond
 	 ((<fx len 8)
-	  (error "bigloo-demangle" "Not a Bigloo mangled identifier" string))
+	  string)
 	 ((substring=? string "BgL_" 4)
 	  (bigloo-demangle-simple))
 	 ((substring=? string "BGl_" 4)

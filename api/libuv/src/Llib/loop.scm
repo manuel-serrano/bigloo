@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Wed May  7 05:45:28 2014 (serrano)                */
+;*    Last change :  Thu Jul 10 15:10:50 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV loops                                                      */
@@ -21,7 +21,10 @@
    (import __libuv_types)
    
    (export (uv-default-loop::UvLoop)
-	   (uv-run ::UvLoop #!optional mode)))
+	   (uv-run ::UvLoop #!optional mode)
+	   %uv-mutex)
+
+   (extern (export %uv-mutex "bgl_uv_mutex")))
 
 ;*---------------------------------------------------------------------*/
 ;*    default-loop ...                                                 */
@@ -32,7 +35,7 @@
 ;*    gc-loops ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define gc-loops '())
-(define loop-mutex (make-mutex))
+(define %uv-mutex (make-mutex))
 
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ::UvLoop ...                                            */
@@ -62,6 +65,6 @@
 	 (begin
 	    (set! gc-loops (cons loop gc-loops))
 	    ($uv-run ($uv-loop-t $builtin) (or mode $UV_RUN_DEFAULT)))
-	 (synchronize loop-mutex
+	 (synchronize %uv-mutex
 	    (set! gc-loops (remq! loop gc-loops))))
       loop))

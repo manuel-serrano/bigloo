@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Fri Jun 27 12:10:38 2014 (serrano)                */
+;*    Last change :  Wed Jul  9 16:21:27 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -110,7 +110,7 @@
        (let ((c (the-failure)))
 	  (if (eof-object? c)
 	      (return 'EOS c)
-	      (return 'ERROR (format "<~a>~a" c (read-chars (the-port) 10))))))))
+	      (return 'ERROR (format "<~a>~a" c (read-chars 10 (the-port)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ucs2->utf8 ...                                                   */
@@ -164,7 +164,7 @@
 	   array-alloc array-set array-return
 	   object-alloc object-set object-return
 	   parse-error reviver expr)
-
+   
    (define (check-procedure proc arity name)
       (unless (and (procedure? proc) (correct-arity? proc arity))
 	 (raise
@@ -172,14 +172,14 @@
 	       (proc "json-parse")
 	       (msg (format "wrong argument \"~s\"" name))
 	       (obj proc)))))
-
+   
    (define last-token #f)
    
    (define (read-token)
       (let ((t (read/rp *json-lexer* o)))
 	 (set! last-token t)
 	 t))
-
+   
    (define (parse-token type)
       (let ((token (read-token)))
 	 (if (eq? (car token) type)
@@ -206,7 +206,7 @@
 			 (else
 			  (parse-error "syntax error"
 			     (caddr token) (cadddr token))))))))))
-
+   
    (define (parse-object object)
       (let loop ()
 	 (let ((token (read-token)))
@@ -251,7 +251,7 @@
 		      (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
 		      (caddr token)
 		      (cadddr token))))))))
-
+   
    (check-procedure array-alloc 0 :array-alloc)
    (check-procedure array-set 3 :array-set)
    (check-procedure array-return 2 :array-return)
@@ -265,9 +265,13 @@
       (unless expr
 	 (let ((token (parse-text 'EOS)))
 	    (when token
-	       (parse-error (format "Illegal JSON trailing ~a token: \"~a\""
-			       (car token) (cadr token))
-		  (cadr last-token) (caddr last-token)))))
+	       (if (pair? token)
+		   (parse-error (format "Illegal JSON trailing ~a token: \"~a\""
+				   (car token) (cadr token))
+		      (cadr last-token) (caddr last-token))
+		   (parse-error (format "Illegal JSON trailing token: \"~a\""
+				   token)
+		      #f #f)))))
       val))
 
 

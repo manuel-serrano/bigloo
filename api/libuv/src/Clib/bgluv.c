@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed May 14 10:21:19 2014 (serrano)                */
+/*    Last change :  Thu Jul 10 15:19:49 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -13,6 +13,39 @@
 #include <uv.h>
 
 #include "bgluv.h"
+
+/*---------------------------------------------------------------------*/
+/*    bgl_uv_mutex                                                     */
+/*---------------------------------------------------------------------*/
+extern obj_t bgl_uv_mutex;
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    gc_marks ...                                                     */
+/*---------------------------------------------------------------------*/
+obj_t gc_marks = BNIL;
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    gc_mark ...                                                      */
+/*---------------------------------------------------------------------*/
+static void
+gc_mark( obj_t obj ) {
+   BGL_MUTEX_LOCK( bgl_uv_mutex );
+   gc_marks = MAKE_PAIR( obj, gc_marks );
+   BGL_MUTEX_UNLOCK( bgl_uv_mutex );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    gc_unmark ...                                                    */
+/*---------------------------------------------------------------------*/
+void
+gc_unmark( obj_t obj ) {
+   BGL_MUTEX_LOCK( bgl_uv_mutex );
+   gc_marks = bgl_remq( obj, gc_marks );
+   BGL_MUTEX_UNLOCK( bgl_uv_mutex );
+}
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -80,3 +113,31 @@ bgl_uv_async_new( BgL_uvasyncz00_bglt o, BgL_uvloopz00_bglt loop ) {
    return new;
 }
 
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_fs_cb ...                                                 */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_fs_cb( uv_fs_t *req ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+
+   if( PROCEDUREP( p ) ) {
+      PROCEDURE_ENTRY( p )( p, BINT( req->result ), string_to_bstring( (char *)req->path ), BEOA );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_rename_file ...                                           */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_rename_file( char *oldp, char *newp, obj_t proc, BgL_uvloopz00_bglt loop ) {
+   uv_fs_t *req = (uv_fs_t *)GC_MALLOC( sizeof( uv_fs_t ) );
+   req->data = proc;
+
+   gc_mark( proc );
+   
+   uv_fs_rename( (uv_loop_t *)loop->BgL_z42builtinz42, req, oldp, newp, &bgl_uv_fs_cb );
+}
