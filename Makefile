@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Mar  5 08:01:57 2014 (serrano)                */
+#*    Last change :  Fri Jul 18 18:25:05 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -164,6 +164,9 @@ checkconf:
 boot: checkgmake
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp boot; \
+        fi
+	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libuv boot; \
         fi
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
@@ -738,6 +741,9 @@ install-libs: install-dirs
         fi
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp install; \
+        fi
+	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libuv install; \
         fi
 	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.config)

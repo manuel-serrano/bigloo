@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jul 10 12:25:59 2014 (serrano)                */
+#*    Last change :  Fri Jul 18 05:37:45 2014 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -58,7 +58,7 @@ DISTRIB_FILES	= $(C_SRC_DIR)/bgluv.h
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= uvtypes handle loop timer async fs
+_BGL_OBJECTS	= uvtypes handle loop timer async fs os
 
 _C_OBJECTS	= bgluv
 _JAVA_CLASSES	= 

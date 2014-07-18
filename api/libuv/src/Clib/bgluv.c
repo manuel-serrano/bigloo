@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu Jul 10 15:19:49 2014 (serrano)                */
+/*    Last change :  Fri Jul 18 17:33:10 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -140,4 +140,84 @@ bgl_uv_rename_file( char *oldp, char *newp, obj_t proc, BgL_uvloopz00_bglt loop 
    gc_mark( proc );
    
    uv_fs_rename( (uv_loop_t *)loop->BgL_z42builtinz42, req, oldp, newp, &bgl_uv_fs_cb );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    _irq ...                                                         */
+/*---------------------------------------------------------------------*/
+static obj_t _irq, _idle, _sys, _nice, _user, _times, _speed, _model;
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    uv_init_cpus ...                                                 */
+/*---------------------------------------------------------------------*/
+static void
+uv_init_cpus() {
+   _irq = string_to_symbol( "irq" );
+   _idle = string_to_symbol( "idle" );
+   _sys = string_to_symbol( "sys" );
+   _nice = string_to_symbol( "nice" );
+   _user = string_to_symbol( "user" );
+   _times = string_to_symbol( "times" );
+   _speed = string_to_symbol( "speed" );
+   _model = string_to_symbol( "model" );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_cpu ...                                                   */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_uv_cpu( uv_cpu_info_t cpu ) {
+   obj_t res = BNIL;
+   obj_t times = BNIL;
+
+   times = MAKE_PAIR(
+      MAKE_PAIR( _irq, DOUBLE_TO_REAL( (double)cpu.cpu_times.irq ) ),
+      times );
+   times = MAKE_PAIR(
+      MAKE_PAIR( _idle, DOUBLE_TO_REAL( (double)cpu.cpu_times.idle ) ),
+      times );
+   times = MAKE_PAIR(
+      MAKE_PAIR( _sys, DOUBLE_TO_REAL( (double)cpu.cpu_times.sys ) ),
+      times );
+   times = MAKE_PAIR(
+      MAKE_PAIR( _nice, DOUBLE_TO_REAL( (double)cpu.cpu_times.nice) ),
+      times );
+   times = MAKE_PAIR(
+      MAKE_PAIR( _user, DOUBLE_TO_REAL( (double)cpu.cpu_times.user ) ),
+      times );
+
+   res = MAKE_PAIR( MAKE_PAIR( _times, times ), res );
+   res = MAKE_PAIR( MAKE_PAIR( _speed, BINT( cpu.speed ) ), res );
+   res = MAKE_PAIR( MAKE_PAIR( _model, string_to_bstring( cpu.model ) ), res );
+
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_cpus ...                                                  */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_cpus() {
+   int count;
+   uv_cpu_info_t *cpus;
+
+   if( uv_cpu_info( &cpus, &count ) ) {
+      return create_vector( 0 );
+   } else {
+      obj_t vec = create_vector( count );
+      int i;
+
+      uv_init_cpus();
+      
+      for( i = 0; i < count; i++ ) {
+	 VECTOR_SET( vec, i, bgl_uv_cpu( cpus[ i ] ) );
+      }
+
+      uv_free_cpu_info( cpus, count );
+      return vec;
+   }
 }

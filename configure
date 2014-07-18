@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May  6 11:44:31 2014 (serrano)                */
+#*    Last change :  Fri Jul 18 18:46:59 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -200,6 +200,9 @@ avahicflags=
 libuv=
 libuvlibs=
 libuvcflags=
+customlibuv=yes
+libuvconfigureopt=
+libuvversion=master-18jul2014
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
@@ -387,6 +390,7 @@ while : ; do
       break;;
 
     --bootconfig)
+      prefix=$PWD;
       bindir=$PWD/bin;
       libdir=$PWD/lib;
       fildir=$release;
@@ -860,6 +864,15 @@ while : ; do
     --unistringconfigureopt=*)
       unistringconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --customlibuv=yes|--customlibuv)
+      customlibuv=yes;;
+
+    --customlibuv=no)
+      customlibuv=no;;
+
+    --libuvconfigureopt=*)
+      libuvconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --enable-bglpkg)
       enable_bglpkg="force";;
 
@@ -1025,6 +1038,7 @@ while : ; do
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
       echo "   --customunistring=yes|no [default yes]" >&2;
       echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
+      echo "   --customlibuv=yes|no [default yes]" >&2;
       echo "" >&2;
       echo "Configuration settings:"  >&2;
       echo "   --bigloo.h[=file]" >&2;
@@ -1948,19 +1962,16 @@ if [ "$customgmp " = "yes " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    UNISTRING configuration                                          */
+#*    LIBUV configuration                                              */
 #*---------------------------------------------------------------------*/
-#* if [ "$customunistring " = "yes " ]; then                           */
-#*   echo ""                                                           */
-#*   echo "Preparing and configuring custom unistring ($unistringsrc)..." */
-#*   echo "+ unistring configuration ($unistringsrc)..." >> $configurelog */
-#*                                                                     */
-#*   unistring=`basename $unistringsrc .tar.gz`                 */
-#*   unistring=`basename $unistring .tgz`                */
-#*                                                                     */
-#*   (cd unistring && UNISTRING=$unistringsrc; export UNISTRING && . ./install-unistring) || exit 1 */
-#*   (cd unistring; . ./configure-unistring) || exit 1                 */
-#* fi                                                                  */
+if [ "$customlibuv " = "yes " ]; then
+  echo ""
+  echo "Preparing and configuring custom libuv ($libuvsrc)..."
+  echo "+ libuv configuration ($libuvsrc)..." >> $configurelog
+
+  (cd libuv; . ./install-libuv) || exit 1
+  (cd libuv; . ./configure-libuv) || exit 1
+fi
 
 #*---------------------------------------------------------------------*/
 #*    Benchmark mode                                                   */
@@ -2197,10 +2208,16 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for libuv
 if [ "$libuv " = " " ]; then
-   libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
-   libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
+   if [ "$customlibuv " = "yes " ]; then
+     libuvlibs="-lbigloouv-$release"
+     libuv="yes"
+     libuvcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
+   else
+     libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
+     libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
 
-   libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
+     libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
+  fi
 fi
 
 #*---------------------------------------------------------------------*/
@@ -3624,6 +3641,13 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
     echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
+
+    if [ "$customlibuv " = "yes " ]; then
+      echo "LIBUVCUSTOM=yes" >> $makefile_cfg
+      echo "LIBUVCUSTOMVERSION=$libuvversion" >> $makefile_cfg
+    else
+      echo "LIBUVCUSTOM=no" >> $makefile_cfg
+    fi
 
     # Patch the code of the LIBUV init file
     echo ";; automatically generated. Don't edit" >  api/libuv/src/Misc/libuv.init

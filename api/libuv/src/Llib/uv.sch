@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Thu Jul 10 11:38:15 2014 (serrano)                */
+;*    Last change :  Fri Jul 18 17:30:34 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -20,8 +20,13 @@
    (extern
       (include "uv.h")
 
+      ;; misc types
+      (type double* void* "double *")
+      (macro $f64vector->double*::double* (::f64vector ::int) "&BGL_F64VREF")
+      (macro $u8vector->double*::double* (::u8vector ::int) "&BGL_F64VREF")
+      
       ;; handle
-      (type $uv_handle_t void* "uv_handle_t*")
+      (type $uv_handle_t void* "uv_handle_t *")
       (type $uv_close_cb void* "uv_close_cb")
       (macro $uv-handle-t::$uv_handle_t (::void*) "(uv_handle_t *)")
       
@@ -36,7 +41,7 @@
       (macro $BGL_UV_CLOSE_CB::$uv_close_cb "(uv_close_cb)&bgl_uv_close_cb")
       
       ;; loop
-      (type $uv_loop_t void* "uv_loop_t*")
+      (type $uv_loop_t void* "uv_loop_t *")
       (macro $uv-loop-t::$uv_loop_t (::$uv_handle_t) "(uv_loop_t *)")
       
       (macro $uv_loop_nil::$uv_loop_t "0L")
@@ -50,7 +55,7 @@
       (macro $UV_RUN_DEFAULT::int "UV_RUN_DEFAULT")
 
       ;; timer
-      (type $uv_timer_t void* "uv_timer_t*")
+      (type $uv_timer_t void* "uv_timer_t *")
       (type $uv_timer_cb void* "uv_timer_cb")
       (macro $uv-timer-t::$uv_timer_t (::$uv_handle_t) "(uv_timer_t *)")
       
@@ -64,7 +69,7 @@
       (macro $BGL_UV_TIMER_CB::$uv_timer_cb "(uv_timer_cb)&bgl_uv_timer_cb")
 
       ;; async
-      (type $uv_async_t void* "uv_async_t*")
+      (type $uv_async_t void* "uv_async_t *")
       (type $uv_async_cb void* "uv_async_cb")
       (macro $uv-async-t::$uv_async_t (::$uv_handle_t) "(uv_async_t *)")
       
@@ -76,6 +81,13 @@
       ;; fs
       (macro $uv-rename-file::void (::string ::string ::procedure ::UvLoop)
 	     "bgl_uv_rename_file")
+
+      ;; os
+      (macro $uv-loadavg::void (::double*) "uv_loadavg")
+      (macro $uv-get-free-memory::double () "uv_get_free_memory")
+      (macro $uv-get-total-memory::double () "uv_get_total_memory")
+      ($uv-cpus::vector () "bgl_uv_cpus")
+      
       ))
 
 
