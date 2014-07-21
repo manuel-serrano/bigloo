@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Jul 21 12:12:23 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 12:31:23 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -250,38 +250,48 @@ static void read_cb( uv_stream_t* stream,
 
 /*---------------------------------------------------------------------*/
 /*    static long                                                      */
-/*    bgl_uv_read ...                                                  */
+/*    bgl_uv_sync_read ...                                             */
 /*---------------------------------------------------------------------*/
 static long
-bgl_uv_read( obj_t port, void *buf, size_t count ) {
-   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-   uv_loop_t *loop = uv_default_loop();
-   uv_file file = (uv_file)(long)PORT_FILE( port );
+bgl_uv_sync_read( obj_t port, void *ptr, size_t num ) {
+   int fd = (long)PORT_FILE( port );
+   long n;
 
-   int res = read( file, buf, count );
-   fprintf( stderr, "read file=%d count=%d -> %d\n", file, count, res );
-/*    int res = uv_fs_read( loop, req, (uv_file)file, buf, count, 0, &read_cb ); */
-
-   if( res == -1 ) {
-      fprintf( stderr, "bgl_uv_read.1 file=%d count=%d res=%d\n", file, count, res );
+ loop:
+   if( (n = read( fd, ptr, num ) ) <= 0 ) {
+      if( n == 0 ) {
+	 INPUT_PORT( port ).eof = 1;
+      } else if( errno == EINTR ) {
+	 goto loop;
+      }
    }
 
-   res = req->result;
-
-   if( res < 0 ) {
-      fprintf( stderr, "bgl_uv_read.2 file=%d count=%d res=%d %s %s\n", file, count, res,
-	       uv_strerror( res ), uv_err_name( res ) );
-   }
-      
-   uv_fs_req_cleanup( req );
-   free( req );
-
-   if( res == 0 ) {
-      INPUT_PORT( port ).eof = 1;
-   }
-   return res;
+   return n;
 }
    
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_input_file_seek ...                                          */
+/*---------------------------------------------------------------------*/
+static void
+bgl_input_file_seek( obj_t port, long pos ) {
+   if( fseek( PORT_FILE( port ), pos, SEEK_SET ) == -1 ) {
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"set-input-port-position!",
+			strerror( errno ),
+			port );
+   }
+      
+   INPUT_PORT( port ).filepos = pos;
+   INPUT_PORT( port ).eof = 0;
+   INPUT_PORT( port ).matchstart = 0;
+   INPUT_PORT( port ).matchstop = 0;
+   INPUT_PORT( port ).forward = 0;
+   INPUT_PORT( port ).bufpos = 0;
+   INPUT_PORT( port ).lastchar = '\n';
+   RGC_BUFFER_SET( port, 0, '\0' );
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_uv_open_input_file ...                                       */
@@ -306,14 +316,14 @@ bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
    } else {
       obj_t port = bgl_make_input_port( name, (FILE *)req->result, KINDOF_FILE, buffer );
 
-      fprintf( stderr, "open=%d fd=%d\n", r, req->result );
       if( proc == BFALSE ) {
 	 uv_fs_req_cleanup( req );
 	 free( req );
       }
-      
-      INPUT_PORT( port ).sysread = &bgl_uv_read;
-      INPUT_PORT( port ).sysseek = 0L;
+
+      INPUT_PORT( port ).port.userdata = GC_MALLOC( sizeof( uv_fs_t ) );
+      INPUT_PORT( port ).sysread = &bgl_uv_sync_read;
+      INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;
       INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;
       
       return port;
