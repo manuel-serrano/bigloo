@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Jul 21 08:12:50 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 10:13:32 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -18,6 +18,7 @@
 /*    bgl_uv_mutex                                                     */
 /*---------------------------------------------------------------------*/
 extern obj_t bgl_uv_mutex;
+extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -222,5 +223,92 @@ bgl_uv_cpus() {
 
       uv_free_cpu_info( cpus, count );
       return vec;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_uv_close_file ...                                            */
+/*---------------------------------------------------------------------*/
+static int
+bgl_uv_close_file( int file ) {
+   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+   uv_loop_t *loop = uv_default_loop();
+   int res = uv_fs_close( loop, req, (uv_file)file, 0L );
+
+   uv_fs_req_cleanup( req );
+   free( req );
+   return res;
+}
+
+static void read_cb( uv_stream_t* stream,
+			ssize_t nread,
+			const uv_buf_t* buf ) {
+   fprintf( stderr, "UV_READ_CB stream=%d nread=%d buf=%p\n",
+	    stream, nread, buf );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static long                                                      */
+/*    bgl_uv_read ...                                                  */
+/*---------------------------------------------------------------------*/
+static long
+bgl_uv_read( obj_t port, void *buf, size_t count ) {
+   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+   uv_loop_t *loop = uv_default_loop();
+   uv_file file = (uv_file)(long)PORT_FILE( port );
+   int res = uv_fs_read( loop, req, (uv_file)file, buf, count, 0, &read_cb );
+
+   if( res == -1 ) {
+      fprintf( stderr, "bgl_uv_read.1 file=%d count=%d res=%d\n", file, count, res );
+   }
+
+   res = req->result;
+
+   if( res < 0 ) {
+      fprintf( stderr, "bgl_uv_read.2 file=%d count=%d res=%d %s %s\n", file, count, res,
+	       uv_strerror( res ), uv_err_name( res ) );
+   }
+      
+   uv_fs_req_cleanup( req );
+   free( req );
+   return res;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_open_input_file ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
+   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+   char *path = BSTRING_TO_STRING( name );
+   uv_loop_t *loop = uv_default_loop();
+   obj_t res;
+   int r;
+   
+   req->data = proc;
+
+   if( r = uv_fs_open( loop, req, path, O_RDONLY, 0, 0 ) < 0 ) {
+      uv_fs_req_cleanup( req );
+      free( req );
+      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
+			"open-input-uv-file",
+			"Cannot open file for input",
+			name );
+   } else {
+      obj_t port = bgl_make_input_port( name, (FILE *)req->result, KINDOF_FILE, buffer );
+
+      fprintf( stderr, "open=%d fd=%d\n", r, req->result );
+      if( proc == BFALSE ) {
+	 uv_fs_req_cleanup( req );
+	 free( req );
+      }
+      
+      INPUT_PORT( port ).sysread = &bgl_uv_read;
+      INPUT_PORT( port ).sysseek = 0L;
+      INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;
+      
+      return port;
    }
 }

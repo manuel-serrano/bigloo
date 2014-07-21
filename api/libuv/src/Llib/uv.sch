@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri Jul 18 17:30:34 2014 (serrano)                */
+;*    Last change :  Mon Jul 21 09:45:27 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -81,6 +81,8 @@
       ;; fs
       (macro $uv-rename-file::void (::string ::string ::procedure ::UvLoop)
 	     "bgl_uv_rename_file")
+      (macro $uv-open-input-file::obj (::obj ::obj ::obj)
+	     "bgl_uv_open_input_file")
 
       ;; os
       (macro $uv-loadavg::void (::double*) "uv_loadavg")

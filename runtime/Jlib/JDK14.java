@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:04 2008                          */
-/*    Last change :  Sun May 18 09:37:17 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 10:21:51 2014 (serrano)                */
 /*    Copyright   :  2008-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.4 specifics                                                */
@@ -66,7 +66,7 @@ public class JDK14 extends JDK {
       return null;
    }
 
-   public boolean truncate(FileOutputStream, long size) {
+   public boolean truncate(FileOutputStream file, long size) {
       return false;
    }
 }
