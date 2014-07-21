@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jul 19 08:54:22 2014 (serrano)                */
+#*    Last change :  Mon Jul 21 08:36:21 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1966,8 +1966,7 @@ fi
 #*---------------------------------------------------------------------*/
 if [ "$customlibuv " = "yes " ]; then
   echo ""
-  echo "Preparing and configuring custom libuv ($libuvsrc)..."
-  echo "+ libuv configuration ($libuvsrc)..." >> $configurelog
+  echo "+ Installing custom libuv ($libuvsrc) source code."
 
   (cd libuv; . ./install-libuv) || exit 1
   (cd libuv; . ./configure-libuv) || exit 1

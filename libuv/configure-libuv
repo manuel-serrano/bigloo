@@ -1,0 +1,21 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/libuv/configure-libuv                */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Mon Sep  7 09:49:25 2009                          */
+#*    Last change :  Sat Jul 19 09:14:34 2014 (serrano)                */
+#*    Copyright   :  2009-14 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Ad-hoc configuration for the GC.                                 */
+#*=====================================================================*/
+
+src=libuv-$libuvversion
+
+echo "configure libuv with \"./configure --libdir=$bootdir/lib/$release --includedir=$bootdir/lib/$release $libuvconfigureopt\"" >> ../configure.log
+
+(cd $src && \
+ export CC=$cc && \
+ ./configure --libdir=$bootdir/lib/$release --includedir=$bootdir/lib/$release $libuvconfigureopt 2>&1 >> ../../configure.log || \
+ (echo "configure libuv fail, see configure.log file." && exit 1)) || exit 1
+

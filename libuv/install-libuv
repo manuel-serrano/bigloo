@@ -1,0 +1,16 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/libuv/install-libuv                  */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Dec 19 07:52:02 2007                          */
+#*    Last change :  Fri Jul 18 18:17:08 2014 (serrano)                */
+#*    Copyright   :  2007-14 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    This shell script installs a new GMP.                            */
+#*=====================================================================*/
+
+src=libuv-$libuvversion.tgz
+
+tar xfz $src || (echo "tar xfz $src failed"; exit 1)
+

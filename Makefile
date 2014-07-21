@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat Jul 19 08:56:02 2014 (serrano)                */
+#*    Last change :  Mon Jul 21 08:37:22 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -136,7 +136,8 @@ DIRECTORIES	= cigloo \
 		  pnet2ms \
                   bglpkg \
                   gc \
-                  gmp
+                  gmp \
+                  libuv
 
 #*---------------------------------------------------------------------*/
 #*    The file that have to be removed when building a distrib.        */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Jul 18 17:33:10 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 08:12:50 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -126,6 +126,9 @@ bgl_uv_fs_cb( uv_fs_t *req ) {
    if( PROCEDUREP( p ) ) {
       PROCEDURE_ENTRY( p )( p, BINT( req->result ), string_to_bstring( (char *)req->path ), BEOA );
    }
+   
+   uv_fs_req_cleanup( req );
+   free( req );
 }
 
 /*---------------------------------------------------------------------*/
@@ -134,7 +137,7 @@ bgl_uv_fs_cb( uv_fs_t *req ) {
 /*---------------------------------------------------------------------*/
 void
 bgl_uv_rename_file( char *oldp, char *newp, obj_t proc, BgL_uvloopz00_bglt loop ) {
-   uv_fs_t *req = (uv_fs_t *)GC_MALLOC( sizeof( uv_fs_t ) );
+   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
    req->data = proc;
 
    gc_mark( proc );
