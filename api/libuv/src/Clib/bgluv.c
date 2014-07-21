@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Jul 21 12:31:23 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 14:38:31 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -271,11 +271,13 @@ bgl_uv_sync_read( obj_t port, void *ptr, size_t num ) {
    
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_input_file_seek ...                                          */
+/*    bgl_uv_file_seek ...                                             */
 /*---------------------------------------------------------------------*/
 static void
-bgl_input_file_seek( obj_t port, long pos ) {
-   if( fseek( PORT_FILE( port ), pos, SEEK_SET ) == -1 ) {
+bgl_uv_file_seek( obj_t port, long pos ) {
+   int fd = (long)PORT_FILE( port );
+
+   if( lseek( fd, pos, SEEK_SET ) == -1 ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"set-input-port-position!",
 			strerror( errno ),
@@ -289,6 +291,7 @@ bgl_input_file_seek( obj_t port, long pos ) {
    INPUT_PORT( port ).forward = 0;
    INPUT_PORT( port ).bufpos = 0;
    INPUT_PORT( port ).lastchar = '\n';
+   
    RGC_BUFFER_SET( port, 0, '\0' );
 }
 
@@ -329,3 +332,31 @@ bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
       return port;
    }
 }
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_read_cb ...                                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
+   fprintf( stderr, "<<<read stream=%p nread=%d buf=%p\n", stream, nread, buf );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_read ...                                               */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long position, obj_t proc, BgL_uvloopz00_bglt bloop ) {
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+   uv_fs_t *req = INPUT_PORT( port ).port.userdata;
+   uv_file file = (uv_file)(long)PORT_FILE( port );
+
+   fprintf( stderr, ">>> read port=%p length=%d buf=%p\n",
+	    port, length, &(STRING_REF( buffer, offset )) );
+   return uv_fs_read( loop, req, file,
+		      (void *)&(STRING_REF( buffer, offset )),
+		      length,
+		      position, (uv_fs_cb)&bgl_uv_fs_read_cb );
+}
+      

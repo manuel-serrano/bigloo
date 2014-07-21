@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:10:13 2014                          */
-;*    Last change :  Mon Jul 21 09:50:45 2014 (serrano)                */
+;*    Last change :  Mon Jul 21 14:40:36 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV io example                                                 */
@@ -20,8 +20,11 @@
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
-   (let ((loop (uv-default-loop)))
-      (print (synchronous-read (make-file-name (pwd) "io.scm")))))
+   (let ((loop (uv-default-loop))
+	 (path (make-file-name (pwd) "io.scm")))
+      (print (synchronous-read path))
+      (asynchronous-read path)
+      (uv-run loop)))
 
 ;*---------------------------------------------------------------------*/
 ;*    synchronous-read ...                                             */
@@ -31,5 +34,14 @@
       (unwind-protect
 	 (read-string ip)
 	 (close-input-port ip))))
+
+;*---------------------------------------------------------------------*/
+;*    asynchronous-read ...                                            */
+;*---------------------------------------------------------------------*/
+(define (asynchronous-read path)
+   (uv-open-input-file path
+      :callback (lambda (err ip)
+		   (print "err=" err " ip=" ip)
+		   (close-input-port ip))))
       
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Feb 26 17:31:24 2014 (serrano)                */
+;*    Last change :  Mon Jul 21 15:17:09 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -459,7 +459,9 @@
    "The lib dir path"
    (let ((lib-env (build-path-from-shell-variable "BIGLOOLIB")))
       (if (not (pair? lib-env))
-	  (list "." *default-lib-dir*)
+	  (list "."
+	     *default-lib-dir*
+	     (bigloo-config 'ld-library-dir))
 	  (cons "." lib-env))))
 ;; the lib source dir path
 (param-define *lib-src-dir*
