@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 25 08:37:41 2007                          */
-;*    Last change :  Sat Jul 28 06:50:31 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Mon Jul 21 12:02:50 2014 (serrano)                */
+;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 info extractor                                               */
 ;*    -------------------------------------------------------------    */

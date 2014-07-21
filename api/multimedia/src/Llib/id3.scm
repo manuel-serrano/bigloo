@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Sat Feb 15 08:56:24 2014 (serrano)                */
+;*    Last change :  Mon Jul 21 12:06:50 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
@@ -1049,15 +1049,18 @@
       (with-access::mp3frame f1 ((version1 version)
 				 (layer1 layer)
 				 (crc1 crc)
-				 (samplerate1 samplerate))
+				 (samplerate1 samplerate)
+				 (bitrate1 bitrate)) 
 	 (with-access::mp3frame f2 ((version2 version)
 				    (layer2 layer)
 				    (crc2 crc)
-				    (samplerate2 samplerate))
+				    (samplerate2 samplerate)
+				    (bitrate2 bitrate))
 	    (and (=fl version1 version2)
 		 (=fx layer2 layer2)
 		 (=fx crc1 crc2)
-		 (=fx samplerate1 samplerate2)))))
+		 (=fx samplerate1 samplerate2)
+		 (=fx bitrate1 bitrate2)))))
    
    ;; skip the ID3 frame
    (cond

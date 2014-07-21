@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Jul 21 10:13:32 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 12:12:23 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -257,7 +257,10 @@ bgl_uv_read( obj_t port, void *buf, size_t count ) {
    uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
    uv_loop_t *loop = uv_default_loop();
    uv_file file = (uv_file)(long)PORT_FILE( port );
-   int res = uv_fs_read( loop, req, (uv_file)file, buf, count, 0, &read_cb );
+
+   int res = read( file, buf, count );
+   fprintf( stderr, "read file=%d count=%d -> %d\n", file, count, res );
+/*    int res = uv_fs_read( loop, req, (uv_file)file, buf, count, 0, &read_cb ); */
 
    if( res == -1 ) {
       fprintf( stderr, "bgl_uv_read.1 file=%d count=%d res=%d\n", file, count, res );
@@ -272,6 +275,10 @@ bgl_uv_read( obj_t port, void *buf, size_t count ) {
       
    uv_fs_req_cleanup( req );
    free( req );
+
+   if( res == 0 ) {
+      INPUT_PORT( port ).eof = 1;
+   }
    return res;
 }
    
