@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Jul 18 05:37:45 2014 (serrano)                */
+#*    Last change :  Sat Jul 19 08:59:40 2014 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -54,6 +54,8 @@ EXTRALIBS	= $(LIBUVLIBS)
 endif
 
 DISTRIB_FILES	= $(C_SRC_DIR)/bgluv.h
+
+LDOPTS		+= -L$(BOOTDIR)/libuv/libuv-$(LIBUVCUSTOMVERSION)/.libs
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
@@ -106,7 +108,8 @@ all:
 	  fi
 
 c: build-c
-build-c: api-c
+build-c: 
+	$(MAKE) api-c LDOPTS=$(LDOPTS)
 
 jvm: build-jvm
 build-jvm:

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jul 18 18:46:59 2014 (serrano)                */
+#*    Last change :  Sat Jul 19 08:54:22 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2209,7 +2209,7 @@ fi
 # find out the C library for libuv
 if [ "$libuv " = " " ]; then
    if [ "$customlibuv " = "yes " ]; then
-     libuvlibs="-lbigloouv-$release"
+     libuvlibs="-luv"
      libuv="yes"
      libuvcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
    else
@@ -3641,6 +3641,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
     echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
+    echo "LIBUV_LD_LIBRARY_PATH=$buildir/libuv/libuv-$libuvversion/.libs" >> $makefile_cfg
 
     if [ "$customlibuv " = "yes " ]; then
       echo "LIBUVCUSTOM=yes" >> $makefile_cfg
