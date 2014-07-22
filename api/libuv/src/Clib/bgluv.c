@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Jul 22 15:00:09 2014 (serrano)                */
+/*    Last change :  Tue Jul 22 17:04:11 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -297,13 +297,11 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
    obj_t proc = CAR( (obj_t)req->data );
    obj_t buffer = CDR( (obj_t)req->data );
    obj_t port;
-   obj_t err;
 
    gc_unmark( req->data );
 
    if( req->result == -1 ) {
-      err = BINT( req->result );
-      port = BFALSE;
+      port = BINT( req->result );
    } else {
       port = bgl_make_input_port(
 	 string_to_bstring( ( char*)(req->path) ), (FILE *)req->result, KINDOF_FILE, buffer );
@@ -312,14 +310,13 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
       INPUT_PORT( port ).sysread = &bgl_uv_sync_read;
       INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;
       INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;
-      err = BFALSE;
-     
+      BGL_INPUT_PORT_LENGTH_SET( port, bgl_file_size( (char *)req->path ) );
    }
    
    uv_fs_req_cleanup( req );
    free( req );
-   
-   PROCEDURE_ENTRY( proc )( proc, err, port, BEOA );
+
+   PROCEDURE_ENTRY( proc )( proc, port, BEOA );
 }
 
 /*---------------------------------------------------------------------*/
@@ -342,7 +339,7 @@ bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
       uv_fs_req_cleanup( req );
       free( req );
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			"open-input-uv-file",
+			"uv-open-input-file",
 			"Cannot open file for input",
 			name );
    } else {
