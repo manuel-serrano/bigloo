@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Mon Jul 21 16:32:01 2014 (serrano)                */
+;*    Last change :  Tue Jul 22 14:51:50 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -41,7 +41,7 @@
 	  ($uv-open-input-file name buf callback))
 	 ((not (procedure? callback))
 	  (error "uv-open-input-file" "wrong callback" callback))
-	 ((not (correct-arity? callback 1))
+	 ((not (correct-arity? callback 2))
 	  (error "uv-open-input-file" "wrong callback arity" callback))
 	 (else
 	  ($uv-open-input-file name buf callback)))))
