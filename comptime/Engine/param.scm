@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Jul 21 15:17:09 2014 (serrano)                */
+;*    Last change :  Tue Jul 22 13:36:04 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -389,7 +389,7 @@
 ;; the c compiler rpath option
 (param-define *cflags-rpath*
    "The C compiler rpath option"
-   (list (bigloo-config 'ld-library-dir)))
+   (list (bigloo-config 'library-directory)))
 ;; the c compiler -o option
 (param-define *cc-o-option*
    "The C compiler -o option"
