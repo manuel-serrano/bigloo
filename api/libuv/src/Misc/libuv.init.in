@@ -4,7 +4,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Tue May  6 12:23:11 2014 (serrano)                */
+;*    Last change :  Tue Jul 22 14:04:41 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The LIBUV init file.                                             */
@@ -24,11 +24,11 @@
 ;*---------------------------------------------------------------------*/
 (cond-expand
    (bigloo-compile
-      ;; libuv includes
-      (set! *additional-include-foreign*
-	 (cons* "uv.h" *additional-include-foreign*))
-      ;; libuv libraries
-      (set! *ld-post-options* (string-append "@LIBUVLIBS@ " *ld-post-options*))
-      ;; libuv C compilation options
-      (set! *cc-options* (string-append "@LIBUVCFLAGS@ " *cc-options*))))
+    ;; libuv includes
+    (set! *additional-include-foreign*
+       (cons* "uv.h" *additional-include-foreign*))
+    ;; libuv libraries
+    (set! *ld-post-options* (string-append "@LIBUVLIBS@ " *ld-post-options*))
+    ;; libuv C compilation options
+    (set! *cc-options* (string-append "@LIBUVCFLAGS@ " *cc-options*))))
 
