@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Jul 21 14:42:53 2014 (serrano)                */
+;*    Last change :  Mon Jul 21 17:36:53 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -51,6 +51,7 @@
       (macro $uv_default_loop::$uv_loop_t () "uv_default_loop")
       
       (macro $uv-run::void (::$uv_loop_t ::int) "uv_run")
+      (macro $uv-stop::void (::$uv_loop_t) "uv_stop")
       
       (macro $UV_RUN_DEFAULT::int "UV_RUN_DEFAULT")
 

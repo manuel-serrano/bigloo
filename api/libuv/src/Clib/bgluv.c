@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Jul 21 14:38:31 2014 (serrano)                */
+/*    Last change :  Mon Jul 21 17:38:08 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -241,13 +241,6 @@ bgl_uv_close_file( int file ) {
    return res;
 }
 
-static void read_cb( uv_stream_t* stream,
-			ssize_t nread,
-			const uv_buf_t* buf ) {
-   fprintf( stderr, "UV_READ_CB stream=%d nread=%d buf=%p\n",
-	    stream, nread, buf );
-}
-
 /*---------------------------------------------------------------------*/
 /*    static long                                                      */
 /*    bgl_uv_sync_read ...                                             */
@@ -296,6 +289,36 @@ bgl_uv_file_seek( obj_t port, long pos ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_fs_open_cb ...                                            */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_fs_open_cb( uv_fs_t* req ) {
+   obj_t proc = CAR( (obj_t)req->data );
+   obj_t buffer = CDR( (obj_t)req->data );
+   obj_t port;
+
+   gc_unmark( req->data );
+
+   if( req->result == -1 ) {
+      port = BINT( req->result );
+   } else {
+      port = bgl_make_input_port(
+	 string_to_bstring( ( char*)(req->path) ), (FILE *)req->result, KINDOF_FILE, buffer );
+
+      INPUT_PORT( port ).port.userdata = GC_MALLOC( sizeof( uv_fs_t ) );
+      INPUT_PORT( port ).sysread = &bgl_uv_sync_read;
+      INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;
+      INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;
+   }
+   
+   uv_fs_req_cleanup( req );
+   free( req );
+   
+   PROCEDURE_ENTRY( proc )( proc, port, BEOA );
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_uv_open_input_file ...                                       */
 /*---------------------------------------------------------------------*/
@@ -307,9 +330,11 @@ bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
    obj_t res;
    int r;
    
-   req->data = proc;
+   req->data = MAKE_PAIR( proc, buffer );
+   gc_mark( req->data );
 
-   if( r = uv_fs_open( loop, req, path, O_RDONLY, 0, 0 ) < 0 ) {
+   if( r = uv_fs_open( loop, req, path, O_RDONLY, 0,
+		       PROCEDUREP( proc ) ? bgl_uv_fs_open_cb : 0L ) < 0 ) {
       uv_fs_req_cleanup( req );
       free( req );
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -334,12 +359,18 @@ bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    void                                                             */
 /*    bgl_uv_fs_read_cb ...                                            */
 /*---------------------------------------------------------------------*/
-int
-bgl_uv_fs_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
-   fprintf( stderr, "<<<read stream=%p nread=%d buf=%p\n", stream, nread, buf );
+void
+bgl_uv_fs_read_cb( uv_fs_t *req ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+
+   PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
+   
+   uv_fs_req_cleanup( req );
 }
 
 /*---------------------------------------------------------------------*/
@@ -351,12 +382,19 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    uv_fs_t *req = INPUT_PORT( port ).port.userdata;
    uv_file file = (uv_file)(long)PORT_FILE( port );
+   void* buf = (void *)&(STRING_REF( buffer, offset ));
+   uv_buf_t iov;
 
-   fprintf( stderr, ">>> read port=%p length=%d buf=%p\n",
-	    port, length, &(STRING_REF( buffer, offset )) );
-   return uv_fs_read( loop, req, file,
-		      (void *)&(STRING_REF( buffer, offset )),
-		      length,
-		      position, (uv_fs_cb)&bgl_uv_fs_read_cb );
+   iov = uv_buf_init( buf, length );
+   
+   req->data = proc;
+   gc_mark( proc );
+   uv_fs_read( loop, req, file,
+		      &iov,
+		      1,
+		      position,
+		      &bgl_uv_fs_read_cb );
+
+   uv_fs_req_cleanup( req );
 }
       
