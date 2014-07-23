@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jul 23 15:26:25 2014 (serrano)                */
+/*    Last change :  Wed Jul 23 16:26:35 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -349,7 +349,7 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
 
    gc_unmark( req->data );
 
-   if( req->result == -1 ) {
+   if( req->result <= 0 ) {
       obj = BINT( req->result );
    } else {
       obj_t name = string_to_bstring( (char *)req->path );
@@ -378,10 +378,8 @@ bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloo
    
       req->data = proc;
       gc_mark( req->data );
-      
+
       uv_fs_open( loop, req, path, flags, mode, bgl_uv_fs_open_cb );
-      
-      uv_fs_req_cleanup( req );
 
       return BUNSPEC;
    } else {
@@ -390,15 +388,17 @@ bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloo
 
       uv_fs_open( loop, &req, path, flags, mode, 0L );
 
-      res = BINT( req.result );
-      uv_fs_req_cleanup( &req );
-
-      if( res >= 0 ) {
-	 obj_t res = bgl_uv_new_file( req.result, bpath );
+      if( req.result <= 0 ) {
+	 res = BINT( req.result );
+      } else {
+	 res = bgl_uv_new_file( req.result, bpath );
 	 ((bgl_uv_file_t)res)->BgL_z52readreqz52 =
 	    GC_MALLOC( sizeof( uv_fs_t ) );
       }
 
+      uv_fs_req_cleanup( &req );
+
+      
       return res;
    }
 }
@@ -513,7 +513,7 @@ bgl_uv_fs_fstat_cb( uv_fs_t *req ) {
    gc_unmark( p );
 
    if( req->result < 0 ) {
-      PROCEDURE_ENTRY( p )( p, BFALSE, BEOA );
+      PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
    } else {
       PROCEDURE_ENTRY( p )( p, bgl_uv_fstat( req->statbuf ), BEOA );
    }
