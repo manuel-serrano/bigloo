@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Wed Jul 23 11:39:35 2014 (serrano)                */
+;*    Last change :  Wed Jul 23 15:13:20 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -29,6 +29,7 @@
       (macro $u8vector->double*::double* (::u8vector ::int) "&BGL_F64VREF")
 
       (macro $uv-strerror::string (::int) "uv_strerror")
+      (macro $uv-err-name::string (::int) "uv_err_name")
       
       ;; handle
       (type $uv_handle_t void* "uv_handle_t *")
@@ -90,9 +91,17 @@
       
       ($uv-fs-rename::int (::string ::string ::obj ::UvLoop)
 	 "bgl_uv_fs_rename")
+      ($uv-fs-ftruncate::int (::UvFile ::long ::obj ::UvLoop)
+	 "bgl_uv_fs_ftruncate")
+      ($uv-fs-truncate::int (::string ::long ::obj ::UvLoop)
+	 "bgl_uv_fs_truncate")
+      ($uv-fs-fchown::int (::UvFile ::int ::int ::obj ::UvLoop)
+	 "bgl_uv_fs_fchown")
+      ($uv-fs-chown::int (::string ::int ::int ::obj ::UvLoop)
+	 "bgl_uv_fs_chown")
       ($uv-fs-open::obj (::bstring ::int ::int ::obj ::UvLoop)
 	 "bgl_uv_fs_open")
-      ($uv-fs-close::obj (::UvFile ::obj ::UvLoop)
+      ($uv-fs-close::int (::UvFile ::obj ::UvLoop)
 	 "bgl_uv_fs_close")
       ($uv-fs-fstat::obj (::UvFile ::obj ::UvLoop)
 	 "bgl_uv_fs_fstat")

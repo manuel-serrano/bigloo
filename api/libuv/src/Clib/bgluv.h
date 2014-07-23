@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (4.2a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Wed Jul 23 12:52:44 CEST 2014       */
+/*   Inria -- Sophia Antipolis (c)       Wed Jul 23 15:39:31 CEST 2014       */
 /*===========================================================================*/
 /* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/4.2a -unsafe -safee -srfi libuv -copt -I/users/serrano/prgm/project/bigloo/libuv/libuv-master-18jul2014/include -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
 

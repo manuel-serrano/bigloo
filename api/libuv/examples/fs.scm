@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:10:13 2014                          */
-;*    Last change :  Wed Jul 23 08:53:15 2014 (serrano)                */
+;*    Last change :  Wed Jul 23 14:27:43 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -23,10 +23,10 @@
    (let ((loop (uv-default-loop)))
 
       (uv-fs-rename "FOO" "BAR"
-	 :callback (lambda (res path)
-		      (tprint "res=" res " path=" path)))
-      
-      (display "Looping forever.\n")
+	 :callback (lambda (res)
+		      (tprint "rename..."
+			 (if (<fx res 0) (uv-strerror res) "ok"))))
+	 
       (uv-run loop)))
       
 

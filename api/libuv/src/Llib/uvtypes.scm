@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Wed Jul 23 11:17:32 2014 (serrano)                */
+;*    Last change :  Wed Jul 23 15:13:07 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -45,7 +45,8 @@
 	   (generic %uv-init ::UvHandle)
 
 	   (uv-new-file::UvFile ::int ::bstring)
-	   (uv-strerror::string ::int))
+	   (uv-strerror::string ::int)
+	   (uv-err-name::string ::int))
 
    (extern (export uv-new-file "bgl_uv_new_file")))
 
@@ -100,3 +101,9 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-strerror errno)
    ($uv-strerror errno))
+
+;*---------------------------------------------------------------------*/
+;*    uv-err-name ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-err-name errno)
+   ($uv-err-name errno))

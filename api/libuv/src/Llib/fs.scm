@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Wed Jul 23 11:46:16 2014 (serrano)                */
+;*    Last change :  Wed Jul 23 15:32:09 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -22,6 +22,14 @@
    (export  #;(uv-open-input-file ::bstring #!key (bufinfo #t) callback)
 	    
 	    (uv-fs-rename::int ::bstring ::bstring
+	       #!key callback (loop (uv-default-loop)))
+	    (uv-fs-ftruncate::int ::UvFile ::long
+	       #!key callback (loop (uv-default-loop)))
+	    (uv-fs-truncate::int ::bstring ::long
+	       #!key callback (loop (uv-default-loop)))
+	    (uv-fs-chown::int ::bstring ::int ::int
+	       #!key callback (loop (uv-default-loop)))
+	    (uv-fs-fchown::int ::UvFile ::int ::int
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-open ::bstring ::obj
 	       #!key (mode #o666) callback (loop (uv-default-loop)))
@@ -76,6 +84,49 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-fs-rename old new #!key callback (loop (uv-default-loop)))
    ($uv-fs-rename old new callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-ftruncate ...                                              */
+;*---------------------------------------------------------------------*/
+(define (uv-fs-ftruncate file offset #!key callback (loop (uv-default-loop)))
+   ($uv-fs-ftruncate file offset callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-truncate ...                                               */
+;*---------------------------------------------------------------------*/
+(define (uv-fs-truncate path offset #!key callback (loop (uv-default-loop)))
+   (if (procedure? callback)
+       (uv-fs-open path "a"
+	  :callback
+	  (lambda (fd)
+	     (if (isa? fd UvFile)
+		 (uv-fs-ftruncate fd offset
+		    :callback
+		    (lambda (res)
+		       (uv-fs-close fd
+			  :callback (lambda (obj) (callback res))
+			  :loop loop))
+		    :loop loop)
+		 (callback fd)))
+	  :loop loop)
+       (let ((fd (uv-fs-open path "a")))
+	  (if (isa? fd UvFile)
+	      (let ((res (uv-fs-ftruncate fd offset)))
+		(uv-fs-close fd)
+		res)
+	      fd))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-chown ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-fs-chown path uid gid #!key callback (loop (uv-default-loop)))
+   ($uv-fs-chown path uid gid callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-fchown ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (uv-fs-fchown fd uid gid #!key callback (loop (uv-default-loop)))
+   ($uv-fs-fchown fd uid gid callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-open ...                                                   */

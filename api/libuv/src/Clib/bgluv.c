@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jul 23 12:39:19 2014 (serrano)                */
+/*    Last change :  Wed Jul 23 15:26:25 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -125,59 +125,6 @@ bgl_uv_async_new( bgl_uv_async_t o, bgl_uv_loop_t loop ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_uv_fs_cb ...                                                 */
-/*---------------------------------------------------------------------*/
-static void
-bgl_uv_fs_cb( uv_fs_t *req ) {
-   obj_t p = (obj_t)req->data;
-
-   gc_unmark( p );
-
-   if( PROCEDUREP( p ) ) {
-      PROCEDURE_ENTRY( p )( p, BINT( req->result ), string_to_bstring( (char *)req->path ), BEOA );
-   }
-   
-   uv_fs_req_cleanup( req );
-   free( req );
-}
-
-/*---------------------------------------------------------------------*/
-/*    int                                                              */
-/*    bgl_uv_fs_rename ...                                             */
-/*---------------------------------------------------------------------*/
-int
-bgl_uv_fs_rename( char *oldp, char *newp, obj_t proc, bgl_uv_loop_t loop ) {
-   if( PROCEDUREP( proc ) ) {
-      if( PROCEDURE_CORRECT_ARITYP( proc, 2 ) ) {
-	 uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-   
-	 req->data = proc;
-	 gc_mark( proc );
-	 uv_fs_rename( (uv_loop_t *)loop->BgL_z42builtinz42,
-		       req, oldp, newp, &bgl_uv_fs_cb );
-
-	 return 0;
-      } else {
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-rename-file",
-			   "wrong callback arity",
-			   proc );
-      }
-   } else {
-      uv_fs_t req;
-      int res;
-      
-      uv_fs_rename( (uv_loop_t *)loop->BgL_z42builtinz42,
-		    &req, oldp, newp, 0L );
-
-      res = req.result;
-      uv_fs_req_cleanup( &req );
-      
-      return res;
-   }
-}
-
-/*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    _irq ...                                                         */
 /*---------------------------------------------------------------------*/
@@ -258,134 +205,137 @@ bgl_uv_cpus() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    BGL_UV_FS_WRAPPER ...                                            */
+/*---------------------------------------------------------------------*/
+#define BGL_UV_FS_WRAPPER0( name, obj ) { \
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   if( bgl_check_fs_cb( proc, 1, #name ) ) { \
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
+      req->data = proc; \
+      gc_mark( proc ); \
+      name( loop, req, obj, &bgl_uv_fs_cb ); \
+      return 0; \
+   } else { \
+      uv_fs_t req; \
+      int res; \
+      name( loop, &req, obj, 0L ); \
+      res = req.result; \
+      uv_fs_req_cleanup( &req ); \
+      return res; \
+   } \
+}
+
+#define BGL_UV_FS_WRAPPER1( name, obj, arg ) { \
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   if( bgl_check_fs_cb( proc, 1, #name ) ) { \
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
+      req->data = proc; \
+      gc_mark( proc ); \
+      name( loop, req, obj, arg, &bgl_uv_fs_cb ); \
+      return 0; \
+   } else { \
+      uv_fs_t req; \
+      int res; \
+      name( loop, &req, obj, arg, 0L ); \
+      res = req.result; \
+      uv_fs_req_cleanup( &req ); \
+      return res; \
+   } \
+}
+
+#define BGL_UV_FS_WRAPPER2( name, obj, arg0, arg1 ) {	\
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   if( bgl_check_fs_cb( proc, 1, #name ) ) { \
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
+      req->data = proc; \
+      gc_mark( proc ); \
+      name( loop, req, obj, arg0, arg1, &bgl_uv_fs_cb ); \
+      return 0; \
+   } else { \
+      uv_fs_t req; \
+      int res; \
+      name( loop, &req, obj, arg0, arg1, 0L ); \
+      res = req.result; \
+      uv_fs_req_cleanup( &req ); \
+      return res; \
+   } \
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_fs_cb ...                                                 */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_fs_cb( uv_fs_t *req ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+
+   if( PROCEDUREP( p ) ) {
+      PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
+   }
+   
+   uv_fs_req_cleanup( req );
+   free( req );
+}
+
+/*---------------------------------------------------------------------*/
 /*    static int                                                       */
-/*    bgl_uv_close_file ...                                            */
+/*    bgl_check_fs_cb ...                                              */
 /*---------------------------------------------------------------------*/
 static int
-bgl_uv_close_file( int file ) {
-   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-   uv_loop_t *loop = uv_default_loop();
-   int res = uv_fs_close( loop, req, (uv_file)file, 0L );
-
-   uv_fs_req_cleanup( req );
-   free( req );
-   return res;
-}
-
-/*---------------------------------------------------------------------*/
-/*    static long                                                      */
-/*    bgl_uv_sync_read ...                                             */
-/*---------------------------------------------------------------------*/
-static long
-bgl_uv_sync_read( obj_t port, void *ptr, size_t num ) {
-   int fd = (long)PORT_FILE( port );
-   long n;
-
- loop:
-   if( (n = read( fd, ptr, num ) ) <= 0 ) {
-      if( n == 0 ) {
-	 INPUT_PORT( port ).eof = 1;
-      } else if( errno == EINTR ) {
-	 goto loop;
+bgl_check_fs_cb( obj_t proc, int arity, char *fun ) {
+   if( PROCEDUREP( proc ) ) {
+      if( PROCEDURE_CORRECT_ARITYP( proc, arity ) ) {
+	 return 1;
+      } else {
+	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, fun,
+			   "wrong callback arity", proc );
+	 return -1;
       }
-   }
-
-   return n;
-}
-   
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_uv_file_seek ...                                             */
-/*---------------------------------------------------------------------*/
-static void
-bgl_uv_file_seek( obj_t port, long pos ) {
-   int fd = (long)PORT_FILE( port );
-
-   if( lseek( fd, pos, SEEK_SET ) == -1 ) {
-      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "set-input-port-position!",
-			strerror( errno ),
-			port );
-   }
-      
-   INPUT_PORT( port ).filepos = pos;
-   INPUT_PORT( port ).eof = 0;
-   INPUT_PORT( port ).matchstart = 0;
-   INPUT_PORT( port ).matchstop = 0;
-   INPUT_PORT( port ).forward = 0;
-   INPUT_PORT( port ).bufpos = 0;
-   INPUT_PORT( port ).lastchar = '\n';
-   
-   RGC_BUFFER_SET( port, 0, '\0' );
-}
-
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_uv_fs_open_input_file_cb ...                                 */
-/*---------------------------------------------------------------------*/
-static void
-bgl_uv_fs_open_input_file_cb( uv_fs_t* req ) {
-   obj_t proc = CAR( (obj_t)req->data );
-   obj_t buffer = CDR( (obj_t)req->data );
-   obj_t port;
-
-   gc_unmark( req->data );
-
-   if( req->result == -1 ) {
-      port = BINT( req->result );
    } else {
-      port = bgl_make_input_port(
-	 string_to_bstring( ( char*)(req->path) ), (FILE *)req->result, KINDOF_FILE, buffer );
-
-      INPUT_PORT( port ).port.userdata = GC_MALLOC( sizeof( uv_fs_t ) );
-      INPUT_PORT( port ).sysread = &bgl_uv_sync_read;
-      INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;
-      INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;
-      BGL_INPUT_PORT_LENGTH_SET( port, bgl_file_size( (char *)req->path ) );
+      return 0;
    }
-   
-   uv_fs_req_cleanup( req );
-   free( req );
-
-   PROCEDURE_ENTRY( proc )( proc, port, BEOA );
 }
 
 /*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_uv_open_input_file ...                                       */
+/*    int                                                              */
+/*    bgl_uv_fs_rename ...                                             */
 /*---------------------------------------------------------------------*/
-obj_t
-bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
-   uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-   char *path = BSTRING_TO_STRING( name );
-   uv_loop_t *loop = uv_default_loop();
-   obj_t res;
-   int r;
+int
+bgl_uv_fs_rename( char *oldp, char *newp, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER1( uv_fs_rename, oldp, newp )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_ftruncate ...                                          */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_ftruncate( obj_t obj, long offset, obj_t proc, bgl_uv_loop_t bloop ) {
+   int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
+
+   BGL_UV_FS_WRAPPER1( uv_fs_ftruncate, fd, offset )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_fchown ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_fchown( obj_t obj, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop ) {
+   int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
    
-   req->data = MAKE_PAIR( proc, buffer );
-   gc_mark( req->data );
+   BGL_UV_FS_WRAPPER2( uv_fs_fchown, fd, uid, gid )
+}
 
-   if( r = uv_fs_open( loop, req, path, O_RDONLY, 0,
-		       PROCEDUREP( proc ) ? bgl_uv_fs_open_input_file_cb : 0L ) < 0 ) {
-      uv_fs_req_cleanup( req );
-      free( req );
-      C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-open-input-file",
-			(char *)uv_strerror( req->result ),
-			name );
-   } else {
-      obj_t port = bgl_make_input_port( name, (FILE *)req->result, KINDOF_FILE, buffer );
-
-      if( proc == BFALSE ) {
-	 uv_fs_req_cleanup( req );
-	 free( req );
-      }
-
-      INPUT_PORT( port ).port.userdata = GC_MALLOC( sizeof( uv_fs_t ) );
-      INPUT_PORT( port ).sysread = &bgl_uv_sync_read;
-      INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;
-      INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;
-      
-      return port;
-   }
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_chown ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_chown( char *path, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER2( uv_fs_chown, path, uid, gid )
 }
 
 /*---------------------------------------------------------------------*/
@@ -395,23 +345,23 @@ bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {
 static void
 bgl_uv_fs_open_cb( uv_fs_t* req ) {
    obj_t proc = (obj_t)req->data;
-   obj_t port;
+   obj_t obj;
 
    gc_unmark( req->data );
 
    if( req->result == -1 ) {
-      port = BINT( req->result );
+      obj = BINT( req->result );
    } else {
-      port =
-	 bgl_uv_new_file( req->result, string_to_bstring( (char *)req->path ) );
-      ((bgl_uv_file_t)port)->BgL_z52readreqz52 =
+      obj_t name = string_to_bstring( (char *)req->path );
+      obj = bgl_uv_new_file( req->result, name );
+      ((bgl_uv_file_t)obj)->BgL_z52readreqz52 =
 	 GC_MALLOC( sizeof( uv_fs_t ) );
    }
    
    uv_fs_req_cleanup( req );
    free( req );
 
-   PROCEDURE_ENTRY( proc )( proc, port, BEOA );
+   PROCEDURE_ENTRY( proc )( proc, obj, BEOA );
 }
 
 /*---------------------------------------------------------------------*/
@@ -420,103 +370,48 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloop ) {
-   char *path = BSTRING_TO_STRING( bpath );
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-   
-   if( PROCEDUREP( proc ) ) {
-      if( PROCEDURE_CORRECT_ARITYP( proc, 1 ) ) {
-	 uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-   
-	 req->data = proc;
-	 gc_mark( req->data );
+   char *path = BSTRING_TO_STRING( bpath );
 
-	 if( uv_fs_open( loop, req, path, flags, mode, bgl_uv_fs_open_cb ) < 0 ) {
-	    uv_fs_req_cleanup( req );
-	    free( req );
-	    C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-open-input-file",
-			      "Cannot open file for input",
-			      bpath );
-	 }
+   if( bgl_check_fs_cb( proc, 1, "uv-fs-open" ) ) {
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+   
+      req->data = proc;
+      gc_mark( req->data );
+      
+      uv_fs_open( loop, req, path, flags, mode, bgl_uv_fs_open_cb );
+      
+      uv_fs_req_cleanup( req );
 
-	 return BUNSPEC;
-      } else {
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-open",
-			   "wrong callback arity",
-			   proc );
-      }
+      return BUNSPEC;
    } else {
       uv_fs_t req;
+      obj_t res;
 
-      if( uv_fs_open( loop, &req, path, flags, mode, 0L ) < 0 ) {
-	 uv_fs_req_cleanup( &req );
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-open-input-file",
-			   (char *)uv_strerror( req.result ),
-			   bpath );
-      } else {
+      uv_fs_open( loop, &req, path, flags, mode, 0L );
+
+      res = BINT( req.result );
+      uv_fs_req_cleanup( &req );
+
+      if( res >= 0 ) {
 	 obj_t res = bgl_uv_new_file( req.result, bpath );
 	 ((bgl_uv_file_t)res)->BgL_z52readreqz52 =
 	    GC_MALLOC( sizeof( uv_fs_t ) );
-	 
-	 uv_fs_req_cleanup( &req );
-
-	 return res;
       }
+
+      return res;
    }
 }
 
 /*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bgl_uv_fs_close_cb ...                                           */
-/*---------------------------------------------------------------------*/
-void
-bgl_uv_fs_close_cb( uv_fs_t *req ) {
-   obj_t p = (obj_t)req->data;
-
-   gc_unmark( p );
-
-   if( req->result < 0 ) {
-      PROCEDURE_ENTRY( p )( p, BFALSE, BEOA );
-   } else {
-      PROCEDURE_ENTRY( p )( p, BTRUE, BEOA );
-   }
-
-   uv_fs_req_cleanup( req );
-   free( req );
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
+/*    int                                                              */
 /*    bgl_uv_fs_close ...                                              */
 /*---------------------------------------------------------------------*/
-obj_t
+int
 bgl_uv_fs_close( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
 
-   if( PROCEDUREP( proc ) ) {
-      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-      req->data = proc;
-      gc_mark( proc );
-      
-      if( uv_fs_close( loop, req, fd, &bgl_uv_fs_close_cb ) < 0 ) {
-	 uv_fs_req_cleanup( req );
-	 free( req );
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-close",
-			   (char *)uv_strerror( req->result ),
-			   port );
-      }
-   } else {
-      uv_fs_t req;
-
-      if( uv_fs_close( loop, &req, fd, 0L ) < 0 ) {
-	 uv_fs_req_cleanup( &req );
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-clsoe",
-			   (char *)uv_strerror( req.result ),
-			   port );
-      } else {
-	 return BTRUE;
-      }
-   }
+   BGL_UV_FS_WRAPPER0( uv_fs_close, fd )
 }
 
 /*---------------------------------------------------------------------*/
@@ -636,32 +531,20 @@ bgl_uv_fs_fstat( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
 
-   if( PROCEDUREP( proc ) ) {
-      if( PROCEDURE_CORRECT_ARITYP( proc, 1 ) ) {
-	 uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
-	 req->data = proc;
-	 gc_mark( proc );
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_fstat" ) ) {
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+      req->data = proc;
+      gc_mark( proc );
       
-	 if( uv_fs_fstat( loop, req, fd, &bgl_uv_fs_fstat_cb ) < 0 ) {
-	    uv_fs_req_cleanup( req );
-	    free( req );
-	    C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-fstat",
-			      (char *)uv_strerror( req->result ),
-			      port );
-	 }
-      } else {
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-fstat",
-			   "wrong callback arity",
-			   proc );
-      }
+      uv_fs_fstat( loop, req, fd, &bgl_uv_fs_fstat_cb );
+      
+      return BUNSPEC;
    } else {
       uv_fs_t req;
 
       if( uv_fs_fstat( loop, &req, fd, 0L ) < 0 ) {
 	 uv_fs_req_cleanup( &req );
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-fstat",
-			   (char *)uv_strerror( req.result ),
-			   port );
+	 return BINT( req.result );
       } else {
 	 obj_t res = bgl_uv_fstat( req.statbuf );
 
@@ -702,31 +585,155 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
 			"offset+length out of buffer range",
 			BINT( STRING_LENGTH( buffer ) ) );
    }
-			
-   if( PROCEDUREP( proc ) ) {
-      if( PROCEDURE_CORRECT_ARITYP( proc, 1 ) ) {
-      
-	 /* uv_buf_init inlined */
-	 file->BgL_z52bufz52 = &(STRING_REF( buffer, offset ));
-	 file->BgL_z52buflenz52 = length;
+
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
+      /* uv_buf_init inlined */
+      file->BgL_z52bufz52 = &(STRING_REF( buffer, offset ));
+      file->BgL_z52buflenz52 = length;
 
 /*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
 /*    uv_buf_t iov;                                                    */
 /*                                                                     */
 /*    iov = uv_buf_init( buf, length );                                */
 
-	 req->data = proc;
-	 gc_mark( proc );
+      req->data = proc;
+      gc_mark( proc );
 
-	 uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_read_cb );
-	 uv_fs_req_cleanup( req );
-      } else {
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-fs-read",
-			   "wrong callback arity",
-			   proc );
-      }
+      uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_read_cb );
+      uv_fs_req_cleanup( req );
    } else {
       return pread( fd, &(STRING_REF( buffer, offset )), length, offset );
    }
 }
       
+/* {*---------------------------------------------------------------------*} */
+/* {*    static int                                                       *} */
+/* {*    bgl_uv_close_file ...                                            *} */
+/* {*---------------------------------------------------------------------*} */
+/* static int                                                          */
+/* bgl_uv_close_file( int file ) {                                     */
+/*    uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );           */
+/*    uv_loop_t *loop = uv_default_loop();                             */
+/*    int res = uv_fs_close( loop, req, (uv_file)file, 0L );           */
+/*                                                                     */
+/*    uv_fs_req_cleanup( req );                                        */
+/*    free( req );                                                     */
+/*    return res;                                                      */
+/* }                                                                   */
+/*                                                                     */
+/* {*---------------------------------------------------------------------*} */
+/* {*    static long                                                      *} */
+/* {*    bgl_uv_sync_read ...                                             *} */
+/* {*---------------------------------------------------------------------*} */
+/* static long                                                         */
+/* bgl_uv_sync_read( obj_t port, void *ptr, size_t num ) {             */
+/*    int fd = (long)PORT_FILE( port );                                */
+/*    long n;                                                          */
+/*                                                                     */
+/*  loop:                                                              */
+/*    if( (n = read( fd, ptr, num ) ) <= 0 ) {                         */
+/*       if( n == 0 ) {                                                */
+/* 	 INPUT_PORT( port ).eof = 1;                                   */
+/*       } else if( errno == EINTR ) {                                 */
+/* 	 goto loop;                                                    */
+/*       }                                                             */
+/*    }                                                                */
+/*                                                                     */
+/*    return n;                                                        */
+/* }                                                                   */
+/*                                                                     */
+/* {*---------------------------------------------------------------------*} */
+/* {*    static void                                                      *} */
+/* {*    bgl_uv_file_seek ...                                             *} */
+/* {*---------------------------------------------------------------------*} */
+/* static void                                                         */
+/* bgl_uv_file_seek( obj_t port, long pos ) {                          */
+/*    int fd = (long)PORT_FILE( port );                                */
+/*                                                                     */
+/*    if( lseek( fd, pos, SEEK_SET ) == -1 ) {                         */
+/*       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "set-input-port-position!", */
+/* 			strerror( errno ),                             */
+/* 			port );                                        */
+/*    }                                                                */
+/*                                                                     */
+/*    INPUT_PORT( port ).filepos = pos;                                */
+/*    INPUT_PORT( port ).eof = 0;                                      */
+/*    INPUT_PORT( port ).matchstart = 0;                               */
+/*    INPUT_PORT( port ).matchstop = 0;                                */
+/*    INPUT_PORT( port ).forward = 0;                                  */
+/*    INPUT_PORT( port ).bufpos = 0;                                   */
+/*    INPUT_PORT( port ).lastchar = '\n';                              */
+/*                                                                     */
+/*    RGC_BUFFER_SET( port, 0, '\0' );                                 */
+/* }                                                                   */
+/*                                                                     */
+/* {*---------------------------------------------------------------------*} */
+/* {*    static void                                                      *} */
+/* {*    bgl_uv_fs_open_input_file_cb ...                                 *} */
+/* {*---------------------------------------------------------------------*} */
+/* static void                                                         */
+/* bgl_uv_fs_open_input_file_cb( uv_fs_t* req ) {                      */
+/*    obj_t proc = CAR( (obj_t)req->data );                            */
+/*    obj_t buffer = CDR( (obj_t)req->data );                          */
+/*    obj_t port;                                                      */
+/*                                                                     */
+/*    gc_unmark( req->data );                                          */
+/*                                                                     */
+/*    if( req->result == -1 ) {                                        */
+/*       port = BINT( req->result );                                   */
+/*    } else {                                                         */
+/*       port = bgl_make_input_port(                                   */
+/* 	 string_to_bstring( ( char*)(req->path) ), (FILE *)req->result, KINDOF_FILE, buffer ); */
+/*                                                                     */
+/*       INPUT_PORT( port ).port.userdata = GC_MALLOC( sizeof( uv_fs_t ) ); */
+/*       INPUT_PORT( port ).sysread = &bgl_uv_sync_read;               */
+/*       INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;               */
+/*       INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;        */
+/*       BGL_INPUT_PORT_LENGTH_SET( port, bgl_file_size( (char *)req->path ) ); */
+/*    }                                                                */
+/*                                                                     */
+/*    uv_fs_req_cleanup( req );                                        */
+/*    free( req );                                                     */
+/*                                                                     */
+/*    PROCEDURE_ENTRY( proc )( proc, port, BEOA );                     */
+/* }                                                                   */
+/*                                                                     */
+/* {*---------------------------------------------------------------------*} */
+/* {*    obj_t                                                            *} */
+/* {*    bgl_uv_open_input_file ...                                       *} */
+/* {*---------------------------------------------------------------------*} */
+/* obj_t                                                               */
+/* bgl_uv_open_input_file( obj_t name, obj_t buffer, obj_t proc ) {    */
+/*    uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );           */
+/*    char *path = BSTRING_TO_STRING( name );                          */
+/*    uv_loop_t *loop = uv_default_loop();                             */
+/*    obj_t res;                                                       */
+/*    int r;                                                           */
+/*                                                                     */
+/*    req->data = MAKE_PAIR( proc, buffer );                           */
+/*    gc_mark( req->data );                                            */
+/*                                                                     */
+/*    if( r = uv_fs_open( loop, req, path, O_RDONLY, 0,                */
+/* 		       PROCEDUREP( proc ) ? bgl_uv_fs_open_input_file_cb : 0L ) < 0 ) { */
+/*       uv_fs_req_cleanup( req );                                     */
+/*       free( req );                                                  */
+/*       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv-open-input-file",    */
+/* 			(char *)uv_strerror( req->result ),            */
+/* 			name );                                        */
+/*    } else {                                                         */
+/*       obj_t port = bgl_make_input_port( name, (FILE *)req->result, KINDOF_FILE, buffer ); */
+/*                                                                     */
+/*       if( proc == BFALSE ) {                                        */
+/* 	 uv_fs_req_cleanup( req );                                     */
+/* 	 free( req );                                                  */
+/*       }                                                             */
+/*                                                                     */
+/*       INPUT_PORT( port ).port.userdata = GC_MALLOC( sizeof( uv_fs_t ) ); */
+/*       INPUT_PORT( port ).sysread = &bgl_uv_sync_read;               */
+/*       INPUT_PORT( port ).sysseek = &bgl_uv_file_seek;               */
+/*       INPUT_PORT( port ).port.sysclose = &bgl_uv_close_file;        */
+/*                                                                     */
+/*       return port;                                                  */
+/*    }                                                                */
+/* }                                                                   */
+
