@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Jul 21 17:36:53 2014 (serrano)                */
+;*    Last change :  Wed Jul 23 11:39:35 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -20,10 +20,15 @@
    (extern
       (include "uv.h")
 
-      ;; misc types
+      ;; misc
+      (macro $void*_nil::void* "0L")
+      (macro $string-nil::string "0L")
+      
       (type double* void* "double *")
       (macro $f64vector->double*::double* (::f64vector ::int) "&BGL_F64VREF")
       (macro $u8vector->double*::double* (::u8vector ::int) "&BGL_F64VREF")
+
+      (macro $uv-strerror::string (::int) "uv_strerror")
       
       ;; handle
       (type $uv_handle_t void* "uv_handle_t *")
@@ -80,13 +85,20 @@
       (macro $uv_async_send::void (::$uv_async_t) "uv_async_send")
 
       ;; fs
-      (macro $uv-rename-file::void (::string ::string ::procedure ::UvLoop)
-	     "bgl_uv_rename_file")
       ($uv-open-input-file::obj (::obj ::obj ::obj)
-	     "bgl_uv_open_input_file")
-      ($uv-fs-read::int (::input-port ::bstring ::long ::long ::long ::obj ::UvLoop)
-	     "bgl_uv_fs_read")
+	 "bgl_uv_open_input_file")
       
+      ($uv-fs-rename::int (::string ::string ::obj ::UvLoop)
+	 "bgl_uv_fs_rename")
+      ($uv-fs-open::obj (::bstring ::int ::int ::obj ::UvLoop)
+	 "bgl_uv_fs_open")
+      ($uv-fs-close::obj (::UvFile ::obj ::UvLoop)
+	 "bgl_uv_fs_close")
+      ($uv-fs-fstat::obj (::UvFile ::obj ::UvLoop)
+	 "bgl_uv_fs_fstat")
+      ($uv-fs-read::int (::UvFile ::bstring ::long ::long ::long ::obj ::UvLoop)
+	 "bgl_uv_fs_read")
+
       ;; os
       (macro $uv-loadavg::void (::double*) "uv_loadavg")
       (macro $uv-get-free-memory::double () "uv_get_free_memory")

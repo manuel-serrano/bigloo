@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Wed May 14 10:19:17 2014 (serrano)                */
+;*    Last change :  Wed Jul 23 11:17:32 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -35,7 +35,19 @@
 
 	   (class UvAsync::UvWatcher)
 
-	   (generic %uv-init ::UvHandle)))
+	   (class UvFile
+	      (fd::int read-only)
+	      (path::bstring read-only)
+	      (%readreq::void* (default $void*_nil))
+	      (%buf::string (default $string-nil))
+	      (%buflen::int (default 0)))
+	   
+	   (generic %uv-init ::UvHandle)
+
+	   (uv-new-file::UvFile ::int ::bstring)
+	   (uv-strerror::string ::int))
+
+   (extern (export uv-new-file "bgl_uv_new_file")))
 
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ...                                                     */
@@ -74,3 +86,17 @@
 		 (begin
 		    (class-field-write/display (vector-ref-ur fields i))
 		    (loop (+fx i 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-new-file ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-new-file::UvFile fd::int path::bstring)
+   (instantiate::UvFile
+      (fd fd)
+      (path path)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-strerror ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-strerror errno)
+   ($uv-strerror errno))
