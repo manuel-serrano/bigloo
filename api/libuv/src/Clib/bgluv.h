@@ -1,7 +1,7 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (4.2a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Wed Jul 23 15:39:31 CEST 2014       */
+/*   Inria -- Sophia Antipolis (c)       Thu Jul 24 10:07:11 CEST 2014       */
 /*===========================================================================*/
 /* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/4.2a -unsafe -safee -srfi libuv -copt -I/users/serrano/prgm/project/bigloo/libuv/libuv-master-18jul2014/include -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
 
@@ -60,8 +60,10 @@ typedef struct BgL_uvfilez00_bgl {
    int BgL_fdz00;
    obj_t BgL_pathz00;
    void * BgL_z52readreqz52;
-   char * BgL_z52bufz52;
-   int BgL_z52buflenz52;
+   char * BgL_z52rbufz52;
+   int BgL_z52rbuflenz52;
+   char * BgL_z52wbufz52;
+   int BgL_z52wbuflenz52;
 } *BgL_uvfilez00_bglt;
 
 

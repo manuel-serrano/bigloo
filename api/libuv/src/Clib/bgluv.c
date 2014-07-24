@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jul 23 16:26:35 2014 (serrano)                */
+/*    Last change :  Thu Jul 24 10:12:50 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -331,11 +331,41 @@ bgl_uv_fs_fchown( obj_t obj, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop )
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
+/*    bgl_uv_fs_lchown ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_lchown( char *path, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop ) {
+   C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, "uv_fs_lchown",
+		     "Not implemented", proc );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
 /*    bgl_uv_fs_chown ...                                              */
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_chown( char *path, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop ) {
    BGL_UV_FS_WRAPPER2( uv_fs_chown, path, uid, gid )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_fchmod ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_fchmod( obj_t obj, int mod, obj_t proc, bgl_uv_loop_t bloop ) {
+   int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
+   
+   BGL_UV_FS_WRAPPER1( uv_fs_fchmod, fd, mod )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_chmod ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_chmod( char *path, int mod, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER1( uv_fs_chmod, path, mod )
 }
 
 /*---------------------------------------------------------------------*/
@@ -556,11 +586,214 @@ bgl_uv_fs_fstat( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bgl_uv_fs_read_cb ...                                            */
+/*    obj_t                                                            */
+/*    bgl_uv_fs_lstat ...                                              */
 /*---------------------------------------------------------------------*/
-void
-bgl_uv_fs_read_cb( uv_fs_t *req ) {
+obj_t
+bgl_uv_fs_lstat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_lstat" ) ) {
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+      req->data = proc;
+      gc_mark( proc );
+      
+      uv_fs_lstat( loop, req, path, &bgl_uv_fs_fstat_cb );
+      
+      return BUNSPEC;
+   } else {
+      uv_fs_t req;
+
+      if( uv_fs_lstat( loop, &req, path, 0L ) < 0 ) {
+	 uv_fs_req_cleanup( &req );
+	 return BINT( req.result );
+      } else {
+	 obj_t res = bgl_uv_fstat( req.statbuf );
+
+	 uv_fs_req_cleanup( &req );
+
+	 return res;
+      }
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_fs_stat ...                                               */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_fs_stat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_lstat" ) ) {
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+      req->data = proc;
+      gc_mark( proc );
+      
+      uv_fs_stat( loop, req, path, &bgl_uv_fs_fstat_cb );
+      
+      return BUNSPEC;
+   } else {
+      uv_fs_t req;
+
+      if( uv_fs_stat( loop, &req, path, 0L ) < 0 ) {
+	 uv_fs_req_cleanup( &req );
+	 return BINT( req.result );
+      } else {
+	 obj_t res = bgl_uv_fstat( req.statbuf );
+
+	 uv_fs_req_cleanup( &req );
+
+	 return res;
+      }
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_link ...                                               */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_link( char *oldp, char *newp, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER1( uv_fs_link, oldp, newp )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_symlink ...                                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_symlink( char *oldp, char *newp, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER1( uv_fs_link, oldp, newp )
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_fs_readlink_cb ...                                        */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_fs_readlink_cb( uv_fs_t *req ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+
+   if( req->result < 0 ) {
+      PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
+   } else {
+      PROCEDURE_ENTRY( p )( p, string_to_bstring( (char *)req->ptr ), BEOA );
+   }
+
+   uv_fs_req_cleanup( req );
+   free( req );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_fs_readlink ...                                           */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_fs_readlink( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_readlink" ) ) {
+      uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
+      req->data = proc;
+      gc_mark( proc );
+      
+      uv_fs_readlink( loop, req, path, &bgl_uv_fs_readlink_cb );
+      
+      return BUNSPEC;
+   } else {
+      uv_fs_t req;
+
+      if( uv_fs_readlink( loop, &req, path, 0L ) < 0 ) {
+	 uv_fs_req_cleanup( &req );
+	 return BINT( req.result );
+      } else {
+	 obj_t res = string_to_bstring( (char *)req.ptr );
+
+	 uv_fs_req_cleanup( &req );
+
+	 return res;
+      }
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_unlink ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_unlink( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER0( uv_fs_unlink, path )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_rmdir ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_rmdir( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER0( uv_fs_rmdir, path )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_mkdir ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_mkdir( char *path, int mod, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER1( uv_fs_mkdir, path, mod )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_fsync ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_fsync( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
+   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+
+   BGL_UV_FS_WRAPPER0( uv_fs_fsync, fd )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_fdatasync ...                                          */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_fdatasync( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
+   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+
+   BGL_UV_FS_WRAPPER0( uv_fs_fdatasync, fd )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_futime ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_futime( obj_t port, double atime, double mtime, obj_t proc, bgl_uv_loop_t bloop ) {
+   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+
+   BGL_UV_FS_WRAPPER2( uv_fs_futime, fd, atime, mtime )
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_fs_utime ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_utime( char *path, double atime, double mtime, obj_t proc, bgl_uv_loop_t bloop ) {
+   BGL_UV_FS_WRAPPER2( uv_fs_utime, path, atime, mtime )
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_fs_readwrite_cb ...                                       */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_fs_readwrite_cb( uv_fs_t *req ) {
    obj_t p = (obj_t)req->data;
 
    gc_unmark( p );
@@ -570,6 +803,44 @@ bgl_uv_fs_read_cb( uv_fs_t *req ) {
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
+/*    bgl_uv_fs_write ...                                               */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_fs_write( obj_t port, obj_t buffer, long offset, long length, long position, obj_t proc, bgl_uv_loop_t bloop ) {
+   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+   bgl_uv_file_t file = (bgl_uv_file_t)port;
+   uv_fs_t *req = file->BgL_z52readreqz52;
+   uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
+   int fd = file->BgL_fdz00;
+
+   if( length + offset > STRING_LENGTH( buffer ) ) {
+      C_SYSTEM_FAILURE( BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-write",
+			"offset+length out of buffer range",
+			BINT( STRING_LENGTH( buffer ) ) );
+   }
+
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_write" ) ) {
+      /* uv_buf_init inlined */
+      file->BgL_z52rbufz52 = &(STRING_REF( buffer, offset ));
+      file->BgL_z52rbuflenz52 = length;
+
+/*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
+/*    uv_buf_t iov;                                                    */
+/*                                                                     */
+/*    iov = uv_buf_init( buf, length );                                */
+
+      req->data = proc;
+      gc_mark( proc );
+
+      uv_fs_write( loop, req, fd, buf, 1, position, &bgl_uv_fs_readwrite_cb );
+      uv_fs_req_cleanup( req );
+   } else {
+      return pwrite( fd, &(STRING_REF( buffer, offset )), length, offset );
+   }
+}
+      
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
 /*    bgl_uv_fs_read ...                                               */
 /*---------------------------------------------------------------------*/
 int
@@ -577,7 +848,7 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    bgl_uv_file_t file = (bgl_uv_file_t)port;
    uv_fs_t *req = file->BgL_z52readreqz52;
-   uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52bufz52));
+   uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
    int fd = file->BgL_fdz00;
 
    if( length + offset > STRING_LENGTH( buffer ) ) {
@@ -588,8 +859,8 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
       /* uv_buf_init inlined */
-      file->BgL_z52bufz52 = &(STRING_REF( buffer, offset ));
-      file->BgL_z52buflenz52 = length;
+      file->BgL_z52rbufz52 = &(STRING_REF( buffer, offset ));
+      file->BgL_z52rbuflenz52 = length;
 
 /*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
 /*    uv_buf_t iov;                                                    */
@@ -599,7 +870,7 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
       req->data = proc;
       gc_mark( proc );
 
-      uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_read_cb );
+      uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_readwrite_cb );
       uv_fs_req_cleanup( req );
    } else {
       return pread( fd, &(STRING_REF( buffer, offset )), length, offset );

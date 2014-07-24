@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:10:13 2014                          */
-;*    Last change :  Wed Jul 23 14:27:43 2014 (serrano)                */
+;*    Last change :  Thu Jul 24 07:58:45 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -26,6 +26,13 @@
 	 :callback (lambda (res)
 		      (tprint "rename..."
 			 (if (<fx res 0) (uv-strerror res) "ok"))))
+	 
+      (uv-fs-readlink "GEE"
+	 :callback (lambda (res)
+		      (tprint "readlink..."
+			 (if (integer? res)
+			     (uv-strerror res)
+			     res))))
 	 
       (uv-run loop)))
       

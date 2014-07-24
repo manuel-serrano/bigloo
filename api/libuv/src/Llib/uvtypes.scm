@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Wed Jul 23 15:13:07 2014 (serrano)                */
+;*    Last change :  Thu Jul 24 10:08:31 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -39,8 +39,10 @@
 	      (fd::int read-only)
 	      (path::bstring read-only)
 	      (%readreq::void* (default $void*_nil))
-	      (%buf::string (default $string-nil))
-	      (%buflen::int (default 0)))
+	      (%rbuf::string (default $string-nil))
+	      (%rbuflen::int (default 0))
+	      (%wbuf::string (default $string-nil))
+	      (%wbuflen::int (default 0)))
 	   
 	   (generic %uv-init ::UvHandle)
 
