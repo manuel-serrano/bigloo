@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Jul 28 15:00:15 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 16:48:23 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -641,7 +641,7 @@ doboot.static: $(O_OBJECTS)
         else \
 	  gc=$(BOOTLIBDIR)/lib$(GCLIB)-$(RELEASE).a; \
         fi; \
-	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(EXTRALIBS); \
+	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(EXTRALIBS);
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
