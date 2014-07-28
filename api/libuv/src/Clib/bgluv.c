@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu Jul 24 10:12:50 2014 (serrano)                */
+/*    Last change :  Fri Jul 25 09:23:31 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -209,55 +209,67 @@ bgl_uv_cpus() {
 /*---------------------------------------------------------------------*/
 #define BGL_UV_FS_WRAPPER0( name, obj ) { \
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   int r; \
    if( bgl_check_fs_cb( proc, 1, #name ) ) { \
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
       req->data = proc; \
-      gc_mark( proc ); \
-      name( loop, req, obj, &bgl_uv_fs_cb ); \
-      return 0; \
+      if( (r = name( loop, req, obj, &bgl_uv_fs_cb ) >= 0) ) { \
+        gc_mark( proc ); \
+      } else { \
+        free( req ); \
+      } \
+      return r; \
    } else { \
       uv_fs_t req; \
-      int res; \
-      name( loop, &req, obj, 0L ); \
-      res = req.result; \
+      if( (r = name( loop, &req, obj, 0L )) >= 0 ) { \
+         r = req.result; \
+      } \
       uv_fs_req_cleanup( &req ); \
-      return res; \
+      return r; \
    } \
 }
 
 #define BGL_UV_FS_WRAPPER1( name, obj, arg ) { \
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   int r; \
    if( bgl_check_fs_cb( proc, 1, #name ) ) { \
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
       req->data = proc; \
-      gc_mark( proc ); \
-      name( loop, req, obj, arg, &bgl_uv_fs_cb ); \
-      return 0; \
+      if( (r = name( loop, req, obj, arg, &bgl_uv_fs_cb ) >= 0) ) { \
+        gc_mark( proc ); \
+      } else { \
+        free( req ); \
+      } \
+      return r; \
    } else { \
       uv_fs_t req; \
-      int res; \
-      name( loop, &req, obj, arg, 0L ); \
-      res = req.result; \
+      if( (r = name( loop, &req, obj, arg, 0L )) >= 0 ) { \
+        r = req.result; \
+      } \
       uv_fs_req_cleanup( &req ); \
-      return res; \
+      return r; \
    } \
 }
 
 #define BGL_UV_FS_WRAPPER2( name, obj, arg0, arg1 ) {	\
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   int r; \
    if( bgl_check_fs_cb( proc, 1, #name ) ) { \
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
       req->data = proc; \
-      gc_mark( proc ); \
-      name( loop, req, obj, arg0, arg1, &bgl_uv_fs_cb ); \
-      return 0; \
+      if( (r = name( loop, req, obj, arg0, arg1, &bgl_uv_fs_cb ) >= 0) ) { \
+        gc_mark( proc ); \
+      } else { \
+        free( req ); \
+      } \
+      return r; \
    } else { \
       uv_fs_t req; \
-      int res; \
-      name( loop, &req, obj, arg0, arg1, 0L ); \
-      res = req.result; \
+      if( (r = name( loop, &req, obj, arg0, arg1, 0L )) >= 0 ) { \
+        r = req.result; \
+      } \
       uv_fs_req_cleanup( &req ); \
-      return res; \
+      return r; \
    } \
 }
 
@@ -289,7 +301,7 @@ bgl_check_fs_cb( obj_t proc, int arity, char *fun ) {
       if( PROCEDURE_CORRECT_ARITYP( proc, arity ) ) {
 	 return 1;
       } else {
-	 C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR, fun,
+	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, fun,
 			   "wrong callback arity", proc );
 	 return -1;
       }
@@ -1008,3 +1020,100 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
 /*    }                                                                */
 /* }                                                                   */
 
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_getaddrinfo_cb ...                                        */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_getaddrinfo_cb( uv_getaddrinfo_t *req, int status, struct addrinfo *res ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+
+   if( status ) {
+      PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
+   } else {
+      char *addr;
+      obj_t acc = BNIL;
+      
+#define MAX_IP_LEN \
+      (INET6_ADDRSTRLEN > INET_ADDRSTRLEN ? INET6_ADDRSTRLEN : INET_ADDRSTRLEN)
+      
+      char ip[ MAX_IP_LEN ];
+      
+      for( ; res; res = res->ai_next ) {
+	 switch( res->ai_family ) {
+	    case AF_INET: {
+	       // ipv4 address
+	       addr = (char *)&((struct sockaddr_in *)res->ai_addr)->sin_addr;
+	       int err = uv_inet_ntop( res->ai_family, addr,
+				       ip, INET_ADDRSTRLEN );
+	       if( err != 0 ) {
+		  continue;
+	       } else {
+		  acc = MAKE_PAIR( string_to_bstring( ip ), acc );
+	       }
+	    }
+	       break;
+	       
+	    case AF_INET6: {
+	       // ipv6 address
+	       addr = (char*)&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr;
+	       int err = uv_inet_ntop( res->ai_family, addr,
+				       ip, INET6_ADDRSTRLEN );
+	       if( err != 0 ) {
+		  continue;
+	       } else {
+		  acc = MAKE_PAIR( string_to_bstring( ip ), acc );
+	       }
+	    }
+	       break;
+	 }
+      }
+
+      uv_freeaddrinfo( res );
+      PROCEDURE_ENTRY( p )( p, bgl_reverse_bang( acc ) );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_getaddrinfo ...                                           */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_getaddrinfo( char *node, char *service, obj_t proc, int family, bgl_uv_loop_t bloop ) {
+   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 1 )) ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-getaddrinfo",
+			"wrong callback", proc );
+   } else {
+      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+      uv_getaddrinfo_t *resolver =
+	 (uv_getaddrinfo_t *)malloc( sizeof( uv_getaddrinfo_t ) );
+      struct addrinfo hints;
+      int fam = AF_UNSPEC;
+      int r;
+   
+      switch( family ) {
+	 case 6:
+	    fam = AF_INET6;
+	    break;
+
+	 case 4:
+	    fam = AF_INET;
+	    break;
+      }
+
+      memset( &hints, 0, sizeof( struct addrinfo ) );
+      hints.ai_family = fam;
+      hints.ai_socktype = SOCK_STREAM;
+   
+      if( (r = uv_getaddrinfo( loop, resolver, bgl_uv_getaddrinfo_cb,
+			       node, service, &hints )) < 0 ) {
+	 free( resolver );
+      } else {
+	 gc_mark( proc );
+      }
+
+      return r;
+   }
+}
