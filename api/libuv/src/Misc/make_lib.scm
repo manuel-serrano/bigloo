@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Fri Jul 25 09:40:14 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 14:14:54 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -17,6 +17,7 @@
    (import __libuv_types
 	   __libuv_loop
 	   __libuv_timer
+	   __libuv_idle
 	   __libuv_handle
 	   __libuv_async
 	   __libuv_fs
@@ -29,5 +30,6 @@
 	   (class UvLoop)
 	   (class UvWatcher)
 	   (class UvTimer)
+	   (class UvIdle)
 	   (class UvAsync)))
 

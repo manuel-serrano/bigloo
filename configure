@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 28 07:30:37 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 14:25:15 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2715,6 +2715,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$xcc " = "$cc " ]; then
     ldrpath="-Wl,-rpath="
     crpath="$ldrpath~a"
+    rflags="$rflags $ldrpath\$(RPATH)"
   else
     ldrpath=""
     crpath=""

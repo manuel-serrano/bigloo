@@ -1,51 +1,51 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/timer.scm         */
+;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/idle.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Mon Jul 28 13:46:18 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 14:06:38 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    LIBUV timers                                                     */
+;*    LIBUV idle callback                                              */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
-(module __libuv_timer
+(module __libuv_idle
 
    (include "uv.sch")
 
    (import __libuv_types)
    
-   (export (uv-timer-start ::UvTimer ::uint64 ::uint64)
-	   (uv-timer-stop ::UvTimer)))
+   (export (uv-idle-start ::UvIdle)
+	   (uv-idle-stop ::UvIdle)))
 
 ;*---------------------------------------------------------------------*/
-;*    %uv-init ::UvTimer ...                                           */
+;*    %uv-init ::UvIdle ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (%uv-init o::UvTimer)
-   (with-access::UvTimer o ($builtin loop)
-      (set! $builtin ($uv-handle-t ($bgl_uv_timer_new o loop)))
+(define-method (%uv-init o::UvIdle)
+   (with-access::UvIdle o ($builtin loop)
+      (set! $builtin ($uv-handle-t ($bgl_uv_idle_new o loop)))
       o))
 
 ;*---------------------------------------------------------------------*/
-;*    uv-timer-start ...                                               */
+;*    uv-idle-start ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (uv-timer-start o::UvTimer t::uint64 r::uint64)
-   (with-access::UvTimer o ($builtin loop %proc)
+(define (uv-idle-start o::UvIdle)
+   (with-access::UvIdle o ($builtin loop %proc)
       (with-access::UvLoop loop (%mutex %gcmarks)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
 	    (set! %gcmarks (cons o %gcmarks))
-	    ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
-	    (when (null? %gcmarks) ($bgl_uv_timer_cb $uv_timer_nil 0))))
-      ($uv_timer_start ($uv-timer-t $builtin) $BGL_UV_TIMER_CB t r)))
+	    ;; force Bigloo to add the extern clause for bgl_uv_idle_cb
+	    (when (null? %gcmarks) ($bgl_uv_idle_cb $uv_idle_nil 0))))
+      ($uv_idle_start ($uv-idle-t $builtin) $BGL_UV_IDLE_CB)))
 
 ;*---------------------------------------------------------------------*/
-;*    uv-timer-stop ...                                                */
+;*    uv-idle-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (uv-timer-stop o::UvTimer)
-   (with-access::UvTimer o ($builtin)
-      ($uv_timer_stop ($uv-timer-t $builtin))))
+(define (uv-idle-stop o::UvIdle)
+   (with-access::UvIdle o ($builtin)
+      ($uv_idle_stop ($uv-idle-t $builtin))))
       

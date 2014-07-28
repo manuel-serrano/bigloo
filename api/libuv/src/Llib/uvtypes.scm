@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Fri Jul 25 09:24:36 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 14:06:19 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -32,6 +32,8 @@
 	      (loop::UvLoop read-only))
 	   
 	   (class UvTimer::UvWatcher)
+
+	   (class UvIdle::UvWatcher)
 
 	   (class UvAsync::UvWatcher)
 

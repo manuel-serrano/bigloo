@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri Jul 25 09:24:32 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 14:13:29 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -72,8 +72,22 @@
       (macro $uv_timer_start::void (::$uv_timer_t ::$uv_timer_cb ::uint64 ::uint64) "uv_timer_start")
       (macro $uv_timer_stop::void (::$uv_timer_t) "uv_timer_stop")
 
-      ($bgl_uv_timer_cb::$uv_timer_cb (::$uv_timer_t ::int) "bgl_uv_timer_cb")
-      (macro $BGL_UV_TIMER_CB::$uv_timer_cb "(uv_timer_cb)&bgl_uv_timer_cb")
+      ($bgl_uv_timer_cb::$uv_timer_cb (::$uv_timer_t ::int) "bgl_uv_handle_cb")
+      (macro $BGL_UV_TIMER_CB::$uv_timer_cb "(uv_timer_cb)&bgl_uv_handle_cb")
+
+      ;; idle
+      (type $uv_idle_t void* "uv_idle_t *")
+      (type $uv_idle_cb void* "uv_idle_cb")
+      (macro $uv-idle-t::$uv_idle_t (::$uv_handle_t) "(uv_idle_t *)")
+      
+      (macro $uv_idle_nil::$uv_idle_t "0L")
+      
+      ($bgl_uv_idle_new::$uv_idle_t (::UvIdle ::UvLoop) "bgl_uv_idle_new")
+      (macro $uv_idle_start::void (::$uv_idle_t ::$uv_idle_cb) "uv_idle_start")
+      (macro $uv_idle_stop::void (::$uv_idle_t) "uv_idle_stop")
+
+      ($bgl_uv_idle_cb::$uv_idle_cb (::$uv_idle_t ::int) "bgl_uv_handle_cb")
+      (macro $BGL_UV_IDLE_CB::$uv_idle_cb "(uv_idle_cb)&bgl_uv_handle_cb")
 
       ;; async
       (type $uv_async_t void* "uv_async_t *")

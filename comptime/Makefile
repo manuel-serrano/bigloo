@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Jan 28 05:36:26 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 14:30:51 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -612,32 +612,37 @@ dist-updates:
 boot: 
 	touch $(AFILE)
 	touch $(JFILE)
-	$(MAKE) doboot SCMOBJSUFFIX="" COBJSUFFIX=%.o
-
-doboot: $(O_OBJECTS)
-	if [ "$(SHRD_COMP)" = "yes" -a -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)_s-$(RELEASE).$(SHAREDSUFFIX) ]; then \
-           gc=-l$(GCLIB)-$(RELEASE); \
-           if [ "$(GCCUSTOM)" = "no" ]; then \
-              if [ "$(GCLIBDIR) " = " " ]; then \
-                gc=-lgc; \
-              else \
-                gc="-L$(GCLIBDIR) -lgc"; \
-              fi; \
-           fi; \
-	   $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) -L$(BOOTLIBDIR) -lbigloo_s-$(RELEASE) $$gc -lbigloo_s-$(RELEASE) $(LDCOMPLIBS) $(EXTRALIBS); \
-	else \
-           gc=$(BOOTLIBDIR)/lib$(GCLIB)-$(RELEASE).a; \
-           if [ "$(GCCUSTOM)" = "no" ]; then \
-              if [ "$(GCLIBDIR) " = " " ]; then \
-                gc=-lgc; \
-              else \
-                gc="-L$(GCLIBDIR) -lgc"; \
-              fi; \
-           fi; \
-	   $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(EXTRALIBS); \
+	if [ "$(SHRD_COMP)" = "yes" -a -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)_s-$(RELEASE).$(SHAREDSUFFIX) ]; \
+	  $(MAKE) doboot.shared SCMOBJSUFFIX="" COBJSUFFIX=%.o \
+        else \
+	  $(MAKE) doboot.static SCMOBJSUFFIX="" COBJSUFFIX=%.o \
 	fi
-	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 	@ echo "$(BIGLOO_DEST)$(EXE_SUFFIX) done..."
+
+doboot.shared: $(O_OBJECTS)
+	if [ "$(GCCUSTOM)" = "no" ]; then \
+           if [ "$(GCLIBDIR) " = " " ]; then \
+             gc=-lgc; \
+           else \
+             gc="-L$(GCLIBDIR) -lgc"; \
+           fi \
+        else \
+	  gc=-l$(GCLIB)-$(RELEASE); \
+        fi \
+	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) -L$(BOOTLIBDIR) -lbigloo_s-$(RELEASE) $$gc -lbigloo_s-$(RELEASE) $(LDCOMPLIBS) $(EXTRALIBS); \
+
+doboot.static: $(O_OBJECTS)
+	if [ "$(GCCUSTOM)" = "no" ]; then \
+           if [ "$(GCLIBDIR) " = " " ]; then \
+             gc=-lgc; \
+           else \
+             gc="-L$(GCLIBDIR) -lgc"; \
+           fi \
+        else \
+	  gc=$(BOOTLIBDIR)/lib$(GCLIB)-$(RELEASE).a; \
+        fi \
+	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(EXTRALIBS); \
+	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
 #*    bigboot                                                          */

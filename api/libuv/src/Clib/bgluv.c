@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Jul 25 09:23:31 2014 (serrano)                */
+/*    Last change :  Mon Jul 28 14:13:48 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -64,7 +64,6 @@ gc_unmark( obj_t obj ) {
 /*---------------------------------------------------------------------*/
 void
 bgl_uv_close_cb( uv_handle_t *handle ) {
-   uv_timer_t *t = (uv_timer_t *)handle;
    bgl_uv_handle_t o = (bgl_uv_handle_t)handle->data;
    obj_t p = o->BgL_onclosez00;
 
@@ -73,10 +72,10 @@ bgl_uv_close_cb( uv_handle_t *handle ) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    bgl_uv_timer_cb ...                                              */
+/*    bgl_uv_handle_cb ...                                             */
 /*---------------------------------------------------------------------*/
 void
-bgl_uv_timer_cb( uv_timer_t *handle, int status ) {
+bgl_uv_handle_cb( uv_handle_t *handle, int status ) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = o->BgL_cbz00;
    
@@ -94,6 +93,20 @@ bgl_uv_timer_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
    new->close_cb = &bgl_uv_close_cb;
 
    uv_timer_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   return new;
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_idle_t *                                                      */
+/*    bgl_uv_idle_new ...                                              */
+/*---------------------------------------------------------------------*/
+uv_idle_t *
+bgl_uv_idle_new( BgL_uvidlez00_bglt o, bgl_uv_loop_t loop ) {
+   uv_idle_t *new = (uv_idle_t *)GC_MALLOC( sizeof( uv_idle_t ) );
+   new->data = o;
+   new->close_cb = &bgl_uv_close_cb;
+
+   uv_idle_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
    return new;
 }
 

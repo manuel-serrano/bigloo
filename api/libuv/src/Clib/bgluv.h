@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (4.2a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Thu Jul 24 15:53:08 CEST 2014       */
+/*   Inria -- Sophia Antipolis (c)       Mon Jul 28 10:10:49 CEST 2014       */
 /*===========================================================================*/
-/* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/4.2a -unsafe -safee -srfi libuv -copt -I/users/serrano/prgm/project/bigloo/libuv/libuv-master-18jul2014/include -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
+/* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/bigloo/4.2a -unsafe -safee -srfi libuv -copt -I/users/serrano/prgm/project/bigloo/libuv/libuv-master-18jul2014/include -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
 
 /* Object type definitions */
 typedef struct BgL_z52uvz52_bgl {
@@ -44,6 +44,15 @@ typedef struct BgL_uvtimerz00_bgl {
    obj_t BgL_cbz00;
    struct BgL_uvloopz00_bgl * BgL_loopz00;
 } *BgL_uvtimerz00_bglt;
+
+typedef struct BgL_uvidlez00_bgl {
+   header_t header;
+   obj_t widening;
+   uv_handle_t * BgL_z42builtinz42;
+   obj_t BgL_onclosez00;
+   obj_t BgL_cbz00;
+   struct BgL_uvloopz00_bgl * BgL_loopz00;
+} *BgL_uvidlez00_bglt;
 
 typedef struct BgL_uvasyncz00_bgl {
    header_t header;
