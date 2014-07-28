@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Jul 21 08:37:22 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 11:49:02 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -157,7 +157,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 build: checkconf boot
 
 checkconf:
-	if ! [ -f "lib/$(RELEASE)/bigloo.h" ]; then \
+	if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \
 	  echo "you must configure before building!"; \
 	  exit 1; \
 	fi
