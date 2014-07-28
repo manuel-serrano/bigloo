@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 21 08:43:31 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 07:30:37 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -249,12 +249,13 @@ modfile=644
 #*--- ld shared library option ----------------------------------------*/
 # set $ldopt to `no-share' if you don't want shared library
 ldopt=
+ldrpath=
 # set $ldsoname to `blank' if you want to force it empty
 ldsoname=
 ldinstallname=
 ldinstallnamedirroot=lib
 sharedsuffix=so
-sharedlibraryclosed=no
+sharedlibraryclosed=yes
 sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
@@ -279,7 +280,7 @@ buildcpu=
 cygwindospath=
 cygwindosjvm="yes"
 
-#*--- mingw/macosx specific configuration ------------------------------------*/
+#*--- mingw/macosx specific configuration -----------------------------*/
 mingw="no"
 macosx=auto
 
@@ -393,7 +394,7 @@ while : ; do
       prefix=$PWD;
       bindir=$PWD/bin;
       libdir=$PWD/lib;
-      fildir=$release;
+      fildir=bigloo/$release;
       zipdir=$libdir/$fildir;
       dlldir=$libdir/$fildir;
       bootdir=$PWD;
@@ -1067,22 +1068,22 @@ done
 
 # The bigloo.h file
 if [ "$bigloo_h " = " " ]; then
-  bigloo_h=lib/$release/bigloo.h
+  bigloo_h=lib/bigloo/$release/bigloo.h
 fi
 
 # The bigloo_gc.h file
 if [ "$bigloo_gc_h " = " " ]; then
-  bigloo_gc_h=lib/$release/bigloo_gc.h
+  bigloo_gc_h=lib/bigloo/$release/bigloo_gc.h
 fi
 
 # The bigloo_static.h file
 if [ "$bigloo_static_h " = " " ]; then
-  bigloo_static_h=lib/$release/bigloo_static.h
+  bigloo_static_h=lib/bigloo/$release/bigloo_static.h
 fi
 
 # The bigloo_config.h file
 if [ "$bigloo_config_h " = " " ]; then
-  bigloo_config_h=lib/$release/bigloo_config.h
+  bigloo_config_h=lib/bigloo/$release/bigloo_config.h
 fi
 
 # The bigloo_config.jvm file
@@ -1092,7 +1093,7 @@ fi
 
 # The bigloo_config.sch file
 if [ "$bigloo_config_sch " = " " ]; then
-  bigloo_config_sch=lib/$release/bigloo_config.sch
+  bigloo_config_sch=lib/bigloo/$release/bigloo_config.sch
 fi
 
 # The bigloo_bmacs.el file
@@ -1137,8 +1138,9 @@ if [ $action = "all" ]; then
   if [ ! -d lib ]; then
      mkdir lib || exit 3
   fi
-  if [ ! -d lib/$release ]; then
-     mkdir lib/$release || exit 3
+  if [ ! -d lib/bigloo/$release ]; then
+     mkdir lib/bigloo || exit 3
+     mkdir lib/bigloo/$release || exit 3
   fi
 fi
 
@@ -1528,8 +1530,8 @@ case $hostos in
       sysdlldirstr=`echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
     fi
 
-    jvmrecettebootpath="-classpath \".;../lib/$release/bigloo_s.zip;objs_jvm\""
-    jvmapibootpath="\".;../../../../../lib/$release/bigloo_s.zip\""
+    jvmrecettebootpath="-classpath \".;../lib/bigloo/$release/bigloo_s.zip;objs_jvm\""
+    jvmapibootpath="\".;../../../../../lib/bigloo/$release/bigloo_s.zip\""
 
     ldopt="no-share"
 
@@ -1831,8 +1833,8 @@ fi
 #*    Java configuration                                               */
 #*---------------------------------------------------------------------*/
 echo "+ Java specific configuration ($hostos)..." >> $configurelog
-jvmrecettebootpath="-classpath \".:../lib/$release/bigloo_s.zip:objs_jvm\""
-jvmapibootpath="\".:../../../../../lib/$release/bigloo_s.zip\""
+jvmrecettebootpath="-classpath \".:../lib/bigloo/$release/bigloo_s.zip:objs_jvm\""
+jvmapibootpath="\".:../../../../../lib/bigloo/$release/bigloo_s.zip\""
 echo >> $configurelog
 
 #*---------------------------------------------------------------------*/
@@ -2653,9 +2655,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       cpicflags="-DBGL_NO_PIC"
     else
       xldopt=`$autoconf ldshare --ld="$ld" --ldopt="$ldopt -Wl,-rpath=$libdir" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"`
-      if [ "$xldopt" != "no-share" ]; then
-        ldopt="$ldopt -Wl,-rpath=\$(dir \$(LIBDEST))"
-      fi
 
       haveshlib=1
       ldpreload=`$autoconf ldpreload --ld="$ld" --ldlibs="-lc" --ldopt="$ldopt"` || exit 1
@@ -2712,10 +2711,13 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   ldsharedopt=`$autoconf ldsharedopt` || exit 1
 
   # check if -Wl,-rpath=XXX supported by the C compiler
-  ldrpath="-Wl,-rpath=$libdir"
-  xcc=`$autoconf cctest --cc=$cc --cflags="$ldrpath"`
+  xcc=`$autoconf cctest --cc=$cc --cflags="-Wl,-rpath=$libdir"`
   if [ "$xcc " = "$cc " ]; then
-    crpath="-Wl,-rpath=~a"
+    ldrpath="-Wl,-rpath="
+    crpath="$ldrpath~a"
+  else
+    ldrpath=""
+    crpath=""
   fi
 
   # bdb configuration
@@ -2921,7 +2923,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
               -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
-              -e "s|@C_COMPILER_OPTIM_FLAGS@|$coflags $cflags|" \
+              -e "s|@C_COMPILER_OPTIM_FLAGS@|$coflags|" \
               -e "s|@C_COMPILER_RPATH@|$crpath|" \
               -e "s|@C_STRIP_FLAGS@|$csflags|" \
               -e "s|@C_LINKER_STYLE@|$ldstyle|" \
@@ -3209,13 +3211,13 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The Boot directory
   echo "BOOTDIR=$bootdir" >> $makefile_cfg
   echo "BOOTBINDIR=$bootdir/bin" >> $makefile_cfg
-  echo "BOOTLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
+  echo "BOOTLIBDIR=$bootdir/lib/bigloo/$release" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The Buildbin directory
   if [ "$buildbindir " = " " ]; then
       echo "BGLBUILDBINDIR=$bootdir/bin" >> $makefile_cfg
-      echo "BGLBUILDLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
+      echo "BGLBUILDLIBDIR=$bootdir/lib/bigloo/$release" >> $makefile_cfg
   else
       buildlibdir=`$buildbindir/bigloo -eval '(begin (print *default-lib-dir*) (exit 0))'`
       echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
@@ -3238,6 +3240,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo 'SYSZIPDIR=$(DESTDIR)'"$syszipdir" >> $makefile_cfg
   echo 'DLLDIR=$(DESTDIR)'"$dlldir" >> $makefile_cfg
   echo 'SYSDLLDIR=$(DESTDIR)'"$sysdlldir" >> $makefile_cfg
+  echo 'RPATH=$(DESTDIR)'"$libdir/$fildir" >> $makefile_cfg
   echo 'MANDIR=$(DESTDIR)'"$mandir" >> $makefile_cfg
   echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg
   echo 'DOCDIR=$(DESTDIR)'"$docdir" >> $makefile_cfg
@@ -3331,6 +3334,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$ldopt" = "no-share" ]; then
     echo "SHAREDLIBRARYSUPPORT=no" >> $makefile_cfg
     echo "LD=true# (true means no dynamic library)" >> $makefile_cfg
+    echo "LDRPATHOPT=" >> $makefile_cfg
     echo "LDPRELOADSUPPORT=no" >> $makefile_cfg
 
     echo "LDSONAME=" >> $makefile_cfg
@@ -3340,6 +3344,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "SHAREDLIBRARYSUPPORT=yes" >> $makefile_cfg
     echo "SHAREDLIBRARYCLOSED=$sharedlibraryclosed" >> $makefile_cfg
     echo "LD=$ld $ldopt" >> $makefile_cfg
+    echo "LDRPATHOPT=$ldrpath" >> $makefile_cfg
     echo "LDFLAGS=$ldflags" >> $makefile_cfg
     echo "LDLIBS=$ldlibs" >> $makefile_cfg
     echo "LDCOMPLIBS=$ldcomplibs" >> $makefile_cfg

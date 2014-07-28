@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Feb 26 17:29:30 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 09:21:14 2014 (serrano)                */
 ;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -554,8 +554,7 @@
 	   (begin
 	      (set! *strip* #f)
 	      (set! *profile-library* #t)
-	      (set! *cc-options* (string-append *cc-options*
-						" " *cflags-prof*))
+	      (set! *cc-options* (append *cc-options* (list *cflags-prof*)))
 	      (set! *jas-profile-mode* 1)
 	      (set! *profile-mode* 1)
 	      (set! *jas-profile-mode* 1))))
@@ -565,15 +564,14 @@
 	   (begin
 	      (set! *strip* #f)
 	      (set! *profile-library* #t)
-	      (set! *cc-options* (string-append *cc-options*
-						" " *cflags-prof*))
+	      (set! *cc-options* (append *cc-options* (list *cflags-prof*)))
 	      (set! *profile-mode* 2)
 	      (set! *jas-profile-mode* 2)
 	      (do-parse-args '("-static-bigloo")))))
       (("-pg")
        (set! *strip* #f)
        (set! *profile-library* #t)
-       (set! *cc-options* (string-append *cc-options* " " *cflags-prof*)))
+       (set! *cc-options* (append *cc-options* (list *cflags-prof*))))
       (("-pmem" (help "-pmem[2]" "Compile files for memory profiling"))
        (bigloo-compiler-debug-set! 1)
        (set! *compiler-debug* 1)
@@ -652,7 +650,7 @@
        (set! *stdc* #t))
       ;; cc options
       (("-copt" ?string (help "Invoke cc with STRING"))
-       (set! *cc-options* (string-append *cc-options* " " string)))
+       (set! *cc-options* (append *cc-options* (list string))))
       (("-cheader" ?string (help "C header"))
        (set! *c-user-header* (append *c-user-header* (list string))))
       (("-cfoot" ?string (help "C foot"))
@@ -663,7 +661,7 @@
       (("-ldopt" ?string (help "Invoke ld with STRING"))
        (set! *ld-options* (string-append string " " *ld-options*)))
       (("-ldpostopt" ?string (help "Invoke ld with STRING (end of arguments)"))
-       (set! *ld-post-options* (string-append string " " *ld-post-options*)))
+       (set! *ld-post-options* (cons string *ld-post-options*)))
       ;; move or -o ?
       (("--force-cc-o" (help "Force the C compiler to use -o instead of mv"))
        (set! *cc-move* #f))
@@ -888,9 +886,6 @@
       (("-jvmas" (help "Produce a JVM .jas file"))
        (set! *target-language* 'jvm)
        (set! *pass* 'jvmas))
-      (("-il" (help "Produce a .NET .asm file"))
-       (set! *target-language* '.net)
-       (set! *pass* 'il))
       
 ;*--- Constant initialization -----------------------------------------*/
       (section "Constant initialization")
@@ -1155,7 +1150,7 @@
 ;*---------------------------------------------------------------------*/
 (define (parse-optim-args string)
    (define (-O2!)
-      (set! *cc-options* (string-append *cc-options* " " *cflags-optim*))
+      (set! *cc-options* (append *cc-options* (list *cflags-optim*)))
       (set! *optim-jvm-inlining* 2)
       (set! *optim-jvm-branch* 3)
       (set! *optim-jvm-fasteq* #t)
@@ -1202,7 +1197,7 @@
 			    (char->integer #\0))))
 	  (else
 	   (error "parse-arg" "Illegal -O option" string)))
-       (set! *cc-options* (string-append *cc-options* " -O"))))
+       (set! *cc-options* (append *cc-options* (list "-O")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    query ...                                                        */
@@ -1218,7 +1213,6 @@
    (print "*ld-post-options*      : " *ld-post-options*)
    (print "*bigloo-lib*           : " *bigloo-lib*)
    (print "*bigloo-user-lib*      : " *bigloo-user-lib*)
-   (print "*default-lib-dir*      : " *default-lib-dir*)
    (print "*lib-dir*              : " *lib-dir*)
    (print "*include-foreign*      : " *include-foreign*)
    (print "*heap-name*            : " *heap-name*)

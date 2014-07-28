@@ -1,3 +1,4 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    .../project/bigloo/api/gstreamer/src/Misc/gstreamer.init.in      */
 ;*    -------------------------------------------------------------    */
@@ -32,9 +33,7 @@
     (set! *additional-bigloo-libraries*
 	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
     ;; gstreamer C compilation options
-    (set! *cc-options*
-	  (string-append "@GSTREAMERCFLAGS@ " *cc-options*))
+    (set! *cc-options* (cons "@GSTREAMERCFLAGS@" *cc-options*))
     ;; gstreamer libraries
-    (set! *ld-post-options*
-	  (string-append "@GSTREAMERLIBS@ " *ld-post-options*))))
+    (set! *ld-post-options* (cons "@GSTREAMERLIBS@" *ld-post-options*))))
 

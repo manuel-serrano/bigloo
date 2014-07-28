@@ -1,10 +1,11 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    .../prgm/project/bigloo/api/fthread/src/Misc/fthread.init.in     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Fri Dec 13 12:03:12 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Mon Jul 28 09:37:02 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The fthread init file.                                           */
 ;*=====================================================================*/
@@ -28,15 +29,13 @@
     (set! *multi-threaded-gc?* #t)
     ;; required libraries for fthread
     (set! *additional-bigloo-libraries*
-	  (cons* 'bigloopthread *additional-bigloo-libraries*))
+       (cons* 'bigloopthread *additional-bigloo-libraries*))
     ;; pthread setup
     (set! *bigloo-libraries-c-setup*
-	  (cons "bglpth_setup" *bigloo-libraries-c-setup*))
+       (cons "bglpth_setup" *bigloo-libraries-c-setup*))
     ;; link option
     (unless (string=? (os-class) "win32")
-       (let ((pthread-option "@PTHREADLIBS@ "))
-	  (set! *ld-post-options* 
-		(string-append pthread-option *ld-post-options*)))))
+       (set! *ld-post-options* (cons "@PTHREADLIBS@" *ld-post-options*))))
    (bigloo-eval
     #unspecified))
 

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Tue Jul 22 14:58:43 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 07:48:45 2014 (serrano)                */
 #*    Copyright   :  2002-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -22,15 +22,15 @@ INSTALL	= cp
 #*---------------------------------------------------------------------*/
 #*    Producing shared libraries                                       */
 #*---------------------------------------------------------------------*/
-shared-link-lib:
-	if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
-	  $(MAKE) shared-lib; \
-	else \
-	  cd `dirname $(LIBDEST)` && \
-	  $(RM) -f `basename $(LIBDEST)` && \
-          $(LN_S) `basename $(LIBSRC)` `basename $(LIBDEST)`; \
-	fi
-
+#* shared-link-lib:                                                    */
+#* 	if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \                */
+#* 	  $(MAKE) shared-lib; \                                        */
+#* 	else \                                                         */
+#* 	  cd `dirname $(LIBDEST)` && \                                 */
+#* 	  $(RM) -f `basename $(LIBDEST)` && \                          */
+#*           $(LN_S) `basename $(LIBSRC)` `basename $(LIBDEST)`; \     */
+#* 	fi                                                             */
+#*                                                                     */
 shared-lib:
 	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
             if [ "$(LD)" = "true" ]; then \
@@ -54,6 +54,12 @@ shared:
            if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \
              close="$(CLOSELIBS) $(GCCLOSELIB)"; \
            fi; \
+           rpathopt=""; \
+           if [ "$(LDRPATHOPT) " != " " ]; then \
+             for p in $(RPATH); do \
+               rpathopt="$(LDRPATHOPT)$$p $$rpathopt"; \
+             done \
+           fi; \
            if [ "$(LDINSTALLNAME) " != " " ]; then \
              if [ "$(LDINSTALLNAMEDIR) " = " " ]; then \
                ldinstallnamedir=$(LDINSTALLNAMEDIRROOT)/bigloo/$(RELEASE); \
@@ -61,19 +67,22 @@ shared:
                ldinstallnamedir=$(LDINSTALLNAMEDIR); \
              fi; \
 	     $(MAKE) shared-install-name \
+                 LDRPATH="$$rpathopt" \
                  LDINSTALLNAMEDIR=$$ldinstallnamedir \
-                 LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) -L$(LIBDIR) $(LDOPTS)" \
+                 LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) $(LDOPTS)" \
                  CLOSELIBS="$$close" \
                  || exit 1; \
            else \
              if [ "$(LDSONAME) " = " " ]; then \
 	       $(MAKE) shared-sans-soname \
-                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) -L$(LIBDIR) $(LDOPTS)" \
+                   LDRPATH="$$rpathopt" \
+                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) $(LDOPTS)" \
                    CLOSELIBS="$$close" \
                    || exit 1; \
              else \
 	       $(MAKE) shared-soname \
-                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) -L$(LIBDIR) $(LDOPTS)" \
+                   LDRPATH="$$rpathopt" \
+                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) $(LDOPTS)" \
                    CLOSELIBS="$$close" \
                    || exit 1; \
              fi \
@@ -82,6 +91,7 @@ shared:
 shared-install-name.tmp:
 	$(LD) -o $(notdir $(LIBDEST)) \
                  $(LDINSTALLNAME) @loader_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
+                 $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) \
@@ -94,6 +104,7 @@ shared-install-name.tmp:
 shared-install-name:
 	$(LD) -o $(notdir $(LIBDEST)) \
                  $(LDINSTALLNAME) @executable_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
+                 $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) \
@@ -105,6 +116,7 @@ shared-install-name:
 
 shared-sans-soname:
 	$(LD) -o $(notdir $(LIBDEST)) \
+                 $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) \
@@ -117,6 +129,7 @@ shared-sans-soname:
 shared-soname:
 	$(LD) -o $(notdir $(LIBDEST)) \
                  $(LDSONAME)=$(SONAME) \
+                 $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
                  $(LDOPTS) \
@@ -146,31 +159,18 @@ install-static-lib:
         fi
 
 install-shared-lib:
-	if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
-          if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	    $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
+	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+          if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
+            $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
                $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
-	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
-	    if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a ]; then \
-	      $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a \
+            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX);\
+            if [ -f $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a ]; then \
+              $(INSTALL) $(BOOTLIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a \
                $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a && \
-	    chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
-	    fi \
-          fi && \
-          if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
-            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
-	      $(RM) -f $(LIBDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) && \
-              (cd $(LIBDIR) && \
-	       $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
-               $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX) \
-               || \
-               $(INSTALL) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX)) \
-               || exit 1; \
+            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a;\
             fi \
           fi \
-        fi;
+        fi
 
 install-link-lib:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
@@ -184,47 +184,31 @@ install-link-lib:
           $(MAKE) install-shared-ln-lib; \
         fi
 
-install-shared-ln-lib:
-	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \
-	  (cd $(LIBDIR)/$(FILDIR) && \
-           if [ -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
-             $(LN_S) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
-                   $(LIB).$(SHAREDSUFFIX) \
-             || \
-             $(INSTALL) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX) \
-             || exit 1; \
-           fi); \
-	  (cd $(LIBDIR) && \
-           if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \
-             $(RM) -f $(LIB).$(SHAREDSUFFIX) && \
-             $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \
-                   $(LIB).$(SHAREDSUFFIX) \
-             || \
-             $(INSTALL) $(FILDIR)/$(SUBDIR)$(LN).$(SHAREDSUFFIX) \
-                $(LIB).$(SHAREDSUFFIX) \
-             || exit 1; \
-           fi) \
-        fi
+#* install-shared-ln-lib:                                              */
+#* 	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \            */
+#* 	  (cd $(LIBDIR)/$(FILDIR) && \                                 */
+#*            if [ -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) ]; then \         */
+#*              $(RM) -f $(LIB).$(SHAREDSUFFIX) && \                   */
+#*              $(LN_S) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \               */
+#*                    $(LIB).$(SHAREDSUFFIX) \                         */
+#*              || \                                                   */
+#*              $(INSTALL) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \            */
+#*                 $(LIB).$(SHAREDSUFFIX) \                            */
+#*              || exit 1; \                                           */
+#*            fi); \                                                   */
+#* 	  (cd $(LIBDIR) && \                                           */
+#*            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \ */
+#*              $(RM) -f $(LIB).$(SHAREDSUFFIX) && \                   */
+#*              $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \    */
+#*                    $(LIB).$(SHAREDSUFFIX) \                         */
+#*              || \                                                   */
+#*              $(INSTALL) $(FILDIR)/$(SUBDIR)$(LN).$(SHAREDSUFFIX) \  */
+#*                 $(LIB).$(SHAREDSUFFIX) \                            */
+#*              || exit 1; \                                           */
+#*            fi) \                                                    */
+#*         fi                                                          */
 
 uninstall-lib:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX)
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX).a
-	$(RM) -f $(LIBDIR)/$(LIB).$(SHAREDSUFFIX)
-
-#*---------------------------------------------------------------------*/
-#*    Deprecated entry                                                 */
-#*---------------------------------------------------------------------*/
-# inverse LIB ln LN
-install-lnlib:
-	@ echo "*** WARNING: bigloo/Makefile.misc deprecated \"install-lnlib\","
-	@ echo "use \"install-link-lib\" instead."
-	$(MAKE) install-link-lib LIB=$(LN) LN=$(LIB)
-
-shared-ln-lib:
-	@ echo "*** WARNING: bigloo/Makefile.misc deprecated \"shared-ln-lib\","
-	@ echo "use \"shared-link-lib\" instead."
-	$(MAKE) shared-link-lib 
-

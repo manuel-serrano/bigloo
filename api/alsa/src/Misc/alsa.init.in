@@ -1,10 +1,11 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/alsa/src/Misc/alsa.init.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Tue Dec 10 16:35:41 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Mon Jul 28 09:17:06 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The ALSA init file.                                              */
 ;*=====================================================================*/
@@ -30,9 +31,7 @@
     (set! *additional-bigloo-libraries*
        (cons* 'bigloomultimedia *additional-bigloo-libraries*))
     ;; alsa C compilation options
-    (set! *cc-options*
-       (string-append "@ALSACFLAGS@ " *cc-options*))
+    (set! *cc-options* (cons "@ALSACFLAGS@" *cc-options*))
     ;; alsa libraries
-    (set! *ld-post-options*
-       (string-append "@ALSALIBS@ " *ld-post-options*))))
+    (set! *ld-post-options* (cons "@ALSALIBS@" *ld-post-options*))))
 

@@ -1,3 +1,4 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    .../project/bigloo/api/mpg123/src/Misc/mpg123.init.in            */
 ;*    -------------------------------------------------------------    */
@@ -30,9 +31,7 @@
     (set! *additional-bigloo-libraries*
 	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
     ;; mpg123 C compilation options
-    (set! *cc-options*
-	  (string-append "@MPG123CFLAGS@ " *cc-options*))
+    (set! *cc-options* (cons "@MPG123CFLAGS@" *cc-options*))
     ;; mpg123 libraries
-    (set! *ld-post-options*
-	  (string-append "@MPG123LIBS@ " *ld-post-options*))))
+    (set! *ld-post-options* (cons "@MPG123LIBS@" *ld-post-options*))))
 

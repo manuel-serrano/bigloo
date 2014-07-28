@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Wed Jul 17 09:36:23 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Jul 28 08:09:49 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
 ;*=====================================================================*/
@@ -73,7 +73,7 @@
 			     *c-object-file-extension*)))))
 	      (cc (string-append *cc*
 		     " "
-		     *cc-options*
+		     (format "~( )" *cc-options*)
 		     " "
 		     *cflags*
 		     " -c "
@@ -122,7 +122,6 @@
 ;*---------------------------------------------------------------------*/
 (define (mingw-cc name oname need-to-return)
    (verbose 1 "   . cc (" *cc* ")" #\Newline)
-   (print "libdir:" *lib-dir* " - " *default-lib-dir*)
    (cond
       ((not (string? name))
        (error "cc" "can't process cc on stdout" name))
@@ -135,7 +134,7 @@
 					    *c-object-file-extension*))))
 	      (cc (string-append *cc*
 				 " "
-				 *cc-options*
+				 (format "~( )" *cc-options*)
 				 " "
 				 *cflags*
 				 " -c "
@@ -178,25 +177,27 @@
        (error "cc" "can't process cc on stdout" name))
       (else
        (let* ((oname (if (string? oname) oname name))
-              (cc-args (append (string-split-char *cc-options* #\space)
-                       (string-split-char *cflags* #\space)
-                       '("-c")
-                       '("-I.")
-                       (let loop ((path *lib-dir*))
-                          (if (null? path)
-                              '()
-                              (cons (string-append "-I" (car path))
+              (cc-args (append (append-map (lambda (o)
+					      (string-split-char o #\space))
+				  *cc-options*)
+			  (string-split-char *cflags* #\space)
+			  '("-c")
+			  '("-I.")
+			  (let loop ((path *lib-dir*))
+			     (if (null? path)
+				 '()
+				 (cons (string-append "-I" (car path))
                                     (loop (cdr path)))))
-                       (if (or *c-debug* (>fx *bdb-debug* 0))
-                           (string-split-char *c-debug-option* #\space)
-                           '())
-                       (list (string-append name ".c"))
-                             (if (char=? (string-ref *cc-o-option*
-                                                     (- (string-length *cc-o-option*) 1))
-                                                     #\space)
-                                 (list *cc-o-option*
-                                       (string-append oname "." *c-object-file-extension*))
-                                 (list (string-append *cc-o-option* oname "." *c-object-file-extension*))))))
+			  (if (or *c-debug* (>fx *bdb-debug* 0))
+			      (string-split-char *c-debug-option* #\space)
+			      '())
+			  (list (string-append name ".c"))
+			  (if (char=? (string-ref *cc-o-option*
+					 (- (string-length *cc-o-option*) 1))
+				 #\space)
+			      (list *cc-o-option*
+				 (string-append oname "." *c-object-file-extension*))
+			      (list (string-append *cc-o-option* oname "." *c-object-file-extension*))))))
           (verbose 2 "      " (cons *cc* cc-args) #\Newline)
           (apply run-process *cc* (append cc-args '(wait: #t)))
           (if *rm-tmp-files*

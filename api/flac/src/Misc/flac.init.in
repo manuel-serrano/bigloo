@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Fri Dec 13 12:02:42 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Mon Jul 28 09:17:48 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The FLAC init file.                                              */
 ;*=====================================================================*/
@@ -31,9 +31,7 @@
     (set! *additional-bigloo-libraries*
 	  (cons* 'bigloomultimedia *additional-bigloo-libraries*))
     ;; flac C compilation options
-    (set! *cc-options*
-	  (string-append "@FLACCFLAGS@ " *cc-options*))
+    (set! *cc-options* (cons "@FLACCFLAGS@" *cc-options*))
     ;; flac libraries
-    (set! *ld-post-options*
-	  (string-append "@FLACLIBS@ " *ld-post-options*))))
+    (set! *ld-post-options* (cons "@FLACLIBS@" *ld-post-options*))))
 

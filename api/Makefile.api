@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Wed Nov  6 14:53:03 2013 (serrano)                */
-#*    Copyright   :  2010-13 Manuel Serrano                            */
+#*    Last change :  Sun Jul 27 07:13:22 2014 (serrano)                */
+#*    Copyright   :  2010-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -34,7 +34,7 @@ api-install-c:
 	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$(API).heap; \
         fi
 	$(MAKE) install-lib LIB=libbigloo$(API)_s-$(RELEASE)
-	$(MAKE) install-link-lib LIB=libbigloo$(API)_u-$(RELEASE) \
+	$(MAKE) install-lib LIB=libbigloo$(API)_u-$(RELEASE) \
              LN=libbigloo$(API)_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo$(API)_es-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo$(API)_eu-$(RELEASE)
@@ -156,7 +156,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
 
 $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): \
   $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX)
-	$(MAKE) shared-link-lib \
+	$(MAKE) shared-lib \
            FORCELD=true \
            LIBDEST=$@ \
            LIBSRC=$< \
@@ -166,7 +166,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): \
 
 $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): \
   $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX)
-	$(MAKE) shared-link-lib \
+	$(MAKE) shared-lib \
            OBJECTS=$(EOBJECTS) \
            FORCELD=true \
            LIBDEST=$@ \

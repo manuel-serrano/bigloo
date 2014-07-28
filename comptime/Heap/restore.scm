@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Thu May 15 18:53:35 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 09:41:39 2014 (serrano)                */
 ;*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -178,22 +178,22 @@
 			  ;; check the target languages
 			  (unless (backend-heap-compatible? target)
 			     (error heap
-				    "Target language mismatch"
-				    (format "~a vs. ~a"
-					       target
-					       (backend-language (the-backend)))))
-			     (unless (equal? version *bigloo-version*)
-				(error *heap-name*
-				       "Release mismatch"
-				       (format "Heap is `~a', Bigloo is `~a'"
-					       version
-					       *bigloo-version*)))
-			     (unless (equal? specific *bigloo-specific-version*)
-				(error *heap-name*
-				       "Specific version mismatch"
-				       (format "Heap is `~a', Bigloo is `~a'"
-					       specific
-					       *bigloo-specific-version*)))
+				"Target language mismatch"
+				(format "~a vs. ~a"
+				   target
+				   (backend-language (the-backend)))))
+			  (unless (equal? version *bigloo-version*)
+			     (error *heap-name*
+				"Release mismatch"
+				(format "Heap is `~a', Bigloo is `~a'"
+				   version
+				   *bigloo-version*)))
+			  (unless (equal? specific *bigloo-specific-version*)
+			     (error *heap-name*
+				"Specific version mismatch"
+				(format "Heap is `~a', Bigloo is `~a'"
+				   specific
+				   *bigloo-specific-version*)))
 			  ;; @label heap class handling@
 			  ;; The function add-Tenv! manages the import
 			  ;; of class definitions. That is, if the additional
@@ -209,26 +209,33 @@
 			  ;; the package/module association
 			  (when (backend-qualified-types (the-backend))
 			     (for-each-global!
-			      (lambda (new)
-				 (add-qualified-type!
-				  (global-module new)
-				  (global-jvm-type-name new)
-				  (shape new)))))
+				(lambda (new)
+				   (add-qualified-type!
+				      (global-module new)
+				      (global-jvm-type-name new)
+				      (shape new)))))
 			  ;; we add all the heap modules
 			  (hashtable-for-each
-			   Genv
-			   (lambda (k bucket)
-			      (for-each (lambda (new)
-					   (heap-module-list
-					    (global-module new)))
-					(cdr bucket))))
+			     Genv
+			     (lambda (k bucket)
+				(for-each (lambda (new)
+					     (heap-module-list
+						(global-module new)))
+				   (cdr bucket))))
 			  ;; we store the list of includes
 			  (unless (eq? *pass* 'make-heap)
 			     (set! *additional-include-foreign*
 				(append *additional-include-foreign*
 				   includes))
+			     (tprint "\n\n>>>-----"
+				"HEAP=" heap
+				"\n  *cc-options*=" *cc-options*
+				" " (typeof *cc-options*)
+				"\n  ccopts=" ccopts " " (typeof ccopts))
 			     (set! *cc-options*
-				(string-append *cc-options* " " ccopts)))
+				(delete-duplicates
+				   (append *cc-options* ccopts)))
+			     (tprint "\n\n<<<-----" *cc-options*))
 			  #t)
 		       (close-binary-port port)))))
 	  (let ((m (format "Cannot open heap file ~s" heap)))

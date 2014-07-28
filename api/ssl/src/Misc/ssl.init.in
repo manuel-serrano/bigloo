@@ -1,3 +1,4 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/ssl/src/Misc/ssl.init.in         */
 ;*    -------------------------------------------------------------    */
@@ -27,8 +28,7 @@
    (bigloo-compile
     #;(set! *additional-include-foreign* 
 	  (cons "openssl/ssl.h" *additional-include-foreign*))
-    (set! *ld-post-options* 
-	  (string-append "@OPENSSLLIBS@ " *ld-post-options*))
+    (set! *ld-post-options* (cons "@OPENSSLLIBS@" *ld-post-options*))
     (set! *additional-bigloo-zips* (cons "commons-ssl.zip" *additional-bigloo-zips*)))
    (bigloo-eval
     #unspecified))

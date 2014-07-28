@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Wed Oct 24 12:10:26 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Sun Jul 27 08:26:14 2014 (serrano)                */
+;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
 ;*    from a monitor file.                                             */
@@ -32,7 +32,7 @@
 ;*    bigloo-fildir ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-macro (bigloo-fildir)
-   (make-file-name *default-lib-dir* "bmem"))
+   (make-file-name (bigloo-config 'library-directory) "bmem"))
 
 ;*---------------------------------------------------------------------*/
 ;*    plugin-exit ...                                                  */

@@ -1,10 +1,11 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/avahi/src/Misc/avahi.init.in     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Fri Dec 13 12:00:05 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Mon Jul 28 09:17:19 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The AVAHI init file.                                             */
 ;*=====================================================================*/
@@ -36,7 +37,7 @@
 	    "avahi-common/error.h"
 	    *additional-include-foreign*))
       ;; avahi libraries
-      (set! *ld-post-options* (string-append "@AVAHILIBS@ " *ld-post-options*))
+      (set! *ld-post-options* (cons "@AVAHILIBS@" *ld-post-options*))
       ;; avahi C compilation options
-      (set! *cc-options* (string-append "@AVAHICFLAGS@ " *cc-options*))))
+      (set! *cc-options* (cons "@AVAHICFLAGS@" *cc-options*))))
 

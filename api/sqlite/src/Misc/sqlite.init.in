@@ -1,3 +1,4 @@
+;; -*- mode: bee -*-
 ;*=====================================================================*/
 ;*    .../prgm/project/bigloo/api/sqlite/src/Misc/sqlite.init.in       */
 ;*    -------------------------------------------------------------    */
@@ -25,7 +26,7 @@
 ;*---------------------------------------------------------------------*/
 (cond-expand
    (bigloo-compile
-    (set! *ld-post-options* (string-append "@SQLITELIBS@ " *ld-post-options*)))
+    (set! *ld-post-options* (cons "@SQLITELIBS@" *ld-post-options*)))
    (bigloo-eval
     #unspecified))
 

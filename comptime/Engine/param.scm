@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Jul 22 13:36:04 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 09:20:55 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -157,8 +157,6 @@
 	    *additional-bigloo-libraries*
 	    *bigloo-libraries-c-setup*
 	    *additional-bigloo-zips*
-	    *default-lib-dir*
-	    *ld-library-dir*
 	    *lib-dir*
 	    *lib-src-dir*
 	    *include-multiple*
@@ -405,7 +403,7 @@
 ;; the CC option
 (param-define *cc-options*
    "cc options"
-   (bigloo-config 'c-flag))
+   '(""))
 ;; shall we remove the .c and .il produced file?
 (param-define *rm-tmp-files*
    "Shall the .c and .il produced files be removed?"
@@ -433,7 +431,7 @@
 ;; ld post options
 (param-define *ld-post-options*
    "ld post options"
-   "")
+   '(""))
 ;; cc-move
 (param-define *cc-move*
    "Use mv instead of -o when C compiling"
@@ -446,22 +444,12 @@
 (param-define *strip*
    "Shall we strip the executable?"
    #t)
-;; the installation lib dir path
-(param-define *ld-library-dir*
-   "The ld lib dir path (without version)"
-   (bigloo-config 'ld-library-dir))
-;; the default lib dir path
-(param-define *default-lib-dir*
-   "The default lib dir path (without version)"
-   (bigloo-config 'library-directory))
 ;; the lib dir path
 (param-define *lib-dir*
    "The lib dir path"
    (let ((lib-env (build-path-from-shell-variable "BIGLOOLIB")))
       (if (not (pair? lib-env))
-	  (list "."
-	     *default-lib-dir*
-	     (bigloo-config 'ld-library-dir))
+	  (list "." (bigloo-config 'library-directory))
 	  (cons "." lib-env))))
 ;; the lib source dir path
 (param-define *lib-src-dir*
