@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Mon Jul 28 09:41:39 2014 (serrano)                */
+;*    Last change :  Mon Jul 28 10:07:44 2014 (serrano)                */
 ;*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
@@ -227,15 +227,9 @@
 			     (set! *additional-include-foreign*
 				(append *additional-include-foreign*
 				   includes))
-			     (tprint "\n\n>>>-----"
-				"HEAP=" heap
-				"\n  *cc-options*=" *cc-options*
-				" " (typeof *cc-options*)
-				"\n  ccopts=" ccopts " " (typeof ccopts))
 			     (set! *cc-options*
 				(delete-duplicates
-				   (append *cc-options* ccopts)))
-			     (tprint "\n\n<<<-----" *cc-options*))
+				   (append *cc-options* ccopts))))
 			  #t)
 		       (close-binary-port port)))))
 	  (let ((m (format "Cannot open heap file ~s" heap)))
