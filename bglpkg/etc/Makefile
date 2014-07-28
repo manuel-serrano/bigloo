@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan  2 08:48:29 2007                          */
-#*    Last change :  Thu Aug 12 11:00:28 2010 (serrano)                */
-#*    Copyright   :  2007-10 Manuel Serrano                            */
+#*    Last change :  Mon Jul 28 15:40:14 2014 (serrano)                */
+#*    Copyright   :  2007-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile for building Bigloo ScmPkg packages.        */
 #*    -------------------------------------------------------------    */
@@ -174,6 +174,7 @@ libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX): $(AFILE) $(OBJECTS)
 	@ $(MAKE) shared-lib \
              FORCELD=true \
              LIBDEST=$@ \
+	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX) \
              CLOSELIBS="-lbigloo_s-$(VERSION)"
 
@@ -183,6 +184,7 @@ libbigloo$(LIBNAME)_e-$(VERSION).$(SHAREDSUFFIX): $(AFILE) $(EOBJECTS)
              LDOPTS="-L. $(LDOPTS)" \
              FORCELD=true \
              LIBDEST=$@ \
+	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=libbigloo$(LIBNAME)_e-$(VERSION).$(SHAREDSUFFIX) \
              LDLIBS="-lbigloo$(LIBNAME)_s-$(VERSION) $(LDLIBS)" \
              CLOSELIBS="-lbigloo$(LIBNAME)_s-$(VERSION) -lbigloo_s-$(VERSION)"

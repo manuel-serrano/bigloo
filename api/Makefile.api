@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Sun Jul 27 07:13:22 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 15:41:16 2014 (serrano)                */
 #*    Copyright   :  2010-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -140,6 +140,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	$(MAKE) shared-lib \
            FORCELD=true \
            LIBDEST=$@ \
+	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
@@ -149,6 +150,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX): .afile $(EOBJECTS)
            OBJECTS=$(EOBJECTS) \
            FORCELD=true \
            LIBDEST=$@ \
+           LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
            LDLIBS="-lbigloo$(API)_s-$(RELEASE) $(LDLIBS)" \
@@ -159,6 +161,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): \
 	$(MAKE) shared-lib \
            FORCELD=true \
            LIBDEST=$@ \
+           LIBPATH=$(BOOTLIBDIR) \
            LIBSRC=$< \
            SONAME=libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
@@ -170,6 +173,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): \
            OBJECTS=$(EOBJECTS) \
            FORCELD=true \
            LIBDEST=$@ \
+           LIBPATH=$(BOOTLIBDIR) \
            LIBSRC=$< \
            SONAME=libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \

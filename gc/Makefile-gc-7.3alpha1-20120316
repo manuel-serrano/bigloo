@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Fri Mar 16 08:20:49 2012 (serrano)                */
-#*    Copyright   :  2009-12 Manuel Serrano                            */
+#*    Last change :  Mon Jul 28 15:38:43 2014 (serrano)                */
+#*    Copyright   :  2009-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.3alpha1 specific entries                                    */
 #*=====================================================================*/
@@ -30,6 +30,7 @@ do-boot-gc: $(OUTDIR)/libgc.$(SHAREDSUFFIX)
 $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
 	$(MAKE) shared-lib \
              LIBDEST=$@ \
+	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
              GCCLOSELIB= \
              CLOSELIBS= \

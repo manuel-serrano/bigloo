@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Mon Jul 15 16:03:15 2013 (serrano)                */
-#*    Copyright   :  2010-13 Manuel Serrano                            */
+#*    Last change :  Mon Jul 28 15:35:57 2014 (serrano)                */
+#*    Copyright   :  2010-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -169,6 +169,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_OBJECT
 	   OBJECTS="$(SAFE_OBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
+	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_s-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
@@ -178,6 +179,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX): .afile $(SAFE_EOBJE
            OBJECTS="$(SAFE_EOBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
+	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_es-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_S)" \
            LDLIBS="-lbigloo$(API)_s-$(RELEASE) $(LDLIBS)" \
@@ -188,6 +190,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX): .afile $(UNSAFE_OBJE
 	   OBJECTS="$(UNSAFE_OBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
+	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_u-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
@@ -197,6 +200,7 @@ $(BOOTLIBDIR)/libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX): .afile $(UNSAFE_EOB
            OBJECTS="$(UNSAFE_EOBJECTS)" \
            FORCELD=true \
            LIBDEST=$@ \
+	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=libbigloo$(API)_eu-$(RELEASE).$(SHAREDSUFFIX) \
            EXTRALIBS="$(EXTRALIBS) $(EXTRALIBS_U)" \
            LDLIBS="-lbigloo$(API)_u-$(RELEASE) $(LDLIBS)" \

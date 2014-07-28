@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sat Feb  7 07:10:26 2009 (serrano)                */
+#*    Last change :  Mon Jul 28 15:39:39 2014 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdb library.                           */
 #*=====================================================================*/
@@ -136,6 +136,7 @@ lib.a: $(LIB)/lib$(LIBNAME)_s-$(RELEASE).a
 $(LIB)/lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	@ $(MAKE) shared-lib \
              LIBDEST=$@ \
+	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=lib$(LIBNAME)_s-$(RELEASE).$(SHAREDSUFFIX) \
              CLOSELIBS="-lbigloo_s-$(RELEASE)"
 

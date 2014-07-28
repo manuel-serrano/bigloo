@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jun  4 15:40:22 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 15:35:17 2014 (serrano)                */
 #*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -461,6 +461,7 @@ $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).a: $(OBJECTS) $(GCSTDOBJECTS)
 $(BOOTLIBDIR)/lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX): $(OBJECTS) $(GCSTDOBJECTS)
 	  $(MAKE) shared-lib \
              LIBDEST=$@ \
+             LIBPATH=$(BOOTLIBDIR) \
              LDLIBS="$(LDCOMPLIBS)" \
              SONAME=lib$(LIBRARYNAME)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX)
 

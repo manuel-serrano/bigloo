@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 28 14:45:45 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 15:30:50 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3246,6 +3246,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo 'DLLDIR=$(DESTDIR)'"$dlldir" >> $makefile_cfg
   echo 'SYSDLLDIR=$(DESTDIR)'"$sysdlldir" >> $makefile_cfg
   echo 'RPATH=$(DESTDIR)'"$libdir/$fildir" >> $makefile_cfg
+  echo 'LIBPATH=$(DESTDIR)'"$libdir/$fildir" >> $makefile_cfg
   echo 'MANDIR=$(DESTDIR)'"$mandir" >> $makefile_cfg
   echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg
   echo 'DOCDIR=$(DESTDIR)'"$docdir" >> $makefile_cfg

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    .../prgm/project/bigloo/gc/Makefile-gc-7.3alpha3-20130330        */
+#*    serrano/prgm/project/bigloo/gc/Makefile-gc-7.4.0                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Sat Mar 30 09:30:16 2013 (serrano)                */
-#*    Copyright   :  2009-13 Manuel Serrano                            */
+#*    Last change :  Mon Jul 28 15:36:46 2014 (serrano)                */
+#*    Copyright   :  2009-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.3alpha3 specific entries                                    */
 #*=====================================================================*/
@@ -30,6 +30,7 @@ do-boot-gc: $(OUTDIR)/libgc.$(SHAREDSUFFIX)
 $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
 	$(MAKE) shared-lib \
              LIBDEST=$@ \
+	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
              GCCLOSELIB= \
              CLOSELIBS= \
