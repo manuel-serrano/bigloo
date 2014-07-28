@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Mon Jul 28 07:48:45 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 14:39:22 2014 (serrano)                */
 #*    Copyright   :  2002-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -69,20 +69,20 @@ shared:
 	     $(MAKE) shared-install-name \
                  LDRPATH="$$rpathopt" \
                  LDINSTALLNAMEDIR=$$ldinstallnamedir \
-                 LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) $(LDOPTS)" \
+                 LDOPTS="-L$(BOOTLIBDIR) $(LDOPTS)" \
                  CLOSELIBS="$$close" \
                  || exit 1; \
            else \
              if [ "$(LDSONAME) " = " " ]; then \
 	       $(MAKE) shared-sans-soname \
                    LDRPATH="$$rpathopt" \
-                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) $(LDOPTS)" \
+                   LDOPTS="-L$(BOOTLIBDIR) $(LDOPTS)" \
                    CLOSELIBS="$$close" \
                    || exit 1; \
              else \
 	       $(MAKE) shared-soname \
                    LDRPATH="$$rpathopt" \
-                   LDOPTS="-L$(BOOTLIBDIR) -L$(LIBDIR)/$(FILDIR) $(LDOPTS)" \
+                   LDOPTS="-L$(BOOTLIBDIR) $(LDOPTS)" \
                    CLOSELIBS="$$close" \
                    || exit 1; \
              fi \

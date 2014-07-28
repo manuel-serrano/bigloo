@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 28 14:25:15 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 14:45:45 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -253,7 +253,12 @@ ldrpath=
 # set $ldsoname to `blank' if you want to force it empty
 ldsoname=
 ldinstallname=
-ldinstallnamedirroot=lib
+ldinstallnamedirroot=$LDINSTALLNAMEDIRROOT
+
+if [ "$ldinstallnamedirroot " = " " ]; then
+  ldinstallnamedirroot=lib
+fi
+
 sharedsuffix=so
 sharedlibraryclosed=yes
 sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
@@ -1595,7 +1600,6 @@ case $hostos in
       fi
 
       ldinstallname="-install_name";
-      ldinstallnamedirroot="Frameworks";
       sharedsuffix="dylib";
       ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
       sharedcompiler=yes;
