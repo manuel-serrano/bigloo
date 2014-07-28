@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Jul 28 14:52:03 2014 (serrano)                */
+#*    Last change :  Mon Jul 28 14:58:07 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -613,9 +613,9 @@ boot:
 	touch $(AFILE)
 	touch $(JFILE)
 	if [ "$(SHRD_COMP)" = "yes" -a -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)_s-$(RELEASE).$(SHAREDSUFFIX) ]; then \
-	  $(MAKE) doboot.shared SCMOBJSUFFIX="" COBJSUFFIX=%.o \
+	  $(MAKE) doboot.shared SCMOBJSUFFIX="" COBJSUFFIX=%.o; \
         else \
-	  $(MAKE) doboot.static SCMOBJSUFFIX="" COBJSUFFIX=%.o \
+	  $(MAKE) doboot.static SCMOBJSUFFIX="" COBJSUFFIX=%.o; \
 	fi
 	@ echo "$(BIGLOO_DEST)$(EXE_SUFFIX) done..."
 
