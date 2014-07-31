@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Jun 17 08:50:29 2014 (serrano)                */
+;*    Last change :  Wed Jul 30 14:34:40 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -409,8 +409,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    xprintf ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define (xprintf procname p::output-port fmt::bstring objs::pair-nil)
-   (let ((len (string-length fmt)))
+(define (xprintf procname p::output-port _fmt::bstring objs::pair-nil)
+   (let ((len (string-length _fmt)))
       (let loop ((i 0)
 		 (os objs))
 	 (define (next os fmt)
@@ -436,16 +436,16 @@
 	       ((not (null? l))
 		(display l p))))
 	 (define (print-list i l p)
-	    (let ((j (string-index fmt #\) i)))
+	    (let ((j (string-index _fmt #\) i)))
 	       (if (not j)
-		   (error procname "Illegal tag" fmt)
-		   (let ((sep (substring fmt (+fx i 1) j)))
+		   (error procname "Illegal tag" _fmt)
+		   (let ((sep (substring _fmt (+fx i 1) j)))
 		      (print-flat-list l p sep)
 		      (+fx j 1)))))
 	 (define (print-padded-number i num mincol padding)
 	    (if (=fx i len)
-		(error procname "Illegal tag" fmt)
-		(let* ((s (case (string-ref fmt i)
+		(error procname "Illegal tag" _fmt)
+		(let* ((s (case (string-ref _fmt i)
 			     ((#\d #\D)
 			      (number->string num 10))
 			     ((#\x #\X)
@@ -455,7 +455,7 @@
 			     ((#\b #\B)
 			      (number->string num 2))
 			     (else
-			      (error procname "Illegal tag" fmt))))
+			      (error procname "Illegal tag" _fmt))))
 		       (l (string-length s)))
 		   (when (<fx l mincol)
 		      (display (make-string (-fx mincol l) padding) p))
@@ -464,24 +464,22 @@
 	 (define (print-formatted-number i num p)
 	    (if (not (number? num))
 		(error procname "Illegal number" num)
-		(let ((j (string-skip fmt "0123456789" i)))
+		(let ((j (string-skip _fmt "0123456789" i)))
 		   (cond
 		      ((not j)
-		       (error procname "Illegal tag" fmt))
-		      ((char=? (string-ref fmt j) #\,)
+		       (error procname "Illegal tag" _fmt))
+		      ((char=? (string-ref _fmt j) #\,)
 		       (if (=fx j (-fx len 1))
-			   (error procname "Illegal tag" fmt)
+			   (error procname "Illegal tag" _fmt)
 			   (print-padded-number (+fx j 2)
-						num
-						(string->integer
-						 (substring fmt i j))
-						(string-ref fmt (+fx j 1)))))
+			      num
+			      (string->integer (substring _fmt i j))
+			      (string-ref _fmt (+fx j 1)))))
 		      (else
 		       (print-padded-number j
-					    num
-					    (string->integer
-					     (substring fmt i j))
-					    #\space))))))
+			  num
+			  (string->integer (substring _fmt i j))
+			  #\space))))))
 	 (define (handle-tag f i alt?)
 	    (case f
 	       ((#\a #\A)
@@ -538,28 +536,29 @@
 		(if (char-numeric? f)
 		    (let ((ni (print-formatted-number i (next os f) p)))
 		       (loop ni (cdr os)))
-		    (error procname "Illegal tag" f)))))
+		    (error procname
+		       (string-append "Illegal tag \"" (string f) "\"") _fmt)))))
 
 	 (if (<fx i len)
-	     (let ((c (string-ref fmt i)))
+	     (let ((c (string-ref _fmt i)))
 		(if (char=? c #\~)
 		    (cond
 		       ((=fx i (-fx len 1))
 			(error procname
-			       "Tag not allowed here"
-			       (substring fmt i len)))
-		       ((char=? #\: (string-ref fmt (+fx i 1)))
+			   "Tag not allowed here"
+			   (substring _fmt i len)))
+		       ((char=? #\: (string-ref _fmt (+fx i 1)))
 			(if (=fx i (-fx len 2))
 			    (error procname
-				   "Tag not allowed here"
-				   (substring fmt i len))
-			    (handle-tag (string-ref fmt (+fx i 2))
-					(+fx i 2)
-					#t)))
+			       "Tag not allowed here"
+			       (substring _fmt i len))
+			    (handle-tag (string-ref _fmt (+fx i 2))
+			       (+fx i 2)
+			       #t)))
 		       (else
-			(handle-tag (string-ref fmt (+fx i 1))
-				    (+fx i 1)
-				    #f)))
+			(handle-tag (string-ref _fmt (+fx i 1))
+			   (+fx i 1)
+			   #f)))
 		    (begin
 		       (write-char c p)
 		       (loop (+fx i 1) os))))))))

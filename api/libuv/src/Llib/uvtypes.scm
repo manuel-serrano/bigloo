@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Mon Jul 28 14:06:19 2014 (serrano)                */
+;*    Last change :  Wed Jul 30 18:32:36 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -22,14 +22,27 @@
 	   (class UvHandle::%Uv
 	      ($builtin::$uv_handle_t (default $uv_handle_nil))
 	      (onclose (default #f)))
-	   
+
 	   (class UvLoop::UvHandle
 	      (%mutex::mutex read-only (default (make-mutex)))
 	      (%gcmarks::pair-nil (default '())))
 
 	   (abstract-class UvWatcher::UvHandle
-	      (cb::procedure (default list))
-	      (loop::UvLoop read-only))
+	      (loop::UvLoop read-only)
+	      (cb::procedure (default list)))
+
+	   (class UvStream::UvHandle
+	      (loop::UvLoop read-only)
+	      (%readreq::void* (default $void*_nil))
+	      (%rbuf::string (default $string-nil))
+	      (%rbuflen::int (default 0))
+	      (%writereq::void* (default $void*_nil))
+	      (%wbuf::string (default $string-nil))
+	      (%wbuflen::int (default 0))
+	      (%alloc::pair-nil (default '()))
+	      %proc)
+	   
+	   (class UvTcp::UvStream)
 	   
 	   (class UvTimer::UvWatcher)
 

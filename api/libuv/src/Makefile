@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jul 28 14:05:47 2014 (serrano)                */
+#*    Last change :  Tue Jul 29 13:54:32 2014 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -60,7 +60,7 @@ LDOPTS		+= -L$(BOOTDIR)/libuv/libuv-$(LIBUVCUSTOMVERSION)/.libs
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= uvtypes handle loop timer async fs os dns idle
+_BGL_OBJECTS	= uvtypes handle loop timer async fs os net idle
 
 _C_OBJECTS	= bgluv
 _JAVA_CLASSES	= 

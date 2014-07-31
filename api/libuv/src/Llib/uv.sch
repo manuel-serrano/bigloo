@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Jul 28 14:13:29 2014 (serrano)                */
+;*    Last change :  Wed Jul 30 18:24:05 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -153,6 +153,15 @@
 	 "bgl_uv_fs_write")
       ($uv-fs-read::int (::UvFile ::bstring ::long ::long ::long ::obj ::UvLoop)
 	 "bgl_uv_fs_read")
+      (macro $uv-guess-handle::int (::int)
+	 "uv_guess_handle")
+
+      (macro $uv-handle-tcp::int "UV_TCP")
+      (macro $uv-handle-tty::int "UV_TTY")
+      (macro $uv-handle-udp::int "UV_UDP")
+      (macro $uv-handle-pipe::int "UV_NAMED_PIPE")
+      (macro $uv-handle-file::int "UV_FILE")
+      (macro $uv-handle-unknown::int "UV_UNKNOWN_HANDLE")
 
       ;; os
       (macro $uv-loadavg::void (::double*) "uv_loadavg")
@@ -163,6 +172,34 @@
       ;; dns
       ($uv-getaddrinfo::int (::string ::string ::int ::obj ::UvLoop)
 	 "bgl_uv_getaddrinfo")
+
+      ($uv-inet-pton::obj (::string ::int)
+	 "bgl_uv_inet_pton")
+
+      ;; stream
+      (type $uv_stream_t void* "uv_stream_t *")
+      (macro $uv-stream-t::$uv_stream_t (::$uv_handle_t) "(uv_stream_t *)")
+
+      (infix macro $uv-stream-write-queue-size::long (::$uv_stream_t) "->write_queue_size")
+      (infix macro $uv-stream-fd::long (::$uv_stream_t) "->io_watcher.fd")
+      ($uv-stream-write::int (::UvHandle ::string ::long ::procedure ::UvLoop)
+	 "bgl_uv_write")
+      ($uv-read-start::int (::UvHandle ::procedure ::UvLoop)
+	 "bgl_uv_read_start")
+      ($uv-read-stop::int (::$uv_stream_t)
+	 "uv_read_stop")
+      
+      ;; net
+      (type $uv_tcp_t void* "uv_tcp_t *")
+      (macro $uv-tcp-t::$uv_tcp_t (::$uv_handle_t) "(uv_tcp_t *)")
+      
+      (macro $uv-tcp-init::int (::$uv_loop_t ::$uv_tcp_t)
+	 "uv_tcp_init")
+      ($uv-tcp-create::$uv_tcp_t (::$uv_loop_t ::obj)
+	 "bgl_uv_tcp_create")
+      
+      ($uv-tcp-connect::int (::UvTcp ::string ::int ::obj ::UvLoop)
+	 "bgl_uv_tcp_connect")
       
       ))
 

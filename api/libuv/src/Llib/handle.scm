@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Mon Jul 28 14:13:33 2014 (serrano)                */
+;*    Last change :  Wed Jul 30 18:34:01 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV handles                                                    */
@@ -20,7 +20,7 @@
    
    (export (uv-ref ::UvHandle)
 	   (uv-unref ::UvHandle)
-	   (uv-close ::UvHandle)))
+	   (uv-close ::UvHandle #!optional callback)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-ref ::UvHandle ...                                            */
@@ -39,8 +39,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-close ...                                                     */
 ;*---------------------------------------------------------------------*/
-(define (uv-close o::UvHandle)
+(define (uv-close o::UvHandle #!optional callback)
    ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
-   (with-access::UvHandle o ($builtin)
+   (with-access::UvHandle o ($builtin onclose)
+      (when (procedure? callback) (set! onclose callback))
       (when ($uv_handle_nilp $builtin) ($bgl_uv_close_cb $builtin))
       ($uv-handle-close $builtin $BGL_UV_CLOSE_CB)))

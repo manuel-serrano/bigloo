@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Mon Jul 28 14:14:54 2014 (serrano)                */
+;*    Last change :  Tue Jul 29 13:54:42 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -22,7 +22,7 @@
 	   __libuv_async
 	   __libuv_fs
 	   __libuv_os
-	   __libuv_dns)
+	   __libuv_net)
 
    (eval   (export-all)
 
