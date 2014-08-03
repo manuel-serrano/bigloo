@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:10:13 2014                          */
-;*    Last change :  Mon Jul 28 14:14:30 2014 (serrano)                */
+;*    Last change :  Thu Jul 31 13:52:31 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV idle                                                      */
@@ -24,7 +24,7 @@
       (letrec* ((n 5)
 		(idle (instantiate::UvIdle
 			  (loop loop)
-			  (cb (lambda (t s)
+			  (cb (lambda (t)
 				 (tprint "n=" n " T=" t)
 				 (set! n (-fx n 1))
 				 (when (=fx n 0)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Wed Jul 30 18:24:05 2014 (serrano)                */
+;*    Last change :  Sun Aug  3 07:54:14 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -42,6 +42,7 @@
       (macro $uv-handle-ref::void (::$uv_handle_t) "uv_ref")
       (macro $uv-handle-unref::void (::$uv_handle_t) "uv_unref")
       (macro $uv-handle-close::void (::$uv_handle_t ::$uv_close_cb) "uv_close")
+      (macro $uv-handle-active?::bool (::$uv_handle_t) "uv_is_active")
 
       ($bgl_uv_close_cb::$uv_close_cb (::$uv_handle_t) "bgl_uv_close_cb")
       (macro $BGL_UV_CLOSE_CB::$uv_close_cb "(uv_close_cb)&bgl_uv_close_cb")
@@ -58,6 +59,7 @@
       
       (macro $uv-run::void (::$uv_loop_t ::int) "uv_run")
       (macro $uv-stop::void (::$uv_loop_t) "uv_stop")
+      (macro $uv-loop-alive?::bool (::$uv_handle_t) "uv_loop_alive")
       
       (macro $UV_RUN_DEFAULT::int "UV_RUN_DEFAULT")
 
@@ -182,7 +184,7 @@
 
       (infix macro $uv-stream-write-queue-size::long (::$uv_stream_t) "->write_queue_size")
       (infix macro $uv-stream-fd::long (::$uv_stream_t) "->io_watcher.fd")
-      ($uv-stream-write::int (::UvHandle ::string ::long ::procedure ::UvLoop)
+      ($uv-write::int (::UvHandle ::string ::long ::procedure ::UvLoop)
 	 "bgl_uv_write")
       ($uv-read-start::int (::UvHandle ::procedure ::UvLoop)
 	 "bgl_uv_read_start")
@@ -197,9 +199,22 @@
 	 "uv_tcp_init")
       ($uv-tcp-create::$uv_tcp_t (::$uv_loop_t ::obj)
 	 "bgl_uv_tcp_create")
+
+      ($uv-shutdown::int (::UvStream ::obj ::UvLoop)
+	 "bgl_uv_shutdown")
       
       ($uv-tcp-connect::int (::UvTcp ::string ::int ::obj ::UvLoop)
 	 "bgl_uv_tcp_connect")
+      (macro $uv-tcp-nodelay::int (::$uv_tcp_t ::bool)
+	 "uv_tcp_nodelay")
+      (macro $uv-tcp-keepalive::int (::$uv_tcp_t ::bool ::uint)
+	 "uv_tcp_keepalive")
+      (macro $uv-tcp-simultaneous-accepts::int (::$uv_tcp_t ::bool)
+	 "uv_tcp_simultaneous_accepts")
+      ($uv-tcp-getsockname::obj (::$uv_tcp_t)
+	 "bgl_uv_tcp_getsockname")
+      ($uv-tcp-getpeername::obj (::$uv_tcp_t)
+	 "bgl_uv_tcp_getpeername")
       
       ))
 

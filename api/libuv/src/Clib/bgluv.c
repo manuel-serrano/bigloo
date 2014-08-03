@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jul 30 18:34:34 2014 (serrano)                */
+/*    Last change :  Sun Aug  3 07:52:35 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -142,7 +142,7 @@ bgl_uv_async_new( bgl_uv_async_t o, bgl_uv_loop_t loop ) {
 /*    static obj_t                                                     */
 /*    _irq ...                                                         */
 /*---------------------------------------------------------------------*/
-static obj_t _irq, _idle, _sys, _nice, _user, _times, _speed, _model;
+static obj_t _irq = BUNSPEC, _idle, _sys, _nice, _user, _times, _speed, _model;
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -150,14 +150,17 @@ static obj_t _irq, _idle, _sys, _nice, _user, _times, _speed, _model;
 /*---------------------------------------------------------------------*/
 static void
 uv_init_cpus() {
-   _irq = string_to_symbol( "irq" );
-   _idle = string_to_symbol( "idle" );
-   _sys = string_to_symbol( "sys" );
-   _nice = string_to_symbol( "nice" );
-   _user = string_to_symbol( "user" );
-   _times = string_to_symbol( "times" );
-   _speed = string_to_symbol( "speed" );
-   _model = string_to_symbol( "model" );
+
+   if( _irq == BUNSPEC ) {
+      _irq = string_to_symbol( "irq" );
+      _idle = string_to_symbol( "idle" );
+      _sys = string_to_symbol( "sys" );
+      _nice = string_to_symbol( "nice" );
+      _user = string_to_symbol( "user" );
+      _times = string_to_symbol( "times" );
+      _speed = string_to_symbol( "speed" );
+      _model = string_to_symbol( "model" );
+   }
 }
    
 /*---------------------------------------------------------------------*/
@@ -471,10 +474,9 @@ bgl_uv_fs_close( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
 /*    statbuf ...                                                      */
 /*---------------------------------------------------------------------*/
-static obj_t _dev, _mode, _nlink, _uid, _gid, _rdev, _ino, _size;
+static obj_t _dev = BUNSPEC, _mode, _nlink, _uid, _gid, _rdev, _ino, _size;
 static obj_t _blksize, _blocks, _flags, _gen, _atime, _mtime, _ctime;
 
 /*---------------------------------------------------------------------*/
@@ -483,21 +485,23 @@ static obj_t _blksize, _blocks, _flags, _gen, _atime, _mtime, _ctime;
 /*---------------------------------------------------------------------*/
 static void
 uv_init_stat() {
-   _dev = string_to_symbol( "dev" );
-   _mode = string_to_symbol( "mode" );
-   _nlink = string_to_symbol( "nlink" );
-   _uid = string_to_symbol( "uid" );
-   _gid = string_to_symbol( "gid" );
-   _rdev = string_to_symbol( "rdev" );
-   _ino = string_to_symbol( "ino" );
-   _size = string_to_symbol( "size" );
-   _blksize = string_to_symbol( "blksize" );
-   _blocks = string_to_symbol( "blocks" );
-   _flags = string_to_symbol( "flags" );
-   _gen = string_to_symbol( "gen" );
-   _atime = string_to_symbol( "atime" );
-   _mtime = string_to_symbol( "mtime" );
-   _ctime = string_to_symbol( "ctime" );
+   if( _dev == BUNSPEC ) {
+      _dev = string_to_symbol( "dev" );
+      _mode = string_to_symbol( "mode" );
+      _nlink = string_to_symbol( "nlink" );
+      _uid = string_to_symbol( "uid" );
+      _gid = string_to_symbol( "gid" );
+      _rdev = string_to_symbol( "rdev" );
+      _ino = string_to_symbol( "ino" );
+      _size = string_to_symbol( "size" );
+      _blksize = string_to_symbol( "blksize" );
+      _blocks = string_to_symbol( "blocks" );
+      _flags = string_to_symbol( "flags" );
+      _gen = string_to_symbol( "gen" );
+      _atime = string_to_symbol( "atime" );
+      _mtime = string_to_symbol( "mtime" );
+      _ctime = string_to_symbol( "ctime" );
+   }
 }
    
 /*---------------------------------------------------------------------*/
@@ -506,9 +510,10 @@ uv_init_stat() {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fstat( uv_stat_t buf ) {
-   uv_init_stat();
    obj_t res = BNIL;
 
+   uv_init_stat();
+   
    res = MAKE_PAIR(
       MAKE_PAIR( _ctime, ELONG_TO_BELONG( buf.st_ctim.tv_sec ) ),
       res );
@@ -1189,7 +1194,7 @@ uv_tcp_connect_cb( uv_connect_t *req, int status ) {
 
    if( PROCEDUREP( p ) ) {
       obj_t handle = req->handle->data;
-      
+
       PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
    }
    
@@ -1206,7 +1211,6 @@ bgl_uv_tcp_connect( obj_t obj, char *addr, int port, obj_t proc, bgl_uv_loop_t b
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-tcp-connect",
 			"wrong callback", proc );
    } else {
-      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
       struct sockaddr_in address;
       uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
 
@@ -1230,7 +1234,99 @@ bgl_uv_tcp_connect( obj_t obj, char *addr, int port, obj_t proc, bgl_uv_loop_t b
       return r;
    }
 }
-     
+
+/*---------------------------------------------------------------------*/
+/*    address symbols                                                  */
+/*---------------------------------------------------------------------*/
+static obj_t _address = BUNSPEC, _family, _port, _IPv4, _IPv6;
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    uv_init_address ...                                              */
+/*---------------------------------------------------------------------*/
+static void
+uv_init_address() {
+   if( _address == BUNSPEC ) {
+      _address = string_to_symbol( "address" );
+      _family = string_to_symbol( "family" );
+      _port = string_to_symbol( "port" );
+      _IPv4 = string_to_symbol( "IPv4" );
+      _IPv6 = string_to_symbol( "IPv6" );
+   }
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    bgl_address ...                                                  */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_address( struct sockaddr *addr ) {
+   obj_t res = BNIL;
+   char ip[ MAX_IP_LEN ];
+
+   uv_init_address();
+   
+   switch( addr->sa_family ) {
+      case AF_INET6: {
+	 struct sockaddr_in6 *a6 = (struct sockaddr_in6 *)addr;
+	 uv_inet_ntop( AF_INET6, &a6->sin6_addr, ip, sizeof ip );
+	 
+	 res = MAKE_PAIR( MAKE_PAIR( _port, BINT( ntohs( a6->sin6_port ) ) ),
+			  res );
+	 res = MAKE_PAIR( MAKE_PAIR( _family, _IPv4 ), res );
+	 res = MAKE_PAIR( MAKE_PAIR( _address, string_to_bstring( ip ) ), res );
+	 break;
+      }
+
+      case AF_INET: {
+	 struct sockaddr_in *a4 = (struct sockaddr_in *)addr;
+	 uv_inet_ntop( AF_INET, &a4->sin_addr, ip, sizeof ip );
+	 
+	 res = MAKE_PAIR( MAKE_PAIR( _port, BINT( ntohs( a4->sin_port ) ) ), res );
+	 res = MAKE_PAIR( MAKE_PAIR( _family, _IPv4 ), res );
+	 res = MAKE_PAIR( MAKE_PAIR( _address, string_to_bstring( ip ) ), res );
+
+	 break;
+      }
+   }
+	 
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_tcp_getsockname ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_tcp_getsockname( uv_tcp_t *handle ) {
+   struct sockaddr_storage address;
+   int addrlen = sizeof( address );
+   int r = uv_tcp_getsockname( handle, (struct sockaddr *)&address, &addrlen );
+
+   if( r ) { 
+      return BINT( r );
+   } else {
+      return bgl_address( (struct sockaddr *)&address );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_tcp_getpeername ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_tcp_getpeername( uv_tcp_t *handle ) {
+   struct sockaddr_storage address;
+   int addrlen = sizeof( address );
+   int r = uv_tcp_getpeername( handle, (struct sockaddr *)&address, &addrlen );
+
+   if( r ) { 
+      return BINT( r );
+   } else {
+      return bgl_address( (struct sockaddr *)&address );
+   }
+}
+
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bgl_uv_write_cb ...                                              */
@@ -1251,7 +1347,7 @@ bgl_uv_write_cb( uv_write_t *req, int status ) {
 /*    bgl_uv_write ...                                                 */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_write( obj_t obj, obj_t buffer, long length, obj_t proc, bgl_uv_loop_t bloop ) {
+bgl_uv_write( obj_t obj, char *buffer, long length, obj_t proc, bgl_uv_loop_t bloop ) {
    if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 1 )) ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
 			"wrong callback", proc );
@@ -1266,7 +1362,7 @@ bgl_uv_write( obj_t obj, obj_t buffer, long length, obj_t proc, bgl_uv_loop_t bl
       
       gc_mark( proc );
       
-      stream->BgL_z52wbufz52 = &(STRING_REF( buffer, 0 ));
+      stream->BgL_z52wbufz52 = buffer;
       stream->BgL_z52wbuflenz52 = length;
 
       int r = uv_write( req, handle, buf, 1, bgl_uv_write_cb );
@@ -1280,7 +1376,7 @@ bgl_uv_write( obj_t obj, obj_t buffer, long length, obj_t proc, bgl_uv_loop_t bl
 /*    bgl_uv_read_cb ...                                               */
 /*---------------------------------------------------------------------*/
 static void
-bgl_uv_read_cb( uv_stream_t *stream, int nread, const uv_buf_t *buf ) {
+bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    obj_t obj = (obj_t)stream->data;
    bgl_uv_stream_t sobj = (bgl_uv_stream_t)obj;
    obj_t p = sobj->BgL_z52procz52;
@@ -1289,6 +1385,7 @@ bgl_uv_read_cb( uv_stream_t *stream, int nread, const uv_buf_t *buf ) {
    sobj->BgL_z52allocz52 = BNIL;
    gc_unmark( obj );
 
+   fprintf( stderr, "bgl_uv_read_cb size=%d\n", nread );
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
 	 obj_t buf = bgl_string_shrink( chunk, nread );
@@ -1308,8 +1405,9 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
    obj_t chunk = make_string_sans_fill( ssize );
 
+   fprintf( stderr, "bgl_uv_alloc_cb size=%d\n", ssize );
    stream->BgL_z52allocz52 = MAKE_PAIR( chunk, stream->BgL_z52allocz52 );
-   
+
    *buf = uv_buf_init( &(STRING_REF( chunk, 0 )), ssize );
 }
 
@@ -1333,6 +1431,55 @@ bgl_uv_read_start( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
       gc_mark( obj );
 
       int r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
+
+      return r;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_shutdown_cb ...                                           */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_shutdown_cb( uv_shutdown_t* req, int status ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+
+   if( PROCEDUREP( p ) ) {
+      obj_t handle = req->handle->data;
+      
+      PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
+   }
+
+   free( req );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_shutdown ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_shutdown( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
+   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 2 )) ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-shutdown",
+			"wrong callback", proc );
+   } else {
+      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+      uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      uv_shutdown_t *req = malloc( sizeof( uv_shutdown_t ) );
+      int r;
+
+      gc_mark( obj );
+
+      req->data = proc;
+
+      fprintf( stderr, "%s:%d bgl_uv_shutdown untested, example needed\n",
+	       __FILE__, __LINE__ );
+      
+      if( !(r = uv_shutdown( req, s, bgl_uv_shutdown_cb )) ) {
+	 free( req );
+      }
 
       return r;
    }

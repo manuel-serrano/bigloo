@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Wed Jul 30 18:34:01 2014 (serrano)                */
+;*    Last change :  Fri Aug  1 19:55:47 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV handles                                                    */
@@ -20,7 +20,8 @@
    
    (export (uv-ref ::UvHandle)
 	   (uv-unref ::UvHandle)
-	   (uv-close ::UvHandle #!optional callback)))
+	   (uv-close ::UvHandle #!optional callback)
+	   (uv-active?::bool ::UvHandle)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-ref ::UvHandle ...                                            */
@@ -45,3 +46,10 @@
       (when (procedure? callback) (set! onclose callback))
       (when ($uv_handle_nilp $builtin) ($bgl_uv_close_cb $builtin))
       ($uv-handle-close $builtin $BGL_UV_CLOSE_CB)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-active? ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (uv-active? o::UvHandle)
+   (with-access::UvHandle o ($builtin)
+      ($uv-handle-active? $builtin)))

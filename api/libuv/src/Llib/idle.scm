@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Tue Jul 29 05:45:12 2014 (serrano)                */
+;*    Last change :  Fri Aug  1 20:05:34 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV idle callback                                              */
@@ -33,7 +33,7 @@
 ;*    uv-idle-start ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (uv-idle-start o::UvIdle)
-   (with-access::UvIdle o ($builtin loop %proc cb)
+   (with-access::UvIdle o ($builtin loop cb)
       (if (not (and (procedure? cb) (correct-arity? cb 1)))
 	  (error "uv-idle-start" "wrong callback" o)
 	  (with-access::UvLoop loop (%mutex %gcmarks)
@@ -48,6 +48,10 @@
 ;*    uv-idle-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (uv-idle-stop o::UvIdle)
-   (with-access::UvIdle o ($builtin)
+   (with-access::UvIdle o ($builtin loop)
+      (with-access::UvLoop loop (%mutex %gcmarks)
+	 (synchronize %mutex
+	    ;; remove in the loop for the GC
+	    (set! %gcmarks (remq! o %gcmarks))))
       ($uv_idle_stop ($uv-idle-t $builtin))))
       
