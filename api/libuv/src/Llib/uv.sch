@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sun Aug  3 07:54:14 2014 (serrano)                */
+;*    Last change :  Mon Aug  4 07:06:51 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -190,6 +190,12 @@
 	 "bgl_uv_read_start")
       ($uv-read-stop::int (::$uv_stream_t)
 	 "uv_read_stop")
+      ($uv-shutdown::int (::UvStream ::obj ::UvLoop)
+	 "bgl_uv_shutdown")
+      ($uv-listen::int (::UvStream ::int ::obj ::UvLoop)
+	 "bgl_uv_listen")
+      (macro $uv-accept::int (::$uv_stream_t ::$uv_stream_t)
+	 "uv_accept")
       
       ;; net
       (type $uv_tcp_t void* "uv_tcp_t *")
@@ -200,11 +206,12 @@
       ($uv-tcp-create::$uv_tcp_t (::$uv_loop_t ::obj)
 	 "bgl_uv_tcp_create")
 
-      ($uv-shutdown::int (::UvStream ::obj ::UvLoop)
-	 "bgl_uv_shutdown")
-      
-      ($uv-tcp-connect::int (::UvTcp ::string ::int ::obj ::UvLoop)
+      ($uv-tcp-connect::int (::UvTcp ::string ::int ::int ::obj ::UvLoop)
 	 "bgl_uv_tcp_connect")
+      (macro $uv-tcp-open::int (::$uv_tcp_t ::int)
+	 "uv_tcp_open")
+      ($uv-tcp-bind::int (::$uv_tcp_t ::string ::int ::int)
+	 "bgl_uv_tcp_bind")
       (macro $uv-tcp-nodelay::int (::$uv_tcp_t ::bool)
 	 "uv_tcp_nodelay")
       (macro $uv-tcp-keepalive::int (::$uv_tcp_t ::bool ::uint)

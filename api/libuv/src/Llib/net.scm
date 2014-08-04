@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Sun Aug  3 07:57:15 2014 (serrano)                */
+;*    Last change :  Mon Aug  4 07:10:16 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -34,9 +34,14 @@
 	    (uv-stream-read-stop ::UvStream)
 	    (uv-stream-shutdown ::UvStream
 	       #!key callback (loop (uv-default-loop)))
-
-	    (uv-tcp-connect ::UvTcp ::bstring ::int
+	    (uv-listen ::UvTcp ::int
 	       #!key callback (loop (uv-default-loop)))
+	    (uv-accept ::UvTcp ::UvTcp)
+	    
+	    (uv-tcp-connect ::UvTcp ::bstring ::int
+	       #!key (family::int 4) callback (loop (uv-default-loop)))
+	    (uv-tcp-open::int ::UvTcp ::int)
+	    (uv-tcp-bind ::UvTcp ::bstring ::int #!key (family::int 4))
 	    (uv-tcp-nodelay::int ::UvTcp ::bool)
 	    (uv-tcp-keepalive::int ::UvTcp ::bool ::int)
 	    (uv-tcp-simultaneous-accepts::int ::UvTcp ::bool)
@@ -115,10 +120,38 @@
    ($uv-shutdown handle callback loop))
    
 ;*---------------------------------------------------------------------*/
+;*    uv-listen ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (uv-listen handle backlog #!key callback (loop (uv-default-loop)))
+   ($uv-listen handle backlog callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-accept ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (uv-accept server client)
+   (with-access::UvStream server (($sbuiltin $builtin))
+      (with-access::UvStream client (($cbuiltin $builtin))
+	 ($uv-accept ($uv-stream-t $sbuiltin) ($uv-stream-t $cbuiltin)))))
+
+;*---------------------------------------------------------------------*/
 ;*    uv-tcp-connect ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (uv-tcp-connect handle host port #!key callback (loop (uv-default-loop)))
-   ($uv-tcp-connect handle host port callback loop))
+(define (uv-tcp-connect handle host port #!key (family::int 4) callback (loop (uv-default-loop)))
+   ($uv-tcp-connect handle host port family callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-tcp-open ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-tcp-open handle fd)
+   (with-access::UvTcp handle ($builtin)
+      ($uv-tcp-open ($uv-tcp-t $builtin) fd)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-tcp-bind ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-tcp-bind handle host port #!key (family::int 4))
+   (with-access::UvTcp handle ($builtin)
+      ($uv-tcp-bind ($uv-tcp-t $builtin) host port family)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-tcp-nodelay ...                                               */

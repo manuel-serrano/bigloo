@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Aug  3 07:52:35 2014 (serrano)                */
+/*    Last change :  Mon Aug  4 07:06:27 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1189,32 +1189,26 @@ bgl_uv_tcp_create( uv_loop_t *loop, obj_t obj ) {
 static void
 uv_tcp_connect_cb( uv_connect_t *req, int status ) {
    obj_t p = (obj_t)req->data;
+   obj_t handle = req->handle->data;
 
    gc_unmark( p );
 
-   if( PROCEDUREP( p ) ) {
-      obj_t handle = req->handle->data;
-
-      PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
-   }
-   
    free( req );
+   
+   PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    static int                                                       */
 /*    bgl_uv_tcp_connect ...                                           */
 /*---------------------------------------------------------------------*/
-int
-bgl_uv_tcp_connect( obj_t obj, char *addr, int port, obj_t proc, bgl_uv_loop_t bloop ) {
+static int
+bgl_uv_tcp_connectX( obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loop_t bloop ) {
    if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 2 )) ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-tcp-connect",
 			"wrong callback", proc );
    } else {
-      struct sockaddr_in address;
       uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
-
-      uv_ip4_addr( addr, port, &address );
 
       req->data = proc;
       
@@ -1225,7 +1219,7 @@ bgl_uv_tcp_connect( obj_t obj, char *addr, int port, obj_t proc, bgl_uv_loop_t b
 
       gc_mark( proc );
 
-      int r = uv_tcp_connect( req, handle, (struct sockaddr *)&address, uv_tcp_connect_cb );
+      int r = uv_tcp_connect( req, handle, address, uv_tcp_connect_cb );
 
       if( r != 0 ) {
 	 free( req );
@@ -1233,6 +1227,109 @@ bgl_uv_tcp_connect( obj_t obj, char *addr, int port, obj_t proc, bgl_uv_loop_t b
 
       return r;
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_tcp_connect ...                                           */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_tcp_connect( obj_t obj, char *addr, int port, int family, obj_t proc, bgl_uv_loop_t bloop ) {
+   union addr {
+      struct sockaddr_in ip4;
+      struct sockaddr_in6 ip6;
+   } address;
+   int r;
+      
+   if( family == 4 ) {
+      r = uv_ip4_addr( addr, port, &(address.ip4) );
+   } else {
+      r = uv_ip6_addr( addr, port, &(address.ip6) );
+   }
+
+   if( r ) {
+      return r;
+   }
+
+   return bgl_uv_tcp_connectX( obj, (struct sockaddr *)&address, proc, bloop );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    uv_listen_cb ...                                                 */
+/*---------------------------------------------------------------------*/
+static void
+uv_listen_cb( uv_stream_t *handle, int status ) {
+   obj_t data = (obj_t)handle->data;
+   obj_t p, obj;
+
+   gc_unmark( data );
+
+   obj = CAR( data );
+   p = CDR( data );
+
+   PROCEDURE_ENTRY( p )( p, obj, BINT( status ), BEOA );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_listen ...                                                */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_listen( obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop ) {
+   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 2 )) ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-tcp-listen",
+			"wrong callback", proc );
+   } else {
+      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+      uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+
+      s->data = MAKE_PAIR( obj, proc );
+      gc_mark( s->data );
+
+      return uv_listen( s, backlog, uv_listen_cb );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_tcp_bind ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_tcp_bind( uv_tcp_t *handle, char *addr, int port, int family ) {
+   union addr {
+      struct sockaddr_in ip4;
+      struct sockaddr_in6 ip6;
+   } address;
+   int r;
+      
+   if( family == 4 ) {
+      r = uv_ip4_addr( addr, port, &(address.ip4) );
+   } else {
+      r = uv_ip6_addr( addr, port, &(address.ip6) );
+   }
+
+   if( r ) {
+      return r;
+   }
+
+   return uv_tcp_bind( handle, (struct sockaddr *)&address, 0 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_tcp_bind6 ...                                             */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_tcp_bind6( uv_tcp_t *handle, char *addr, int port ) {
+   struct sockaddr_in6 address;
+   int r = uv_ip6_addr( addr, port, &address );
+
+   if( r ) {
+      return r;
+   }
+
+   return uv_tcp_bind( handle, (struct sockaddr *)&address, UV_TCP_IPV6ONLY );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1337,9 +1434,7 @@ bgl_uv_write_cb( uv_write_t *req, int status ) {
 
    gc_unmark( p );
 
-   if( PROCEDUREP( p ) ) {
-      PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
-   }
+   PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1385,7 +1480,6 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    sobj->BgL_z52allocz52 = BNIL;
    gc_unmark( obj );
 
-   fprintf( stderr, "bgl_uv_read_cb size=%d\n", nread );
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
 	 obj_t buf = bgl_string_shrink( chunk, nread );
@@ -1405,7 +1499,6 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
    obj_t chunk = make_string_sans_fill( ssize );
 
-   fprintf( stderr, "bgl_uv_alloc_cb size=%d\n", ssize );
    stream->BgL_z52allocz52 = MAKE_PAIR( chunk, stream->BgL_z52allocz52 );
 
    *buf = uv_buf_init( &(STRING_REF( chunk, 0 )), ssize );
@@ -1443,16 +1536,13 @@ bgl_uv_read_start( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
 static void
 bgl_uv_shutdown_cb( uv_shutdown_t* req, int status ) {
    obj_t p = (obj_t)req->data;
+   obj_t handle = req->handle->data;
 
    gc_unmark( p );
 
-   if( PROCEDUREP( p ) ) {
-      obj_t handle = req->handle->data;
-      
-      PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
-   }
-
    free( req );
+   
+   PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
 }
    
 /*---------------------------------------------------------------------*/

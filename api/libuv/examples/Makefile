@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Jul 28 14:14:18 2014 (serrano)                */
+#*    Last change :  Mon Aug  4 06:28:53 2014 (serrano)                */
 #*    Copyright   :  2002-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the LIBUV examples                         */
@@ -23,7 +23,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = hello async timer idle atimer fs io
+SOURCES = hello async timer idle atimer fs io serv
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -54,6 +54,9 @@ fs: fs.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 io: io.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+serv: serv.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:
