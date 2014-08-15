@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Aug  4 07:06:27 2014 (serrano)                */
+/*    Last change :  Fri Aug  8 14:40:34 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1564,10 +1564,7 @@ bgl_uv_shutdown( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
 
       req->data = proc;
 
-      fprintf( stderr, "%s:%d bgl_uv_shutdown untested, example needed\n",
-	       __FILE__, __LINE__ );
-      
-      if( !(r = uv_shutdown( req, s, bgl_uv_shutdown_cb )) ) {
+      if( r = uv_shutdown( req, s, bgl_uv_shutdown_cb ) ) {
 	 free( req );
       }
 

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri Dec 14 10:29:58 2012 (serrano)                */
-/*    Copyright   :  2005-12 Manuel Serrano                            */
+/*    Last change :  Sat Aug  9 16:23:42 2014 (serrano)                */
+/*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon Jul 28 09:20:55 2014 (serrano)                */
+;*    Last change :  Fri Aug 15 07:30:45 2014 (serrano)                */
 ;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -158,6 +158,7 @@
 	    *bigloo-libraries-c-setup*
 	    *additional-bigloo-zips*
 	    *lib-dir*
+	    *default-lib-dir*
 	    *lib-src-dir*
 	    *include-multiple*
 	    *include-foreign*
@@ -451,6 +452,9 @@
       (if (not (pair? lib-env))
 	  (list "." (bigloo-config 'library-directory))
 	  (cons "." lib-env))))
+(param-define *default-lib-dir*
+   "Depreacted, don't use"
+   (bigloo-config 'library-directory))
 ;; the lib source dir path
 (param-define *lib-src-dir*
    "The lib dir path"

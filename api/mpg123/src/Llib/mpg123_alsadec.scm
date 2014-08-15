@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat Feb 15 18:52:10 2014 (serrano)                */
+;*    Last change :  Wed Aug 13 12:38:03 2014 (serrano)                */
 ;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -331,9 +331,6 @@
 	       :avail-min 1)))
       (with-access::musicstatus %status (songpos songlength bitrate khz)
 	 (set! songpos (alsadecoder-position dec buffer))
-	 (set! songlength 0)
-	 (when (<fx songlength songpos)
-	    (set! songlength songpos))
 	 (multiple-value-bind (brate rate)
 	    (alsadecoder-info dec)
 	    (set! bitrate brate)

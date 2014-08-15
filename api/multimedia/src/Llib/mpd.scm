@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Sat Oct 13 07:55:03 2012 (serrano)                */
-;*    Copyright   :  2008-12 Manuel Serrano                            */
+;*    Last change :  Fri Aug 15 06:45:17 2014 (serrano)                */
+;*    Copyright   :  2008-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
 ;*=====================================================================*/
@@ -35,7 +35,7 @@
 	   (generic mpd-database-init! ::mpd-database)
 
 	   (generic mpd-database-file->path ::mpd-database ::bstring)
-	   (generic mpd-database-stats ::mpd-database ::obj)
+	   (generic mpd-database-stats ::mpd-database ::obj ::obj)
 	   (generic mpd-database-listall ::mpd-database ::output-port)
 	   (generic mpd-database-listalbum ::mpd-database ::output-port)
 	   (generic mpd-database-listartistalbum ::mpd-database ::output-port ::obj)
@@ -223,6 +223,7 @@
       (when (string? str)
 	 (string->integer str))))
 
+(define cmdn 0)
 ;*---------------------------------------------------------------------*/
 ;*    mpd ...                                                          */
 ;*---------------------------------------------------------------------*/
@@ -235,9 +236,14 @@
    (let loop ()
       (unless (music-closed? backend)
 	 (let ((line (read-line ip)))
+	    (set! cmdn (+fx 1 cmdn))
+	    (tprint ">>> mpd{" cmdn "} line=[" line "]")
 	    (when log (log line))
 	    (unless (eof-object? line)
-	       (let ((v (execute-command db backend ip op line)))
+	       (multiple-value-bind (v rtime stime utime)
+		  (time (lambda () (execute-command db backend ip op line)))
+		  (tprint "<<< mpd{" cmdn "} v=" v
+		     " rtime=" rtime " stime=" stime " utime=" utime)
 		  (case v
 		     ((ok)
 		      (mpd-ok op)
@@ -507,11 +513,11 @@
    'ok)
 
 ;*---------------------------------------------------------------------*/
-;*    currentsong ...                                                  */
+;*    currentsong-info ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-command (currentsong)
+(define (currentsong-info db backend plist num line ip)
    
-   (define (metasong file path)
+   (define (metasong op file path)
       ;; the file is not local, ask the player the meta data (if any)
       (let ((meta (music-meta backend)))
 	 (if (null? meta)
@@ -544,14 +550,41 @@
 		      (fprint op "Title: " t)
 		      (fprint op "Album: " b)))))))
    
+   (let* ((file (list-ref plist num))
+	  (path (uri->mpd file db)))
+      (call-with-output-string
+	 (lambda (op)
+	    (if (file-exists? file)
+		(infofile db file op)
+		(metasong op file path))))))
+
+;*---------------------------------------------------------------------*/
+;*    currentsong-cache ...                                            */
+;*---------------------------------------------------------------------*/
+(define currentsong-cache-plist #f)
+(define currentsong-cache-num -1)
+(define currentsong-cache-info "")
+
+;*---------------------------------------------------------------------*/
+;*    currentsong/cache ...                                            */
+;*---------------------------------------------------------------------*/
+(define (currentsong/cache db backend plist num line ip op)
+   (if (and (eq? plist currentsong-cache-plist) (=fx currentsong-cache-num num))
+       (display currentsong-cache-info op)
+       (let ((info (currentsong-info db backend plist num line ip)))
+	  (set! currentsong-cache-plist plist)
+	  (set! currentsong-cache-num num)
+	  (set! currentsong-cache-info info)
+	  (display info op))))
+
+;*---------------------------------------------------------------------*/
+;*    currentsong ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-command (currentsong)
    (let ((plist (music-playlist-get backend))
 	 (num (music-song backend)))
       (when (and (>=fx num 0) (<fx num (length plist)))
-	 (let* ((file (list-ref plist num))
-		(path (uri->mpd file db)))
-	    (if (file-exists? path)
-		(infofile db file op)
-		(metasong file path))))
+	 (currentsong/cache db backend plist num line ip op))
       'ok))
 
 ;*---------------------------------------------------------------------*/
@@ -671,7 +704,7 @@
 ;*    stats ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define-command (stats)
-   (mpd-database-stats db op)
+   (mpd-database-stats db backend op)
    'ok)
 
 ;*---------------------------------------------------------------------*/
@@ -1076,20 +1109,36 @@
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-stats ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-generic (mpd-database-stats o::mpd-database op)
+(define-generic (mpd-database-stats o::mpd-database backend op)
+
+   (define (playtime)
+      (let ((plist (music-playlist-get backend))
+	    (num (music-song backend)))
+	 (when (and (>=fx num 0) (<fx num (length plist)))
+	    (let* ((file (list-ref plist num))
+		   (path (uri->mpd file o)))
+	       (if (file-exists? file)
+		   (let ((info (file-musicinfo file)))
+		      (if (isa? info musicinfo)
+			  (with-access::musicinfo info (duration)
+			     duration)
+			  1000000))
+		   1000000)))))
+   
    (with-access::mpd-database o (%nartists %nalbums %nsongs %uptime %db-update)
       (fprintf op "artists: ~a
 albums: ~a
 songs: ~a
 uptime: ~a
-playtime: 1000000
+playtime: ~a
 db_playtime: 10000000
 db_update: ~a\n"
-	       %nartists
-	       %nalbums
-	       %nsongs
-	       (elong->fixnum (-elong (current-seconds) %uptime))
-	       (elong->fixnum (-elong (current-seconds) %db-update)))))
+	 %nartists
+	 %nalbums
+	 %nsongs
+	 (elong->fixnum (-elong (current-seconds) %uptime))
+	 (playtime)
+	 (elong->fixnum (-elong (current-seconds) %db-update)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpd-database-listall ...                                         */

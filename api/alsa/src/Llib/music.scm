@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Feb 15 13:09:13 2014 (serrano)                */
+;*    Last change :  Wed Aug 13 12:38:58 2014 (serrano)                */
 ;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -151,7 +151,7 @@
       (synchronize %amutex
 	 (when (and (isa? %decoder alsadecoder)
 		    (isa? %buffer alsabuffer))
-	    (with-access::musicstatus %status (songpos)
+	    (with-access::musicstatus %status (songpos songlength)
 	       (set! songpos (alsadecoder-position %decoder %buffer)))))
       %status))
       
@@ -218,6 +218,18 @@
 		(alsadecoder-seek %decoder pos))))))
 
 ;*---------------------------------------------------------------------*/
+;*    url-song-length ...                                              */
+;*---------------------------------------------------------------------*/
+(define (url-song-length url)
+   (if (file-exists? url)
+       (let ((info (file-musicinfo url)))
+	  (if (isa? info musicinfo)
+	      (with-access::musicinfo info (duration)
+		 duration)
+	      0))
+       0))
+
+;*---------------------------------------------------------------------*/
 ;*    open-file ...                                                    */
 ;*    -------------------------------------------------------------    */
 ;*    Open a timeouted file.                                           */
@@ -227,7 +239,7 @@
       (lambda (e)
 	 (exception-notify e)
 	 #f)
-      (with-access::alsamusic o (timeout)
+      (with-access::alsamusic o (timeout %status)
 	 (let ((pi (open-input-file url #f timeout)))
 	    (when (input-port? pi)
 	       (input-port-timeout-set! pi timeout))
@@ -246,15 +258,15 @@
 	    (find (lambda (d) (alsadecoder-can-play-type? d mime))
 	       decoders))))
    
-   (define (update-song-status! o n pid)
+   (define (update-song-status! o n pid url)
       (with-access::alsamusic o (%status onstate onvolume)
 	 (with-access::musicstatus %status (state song songpos songid songlength playlistid volume playlistid)
 	    (set! playlistid pid)
 	    (set! songpos 0)
-	    (set! songlength 0)
 	    (set! song n)
 	    (set! songid (+fx (* 100 pid) n))
 	    (set! state 'play)
+	    (set! songlength (url-song-length url))
 	    (onstate o %status)
 	    (onvolume o volume))))
    
@@ -385,7 +397,7 @@
 	       (set! %buffer buffer)
 	       (set! %decoder d)
 	       (set! %!pid pid)
-	       (update-song-status! o n pid))
+	       (update-song-status! o n pid (car urls)))
 	    (when notify
 	       (with-access::alsamusic o (%status onevent)
 		  (with-access::musicstatus %status (playlistid)
