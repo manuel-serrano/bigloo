@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Tue Aug 19 08:29:00 2014 (serrano)                */
+;*    Last change :  Tue Aug 19 09:01:16 2014 (serrano)                */
 ;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -444,10 +444,8 @@
    
    (define symbol+-grammar
       (regular-grammar ()
-;* 	 ((: (+ (or alpha #\-)) "\r\n")                                */
-;* 	  (the-downcase-subsymbol 0 -2))                               */
-;* 	 ((: (+ (or alpha #\-)) "," (+ (or alpha #\-)) "\r\n")         */
-;* 	  (the-downcase-symbol 0 -2))                                  */
+	 ((: (+ (or alpha #\-)) (* (: "," (* " \t") (+ (or alpha #\-)))) "\r\n")
+	  (the-downcase-subsymbol 0 -2))
 	 ((+ (in " \t")) (ignore))))
    
    (define auth-grammar
