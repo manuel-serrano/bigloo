@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Tue Aug 19 09:01:16 2014 (serrano)                */
+;*    Last change :  Tue Aug 19 09:43:26 2014 (serrano)                */
 ;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -381,15 +381,6 @@
       p))
 
 ;*---------------------------------------------------------------------*/
-;*    http-skip-blank ...                                              */
-;*---------------------------------------------------------------------*/
-(define (http-skip-blank p)
-   (read/rp (regular-grammar ()
-	       ((+ (in " \t")) #f)
-	       (else #f))
-      p))
-
-;*---------------------------------------------------------------------*/
 ;*    http-parse-header ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (http-parse-header p po)
@@ -444,9 +435,15 @@
    
    (define symbol+-grammar
       (regular-grammar ()
-	 ((: (+ (or alpha #\-)) (* (: "," (* " \t") (+ (or alpha #\-)))) "\r\n")
+	 ((: (+ (or alpha #\-)) "\r\n")
 	  (the-downcase-subsymbol 0 -2))
-	 ((+ (in " \t")) (ignore))))
+	 ((: (+ (or alpha #\-))
+	     (* (: "," (* (in " \t")) (+ (or alpha #\-)))) "\r\n")
+	  (the-downcase-subsymbol 0 -2))
+	 ((+ (in " \t"))
+	  (ignore))
+	 (else
+	  '||)))
    
    (define auth-grammar
       (regular-grammar ()
@@ -468,22 +465,6 @@
       (regular-grammar ()
 	 ((: (* (out #\Return #\Newline)) (? #\Return) #\Newline)
 	  #unspecified)
-	 (else
-	  #f)))
-   
-   (define symbol-list-grammar
-      (regular-grammar ()
-	 ((+ (or alpha #\-)) (cons (the-downcase-symbol) (ignore)))
-	 (#\, (ignore))
-	 ("\r\n" '())))
-   
-   (define symbol-or-symbol-list-grammar
-      (regular-grammar ()
-	 ((: (+ (or alpha #\-)) "\r\n")
-	  (the-subsymbol 0 (-fx (the-length) 2)))
-	 ((: (+ (or alpha #\-)) ",")
-	  (cons (the-subsymbol 0 (-fx (the-length) 2))
-	     (read/rp symbol-list-grammar (the-port))))
 	 (else
 	  #f)))
    
@@ -526,9 +507,9 @@
 		 (set! header (cons (cons k authorization) header))
 		 (ignore))
 		((connection:)
-		 (http-skip-blank (the-port))
 		 (set! connection (read/rp symbol+-grammar (the-port)))
-		 (tprint "**** CONNECTION: [" connection "]")
+		 (unless (symbol? connection)
+		    (tprint "PAS GLOP: " connection " " header))
 		 (set! header (cons (cons k connection) header))
 		 (ignore))
 		((proxy-authorization:)
