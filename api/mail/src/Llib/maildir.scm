@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Sun Dec  2 07:33:43 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Fri Aug 15 11:10:04 2014 (serrano)                */
+;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -49,7 +49,7 @@
       (print-slot prefix p)
       (display " folder-selection=" p)
       (print-slot folder-selection p)
-      (display ">\n" p)))
+      (display ">" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-close ::maildir ...                                      */
@@ -719,10 +719,10 @@
 ;*    mailbox-message-header-list ::maildir ...                        */
 ;*---------------------------------------------------------------------*/
 (define-method (mailbox-message-header-list m::maildir i::int)
-   (let ((path (get-message-path "mailbox-message-header-list ::maildir" m i)))
-      (with-input-from-file path
-	 (lambda ()
-	    (mail-header->list (current-input-port))))))
+   (let ((path (get-message-path mailbox-message-header-list m i)))
+      (call-with-input-file path
+	 (lambda (ip)
+	    (mail-header->list ip)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-message-header-field ::maildir ...                       */

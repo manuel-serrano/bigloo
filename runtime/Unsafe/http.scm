@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Wed Jun 25 06:54:22 2014 (serrano)                */
+;*    Last change :  Tue Aug 19 08:29:00 2014 (serrano)                */
 ;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -103,22 +103,22 @@
 ;*    Establishes a HTTP connection with a remote host                 */
 ;*---------------------------------------------------------------------*/
 (define (http #!key
-	      (in #f)
-	      (out #f)
-	      (socket #f)
-	      (protocol 'http)
-	      (method 'get)
-	      (timeout 0)
-	      (proxy #f)
-	      (host "localhost") (port 80)
-	      (path "/")
-	      (login #f) (authorization #f) (username #f) (password #f)
-	      (http-version "HTTP/1.1")
-	      (content-type #f)
-	      (connection #unspecified)
-	      (header '((user-agent: "Mozilla/5.0")))
-	      (args '())
-	      (body #f))
+	   (in #f)
+	   (out #f)
+	   (socket #f)
+	   (protocol 'http)
+	   (method 'get)
+	   (timeout 0)
+	   (proxy #f)
+	   (host "localhost") (port 80)
+	   (path "/")
+	   (login #f) (authorization #f) (username #f) (password #f)
+	   (http-version "HTTP/1.1")
+	   (content-type #f)
+	   (connection #unspecified)
+	   (header '((user-agent: "Mozilla/5.0")))
+	   (args '())
+	   (body #f))
    ;; preliminary checks
    (cond
       (socket
@@ -145,9 +145,9 @@
    ;; user additional header
    (for-each (lambda (h)
 		(display-line (keyword->string (car h)) ": "
-			      (if (pair? (cdr h)) (cadr h) (cdr h))
-			      out))
-	     header)
+		   (if (pair? (cdr h)) (cadr h) (cdr h))
+		   out))
+      header)
    ;; authentication
    (cond
       ((string? login)
@@ -170,8 +170,8 @@
 		  (content (generate-http-post-body boundary args)))
 	      (display-line "Content-Length: " (string-length content) out)
 	      (display-line "Content-Type: multipart/form-data; boundary="
-			    (substring boundary 2 (string-length boundary))
-			    out)
+		 (substring boundary 2 (string-length boundary))
+		 out)
 	      (display-line out)
 	      (display content out)))
 	  (else
@@ -210,7 +210,7 @@
 	     (begin
 		(set! host (substring proxy 0 i))
 		(set! port (string->integer
-			    (substring proxy (+fx i 1) (string-length proxy)))))
+			      (substring proxy (+fx i 1) (string-length proxy)))))
 	     (begin
 		(set! host proxy)
 		(set! port 80)))))
@@ -242,9 +242,9 @@
 		    (display-line boundary port)
 		    (if (pair? (car a))
 			(display-line "Content-Disposition: form-data; name=\""
-				      (caar a) "\";" (cadar a) port)
+			   (caar a) "\";" (cadar a) port)
 			(display-line "Content-Disposition: form-data; name=\""
-				      (car a) "\"" port))
+			   (car a) "\"" port))
 		    (display-line port)
 		    (display-line (cadr a) port)
 		    (loop (cdr args))))))))
@@ -290,7 +290,7 @@
    (if (char? c)
        (let ((line (http-read-line port)))
 	  (string-for-read
-	   (string-append "{" (string c) "}" (if (string? line) line ""))))
+	     (string-append "{" (string c) "}" (if (string? line) line ""))))
        c))
 
 ;*---------------------------------------------------------------------*/
@@ -308,19 +308,19 @@
 	   (begin
 	      (rgc-context #unspecified)
 	      (raise
-	       (instantiate::&io-parse-error
-		  (obj (http-parse-error-msg (the-failure) (the-port)))
-		  (proc 'http-parse-status-line)
-		  (msg "Illegal status line"))))
+		 (instantiate::&io-parse-error
+		    (obj (http-parse-error-msg (the-failure) (the-port)))
+		    (proc 'http-parse-status-line)
+		    (msg "Illegal status line"))))
 	   (let ((http (the-substring 0 (-fx (the-length) 1))))
 	      (rgc-context 'code)
 	      (let ((code (ignore)))
 		 (if (not (fixnum? code))
 		     (raise
-		      (instantiate::&io-parse-error
-			 (obj (http-parse-error-msg (the-failure) (the-port)))
-			 (proc 'http-parse-status-line)
-			 (msg "Illegal status code")))
+			(instantiate::&io-parse-error
+			   (obj (http-parse-error-msg (the-failure) (the-port)))
+			   (proc 'http-parse-status-line)
+			   (msg "Illegal status code")))
 		     (begin
 			(rgc-context 'line)
 			(let ((phrase (ignore)))
@@ -334,15 +334,15 @@
        (let ((c (the-failure)))
 	  (rgc-context #unspecified)
 	  (raise 
-	   (if (eof-object? c)
-	       (instantiate::&io-parse-error
-		  (obj (the-port))
-		  (proc 'http-parse-status-line)
-		  (msg "Illegal status line, premature end of input"))
-	       (instantiate::&io-parse-error
-		  (obj (http-parse-error-msg c (the-port)))
-		  (proc 'http-parse-status-line)
-		  (msg "Illegal status line"))))))))
+	     (if (eof-object? c)
+		 (instantiate::&io-parse-error
+		    (obj (the-port))
+		    (proc 'http-parse-status-line)
+		    (msg "Illegal status line, premature end of input"))
+		 (instantiate::&io-parse-error
+		    (obj (http-parse-error-msg c (the-port)))
+		    (proc 'http-parse-status-line)
+		    (msg "Illegal status line"))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    http-parse-status-line ...                                       */
@@ -366,7 +366,7 @@
 		   (if (eof-object? c)
 		       c
 		       (the-string)))))
-	    p))
+      p))
  
 ;*---------------------------------------------------------------------*/
 ;*    http-skip-line ...                                               */
@@ -378,7 +378,16 @@
 	       (else
 		(let ((c (the-failure)))
 		   (when (eof-object? c) c))))
-	    p))
+      p))
+
+;*---------------------------------------------------------------------*/
+;*    http-skip-blank ...                                              */
+;*---------------------------------------------------------------------*/
+(define (http-skip-blank p)
+   (read/rp (regular-grammar ()
+	       ((+ (in " \t")) #f)
+	       (else #f))
+      p))
 
 ;*---------------------------------------------------------------------*/
 ;*    http-parse-header ...                                            */
@@ -433,6 +442,14 @@
 	 ((+ (or alpha #\-)) (the-downcase-symbol))
 	 ((+ (in " \t")) (ignore))))
    
+   (define symbol+-grammar
+      (regular-grammar ()
+;* 	 ((: (+ (or alpha #\-)) "\r\n")                                */
+;* 	  (the-downcase-subsymbol 0 -2))                               */
+;* 	 ((: (+ (or alpha #\-)) "," (+ (or alpha #\-)) "\r\n")         */
+;* 	  (the-downcase-symbol 0 -2))                                  */
+	 ((+ (in " \t")) (ignore))))
+   
    (define auth-grammar
       (regular-grammar ()
 	 ((: (+ (in #\Space #\Tab)))
@@ -453,6 +470,22 @@
       (regular-grammar ()
 	 ((: (* (out #\Return #\Newline)) (? #\Return) #\Newline)
 	  #unspecified)
+	 (else
+	  #f)))
+   
+   (define symbol-list-grammar
+      (regular-grammar ()
+	 ((+ (or alpha #\-)) (cons (the-downcase-symbol) (ignore)))
+	 (#\, (ignore))
+	 ("\r\n" '())))
+   
+   (define symbol-or-symbol-list-grammar
+      (regular-grammar ()
+	 ((: (+ (or alpha #\-)) "\r\n")
+	  (the-subsymbol 0 (-fx (the-length) 2)))
+	 ((: (+ (or alpha #\-)) ",")
+	  (cons (the-subsymbol 0 (-fx (the-length) 2))
+	     (read/rp symbol-list-grammar (the-port))))
 	 (else
 	  #f)))
    
@@ -495,8 +528,9 @@
 		 (set! header (cons (cons k authorization) header))
 		 (ignore))
 		((connection:)
-		 (set! connection (read/rp symbol-grammar (the-port)))
-		 (http-skip-line (the-port))
+		 (http-skip-blank (the-port))
+		 (set! connection (read/rp symbol+-grammar (the-port)))
+		 (tprint "**** CONNECTION: [" connection "]")
 		 (set! header (cons (cons k connection) header))
 		 (ignore))
 		((proxy-authorization:)
@@ -509,8 +543,8 @@
 		    (cond
 		       ((not (output-port? po))
 			(error "expect-header"
-			       "Cannot honnor message because output-port is #f"
-			       po))
+			   "Cannot honnor message because output-port is #f"
+			   po))
 		       ((string=? e "100-continue")
 			(fprint po "HTTP/1.1 100 Continue\r\n\r\n")
 			(flush-output-port po)
@@ -519,56 +553,56 @@
 			(fprint po "HTTP/1.1 417 Expectation Failed\r\n\r\n")
 			(flush-output-port po)
 			(raise
-			 (instantiate::&io-parse-error
-			    (obj (the-port))
-			    (proc 'expect-header)
-			    (msg (format "Expectation failed (~a)" e))))))))
+			   (instantiate::&io-parse-error
+			      (obj (the-port))
+			      (proc 'expect-header)
+			      (msg (format "Expectation failed (~a)" e))))))))
 		(else
 		 (let ((v (read/rp value-grammar (the-port))))
 		    (set! header (cons (cons k v) header))
 		    (ignore))))))
 	 ((: (* (in #\space #\tab)) (? #\Return) #\Newline)
 	  (values (reverse! header)
-		  hostname
-		  port
-		  content-length
-		  transfer-encoding
-		  authorization
-		  proxy-authorization
-		  connection))
+	     hostname
+	     port
+	     content-length
+	     transfer-encoding
+	     authorization
+	     proxy-authorization
+	     connection))
 	 (else
 	  (let ((c (the-failure)))
 	     (if (eof-object? c)
 		 ;; some (bugous?) HTTP server don't send the appropriate
 		 ;; CRLF when the body is empty
 		 (values (reverse! header)
-			 hostname
-			 port
-			 content-length
-			 transfer-encoding
-			 authorization
-			 proxy-authorization
-			 connection)
+		    hostname
+		    port
+		    content-length
+		    transfer-encoding
+		    authorization
+		    proxy-authorization
+		    connection)
 		 (raise (instantiate::&io-parse-error
 			   (obj (list (reverse! header) hostname
-				      port content-length
-				      transfer-encoding authorization
-				      proxy-authorization connection))
+				   port content-length
+				   transfer-encoding authorization
+				   proxy-authorization connection))
 			   (proc 'http-parse-header)
 			   (msg (format "Illegal characters: ~a"
-					(http-parse-error-msg
-					 (the-failure) (the-port)))))))))))
+				   (http-parse-error-msg
+				      (the-failure) (the-port)))))))))))
    
    (read/rp header-grammar p
-	    po    ;; output port
-	    '()   ;; header
-	    #f    ;; hostname
-	    #f    ;; port
-	    #e-1  ;; content-length
-	    #f    ;; transfer-encoding
-	    #f    ;; authorization
-	    #f    ;; proxy-authorization
-	    #f))  ;; connection
+      po    ;; output port
+      '()   ;; header
+      #f    ;; hostname
+      #f    ;; port
+      #e-1  ;; content-length
+      #f    ;; transfer-encoding
+      #f    ;; authorization
+      #f    ;; proxy-authorization
+      #f))  ;; connection
 
 ;*---------------------------------------------------------------------*/
 ;*    http-parse-response ...                                          */
@@ -650,8 +684,8 @@
       ((: SZ (* BLANK) #\;)
        (when op (display (the-string) op))
        (let ((sz (string->integer
-		  (the-substring 0 (-fx (the-length) 1))
-		  16)))
+		    (the-substring 0 (-fx (the-length) 1))
+		    16)))
 	  (read/rp (regular-grammar ((CRLF "\r\n"))
 		      ((: (+ (or (+ (out "\r")) (+ (: "\r" (out "\n"))))) CRLF)
 		       (when op (display (the-string) op)))
@@ -660,8 +694,8 @@
 				 (proc 'chunks)
 				 (msg "Illegal character")
 				 (obj (http-parse-error-msg
-				       (the-failure) (the-port)))))))
-		   (the-port))
+					 (the-failure) (the-port)))))))
+	     (the-port))
 	  sz))
       ((: SZ (* BLANK) CRLF)
        (when op (display (the-string) op))

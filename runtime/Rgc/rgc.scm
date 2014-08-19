@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Fri Apr 27 12:27:34 2012 (serrano)                */
+;*    Last change :  Tue Aug 19 08:50:50 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -86,10 +86,10 @@
 					"rgc_buffer_symbol")
 	    ($rgc-buffer-subsymbol::symbol (::input-port ::long ::long)
 					   "rgc_buffer_subsymbol")
-	    ($rgc-buffer-downcase-symbol::symbol (::input-port)
-						 "rgc_buffer_downcase_symbol")
- 	    ($rgc-buffer-upcase-symbol::symbol (::input-port)
-					       "rgc_buffer_upcase_symbol")
+	    ($rgc-buffer-downcase-subsymbol::symbol (::input-port ::long ::long)
+						 "rgc_buffer_downcase_subsymbol")
+ 	    ($rgc-buffer-upcase-subsymbol::symbol (::input-port ::long ::long)
+					       "rgc_buffer_upcase_subsymbol")
 	    ($rgc-buffer-downcase-keyword::keyword (::input-port)
 						   "rgc_buffer_downcase_keyword")
 	    ($rgc-buffer-upcase-keyword::keyword (::input-port)
@@ -150,12 +150,12 @@
 		       "rgc_buffer_symbol")
 	       (method static $rgc-buffer-subsymbol::symbol (::input-port ::long ::long)
 		       "rgc_buffer_subsymbol")
-	       (method static $rgc-buffer-upcase-symbol::symbol (::input-port)
-		       "rgc_buffer_upcase_symbol")
+	       (method static $rgc-buffer-upcase-subsymbol::symbol (::input-port ::long ::long)
+		       "rgc_buffer_upcase_subsymbol")
 	       (method static $rgc-buffer-keyword::keyword (::input-port)
 		       "rgc_buffer_keyword")
-	       (method static $rgc-buffer-downcase-symbol::symbol (::input-port)
-		       "rgc_buffer_downcase_symbol")
+	       (method static $rgc-buffer-downcase-subsymbol::symbol (::input-port ::long ::long)
+		       "rgc_buffer_downcase_subsymbol")
 	       (method static $rgc-buffer-upcase-keyword::keyword (::input-port)
 		       "rgc_buffer_upcase_keyword")
 	       (method static $rgc-buffer-downcase-keyword::keyword (::input-port)
@@ -190,7 +190,9 @@
 	    (inline rgc-buffer-symbol::symbol ::input-port)
 	    (inline rgc-buffer-subsymbol::symbol ::input-port ::long ::long)
 	    (inline rgc-buffer-downcase-symbol::symbol ::input-port)
+	    (inline rgc-buffer-downcase-subsymbol::symbol ::input-port ::long ::long)
 	    (inline rgc-buffer-upcase-symbol::symbol ::input-port)
+	    (inline rgc-buffer-upcase-subsymbol::symbol ::input-port ::long ::long)
 	    (inline rgc-buffer-keyword::keyword ::input-port)
 	    (inline rgc-buffer-downcase-keyword::keyword ::input-port)
 	    (inline rgc-buffer-upcase-keyword::keyword ::input-port)
@@ -317,13 +319,25 @@
 ;*    rgc-buffer-downcase-symbol ...                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-downcase-symbol::symbol input-port::input-port)
-   ($rgc-buffer-downcase-symbol input-port))
+   ($rgc-buffer-downcase-subsymbol input-port 0 (rgc-buffer-length input-port)))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-downcase-subsymbol ...                                */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-downcase-subsymbol input-port::input-port start stop)
+   ($rgc-buffer-downcase-subsymbol input-port start stop))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-upcase-symbol ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-upcase-symbol::symbol input-port::input-port)
-   ($rgc-buffer-upcase-symbol input-port))
+   ($rgc-buffer-upcase-subsymbol input-port 0 (rgc-buffer-length input-port)))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-upcase-subsymbol ...                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-upcase-subsymbol input-port::input-port start stop)
+   ($rgc-buffer-upcase-subsymbol input-port start stop))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-keyword ...                                           */

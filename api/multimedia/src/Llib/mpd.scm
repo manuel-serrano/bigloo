@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  6 15:03:32 2008                          */
-;*    Last change :  Fri Aug 15 06:45:17 2014 (serrano)                */
+;*    Last change :  Sun Aug 17 07:49:08 2014 (serrano)                */
 ;*    Copyright   :  2008-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Music Player Deamon implementation                               */
@@ -228,8 +228,8 @@
 ;*    mpd ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (mpd backend::music
-	     ip::input-port op::output-port db::mpd-database
-	     #!key log)
+	   ip::input-port op::output-port db::mpd-database
+	   #!key log)
    (display (mpd-version) op)
    (newline op)
    (flush-output-port op)
@@ -237,13 +237,9 @@
       (unless (music-closed? backend)
 	 (let ((line (read-line ip)))
 	    (set! cmdn (+fx 1 cmdn))
-	    (tprint ">>> mpd{" cmdn "} line=[" line "]")
 	    (when log (log line))
 	    (unless (eof-object? line)
-	       (multiple-value-bind (v rtime stime utime)
-		  (time (lambda () (execute-command db backend ip op line)))
-		  (tprint "<<< mpd{" cmdn "} v=" v
-		     " rtime=" rtime " stime=" stime " utime=" utime)
+	       (let ((v (execute-command db backend ip op line)))
 		  (case v
 		     ((ok)
 		      (mpd-ok op)

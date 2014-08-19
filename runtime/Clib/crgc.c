@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Fri Apr  5 10:26:02 2013 (serrano)                */
+/*    Last change :  Tue Aug 19 08:51:25 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -593,36 +593,38 @@ rgc_buffer_subsymbol( obj_t ip, long offset, long end ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    rgc_buffer_upcase_symbol ...                                     */
+/*    rgc_buffer_upcase_subsymbol ...                                  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-rgc_buffer_upcase_symbol( obj_t ip ) {
+rgc_buffer_upcase_subsymbol( obj_t ip, long offset, long end ) {
    long start = INPUT_PORT( ip ).matchstart;
-   unsigned char *s = &RGC_BUFFER_REF( ip, start );
-   long i, len = RGC_BUFFER_MATCH_LENGTH( ip );
+   long len = end - offset;
+   unsigned char *s = &RGC_BUFFER_REF( ip, start + offset );
+   long i = RGC_BUFFER_MATCH_LENGTH( ip );
 
    for( i = 0; i < len; i++ ) {
       if( isascii( s[ i ] ) ) s[ i ] = toupper( s[ i ] );
    }
 
-   return bgl_string_to_symbol_len( s, RGC_BUFFER_MATCH_LENGTH( ip ) );
+   return bgl_string_to_symbol_len( s, len );
 }
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    rgc_buffer_downcase_symbol ...                                   */
+/*    rgc_buffer_downcase_subsymbol ...                                */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-rgc_buffer_downcase_symbol( obj_t ip ) {
+rgc_buffer_downcase_subsymbol( obj_t ip, long offset, long end ) {
    long start = INPUT_PORT( ip ).matchstart;
-   unsigned char *s = &RGC_BUFFER_REF( ip, start );
-   long i, len = RGC_BUFFER_MATCH_LENGTH( ip );
+   long len = end - offset;
+   unsigned char *s = &RGC_BUFFER_REF( ip, start + offset );
+   long i = RGC_BUFFER_MATCH_LENGTH( ip );
 
    for( i = 0; i < len; i++ ) {
       if( isascii( s[ i ] ) ) s[ i ] = tolower( s[ i ] );
    }
 
-   return bgl_string_to_symbol_len( s, RGC_BUFFER_MATCH_LENGTH( ip ) );
+   return bgl_string_to_symbol_len( s, len );
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Mon Mar 10 08:23:56 2014 (serrano)                */
+;*    Last change :  Tue Aug 19 08:44:27 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -205,9 +205,33 @@
 	  ;; @deffn the-downcase-symbol@
 	  (define (the-downcase-symbol::symbol)
 	     (rgc-buffer-downcase-symbol input-port))
+	  ;; @deffn the-downcase-subsymbol@
+	  (define (the-downcase-subsymbol::symbol min max)
+	     (if (<fx max 0)
+		 (let ((stop (+fx (the-length) max)))
+		    (if (<=fx stop min)
+			(error "the-downcase-subsymbol"
+			   "Illegal range" (cons min max))
+			(rgc-buffer-downcase-subsymbol input-port min stop)))
+		 (if (and (>=fx min 0) (<=fx max (the-length)) (>=fx max min))
+		     (rgc-buffer-downcase-subsymbol input-port min max)
+		     (error "the-downcase-subsymbol"
+			"Illegal range" (cons min max)))))
 	  ;; @deffn the-upcase-symbol@
 	  (define (the-upcase-symbol::symbol)
 	     (rgc-buffer-upcase-symbol input-port))
+	  ;; @deffn the-upcase-subsymbol@
+	  (define (the-upcase-subsymbol::symbol min max)
+	     (if (<fx max 0)
+		 (let ((stop (+fx (the-length) max)))
+		    (if (<=fx stop min)
+			(error "the-upcase-subsymbol"
+			   "Illegal range" (cons min max))
+			(rgc-buffer-upcase-subsymbol input-port min stop)))
+		 (if (and (>=fx min 0) (<=fx max (the-length)) (>=fx max min))
+		     (rgc-buffer-upcase-subsymbol input-port min max)
+		     (error "the-upcase-subsymbol"
+			"Illegal range" (cons min max)))))
 	  ;; @deffn the-keyword@
 	  (define (the-keyword::keyword)
 	     (rgc-buffer-keyword input-port))

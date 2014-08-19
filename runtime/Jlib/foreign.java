@@ -6442,10 +6442,10 @@ public final class foreign
 	 return symbol.make_symbol(name);
       }
 
-   public static symbol rgc_buffer_upcase_symbol(input_port p)
+   public static symbol rgc_buffer_upcase_subsymbol(input_port p, int o, int e)
       {
-	 int start = p.matchstart;
-	 final int stop = p.matchstop;
+	 int start = p.matchstart + o;
+	 final int stop = p.matchstart + e;
 	 final int n = stop - start;
 	 final byte[] name = new byte[n];
 
@@ -6455,10 +6455,10 @@ public final class foreign
 	 return symbol.make_symbol(name);
       }
 
-   public static symbol rgc_buffer_downcase_symbol(input_port p)
+   public static symbol rgc_buffer_downcase_subsymbol(input_port p, int o, int e)
       {
-	 int start = p.matchstart;
-	 final int stop = p.matchstop;
+	 int start = p.matchstart + o;
+	 final int stop = p.matchstart + e;
 	 final int n = stop - start;
 	 final byte[] name = new byte[n];
 
