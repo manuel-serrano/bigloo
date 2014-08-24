@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Nov 10 16:16:57 2013 (serrano)                */
+;*    Last change :  Sat Aug 23 16:53:22 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -84,7 +84,8 @@
 	    ($setuid::obj (::int) "bgl_setuid")
 	    ($setgid::obj (::int) "bgl_setgid")
 	    ($getpwnam::obj (::string) "bgl_getpwnam")
-	    ($getpwuid::obj (::int) "bgl_getpwuid"))
+	    ($getpwuid::obj (::int) "bgl_getpwuid")
+	    (macro $getpid::int () "getpid"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -208,7 +209,8 @@
 	    (setuid ::int)
 	    (setgid ::int)
 	    (getpwnam ::bstring)
-	    (getpwuid ::int)))
+	    (getpwuid ::int)
+	    (inline getpid::int)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Variables setup ...                                              */
@@ -1059,3 +1061,10 @@
        ($getpwuid uid))
       (else
        #f)))
+;*---------------------------------------------------------------------*/
+;*    getpid ...                                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (getpid)
+   (cond-expand
+      (bigloo-c ($getpid))
+      (else 0)))

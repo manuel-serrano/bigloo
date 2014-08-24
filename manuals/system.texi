@@ -183,6 +183,10 @@ The procedure @code{setuid} (resp. @code{setgid}) set the UID
 failure, this procedure raises an error.
 @end deffn
 
+@deffn {bigloo procedure} getpid
+Get the current process identifier.
+@end deffn
+
 @deffn {bigloo procedure} getpwnam name
 @deffnx {bigloo procedure} getpwuid uid
 These two procedures returns information about a user. The procedure 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sat Aug  9 16:23:42 2014 (serrano)                */
+/*    Last change :  Sat Aug 23 10:50:52 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -43,6 +43,7 @@
 #include <errno.h>
 #include <bigloo.h>
 #include "bglssl.h"
+#include "ssl.h"
 
 #define socklen_t void
 
@@ -53,6 +54,11 @@
 #endif
 
 #define SOCKET_IO_BUFSIZE 1024
+
+const char *root_certs[] = {
+#include "root_certs.h"
+  NULL
+};
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -136,6 +142,52 @@ bgl_ssl_init() {
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
+}
+
+
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_ssl_ctx_add_root_certs ...                                   */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
+   static X509_STORE *root_cert_store = 0L;
+
+   if ( !root_cert_store ) {
+      int i;
+      BGL_MUTEX_LOCK( bigloo_mutex );
+      
+      root_cert_store = X509_STORE_new();
+      
+      for( i = 0; root_certs[ i ]; i++ ) {
+	 BIO *bp = BIO_new( BIO_s_mem() );
+	 X509 *x509;
+
+	 if( !BIO_write( bp, root_certs[ i ], strlen( root_certs[ i ] ) ) ) {
+	    BIO_free( bp );
+	    BGL_MUTEX_UNLOCK( bigloo_mutex );
+	    return 0;
+	 }
+
+	  x509 = PEM_read_bio_X509( bp, NULL, NULL, NULL );
+
+	  if( x509 == NULL ) {
+	     BIO_free( bp );
+	     BGL_MUTEX_UNLOCK( bigloo_mutex );
+	     return 0;
+	  }
+
+	  X509_STORE_add_cert( root_cert_store, x509 );
+
+	  BIO_free( bp );
+	  X509_free( x509 );
+      }
+      BGL_MUTEX_UNLOCK( bigloo_mutex );
+   }
+
+   SSL_CTX_set_cert_store( sc->BgL_z42nativez42, root_cert_store );
+   return 1;
 }
 
 /*---------------------------------------------------------------------*/
@@ -703,3 +755,82 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
    return string_to_bstring( buf );
 }
 
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_ssl_ctx_init ...                                             */
+/*    -------------------------------------------------------------    */
+/*    Leave this function at the end of the file as it breaks emacs    */
+/*    auto indentation.                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void
+bgl_ssl_ctx_init( BgL_securezd2contextzd2_bglt sc ) {
+   char *sslmethod = BSTRING_TO_STRING( sc->BgL_methodz00 );
+   SSL_METHOD *method;
+
+   bgl_ssl_init();
+   
+   if( !strcmp( sslmethod, "SSLv2_method" ) ) {
+#if( BGLSSL_HAVE_SSLV2 )
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_method() );
+#else
+      goto unsupported;
+#endif
+   } else if( !strcmp( sslmethod, "SSLv2_server_method" ) ) {
+#if( BGLSSL_HAVE_SSLV2 )
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_server_method() );
+#else
+      goto unsupported;
+#endif
+   } else if( !strcmp( sslmethod, "SSLv2_client_method" ) ) {
+#if( BGLSSL_HAVE_SSLV2 )
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_client_method() );
+#else
+      goto unsupported;
+#endif
+   } else if( !strcmp( sslmethod, "SSLv3_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_method() );
+   } else if( !strcmp( sslmethod, "SSLv3_server_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_server_method() );
+   } else if( !strcmp( sslmethod, "SSLv3_client_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_client_method() );
+   } else if( !strcmp( sslmethod, "SSLv23_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_method() );
+   } else if( !strcmp( sslmethod, "SSLv23_server_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_server_method() );
+   } else if( !strcmp( sslmethod, "SSLv23_client_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_client_method() );
+   } else if( !strcmp( sslmethod, "TLSv1_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_method() );
+   } else if( !strcmp( sslmethod, "TLSv1_server_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_server_method() );
+   } else if( !strcmp( sslmethod, "TLSv1_client_method" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_client_method() );
+   } else {
+      goto unsupported;
+   }
+      
+   // SSL session cache configuration
+   if( !(sc->BgL_z42nativez42) ) {
+      char errbuf[ 121 ];
+      
+      C_SYSTEM_FAILURE( BGL_IO_ERROR,
+			"secure-context-init",
+			ssl_error_message( errbuf ),
+			(obj_t)sc );
+      return;
+   }
+   
+   SSL_CTX_set_session_cache_mode( sc->BgL_z42nativez42,
+				   SSL_SESS_CACHE_SERVER
+				   | SSL_SESS_CACHE_NO_INTERNAL
+				   | SSL_SESS_CACHE_NO_AUTO_CLEAR );
+/*    SSL_CTX_sess_set_get_cb( sc->BgL_z42nativez42, GetSessionCallback ); */
+/*    SSL_CTX_sess_set_new_cb( sc->BgL_z42nativez42, NewSessionCallback ); */
+
+   return;
+  
+unsupported:
+   C_SYSTEM_FAILURE( BGL_ERROR, "secure-context",
+	 "method not supported", 
+	 sc->BgL_methodz00 );
+}

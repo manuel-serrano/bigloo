@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Apr  2 19:42:39 2012 (serrano)                */
+#*    Last change :  Sat Aug 23 10:24:31 2014 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,7 +53,7 @@ JVMAPIBOOTPATH  := $(JVMAPIBOOTPATH):$(BOOTLIBDIR)/$(SSL_ZIP)
 _BGL_OBJECTS	= ssl
 
 _C_OBJECTS	= bglssl
-_JAVA_CLASSES	= certificate private_key
+_JAVA_CLASSES	= certificate private_key ctx
 _JAVA_ECLASSES	= ssl_client_socket ssl_server_socket 
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
@@ -79,7 +79,7 @@ _WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
 SOURCES		= $(_BGL_SOURCES) \
                   $(_C_SOURCES) \
                   $(_JAVA_SOURCES)
-INCLUDES	= $(C_SRC_DIR)/bglssl.h
+INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h
 
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */
@@ -186,11 +186,18 @@ pop:
 	@ echo $(POPULATION:%=$(API)/src/%)
 
 #*---------------------------------------------------------------------*/
+#*    ssl.h                                                            */
+#*---------------------------------------------------------------------*/
+$(C_SRC_DIR)/ssl.h: Llib/ssl.scm
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+
+#*---------------------------------------------------------------------*/
 #*    extra-clean                                                      */
 #*---------------------------------------------------------------------*/
 clean: api-clean
 	$(RM) -f $(JAVA_SRC_DIR)/ssl_client_socket.java
 	$(RM) -f $(JAVA_SRC_DIR)/ssl_server_socket.java
+	$(RM) -f $(C_SRC_DIR)/ssl.h
 
 cleanall: api-cleanall
 	$(RM) $(BOOTLIBDIR)/$(SSL_ZIP)
@@ -201,3 +208,10 @@ distclean: cleanall
 #*    Common API rules                                                 */
 #*---------------------------------------------------------------------*/
 include ../../Makefile.api
+
+#*---------------------------------------------------------------------*/
+#*    explicit depencies                                               */
+#*---------------------------------------------------------------------*/
+$(C_SRC_DIR)/bglssl.c: $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/ssl.h \
+  $(C_SRC_DIR)/root_certs.h
+

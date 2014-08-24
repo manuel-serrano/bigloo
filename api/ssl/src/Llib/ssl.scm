@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Fri Dec 13 12:50:02 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Last change :  Sat Aug 23 10:36:55 2014 (serrano)                */
+;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -25,38 +25,38 @@
 	   
            (type $private-key void* "void *")
            (type $certificate void* "void *")
+	   (type $ssl-ctx void* "void *")
+
+	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
            
            ($certificate-subject::bstring (::certificate)
-                                          "bgl_ssl_certificate_subject")
+	      "bgl_ssl_certificate_subject")
            ($certificate-issuer::bstring (::certificate)
-                                         "bgl_ssl_certificate_issuer")
+	      "bgl_ssl_certificate_issuer")
            ($certificate-load::certificate (::bstring)
-					   "bgl_ssl_load_certificate")
+	      "bgl_ssl_load_certificate")
            ($certificate-load-pem::pair-nil (::bstring)
-                                            "bgl_ssl_load_pem")
+	      "bgl_ssl_load_pem")
            ($private-key-load::private-key (::bstring)
-					   "bgl_ssl_load_private_key")
+	      "bgl_ssl_load_private_key")
 	   
 	   ($ssl-client-make-socket::obj (::bstring ::int ::int ::int
-                                                    ::obj ::obj
-                                                    ::pair-nil
-                                                    ::obj
-						    ::bstring
-						    ::bstring)
-					 "bgl_make_ssl_client_socket")
-	   ($ssl-client-socket-use-ssl!::socket (::socket
-						 ::int
-						 ::obj ::obj
-						 ::pair-nil
-						 ::obj)
-						"bgl_client_socket_use_ssl")
-	   ($ssl-server-make-socket::obj (::obj ::int ::int
-                                                ::obj
-                                                ::obj
-                                                ::pair-nil
-                                                ::obj
-						::int)
-					 "bgl_make_ssl_server_socket")
+					    ::obj ::obj ::pair-nil
+					    ::obj ::bstring ::bstring)
+	      "bgl_make_ssl_client_socket")
+	   ($ssl-client-socket-use-ssl!::socket (::socket ::int ::obj ::obj
+						   ::pair-nil ::obj)
+	      "bgl_client_socket_use_ssl")
+	   ($ssl-server-make-socket::obj (::obj ::int ::int ::obj ::obj
+					    ::pair-nil ::obj ::int)
+	      "bgl_make_ssl_server_socket")
+
+	   ($bgl-secure-context-init!::void (::secure-context)
+	      "bgl_ssl_ctx_init")
+	   
+	   ($bgl-secure-context-add-root-certs!::bool (::secure-context)
+	      "bgl_ssl_ctx_add_root_certs")
+	   
 	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
 	   (macro $ssl-client-sslv23::int "BGLSSL_SSLV23")
@@ -64,42 +64,41 @@
 	   (macro $ssl-client-dtlsv1::int "BGLSSL_DTLSV1"))
    
    (java (export %make-certificate "make_certificate")
-	 (export %make-private-key "make_private_key")
-	 (export %certificate-$native "certificate_native")
-	 (export %private-key-$native "private_key_native")
-	 
-	 (class $private-key
-	    (method static load::obj (::bstring) "load")
-	    "bigloo.ssl.private_key")
-	 
-	 (class $certificate
-	    (method static load::obj (::bstring) "load")
-	    (method static load-pem::obj (::bstring) "load_pem")
-	    (method static subject::bstring (::obj) "subject")
-	    (method static issuer::bstring (::obj) "issuer")
-	    "bigloo.ssl.certificate")
-	 
-	 (class $ssl-client
-	    (constructor make-socket (::bstring ::int ::int ::int
-						::obj ::obj
-						::pair-nil ::obj
-						::bstring ::bstring))
-	    (method static socket-use-ssl!::socket (::socket
-						    ::int 
-						    ::obj ::obj
-						    ::pair-nil ::obj)
-		    "bgl_client_socket_use_ssl")
-	    (field static sslv2::int "BGLSSL_SSLV2")
-	    (field static sslv3::int "BGLSSL_SSLV3")
-	    (field static sslv23::int "BGLSSL_SSLV23")
-	    (field static tlsv1::int "BGLSSL_TLSV1")
-	    (field static dtlsv1::int "BGLSSL_DTLSV1")
-	    "bigloo.ssl.ssl_client_socket")
-	 
-	 (class $ssl-server
-	    (constructor make-socket (::obj ::int ::int
-					    ::obj ::obj ::pair-nil ::obj ::int))
-	    "bigloo.ssl.ssl_server_socket"))
+      (export %make-private-key "make_private_key")
+      (export %certificate-$native "certificate_native")
+      (export %private-key-$native "private_key_native")
+      
+      (class $private-key
+	 (method static load::obj (::bstring) "load")
+	 "bigloo.ssl.private_key")
+      
+      (class $certificate
+	 (method static load::obj (::bstring) "load")
+	 (method static load-pem::obj (::bstring) "load_pem")
+	 (method static subject::bstring (::obj) "subject")
+	 (method static issuer::bstring (::obj) "issuer")
+	 "bigloo.ssl.certificate")
+
+      (class $ssl-ctx
+	 "bigloo.ssl.ctx")
+      
+      (class $ssl-client
+	 (constructor make-socket (::bstring ::int ::int ::int ::obj ::obj
+				     ::pair-nil ::obj ::bstring ::bstring))
+	 (method static socket-use-ssl!::socket (::socket ::int ::obj ::obj
+						   ::pair-nil ::obj)
+	    "bgl_client_socket_use_ssl")
+	 (field static sslv2::int "BGLSSL_SSLV2")
+	 (field static sslv3::int "BGLSSL_SSLV3")
+	 (field static sslv23::int "BGLSSL_SSLV23")
+	 (field static tlsv1::int "BGLSSL_TLSV1")
+	 (field static dtlsv1::int "BGLSSL_DTLSV1")
+	 "bigloo.ssl.ssl_client_socket")
+      
+      (class $ssl-server
+	 (constructor make-socket (::obj ::int ::int ::obj ::obj
+				     ::pair-nil ::obj ::int))
+	 "bigloo.ssl.ssl_server_socket"))
    
    (export (class certificate
 	      ($native::$certificate read-only))
@@ -115,29 +114,44 @@
 	   (inline certificate-issuer::bstring ::certificate)
 	   
 	   (make-ssl-client-socket ::bstring ::int
-				   #!key
-				   (inbuf #t) (outbuf #t)
-				   (timeout 0) (protocol 'sslv23)
-				   (cert #f) (pkey #f)
-				   (CAs '()) (accepted-certs #f))
-
+	      #!key
+	      (inbuf #t) (outbuf #t)
+	      (timeout 0) (protocol 'sslv23)
+	      (cert #f) (pkey #f)
+	      (CAs '()) (accepted-certs #f))
+	   
 	   (client-socket-use-ssl! ::socket
-				   #!key
-				   (protocol 'sslv23)
-				   (cert #f) (pkey #f)
-				   (CAs '()) (accepted-certs #f))
+	      #!key
+	      (protocol 'sslv23)
+	      (cert #f) (pkey #f)
+	      (CAs '()) (accepted-certs #f))
 	   
 	   (make-ssl-server-socket #!optional (port 0)
-				   #!key
-				   (name #f) (protocol 'sslv23)
-				   (cert #f) (pkey #f)
-				   (CAs '()) (accepted-certs #f)
-				   (backlog 5))
+	      #!key
+	      (name #f) (protocol 'sslv23)
+	      (cert #f) (pkey #f)
+	      (CAs '()) (accepted-certs #f)
+	      (backlog 5))
 	   
 	   (%make-certificate::obj ::$certificate)
 	   (%make-private-key::obj ::$private-key)
 	   (%certificate-$native::$certificate ::obj)
-	   (%private-key-$native::$private-key ::obj)))
+	   (%private-key-$native::$private-key ::obj)
+
+	   (generic secure-context-init ::secure-context)
+	   (generic secure-context-add-root-certs!::bool ::secure-context))
+   
+   (cond-expand
+      (bigloo-c
+       (export
+	  (class secure-context
+	     (secure-context-init)
+	     ($native::$ssl-ctx (default $ssl-ctx-nil))
+	     (method::bstring read-only (default "SSLv23_method")))))
+      (else
+       (export
+	  (class secure-context
+	     (method::bstring read-only (default "SSLv23_method")))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sanity-args-checks ...                                           */
@@ -280,3 +294,23 @@
    (with-access::private-key pkey ($native)
       $native))
 
+;*---------------------------------------------------------------------*/
+;*    secure-context-init ::secure-context ...                         */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-init sc::secure-context)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-init! sc))
+      (else
+       #f))
+   sc)
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-add-root-certs! ::secure-context ...              */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-add-root-certs! sc::secure-context)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-add-root-certs! sc))
+      (else
+       #f)))

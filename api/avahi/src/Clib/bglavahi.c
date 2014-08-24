@@ -3,10 +3,12 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Fri Jul 19 10:51:11 2013 (serrano)                */
-/*    Copyright   :  2011-13 Manuel Serrano                            */
+/*    Last change :  Fri Aug 22 08:12:44 2014 (serrano)                */
+/*    Copyright   :  2011-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
+/*    avahi documentation available at:                                */
+/*    http://avahi.sourcearchive.com/documentation/0.6.25-1/main.html  */
 /*=====================================================================*/
 #include <bigloo.h>
 
@@ -636,7 +638,8 @@ bgl_avahi_client_new( bgl_avahi_client_t o ) {
       poll = avahi_simple_poll_get( BGL_AVAHI_SIMPLE_POLL_BUILTIN( bpoll ) );
    }
 
-   client = avahi_client_new( poll, 0, bgl_avahi_client_callback, o, &error );
+   client = avahi_client_new( poll, AVAHI_CLIENT_NO_FAIL,
+			      bgl_avahi_client_callback, o, &error );
 
    if( !client ) {
       bgl_avahi_error( "avahi-client-new",
