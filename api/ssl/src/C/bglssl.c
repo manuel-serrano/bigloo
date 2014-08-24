@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sat Aug 23 10:50:52 2014 (serrano)                */
+/*    Last change :  Sun Aug 24 06:30:24 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -59,6 +59,12 @@ const char *root_certs[] = {
 #include "root_certs.h"
   NULL
 };
+
+/*---------------------------------------------------------------------*/
+/*    type aliasing                                                    */
+/*---------------------------------------------------------------------*/
+typedef BgL_sslzd2connectionzd2_bglt ssl_connection;
+typedef BgL_securezd2contextzd2_bglt secure_context;
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -756,14 +762,144 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    void                                                             */
+/*    static void                                                      */
+/*    bgl_info_callback ...                                            */
+/*---------------------------------------------------------------------*/
+static void
+bgl_info_callback( const SSL *ssl, int where, int ret ) {
+   ssl_connection *c = (ssl_connection *)(SSL_get_app_data( ssl ));
+   
+   if( where & SSL_CB_HANDSHAKE_START) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   }
+   if( where & SSL_CB_HANDSHAKE_DONE ) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_verify_callback ...                                          */
+/*---------------------------------------------------------------------*/
+static int
+bgl_verify_callback( int preverify_ok, X509_STORE_CTX *ctx ) {
+   // Quoting SSL_set_verify(3ssl):
+   //
+   //   The VerifyCallback function is used to control the behaviour when
+   //   the SSL_VERIFY_PEER flag is set. It must be supplied by the
+   //   application and receives two arguments: preverify_ok indicates,
+   //   whether the verification of the certificate in question was passed
+   //   (preverify_ok=1) or not (preverify_ok=0). x509_ctx is a pointer to
+   //   the complete context used for the certificate chain verification.
+   //
+   //   The certificate chain is checked starting with the deepest nesting
+   //   level (the root CA certificate) and worked upward to the peer's
+   //   certificate.  At each level signatures and issuer attributes are
+   //   checked.  Whenever a verification error is found, the error number is
+   //   stored in x509_ctx and VerifyCallback is called with preverify_ok=0.
+   //   By applying X509_CTX_store_* functions VerifyCallback can locate the
+   //   certificate in question and perform additional steps (see EXAMPLES).
+   //   If no error is found for a certificate, VerifyCallback is called
+   //   with preverify_ok=1 before advancing to the next level.
+   //
+   //   The return value of VerifyCallback controls the strategy of the
+   //   further verification process. If VerifyCallback returns 0, the
+   //   verification process is immediately stopped with "verification
+   //   failed" state. If SSL_VERIFY_PEER is set, a verification failure
+   //   alert is sent to the peer and the TLS/SSL handshake is terminated. If
+   //   VerifyCallback returns 1, the verification process is continued. If
+   //   VerifyCallback always returns 1, the TLS/SSL handshake will not be
+   //   terminated with respect to verification failures and the connection
+   //   will be established. The calling process can however retrieve the
+   //   error code of the last verification error using
+   //   SSL_get_verify_result(3) or by maintaining its own error storage
+   //   managed by VerifyCallback.
+   //
+   //   If no VerifyCallback is specified, the default callback will be
+   //   used.  Its return value is identical to preverify_ok, so that any
+   //   verification failure will lead to a termination of the TLS/SSL
+   //   handshake with an alert message, if SSL_VERIFY_PEER is set.
+   //
+   // Since we cannot perform I/O quickly enough in this callback, we ignore
+   // all preverify_ok errors and let the handshake continue. It is
+   // imparative that the user use Connection::VerifyError after the
+   // 'secure' callback has been made.
+   return 1;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_ssl_connection_init ...                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_connection_init( ssl_connection ssl ) {
+   secure_context bctx = ssl->BgL_ctxz00;
+   int verify_mode;
+   SSL *_ssl = SSL_new( bctx->BgL_z42nativez42 );
+   
+   ssl->BgL_z42nativez42 = _ssl;
+   ssl->BgL_z42biozd2readz90 = BIO_new( BIO_s_mem() );
+   ssl->BgL_z42biozd2writez90 = BIO_new( BIO_s_mem() );
+
+   SSL_set_app_data( ssl->BgL_z42nativez42, ssl );
+
+   if( ssl->BgL_isserverz00 ) {
+      SSL_set_info_callback( _ssl, bgl_info_callback );
+   }
+
+   SSL_set_bio( _ssl, ssl->BgL_z42biozd2readz90, ssl->BgL_z42biozd2writez90 );
+      
+   if( ssl->BgL_isserverz00 ) {
+      if( ssl->BgL_requestzd2certzd2 ) {
+	 verify_mode = SSL_VERIFY_NONE;
+      } else {
+	 verify_mode = SSL_VERIFY_PEER;
+	 if( ssl->BgL_rejectzd2unauthoriza7edz75 ) {
+	    verify_mode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+	 }
+      }
+   } else {
+      verify_mode = SSL_VERIFY_NONE;
+   }
+
+   SSL_set_verify( _ssl, verify_mode, bgl_verify_callback );
+   
+   if( ssl->BgL_isserverz00 ) {
+      SSL_set_accept_state( _ssl );
+   } else {
+      SSL_set_connect_state( _ssl );
+   }
+   
+   return (obj_t)ssl;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static SSL_SESSION *                                             */
+/*    bgl_get_session_callback ...                                     */
+/*---------------------------------------------------------------------*/
+static SSL_SESSION *
+bgl_get_session_callback( SSL *s, unsigned char *key, int len, int *copy ) {
+   fprintf( stderr, "TODO: %s:%d\n", __FILE__, __LINE__ );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_new_session_callback ...                                     */
+/*---------------------------------------------------------------------*/
+static int
+bgl_new_session_callback( SSL *s, SSL_SESSION *sess ) {
+   fprintf( stderr, "TODO: %s:%d\n", __FILE__, __LINE__ );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    bgl_ssl_ctx_init ...                                             */
 /*    -------------------------------------------------------------    */
 /*    Leave this function at the end of the file as it breaks emacs    */
 /*    auto indentation.                                                */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF void
-bgl_ssl_ctx_init( BgL_securezd2contextzd2_bglt sc ) {
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_ctx_init( secure_context sc ) {
    char *sslmethod = BSTRING_TO_STRING( sc->BgL_methodz00 );
    SSL_METHOD *method;
 
@@ -817,20 +953,22 @@ bgl_ssl_ctx_init( BgL_securezd2contextzd2_bglt sc ) {
 			"secure-context-init",
 			ssl_error_message( errbuf ),
 			(obj_t)sc );
-      return;
+      return (obj_t)sc;
    }
    
    SSL_CTX_set_session_cache_mode( sc->BgL_z42nativez42,
 				   SSL_SESS_CACHE_SERVER
 				   | SSL_SESS_CACHE_NO_INTERNAL
 				   | SSL_SESS_CACHE_NO_AUTO_CLEAR );
-/*    SSL_CTX_sess_set_get_cb( sc->BgL_z42nativez42, GetSessionCallback ); */
-/*    SSL_CTX_sess_set_new_cb( sc->BgL_z42nativez42, NewSessionCallback ); */
+   
+   SSL_CTX_sess_set_get_cb( sc->BgL_z42nativez42, bgl_get_session_callback );
+   SSL_CTX_sess_set_new_cb( sc->BgL_z42nativez42, bgl_new_session_callback );
 
-   return;
+   return (obj_t)sc;
   
 unsupported:
    C_SYSTEM_FAILURE( BGL_ERROR, "secure-context",
 	 "method not supported", 
 	 sc->BgL_methodz00 );
+   return (obj_t)sc;
 }

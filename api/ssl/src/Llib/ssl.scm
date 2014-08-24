@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat Aug 23 10:36:55 2014 (serrano)                */
+;*    Last change :  Sun Aug 24 06:26:51 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -26,8 +26,12 @@
            (type $private-key void* "void *")
            (type $certificate void* "void *")
 	   (type $ssl-ctx void* "void *")
+	   (type $ssl void* "void *")
+	   (type $bio void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
+	   (macro $ssl-nil::$ssl "0L")
+	   (macro $bio-nil::$bio "0L")
            
            ($certificate-subject::bstring (::certificate)
 	      "bgl_ssl_certificate_subject")
@@ -51,11 +55,14 @@
 					    ::pair-nil ::obj ::int)
 	      "bgl_make_ssl_server_socket")
 
-	   ($bgl-secure-context-init!::void (::secure-context)
+	   ($bgl-secure-context-init!::obj (::secure-context)
 	      "bgl_ssl_ctx_init")
 	   
 	   ($bgl-secure-context-add-root-certs!::bool (::secure-context)
 	      "bgl_ssl_ctx_add_root_certs")
+
+	   ($bgl-ssl-connection-init!::obj (::ssl-connection)
+	      "bgl_ssl_connection_init")
 	   
 	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
@@ -139,7 +146,9 @@
 	   (%private-key-$native::$private-key ::obj)
 
 	   (generic secure-context-init ::secure-context)
-	   (generic secure-context-add-root-certs!::bool ::secure-context))
+	   (generic secure-context-add-root-certs!::bool ::secure-context)
+
+	   (generic ssl-connection-init ::ssl-connection))
    
    (cond-expand
       (bigloo-c
@@ -147,11 +156,25 @@
 	  (class secure-context
 	     (secure-context-init)
 	     ($native::$ssl-ctx (default $ssl-ctx-nil))
-	     (method::bstring read-only (default "SSLv23_method")))))
+	     (method::bstring read-only (default "SSLv23_method")))
+
+	  (class ssl-connection
+	      (ssl-connection-init)
+	      ($native::$ssl (default $ssl-nil))
+	      ($bio-read::$bio (default $bio-nil))
+	      ($bio-write::$bio (default $bio-nil))
+	      (ctx::secure-context read-only)
+	      (isserver::bool read-only)
+	      (request-cert::bool read-only)
+	      (reject-unauthorized::bool read-only))))
       (else
        (export
 	  (class secure-context
-	     (method::bstring read-only (default "SSLv23_method")))))))
+	     (method::bstring read-only (default "SSLv23_method")))
+
+	  (class ssl-connection
+	     (ctx::secure-context read-only)
+	     (issserver::bool read-only))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sanity-args-checks ...                                           */
@@ -302,8 +325,7 @@
       (bigloo-c
        ($bgl-secure-context-init! sc))
       (else
-       #f))
-   sc)
+       sc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    secure-context-add-root-certs! ::secure-context ...              */
@@ -314,3 +336,13 @@
        ($bgl-secure-context-add-root-certs! sc))
       (else
        #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-init ::ssl-connection ...                         */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-init ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-init! ssl))
+      (else
+       ssl)))
