@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sat Aug 23 16:53:22 2014 (serrano)                */
+;*    Last change :  Mon Aug 25 10:13:07 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -54,6 +54,7 @@
 	    (*the-executable-name*::string "executable_name")
 	    (macro $getenv?::bool (::string) "(long)getenv")
 	    (macro $getenv::string (::string) "(char *)getenv")
+	    ($getenv-all::pair () "bgl_getenv_all")
 	    (c-setenv::int (::string ::string) "bgl_setenv")
 	    (macro c-system::int  (::string) "system")
 	    (c-date::string () "c_date")
@@ -89,75 +90,77 @@
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
-		      "command_line")
+		  "command_line")
 	       (field static *the-executable-name*::string
-		      "executable_name")
+		  "executable_name")
 	       (method static $signal::obj (::int ::obj)
-		       "bgl_signal")
+		  "bgl_signal")
 	       (method static $get-signal-handler::obj (::int)
-		       "bgl_get_signal_handler")
+		  "bgl_get_signal_handler")
 	       (method static $restore-signal-handlers::void ()
-		       "bgl_restore_signal_handlers")
+		  "bgl_restore_signal_handlers")
 	       (method static $getenv?::bool (::string)
-		       "getenv_exists")
+		  "getenv_exists")
 	       (method static $getenv::string (::string)
-		       "getenv")
+		  "getenv")
+	       (method static $getenv-all::obj ()
+		  "getenv_all")
 	       (method static c-setenv::int (::string ::string)
-		       "bgl_setenv")
+		  "bgl_setenv")
 	       (method static c-system::int  (::string)
-		       "system")
+		  "system")
 	       (method static c-date::string ()
-		       "c_date")
+		  "c_date")
 	       (method static c-chdir::bool (::string)
-		       "chdir")
+		  "chdir")
 	       (method static c-getcwd::string (::string ::int)
-		       "getcwd")
+		  "getcwd")
 	       (method static c-chmod::bool (::string ::bool ::bool ::bool)
-		       "bgl_chmod")
+		  "bgl_chmod")
 	       (method static c-chmod-int::bool (::string ::int)
-		       "bgl_chmod")
+		  "bgl_chmod")
 	       (method static c-sleep::void (::long)
-		       "bgl_sleep")
+		  "bgl_sleep")
 	       (field static %dload-init-sym::string
-		      "BGL_DYNAMIC_LOAD_INIT")
+		  "BGL_DYNAMIC_LOAD_INIT")
 	       (method static %dload::int (::string ::string ::string)
-		       "bgl_dload")
+		  "bgl_dload")
 	       (method static %dunload::int (::string)
-		       "bgl_dunload")
+		  "bgl_dunload")
 	       (method static %dload-error::string ()
-		       "bgl_dload_error"))
-	    
-	    (class runtime
-	       (field static default-executable-name::string
-		      "BGL_DEFAULT_A_OUT")
-	       (field static default-script-name::string
-		      "BGL_DEFAULT_A_BAT")
-	       (field static os-class::string
-		      "OS_CLASS")
-	       (field static os-name::string
-		      "OS_NAME")
-	       (field static os-arch::string
-		      "OS_ARCH")
-	       (field static os-version::string
-		      "OS_VERSION")
-	       (field static os-tmp::string
-		      "OS_TMP")
-	       (field static os-charset::string
-		      "OS_CHARSET")
-	       (field static file-separator::char
-		      "FILE_SEPARATOR")
-	       (field static path-separator::char
-		      "PATH_SEPARATOR")
-	       (field static static-library-suffix::string
-		      "STATIC_LIB_SUFFIX")
-	       (field static shared-library-suffix::string
-		      "SHARED_LIB_SUFFIX")
-	       "bigloo.os"))
+		  "bgl_dload_error"))
+      
+      (class runtime
+	 (field static default-executable-name::string
+	    "BGL_DEFAULT_A_OUT")
+	 (field static default-script-name::string
+	    "BGL_DEFAULT_A_BAT")
+	 (field static os-class::string
+	    "OS_CLASS")
+	 (field static os-name::string
+	    "OS_NAME")
+	 (field static os-arch::string
+	    "OS_ARCH")
+	 (field static os-version::string
+	    "OS_VERSION")
+	 (field static os-tmp::string
+	    "OS_TMP")
+	 (field static os-charset::string
+	    "OS_CHARSET")
+	 (field static file-separator::char
+	    "FILE_SEPARATOR")
+	 (field static path-separator::char
+	    "PATH_SEPARATOR")
+	 (field static static-library-suffix::string
+	    "STATIC_LIB_SUFFIX")
+	 (field static shared-library-suffix::string
+	    "SHARED_LIB_SUFFIX")
+	 "bigloo.os"))
    
    (export  (signal num::int ::obj)
 	    (get-signal-handler::obj ::int)
 	    
-	    (getenv ::string)
+	    (getenv #!optional name)
 	    (putenv ::string ::string)
 	    (date::string)
 	    (inline chdir::bool string::string)
@@ -280,16 +283,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    getenv ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (getenv string)
-   (if (and (string=? (os-class) "win32")
-            (string=? string "HOME"))
-       (set! string "USERPROFILE"))
-   (if ($getenv? string)
-       (let ((result ($getenv string)))
-          (if (string-ptr-null? result)
-              #f
-              result))
-       #f))
+(define (getenv #!optional name)
+   (if (string? name)
+       (begin
+	  (when (and (string=? (os-class) "win32") (string=? name "HOME"))
+	     (set! name "USERPROFILE"))
+	  (if ($getenv? name)
+	      (let ((result ($getenv name)))
+		 (if (string-ptr-null? result)
+		     #f
+		     result))
+	      #f))
+       ($getenv-all)))
 
 ;*---------------------------------------------------------------------*/
 ;*    putenv ...                                                       */

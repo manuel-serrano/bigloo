@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun Aug 24 06:30:24 2014 (serrano)                */
+/*    Last change :  Mon Aug 25 09:17:28 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -768,7 +768,10 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
 static void
 bgl_info_callback( const SSL *ssl, int where, int ret ) {
    ssl_connection *c = (ssl_connection *)(SSL_get_app_data( ssl ));
-   
+
+   fprintf( stderr, "bgl_info_callback where=%d, ret=%d, todo: %s:%d\n",
+	    where, ret, 
+	    __FILE__, __LINE__ );
    if( where & SSL_CB_HANDSHAKE_START) {
       fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
    }
@@ -841,7 +844,7 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
    ssl->BgL_z42biozd2readz90 = BIO_new( BIO_s_mem() );
    ssl->BgL_z42biozd2writez90 = BIO_new( BIO_s_mem() );
 
-   SSL_set_app_data( ssl->BgL_z42nativez42, ssl );
+   SSL_set_app_data( _ssl, ssl );
 
    if( ssl->BgL_isserverz00 ) {
       SSL_set_info_callback( _ssl, bgl_info_callback );
@@ -871,6 +874,207 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
    }
    
    return (obj_t)ssl;
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    handle_bio_error ...                                             */
+/*---------------------------------------------------------------------*/
+static int
+handle_bio_error( ssl_connection ssl, BIO *bio, int n ) {
+   if( BIO_should_write( bio ) ) {
+      return 0;
+   } else if( BIO_should_read( bio ) ) {
+      return 0;
+   } else {
+      static char ssl_error_buf[ 512 ];
+      ERR_error_string_n( n, ssl_error_buf, sizeof( ssl_error_buf ) );
+
+      fprintf( stderr, "TODO ERROR %s:%d\n", __FILE__, __LINE__ );
+
+      return n;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    handle_ssl_error ...                                             */
+/*---------------------------------------------------------------------*/
+static int
+handle_ssl_error( ssl_connection ssl, int n ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   
+   int err = SSL_get_error( _ssl, n );
+
+   if( err == SSL_ERROR_NONE ) {
+      return 0;
+   } else if( err == SSL_ERROR_WANT_WRITE ) {
+      return 0;
+   } else if( err == SSL_ERROR_WANT_READ ) {
+      return 0;
+   } else if( err == SSL_ERROR_ZERO_RETURN ) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+      return n;
+   } else {
+      BUF_MEM* mem;
+      BIO *bio;
+
+      if( (bio = BIO_new( BIO_s_mem() )) ) {
+	 ERR_print_errors( bio );
+	 BIO_get_mem_ptr( bio, &mem );
+	 BIO_free( bio );
+      }
+
+      return n;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    set_shutdown_flags ...                                           */
+/*---------------------------------------------------------------------*/
+static void
+set_shutdown_flags( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   int flags = SSL_get_shutdown( _ssl );
+
+   if( flags & SSL_SENT_SHUTDOWN ) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   }
+
+   if( flags & SSL_RECEIVED_SHUTDOWN ) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_ssl_connection_start ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_start( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   int n;
+
+   if( !SSL_is_init_finished( _ssl ) ) {
+      if( ssl->BgL_isserverz00 ) {
+	 if( (n = SSL_accept( _ssl )) <= 0 ) {
+	    return handle_ssl_error( ssl, n );
+	 }
+      } else {
+	 if( (n = SSL_connect( _ssl )) <= 0 ) {
+	    return handle_ssl_error( ssl, n );
+	 }
+      }
+
+      return n;
+   } else {
+      return 0;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_ssl_connection_write ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
+   long int n = BIO_read( ssl->BgL_z42biozd2writez90, buf + off, len );
+
+   if( n < 0 ) {
+      handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n );
+   }
+   
+   set_shutdown_flags( ssl );
+   
+   return n;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_ssl_connection_clear ...                                     */
+/*---------------------------------------------------------------------*/
+static int
+bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
+			  int (*SSL_fun)( SSL *, void *, int ),
+			  char *name ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   int n;
+
+   if( !SSL_is_init_finished( _ssl ) ) {
+      if( ssl->BgL_isserverz00 ) {
+	 int m;
+	 if( m = SSL_accept( _ssl ) < 0 ) {
+	    handle_ssl_error( ssl, m );
+	 }
+      } else {
+	 int m;
+	 if( m = SSL_connect( _ssl ) < 0 ) {
+	    handle_ssl_error( ssl, m );
+	 }
+      }
+   }
+
+   n = SSL_fun( _ssl, buf + off, len );
+
+   if( n < 0 ) {
+      handle_ssl_error( ssl, n );
+   }
+   
+   set_shutdown_flags( ssl );
+
+   return n;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_ssl_connection_clear_in ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
+   return bgl_ssl_connection_clear( ssl, buf, off, len,
+				    &SSL_read,
+				    "connection-clear-in" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_ssl_connection_clear_out ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_clear_out( ssl_connection ssl, char *buf, long off, long len ) {
+   return bgl_ssl_connection_clear( ssl, buf, off, len,
+				    (int (*)( SSL *, void *, int))&SSL_write,
+				    "connection-clear-out" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF int                                              */
+/*    bgl_ssl_connection_init_finishedp ...                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_init_finishedp( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+
+   return (_ssl != NULL && SSL_is_init_finished( _ssl ));
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF int                                              */
+/*    bgl_ssl_connection_enc_pending ...                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_enc_pending( ssl_connection ssl ) {
+   return BIO_pending( ssl->BgL_z42biozd2writez90 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF int                                              */
+/*    bgl_ssl_connection_clear_pending ...                             */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_clear_pending( ssl_connection ssl ) {
+   return BIO_pending( ssl->BgL_z42biozd2readz90 );
 }
 
 /*---------------------------------------------------------------------*/
@@ -944,7 +1148,7 @@ bgl_ssl_ctx_init( secure_context sc ) {
    } else {
       goto unsupported;
    }
-      
+
    // SSL session cache configuration
    if( !(sc->BgL_z42nativez42) ) {
       char errbuf[ 121 ];

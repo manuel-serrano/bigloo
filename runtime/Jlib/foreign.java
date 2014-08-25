@@ -5468,6 +5468,31 @@ public final class foreign
 	      || (get_property("bigloo." + sname, null) != null) );
    }
 
+   public static Object getenv_all() {
+      Object res = BNIL;
+
+      res = MAKE_PAIR( 
+	 MAKE_PAIR( "HOME".getBytes(),get_property("user.home", null) ),
+	 res );
+      res = MAKE_PAIR(
+	 MAKE_PAIR( "USER".getBytes(),get_property("user.name", null) ),
+	 res );
+      res = MAKE_PAIR(
+	 MAKE_PAIR( "CLASSPATH".getBytes(),get_property("java.library.path", null) ),
+	 res );
+      res = MAKE_PAIR(
+	 MAKE_PAIR( "TMPDIR".getBytes(),get_property("java.io.tmpdir", null) ),
+	 res );
+      res = MAKE_PAIR(
+	 MAKE_PAIR( "BIGLOOSTACKDEPTH".getBytes(),get_property("bigloo.BIGLOOSTACKDEPTH", null) ),
+	 res );
+      res = MAKE_PAIR(
+	 MAKE_PAIR( "BIGLOOLIVEPROCESS".getBytes(),get_property("bigloo.BIGLOOLIVEPROCESS", null) ),
+	 res );
+      
+      return res;
+   }
+
    public static int bgl_setenv(byte[]name, byte[]val)
       {
 	 return 0;

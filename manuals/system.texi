@@ -81,9 +81,11 @@ Append all the arguments @var{strings} and invoke the native host
 command.
 @end deffn
 
-@deffn {bigloo procedure} getenv string
-Returns the string value of the Unix shell's @var{string} variable. If no
-such variable is bound, @code{getenv} returns @code{#f}.
+@deffn {bigloo procedure} getenv [name]
+Returns the string value of the Unix shell's @var{name} variable. If no
+such variable is bound, @code{getenv} returns @code{#f}. If @var{name}
+is not provided, @code{getenv} returns an alist composed of all 
+the environment variables.
 @end deffn
 
 @deffn {bigloo procedure} putenv string val

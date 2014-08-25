@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Fri Dec 13 18:23:59 2013 (serrano)                */
+/*    Last change :  Mon Aug 25 10:10:47 2014 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -60,6 +60,27 @@ BGL_RUNTIME_DEF obj_t command_line = 0L;
 char *executable_name = 0L;
 char **bgl_envp;
 int bgl_envp_len;
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_getenv_all ...                                               */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_getenv_all() {
+   obj_t alist = BNIL;
+   int i;
+
+   for( i = 0; i < bgl_envp_len; i++ ) {
+      char *sk = bgl_envp[ i ];
+      char *sv = strchr( sk, '=' );
+
+      obj_t k = string_to_bstring_len( sk, sv - sk );
+      obj_t v = string_to_bstring( sv + 1 );
+      alist = MAKE_PAIR( MAKE_PAIR( k, v ), alist );
+   }
+
+   return alist;
+}
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

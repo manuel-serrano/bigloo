@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sun Aug 24 06:26:51 2014 (serrano)                */
+;*    Last change :  Mon Aug 25 08:51:03 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -63,6 +63,22 @@
 
 	   ($bgl-ssl-connection-init!::obj (::ssl-connection)
 	      "bgl_ssl_connection_init")
+	   
+	   ($bgl-ssl-connection-start::int (::ssl-connection)
+	      "bgl_ssl_connection_start")
+	   
+	   ($bgl-ssl-connection-write::long (::ssl-connection ::string ::long ::long)
+	      "bgl_ssl_connection_write")
+	   ($bgl-ssl-connection-clear-in::long (::ssl-connection ::string ::long ::long)
+	      "bgl_ssl_connection_clear_in")
+	   ($bgl-ssl-connection-clear-out::long (::ssl-connection ::string ::long ::long)
+	      "bgl_ssl_connection_clear_out")
+	   ($bgl-ssl-connection-init-finished?::bool (::ssl-connection)
+	      "bgl_ssl_connection_init_finishedp")
+	   ($bgl-ssl-connection-enc-pending::int (::ssl-connection)
+	      "bgl_ssl_connection_enc_pending")
+	   ($bgl-ssl-connection-clear-pending::int (::ssl-connection)
+	      "bgl_ssl_connection_clear_pending")
 	   
 	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
@@ -148,7 +164,14 @@
 	   (generic secure-context-init ::secure-context)
 	   (generic secure-context-add-root-certs!::bool ::secure-context)
 
-	   (generic ssl-connection-init ::ssl-connection))
+	   (generic ssl-connection-init ::ssl-connection)
+	   (generic ssl-connection-start::int ::ssl-connection)
+	   (generic ssl-connection-write ::ssl-connection ::bstring ::long ::long)
+	   (generic ssl-connection-clear-in ::ssl-connection ::bstring ::long ::long)
+	   (generic ssl-connection-clear-out ::ssl-connection ::bstring ::long ::long)
+	   (generic ssl-connection-init-finished? ::ssl-connection)
+	   (generic ssl-connection-enc-pending ::ssl-connection)
+	   (generic ssl-connection-clear-pending ::ssl-connection))
    
    (cond-expand
       (bigloo-c
@@ -346,3 +369,74 @@
        ($bgl-ssl-connection-init! ssl))
       (else
        ssl)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-start ::ssl-connection ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-start ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-start ssl))
+      (else
+       ssl)))
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-write ::ssl-connection ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-write ssl::ssl-connection buffer offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-write ssl buffer offset len))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-clear-in ::ssl-connection ...                     */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-clear-in ssl::ssl-connection buffer offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-clear-in ssl buffer offset len))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-clear-out ::ssl-connection ...                    */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-clear-out ssl::ssl-connection buffer offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-clear-out ssl buffer offset len))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-init-finished? ::ssl-connection ...               */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-init-finished? ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-init-finished? ssl))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-enc-pending ::ssl-connection ...                  */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-enc-pending ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-enc-pending ssl))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-clear-pending ::ssl-connection ...                */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-clear-pending ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-clear-pending ssl))
+      (else
+       0)))
+
+
