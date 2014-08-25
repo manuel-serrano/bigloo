@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sat Aug 23 10:24:31 2014 (serrano)                */
+#*    Last change :  Mon Aug 25 11:06:34 2014 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -108,6 +108,7 @@ POPULATION	= $(SOURCES) $(C_SRC_DIR)/bglssl.h.in $(_WIN32_SOURCES) \
                   $(JAVA_SRC_DIR)/private_key.java \
 		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(API).init.in \
+	          $(C_SRC_DIR)/root_certs.h \
                   Makefile
 
 #*---------------------------------------------------------------------*/

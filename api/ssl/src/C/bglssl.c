@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Aug 25 09:17:28 2014 (serrano)                */
+/*    Last change :  Mon Aug 25 10:52:42 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -1094,7 +1094,39 @@ static int
 bgl_new_session_callback( SSL *s, SSL_SESSION *sess ) {
    fprintf( stderr, "TODO: %s:%d\n", __FILE__, __LINE__ );
 }
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_connection_set_session ...                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_connection_set_session( ssl_connection ssl, obj_t buf ) {
+   int wlen = STRING_LENGTH( buf );
+   char *sbuf = alloca( wlen );
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL_SESSION *sess;
    
+   memcpy( sbuf, BSTRING_TO_STRING( buf ), wlen );
+   sess = d2i_SSL_SESSION( NULL, (const unsigned char **)&sbuf, wlen );
+
+   if( !sess ) {
+      return 0;
+   } else {
+      int r = SSL_set_session( _ssl, sess );
+      SSL_SESSION_free( sess );
+
+      if( !r ) {
+	 char errbuf[ 121 ];
+	 C_SYSTEM_FAILURE( BGL_IO_ERROR,
+			   "SSL_set_session error",
+			   ssl_error_message( errbuf ),
+			   (obj_t)ssl );
+      }
+
+      return 1;
+   }
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_ssl_ctx_init ...                                             */
