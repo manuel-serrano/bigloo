@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed May 21 16:23:46 2014 (serrano)                */
+/*    Last change :  Mon Sep  1 13:21:51 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -886,13 +886,25 @@ bgl_gethostent( obj_t hostname ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
+/*    bgl_inet_ntop ...                                                */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_inet_ntop( struct in_addr *addr ) {
+   obj_t obj = make_string_sans_fill( INET_ADDRSTRLEN );
+   char *buf = &(STRING_REF( obj, 0 ));
+   const char *s = inet_ntop( AF_INET, addr, buf, INET_ADDRSTRLEN );
+   
+   return bgl_string_shrink( obj, strlen( s ) );
+}
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    bgl_host ...                                                     */
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_host( obj_t hostname ) {
    struct hostent *hp = bgl_gethostent( hostname );
 
-   return string_to_bstring( inet_ntoa( *(struct in_addr *)(hp->h_addr) ) );
+   return bgl_inet_ntop( (struct in_addr *)(hp->h_addr) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -911,7 +923,7 @@ bgl_hostinfo( obj_t hostname ) {
 
    if( hp->h_addr_list ) {
       for( runner = hp->h_addr_list; *runner; runner++ ) {
-	 s = string_to_bstring( inet_ntoa( *(struct in_addr *)(*runner) ) );
+	 s = bgl_inet_ntop( (struct in_addr *)(*runner) );
 	 addr = MAKE_PAIR( s, addr );
       }
    }
@@ -1402,7 +1414,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.portnum = ntohs( server.sin_port );
    a_socket->socket_t.hostname = hname;
-   a_socket->socket_t.hostip = string_to_bstring( inet_ntoa( server.sin_addr ) );
+   a_socket->socket_t.hostip = bgl_inet_ntop( &(server.sin_addr) );
    a_socket->socket_t.fd = s;
    a_socket->socket_t.input = BFALSE;
    a_socket->socket_t.output = BFALSE;
@@ -1572,7 +1584,7 @@ socket_local_addr( obj_t sock ) {
 		    (socklen_t *) &len) )
       socket_error( "socket-local-address", strerror( errno ), sock );
 
-   return string_to_bstring( (char *)inet_ntoa( sin.sin_addr ) );
+   return bgl_inet_ntop( &(sin.sin_addr) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1663,7 +1675,7 @@ bgl_socket_accept( obj_t serv, bool_t errp, obj_t inb, obj_t outb ) {
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.portnum = ntohs( sin.sin_port );
    a_socket->socket_t.hostname = BUNSPEC;
-   a_socket->socket_t.hostip = string_to_bstring( inet_ntoa( sin.sin_addr ) );
+   a_socket->socket_t.hostip = bgl_inet_ntop( &(sin.sin_addr) );
    a_socket->socket_t.fd = new_s;
    a_socket->socket_t.stype = BGL_SOCKET_CLIENT;
    a_socket->socket_t.userdata = BUNSPEC;
@@ -2388,7 +2400,7 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
    a_socket->datagram_socket_t.portnum = ntohs( server->sin_port );
    a_socket->datagram_socket_t.hostname = hname;
-   a_socket->datagram_socket_t.hostip = string_to_bstring( inet_ntoa( server->sin_addr ) );
+   a_socket->datagram_socket_t.hostip = bgl_inet_ntop( &(server->sin_addr) );
    a_socket->datagram_socket_t.stype = BGL_SOCKET_CLIENT;
    a_socket->datagram_socket_t.fd = s;
    
