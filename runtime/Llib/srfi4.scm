@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Sun Jun 22 08:29:04 2014 (serrano)                */
+;*    Last change :  Sun Aug 31 16:44:58 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -206,6 +206,10 @@
 		  "BGL_SU8VECTOR_COPY")
 	   (macro $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
 		  "BGL_SU8VECTOR_COPY")
+;* 	   (macro $u8vector-copy-from-string!::void (::u8vector ::long ::bstring ::long ::long) */
+;* 		  "BGL_SU8VECTOR_COPY_FROM_STRING")                    */
+;* 	   (macro $u8vector-copy-to-string!::void (::u8vector ::long ::bstring ::long ::long) */
+;* 		  "BGL_SU8VECTOR_COPY_TO_STRING")                      */
 	   (macro $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
 		  "BGL_SU16VECTOR_COPY")
 	   (macro $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)
@@ -411,6 +415,10 @@
 		 "BGL_SU8VECTOR_COPY")
 	      (method static $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
 		 "BGL_SU8VECTOR_COPY")
+;* 	      (method static $u8vector-copy-from-string!::void (::u8vector ::long ::bstring ::long ::long) */
+;* 		 "BGL_SU8VECTOR_COPY_FROM_STRING")                     */
+;* 	      (method static $u8vector-copy-to-string!::void (::u8vector ::long ::bstring ::long ::long) */
+;* 		 "BGL_SU8VECTOR_COPY_TO_STRING")                       */
 	      (method static $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
 		 "BGL_SU16VECTOR_COPY")
 	      (method static $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)
@@ -541,6 +549,11 @@
 	      #!optional (sstart 0) (send (f32vector-length source)))
 	   (f64vector-copy! target::f64vector tstart::long source::f64vector
 	      #!optional (sstart 0) (send (f64vector-length source)))))
+
+;* 	   (u8vector-copy-from-string! target::u8vector tstart::long source::bstring */
+;* 	      #!optional (sstart 0) (send (string-length source)))     */
+;* 	   (u8vector-copy-to-string! target::u8vector tstart::long source::bstring */
+;* 	      #!optional (sstart 0) (send (string-length source)))))   */
 
 ;*---------------------------------------------------------------------*/
 ;*    define-hvector ...                                               */
@@ -791,6 +804,14 @@
 (define-hvector define-list->hvector)
 
 ;*---------------------------------------------------------------------*/
+;*    unsafe-range ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-macro (unsafe-range body)
+   (if *unsafe-range*
+       #unspecified
+       body))
+
+;*---------------------------------------------------------------------*/
 ;*    vector-copy! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-macro (define-vector-copy! sign sz)
@@ -806,20 +827,68 @@
 	  ($copy! (symbol-append '$ copy!)))
       `(define (,copy! target tstart source
 		  #!optional (sstart 0) (send (,getlen source)))
-	  ,(unless *unsafe-range*
-	      `(cond
-		  ((<fx tstart 0)
-		   (error ,(symbol->string copy!) "Illegal target start index" tstart))
-		  ((<fx sstart 0)
-		   (error ,(symbol->string copy!) "Illegal source start index" sstart))
-		  ((>=fx send (,getlen source))
-		   (error ,(symbol->string copy!) "Illegal source end index" send))
-		  ((<fx send start)
-		   (error ,(symbol->string copy!) "Illegal source end index" send))
-		  
-		  ((>= (-fx send start) (,getlen target))
-		   (error ,(symbol->string copy!) "Illegal source length"  (-fx send start))))
-	      `(,$copy! target tstart source sstart send)))))
+	  (unsafe-range
+	     (cond
+		((<fx tstart 0)
+		 (error ,(symbol->string copy!) "Illegal target start index" tstart))
+		((<fx sstart 0)
+		 (error ,(symbol->string copy!) "Illegal source start index" sstart))
+		((>fx send (,getlen source))
+		 (error ,(symbol->string copy!) "Illegal source end index" send))
+		((<fx send sstart)
+		 (error ,(symbol->string copy!) "Illegal source end index" send))
+		
+		((> (-fx send sstart) (,getlen target))
+		 (error ,(symbol->string copy!) "Illegal source length"  (-fx send sstart)))))
+	  (,$copy! target tstart source sstart send))))
 
 
 (define-hvector define-vector-copy!)
+
+;* {*---------------------------------------------------------------------*} */
+;* {*    u8vector-copy-from-string! ...                                   *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (u8vector-copy-from-string! target::u8vector tstart::long source::bstring */
+;* 	   #!optional (sstart 0) (send (string-length source)))        */
+;*    (unsafe-range                                                    */
+;*       (cond                                                         */
+;* 	 ((<fx tstart 0)                                               */
+;* 	  (error "u8vector-copy-from-string!"                          */
+;* 	     "Illegal target start index" tstart))                     */
+;* 	 ((<fx sstart 0)                                               */
+;* 	  (error "u8vector-copy-from-string!"                          */
+;* 	     "Illegal source start index" sstart))                     */
+;* 	 ((>fx send (string-length source))                            */
+;* 	  (error "u8vector-copy-from-string!"                          */
+;* 	     "Illegal source end index" send))                         */
+;* 	 ((<fx send sstart)                                            */
+;* 	  (error "u8vector-copy-from-string!"                          */
+;* 	     "Illegal source end index" send))                         */
+;* 	 ((> (-fx send sstart) (u8vector-length target))               */
+;* 	  (error "u8vector-copy-from-string!"                          */
+;* 	     "Illegal source length"  (-fx send sstart)))))            */
+;*    ($u8vector-copy-from-string! target tstart source sstart send))  */
+;*                                                                     */
+;* {*---------------------------------------------------------------------*} */
+;* {*    u8vector-copy-to-string! ...                                     *} */
+;* {*---------------------------------------------------------------------*} */
+;* (define (u8vector-copy-to-string! target::u8vector tstart::long source::bstring */
+;* 	   #!optional (sstart 0) (send (string-length source)))        */
+;*    (unsafe-range                                                    */
+;*       (cond                                                         */
+;* 	 ((<fx tstart 0)                                               */
+;* 	  (error "u8vector-copy-to-string!"                            */
+;* 	     "Illegal target start index" tstart))                     */
+;* 	 ((<fx sstart 0)                                               */
+;* 	  (error "u8vector-copy-to-string!"                            */
+;* 	     "Illegal source start index" sstart))                     */
+;* 	 ((>fx send (string-length source))                            */
+;* 	  (error "u8vector-copy-to-string!"                            */
+;* 	     "Illegal source end index" send))                         */
+;* 	 ((<fx send sstart)                                            */
+;* 	  (error "u8vector-copy-to-string!"                            */
+;* 	     "Illegal source end index" send))                         */
+;* 	 ((> (-fx send sstart) (u8vector-length target))               */
+;* 	  (error "u8vector-copy-to-string!"                            */
+;* 	     "Illegal source length"  (-fx send sstart)))))            */
+;*    ($u8vector-copy-to-string! target tstart source sstart send))    */

@@ -4089,6 +4089,20 @@ public final class foreign
       }
    }
    
+/*    public static void BGL_SU8VECTOR_COPY_FROM_STRING(u8vector t, int ts, byte[] s, int ss, int se ) { */
+/*       int len = se - ss;                                            */
+/*       for( int i = 0; i < len; i++ ) {                              */
+/* 	 t.objs[ ts + i ] = s[ ss + i ];                               */
+/*       }                                                             */
+/*    }                                                                */
+/*                                                                     */
+/*    public static void BGL_SU8VECTOR_COPY_TO_STRING(u8vector t, int ts, byte[] s, int ss, int se ) { */
+/*       int len = se - ss;                                            */
+/*       for( int i = 0; i < len; i++ ) {                              */
+/* 	 s[ ss + i ] = t.objs[ ts + i ];                               */
+/*       }                                                             */
+/*    }                                                                */
+   
    public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se ) {
       int len = se - ss;
       for( int i = 0; i < len; i++ ) {

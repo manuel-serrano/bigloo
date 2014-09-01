@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Thu Jul 31 08:54:27 2014 (serrano)                */
+;*    Last change :  Sun Aug 31 15:58:30 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -40,7 +40,8 @@
 	      (%wbuf::string (default $string-nil))
 	      (%wbuflen::int (default 0))
 	      (%alloc::pair-nil (default '()))
-	      (%proc (default #f)))
+	      (%proca (default #f))
+	      (%procc (default #f)))
 
 	   (class UvTcp::UvStream)
 	   

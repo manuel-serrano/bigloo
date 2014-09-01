@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Aug  8 14:40:34 2014 (serrano)                */
+/*    Last change :  Sun Aug 31 18:17:06 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -881,16 +881,18 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
    uv_fs_t *req = file->BgL_z52readreqz52;
    uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
    int fd = file->BgL_fdz00;
+   int len = 0;
+   char *chunk;
 
    if( length + offset > STRING_LENGTH( buffer ) ) {
       C_SYSTEM_FAILURE( BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-read",
 			"offset+length out of buffer range",
-			BINT( STRING_LENGTH( buffer ) ) );
+			BINT( len ) );
    }
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
       /* uv_buf_init inlined */
-      file->BgL_z52rbufz52 = &(STRING_REF( buffer, offset ));
+      file->BgL_z52rbufz52 = &(chunk[ offset ]);
       file->BgL_z52rbuflenz52 = length;
 
 /*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
@@ -904,7 +906,7 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
       uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_readwrite_cb );
       uv_fs_req_cleanup( req );
    } else {
-      return pread( fd, &(STRING_REF( buffer, offset )), length, offset );
+      return pread( fd, &(STRING_REF( buffer, offset )), length, position );
    }
 }
 
@@ -1442,7 +1444,7 @@ bgl_uv_write_cb( uv_write_t *req, int status ) {
 /*    bgl_uv_write ...                                                 */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_write( obj_t obj, char *buffer, long length, obj_t proc, bgl_uv_loop_t bloop ) {
+bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl_uv_loop_t bloop ) {
    if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 1 )) ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
 			"wrong callback", proc );
@@ -1457,7 +1459,7 @@ bgl_uv_write( obj_t obj, char *buffer, long length, obj_t proc, bgl_uv_loop_t bl
       
       gc_mark( proc );
       
-      stream->BgL_z52wbufz52 = buffer;
+      stream->BgL_z52wbufz52 = buffer + offset;
       stream->BgL_z52wbuflenz52 = length;
 
       int r = uv_write( req, handle, buf, 1, bgl_uv_write_cb );
@@ -1474,18 +1476,17 @@ static void
 bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    obj_t obj = (obj_t)stream->data;
    bgl_uv_stream_t sobj = (bgl_uv_stream_t)obj;
-   obj_t p = sobj->BgL_z52procz52;
-   obj_t chunk = CAR( sobj->BgL_z52allocz52 );
+   obj_t p = sobj->BgL_z52proccz52;
+   obj_t allocobj = sobj->BgL_z52allocz52;
 
-   sobj->BgL_z52allocz52 = BNIL;
+   sobj->BgL_z52allocz52 = BUNSPEC;
    gc_unmark( obj );
 
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
-	 obj_t buf = bgl_string_shrink( chunk, nread );
-	 PROCEDURE_ENTRY( p )( p, buf, BINT( 0 ), BINT( nread ), BEOA );
+	 PROCEDURE_ENTRY( p )( p, allocobj, BINT( 0 ), BINT( nread ), BEOA );
       } else if( nread < 0 ) {
-	 PROCEDURE_ENTRY( p )( p, BUNSPEC, BINT( 0 ), BINT( 0 ), BEOA );
+	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( 0 ), BINT( 0 ), BEOA );
       }
    }
 }
@@ -1497,11 +1498,19 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
 static void
 bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
-   obj_t chunk = make_string_sans_fill( ssize );
+   obj_t p = stream->BgL_z52procaz52;
+   obj_t allocobj = PROCEDURE_ENTRY( p )( p, stream, BINT( ssize ) );
+   obj_t chunk = BGL_MVALUES_VAL( 1 );
+   obj_t offset = BGL_MVALUES_VAL( 2 );
 
-   stream->BgL_z52allocz52 = MAKE_PAIR( chunk, stream->BgL_z52allocz52 );
+   if( !STRINGP( chunk ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start, onalloc",
+			"wrong chunk type, string expected",
+			chunk );
+   }
+   stream->BgL_z52allocz52 = allocobj;
 
-   *buf = uv_buf_init( &(STRING_REF( chunk, 0 )), ssize );
+   *buf = uv_buf_init( &(STRING_REF( chunk, CINT( offset ) )), ssize );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1509,23 +1518,29 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
 /*    bgl_uv_read_start ...                                            */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_read_start( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
-   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 3 )) ) ) {
+bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
+   if( !PROCEDUREP( proca ) || (!PROCEDURE_CORRECT_ARITYP( proca, 2 )) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
-			"wrong callback", proc );
+			"wrong onalloc", proca );
    } else {
-      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-      uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      if( !(PROCEDUREP( procc ) && (PROCEDURE_CORRECT_ARITYP( procc, 3 )) ) ) {
+	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
+			   "wrong callback", procc );
+      } else {
+	 uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
 
-      stream->BgL_z52allocz52 = BNIL;
-      stream->BgL_z52procz52 = proc;
+	 stream->BgL_z52allocz52 = BUNSPEC;
+	 stream->BgL_z52procaz52 = proca;
+	 stream->BgL_z52proccz52 = procc;
 
-      gc_mark( obj );
+	 gc_mark( obj );
 
-      int r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
+	 int r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
 
-      return r;
+	 return r;
+      }
    }
 }
 

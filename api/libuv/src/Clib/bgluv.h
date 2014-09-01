@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
 /*   Bigloo (4.2a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Thu Jul 31 08:28:49 CEST 2014       */
+/*   Inria -- Sophia Antipolis (c)       Mon Sep 1 10:04:09 CEST 2014        */
 /*===========================================================================*/
-/* COMPILATION: (/users/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /users/serrano/prgm/project/bigloo/lib/bigloo/4.2a -unsafe -safee -srfi libuv -copt -I/users/serrano/prgm/project/bigloo/libuv/libuv-master-18jul2014/include -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.2a -unsafe -safee -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/libuv/libuv-master-18jul2014/include -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
 
 /* Object type definitions */
 typedef struct BgL_z52uvz52_bgl {
@@ -49,7 +49,8 @@ typedef struct BgL_uvstreamz00_bgl {
    char * BgL_z52wbufz52;
    int BgL_z52wbuflenz52;
    obj_t BgL_z52allocz52;
-   obj_t BgL_z52procz52;
+   obj_t BgL_z52procaz52;
+   obj_t BgL_z52proccz52;
 } *BgL_uvstreamz00_bglt;
 
 typedef struct BgL_uvtcpz00_bgl {
@@ -65,7 +66,8 @@ typedef struct BgL_uvtcpz00_bgl {
    char * BgL_z52wbufz52;
    int BgL_z52wbuflenz52;
    obj_t BgL_z52allocz52;
-   obj_t BgL_z52procz52;
+   obj_t BgL_z52procaz52;
+   obj_t BgL_z52proccz52;
 } *BgL_uvtcpz00_bglt;
 
 typedef struct BgL_uvtimerz00_bgl {

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Aug 25 10:52:42 2014 (serrano)                */
+/*    Last change :  Sun Aug 31 19:03:24 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -769,9 +769,6 @@ static void
 bgl_info_callback( const SSL *ssl, int where, int ret ) {
    ssl_connection *c = (ssl_connection *)(SSL_get_app_data( ssl ));
 
-   fprintf( stderr, "bgl_info_callback where=%d, ret=%d, todo: %s:%d\n",
-	    where, ret, 
-	    __FILE__, __LINE__ );
    if( where & SSL_CB_HANDSHAKE_START) {
       fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
    }
@@ -839,7 +836,8 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
    secure_context bctx = ssl->BgL_ctxz00;
    int verify_mode;
    SSL *_ssl = SSL_new( bctx->BgL_z42nativez42 );
-   
+   long mode;
+
    ssl->BgL_z42nativez42 = _ssl;
    ssl->BgL_z42biozd2readz90 = BIO_new( BIO_s_mem() );
    ssl->BgL_z42biozd2writez90 = BIO_new( BIO_s_mem() );
@@ -851,7 +849,10 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
    }
 
    SSL_set_bio( _ssl, ssl->BgL_z42biozd2readz90, ssl->BgL_z42biozd2writez90 );
-      
+   
+   mode = SSL_get_mode( _ssl );
+   SSL_set_mode( _ssl, mode | SSL_MODE_RELEASE_BUFFERS );
+   
    if( ssl->BgL_isserverz00 ) {
       if( ssl->BgL_requestzd2certzd2 ) {
 	 verify_mode = SSL_VERIFY_NONE;
@@ -877,56 +878,65 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    void                                                             */
 /*    handle_bio_error ...                                             */
 /*---------------------------------------------------------------------*/
-static int
-handle_bio_error( ssl_connection ssl, BIO *bio, int n ) {
+static void
+handle_bio_error( ssl_connection ssl, BIO *bio, int n, char *fun ) {
+   int retry = BIO_should_retry( bio );
+   (void) retry; // unused if !defined(SSL_PRINT_DEBUG)
+
    if( BIO_should_write( bio ) ) {
-      return 0;
+      return;
    } else if( BIO_should_read( bio ) ) {
-      return 0;
+      return;
    } else {
       static char ssl_error_buf[ 512 ];
       ERR_error_string_n( n, ssl_error_buf, sizeof( ssl_error_buf ) );
 
-      fprintf( stderr, "TODO ERROR %s:%d\n", __FILE__, __LINE__ );
+      fprintf( stderr, "TODO ERROR (%s) %s:%d\n", ssl_error_buf,
+	       __FILE__, __LINE__ );
 
-      return n;
+      return;
    }
 }
 
 /*---------------------------------------------------------------------*/
-/*    static int                                                       */
+/*    static void                                                      */
 /*    handle_ssl_error ...                                             */
 /*---------------------------------------------------------------------*/
-static int
-handle_ssl_error( ssl_connection ssl, int n ) {
+static void
+handle_ssl_error( ssl_connection ssl, int n, char *fun ) {
    SSL *_ssl = ssl->BgL_z42nativez42;
-   
    int err = SSL_get_error( _ssl, n );
+   int res = 0;
 
    if( err == SSL_ERROR_NONE ) {
-      return 0;
+      goto ret;
    } else if( err == SSL_ERROR_WANT_WRITE ) {
-      return 0;
+      goto ret;
    } else if( err == SSL_ERROR_WANT_READ ) {
-      return 0;
+      goto ret;
    } else if( err == SSL_ERROR_ZERO_RETURN ) {
-      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
-      return n;
+      res = n;
+      goto ret;
    } else {
       BUF_MEM* mem;
       BIO *bio;
-
+      
       if( (bio = BIO_new( BIO_s_mem() )) ) {
 	 ERR_print_errors( bio );
 	 BIO_get_mem_ptr( bio, &mem );
 	 BIO_free( bio );
       }
 
-      return n;
+      res = n;
+      goto ret;
    }
+
+ret:
+   ERR_clear_error();
+   return;
 }
 
 /*---------------------------------------------------------------------*/
@@ -959,11 +969,11 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
    if( !SSL_is_init_finished( _ssl ) ) {
       if( ssl->BgL_isserverz00 ) {
 	 if( (n = SSL_accept( _ssl )) <= 0 ) {
-	    return handle_ssl_error( ssl, n );
+	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       } else {
 	 if( (n = SSL_connect( _ssl )) <= 0 ) {
-	    return handle_ssl_error( ssl, n );
+	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       }
 
@@ -974,17 +984,34 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
-/*    bgl_ssl_connection_write ...                                     */
+/*    long                                                             */
+/*    bgl_ssl_connection_read ...                                      */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF int
-bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
+BGL_RUNTIME_DEF long
+bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
    long int n = BIO_read( ssl->BgL_z42biozd2writez90, buf + off, len );
 
    if( n < 0 ) {
-      handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n );
+      handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n, "connection_read" );
    }
+
+   set_shutdown_flags( ssl );
    
+   return n;
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_ssl_connection_write ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF long
+bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
+   long int n = BIO_write( ssl->BgL_z42biozd2readz90, buf + off, len );
+
+   if( n < 0 ) {
+      handle_bio_error( ssl, ssl->BgL_z42biozd2readz90, n, "connection_write" );
+   }
+
    set_shutdown_flags( ssl );
    
    return n;
@@ -1004,21 +1031,23 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
    if( !SSL_is_init_finished( _ssl ) ) {
       if( ssl->BgL_isserverz00 ) {
 	 int m;
-	 if( m = SSL_accept( _ssl ) < 0 ) {
-	    handle_ssl_error( ssl, m );
+	 if( (m = SSL_accept( _ssl )) <= 0 ) {
+	    handle_ssl_error( ssl, m, "ssl-connection-clear (accept)" );
 	 }
+	 return m;
       } else {
 	 int m;
-	 if( m = SSL_connect( _ssl ) < 0 ) {
-	    handle_ssl_error( ssl, m );
+	 if( (m = SSL_connect( _ssl )) <= 0 ) {
+	    handle_ssl_error( ssl, m, "ssl-connection-clear (connect)" );
 	 }
+	 return m;
       }
    }
 
    n = SSL_fun( _ssl, buf + off, len );
 
    if( n < 0 ) {
-      handle_ssl_error( ssl, n );
+      handle_ssl_error( ssl, n, "ssl-connection-clear (read/write)" );
    }
    
    set_shutdown_flags( ssl );
@@ -1033,7 +1062,7 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
    return bgl_ssl_connection_clear( ssl, buf, off, len,
-				    &SSL_read,
+				    (int (*)( SSL *, void *, int))&SSL_write,
 				    "connection-clear-in" );
 }
 
@@ -1044,7 +1073,7 @@ bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len )
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_clear_out( ssl_connection ssl, char *buf, long off, long len ) {
    return bgl_ssl_connection_clear( ssl, buf, off, len,
-				    (int (*)( SSL *, void *, int))&SSL_write,
+				    &SSL_read,
 				    "connection-clear-out" );
 }
 
@@ -1124,6 +1153,149 @@ bgl_ssl_connection_set_session( ssl_connection ssl, obj_t buf ) {
       }
 
       return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_connection_verify_error ...                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_connection_verify_error( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   long x509_verify_error;
+   
+   if( !_ssl ) {
+      return BUNSPEC;
+   } else {
+      X509* peer_cert = SSL_get_peer_certificate( _ssl );
+      if( peer_cert == NULL ) {
+	 // We requested a certificate and they did not send us one.
+	 // Definitely an error.
+	 // XXX is this the right error message?
+	 return string_to_bstring( "UNABLE_TO_GET_ISSUER_CERT" );
+      }
+      X509_free( peer_cert );
+   }
+   
+   x509_verify_error = SSL_get_verify_result( _ssl );
+
+   switch ( x509_verify_error ) {
+      case X509_V_OK:
+	 return BUNSPEC;
+
+      case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
+	 return string_to_bstring( "UNABLE_TO_GET_ISSUER_CERT" );
+	 break;
+
+      case X509_V_ERR_UNABLE_TO_GET_CRL:
+	 return string_to_bstring( "UNABLE_TO_GET_CRL" );
+	 break;
+
+      case X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE:
+	 return string_to_bstring( "UNABLE_TO_DECRYPT_CERT_SIGNATURE" );
+	 break;
+
+      case X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE:
+	 return string_to_bstring( "UNABLE_TO_DECRYPT_CRL_SIGNATURE" );
+	 break;
+
+      case X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY:
+	 return string_to_bstring( "UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY" );
+	 break;
+
+      case X509_V_ERR_CERT_SIGNATURE_FAILURE:
+	 return string_to_bstring( "CERT_SIGNATURE_FAILURE" );
+	 break;
+
+      case X509_V_ERR_CRL_SIGNATURE_FAILURE:
+	 return string_to_bstring( "CRL_SIGNATURE_FAILURE" );
+	 break;
+
+      case X509_V_ERR_CERT_NOT_YET_VALID:
+	 return string_to_bstring( "CERT_NOT_YET_VALID" );
+	 break;
+
+      case X509_V_ERR_CERT_HAS_EXPIRED:
+	 return string_to_bstring( "CERT_HAS_EXPIRED" );
+	 break;
+
+      case X509_V_ERR_CRL_NOT_YET_VALID:
+	 return string_to_bstring( "CRL_NOT_YET_VALID" );
+	 break;
+
+      case X509_V_ERR_CRL_HAS_EXPIRED:
+	 return string_to_bstring( "CRL_HAS_EXPIRED" );
+	 break;
+
+      case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
+	 return string_to_bstring( "ERROR_IN_CERT_NOT_BEFORE_FIELD" );
+	 break;
+
+      case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
+	 return string_to_bstring( "ERROR_IN_CERT_NOT_AFTER_FIELD" );
+	 break;
+
+      case X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD:
+	 return string_to_bstring( "ERROR_IN_CRL_LAST_UPDATE_FIELD" );
+	 break;
+
+      case X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD:
+	 return string_to_bstring( "ERROR_IN_CRL_NEXT_UPDATE_FIELD" );
+	 break;
+
+      case X509_V_ERR_OUT_OF_MEM:
+	 return string_to_bstring( "OUT_OF_MEM" );
+	 break;
+
+      case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
+	 return string_to_bstring( "DEPTH_ZERO_SELF_SIGNED_CERT" );
+	 break;
+
+      case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+	 return string_to_bstring( "SELF_SIGNED_CERT_IN_CHAIN" );
+	 break;
+
+      case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
+	 return string_to_bstring( "UNABLE_TO_GET_ISSUER_CERT_LOCALLY" );
+	 break;
+
+      case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
+	 return string_to_bstring( "UNABLE_TO_VERIFY_LEAF_SIGNATURE" );
+	 break;
+
+      case X509_V_ERR_CERT_CHAIN_TOO_LONG:
+	 return string_to_bstring( "CERT_CHAIN_TOO_LONG" );
+	 break;
+
+      case X509_V_ERR_CERT_REVOKED:
+	 return string_to_bstring( "CERT_REVOKED" );
+	 break;
+
+      case X509_V_ERR_INVALID_CA:
+	 return string_to_bstring( "INVALID_CA" );
+	 break;
+
+      case X509_V_ERR_PATH_LENGTH_EXCEEDED:
+	 return string_to_bstring( "PATH_LENGTH_EXCEEDED" );
+	 break;
+
+      case X509_V_ERR_INVALID_PURPOSE:
+	 return string_to_bstring( "INVALID_PURPOSE" );
+	 break;
+
+      case X509_V_ERR_CERT_UNTRUSTED:
+	 return string_to_bstring( "CERT_UNTRUSTED" );
+	 break;
+
+      case X509_V_ERR_CERT_REJECTED:
+	 return string_to_bstring( "CERT_REJECTED" );
+	 break;
+
+      default:
+	 return string_to_bstring(
+	    (char *)X509_verify_cert_error_string( x509_verify_error ) );
+	 break;
    }
 }
 

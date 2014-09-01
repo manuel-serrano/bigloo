@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Mon Aug 25 08:51:03 2014 (serrano)                */
+;*    Last change :  Sun Aug 31 18:57:40 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -67,6 +67,8 @@
 	   ($bgl-ssl-connection-start::int (::ssl-connection)
 	      "bgl_ssl_connection_start")
 	   
+	   ($bgl-ssl-connection-read::long (::ssl-connection ::string ::long ::long)
+	      "bgl_ssl_connection_read")
 	   ($bgl-ssl-connection-write::long (::ssl-connection ::string ::long ::long)
 	      "bgl_ssl_connection_write")
 	   ($bgl-ssl-connection-clear-in::long (::ssl-connection ::string ::long ::long)
@@ -79,6 +81,10 @@
 	      "bgl_ssl_connection_enc_pending")
 	   ($bgl-ssl-connection-clear-pending::int (::ssl-connection)
 	      "bgl_ssl_connection_clear_pending")
+	   ($bgl-ssl-connection-set-session::int (::ssl-connection ::bstring)
+	      "bgl_ssl_connection_set_session")
+	   ($bgl-ssl-connection-verify-error::obj (::ssl-connection)
+	      "bgl_ssl_connection_verify_error")
 	   
 	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
@@ -166,12 +172,15 @@
 
 	   (generic ssl-connection-init ::ssl-connection)
 	   (generic ssl-connection-start::int ::ssl-connection)
+	   (generic ssl-connection-read ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-write ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-clear-in ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-clear-out ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-init-finished? ::ssl-connection)
 	   (generic ssl-connection-enc-pending ::ssl-connection)
-	   (generic ssl-connection-clear-pending ::ssl-connection))
+	   (generic ssl-connection-clear-pending ::ssl-connection)
+	   (generic ssl-connection-set-session ssl::ssl-connection ::bstring)
+	   (generic ssl-connection-verify-error ::ssl-connection))
    
    (cond-expand
       (bigloo-c
@@ -379,6 +388,17 @@
        ($bgl-ssl-connection-start ssl))
       (else
        ssl)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-read ::ssl-connection ...                         */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-read ssl::ssl-connection buffer offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-read ssl buffer offset len))
+      (else
+       0)))
+
 ;*---------------------------------------------------------------------*/
 ;*    ssl-connection-write ::ssl-connection ...                        */
 ;*---------------------------------------------------------------------*/
@@ -439,4 +459,25 @@
       (else
        0)))
 
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-set-session ::ssl-connection ...                  */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-set-session ssl::ssl-connection buf::bstring)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-set-session ssl buf))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-verify-error ::ssl-connection ...                 */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-verify-error ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-verify-error ssl))
+      (else
+       #f)))
+
+   
 

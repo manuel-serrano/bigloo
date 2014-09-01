@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jul 31 08:21:57 2014 (serrano)                */
+/*    Last change :  Sun Aug 31 16:34:07 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2011,6 +2011,14 @@ BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
 #define BGL_SU8VECTOR_COPY( target, tstart, source, sstart, ssend ) \
    memcpy( (void *)&BGL_S8VREF( target, tstart ), (void *)&BGL_S8VREF( source, sstart ), \
 	   (ssend - sstart) )
+   
+/* #define BGL_SU8VECTOR_COPY_FROM_STRING( target, tstart, source, sstart, ssend ) \ */
+/*    memcpy( (void *)&BGL_S8VREF( target, tstart ), (void *)&STRING_REF( source, sstart ), \ */
+/* 	   (ssend - sstart) )                                          */
+/*                                                                     */
+/* #define BGL_SU8VECTOR_COPY_TO_STRING( target, tstart, source, sstart, ssend ) \ */
+/*    memcpy( (void *)&STRING_REF( source, sstart ), (void *)&BGL_S8VREF( target, tstart ), \ */
+/*            (ssend - sstart) )                                       */
    
 #define BGL_SU16VECTOR_COPY( target, tstart, source, sstart, ssend ) \
    memcpy( (void *)&BGL_S16VREF( target, tstart ), (void *)&BGL_S16VREF( source, sstart ), \

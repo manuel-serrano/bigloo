@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Mon Aug  4 07:10:16 2014 (serrano)                */
+;*    Last change :  Sun Aug 31 18:18:10 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -27,10 +27,10 @@
 	    
 	    (uv-stream-write-queue-size::long o::UvStream)
 	    (uv-stream-fd::long o::UvStream)
-	    (uv-stream-write ::UvStream ::bstring ::long
+	    (uv-stream-write ::UvStream ::bstring ::long ::long
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-stream-read-start ::UvStream 
-	       #!key callback (loop (uv-default-loop)))
+	       #!key onalloc callback (loop (uv-default-loop)))
 	    (uv-stream-read-stop ::UvStream)
 	    (uv-stream-shutdown ::UvStream
 	       #!key callback (loop (uv-default-loop)))
@@ -97,14 +97,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-write o::UvStream buf length #!key callback (loop (uv-default-loop)))
-   ($uv-write o buf length callback loop))
+(define (uv-stream-write o::UvStream buf offset length #!key callback (loop (uv-default-loop)))
+   ($uv-write o buf offset length callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-read-start o::UvStream #!key callback (loop (uv-default-loop)))
-   ($uv-read-start o callback loop))
+(define (uv-stream-read-start o::UvStream #!key onalloc callback (loop (uv-default-loop)))
+   ($uv-read-start o onalloc callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-stop ...                                          */
