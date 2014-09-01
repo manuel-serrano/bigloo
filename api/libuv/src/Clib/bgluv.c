@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Aug 31 18:17:06 2014 (serrano)                */
+/*    Last change :  Mon Sep  1 07:02:25 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1478,15 +1478,17 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    bgl_uv_stream_t sobj = (bgl_uv_stream_t)obj;
    obj_t p = sobj->BgL_z52proccz52;
    obj_t allocobj = sobj->BgL_z52allocz52;
+   obj_t offset = sobj->BgL_z52offsetz52;
 
    sobj->BgL_z52allocz52 = BUNSPEC;
+
    gc_unmark( obj );
 
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
-	 PROCEDURE_ENTRY( p )( p, allocobj, BINT( 0 ), BINT( nread ), BEOA );
+	 PROCEDURE_ENTRY( p )( p, allocobj, offset, BINT( nread ), BEOA );
       } else if( nread < 0 ) {
-	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( 0 ), BINT( 0 ), BEOA );
+	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( -1 ), BINT( -1 ), BEOA );
       }
    }
 }
@@ -1509,6 +1511,7 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
 			chunk );
    }
    stream->BgL_z52allocz52 = allocobj;
+   stream->BgL_z52offsetz52 = offset;
 
    *buf = uv_buf_init( &(STRING_REF( chunk, CINT( offset ) )), ssize );
 }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Sun Aug 31 15:58:30 2014 (serrano)                */
+;*    Last change :  Mon Sep  1 07:01:12 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -39,7 +39,8 @@
 	      (%writereq::void* (default $void*_nil))
 	      (%wbuf::string (default $string-nil))
 	      (%wbuflen::int (default 0))
-	      (%alloc::pair-nil (default '()))
+	      (%alloc::obj (default #f))
+	      (%offset::obj (default 0))
 	      (%proca (default #f))
 	      (%procc (default #f)))
 

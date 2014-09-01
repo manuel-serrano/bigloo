@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Mon Jul 28 15:33:02 2014 (serrano)                */
+#*    Last change :  Mon Sep  1 17:40:18 2014 (serrano)                */
 #*    Copyright   :  2002-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
@@ -102,6 +102,19 @@ shared-install-name.tmp:
          fi
 
 shared-install-name:
+	$(LD) -o $(notdir $(LIBDEST)) \
+                 $(LDINSTALLNAME) $(LIBDIR)/$(FILDIR)/$(notdir $(LIBDEST)) \
+                 $(LDRPATH) \
+                 $(OBJECTS) \
+                 $(GCSTDOBJECTS) \
+                 $(LDFLAGS) \
+                 $(EXTRALIBS) $(CLOSELIBS) \
+                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
+         if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
+           mv $(notdir $(LIBDEST)) $(LIBDEST); \
+         fi
+
+MS-CARE-shared-install-name:
 	$(LD) -o $(notdir $(LIBDEST)) \
                  $(LDINSTALLNAME) @executable_path/../$(LDINSTALLNAMEDIR)/$(notdir $(LIBDEST)) \
                  $(LDRPATH) \

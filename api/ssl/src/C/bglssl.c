@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun Aug 31 19:03:24 2014 (serrano)                */
+/*    Last change :  Mon Sep  1 14:17:07 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -105,7 +105,7 @@ extern EVP_PKEY *bgl_private_key_native( obj_t pkey );
 /*---------------------------------------------------------------------*/
 static void
 bgl_ssl_init() {
-   static initialized = 0;
+   static int initialized = 0;
 
    BGL_MUTEX_LOCK( bigloo_mutex );
    
@@ -850,8 +850,10 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
 
    SSL_set_bio( _ssl, ssl->BgL_z42biozd2readz90, ssl->BgL_z42biozd2writez90 );
    
+#if( defined( SSL_MODE_RELEASE_BUFFERS ) )
    mode = SSL_get_mode( _ssl );
    SSL_set_mode( _ssl, mode | SSL_MODE_RELEASE_BUFFERS );
+#endif
    
    if( ssl->BgL_isserverz00 ) {
       if( ssl->BgL_requestzd2certzd2 ) {
