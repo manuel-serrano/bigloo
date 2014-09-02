@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Sep  1 07:02:25 2014 (serrano)                */
+/*    Last change :  Tue Sep  2 14:45:52 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -882,7 +882,6 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
    uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
    int fd = file->BgL_fdz00;
    int len = 0;
-   char *chunk;
 
    if( length + offset > STRING_LENGTH( buffer ) ) {
       C_SYSTEM_FAILURE( BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-read",
@@ -892,7 +891,7 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
       /* uv_buf_init inlined */
-      file->BgL_z52rbufz52 = &(chunk[ offset ]);
+      file->BgL_z52rbufz52 = (void *)&(STRING_REF( buffer, offset ));
       file->BgL_z52rbuflenz52 = length;
 
 /*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
