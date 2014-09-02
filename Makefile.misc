@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Tue Sep  2 10:10:38 2014 (serrano)                */
+#*    Last change :  Tue Sep  2 10:32:19 2014 (serrano)                */
 #*    Copyright   :  2002-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
