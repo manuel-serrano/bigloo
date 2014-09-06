@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Fri Apr 12 19:07:55 2013 (serrano)                */
-/*    Copyright   :  2003-13 Manuel Serrano                            */
+/*    Last change :  Sat Sep  6 07:46:17 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -127,7 +127,9 @@ extern void *(*____bgl_open_input_file)( void *, void * );
 extern void *(*____bgl_file_input_port)( FILE * );
 extern void *(*____bgl_open_input_pipe)( void *, void * );
 extern void *(*____bgl_open_input_resource)( void *, void * );
-extern void *(*____bgl_open_input_string)( void *, int );
+extern void *(*____bgl_open_input_string)( void *, long );
+extern void *(*____bgl_open_input_substring)( void *, long, long );
+extern void *(*____bgl_open_input_substring_bang)( void *, long, long );
 extern void *(*____bgl_open_input_c_string)( char * );
 extern void *(*____bgl_reopen_input_c_string)( void *, char * );
 extern void *(*____bgl_input_port_timeout_set)( void *, long );

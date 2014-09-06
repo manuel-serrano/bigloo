@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Aug 31 16:34:07 2014 (serrano)                */
+/*    Last change :  Sat Sep  6 07:21:42 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3397,7 +3397,10 @@ BGL_RUNTIME_DECL obj_t bgl_symbol_genname( obj_t, char * );
    
 BGL_RUNTIME_DECL obj_t string_to_keyword( char * );
    
-BGL_RUNTIME_DECL obj_t bgl_open_input_string( obj_t, int );
+BGL_RUNTIME_DECL obj_t bgl_open_input_string( obj_t, long );
+BGL_RUNTIME_DECL obj_t bgl_open_input_substring( obj_t, long, long );
+BGL_RUNTIME_DECL obj_t bgl_open_input_substring_bang( obj_t, long, long );
+   
 BGL_RUNTIME_DECL long bgl_file_size( char * );
 BGL_RUNTIME_DECL obj_t create_custom( long );
 

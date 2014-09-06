@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Mon Mar  3 10:31:32 2014 (serrano)                */
+;*    Last change :  Sat Sep  6 07:14:53 2014 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -369,6 +369,26 @@
 			    (send-chars p op 10))))))
 
 ;*---------------------------------------------------------------------*/
+;*    test-input-string! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (test-input-string! string off end)
+   (let* ((end (if (<fx end 0) (string-length string) end))
+	  (o (open-input-string! string off end)))
+      (let ((r (read o)))
+	 (close-input-port o)
+	 r)))
+      
+;*---------------------------------------------------------------------*/
+;*    test-input-string ...                                            */
+;*---------------------------------------------------------------------*/
+(define (test-input-string string off end)
+   (let* ((end (if (<fx end 0) (string-length string) end))
+	  (o (open-input-string string off end)))
+      (let ((r (read o)))
+	 (close-input-port o)
+	 r)))
+
+;*---------------------------------------------------------------------*/
 ;*    test-input-port ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (test-input-port)
@@ -377,10 +397,27 @@
    (test "input.2" (call-with-input-file "misc/input.txt" test1) #\.)
    (test "input.3" (test2 "misc/input.txt" 10) #\.)
    (test "input.4" (test2b "misc/input.txt" 10) #\.)
-   (test "input-string" (test3 "(4 5 (3) #(1 2 3) \"toto\" titi)")
+   (test "input-string.1" (test3 "(4 5 (3) #(1 2 3) \"toto\" titi)")
 	 '(4 5 (3) #(1 2 3) "toto" titi))
-   (test "input-string" (test3b "(4 5 (3) #(1 2 3) \"toto\" titi)")
+   (test "input-string.2" (test3b "(4 5 (3) #(1 2 3) \"toto\" titi)")
 	 '(4 5 (3) #(1 2 3) "toto" titi))
+   (let ((s "\"foo\" 123 bar"))
+      (test "input-string.3" (test-input-string s 0 -1) "foo")
+      (test "input-string.4" (test-input-string s 5 -1) 123)
+      (test "input-string.5" (test-input-string s 9 -1) 'bar)
+      (test "input-string.6" (test-input-string s 0 5) "foo")
+      (test "input-string.7" (test-input-string s 5 8) 12)
+      (test "input-string.8" (test-input-string s 7 12) 23)
+      (test "input-string.9" (test-input-string s 9 13) 'bar)
+      (test "input-string.10" (test-input-string s 10 12) 'ba)
+      (test "input-string!.1" (test-input-string! (string-copy s) 0 -1) "foo")
+      (test "input-string!.2" (test-input-string! (string-copy s) 5 -1) 123)
+      (test "input-string!.3" (test-input-string! (string-copy s) 9 -1) 'bar)
+      (test "input-string!.4" (test-input-string! (string-copy s) 0 5) "foo")
+      (test "input-string!.5" (test-input-string! (string-copy s) 5 8) 12)
+      (test "input-string!.6" (test-input-string! (string-copy s) 7 12) 23)
+      (test "input-string!.7" (test-input-string! (string-copy s) 9 13) 'bar)
+      (test "input-string!.8" (test-input-string! (string-copy s) 10 12) 'ba))
    (let ((p (open-output-string)))
       (write #a012 p)
       (test "char.1" (close-output-port p) "#a012"))
@@ -396,6 +433,15 @@
       (test "char.3" (close-output-port p) "#a179"))
    (test "char.4"
       (let* ((s "toto\000tutu\000\000")
+	     (p (open-input-string s)))
+	 (let loop ((i 0))
+	    (let ((c (read-char p)))
+	       (if (eof-object? c)
+		   (-fx (string-length s) i)
+		   (loop (+ i 1))))))
+      0)
+   (test "char.4"
+      (let* ((s "\"foo\" 123 gee")
 	     (p (open-input-string s)))
 	 (let loop ((i 0))
 	    (let ((c (read-char p)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Fri Feb  3 14:32:49 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep  6 07:22:24 2014 (serrano)                */
+;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/
@@ -91,9 +91,8 @@
    (define (read-full-cnst-initialize/small-string cnst-string)
       (let* ((var-string  (cnst-alloc-string cnst-string #f))
 	     (sexp `(let ((cport::input-port
-			   ($open-input-string ,(global-id
-						 (var-variable var-string))
-					       0)))
+			   (open-input-string
+			      ,(global-id (var-variable var-string)))))
 		       (labels ((loop (i::long)
 				      (if (c-=fx i -1)
 					  #unspecified

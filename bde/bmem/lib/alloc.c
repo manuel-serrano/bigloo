@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Apr 12 19:44:47 2013 (serrano)                */
-/*    Copyright   :  2003-13 Manuel Serrano                            */
+/*    Last change :  Sat Sep  6 07:45:28 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -787,7 +787,9 @@ WRAPPER( bgl_make_input_port, INPUT_PORT_TYPE_NUM, (obj_t s, FILE *f, obj_t o, o
 WRAPPER( bgl_open_input_file, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_pipe, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_resource, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
-WRAPPER( bgl_open_input_string, INPUT_PORT_TYPE_NUM, (obj_t o, int i), (o, i) )
+WRAPPER( bgl_open_input_string, INPUT_PORT_TYPE_NUM, (obj_t o, long i), (o, i) )
+WRAPPER( bgl_open_input_substring, INPUT_PORT_TYPE_NUM, (obj_t o, long i, long e), (o, i, e) )
+WRAPPER( bgl_open_input_substring_bang, INPUT_PORT_TYPE_NUM, (obj_t o, long i, long e), (o, i, e) )
 WRAPPER( bgl_open_input_c_string, INPUT_PORT_TYPE_NUM, (char *s), (s) )
 WRAPPER( bgl_reopen_input_c_string, INPUT_PORT_TYPE_NUM, (void *o, char *s), (o, s) )
 WRAPPER2( bgl_input_port_timeout_set, PORT_TIMEOUT_TYPE_NUM, -1, (void *o, long t), (o, t) )

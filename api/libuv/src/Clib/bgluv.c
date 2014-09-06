@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Sep  2 14:45:52 2014 (serrano)                */
+/*    Last change :  Thu Sep  4 17:31:18 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -832,9 +832,25 @@ bgl_uv_fs_readwrite_cb( uv_fs_t *req ) {
    PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
 }
 
+void debug_buf( char *fun, uv_buf_t *buf ) {
+   int i;
+   int len = buf->len;
+
+   fprintf( stderr, "---- %s debug_buf (%s) len=%d ------\n", __FILE__, fun, len );
+   for( i = 0; i < (len < 160 ? len : 160); i++ ) {
+      fprintf( stderr, "%02x ", ((unsigned char *)(buf->base))[ i ] );
+   }
+   for( i = 0; i < (len < 160 ? len : 160); i++ ) {
+      char c = ((unsigned char *)(buf->base))[ i ];
+      fprintf( stderr, "%c ", isalpha( c ) ? c : '.' );
+   }
+
+   fprintf( stderr, "\n" );
+}
+
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_uv_fs_write ...                                               */
+/*    bgl_uv_fs_write ...                                              */
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_write( obj_t port, obj_t buffer, long offset, long length, long position, obj_t proc, bgl_uv_loop_t bloop ) {
@@ -1485,6 +1501,8 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
 
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
+	 fprintf( stderr, "bgl_uv_read_start, read_cb (%s) offset=%d read=%d\n",
+		  __FILE__, CINT( offset ), nread );
 	 PROCEDURE_ENTRY( p )( p, allocobj, offset, BINT( nread ), BEOA );
       } else if( nread < 0 ) {
 	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( -1 ), BINT( -1 ), BEOA );
@@ -1504,6 +1522,8 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
    obj_t chunk = BGL_MVALUES_VAL( 1 );
    obj_t offset = BGL_MVALUES_VAL( 2 );
 
+   fprintf( stderr, "bgl_uv_read_start, alloc_cb (%s) offset=%d ssize=%d\n",
+	    __FILE__, CINT( offset ), ssize );
    if( !STRINGP( chunk ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start, onalloc",
 			"wrong chunk type, string expected",

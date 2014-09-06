@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Sep  1 14:17:07 2014 (serrano)                */
+/*    Last change :  Thu Sep  4 17:25:05 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -54,6 +54,11 @@
 #endif
 
 #define SOCKET_IO_BUFSIZE 1024
+
+static const int X509_NAME_FLAGS = ASN1_STRFLGS_ESC_CTRL
+   | ASN1_STRFLGS_ESC_MSB
+   | XN_FLAG_SEP_MULTILINE
+   | XN_FLAG_FN_SN;
 
 const char *root_certs[] = {
 #include "root_certs.h"
@@ -148,52 +153,6 @@ bgl_ssl_init() {
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
-}
-
-
-
-/*---------------------------------------------------------------------*/
-/*    bool_t                                                           */
-/*    bgl_ssl_ctx_add_root_certs ...                                   */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF bool_t
-bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
-   static X509_STORE *root_cert_store = 0L;
-
-   if ( !root_cert_store ) {
-      int i;
-      BGL_MUTEX_LOCK( bigloo_mutex );
-      
-      root_cert_store = X509_STORE_new();
-      
-      for( i = 0; root_certs[ i ]; i++ ) {
-	 BIO *bp = BIO_new( BIO_s_mem() );
-	 X509 *x509;
-
-	 if( !BIO_write( bp, root_certs[ i ], strlen( root_certs[ i ] ) ) ) {
-	    BIO_free( bp );
-	    BGL_MUTEX_UNLOCK( bigloo_mutex );
-	    return 0;
-	 }
-
-	  x509 = PEM_read_bio_X509( bp, NULL, NULL, NULL );
-
-	  if( x509 == NULL ) {
-	     BIO_free( bp );
-	     BGL_MUTEX_UNLOCK( bigloo_mutex );
-	     return 0;
-	  }
-
-	  X509_STORE_add_cert( root_cert_store, x509 );
-
-	  BIO_free( bp );
-	  X509_free( x509 );
-      }
-      BGL_MUTEX_UNLOCK( bigloo_mutex );
-   }
-
-   SSL_CTX_set_cert_store( sc->BgL_z42nativez42, root_cert_store );
-   return 1;
 }
 
 /*---------------------------------------------------------------------*/
@@ -320,7 +279,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    char verify = 0;
    char errbuf[ 121 ];
    obj_t drag = BNIL;
-   
+
    bgl_ssl_init();
 
    BGL_MUTEX_LOCK( ssl_mutex );
@@ -761,6 +720,52 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
    return string_to_bstring( buf );
 }
 
+#include "ssl_debug.h"
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_ssl_ctx_add_root_certs ...                                   */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
+   static X509_STORE *root_cert_store = 0L;
+
+   if ( !root_cert_store ) {
+      int i;
+      BGL_MUTEX_LOCK( bigloo_mutex );
+      
+      root_cert_store = X509_STORE_new();
+      
+      for( i = 0; root_certs[ i ]; i++ ) {
+	 BIO *bp = BIO_new( BIO_s_mem() );
+	 X509 *x509;
+
+	 if( !BIO_write( bp, root_certs[ i ], strlen( root_certs[ i ] ) ) ) {
+	    BIO_free( bp );
+	    BGL_MUTEX_UNLOCK( bigloo_mutex );
+	    return 0;
+	 }
+
+	  x509 = PEM_read_bio_X509( bp, NULL, NULL, NULL );
+
+	  if( x509 == NULL ) {
+	     BIO_free( bp );
+	     BGL_MUTEX_UNLOCK( bigloo_mutex );
+	     return 0;
+	  }
+
+	  X509_STORE_add_cert( root_cert_store, x509 );
+
+	  BIO_free( bp );
+	  X509_free( x509 );
+      }
+      BGL_MUTEX_UNLOCK( bigloo_mutex );
+   }
+
+   SSL_CTX_set_cert_store( sc->BgL_z42nativez42, root_cert_store );
+   return 1;
+}
+
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bgl_info_callback ...                                            */
@@ -832,7 +837,7 @@ bgl_verify_callback( int preverify_ok, X509_STORE_CTX *ctx ) {
 /*    bgl_ssl_connection_init ...                                      */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_ssl_connection_init( ssl_connection ssl ) {
+bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
    secure_context bctx = ssl->BgL_ctxz00;
    int verify_mode;
    SSL *_ssl = SSL_new( bctx->BgL_z42nativez42 );
@@ -848,8 +853,13 @@ bgl_ssl_connection_init( ssl_connection ssl ) {
       SSL_set_info_callback( _ssl, bgl_info_callback );
    }
 
+   if( ssl->BgL_isserverz00 ) {
+   } else {
+      SSL_set_tlsext_host_name( _ssl, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
+   }
+
    SSL_set_bio( _ssl, ssl->BgL_z42biozd2readz90, ssl->BgL_z42biozd2writez90 );
-   
+
 #if( defined( SSL_MODE_RELEASE_BUFFERS ) )
    mode = SSL_get_mode( _ssl );
    SSL_set_mode( _ssl, mode | SSL_MODE_RELEASE_BUFFERS );
@@ -959,6 +969,26 @@ set_shutdown_flags( ssl_connection ssl ) {
    }
 }
 
+#if( SSL_DEBUG )
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    set_shutdown_flags ...                                           */
+/*---------------------------------------------------------------------*/
+static void
+set_shutdown_flags2( char *name, ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   int flags = SSL_get_shutdown2( name, _ssl );
+
+   if( flags & SSL_SENT_SHUTDOWN ) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   }
+
+   if( flags & SSL_RECEIVED_SHUTDOWN ) {
+      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   }
+}
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
 /*    bgl_ssl_connection_start ...                                     */
@@ -974,7 +1004,7 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
 	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       } else {
-	 if( (n = SSL_connect( _ssl )) <= 0 ) {
+	 if( (n = SSL_connect2( "start", _ssl )) <= 0 ) {
 	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       }
@@ -996,8 +1026,24 @@ bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
    if( n < 0 ) {
       handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n, "connection_read" );
    }
+   else {
+      int bytes_read = n;
+      if( bytes_read >= 0 ) {
+	 int i;
 
+	 fprintf( stderr, "%s (bgl_ssl_connection_read) off=%d len=%d bytes_read=%d\n", __FILE__, off, len, bytes_read );
+	 for( i = 0; i < bytes_read; i++ ) {
+	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
+	 }
+
+	 fprintf( stderr, "\n" );
+      }
+   }
+#if( SSL_DEBUG )    
+   set_shutdown_flags2( "connection_read", ssl );
+#else
    set_shutdown_flags( ssl );
+#endif
    
    return n;
 }
@@ -1010,11 +1056,26 @@ BGL_RUNTIME_DEF long
 bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
    long int n = BIO_write( ssl->BgL_z42biozd2readz90, buf + off, len );
 
+   {
+      int i;
+
+      fprintf( stderr, "%s (bgl_ssl_connection_write) off=%d len=%d\n", __FILE__, off, len );
+      for( i = 0; i < (len < 160 ? len : 160); i++ ) {
+	 fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
+      }
+
+      fprintf( stderr, "\n" );
+   }
+
    if( n < 0 ) {
       handle_bio_error( ssl, ssl->BgL_z42biozd2readz90, n, "connection_write" );
    }
 
+#if( SSL_DEBUG )    
+   set_shutdown_flags2( "connection_write", ssl );
+#else
    set_shutdown_flags( ssl );
+#endif
    
    return n;
 }
@@ -1039,21 +1100,33 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 	 return m;
       } else {
 	 int m;
-	 if( (m = SSL_connect( _ssl )) <= 0 ) {
+	 if( (m = SSL_connect2( name, _ssl )) <= 0 ) {
 	    handle_ssl_error( ssl, m, "ssl-connection-clear (connect)" );
 	 }
 	 return m;
       }
    }
 
+#if( defined( SSL_DEBUG) )   
+   if( SSL_fun == &SSL_write ) {
+      n = SSL_write( _ssl, buf + off, len );
+   } else {
+      n = SSL_read( _ssl, buf + off, len );
+   }
+#else   
    n = SSL_fun( _ssl, buf + off, len );
+#endif
 
    if( n < 0 ) {
       handle_ssl_error( ssl, n, "ssl-connection-clear (read/write)" );
    }
    
+#if( defined( SSL_DEBUG) )   
+   set_shutdown_flags2( name, ssl );
+#else
    set_shutdown_flags( ssl );
-
+#endif
+   
    return n;
 }
    
@@ -1302,6 +1375,148 @@ bgl_ssl_connection_verify_error( ssl_connection ssl ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    cons ...                                                         */
+/*---------------------------------------------------------------------*/
+static obj_t
+cons( char *sym, BUF_MEM *mem ) {
+   obj_t key = string_to_symbol( sym );
+   obj_t val = string_to_bstring_len( mem->data, mem->length );
+
+   return MAKE_PAIR( key, val );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_connection_get_peer_certificate ...                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_connection_get_peer_certificate( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   X509 *peer_cert = SSL_get_peer_certificate( _ssl );
+   
+   if( peer_cert ) {
+      int index;
+      unsigned int md_size, i;
+      unsigned char md[ EVP_MAX_MD_SIZE ];
+      
+      BIO *bio = BIO_new( BIO_s_mem() );
+      BUF_MEM *mem;
+      obj_t info = BNIL;
+      
+      if( X509_NAME_print_ex(
+	     bio, X509_get_subject_name(peer_cert), 0, X509_NAME_FLAGS ) > 0 ) {
+	 BIO_get_mem_ptr( bio, &mem );
+	 info = MAKE_PAIR( cons( "subject", mem ), info );
+      }
+      BIO_reset( bio );
+
+      if( X509_NAME_print_ex(
+	     bio, X509_get_issuer_name(peer_cert), 0, X509_NAME_FLAGS ) > 0 ) {
+	 BIO_get_mem_ptr( bio, &mem );
+	 info = MAKE_PAIR( cons( "issuer", mem ), info );
+      }
+      BIO_reset( bio );
+
+      index = X509_get_ext_by_NID( peer_cert, NID_subject_alt_name, -1 );
+      if( index >= 0 ) {
+	 X509_EXTENSION *ext = X509_get_ext( peer_cert, index );
+	 int rv = X509V3_EXT_print( bio, ext, 0, 0 );
+
+	 BIO_get_mem_ptr( bio, &mem );
+	 info = MAKE_PAIR( cons( "subjectaltname", mem ), info );
+
+	 BIO_reset( bio );
+      }
+
+      EVP_PKEY *pkey = NULL;
+      RSA *rsa = NULL;
+      if( NULL != (pkey = X509_get_pubkey( peer_cert ))
+	  && NULL != (rsa = EVP_PKEY_get1_RSA( pkey )) ) {
+	 BN_print( bio, rsa->n );
+	 BIO_get_mem_ptr( bio, &mem );
+	 info = MAKE_PAIR( cons( "modulus", mem ), info );
+	 BIO_reset( bio );
+
+	 BN_print( bio, rsa->e );
+	 BIO_get_mem_ptr( bio, &mem );
+	 info = MAKE_PAIR( cons( "exponent", mem ), info );
+	 BIO_reset( bio );
+      }
+
+      if( pkey != NULL ) {
+	 EVP_PKEY_free( pkey );
+	 pkey = NULL;
+      }
+      if( rsa != NULL ) {
+	 RSA_free( rsa );
+	 rsa = NULL;
+      }
+
+      ASN1_TIME_print( bio, X509_get_notBefore( peer_cert )) ;
+      BIO_get_mem_ptr( bio, &mem );
+
+      info = MAKE_PAIR( cons( "valid-from", mem ), info );
+      BIO_reset( bio );
+
+      ASN1_TIME_print( bio, X509_get_notAfter( peer_cert ) );
+      BIO_get_mem_ptr( bio, &mem );
+      info = MAKE_PAIR( cons( "valid-to", mem ), info );
+      BIO_free( bio );
+
+      if( X509_digest( peer_cert, EVP_sha1(), md, &md_size ) ) {
+	 const char hex[] = "0123456789ABCDEF";
+	 char fingerprint[ EVP_MAX_MD_SIZE * 3 ];
+
+	 for( i = 0; i<md_size; i++ ) {
+	    fingerprint[ 3*i ] = hex[ (md[ i ] & 0xf0) >> 4 ];
+	    fingerprint[ (3*i)+1 ] = hex[ (md[i] & 0x0f) ];
+	    fingerprint[ (3*i)+2 ] = ':';
+	 }
+
+	 if( md_size > 0 ) {
+	    fingerprint[ (3*(md_size-1))+2 ] = '\0';
+	 } else {
+	    fingerprint[ 0 ] = '\0';
+	 }
+
+	 info = MAKE_PAIR(
+	    MAKE_PAIR(
+	       string_to_symbol( "fingerprint" ),
+	       string_to_bstring( fingerprint ) ),
+	    info );
+      }
+
+      ASN1_OBJECT *eku =
+	 (ASN1_OBJECT *)X509_get_ext_d2i( peer_cert, NID_ext_key_usage, NULL, NULL );
+      if( eku != NULL ) {
+	 char buf[ 256 ];
+	 int len = sk_ASN1_OBJECT_num( eku );
+	 obj_t ext_key_usage = create_vector( len );
+
+	 for( i = 0; i < len; i++ ) {
+	    memset( buf, 0, sizeof( buf ) );
+	    OBJ_obj2txt( buf, sizeof(buf) - 1, sk_ASN1_OBJECT_value( eku, i ), 1 );
+			
+	    VECTOR_SET( ext_key_usage, i, string_to_bstring( buf ) );
+	 }
+
+	 sk_ASN1_OBJECT_pop_free( eku, ASN1_OBJECT_free );
+	 info = MAKE_PAIR(
+	    MAKE_PAIR(
+	       string_to_symbol( "ext-key-usage" ),
+	       ext_key_usage ),
+	    info );
+      }
+
+      X509_free( peer_cert );
+      return info;
+   } else {
+      return BUNSPEC;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_ssl_ctx_init ...                                             */
 /*    -------------------------------------------------------------    */
@@ -1312,8 +1527,14 @@ BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_init( secure_context sc ) {
    char *sslmethod = BSTRING_TO_STRING( sc->BgL_methodz00 );
    SSL_METHOD *method;
-
+   
+#if( SSL_DEBUG )   
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+#else
    bgl_ssl_init();
+#endif
    
    if( !strcmp( sslmethod, "SSLv2_method" ) ) {
 #if( BGLSSL_HAVE_SSLV2 )

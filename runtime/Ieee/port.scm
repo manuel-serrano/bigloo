@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Thu Jun 12 16:04:19 2014 (serrano)                */
+;*    Last change :  Sat Sep  6 08:04:27 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -92,8 +92,9 @@
 	    ($open-input-resource::obj (::bstring ::bstring) "bgl_open_input_resource")
  	    ($open-input-c-string::obj (::string) "bgl_open_input_c_string")
 	    ($reopen-input-c-string::obj (::input-port ::string) "bgl_reopen_input_c_string")
-	    ($open-input-string::input-port (::bstring ::int) "bgl_open_input_string")
-	    ($open-input-string!::input-port (::bstring) "bgl_open_input_string_bang")
+	    ($open-input-string::input-port (::bstring ::long) "bgl_open_input_string")
+	    ($open-input-substring::input-port (::bstring ::long ::long) "bgl_open_input_substring")
+	    ($open-input-substring!::input-port (::bstring ::long ::long) "bgl_open_input_substring_bang")
 	    ($open-input-procedure::input-port (::procedure ::bstring) "bgl_open_input_procedure")
 	    ($input-port-timeout-set!::bool (::input-port ::long) "bgl_input_port_timeout_set")
 	    ($output-port-timeout-set!::bool (::output-port ::long) "bgl_output_port_timeout_set")
@@ -240,8 +241,10 @@
 		       "bgl_reopen_input_c_string")
 	       (method static $open-input-string::input-port (::bstring ::int)
 		       "bgl_open_input_string")
-	       (method static $open-input-string!::input-port (::bstring)
-		       "bgl_open_input_string_bang")
+	       (method static $open-input-substring::input-port (::bstring ::int ::int)
+		       "bgl_open_input_substring")
+	       (method static $open-input-substring!::input-port (::bstring ::int ::int)
+		       "bgl_open_input_substring_bang")
 	       (method static $open-input-procedure::obj (::procedure ::bstring)
 		       "bgl_open_input_procedure")
 	       (method static $input-port-timeout-set!::bool (::input-port ::long)
@@ -410,8 +413,10 @@
 	    (with-error-to-procedure ::procedure ::procedure)
 	    
 	    (open-input-file ::bstring #!optional (bufinfo #t) (timeout 5000000))
-	    (open-input-string::input-port ::bstring #!optional (start 0))
-	    (inline open-input-string!::input-port ::bstring)
+	    (open-input-string::input-port string::bstring
+	       #!optional (start 0) (end (string-length string)))
+	    (open-input-string!::input-port string::bstring
+	       #!optional (start 0) (end (string-length string)))
 	    (open-input-procedure ::procedure #!optional (bufinfo #t))
 	    (open-input-gzip-port ::input-port  #!optional (bufinfo #t))
 	    
@@ -1014,20 +1019,36 @@
 ;*---------------------------------------------------------------------*/
 ;*    open-input-string ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (open-input-string string #!optional (start 0))
+(define (open-input-string string
+	   #!optional (start 0) (end (string-length string)))
    (cond
       ((<fx start 0)
        (error "open-input-string" "Illegal start offset" start))
       ((>fx start (string-length string))
        (error "open-input-string" "Start offset out of bounds" start))
+      ((>fx start end)
+       (error "open-input-string" "Start offset greater than end" start))
+      ((>fx end (string-length string))
+       (error "open-input-string" "End offset out of bounds" end))
       (else
-       ($open-input-string string start))))
+       ($open-input-substring string start end))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-string! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-inline (open-input-string! string)
-   ($open-input-string! string))
+(define (open-input-string! string
+	   #!optional (start 0) (end (string-length string)))
+   (cond
+      ((<fx start 0)
+       (error "open-input-string" "Illegal start offset" start))
+      ((>fx start (string-length string))
+       (error "open-input-string" "Start offset out of bounds" start))
+      ((>fx start end)
+       (error "open-input-string" "Start offset greater than end" start))
+      ((>fx end (string-length string))
+       (error "open-input-string" "End offset out of bounds" end))
+      (else
+       ($open-input-substring! string start end))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-procedure ...                                         */

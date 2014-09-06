@@ -3,15 +3,32 @@ package bigloo;
 import java.io.*;
 
 public class input_string_port extends input_port {
-   public input_string_port( final byte[] s, int start ) {
-      super( "[string]", new byte[ s.length+1 - start ] );
+   public input_string_port( final byte[] s, int start, int end ) {
+      super( "[string]", new byte[ end+1 - start ] );
 
-      final int size = s.length - start;
+      final int size = end - start;
       length = size;
       
       for ( int i= 0 ; i < size ; ++i ) buffer[i] = s[i + start];
       
+      bufpos = bufsiz;
       buffer[size] = 0;
+      eof = true;
+   }
+
+   public input_string_port( final byte[] s, int start, int end, byte c0 ) {
+      super( "[string]", s );
+      int size = end - start;
+      
+      length = size;
+      bufsiz = size + 1;
+      
+      s[size + start] = 0;
+      s[0] = c0;
+      
+      matchstart = start;
+      matchstop = start;
+      
       bufpos = bufsiz;
       eof = true;
    }

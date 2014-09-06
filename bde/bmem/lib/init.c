@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Apr 12 19:13:50 2013 (serrano)                */
-/*    Copyright   :  2003-13 Manuel Serrano                            */
+/*    Last change :  Sat Sep  6 07:47:02 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -95,7 +95,9 @@ void *(*____bgl_open_input_file)( void *, void * );
 void *(*____bgl_file_to_input_port)( FILE * );
 void *(*____bgl_open_input_pipe)( void *, void * );
 void *(*____bgl_open_input_resource)( void *, void * );
-void *(*____bgl_open_input_string)( void *, int );
+void *(*____bgl_open_input_string)( void *, long );
+void *(*____bgl_open_input_substring)( void *, long, long );
+void *(*____bgl_open_input_substring_bang)( void *, long, long );
 void *(*____bgl_open_input_c_string)( char * );
 void *(*____bgl_reopen_input_c_string)( void *, char * );
 void *(*____bgl_input_port_timeout_set)( void *, long );
@@ -397,7 +399,7 @@ bmem_init_inner() {
    ____bgl_open_input_file = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_file" );
    ____bgl_open_input_pipe = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
    ____bgl_open_input_resource = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
-   ____bgl_open_input_string = (void *(*)( void *, int ))get_function( hdl, "bgl_open_input_string" );
+   ____bgl_open_input_string = (void *(*)( void *, long ))get_function( hdl, "bgl_open_input_string" );
    ____bgl_open_input_c_string = (void *(*)( char * ))get_function( hdl, "bgl_open_input_c_string" );
    ____bgl_reopen_input_c_string = (void *(*)( void *, char * ))get_function( hdl, "bgl_reopen_input_c_string" );
    ____bgl_input_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_input_port_timeout_set" );

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sun May 18 09:33:07 2014 (serrano)                */
+/*    Last change :  Sat Sep  6 07:21:28 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1585,52 +1585,64 @@ bgl_file_to_input_port( FILE *file ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    bgl_open_input_string ...                                        */
+/*    bgl_open_input_substring ...                                     */
 /*    -------------------------------------------------------------    */
 /*    The start index is in bounds.                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_open_input_string( obj_t string, int start ) {
+bgl_open_input_substring( obj_t string, long offset, long end ) {
    obj_t port;
-   long bufsiz = STRING_LENGTH( string ) - start;
-   obj_t buffer = make_string_sans_fill( bufsiz );
+   long len = end - offset;
+   obj_t buffer = make_string_sans_fill( len );
 
-   
-   memcpy( &STRING_REF( buffer, 0 ), &(STRING_REF( string, start )), bufsiz );
+   memcpy( &STRING_REF( buffer, 0 ), &(STRING_REF( string, offset )), len );
    port = bgl_make_input_port( string_to_bstring( "[string]" ),
 			       0L,
 			       KINDOF_STRING,
 			       buffer );
 
    CREF( port )->input_port_t.eof = 1;
-   CREF( port )->input_port_t.bufpos = bufsiz;
-   CREF( port )->input_port_t.length = bufsiz;
+   CREF( port )->input_port_t.bufpos = len;
+   CREF( port )->input_port_t.length = len;
    CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
 
    return port;
 }
 
 /*---------------------------------------------------------------------*/
-/*    bgl_open_input_string_bang ...                                   */
+/*    bgl_open_input_substring_bang ...                                */
 /*    -------------------------------------------------------------    */
-/*    The start index is in bounds.                                    */
+/*    The offset index is in bounds.                                   */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_open_input_string_bang( obj_t buffer ) {
+bgl_open_input_substring_bang( obj_t buffer, long offset, long end ) {
    obj_t port;
-   long bufsiz = STRING_LENGTH( buffer );
    
    port = bgl_make_input_port( string_to_bstring( "[string]" ),
 			       0L,
 			       KINDOF_STRING,
 			       buffer );
 
+   STRING_SET( buffer, end, '\0' );
    CREF( port )->input_port_t.eof = 1;
-   CREF( port )->input_port_t.bufpos = bufsiz;
-   CREF( port )->input_port_t.length = bufsiz;
+   CREF( port )->input_port_t.bufpos = end;
+   CREF( port )->input_port_t.length = end;
+   CREF( port )->input_port_t.matchstart = offset;
+   CREF( port )->input_port_t.matchstop = offset;
    CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
 
    return port;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_open_input_string ...                                        */
+/*    -------------------------------------------------------------    */
+/*    Backward compatibility                                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_open_input_string( obj_t buffer, long offset ) {
+   return bgl_open_input_substring( buffer, offset, STRING_LENGTH( buffer ) );
 }
 
 /*---------------------------------------------------------------------*/

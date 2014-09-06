@@ -6052,12 +6052,22 @@ public final class foreign
 
    public static input_port bgl_open_input_string(byte[]s, int start)
       {
-	 return new input_string_port(s, start);
+	 return new input_string_port(s, start, s.length);
       }
 
-   public static input_port bgl_open_input_string_bang(byte[]s)
+   public static input_port bgl_open_input_substring(byte[]s, int start, int end)
       {
-	 return new input_string_port(s, 0);
+	 return new input_string_port(s, start, end);
+      }
+
+   public static input_port bgl_open_input_substring_bang(byte[]s, int start, int end)
+      {
+	 if( end < s.length && s.length > 0 ) {
+	    // s[ 0 ] will be erased when the buffer is created
+	    return new input_string_port(s, start, end, s[ 0 ] );
+	 } else {
+	    return new input_string_port(s, start, end);
+	 }
       }
 
    public static Object bgl_open_input_procedure(procedure p, byte[] b)
@@ -6080,7 +6090,7 @@ public final class foreign
 
    public static Object bgl_open_input_c_string(byte[]s)
       {
-	 return new input_string_port(s, 0);
+	 return new input_string_port(s, 0, s.length);
       }
 
    public static Object bgl_reopen_input_c_string(input_port p, byte[]s)

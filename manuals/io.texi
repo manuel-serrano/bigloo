@@ -319,9 +319,19 @@ Note that closing a zlib port opened from a port @var{pi} does not close
 the @var{pi} port.
 @end deffn
  
-@deffn {bigloo procedure} open-input-string string [start 0]
-@deffnx {bigloo procedure} open-input-string! string
+@deffn {bigloo procedure} open-input-string string [start 0] [end]
+@deffnx {bigloo procedure} open-input-string! string [start 0] [end]
 @cindex SRFI-6
+
+@var{string} must be a string, and @var{start} and @var{end} must be
+exact integers satisfying:
+
+@smallexample
+  0 <= START <= END <= (string-length STRING)
+@end smallexample
+
+The optional argument @var{end} defaults to @code{(string-length STRING)}.
+
 Returns an @code{input-port} able to deliver characters from
 @var{string}.
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sun Aug 31 18:57:40 2014 (serrano)                */
+;*    Last change :  Wed Sep  3 17:12:40 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -85,6 +85,8 @@
 	      "bgl_ssl_connection_set_session")
 	   ($bgl-ssl-connection-verify-error::obj (::ssl-connection)
 	      "bgl_ssl_connection_verify_error")
+	   ($bgl-ssl-connection-get-peer-certificate::obj (::ssl-connection)
+	      "bgl_ssl_connection_get_peer_certificate")
 	   
 	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
@@ -180,7 +182,8 @@
 	   (generic ssl-connection-enc-pending ::ssl-connection)
 	   (generic ssl-connection-clear-pending ::ssl-connection)
 	   (generic ssl-connection-set-session ssl::ssl-connection ::bstring)
-	   (generic ssl-connection-verify-error ::ssl-connection))
+	   (generic ssl-connection-verify-error ::ssl-connection)
+	   (generic ssl-connection-get-peer-certificate ::ssl-connection))
    
    (cond-expand
       (bigloo-c
@@ -197,7 +200,8 @@
 	      ($bio-write::$bio (default $bio-nil))
 	      (ctx::secure-context read-only)
 	      (isserver::bool read-only)
-	      (request-cert::bool read-only)
+	      (request-cert::bool read-only (default #f))
+	      (server-name::bstring read-only (default ""))
 	      (reject-unauthorized::bool read-only))))
       (else
        (export
@@ -479,5 +483,12 @@
       (else
        #f)))
 
-   
-
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-get-peer-certificate ::ssl-connection ...         */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-get-peer-certificate ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-get-peer-certificate ssl))
+      (else
+       #f)))
