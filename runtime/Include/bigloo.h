@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Sep  6 07:21:42 2014 (serrano)                */
+/*    Last change :  Sun Sep  7 10:26:41 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2993,14 +2993,14 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define RGC_BUFFER_PEEK_CHAR( i ) \
    ((unsigned int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).forward )))
    
-#define RGC_BUFFER_CHARACTER( i ) \
-   ((char)(RGC_BUFFER_REF( i, INPUT_PORT( i ).matchstart )))
-   
-#define RGC_BUFFER_BYTE( i ) \
-   ((int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).matchstart )))
-   
 #define RGC_BUFFER_BYTE_REF( i, offset ) \
    ((int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).matchstart + offset )))
+   
+#define RGC_BUFFER_BYTE( i ) \
+   ((int)(RGC_BUFFER_BYTE_REF( i, 0 )))
+   
+#define RGC_BUFFER_CHARACTER( i ) \
+   ((char)(RGC_BUFFER_BYTE( i )))
    
 #define RGC_SET_FILEPOS( p ) \
    (INPUT_PORT( p ).filepos += RGC_BUFFER_MATCH_LENGTH( p ))
@@ -3027,6 +3027,12 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define RGC_BUFFER_POSITION( p ) \
    (INPUT_PORT( p ).forward - INPUT_PORT( p ).matchstart)
+
+#define RGC_BUFFER_FORWARD( p ) \
+   (INPUT_PORT( p ).forward)
+
+#define RGC_BUFFER_BUFPOS( p ) \
+   (INPUT_PORT( p ).bufpos)
 
 #define RGC_MATCHSTOP( p ) \
    (INPUT_PORT( p ).matchstop)

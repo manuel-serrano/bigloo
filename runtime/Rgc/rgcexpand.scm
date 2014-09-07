@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Tue Aug 19 08:44:27 2014 (serrano)                */
+;*    Last change :  Sun Sep  7 09:46:33 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -140,71 +140,71 @@
 ;*---------------------------------------------------------------------*/
 (define (make-regular-parser args states actions else-num submatch? defs)
    `(let ((the-rgc-context #unspecified))
-       (lambda (input-port ,@args)
+       (lambda (iport ,@args)
 	  ;; compiled states
 	  ,@states
 	  ;; rgc library functions
 	  ;; @deffn the-port@
 	  (define (the-port::input-port)
-	     input-port)
+	     iport)
 	  ;; @deffn the-character@
 	  (define (the-character::char)
-	     (rgc-buffer-character input-port))
+	     (rgc-buffer-character iport))
 	  ;; @deffn the-byte@
 	  (define (the-byte::int)
-	     (rgc-buffer-byte input-port))
+	     (rgc-buffer-byte iport))
 	  ;; @deffn the-byte-ref@
 	  (define (the-byte-ref::int offset::int)
-	     (rgc-buffer-byte-ref input-port offset))
+	     (rgc-buffer-byte-ref iport offset))
 	  ;; @deffn the-string@
 	  (define (the-string::bstring)
-	     (rgc-buffer-substring input-port 0 (the-length)))
+	     (rgc-buffer-substring iport 0 (the-length)))
 	  ;; @deffn the-substring@
 	  (define (the-substring::bstring min::int max::int)
 	     (when (<fx max min) (set! max (+fx (the-length) max)))
 	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
-		 (rgc-buffer-substring input-port min max)
+		 (rgc-buffer-substring iport min max)
 		 (error "the-substring"
-			((@ format __r4_output_6_10_3)
-			 "Illegal range `~a'" (the-string))
-			(cons min max))))
+		    ((@ format __r4_output_6_10_3)
+		     "Illegal range `~a'" (the-string))
+		    (cons min max))))
 	  ;; @deffn the-escape-substring@
 	  (define (the-escape-substring::bstring min::int max::int strict::bool)
 	     (when (<fx max 0) (set! max (+fx (the-length) max)))
 	     (if (and (>=fx min 0) (>=fx max min) (<=fx max (the-length)))
-		 (rgc-buffer-escape-substring input-port min max strict)
+		 (rgc-buffer-escape-substring iport min max strict)
 		 (error "the-escape-substring"
-			((@ format __r4_output_6_10_3)
-			 "Illegal range `~a'" (the-string))
-			(cons min max))))
+		    ((@ format __r4_output_6_10_3)
+		     "Illegal range `~a'" (the-string))
+		    (cons min max))))
 	  ;; @deffn the-length@
 	  (define (the-length::int)
-	     (rgc-buffer-length input-port))
+	     (rgc-buffer-length iport))
 	  ;; @deffn the-fixnum@
 	  (define (the-fixnum::long)
-	     (rgc-buffer-fixnum input-port))
+	     (rgc-buffer-fixnum iport))
 	  ;; @deffn the-integer@
 	  (define (the-integer::obj)
-	     (rgc-buffer-integer input-port))
+	     (rgc-buffer-integer iport))
 	  ;; @deffn the-flonum@
 	  (define (the-flonum::double)
-	     (rgc-buffer-flonum input-port))
+	     (rgc-buffer-flonum iport))
 	  ;; @deffn the-symbol@
 	  (define (the-symbol::symbol)
-	     (rgc-buffer-symbol input-port))
+	     (rgc-buffer-symbol iport))
 	  ;; @deffn the-subsymbol@
 	  (define (the-subsymbol::symbol min max)
 	     (if (<fx max 0)
 		 (let ((stop (+fx (the-length) max)))
 		    (if (<=fx stop min)
 			(error "the-subsymbol" "Illegal range" (cons min max))
-			(rgc-buffer-subsymbol input-port min stop)))
+			(rgc-buffer-subsymbol iport min stop)))
 		 (if (and (>=fx min 0) (<=fx max (the-length)) (>=fx max min))
-		     (rgc-buffer-subsymbol input-port min max)
+		     (rgc-buffer-subsymbol iport min max)
 		     (error "the-subsymbol" "Illegal range" (cons min max)))))
 	  ;; @deffn the-downcase-symbol@
 	  (define (the-downcase-symbol::symbol)
-	     (rgc-buffer-downcase-symbol input-port))
+	     (rgc-buffer-downcase-symbol iport))
 	  ;; @deffn the-downcase-subsymbol@
 	  (define (the-downcase-subsymbol::symbol min max)
 	     (if (<fx max 0)
@@ -212,14 +212,14 @@
 		    (if (<=fx stop min)
 			(error "the-downcase-subsymbol"
 			   "Illegal range" (cons min max))
-			(rgc-buffer-downcase-subsymbol input-port min stop)))
+			(rgc-buffer-downcase-subsymbol iport min stop)))
 		 (if (and (>=fx min 0) (<=fx max (the-length)) (>=fx max min))
-		     (rgc-buffer-downcase-subsymbol input-port min max)
+		     (rgc-buffer-downcase-subsymbol iport min max)
 		     (error "the-downcase-subsymbol"
 			"Illegal range" (cons min max)))))
 	  ;; @deffn the-upcase-symbol@
 	  (define (the-upcase-symbol::symbol)
-	     (rgc-buffer-upcase-symbol input-port))
+	     (rgc-buffer-upcase-symbol iport))
 	  ;; @deffn the-upcase-subsymbol@
 	  (define (the-upcase-subsymbol::symbol min max)
 	     (if (<fx max 0)
@@ -227,26 +227,26 @@
 		    (if (<=fx stop min)
 			(error "the-upcase-subsymbol"
 			   "Illegal range" (cons min max))
-			(rgc-buffer-upcase-subsymbol input-port min stop)))
+			(rgc-buffer-upcase-subsymbol iport min stop)))
 		 (if (and (>=fx min 0) (<=fx max (the-length)) (>=fx max min))
-		     (rgc-buffer-upcase-subsymbol input-port min max)
+		     (rgc-buffer-upcase-subsymbol iport min max)
 		     (error "the-upcase-subsymbol"
 			"Illegal range" (cons min max)))))
 	  ;; @deffn the-keyword@
 	  (define (the-keyword::keyword)
-	     (rgc-buffer-keyword input-port))
+	     (rgc-buffer-keyword iport))
 	  ;; @deffn the-downcase-keyword@
 	  (define (the-downcase-keyword::keyword)
-	     (rgc-buffer-downcase-keyword input-port))
+	     (rgc-buffer-downcase-keyword iport))
 	  ;; @deffn the-upcase-keyword@
 	  (define (the-upcase-keyword::keyword)
-	     (rgc-buffer-upcase-keyword input-port))
+	     (rgc-buffer-upcase-keyword iport))
 	  ;; @deffn the-failure@
 	  (define (the-failure)
-	     (if (=fx (rgc-buffer-length input-port) 0)
+	     (if (=fx (rgc-buffer-length iport) 0)
 		 ;; this is the end-of-file object
 		 #<0100>
-		 (rgc-buffer-character input-port)))
+		 (rgc-buffer-character iport)))
 	  ;; @deffn the-context@
 	  (define (the-context)
 	     the-rgc-context)
@@ -262,41 +262,43 @@
 		 (set! the-rgc-context #unspecified)))
 	  ,@(if submatch?
 		(list
-		 '(define rgc-submatches (quote ()))
-		 '(define (rgc-submatch-start! match::int submatch::int)
-		   (set! rgc-submatches
-			 (cons (vector match
-				       submatch
-				       (rgc-buffer-position input-port)
-				       (quote start))
-			       rgc-submatches)))
-		 '(define (rgc-submatch-start*! match::int submatch::int)
-		   (set! rgc-submatches
-			 (cons (vector match
-				       submatch
-				       (rgc-buffer-position input-port)
-				       (quote start*))
-			       rgc-submatches)))
-		 '(define (rgc-submatch-stop! match::int submatch::int)
-		   (set! rgc-submatches
-			 (cons (vector match
-				       submatch
-				       (rgc-buffer-position input-port)
-				       (quote stop))
-			       rgc-submatches))))
+		   '(define rgc-submatches (quote ()))
+		   '(define (rgc-submatch-start! match::int submatch::int)
+		     (set! rgc-submatches
+			(cons (vector match
+				 submatch
+				 (rgc-buffer-position iport)
+				 (quote start))
+			   rgc-submatches)))
+		   '(define (rgc-submatch-start*! match::int submatch::int)
+		     (set! rgc-submatches
+			(cons (vector match
+				 submatch
+				 (rgc-buffer-position iport)
+				 (quote start*))
+			   rgc-submatches)))
+		   '(define (rgc-submatch-stop! match::int submatch::int)
+		     (set! rgc-submatches
+			(cons (vector match
+				 submatch
+				 (rgc-buffer-position iport)
+				 (quote stop))
+			   rgc-submatches))))
 		'())
 	  ;; user definitions
 	  ,@defs
 	  ;; main function
 	  (define (ignore)
-	     (rgc-start-match! input-port)
+	     (rgc-start-match! iport)
 	     ,@(if submatch?
 		   (list '(set! rgc-submatches (quote ())))
 		   '())
 	     (let ((match::long (,(state-name (get-initial-state))
-				 input-port
-				 ,else-num)))
-		(rgc-set-filepos! input-port)
+				 iport
+				 ,else-num
+				 (rgc-buffer-position iport)
+				 (rgc-buffer-bufpos iport))))
+		(rgc-set-filepos! iport)
 		,@(if submatch?
 		      ;; @deffn the-submatch@
 		      '((define (the-submatch num)
@@ -304,10 +306,8 @@
 			       (the-string)
 			       (multiple-value-bind (start stop)
 				  (rgc-the-submatch rgc-submatches
-						    (rgc-buffer-position
-						     input-port)
-						    match
-						    num)
+				     (rgc-buffer-position iport)
+				     match num)
 				  (if (and (>=fx start 0) (>=fx stop start))
 				      (the-substring start stop)
 				      "")))))
@@ -316,11 +316,11 @@
 		   ,@(let loop ((actions actions)
 				(num     0)
 				(res     '()))
-			(if (null? actions)
-			    res
-			    (loop (cdr actions)
-				  (+fx num 1)
-				  (cons `((,num) ,(car actions)) res))))
+		      (if (null? actions)
+			  res
+			  (loop (cdr actions)
+			     (+fx num 1)
+			     (cons `((,num) ,(car actions)) res))))
 		   (else
 		    (error "regular-grammar" "Illegal match" match)))))
 	  ;; we start parsing. See the module __rgc for the definition
@@ -330,7 +330,7 @@
 	       '(ignore)
 	       '(if (closed-input-port? (the-port))
 		 (error "regular-grammar"
-			"Can't read on a closed input port"
-			(the-port))
+		    "Can't read on a closed input port"
+		    (the-port))
 		 (ignore))))))
 		    

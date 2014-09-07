@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 30 13:36:49 1998                          */
-;*    Last change :  Sat Dec 26 09:08:13 1998 (serrano)                */
+;*    Last change :  Sun Sep  7 10:02:18 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A benchmark to test the reader performances.                     */
 ;*=====================================================================*/
@@ -312,7 +312,7 @@
 				"Unexpected end-of-file"
 				"Unclosed vector or structure"))))
 		 (else
-		  (reset-eof input-port)
+		  (reset-eof (the-port))
 		  char))
 	      (error/location "read"
 			      "Illegal char"

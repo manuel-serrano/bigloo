@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */
-;*    Last change :  Tue Apr 17 07:40:18 2012 (serrano)                */
+;*    Last change :  Sun Sep  7 10:23:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the DFA compilation. Each state is        */
 ;*    compiled into a lambda expression.                               */
@@ -73,9 +73,7 @@
 ;*---------------------------------------------------------------------*/
 (define *case-threshold*
    (let ((value 80))
-      (if *rgc-optim*
-	  (/fx value 2)
-	  value)))
+      (if *rgc-optim* (/fx value 2) value)))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-state ...                                                */
@@ -95,9 +93,9 @@
    ;; we start splittint transition in two sets:
    ;;    1. set for special
    ;;    2. set for regular chars
-   `(define (,(state-name state) input-port last-match)
+   `(define (,(state-name state) iport last-match position bufpos)
        ,(let ((transitions (state-transitions state))
-	      (positions   (state-positions state)))
+	      (positions (state-positions state)))
 	   (if (null? transitions)
 	       'last-match
 	       (multiple-value-bind (special-trans regular-trans)
@@ -105,16 +103,12 @@
 		  (let ((match-body (compile-match special-trans)))
 		     (if match-body
 			 `(let ((new-match ,match-body))
-			     ,(compile-regular submatches
-					       state
-					       regular-trans
-					       'new-match
-					       positions-to-char))
-			 (compile-regular submatches
-					  state
-					  regular-trans
-					  'last-match
-					  positions-to-char))))))))
+			     ,(compile-regular
+				 submatches state
+				 regular-trans 'new-match positions-to-char))
+			 (compile-regular
+			    submatches state
+			    regular-trans 'last-match positions-to-char))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    split-transitions ...                                            */
@@ -124,8 +118,8 @@
 ;*---------------------------------------------------------------------*/
 (define (split-transitions transitions)
    (let loop ((transitions transitions)
-	      (specials    '())
-	      (regulars    '()))
+	      (specials '())
+	      (regulars '()))
       (cond
 	 ((null? transitions)
 	  (values specials regulars))
@@ -145,55 +139,59 @@
    ;; the first set is to build the <state x transitions>
    ;; association list
    (let ((state-trans (state-transition-list transitions))
-	 (positions   (state-positions current-state)))
+	 (positions (state-positions current-state)))
       (if (null? state-trans)
 	  last-match
-	  ;; if the number of different transition is important
-	  ;; it is better to generate a `case' construction instead
-	  ;; of `cond'. I don't know exactly where the limit.
-	  `(let ((current-char::int (rgc-buffer-get-char input-port)))
-	      ,@(compile-submatches 'current-char
-				    submatches
-				    positions
-				    p->c)
+	  ;; Generate a `case' construction instead of `cond' when the
+	  ;; the number of transitions exceeds a fixed threshold
+	  `(let ((current-char::int (rgc-buffer-get-char iport)))
+	      ,@(compile-submatches 'current-char submatches positions p->c)
 	      ,(if (<=fx (length state-trans) 12)
-		   (compile-cond-regular current-state
-					 state-trans
-					 last-match)
-		   (compile-case-regular current-state
-					 state-trans
-					 last-match))))))
+		   (compile-cond-regular
+		      current-state state-trans last-match)
+		   (compile-case-regular
+		      current-state state-trans last-match))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-jump-to-state ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (compile-jump-to-state state match)
-   `(,(state-name state) input-port ,match))
+(define (compile-jump-to-state state match position bufpos)
+   `(,(state-name state) iport ,match ,position ,bufpos))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-case-regular ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (compile-case-regular current-state state-trans match)
+   
    (define sentinel-match #f)
+   
    (define (sentinel-rule)
       (if (state? sentinel-match)
-	  `((0) (if (rgc-buffer-empty? input-port)
-		    (if (rgc-fill-buffer input-port)
-			,(compile-jump-to-state current-state 'last-match)
+	  `((0) (if (rgc-buffer-empty? iport)
+		    (if (rgc-fill-buffer iport)
+			,(compile-jump-to-state current-state 'last-match
+			    '(rgc-buffer-position iport)
+			    '(rgc-buffer-bufpos iport))
 			,match)
-		    ,(compile-jump-to-state sentinel-match match)))
-	  `((0) (if (rgc-fill-buffer-if-empty input-port)
-		    ,(compile-jump-to-state current-state 'last-match)
+		    ,(compile-jump-to-state sentinel-match match
+			'(+fx 1 position) 'bufpos)))
+	  `((0) (if (rgc-fill-buffer-if-empty iport)
+		    ,(compile-jump-to-state current-state 'last-match
+			'(rgc-buffer-position iport)
+			'(rgc-buffer-bufpos iport))
 		    ,match))))
+   
    (define (compile-case-transition state-trans)
-      (let ((set   (cdr state-trans))
+      (let ((set (cdr state-trans))
 	    (state (car state-trans)))
 	 (if (rgcset-member? set 0)
 	     (begin
 		(set! sentinel-match state)
 		(rgcset-remove! set 0)))
 	 (let ((case-test (rgcset->list set)))
-	    `(,case-test ,(compile-jump-to-state state match)))))
+	    `(,case-test ,(compile-jump-to-state state match
+			     '(+fx position 1) 'bufpos)))))
+   
    `(case current-char
        ,@(map compile-case-transition state-trans)
        ,(sentinel-rule)
@@ -204,19 +202,27 @@
 ;*    compile-cond-regular ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (compile-cond-regular current-state state-trans match)
+   
    (define sentinel-match #f)
+   
    (define (sentinel-rule)
       (if (state? sentinel-match)
 	  `((=fx current-char 0)
-	    (if (rgc-buffer-empty? input-port)
-		(if (rgc-fill-buffer input-port)
-		    ,(compile-jump-to-state current-state 'last-match)
+	    (if (rgc-buffer-empty? iport)
+		(if (rgc-fill-buffer iport)
+		    ,(compile-jump-to-state current-state 'last-match
+			'(rgc-buffer-position iport)
+			'(rgc-buffer-bufpos iport))
 		    ,match)
-		,(compile-jump-to-state sentinel-match match)))
+		,(compile-jump-to-state sentinel-match match
+		    '(+fx position 1) 'bufpos)))
 	  `((=fx current-char 0)
-	    (if (rgc-fill-buffer-if-empty input-port)
-		,(compile-jump-to-state current-state 'last-match)
+	    (if (rgc-fill-buffer-if-empty iport)
+		,(compile-jump-to-state current-state 'last-match
+		    '(rgc-buffer-position iport)
+		    '(rgc-buffer-bufpos iport))
 		,match))))
+   
    (define (compile-cond-transition state-trans prev-test-len)
       (let ((set   (cdr state-trans))
 	    (state (car state-trans)))
@@ -226,13 +232,16 @@
 		(rgcset-remove! set 0)))
 	 (multiple-value-bind (cond-test cond-cost)
 	    (compile-cond-test set 'current-char prev-test-len)
-	    (values `(,cond-test ,(compile-jump-to-state state match))
-		    cond-cost))))
-   (let loop ((trans    state-trans)
-	      (tests    '())
-	      (cost     0)
+	    (values `(,cond-test
+			,(compile-jump-to-state state match
+			    '(+fx position 1) 'bufpos))
+	       cond-cost))))
+   
+   (let loop ((trans state-trans)
+	      (tests '())
+	      (cost 0)
 	      (prev-len 0)
-	      (elsep    #f))
+	      (elsep #f))
       (if (or (null? trans) elsep)
 	  (if (>fx cost *case-threshold*)
 	      (compile-case-regular current-state state-trans match)
@@ -242,40 +251,37 @@
 		  ,(sentinel-rule)
 		  ,@(reverse! tests)
 		  ,@(if elsep
-			'()
-			`((else ,match)))))
+		     '()
+		     `((else ,match)))))
 	  (multiple-value-bind (test c)
 	     (compile-cond-transition (car trans) prev-len)
 	     (loop (cdr trans)
-		   (cons test tests)
-		   (+fx c cost)
-		   (+fx prev-len (rgcset-length (cdr (car trans))))
-		   (and (pair? test) (eq? (car test) 'else)))))))
+		(cons test tests)
+		(+fx c cost)
+		(+fx prev-len (rgcset-length (cdr (car trans))))
+		(and (pair? test) (eq? (car test) 'else)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-cond-test ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (compile-cond-test set var prev-test-len)
+   
    (define (find-next-member start set)
       (let ((max (rgc-max-char)))
 	 (let loop ((i start))
 	    (cond
-	       ((=fx i max)
-		-1)
-	       ((rgcset-member? set i)
-		i)
-	       (else
-		(loop (+fx i 1)))))))
+	       ((=fx i max) -1)
+	       ((rgcset-member? set i) i)
+	       (else (loop (+fx i 1)))))))
+   
    (define (find-next-non-member start set)
       (let ((max (rgc-max-char)))
 	 (let loop ((i start))
 	    (cond
-	       ((=fx i max)
-		max)
-	       ((rgcset-member? set i)
-		(loop (+fx i 1)))
-	       (else
-		i)))))
+	       ((=fx i max) max)
+	       ((rgcset-member? set i) (loop (+fx i 1)))
+	       (else i)))))
+   
    (define (compile-test start stop set)
       (cond
 	 ((=fx (-fx stop 1) start)
@@ -296,6 +302,7 @@
 	  (values `(<fx ,var ,stop) 1))
 	 (else
 	  (values `(and (>=fx ,var ,start) (<fx ,var ,stop)) 3))))
+   
    (define (compile-range-test set)
       (let loop ((start (find-next-member 1 set))
 		 (tests '())
@@ -308,6 +315,7 @@
 		   (loop (find-next-member stop set)
 			 (cons test tests)
 			 (+fx c cost)))))))
+   
    (let ((max (rgc-max-char))
 	 (len (rgcset-length set)))
       (cond
@@ -329,17 +337,17 @@
 ;*---------------------------------------------------------------------*/
 (define (state-transition-list transitions)
    (let loop ((transitions transitions)
-	      (res         '()))
+	      (res '()))
       (if (null? transitions)
 	  res
 	  (let* ((transition (car transitions))
-		 (char       (car transition))
-		 (state      (cdr transition)))
+		 (char (car transition))
+		 (state (cdr transition)))
 	     (let ((cell (assq state res)))
 		(if (not (pair? cell))
 		    (let ((set (list->rgcset (list char) (rgc-max-char))))
 		       (loop (cdr transitions)
-			     (cons (cons state set) res)))
+			  (cons (cons state set) res)))
 		    (begin
 		       (rgcset-add! (cdr cell) char)
 		       (loop (cdr transitions) res))))))))
@@ -351,14 +359,10 @@
 ;*---------------------------------------------------------------------*/
 (define (insort el lst)
    (cond
-      ((null? lst)
-       (list el))
-      ((<fx el (car lst))
-       (cons el lst))
-      ((=fx el (car lst))
-       lst)
-      (else
-       (cons (car lst) (insort el (cdr lst))))))
+      ((null? lst) (list el))
+      ((<fx el (car lst)) (cons el lst))
+      ((=fx el (car lst)) lst)
+      (else (cons (car lst) (insort el (cdr lst))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-match ...                                                */
@@ -369,6 +373,7 @@
 ;*    COND construction is inserted.                                   */
 ;*---------------------------------------------------------------------*/
 (define (compile-match transitions)
+   
    ;; we compile a match list into a body that, at runtime, will compute
    ;; we new matching rule. the MATCHES list is sorted.
    (define (compile-matches matches)
@@ -384,19 +389,20 @@
 			;; this rule is conditional
 			`(if (and ,@preds)
 			     (begin
-				(rgc-stop-match! input-port)
+				(rgc-stop-match! iport)
 				,match)
 			     ,(loop (cdr matches)))
 			`(begin
-			   (rgc-stop-match! input-port)
+			   (rgc-stop-match! iport)
 			   ,match)))))))
+   
    (let loop ((transitions transitions)
-	      (matches     '()))
+	      (matches '()))
       (if (null? transitions)
 	  (compile-matches matches)
 	  (let* ((transition (car transitions))
-		 (char       (car transition))
-		 (state      (cdr transition)))
+		 (char (car transition))
+		 (state (cdr transition)))
 	     (if (special-char-match? char)
 		 (loop (cdr transitions)
 		       (insort (special-match-char->rule-number char) matches))
@@ -429,30 +435,29 @@
 ;*      (65 66 67 70 71 72 73 74) -> ((65 . 67) (70 . 74))             */
 ;*---------------------------------------------------------------------*/
 (define (chars->char-ranges chars)
+   
    (let ((max (rgc-max-char)))
+      
       (define (find-range-start i)
 	 (let loop ((i i))
 	    (cond
-	       ((=fx i max)
-		#f)
-	       ((vector-ref compile-member-vector i)
-		i)
-	       (else
-		(loop (+fx i 1))))))
+	       ((=fx i max) #f)
+	       ((vector-ref compile-member-vector i) i)
+	       (else (loop (+fx i 1))))))
+      
       (define (find-range-stop i)
 	 (let loop ((i i))
 	    (cond
-	       ((=fx i max)
-		max)
-	       ((vector-ref compile-member-vector i)
-		(loop (+fx i 1)))
-	       (else
-		i))))
+	       ((=fx i max) max)
+	       ((vector-ref compile-member-vector i) (loop (+fx i 1)))
+	       (else i))))
+      
       (define (get-next-range i)
 	 (let ((start (find-range-start i)))
 	    (if (not start)
 		max
 		(cons start (-fx (find-range-stop start) 1)))))
+      
       (vector-fill! compile-member-vector #f)
       (for-each (lambda (x) (vector-set! compile-member-vector x #t)) chars)
       (let loop ((i      0)
@@ -461,21 +466,21 @@
 	     (reverse! ranges)
 	     (let ((range (get-next-range i)))
 		(if (pair? range)
-		    (loop (+fx (cdr range) 1)
-			  (cons range ranges))
-		    (loop range
-			  ranges)))))))
+		    (loop (+fx (cdr range) 1) (cons range ranges))
+		    (loop range ranges)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    char-ranges->test ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (char-ranges->test current ranges)
+   
    (define (char-range->test range)
       (let ((start (car range))
 	    (stop  (cdr range)))
 	 (if (=fx start stop)
 	     `(=fx ,current ,start)
 	     `(and (>=fx ,current ,start) (<=fx ,current ,stop)))))
+   
    `(or ,@(map char-range->test ranges)))
 
 ;*---------------------------------------------------------------------*/
@@ -497,6 +502,7 @@
 ;*    compile-submatches ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (compile-submatches current submatches positions positions-to-char)
+   
    (define (find-same-submatch cell sm)
       (let loop ((sm sm))
 	 (cond
@@ -506,10 +512,12 @@
 	     (car sm))
 	    (else
 	     (loop (cdr sm))))))
+   
    (define (add-to-submatch! char cell)
       (set-car! cell (cons char (car cell)))
       cell)
-   (let loop ((positions       (rgcset->list positions))
+   
+   (let loop ((positions (rgcset->list positions))
 	      (char-submatches '()))
       (if (null? positions)
 	  (map (match-lambda

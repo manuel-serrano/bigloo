@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:45:00 1998                          */
-;*    Last change :  Tue Apr 17 07:40:02 2012 (serrano)                */
+;*    Last change :  Sun Sep  7 09:48:42 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the function `rules->tree' that translate */
 ;*    (canonicalize) the user set of clauses into on tree that         */
@@ -278,23 +278,24 @@
 		       (add-predicate-match! match pred)
 		       (loop rule))
 		      ((context ?context ?rule)
-		       (add-predicate-match! match `(eq? the-rgc-context ',context))
+		       (add-predicate-match! match
+			  `(eq? the-rgc-context ',context))
 		       (loop rule))
 		      ((bol ?rule)
 		       (add-predicate-match! match
-					     '(rgc-buffer-bol? input-port))
+			  '(rgc-buffer-bol? iport))
 		       (loop rule))
 		      ((eol ?rule)
 		       (add-predicate-match! match
-					     '(rgc-buffer-eol? input-port))
+			  '(rgc-buffer-eol? iport))
 		       (loop rule))
 		      ((bof ?rule)
 		       (add-predicate-match! match
-					     '(rgc-buffer-bof? input-port))
+			  '(rgc-buffer-bof? iport))
 		       (loop rule))
 		      ((eof ?rule)
 		       (add-predicate-match! match
-					     '(rgc-buffer-eof? input-port))
+			  '(rgc-buffer-eof? iport))
 		       (loop rule))
 ;* 		      ((keyword . ?kwds)                               */
 ;* 		       (print "Je vais re-expanser: "                  */

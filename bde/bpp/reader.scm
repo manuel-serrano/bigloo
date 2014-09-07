@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 15:23:18 1992                          */
-;*    Last change :  Mon Dec  5 12:09:57 2011 (serrano)                */
+;*    Last change :  Sun Sep  7 10:02:03 2014 (serrano)                */
 ;*                                                                     */
 ;*    Le reader de `Bigloo'                                            */
 ;*---------------------------------------------------------------------*/
@@ -175,7 +175,7 @@
 		     (if (>fx par-open 0)
 			 (error "read" "Unexpected end-of-file" char)
 			 (begin
-			    (reset-eof input-port)
+			    (reset-eof (the-port))
 			    char))
 		     (error "read"
 			    "Illegal char"

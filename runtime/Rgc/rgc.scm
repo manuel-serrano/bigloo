@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Tue Aug 19 08:50:50 2014 (serrano)                */
+;*    Last change :  Sun Sep  7 09:46:48 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -60,6 +60,10 @@
 		   "RGC_BUFFER_EMPTY")
  	    (macro $rgc-buffer-position::long (::input-port)
 		   "RGC_BUFFER_POSITION")
+	    (macro $rgc-buffer-forward::long (::input-port)
+		   "RGC_BUFFER_FORWARD")
+	    (macro $rgc-buffer-bufpos::long (::input-port)
+		   "RGC_BUFFER_BUFPOS")
 	    (macro $rgc-buffer-character::char (::input-port)
 		   "RGC_BUFFER_CHARACTER")
 	    (macro $rgc-buffer-byte::int (::input-port)
@@ -124,6 +128,10 @@
 		       "RGC_BUFFER_EMPTY")
 	       (method static $rgc-buffer-position::long (::input-port)
 		       "RGC_BUFFER_POSITION")
+	       (method static $rgc-buffer-forward::long (::input-port)
+		       "RGC_BUFFER_FORWARD")
+	       (method static $rgc-buffer-bufpos::long (::input-port)
+		       "RGC_BUFFER_BUFPOS")
 	       (method static $rgc-buffer-unget-char::int (::input-port ::int)
 		       "rgc_buffer_unget_char")
 	       (method static $rgc-buffer-insert-substring::bool (::input-port ::bstring ::long ::long)
@@ -197,6 +205,8 @@
 	    (inline rgc-buffer-downcase-keyword::keyword ::input-port)
 	    (inline rgc-buffer-upcase-keyword::keyword ::input-port)
 	    (inline rgc-buffer-position::long ::input-port)
+	    (inline rgc-buffer-bufpos::long ::input-port)
+	    (inline rgc-buffer-forward::long ::input-port)
 	    (inline rgc-set-filepos! ::input-port)
 	    (inline rgc-start-match!::long ::input-port)
 	    (inline rgc-stop-match!::long ::input-port)
@@ -362,6 +372,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-position::long input-port::input-port)
    ($rgc-buffer-position input-port))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-forward ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-forward::long input-port::input-port)
+   ($rgc-buffer-forward input-port))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-bufpos ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-bufpos::long input-port::input-port)
+   ($rgc-buffer-bufpos input-port))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-set-filepos! ...                                             */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 24 11:36:25 1995                          */
-;*    Last change :  Sun Aug 31 16:05:12 2008 (serrano)                */
+;*    Last change :  Sun Sep  7 10:15:25 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The C lexer                                                      */
 ;*=====================================================================*/
@@ -111,7 +111,7 @@
 			  (: #\\ #\Newline)
 			  (: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*))))
 				  (+ #\*) "/")))))
-       (let ((coord  (the-coord input-port))
+       (let ((coord  (the-coord (the-port)))
 	     (string (the-string))
 	     (ctx (make-cell 'noctx)))
 	  (set-cpp-coord! coord)
@@ -126,37 +126,37 @@
 
       ;; comma
       (#\,
-       (list 'COMMA (the-coord input-port)))
+       (list 'COMMA (the-coord (the-port))))
 
       ;; semi-comma
       (#\;
-       (list 'SEMI-COMMA (the-coord input-port)))
+       (list 'SEMI-COMMA (the-coord (the-port))))
 
       ;; dots
       (#\.
-       (list 'DOT (the-coord input-port)))
+       (list 'DOT (the-coord (the-port))))
       
       ;; bracket
       (#\{
-       (list 'BRA-OPEN (the-coord input-port)))
+       (list 'BRA-OPEN (the-coord (the-port))))
       (#\}
-       (list 'BRA-CLO (the-coord input-port)))
+       (list 'BRA-CLO (the-coord (the-port))))
 
       ;; angle
       (#\[
-       (list 'ANGLE-OPEN (the-coord input-port)))
+       (list 'ANGLE-OPEN (the-coord (the-port))))
       (#\]
-       (list 'ANGLE-CLO (the-coord input-port)))
+       (list 'ANGLE-CLO (the-coord (the-port))))
 
       ;; parenthesis
       (#\(
-       (list 'PAR-OPEN (the-coord input-port)))
+       (list 'PAR-OPEN (the-coord (the-port))))
       (#\)
-       (list 'PAR-CLO (the-coord input-port)))
+       (list 'PAR-CLO (the-coord (the-port))))
 
       ;; ldots
       ("..."
-       (list 'LDOTS (the-coord input-port)))
+       (list 'LDOTS (the-coord (the-port))))
       
       ;; integer constant
       ((: (or (: nonzero-digit (* digit))
@@ -166,7 +166,7 @@
 		 (: long-suffix unsigned-suffix)
 		 unsigned-suffix
 		 (: unsigned-suffix long-suffix))))
-       (list 'CONSTANT (the-coord input-port) (the-string)))
+       (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; floating-point constant
       ((or (: (+ digit)
@@ -175,29 +175,29 @@
 	   (: (or (: (+ digit) #\. (* digit)) (: #\. (+ digit)))
 	      (? (: (in #\e #\E) (? (in #\- #\+)) (+ digit)))
 	      (? (in #\f #\F #\l #\L))))
-       (list 'CONSTANT (the-coord input-port) (the-string)))
+       (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; character constant
       ((: (? #\L) #\' (+ all) #\')
-       (list 'CONSTANT (the-coord input-port) (the-string)))
+       (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; string constant
       ((: (? #\L) #\" (* (out #\")) #\")
-       (list 'CONSTANT (the-coord input-port) (the-string)))
+       (list 'CONSTANT (the-coord (the-port)) (the-string)))
 
       ;; operators
       ((in #\* #\+ #\- #\/ #\% #\& #\~ #\! #\/ #\% #\= #\< #\> #\? #\^ #\:)
-       (list (the-symbol) (the-coord input-port)))
+       (list (the-symbol) (the-coord (the-port))))
       (#\|
-       (list 'BOR (the-coord input-port)))
+       (list 'BOR (the-coord (the-port))))
 
       ((or "&&" "<<" ">>" "<=" ">=" "==" "!=" "->" "++" "--" "+="
 	   "-=" "*=" "/=" "%=" "<<=" ">>=" "&=" "^=")
-       (list (the-symbol) (the-coord input-port)))
+       (list (the-symbol) (the-coord (the-port))))
       ("||"
-       (list 'OR (the-coord input-port)))
+       (list 'OR (the-coord (the-port))))
       ("|="
-       (list 'OR= (the-coord input-port)))
+       (list 'OR= (the-coord (the-port))))
 
       ;; identifier
       ((: (or #\_ alpha) (* (or #\_ alpha digit)))
@@ -205,13 +205,13 @@
 	      (symbol   (string->symbol string)))
 	  (cond
 	     ((getprop symbol 'reserved)
-	      (list symbol (the-coord input-port)))
+	      (list symbol (the-coord (the-port))))
 	     ((getprop symbol 'typedef)
 	      ;; see the `declaration' rule in the grammar to
 	      ;; discover where the `typedef' property is set.
-	      (list 'TYPE-ID (the-coord input-port) string))
+	      (list 'TYPE-ID (the-coord (the-port)) string))
 	     (else
-	      (list 'ID (the-coord input-port) string)))))
+	      (list 'ID (the-coord (the-port)) string)))))
 
       ;; error
       (else
@@ -219,6 +219,6 @@
 	  (if (eof-object? c)
 	      c
 	      (list 'ERROR
-		    (the-coord input-port)
+		    (the-coord (the-port))
 		    c))))))
 

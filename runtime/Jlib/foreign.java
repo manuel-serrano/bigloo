@@ -6192,6 +6192,16 @@ public final class foreign
 	 return (p.forward - p.matchstart);
       }
 
+   public static int RGC_BUFFER_FORWARD(input_port p)
+      {
+	 return p.forward;
+      }
+
+   public static int RGC_BUFFER_BUFPOS(input_port p)
+      {
+	 return p.bufpos;
+      }
+
    public static int RGC_BUFFER_GET_CHAR(input_port p)
       {
 	 try {
