@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Sun Sep  7 09:46:33 2014 (serrano)                */
+;*    Last change :  Sun Sep  7 10:39:23 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -296,7 +296,7 @@
 	     (let ((match::long (,(state-name (get-initial-state))
 				 iport
 				 ,else-num
-				 (rgc-buffer-position iport)
+				 (rgc-buffer-forward iport)
 				 (rgc-buffer-bufpos iport))))
 		(rgc-set-filepos! iport)
 		,@(if submatch?

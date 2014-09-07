@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Aug 19 08:51:25 2014 (serrano)                */
+/*    Last change :  Sun Sep  7 10:32:33 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -163,7 +163,7 @@ rgc_fill_buffer( obj_t port ) {
    /* because forward has reached the sentinel  */
    INPUT_PORT( port ).forward--;
 
-   /* an input port that has seen its eof       */
+   /* the input port that has seen its eof      */
    /* cannot be filled anymore                  */
    if( INPUT_PORT( port ).eof ) {
       return (bool_t)0;
@@ -171,8 +171,6 @@ rgc_fill_buffer( obj_t port ) {
       unsigned char *buf = &RGC_BUFFER_REF( port, 0 );
       long bufsize = BGL_INPUT_PORT_BUFSIZ( port );
       long bufpos = INPUT_PORT( port ).bufpos;
-
-//   rgc_debug_port( port, "rgc_fill_buffer" );
 
       if( bufpos < bufsize ) {
 fill:
@@ -188,7 +186,6 @@ fill:
 	 if( INPUT_PORT( port ).matchstart > 0 ) {
 	    /* we are in the middle of a match, shift the buffer first */
 	    rgc_shift_buffer( port );
-//	    rgc_debug_port( port, "rgc_fill_buffer:shift buffer" );
 	    
 	    bufpos = INPUT_PORT( port ).bufpos;
 
@@ -203,8 +200,6 @@ fill:
 	    bufsize = BGL_INPUT_PORT_BUFSIZ( port );
 	    buf = &RGC_BUFFER_REF( port, 0 );
 	    
-//	    rgc_debug_port( port, "rgc_fill_buffer:double buffer" );
-
 	    goto fill;
 	 }
       }
