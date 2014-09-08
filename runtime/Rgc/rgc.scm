@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Sun Sep  7 09:46:48 2014 (serrano)                */
+;*    Last change :  Mon Sep  8 09:13:02 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -48,6 +48,8 @@
 
    (extern  (macro $rgc-buffer-get-char::int (::input-port)
 		   "RGC_BUFFER_GET_CHAR")
+	    (macro $rgc-buffer-get-char2::int (::input-port ::long)
+		   "RGC_BUFFER_GET_CHAR2")
 	    (macro $rgc-buffer-length::long (::input-port)
 		   "RGC_BUFFER_MATCH_LENGTH")
 	    (macro $rgc-set-filepos!::long (::input-port)
@@ -102,6 +104,8 @@
 					  "rgc_buffer_keyword")
 	    ($rgc-fill-buffer::bool (::input-port)
 				    "rgc_fill_buffer")
+	    ($rgc-fill-buffer2::bool (::input-port)
+				    "rgc_fill_buffer2")
 	    ($rgc-buffer-bol?::bool (::input-port)
 				    "rgc_buffer_bol_p")
 	    ($rgc-buffer-eol?::bool (::input-port)
@@ -116,6 +120,8 @@
    (java    (class foreign
 	       (method static $rgc-buffer-get-char::int (::input-port)
 		       "RGC_BUFFER_GET_CHAR")
+	       (method static $rgc-buffer-get-char2::int (::input-port ::long)
+		       "RGC_BUFFER_GET_CHAR2")
 	       (method static $rgc-buffer-length::long (::input-port)
 		       "RGC_BUFFER_MATCH_LENGTH")
 	       (method static $rgc-set-filepos!::long (::input-port)
@@ -170,6 +176,8 @@
 		       "rgc_buffer_downcase_keyword")
 	       (method static $rgc-fill-buffer::bool (::input-port)
 		       "rgc_fill_buffer")
+	       (method static $rgc-fill-buffer2::bool (::input-port)
+		       "rgc_fill_buffer2")
 	       (method static $rgc-buffer-bol?::bool (::input-port)
 		       "rgc_buffer_bol_p")
 	       (method static $rgc-buffer-eol?::bool (::input-port)
@@ -183,6 +191,7 @@
  
    (export  *unsafe-rgc*
 	    (inline rgc-buffer-get-char::int ::input-port)
+	    (inline rgc-buffer-get-char2::int ::input-port ::long)
 	    (inline rgc-buffer-insert-substring!::bool ::input-port str::bstring from::long to::long)
 	    (inline rgc-buffer-insert-char!::bool ::input-port ::long)
 	    (inline rgc-buffer-unget-char::int ::input-port ::int)
@@ -212,6 +221,7 @@
 	    (inline rgc-stop-match!::long ::input-port)
 	    (inline rgc-buffer-empty?::bool ::input-port)
 	    (inline rgc-fill-buffer::bool ::input-port)
+	    (inline rgc-fill-buffer2::bool ::input-port)
 	    (inline rgc-fill-buffer-if-empty::bool ::input-port)
 	    (inline rgc-buffer-bol?::bool ::input-port)
 	    (inline rgc-buffer-eol?::bool ::input-port)
@@ -240,6 +250,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-get-char input-port)
    ($rgc-buffer-get-char input-port)) 
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-get-char2 ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-get-char2 input-port index)
+   ($rgc-buffer-get-char2 input-port index))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-unget-char ...                                        */
@@ -414,6 +430,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-fill-buffer::bool input-port::input-port)
    ($rgc-fill-buffer input-port))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-fill-buffer2 ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-fill-buffer2::bool input-port::input-port)
+   ($rgc-fill-buffer2 input-port))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-fill-buffer-if-empty ...                                     */

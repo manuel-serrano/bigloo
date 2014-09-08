@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */
-;*    Last change :  Sun Sep  7 10:55:50 2014 (serrano)                */
+;*    Last change :  Mon Sep  8 09:19:55 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the DFA compilation. Each state is        */
 ;*    compiled into a lambda expression.                               */
@@ -164,21 +164,21 @@
 	  last-match
 	  `(if (=fx forward bufpos)
 	       ;; the buffer is empty
-	       (if (rgc-fill-buffer2 ioport forward bufpos)
+	       (if (rgc-fill-buffer2 ioport)
 		   ,(compile-jump-to-state current-state 'last-match
 		       '(rgc-buffer-forward iport)
 		       '(rgc-buffer-bufpos iport))
-		   ,last-match
-		   ;; Generate a `case' construction instead of `cond' when the
-		   ;; the number of transitions exceeds a fixed threshold
-		   `(let* ((nforward (+fx 1 forward))
-			   (cur::int (rgc-buffer-get-char2 iport nforward)))
-		       ,@(compile-submatches 'cur submatches positions p->c)
-		       ,(if (<=fx (length state-trans) 12)
-			    (compile-cond-regular2
-			       current-state state-trans last-match)
-			    (compile-case-regular2
-			       current-state state-trans last-match))))))))
+		   ,last-match)
+	       ;; Generate a `case' construction instead of `cond' when the
+	       ;; the number of transitions exceeds a fixed threshold
+	       `(let* ((nforward (+fx 1 forward))
+		       (cur::int (rgc-buffer-get-char2 iport nforward)))
+		   ,@(compile-submatches 'cur submatches positions p->c)
+		   ,(if (<=fx (length state-trans) 12)
+			(compile-cond-regular2
+			   current-state state-trans last-match)
+			(compile-case-regular2
+			   current-state state-trans last-match)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-jump-to-state ...                                        */
@@ -218,7 +218,7 @@
 		(rgcset-remove! set 0)))
 	 (let ((case-test (rgcset->list set)))
 	    `(,case-test ,(compile-jump-to-state state match
-			     '(+fx forward 1) 'bufpos)))))
+			     '(+fx 1 forward) 'bufpos)))))
    
    `(case cur
        ,@(map compile-case-transition state-trans)
@@ -236,7 +236,7 @@
 	    (state (car state-trans)))
 	 (let ((case-test (rgcset->list set)))
 	    `(,case-test ,(compile-jump-to-state state match
-			     '(+fx forward 1) 'bufpos)))))
+			     'nforward 'bufpos)))))
    
    `(case cur
        ,@(map compile-case-transition state-trans)
@@ -260,7 +260,7 @@
 			'(rgc-buffer-bufpos iport))
 		    ,match)
 		,(compile-jump-to-state sentinel-match match
-		    '(+fx forward 1) 'bufpos)))
+		    '(+fx 1 forward) 'bufpos)))
 	  `((=fx cur 0)
 	    (if (rgc-fill-buffer-if-empty iport)
 		,(compile-jump-to-state current-state 'last-match
@@ -279,7 +279,7 @@
 	    (compile-cond-test set 'cur prev-test-len)
 	    (values `(,cond-test
 			,(compile-jump-to-state state match
-			    '(+fx forward 1) 'bufpos))
+			    '(+fx 1 forward) 'bufpos))
 	       cond-cost))))
    
    (let loop ((trans state-trans)
@@ -318,7 +318,7 @@
 	    (compile-cond-test set 'cur prev-test-len)
 	    (values `(,cond-test
 			,(compile-jump-to-state state match
-			    '(+fx forward 1) 'bufpos))
+			    'nforward 'bufpos))
 	       cond-cost))))
    
    (let loop ((trans state-trans)

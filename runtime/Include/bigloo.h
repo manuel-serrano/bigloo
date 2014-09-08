@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Sep  7 10:26:41 2014 (serrano)                */
+/*    Last change :  Mon Sep  8 09:15:04 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2989,6 +2989,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define RGC_BUFFER_GET_CHAR( i ) \
    ((unsigned int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).forward++ )))
 #endif
+
+#define RGC_BUFFER_GET_CHAR2( i, offset ) \
+   ((int)(RGC_BUFFER_REF( i, offset )))
    
 #define RGC_BUFFER_PEEK_CHAR( i ) \
    ((unsigned int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).forward )))

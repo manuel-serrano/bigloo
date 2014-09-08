@@ -6211,6 +6211,11 @@ public final class foreign
 	 }
       }
 
+   public static int RGC_BUFFER_GET_CHAR2(input_port p, int offset)
+      {
+	 return (int)(p.buffer[offset] & 0xFF);
+      }
+
    public static int rgc_buffer_unget_char(input_port p, int c)
       {
 	 p.filepos--;
@@ -6446,6 +6451,11 @@ public final class foreign
       }
    }
 
+   public static boolean rgc_fill_buffer2(input_port p) {
+      p.forward = p.bufpos + 1;
+      return rgc_fill_buffer( p );
+   }
+      
    public static byte[] rgc_buffer_substring(input_port p, int o, int e)
       {
 	 return c_substring(p.buffer, p.matchstart + o, p.matchstart + e);
