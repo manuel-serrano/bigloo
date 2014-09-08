@@ -43,13 +43,12 @@ public class input_file_port extends input_port
   public boolean rgc_fill_buffer()
     throws IOException
   {
-    final int bufsize = this.bufsiz;
+    final int bufsize = this.buffer.length;
     int bufpose = this.bufpos;
     final int matchstart = this.matchstart;
     final byte[] buffer = this.buffer;
 
-    if (0 < matchstart)
-    {
+    if (matchstart > 0) {
       // we shift the buffer left and we fill the buffer */
       final int movesize = bufpose-matchstart;
 
@@ -78,22 +77,21 @@ public class input_file_port extends input_port
   final boolean rgc_size_fill_file_buffer( int bufpose, final int  size )
     throws IOException
   {
-    final int nbread = in.read( buffer, bufpose-1, size );
+    final int nbread = in.read( buffer, bufpose, size );
 
-    if (nbread == -1)
+    if (nbread == -1) {
       eof = true;
-    else
+    } else {
       bufpose += nbread;
+    }
 
     this.bufpos = bufpose;
 
-    if (0 < bufpose)
-    {
-      buffer[bufpose-1] = 0;
-      return true;
+    if (nbread <= 0) {
+      return false;
+    } else {
+       return true;
     }
-
-    return false;
   }
 
   Object bgl_input_port_seek( final int  pos )
@@ -106,9 +104,8 @@ public class input_file_port extends input_port
     matchstart = 0;
     matchstop = 0;
     forward = 0;
-    bufpos = 1;
+    bufpos = 0;
     lastchar = (byte)'\n';
-    buffer[0] = 0;
 
     return bigloo.foreign.BTRUE;
   }
@@ -125,9 +122,8 @@ public class input_file_port extends input_port
     matchstart = 0;
     matchstop = 0;
     forward = 0;
-    bufpos = 1;
+    bufpos = 0;
     lastchar = (byte)'\n';
-    buffer[0] = 0;
 
     return bigloo.foreign.BTRUE;
   }

@@ -8,14 +8,13 @@ public abstract class input_port extends obj
   public int filepos = 0;
   public int pseudoeof = -1;
   public long length = -1;
-  public int bufsiz;
   public boolean eof = false;
   public boolean other_eof = false;
   public int matchstart = 0;
   public int matchstop = 0;
   public int forward = 0;
   public byte lastchar = (byte)'\n';
-  public int bufpos = 1;
+  public int bufpos = 0;
   public byte[] buffer;
   public Object chook = bigloo.foreign.BUNSPEC;
   public Object userseek = bigloo.foreign.BUNSPEC;
@@ -23,9 +22,7 @@ public abstract class input_port extends obj
   public input_port( final String name, final byte[] buf )
   {
     this.name= name;
-    this.bufsiz= (int)buf.length;
     buffer= buf;
-    buf[0] = (byte)'\0';
   }
 
   public void close() 
@@ -47,7 +44,7 @@ public abstract class input_port extends obj
     throws IOException;
 
    final void rgc_enlarge_buffer_size( int nsize ) {
-    final int bufsize= this.bufsiz;
+    final int bufsize= this.buffer.length;
 
     if( nsize < bufsize ) return;
     
@@ -62,13 +59,12 @@ public abstract class input_port extends obj
 
       for ( int i= 0 ; i < bufsize ; ++i )
         nbuffer[i]= obuffer[i];
-      this.bufsiz= nsize;
       buffer= nbuffer;
     }
   }
 
    public final void rgc_double_buffer() {
-      rgc_enlarge_buffer_size( this.bufsiz * 2 );
+      rgc_enlarge_buffer_size( this.buffer.length * 2 );
    }
    
   Object bgl_input_port_seek( final int pos )
@@ -85,7 +81,6 @@ public abstract class input_port extends obj
      filepos = src.filepos;
      pseudoeof = src.pseudoeof;
      length = src.length;
-     bufsiz = src.bufsiz;
      eof = src.eof;
      other_eof = src.other_eof;
      matchstart = src.matchstart;
@@ -101,7 +96,7 @@ public abstract class input_port extends obj
 
   public void write( final output_port p )
   {
-    p.write( "[PORT " + name + " @" + filepos + "-" + matchstart + "." + forward + "." + matchstop + "-" + bufsiz + "." + bufpos + "]" );
+     p.write( "[PORT " + name + " @" + filepos + "-" + matchstart + "." + forward + "." + matchstop + "-" + buffer.length + "." + bufpos + "]" );
   }
 
    public boolean timeout_set( int to ) {

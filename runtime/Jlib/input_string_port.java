@@ -4,53 +4,47 @@ import java.io.*;
 
 public class input_string_port extends input_port {
    public input_string_port( final byte[] s, int start, int end ) {
-      super( "[string]", new byte[ end+1 - start ] );
+      super( "[string]", new byte[ end - start ] );
 
       final int size = end - start;
       length = size;
       
       for ( int i= 0 ; i < size ; ++i ) buffer[i] = s[i + start];
       
-      bufpos = bufsiz;
-      buffer[size] = 0;
+      bufpos = size;
       eof = true;
    }
 
-   public input_string_port( final byte[] s, int start, int end, byte c0 ) {
+   public input_string_port( final byte[] s, int start, int end, boolean _ ) {
       super( "[string]", s );
       int size = end - start;
       
       length = size;
-      bufsiz = size + 1;
-      
-      s[size + start] = 0;
-      s[0] = c0;
       
       matchstart = start;
       matchstop = start;
       
-      bufpos = bufsiz;
+      bufpos = end;
+      forward = start;
       eof = true;
    }
 
    public boolean rgc_charready() {
-      return ((forward+1) < bufpos);
+      return ((forward) < bufpos);
    }
 
    public void reopen_input_c_string( final byte[] s ) {
       int len = s.length;
 
-      if (bufsiz < (len + 1)) {
-	 bufsiz = len + 1;
-	 buffer = new byte[len + 1];
+      if (buffer.length < (len + 1)) {
+	 buffer = new byte[len];
       }
 
-      bufpos = len + 1;
+      bufpos = len;
       matchstart = 0;
       matchstop = 0;
       forward = 0;
       lastchar = (byte)'\n';
-      buffer[len] = 0;
       --len;
 
       while (0 <= len) {
@@ -60,7 +54,7 @@ public class input_string_port extends input_port {
    }
 
    Object bgl_input_port_seek( final int  pos ) throws IOException {
-      if (pos < bufsiz) {
+      if (pos < buffer.length) {
 	 filepos = pos;
 	 matchstart = pos;
 	 matchstop = pos;

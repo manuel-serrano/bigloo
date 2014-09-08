@@ -31,7 +31,7 @@ public class input_procedure_port extends input_port
 
   public boolean rgc_fill_buffer()
   {
-    int bufsize = this.bufsiz;
+    int bufsize = this.buffer.length;
     int bufpose = this.bufpos;
     final int matchstart = this.matchstart;
     final Object value = foreign.eval_funcall_0(this.in);
@@ -60,10 +60,10 @@ public class input_procedure_port extends input_port
     // first let's see if the buffer is big enough
     rgc_enlarge_buffer_size(value_len + already_used);
 
-    bufsize = this.bufsiz;
+    bufsize = this.buffer.length;
 
     // do we need to shift?
-    if ((bufpose + value_len) > bufsiz) {
+    if ((bufpose + value_len) > bufsize) {
       // we shift the buffer left
       for ( int i = 0 ; i < already_used ; ++i )
         buffer[i] = buffer[matchstart+i];
@@ -78,12 +78,11 @@ public class input_procedure_port extends input_port
     // finally we insert our object
     if (value instanceof byte[]) {
       for (int i = 0; i < value_len; i++) {
-        buffer[i + bufpose - 1] = ((byte[])value)[i];
+        buffer[i + bufpose ] = ((byte[])value)[i];
       }
-      buffer[bufpose + value_len - 1] = 0;
     } else {
        if (value instanceof bchar) {
-	  buffer[bufpose - 1] = ((bchar)value).value;
+	  buffer[bufpose] = ((bchar)value).value;
        }
     }
     

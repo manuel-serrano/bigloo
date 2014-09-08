@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Mon Sep  8 09:13:02 2014 (serrano)                */
+;*    Last change :  Mon Sep  8 14:44:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -58,10 +58,14 @@
 		   "RGC_START_MATCH")
 	    (macro $rgc-stop-match!::long (::input-port)
 		   "RGC_STOP_MATCH")
+	    (macro $rgc-stop-match2!::long (::input-port ::long)
+		   "RGC_STOP_MATCH2")
 	    (macro $rgc-buffer-empty?::bool (::input-port)
 		   "RGC_BUFFER_EMPTY")
  	    (macro $rgc-buffer-position::long (::input-port)
 		   "RGC_BUFFER_POSITION")
+ 	    (macro $rgc-buffer-position2::long (::input-port ::long)
+		   "RGC_BUFFER_POSITION2")
 	    (macro $rgc-buffer-forward::long (::input-port)
 		   "RGC_BUFFER_FORWARD")
 	    (macro $rgc-buffer-bufpos::long (::input-port)
@@ -110,10 +114,14 @@
 				    "rgc_buffer_bol_p")
 	    ($rgc-buffer-eol?::bool (::input-port)
 				    "rgc_buffer_eol_p")
+	    ($rgc-buffer-eol2?::bool (::input-port ::long ::long)
+				    "rgc_buffer_eol2_p")
 	    ($rgc-buffer-bof?::bool (::input-port)
 				    "rgc_buffer_bof_p")
 	    ($rgc-buffer-eof?::bool (::input-port)
 				    "rgc_buffer_eof_p")
+	    ($rgc-buffer-eof2?::bool (::input-port ::long ::long)
+				    "rgc_buffer_eof2_p")
 	    ($rgc-blit-string!::long (::input-port ::string ::long ::long)
 				    "bgl_rgc_blit_string"))
 
@@ -130,10 +138,14 @@
 		       "RGC_START_MATCH")
 	       (method static $rgc-stop-match!::long (::input-port)
 		       "RGC_STOP_MATCH")
+	       (method static $rgc-stop-match2!::long (::input-port ::long)
+		       "RGC_STOP_MATCH2")
 	       (method static $rgc-buffer-empty?::bool (::input-port)
 		       "RGC_BUFFER_EMPTY")
 	       (method static $rgc-buffer-position::long (::input-port)
 		       "RGC_BUFFER_POSITION")
+	       (method static $rgc-buffer-position2::long (::input-port ::long)
+		       "RGC_BUFFER_POSITION2")
 	       (method static $rgc-buffer-forward::long (::input-port)
 		       "RGC_BUFFER_FORWARD")
 	       (method static $rgc-buffer-bufpos::long (::input-port)
@@ -182,10 +194,14 @@
 		       "rgc_buffer_bol_p")
 	       (method static $rgc-buffer-eol?::bool (::input-port)
 		       "rgc_buffer_eol_p")
+	       (method static $rgc-buffer-eol2?::bool (::input-port ::int ::int)
+		       "rgc_buffer_eol2_p")
 	       (method static $rgc-buffer-bof?::bool (::input-port)
 		       "rgc_buffer_bof_p")
 	       (method static $rgc-buffer-eof?::bool (::input-port)
 		       "rgc_buffer_eof_p")
+	       (method static $rgc-buffer-eof2?::bool (::input-port ::int ::int)
+		       "rgc_buffer_eof2_p")
 	       (method static $rgc-blit-string!::long (::input-port ::string ::long ::long)
 		       "bgl_rgc_blit_string")))
  
@@ -214,19 +230,23 @@
 	    (inline rgc-buffer-downcase-keyword::keyword ::input-port)
 	    (inline rgc-buffer-upcase-keyword::keyword ::input-port)
 	    (inline rgc-buffer-position::long ::input-port)
+	    (inline rgc-buffer-position2::long ::input-port ::long)
 	    (inline rgc-buffer-bufpos::long ::input-port)
 	    (inline rgc-buffer-forward::long ::input-port)
 	    (inline rgc-set-filepos! ::input-port)
 	    (inline rgc-start-match!::long ::input-port)
 	    (inline rgc-stop-match!::long ::input-port)
+	    (inline rgc-stop-match2!::long ::input-port ::long)
 	    (inline rgc-buffer-empty?::bool ::input-port)
 	    (inline rgc-fill-buffer::bool ::input-port)
 	    (inline rgc-fill-buffer2::bool ::input-port)
 	    (inline rgc-fill-buffer-if-empty::bool ::input-port)
 	    (inline rgc-buffer-bol?::bool ::input-port)
 	    (inline rgc-buffer-eol?::bool ::input-port)
+	    (inline rgc-buffer-eol2?::bool ::input-port ::long ::long)
 	    (inline rgc-buffer-bof?::bool ::input-port)
 	    (inline rgc-buffer-eof?::bool ::input-port)
+	    (inline rgc-buffer-eof2?::bool ::input-port ::long ::long)
 	    (rgc-the-submatch ::obj ::long ::long ::long)))
  
 ;*---------------------------------------------------------------------*/
@@ -390,6 +410,12 @@
    ($rgc-buffer-position input-port))
 
 ;*---------------------------------------------------------------------*/
+;*    rgc-buffer-position2 ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-position2::long input-port::input-port forward)
+   ($rgc-buffer-position2 input-port forward))
+
+;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-forward ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-forward::long input-port::input-port)
@@ -418,6 +444,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-stop-match! input-port)
    ($rgc-stop-match! input-port))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-stop-match2! ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-stop-match2! input-port forward)
+   ($rgc-stop-match2! input-port forward))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-empty? ...                                            */
@@ -456,6 +488,12 @@
    ($rgc-buffer-eol? input-port))
 
 ;*---------------------------------------------------------------------*/
+;*    rgc-buffer-eol2? ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-eol2?::bool input-port::input-port forward bufpos)
+   ($rgc-buffer-eol2? input-port forward bufpos))
+
+;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-bof? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-bof?::bool input-port::input-port)
@@ -466,6 +504,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-eof?::bool input-port::input-port)
    ($rgc-buffer-eof? input-port))
+
+;*---------------------------------------------------------------------*/
+;*    rgc-buffer-eof2? ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (rgc-buffer-eof2?::bool input-port::input-port forward bufpos)
+   ($rgc-buffer-eof2? input-port forward bufpos))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-the-submatch ...                                             */

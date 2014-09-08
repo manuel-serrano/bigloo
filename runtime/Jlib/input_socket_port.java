@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Wed Aug 22 16:38:33 2012 (serrano)                */
-/*    Copyright   :  2000-12 Manuel Serrano                            */
+/*    Last change :  Mon Sep  8 17:43:36 2014 (serrano)                */
+/*    Copyright   :  2000-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -57,7 +57,7 @@ public class input_socket_port extends input_port {
    }
 
    public boolean rgc_fill_buffer() throws IOException {
-      final int bufsize = this.bufsiz;
+      final int bufsize = this.buffer.length;
       int bufpose = this.bufpos;
       final int matchstart = this.matchstart;
 
@@ -104,7 +104,6 @@ public class input_socket_port extends input_port {
       else
 	 bufpose += nbread;
 
-      buffer[bufpose-1] = (byte)'\0';
       this.bufpos = bufpose;
       return (0 < bufpos);
    }

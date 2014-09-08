@@ -104,7 +104,7 @@ public class input_resource_port extends input_port {
    }
 
    public boolean rgc_fill_buffer() throws IOException {
-      final int bufsize = this.bufsiz;
+      final int bufsize = this.buffer.length;
       int bufpose = this.bufpos;
       final int matchstart = this.matchstart;
       final byte[] buffer = this.buffer;
@@ -137,7 +137,7 @@ public class input_resource_port extends input_port {
 
    final boolean rgc_size_fill_resource_buffer( int bufpose, final int  size )
       throws IOException {
-      final int nbread = in.read( buffer, bufpose-1, size );
+      final int nbread = in.read( buffer, bufpose, size );
 
       if (nbread == -1)
 	 eof = true;
@@ -147,7 +147,6 @@ public class input_resource_port extends input_port {
       this.bufpos = bufpose;
 
       if (0 < bufpose) {
-	 buffer[bufpose-1] = 0;
 	 return true;
       }
 
@@ -168,9 +167,8 @@ public class input_resource_port extends input_port {
       matchstart = 0;
       matchstop = 0;
       forward = 0;
-      bufpos = 1;
+      bufpos = 0;
       lastchar = (byte)'\n';
-      buffer[0] = 0;
 
       return bigloo.foreign.BTRUE;
    }

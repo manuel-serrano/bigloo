@@ -6006,11 +6006,10 @@ public final class foreign
       }
    public static void bgl_input_port_buffer_set(input_port o, byte[] b)
       {
-	 o.bufsiz = b.length;
 	 o.buffer = b;
 	 
-	 if( !(o instanceof input_string_port) ) {
-	    b[ 0 ] = '\0';
+	 if( (o instanceof input_string_port) ) {
+	    o.length = b.length;
 	 }
       }
    
@@ -6047,7 +6046,7 @@ public final class foreign
 
    public static int bgl_input_port_bufsiz(input_port p)
       {
-	 return p.bufsiz;
+	 return p.buffer.length;
       }
 
    public static input_port bgl_open_input_string(byte[]s, int start)
@@ -6062,12 +6061,7 @@ public final class foreign
 
    public static input_port bgl_open_input_substring_bang(byte[]s, int start, int end)
       {
-	 if( end < s.length && s.length > 0 ) {
-	    // s[ 0 ] will be erased when the buffer is created
-	    return new input_string_port(s, start, end, s[ 0 ] );
-	 } else {
-	    return new input_string_port(s, start, end);
-	 }
+	 return new input_string_port( s, start, end, true );
       }
 
    public static Object bgl_open_input_procedure(procedure p, byte[] b)
@@ -6192,6 +6186,11 @@ public final class foreign
 	 return (p.forward - p.matchstart);
       }
 
+   public static int RGC_BUFFER_POSITION2(input_port p, int forward)
+      {
+	 return (forward - p.matchstart);
+      }
+
    public static int RGC_BUFFER_FORWARD(input_port p)
       {
 	 return p.forward;
@@ -6220,33 +6219,27 @@ public final class foreign
       {
 	 p.filepos--;
       
-	 if (0 < p.matchstop)
+	 if (0 < p.matchstop) { 
 	    --p.matchstop;
-	 else
-	 {
+	 } else {
 	    p.buffer[0] = (byte) c;
-	    if (p.bufpos == 0)
-	    {
-	       p.bufpos = 1;
-	       p.buffer[1] = (byte) '\0';
-	    }
 	 }
 	 return c;
       }
 
    private static void rgc_buffer_reserve_space(input_port p, int amount)
       {
-	 int bufsize = p.bufsiz;
+	 int bufsize = p.buffer.length;
 	 int bufpos = p.bufpos;
 	 int matchstop = p.matchstop;
 
 	 if ( matchstop >= amount ) return;
 
-	 if ( (matchstop + (bufsize - (bufpos-1))) >= amount ) {
+	 if ( (matchstop + (bufsize - (bufpos))) >= amount ) {
 	    // shift the buffer to the right
 	    int diff = amount - matchstop;
 
-	    System.arraycopy(p.buffer, matchstop, p.buffer, amount, bufpos-1 - matchstop);
+	    System.arraycopy(p.buffer, matchstop, p.buffer, amount, bufpos - matchstop);
 
 	    p.bufpos += diff;
 	    p.matchstop += diff;
@@ -6259,7 +6252,7 @@ public final class foreign
       {
 	 if ( from < 0 ) return false;
 	 if ( to > s.length ) return false;
-	 if ( (p.bufsiz == 2) && !(p instanceof input_string_port))
+	 if ( (p.buffer.length == 2) && !(p instanceof input_string_port))
 	    return false; // unbuffered port
 	 if ( CLOSED_RGC_BUFFER( p )) return false;
 	 if ( from >= to ) return true;
@@ -6284,7 +6277,7 @@ public final class foreign
       }
    public static boolean rgc_buffer_insert_char(input_port p, int c)
       {
-	 if ( (p.bufsiz == 2) && !(p instanceof input_string_port))
+	 if ( (p.buffer.length == 2) && !(p instanceof input_string_port))
 	    return false;
 	    
 	 rgc_buffer_reserve_space(p, 1);
@@ -6307,6 +6300,11 @@ public final class foreign
    public static int RGC_START_MATCH(input_port p)
       {
 	 return (p.forward = p.matchstart = p.matchstop);
+      }
+
+   public static int RGC_STOP_MATCH2(input_port p, int forward)
+      {
+	 return (p.matchstop = forward);
       }
 
    public static int RGC_STOP_MATCH(input_port p)
@@ -6341,7 +6339,26 @@ public final class foreign
    
    public static boolean rgc_buffer_eof_p(input_port p)
       {
-	 return ((p.buffer[p.forward] == 0) && (p.forward + 1 == p.bufpos));
+	 return ((p.buffer.length == p.forward) && (p.forward == p.bufpos));
+      }
+
+   public static boolean rgc_buffer_eof2_p(input_port p, int forward, int bufpos)
+      {
+	 if( forward < bufpos ) {
+	    p.forward = forward;
+	    p.bufpos = bufpos;
+	    return false;
+	 } else {
+	    if( p.eof ) {
+	       p.forward = forward;
+	       p.bufpos = bufpos;
+	       return true;
+	    } else {
+	       boolean r = rgc_fill_buffer2( p );
+	       System.err.println( "eof2 pas glop..." + r);
+	       return !r;
+	    }
+	 }
       }
 
    private static int rgc_do_blit(input_port p, byte[]s, int o, int l)
@@ -6351,15 +6368,15 @@ public final class foreign
 
 	 while (((p.bufpos - p.matchstart) <= l) && !p.eof) {
 	    // MS fix 6 Juillet 2005
-	    int fsize = (p.bufsiz - p.bufpos);
+	    int fsize = (p.buffer.length - p.bufpos);
 	    p.forward = p.bufpos;
-	    rgc_fill_buffer(p);
+	    rgc_fill_buffer2(p);
 	    // less characters are available
-	    if( (p.bufpos - p.forward) <  fsize ) break;
+	    if( (p.bufpos - p.forward) < fsize ) break;
 	 }
 
 	 if ((p.bufpos - p.matchstart) <= l)
-	    l = (p.bufpos - p.matchstart - 1);
+	    l = (p.bufpos - p.matchstart);
 
 	 p.forward = p.matchstart + l;
 	 RGC_STOP_MATCH(p);
@@ -6372,7 +6389,7 @@ public final class foreign
    public static int bgl_rgc_blit_string(input_port p, byte[]s, int o, int l)
       throws IOException
       {
-	 final int bs = p.bufsiz;
+	 final int bs = p.buffer.length;
 
 	 if( CLOSED_RGC_BUFFER( p ) ) {
 	    bigloo.runtime.Llib.error.bgl_system_failure(
@@ -6432,15 +6449,35 @@ public final class foreign
 	 return (c == (byte) '\n');
       }
 
+   public static boolean rgc_buffer_eol2_p(input_port p, int forward, int bufpos ) throws IOException
+      {
+	 if( forward == bufpos ) {
+	    if (rgc_fill_buffer2(p))
+	       return rgc_buffer_eol2_p(p, p.forward, p.bufpos );
+	    else
+	       return false;
+	 } else {
+	    p.forward = forward;
+	    p.bufpos = bufpos;
+	    return RGC_BUFFER_GET_CHAR2(p, forward) == (byte)'\n';
+	 }
+      }
+
    public static boolean rgc_fill_buffer(input_port p) {
       --p.forward;
-      if (p.eof)
+      if (p.eof) { 
 	 return false;
+      }
 
       try {
 	 return p.rgc_fill_buffer();
       } catch( Exception e ) {
 	 String msg = e.getMessage();
+
+	 System.err.println( "TO BE REMOVED (foreign.java)" );
+	 final stackwriter sw = new stackwriter( System.out, true );
+	 e.printStackTrace( sw );
+	 
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    (e instanceof java.net.SocketTimeoutException ?
 	     BGL_IO_TIMEOUT_ERROR : BGL_IO_READ_ERROR),

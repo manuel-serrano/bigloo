@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:45:00 1998                          */
-;*    Last change :  Sun Sep  7 09:48:42 2014 (serrano)                */
+;*    Last change :  Mon Sep  8 14:33:33 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the function `rules->tree' that translate */
 ;*    (canonicalize) the user set of clauses into on tree that         */
@@ -82,15 +82,11 @@
        (error #f "RGC:Illegal clauses" clauses)
        (let ((env  (make-variable-env (append user-env (rgc-env))))
 	     (dflt `(in (0 ,(- (rgc-max-char) 1)))))
-;* 	  (print "--------------------------------------")             */
 	  (let loop ((clauses  clauses)
 		     (match    0)
 		     (branches '())
 		     (actions  '())
 		     (defs     '()))
-;* 	     (print "clauses : " clauses)                              */
-;* 	     (print "branches: " branches)                             */
-;* 	     (print "actions : " actions)                              */
 	     (match-case (car clauses)
 		((define . ?-)
 		 (loop (cdr clauses)
@@ -264,7 +260,7 @@
 ;*    In particular, it parses context and BOL, EOL, BOF and EOF       */
 ;*    forms.                                                           */
 ;*---------------------------------------------------------------------*/
-(define (expand-match-rule match env rule)
+(define (expand-match-rule-old match env rule)
    (reset-submatch!)
    (let ((special-char (get-new-special-char)))
       ;; we remember that SPECIAL-CHAR has been created for marking
@@ -272,31 +268,31 @@
       (add-special-match-char! special-char match)
       (let loop ((rule rule))
 	 (make-sequence
-	  (list (let loop ((rule rule))
-		   (match-case rule
-		      ((when ?pred ?rule)
-		       (add-predicate-match! match pred)
-		       (loop rule))
-		      ((context ?context ?rule)
-		       (add-predicate-match! match
-			  `(eq? the-rgc-context ',context))
-		       (loop rule))
-		      ((bol ?rule)
-		       (add-predicate-match! match
-			  '(rgc-buffer-bol? iport))
-		       (loop rule))
-		      ((eol ?rule)
-		       (add-predicate-match! match
-			  '(rgc-buffer-eol? iport))
-		       (loop rule))
-		      ((bof ?rule)
-		       (add-predicate-match! match
-			  '(rgc-buffer-bof? iport))
-		       (loop rule))
-		      ((eof ?rule)
-		       (add-predicate-match! match
-			  '(rgc-buffer-eof? iport))
-		       (loop rule))
+	    (list (let loop ((rule rule))
+		     (match-case rule
+			((when ?pred ?rule)
+			 (add-predicate-match! match pred)
+			 (loop rule))
+			((context ?context ?rule)
+			 (add-predicate-match! match
+			    `(eq? the-rgc-context ',context))
+			 (loop rule))
+			((bol ?rule)
+			 (add-predicate-match! match
+			    '(rgc-buffer-bol? iport))
+			 (loop rule))
+			((eol ?rule)
+			 (add-predicate-match! match
+			    '(rgc-buffer-eol? iport))
+			 (loop rule))
+			((bof ?rule)
+			 (add-predicate-match! match
+			    '(rgc-buffer-bof? iport))
+			 (loop rule))
+			((eof ?rule)
+			 (add-predicate-match! match
+			    '(rgc-buffer-eof? iport))
+			 (loop rule))
 ;* 		      ((keyword . ?kwds)                               */
 ;* 		       (print "Je vais re-expanser: "                  */
 ;* 			     `(when ,(make-keyword-ci-predicate rule kwds) */
@@ -306,9 +302,62 @@
 ;* 		      ((uncase-keyword . ?kwds)                        */
 ;* 		       (loop `(when ,(make-keyword-ci-predicate rule kwds) */
 ;* 				 ,(make-keyword-rule kwds))))          */
-		      (else
-		       (expand-rule match env rule))))
-		special-char)))))
+			(else
+			 (expand-rule match env rule))))
+	       special-char)))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-match-rule ...                                            */
+;*    -------------------------------------------------------------    */
+;*    This function makes the pre-parsing of regular expression.       */
+;*    In particular, it parses context and BOL, EOL, BOF and EOF       */
+;*    forms.                                                           */
+;*---------------------------------------------------------------------*/
+(define (expand-match-rule-new match env rule)
+   (reset-submatch!)
+   (let ((special-char (get-new-special-char)))
+      ;; we remember that SPECIAL-CHAR has been created for marking
+      ;; the match of rule number MATCH
+      (add-special-match-char! special-char match)
+      (let loop ((rule rule))
+	 (make-sequence
+	    (list (let loop ((rule rule))
+		     (match-case rule
+			((when ?pred ?rule)
+			 (add-predicate-match! match pred)
+			 (loop rule))
+			((context ?context ?rule)
+			 (add-predicate-match! match
+			    `(eq? the-rgc-context ',context))
+			 (loop rule))
+			((bol ?rule)
+			 (add-predicate-match! match
+			    '(rgc-buffer-bol? iport))
+			 (loop rule))
+			((eol ?rule)
+			 (add-predicate-match! match
+			    '(let ((r (rgc-buffer-eol2? iport forward bufpos)))
+			      (set! forward (rgc-buffer-forward iport))
+			      (set! bufpos (rgc-buffer-bufpos iport))
+			      r))
+			 (loop rule))
+			((bof ?rule)
+			 (add-predicate-match! match
+			    '(rgc-buffer-bof? iport))
+			 (loop rule))
+			((eof ?rule)
+			 (add-predicate-match! match
+			    '(let ((r (rgc-buffer-eof2? iport forward bufpos)))
+			      (set! forward (rgc-buffer-forward iport))
+			      (set! bufpos (rgc-buffer-bufpos iport))
+			      r))
+			 (loop rule))
+			(else
+			 (expand-rule match env rule))))
+	       special-char)))))
+
+(define (expand-match-rule match env rule)
+   (expand-match-rule-new match env rule))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    make-keyword-rule ...                                            *} */

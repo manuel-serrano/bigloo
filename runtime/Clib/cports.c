@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Sep  6 07:21:28 2014 (serrano)                */
+/*    Last change :  Mon Sep  8 17:45:24 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1372,10 +1372,11 @@ bgl_input_port_buffer_set( obj_t ip, obj_t buffer ) {
    INPUT_PORT( ip ).bufpos = 0;
    INPUT_PORT( ip ).lastchar = '\n';
    
-   if( PORT( ip ).kindof != KINDOF_STRING ) {
-      STRING_SET( buffer, 0 , '\0' );
-   } else {
+   if( PORT( ip ).kindof == KINDOF_STRING ) {
       BGL_INPUT_PORT_LENGTH_SET( ip, STRING_LENGTH( buffer ) );
+   } else {
+      /* RGC 0 */
+      STRING_SET( buffer, 0 , '\0' );
    }
 }
 

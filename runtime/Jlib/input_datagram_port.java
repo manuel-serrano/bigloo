@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Fri Apr  5 11:07:52 2013 (serrano)                */
-/*    Copyright   :  2000-13 Manuel Serrano                            */
+/*    Last change :  Mon Sep  8 17:42:32 2014 (serrano)                */
+/*    Copyright   :  2000-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -39,7 +39,7 @@ public class input_datagram_port extends input_port {
    }
 
    public boolean rgc_fill_buffer() throws IOException {
-      final int bufsize = this.bufsiz;
+      final int bufsize = this.buffer.length;
       int bufpose = this.bufpos;
       final int matchstart = this.matchstart;
 
@@ -77,7 +77,7 @@ public class input_datagram_port extends input_port {
       // to remove the '\0' sentinel that ends the buffer */
       final byte[] buffer = this.buffer;
 
-      socket.socket.receive( new DatagramPacket( buffer, bufpose-1, size ) );
+      socket.socket.receive( new DatagramPacket( buffer, bufpose, size ) );
       
       final int nbread = size;
 
@@ -86,7 +86,6 @@ public class input_datagram_port extends input_port {
       else
 	 bufpose += nbread;
 
-      buffer[bufpose-1] = (byte)'\0';
       this.bufpos = bufpose;
       return (0 < bufpos);
    }

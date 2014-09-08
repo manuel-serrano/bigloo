@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep  8 09:15:04 2014 (serrano)                */
+/*    Last change :  Mon Sep  8 14:39:07 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3016,6 +3016,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define RGC_STOP_MATCH( p ) \
    (INPUT_PORT( p ).matchstop = INPUT_PORT( p ).forward)
 
+#define RGC_STOP_MATCH2( p, forward ) \
+   (INPUT_PORT( p ).matchstop = (forward))
+
 #define RGC_MATCH_FAIL( p ) \
    (INPUT_PORT( p ).matchstart++)
 
@@ -3030,6 +3033,9 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 
 #define RGC_BUFFER_POSITION( p ) \
    (INPUT_PORT( p ).forward - INPUT_PORT( p ).matchstart)
+
+#define RGC_BUFFER_POSITION2( p, forward ) \
+   (forward - INPUT_PORT( p ).matchstart)
 
 #define RGC_BUFFER_FORWARD( p ) \
    (INPUT_PORT( p ).forward)

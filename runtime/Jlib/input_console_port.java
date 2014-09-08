@@ -36,14 +36,13 @@ public class input_console_port extends input_port
     matchstart = 0;
     matchstop = 0;
     bufpos = 1;
-    buffer[0] = (byte)'\0';
     lastchar = (byte)'\n';
   }
 
   public boolean rgc_fill_buffer()
     throws IOException
   {
-    final int bufsize = this.bufsiz;
+    final int bufsize = this.buffer.length;
     int bufpose = this.bufpos;
     final int matchstart = this.matchstart;
 
@@ -82,14 +81,13 @@ public class input_console_port extends input_port
 
     // we start reading at BUFPOSE - 1 because we have */
     // to remove the '\0' sentinel that ends the buffer */
-    final int nbread = in.read( buffer, bufpose-1, size );
+    final int nbread = in.read( buffer, bufpose, size );
 
     if (nbread == -1)
       eof= true;
     else
       bufpose += nbread;
 
-    buffer[bufpose-1]= (byte)'\0';
     this.bufpos = bufpose;
     return (0 < this.bufpos);
   }

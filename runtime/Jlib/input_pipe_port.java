@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Dec  9 11:49:41 2000                          */
-/*    Last change :  Wed Apr  3 06:53:35 2013 (serrano)                */
-/*    Copyright   :  2000-13 Manuel Serrano                            */
+/*    Last change :  Mon Sep  8 17:44:14 2014 (serrano)                */
+/*    Copyright   :  2000-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo JVM input pipe ports.                                     */
 /*=====================================================================*/
@@ -85,7 +85,7 @@ public class input_pipe_port extends input_port {
 
    public boolean rgc_fill_buffer()
       throws IOException {
-      final int bufsize = this.bufsiz;
+      final int bufsize = this.buffer.length;
       int bufpose = this.bufpos;
       final int matchstart = this.matchstart;
       final byte[] buffer = this.buffer;
@@ -118,7 +118,7 @@ public class input_pipe_port extends input_port {
 
    final boolean rgc_size_fill_file_buffer( int bufpose, final int size )
       throws IOException {
-      final int nbread = in.read( buffer, bufpose-1, size );
+      final int nbread = in.read( buffer, bufpose, size );
 
       if (nbread == -1)
 	 eof = true;
@@ -128,7 +128,6 @@ public class input_pipe_port extends input_port {
       this.bufpos = bufpose;
 
       if (0 < bufpose) {
-	 buffer[bufpose-1] = (byte)0;
 	 return true;
       }
 
