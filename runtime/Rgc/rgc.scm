@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Tue Sep  9 08:26:32 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 09:00:07 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -46,9 +46,7 @@
 	    __r4_output_6_10_3
 	    __r4_vectors_6_8)
 
-   (extern  (macro $rgc-buffer-get-char::int (::input-port)
-		   "RGC_BUFFER_GET_CHAR")
-	    (macro $rgc-buffer-get-char2::int (::input-port ::long)
+   (extern  (macro $rgc-buffer-get-char2::int (::input-port ::long)
 		   "RGC_BUFFER_GET_CHAR2")
 	    (macro $rgc-buffer-length::long (::input-port)
 		   "RGC_BUFFER_MATCH_LENGTH")
@@ -56,12 +54,8 @@
 		   "RGC_SET_FILEPOS")
 	    (macro $rgc-start-match!::long (::input-port)
 		   "RGC_START_MATCH")
-	    (macro $rgc-stop-match!::long (::input-port)
-		   "RGC_STOP_MATCH")
 	    (macro $rgc-stop-match2!::long (::input-port ::long)
 		   "RGC_STOP_MATCH2")
- 	    (macro $rgc-buffer-position::long (::input-port)
-		   "RGC_BUFFER_POSITION")
  	    (macro $rgc-buffer-position2::long (::input-port ::long)
 		   "RGC_BUFFER_POSITION2")
 	    (macro $rgc-buffer-forward::long (::input-port)
@@ -120,8 +114,6 @@
 				    "bgl_rgc_blit_string"))
 
    (java    (class foreign
-	       (method static $rgc-buffer-get-char::int (::input-port)
-		       "RGC_BUFFER_GET_CHAR")
 	       (method static $rgc-buffer-get-char2::int (::input-port ::long)
 		       "RGC_BUFFER_GET_CHAR2")
 	       (method static $rgc-buffer-length::long (::input-port)
@@ -130,12 +122,8 @@
 		       "RGC_SET_FILEPOS")
 	       (method static $rgc-start-match!::long (::input-port)
 		       "RGC_START_MATCH")
-	       (method static $rgc-stop-match!::long (::input-port)
-		       "RGC_STOP_MATCH")
 	       (method static $rgc-stop-match2!::long (::input-port ::long)
 		       "RGC_STOP_MATCH2")
-	       (method static $rgc-buffer-position::long (::input-port)
-		       "RGC_BUFFER_POSITION")
 	       (method static $rgc-buffer-position2::long (::input-port ::long)
 		       "RGC_BUFFER_POSITION2")
 	       (method static $rgc-buffer-forward::long (::input-port)
@@ -194,7 +182,6 @@
 		       "bgl_rgc_blit_string")))
  
    (export  *unsafe-rgc*
-	    (inline rgc-buffer-get-char::int ::input-port)
 	    (inline rgc-buffer-get-char2::int ::input-port ::long)
 	    (inline rgc-buffer-insert-substring!::bool ::input-port str::bstring from::long to::long)
 	    (inline rgc-buffer-insert-char!::bool ::input-port ::long)
@@ -217,13 +204,11 @@
 	    (inline rgc-buffer-keyword::keyword ::input-port)
 	    (inline rgc-buffer-downcase-keyword::keyword ::input-port)
 	    (inline rgc-buffer-upcase-keyword::keyword ::input-port)
-	    (inline rgc-buffer-position::long ::input-port)
 	    (inline rgc-buffer-position2::long ::input-port ::long)
 	    (inline rgc-buffer-bufpos::long ::input-port)
 	    (inline rgc-buffer-forward::long ::input-port)
 	    (inline rgc-set-filepos! ::input-port)
 	    (inline rgc-start-match!::long ::input-port)
-	    (inline rgc-stop-match!::long ::input-port)
 	    (inline rgc-stop-match2!::long ::input-port ::long)
 	    (inline rgc-fill-buffer2::bool ::input-port)
 	    (inline rgc-buffer-bol?::bool ::input-port)
@@ -248,12 +233,6 @@
 ;*          @ref ../../comptime/Init/parse-args.scm:unsafe-rgc@        */
 ;*---------------------------------------------------------------------*/
 (define *unsafe-rgc* #f)
-
-;*---------------------------------------------------------------------*/
-;*    rgc-buffer-get-char ...                                          */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-buffer-get-char input-port)
-   ($rgc-buffer-get-char input-port)) 
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-get-char2 ...                                         */
@@ -388,12 +367,6 @@
    ($rgc-buffer-upcase-keyword input-port))
 
 ;*---------------------------------------------------------------------*/
-;*    rgc-buffer-position ...                                          */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-buffer-position::long input-port::input-port)
-   ($rgc-buffer-position input-port))
-
-;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-position2 ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-position2::long input-port::input-port forward)
@@ -422,12 +395,6 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-start-match! input-port)
    ($rgc-start-match! input-port))
-
-;*---------------------------------------------------------------------*/
-;*    rgc-stop-match! ...                                              */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-stop-match! input-port)
-   ($rgc-stop-match! input-port))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-stop-match2! ...                                             */

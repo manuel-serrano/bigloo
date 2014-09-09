@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Sep  9 08:26:46 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 09:13:50 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2969,18 +2969,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define RGC_BUFFER_SET( p, o, c ) \
    STRING_SET( BGL_INPUT_PORT_BUFFER( p ), o, c )
 
-#if (defined( RGC_DEBUG ) && (RGC_DEBUG > 1))
-#define RGC_BUFFER_GET_CHAR( i ) \
-   (printf( "get_char: %d %c forward: %d \n", \
-	    RGC_BUFFER_REF( i, INPUT_PORT( i ).forward ), \
-	    RGC_BUFFER_REF( i, INPUT_PORT( i ).forward ), \
-            INPUT_PORT( i ).forward ), \
-    (unsigned int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).forward++ )))
-#else
-#define RGC_BUFFER_GET_CHAR( i ) \
-   ((unsigned int)(RGC_BUFFER_REF( i, INPUT_PORT( i ).forward++ )))
-#endif
-
 #define RGC_BUFFER_GET_CHAR2( i, offset ) \
    ((int)(RGC_BUFFER_REF( i, offset )))
    
@@ -3004,9 +2992,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
      INPUT_PORT( p ).matchstart = \
       INPUT_PORT( p ).matchstop)
 
-#define RGC_STOP_MATCH( p ) \
-   (INPUT_PORT( p ).matchstop = INPUT_PORT( p ).forward)
-
 #define RGC_STOP_MATCH2( p, forward ) \
    (INPUT_PORT( p ).matchstop = (forward))
 
@@ -3021,9 +3006,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    
 #define RGC_BUFFER_MATCH_LENGTH( p ) \
    (INPUT_PORT( p ).matchstop - INPUT_PORT( p ).matchstart)
-
-#define RGC_BUFFER_POSITION( p ) \
-   (INPUT_PORT( p ).forward - INPUT_PORT( p ).matchstart)
 
 #define RGC_BUFFER_POSITION2( p, forward ) \
    (forward - INPUT_PORT( p ).matchstart)

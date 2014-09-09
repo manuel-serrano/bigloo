@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Sep  9 08:53:57 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 09:13:36 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -235,7 +235,7 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 
       INPUT_PORT( p ).matchstart += l;
       INPUT_PORT( p ).forward = INPUT_PORT( p ).matchstart;
-      RGC_STOP_MATCH( p );
+      RGC_STOP_MATCH2( p, INPUT_PORT( p ).matchstart );
       
       INPUT_PORT( p ).filepos += l;
 

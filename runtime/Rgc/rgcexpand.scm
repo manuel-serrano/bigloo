@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Tue Sep  9 08:12:16 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 09:16:12 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -305,7 +305,8 @@
 			       (the-string)
 			       (multiple-value-bind (start stop)
 				  (rgc-the-submatch rgc-submatches
-				     (rgc-buffer-position iport)
+				     (rgc-buffer-position2 iport
+					(rgc-buffer-forward iport))
 				     match num)
 				  (if (and (>=fx start 0) (>=fx stop start))
 				      (the-substring start stop)

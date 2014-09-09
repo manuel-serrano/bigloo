@@ -6181,11 +6181,6 @@ public final class foreign
 	 return p.name;
       }
 
-   public static int RGC_BUFFER_POSITION(input_port p)
-      {
-	 return (p.forward - p.matchstart);
-      }
-
    public static int RGC_BUFFER_POSITION2(input_port p, int forward)
       {
 	 return (forward - p.matchstart);
@@ -6201,16 +6196,7 @@ public final class foreign
 	 return p.bufpos;
       }
 
-   public static int RGC_BUFFER_GET_CHAR(input_port p)
-      {
-	 try {
-	    return (p.buffer[p.forward++] & 0xFF);
-	 } catch( Throwable _ ) {
-	    return 0;
-	 }
-      }
-
-   public static int RGC_BUFFER_GET_CHAR2(input_port p, int offset)
+    public static int RGC_BUFFER_GET_CHAR2(input_port p, int offset)
       {
 	 return (int)(p.buffer[offset] & 0xFF);
       }
@@ -6307,11 +6293,6 @@ public final class foreign
 	 return (p.matchstop = forward);
       }
 
-   public static int RGC_STOP_MATCH(input_port p)
-      {
-	 return (p.matchstop = p.forward);
-      }
-
    public static int RGC_SET_FILEPOS(input_port p)
       {
 	 return (p.filepos += (p.matchstop - p.matchstart));
@@ -6374,7 +6355,7 @@ public final class foreign
 	    l = (p.bufpos - p.matchstart);
 
 	 p.forward = p.matchstart + l;
-	 RGC_STOP_MATCH(p);
+	 RGC_STOP_MATCH2(p,p.forward);
 	 RGC_SET_FILEPOS(p);
 	 System.arraycopy(p.buffer, p.matchstart, s, o, l);
 
