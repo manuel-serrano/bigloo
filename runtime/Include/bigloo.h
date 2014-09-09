@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep  8 14:39:07 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 08:26:46 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2962,15 +2962,6 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #else
 #undef assert   
 #   define assert( exp ) ;
-#endif
-
-#if (defined( RGC_DEBUG ) && (RGC_DEBUG > 1))
-#define RGC_BUFFER_EMPTY( p ) \
-   (printf( "rgc_buffer_empty forward=%d bufpos=%d size=%d\n", INPUT_PORT( p ).forward, INPUT_PORT( p ).bufpos, INPUT_PORT( p ).length), \
-    INPUT_PORT( p ).forward > INPUT_PORT( p ).bufpos)
-#else
-#define RGC_BUFFER_EMPTY( p ) \
-   (INPUT_PORT( p ).forward > INPUT_PORT( p ).bufpos)
 #endif
 
 #define RGC_BUFFER_REF( p, o ) \

@@ -6322,11 +6322,6 @@ public final class foreign
 	 return (p.matchstop - p.matchstart);
       }
 
-   public static boolean RGC_BUFFER_EMPTY(input_port p)
-      {
-	 return (p.forward == p.bufpos);
-      }
-
    public static boolean bgl_rgc_charready(input_port p)
       {
 	 return p.rgc_charready();
@@ -6426,27 +6421,6 @@ public final class foreign
 	    return (p.buffer[p.matchstart - 1] == '\n');
 	 else
 	    return (p.lastchar == (byte) '\n');
-      }
-
-   public static boolean rgc_buffer_eol_p(input_port p) throws IOException
-      {
-	 final int c = RGC_BUFFER_GET_CHAR(p);
-
-	 if  (c == 0)
-	 {
-	    if (!RGC_BUFFER_EMPTY(p))
-	    {
-	       --p.forward;
-	       return false;
-	    }
-	    // CARE
-	    // if(p.kindof == KINDOF_CONSOLE ) return(true);
-	    if (rgc_fill_buffer(p))
-	       return rgc_buffer_eol_p(p);
-	    return false;
-	 }
-	 --p.forward;
-	 return (c == (byte) '\n');
       }
 
    public static boolean rgc_buffer_eol2_p(input_port p, int forward, int bufpos ) throws IOException

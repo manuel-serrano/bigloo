@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Mon Sep  8 14:44:16 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 08:26:32 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -60,8 +60,6 @@
 		   "RGC_STOP_MATCH")
 	    (macro $rgc-stop-match2!::long (::input-port ::long)
 		   "RGC_STOP_MATCH2")
-	    (macro $rgc-buffer-empty?::bool (::input-port)
-		   "RGC_BUFFER_EMPTY")
  	    (macro $rgc-buffer-position::long (::input-port)
 		   "RGC_BUFFER_POSITION")
  	    (macro $rgc-buffer-position2::long (::input-port ::long)
@@ -106,14 +104,10 @@
 						 "rgc_buffer_upcase_keyword")
 	    ($rgc-buffer-keyword::keyword (::input-port)
 					  "rgc_buffer_keyword")
-	    ($rgc-fill-buffer::bool (::input-port)
-				    "rgc_fill_buffer")
 	    ($rgc-fill-buffer2::bool (::input-port)
 				    "rgc_fill_buffer2")
 	    ($rgc-buffer-bol?::bool (::input-port)
 				    "rgc_buffer_bol_p")
-	    ($rgc-buffer-eol?::bool (::input-port)
-				    "rgc_buffer_eol_p")
 	    ($rgc-buffer-eol2?::bool (::input-port ::long ::long)
 				    "rgc_buffer_eol2_p")
 	    ($rgc-buffer-bof?::bool (::input-port)
@@ -140,8 +134,6 @@
 		       "RGC_STOP_MATCH")
 	       (method static $rgc-stop-match2!::long (::input-port ::long)
 		       "RGC_STOP_MATCH2")
-	       (method static $rgc-buffer-empty?::bool (::input-port)
-		       "RGC_BUFFER_EMPTY")
 	       (method static $rgc-buffer-position::long (::input-port)
 		       "RGC_BUFFER_POSITION")
 	       (method static $rgc-buffer-position2::long (::input-port ::long)
@@ -186,14 +178,10 @@
 		       "rgc_buffer_upcase_keyword")
 	       (method static $rgc-buffer-downcase-keyword::keyword (::input-port)
 		       "rgc_buffer_downcase_keyword")
-	       (method static $rgc-fill-buffer::bool (::input-port)
-		       "rgc_fill_buffer")
 	       (method static $rgc-fill-buffer2::bool (::input-port)
 		       "rgc_fill_buffer2")
 	       (method static $rgc-buffer-bol?::bool (::input-port)
 		       "rgc_buffer_bol_p")
-	       (method static $rgc-buffer-eol?::bool (::input-port)
-		       "rgc_buffer_eol_p")
 	       (method static $rgc-buffer-eol2?::bool (::input-port ::int ::int)
 		       "rgc_buffer_eol2_p")
 	       (method static $rgc-buffer-bof?::bool (::input-port)
@@ -237,12 +225,8 @@
 	    (inline rgc-start-match!::long ::input-port)
 	    (inline rgc-stop-match!::long ::input-port)
 	    (inline rgc-stop-match2!::long ::input-port ::long)
-	    (inline rgc-buffer-empty?::bool ::input-port)
-	    (inline rgc-fill-buffer::bool ::input-port)
 	    (inline rgc-fill-buffer2::bool ::input-port)
-	    (inline rgc-fill-buffer-if-empty::bool ::input-port)
 	    (inline rgc-buffer-bol?::bool ::input-port)
-	    (inline rgc-buffer-eol?::bool ::input-port)
 	    (inline rgc-buffer-eol2?::bool ::input-port ::long ::long)
 	    (inline rgc-buffer-bof?::bool ::input-port)
 	    (inline rgc-buffer-eof?::bool ::input-port)
@@ -452,40 +436,16 @@
    ($rgc-stop-match2! input-port forward))
 
 ;*---------------------------------------------------------------------*/
-;*    rgc-buffer-empty? ...                                            */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-buffer-empty?::bool input-port::input-port)
-   ($rgc-buffer-empty? input-port))
-
-;*---------------------------------------------------------------------*/
-;*    rgc-fill-buffer ...                                              */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-fill-buffer::bool input-port::input-port)
-   ($rgc-fill-buffer input-port))
-
-;*---------------------------------------------------------------------*/
 ;*    rgc-fill-buffer2 ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-fill-buffer2::bool input-port::input-port)
    ($rgc-fill-buffer2 input-port))
 
 ;*---------------------------------------------------------------------*/
-;*    rgc-fill-buffer-if-empty ...                                     */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-fill-buffer-if-empty::bool input-port::input-port)
-   (and (rgc-buffer-empty? input-port) (rgc-fill-buffer input-port)))
-
-;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-bol? ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-bol?::bool input-port::input-port)
    ($rgc-buffer-bol? input-port))
-
-;*---------------------------------------------------------------------*/
-;*    rgc-buffer-eol? ...                                              */
-;*---------------------------------------------------------------------*/
-(define-inline (rgc-buffer-eol?::bool input-port::input-port)
-   ($rgc-buffer-eol? input-port))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgc-buffer-eol2? ...                                             */

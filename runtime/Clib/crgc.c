@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Sep  9 07:53:10 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 08:27:48 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -422,38 +422,6 @@ rgc_buffer_bol_p( obj_t ip ) {
       return RGC_BUFFER_REF( ip, INPUT_PORT( ip ).matchstart - 1 ) == '\n';
    } else {
       return INPUT_PORT( ip ).lastchar == '\n';
-   }
-}
-
-/*---------------------------------------------------------------------*/
-/*    bool_t                                                           */
-/*    rgc_buffer_eol_p ...                                             */
-/*    -------------------------------------------------------------    */
-/*    Does the buffer contain, at its first non match position, a `\n' */
-/*    character?                                                       */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF bool_t
-rgc_buffer_eol_p( obj_t ip ) {
-   int c = RGC_BUFFER_GET_CHAR( ip );
-   
-   if( !c ) {
-      if( !RGC_BUFFER_EMPTY( ip ) ) {
-	 INPUT_PORT( ip ).forward--;
-	 
-	 return 0;
-      }
-
-      if( PORT( ip ).kindof == KINDOF_CONSOLE ) {
-	 return 1;
-      }
-      if( rgc_fill_buffer( ip ) )
-	 return rgc_buffer_eol_p( ip );
-      else {
-	 return 0;
-      }
-   } else {
-      INPUT_PORT( ip ).forward--;
-      return c == '\n';
    }
 }
 

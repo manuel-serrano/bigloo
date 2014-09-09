@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */
-;*    Last change :  Tue Sep  9 08:18:32 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 08:31:03 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the DFA compilation. Each state is        */
 ;*    compiled into a lambda expression.                               */
@@ -58,7 +58,7 @@
 (define (compile-dfa submatches states positions)
    (init-compile-member-vector!)
    (let ((res (map (lambda (state)
-		      (compile-state2 submatches state positions))
+		      (compile-state submatches state positions))
 		   states)))
       (reset-compile-member-vector!)
       res))
@@ -89,7 +89,7 @@
 ;*    The variable POSITIONS-TO-CHAR is a mapping from position        */
 ;*    to real chars. It is used only when compiling submatch.          */
 ;*---------------------------------------------------------------------*/
-(define (compile-state2 submatches state positions-to-char)
+(define (compile-state submatches state positions-to-char)
    ;; we start splittint transition in two sets:
    ;;    1. set for special
    ;;    2. set for regular chars
@@ -100,13 +100,13 @@
 	       'last-match
 	       (multiple-value-bind (special-trans regular-trans)
 		  (split-transitions transitions)
-		  (let ((match-body (compile-match2 special-trans)))
+		  (let ((match-body (compile-match special-trans)))
 		     (if match-body
 			 `(let ((new-match ,match-body))
-			     ,(compile-regular2
+			     ,(compile-regular
 				 submatches state
 				 regular-trans 'new-match positions-to-char))
-			 (compile-regular2
+			 (compile-regular
 			    submatches state
 			    regular-trans 'last-match positions-to-char))))))))
 
@@ -135,7 +135,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    compile-regular ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (compile-regular2 submatches current-state transitions last-match p->c)
+(define (compile-regular submatches current-state transitions last-match p->c)
    ;; the first set is to build the <state x transitions>
    ;; association list
    (let ((state-trans (state-transition-list transitions))
@@ -152,11 +152,11 @@
 	       ;; Generate a `case' construction instead of `cond' when the
 	       ;; the number of transitions exceeds a fixed threshold
 	       (let* ((cur::int (rgc-buffer-get-char2 iport forward)))
-		  ,@(compile-submatches2 'cur submatches positions p->c)
+		  ,@(compile-submatches 'cur submatches positions p->c)
 		  ,(if (<=fx (length state-trans) 12)
-		       (compile-cond-regular2
+		       (compile-cond-regular
 			  current-state state-trans last-match)
-		       (compile-case-regular2
+		       (compile-case-regular
 			  current-state state-trans last-match)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -166,9 +166,9 @@
    `(,(state-name state) iport ,match ,forward ,bufpos))
 
 ;*---------------------------------------------------------------------*/
-;*    compile-case-regular2 ...                                        */
+;*    compile-case-regular ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (compile-case-regular2 current-state state-trans match)
+(define (compile-case-regular current-state state-trans match)
    
    (define (compile-case-transition state-trans)
       (let ((set (cdr state-trans))
@@ -183,15 +183,15 @@
 	,match)))
 
 ;*---------------------------------------------------------------------*/
-;*    compile-cond-regular2 ...                                        */
+;*    compile-cond-regular ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (compile-cond-regular2 current-state state-trans match)
+(define (compile-cond-regular current-state state-trans match)
    
    (define (compile-cond-transition state-trans prev-test-len)
       (let ((set   (cdr state-trans))
 	    (state (car state-trans)))
 	 (multiple-value-bind (cond-test cond-cost)
-	    (compile-cond-test2 set 'cur prev-test-len)
+	    (compile-cond-test set 'cur prev-test-len)
 	    (values `(,cond-test
 			,(compile-jump-to-state state match
 			    '(+fx 1 forward) 'bufpos))
@@ -205,7 +205,7 @@
       (if (or (null? trans) elsep)
 	  (begin
 	     (if (>fx cost *case-threshold*)
-		 (compile-case-regular2 current-state state-trans match)
+		 (compile-case-regular current-state state-trans match)
 		 `(cond
 		     ,@(reverse! tests)
 		     ,@(if elsep
@@ -220,9 +220,9 @@
 		(and (pair? test) (eq? (car test) 'else)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    compile-cond-test2 ...                                           */
+;*    compile-cond-test ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (compile-cond-test2 set var prev-test-len)
+(define (compile-cond-test set var prev-test-len)
    
    (define (find-next-member start set)
       (let ((max (rgc-max-char)))
@@ -330,7 +330,7 @@
 ;*    match is found, the smaller one is returned, otherwise a         */
 ;*    COND construction is inserted.                                   */
 ;*---------------------------------------------------------------------*/
-(define (compile-match2 transitions)
+(define (compile-match transitions)
    
    ;; we compile a match list into a body that, at runtime, will compute
    ;; we new matching rule. the MATCHES list is sorted.
@@ -459,7 +459,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    compile-submatches ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (compile-submatches2 current submatches positions positions-to-char)
+(define (compile-submatches current submatches positions positions-to-char)
    
    (define (find-same-submatch cell sm)
       (let loop ((sm sm))
