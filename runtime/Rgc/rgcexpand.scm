@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Mon Sep  8 14:46:27 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 08:12:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -120,14 +120,13 @@
 		;; We now build the dfa transitions.
 		(begin
 		   (let* ((dfa (node->dfa node followpos positions))
-			  (sexp (make-regular-parser args
-						     (compile-dfa submatches
-								  dfa
-								  positions)
-						     actions
-						     else-num
-						     submatch?
-						     defs)))
+			  (sexp (make-regular-parser
+				   args
+				   (compile-dfa submatches dfa positions)
+				   actions
+				   else-num
+				   submatch?
+				   defs)))
 		      (reset-special-match-char!)
 		      (reset-tree!)
 		      (reset-dfa!)
@@ -263,27 +262,6 @@
 	  ,@(if submatch?
 		(list
 		   '(define rgc-submatches (quote ()))
-		   '(define (rgc-submatch-start! match::int submatch::int)
-		     (set! rgc-submatches
-			(cons (vector match
-				 submatch
-				 (rgc-buffer-position iport)
-				 (quote start))
-			   rgc-submatches)))
-		   '(define (rgc-submatch-start*! match::int submatch::int)
-		     (set! rgc-submatches
-			(cons (vector match
-				 submatch
-				 (rgc-buffer-position iport)
-				 (quote start*))
-			   rgc-submatches)))
-		   '(define (rgc-submatch-stop! match::int submatch::int)
-		     (set! rgc-submatches
-			(cons (vector match
-				 submatch
-				 (rgc-buffer-position iport)
-				 (quote stop))
-			   rgc-submatches)))
 		   '(define (rgc-submatch-start2! match::int submatch::int forward)
 		     (set! rgc-submatches
 			(cons (vector match
