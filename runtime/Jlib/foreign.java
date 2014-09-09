@@ -6181,7 +6181,7 @@ public final class foreign
 	 return p.name;
       }
 
-   public static int RGC_BUFFER_POSITION2(input_port p, int forward)
+   public static int RGC_BUFFER_POSITION(input_port p, int forward)
       {
 	 return (forward - p.matchstart);
       }
@@ -6196,7 +6196,7 @@ public final class foreign
 	 return p.bufpos;
       }
 
-    public static int RGC_BUFFER_GET_CHAR2(input_port p, int offset)
+    public static int RGC_BUFFER_GET_CHAR(input_port p, int offset)
       {
 	 return (int)(p.buffer[offset] & 0xFF);
       }
@@ -6288,7 +6288,7 @@ public final class foreign
 	 return (p.forward = p.matchstart = p.matchstop);
       }
 
-   public static int RGC_STOP_MATCH2(input_port p, int forward)
+   public static int RGC_STOP_MATCH(input_port p, int forward)
       {
 	 return (p.matchstop = forward);
       }
@@ -6330,7 +6330,7 @@ public final class foreign
 	       p.bufpos = bufpos;
 	       return true;
 	    } else {
-	       boolean r = rgc_fill_buffer2( p );
+	       boolean r = rgc_fill_buffer( p );
 	       System.err.println( "eof2 pas glop..." + r);
 	       return !r;
 	    }
@@ -6346,7 +6346,7 @@ public final class foreign
 	    // MS fix 6 Juillet 2005
 	    int fsize = (p.buffer.length - p.bufpos);
 	    p.forward = p.bufpos;
-	    rgc_fill_buffer2(p);
+	    rgc_fill_buffer(p);
 	    // less characters are available
 	    if( (p.bufpos - p.forward) < fsize ) break;
 	 }
@@ -6355,7 +6355,7 @@ public final class foreign
 	    l = (p.bufpos - p.matchstart);
 
 	 p.forward = p.matchstart + l;
-	 RGC_STOP_MATCH2(p,p.forward);
+	 RGC_STOP_MATCH(p,p.forward);
 	 RGC_SET_FILEPOS(p);
 	 System.arraycopy(p.buffer, p.matchstart, s, o, l);
 
@@ -6404,21 +6404,21 @@ public final class foreign
 	    return (p.lastchar == (byte) '\n');
       }
 
-   public static boolean rgc_buffer_eol2_p(input_port p, int forward, int bufpos ) throws IOException
+   public static boolean rgc_buffer_eol_p(input_port p, int forward, int bufpos ) throws IOException
       {
 	 if( forward == bufpos ) {
-	    if (rgc_fill_buffer2(p))
-	       return rgc_buffer_eol2_p(p, p.forward, p.bufpos );
+	    if (rgc_fill_buffer(p))
+	       return rgc_buffer_eol_p(p, p.forward, p.bufpos );
 	    else
 	       return false;
 	 } else {
 	    p.forward = forward;
 	    p.bufpos = bufpos;
-	    return RGC_BUFFER_GET_CHAR2(p, forward) == (byte)'\n';
+	    return RGC_BUFFER_GET_CHAR(p, forward) == (byte)'\n';
 	 }
       }
 
-   public static boolean rgc_fill_buffer2(input_port p) {
+   public static boolean rgc_fill_buffer(input_port p) {
       p.forward = p.bufpos;
       
       if (p.eof) { 

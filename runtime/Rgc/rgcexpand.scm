@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Tue Sep  9 09:16:12 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 14:47:44 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -266,21 +266,21 @@
 		     (set! rgc-submatches
 			(cons (vector match
 				 submatch
-				 (rgc-buffer-position2 iport forward)
+				 (rgc-buffer-position iport forward)
 				 (quote start))
 			   rgc-submatches)))
 		   '(define (rgc-submatch-start*2! match::int submatch::int forward)
 		     (set! rgc-submatches
 			(cons (vector match
 				 submatch
-				 (rgc-buffer-position2 iport forward)
+				 (rgc-buffer-position iport forward)
 				 (quote start*))
 			   rgc-submatches)))
 		   '(define (rgc-submatch-stop2! match::int submatch::int forward)
 		     (set! rgc-submatches
 			(cons (vector match
 				 submatch
-				 (rgc-buffer-position2 iport forward)
+				 (rgc-buffer-position iport forward)
 				 (quote stop))
 			   rgc-submatches))))
 		'())
@@ -305,7 +305,7 @@
 			       (the-string)
 			       (multiple-value-bind (start stop)
 				  (rgc-the-submatch rgc-submatches
-				     (rgc-buffer-position2 iport
+				     (rgc-buffer-position iport
 					(rgc-buffer-forward iport))
 				     match num)
 				  (if (and (>=fx start 0) (>=fx stop start))

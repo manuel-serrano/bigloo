@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:45:00 1998                          */
-;*    Last change :  Tue Sep  9 08:11:37 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 14:50:06 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the function `rules->tree' that translate */
 ;*    (canonicalize) the user set of clauses into on tree that         */
@@ -283,7 +283,7 @@
 			 (loop rule))
 			((eol ?rule)
 			 (add-predicate-match! match
-			    '(let ((r (rgc-buffer-eol2? iport forward bufpos)))
+			    '(let ((r (rgc-buffer-eol? iport forward bufpos)))
 			      (set! forward (rgc-buffer-forward iport))
 			      (set! bufpos (rgc-buffer-bufpos iport))
 			      r))

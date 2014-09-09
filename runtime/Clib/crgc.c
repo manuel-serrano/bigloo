@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Sep  9 09:13:36 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 14:35:57 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -154,7 +154,7 @@ rgc_fillsize_buffer( obj_t port, char *buf, int bufpos, int size ) {
 /*    rgc_fill_buffer ...                                              */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-rgc_fill_buffer2( obj_t port ) {
+rgc_fill_buffer( obj_t port ) {
    if( INPUT_PORT_CLOSEP( port ) ) {
       C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "read", "input-port closed", port );
    } else {
@@ -235,7 +235,7 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 
       INPUT_PORT( p ).matchstart += l;
       INPUT_PORT( p ).forward = INPUT_PORT( p ).matchstart;
-      RGC_STOP_MATCH2( p, INPUT_PORT( p ).matchstart );
+      RGC_STOP_MATCH( p, INPUT_PORT( p ).matchstart );
       
       INPUT_PORT( p ).filepos += l;
 
@@ -427,17 +427,17 @@ rgc_buffer_bol_p( obj_t ip ) {
 /*    character?                                                       */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-rgc_buffer_eol2_p( obj_t ip, long forward, long bufpos ) {
+rgc_buffer_eol_p( obj_t ip, long forward, long bufpos ) {
    if( forward == bufpos ) {
-      if( rgc_fill_buffer2( ip ) )
-	 return rgc_buffer_eol2_p( ip, INPUT_PORT( ip ).forward, INPUT_PORT( ip ).bufpos );
+      if( rgc_fill_buffer( ip ) )
+	 return rgc_buffer_eol_p( ip, INPUT_PORT( ip ).forward, INPUT_PORT( ip ).bufpos );
       else {
 	 return 0;
       }
    } else {
       INPUT_PORT( ip ).forward = forward;
       INPUT_PORT( ip ).bufpos = bufpos;
-      return RGC_BUFFER_GET_CHAR2( ip, forward ) == '\n';
+      return RGC_BUFFER_GET_CHAR( ip, forward ) == '\n';
    }
 }
 
@@ -487,7 +487,7 @@ rgc_buffer_eof2_p( obj_t ip, long forward, long bufpos ) {
 	 
 	 return 1;
       } else {
-	 return !rgc_fill_buffer2( ip );
+	 return !rgc_fill_buffer( ip );
       }
    }
 }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */
-;*    Last change :  Tue Sep  9 08:31:03 2014 (serrano)                */
+;*    Last change :  Tue Sep  9 14:58:14 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the DFA compilation. Each state is        */
 ;*    compiled into a lambda expression.                               */
@@ -144,14 +144,14 @@
 	  last-match
 	  `(if (=fx forward bufpos)
 	       ;; the buffer is empty
-	       (if (rgc-fill-buffer2 iport)
+	       (if (rgc-fill-buffer iport)
 		   ,(compile-jump-to-state current-state 'last-match
 		       '(rgc-buffer-forward iport)
 		       '(rgc-buffer-bufpos iport))
 		   ,last-match)
 	       ;; Generate a `case' construction instead of `cond' when the
 	       ;; the number of transitions exceeds a fixed threshold
-	       (let* ((cur::int (rgc-buffer-get-char2 iport forward)))
+	       (let* ((cur::int (rgc-buffer-get-char iport forward)))
 		  ,@(compile-submatches 'cur submatches positions p->c)
 		  ,(if (<=fx (length state-trans) 12)
 		       (compile-cond-regular
@@ -347,11 +347,11 @@
 			;; this rule is conditional
 			`(if (and ,@preds)
 			     (begin
-				(rgc-stop-match2! iport forward)
+				(rgc-stop-match! iport forward)
 				,match)
 			     ,(loop (cdr matches)))
 			`(begin
-			   (rgc-stop-match2! iport forward)
+			   (rgc-stop-match! iport forward)
 			   ,match)))))))
    
    (let loop ((transitions transitions)
