@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Sep  8 17:45:24 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 07:46:28 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1309,39 +1309,51 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
       case (long)KINDOF_CONSOLE:
 	 new_input_port->port_t.sysclose = 0;
 	 new_input_port->input_port_t.sysread = bgl_console_read;
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif	 
 	 break;
 
 #if( HAVE_PIPE )
       case (long)KINDOF_PIPE:
 	 new_input_port->port_t.sysclose = pclose;
 	 new_input_port->input_port_t.sysread = bgl_read;
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif	 
 	 break;
 
       case (long)KINDOF_PROCPIPE:
 	 new_input_port->port_t.sysclose = fclose;
 	 new_input_port->input_port_t.sysread = bgl_read;
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif	 
 	 break;
 #endif
 	 
       case (long)KINDOF_SOCKET:
       case (long)KINDOF_DATAGRAM:
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif	 
 	 break;
 
       case (long)KINDOF_FILE:
 	 new_input_port->port_t.sysclose = fclose;
 	 new_input_port->input_port_t.sysread = bgl_read;
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif	 
 	 break;
 
       case (long)KINDOF_PROCEDURE:
       case (long)KINDOF_GZIP:
 	 new_input_port->port_t.sysclose = 0;
 	 new_input_port->input_port_t.sysread = bgl_proc_read;
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif
 	 break;
 
       case (long)KINDOF_STRING:
@@ -1352,7 +1364,9 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
       default:
 	 new_input_port->port_t.sysclose = 0;
 	 new_input_port->input_port_t.sysread = bgl_read;
+#if( defined( RGC_0 ) )
 	 STRING_SET( new_input_port->input_port_t.buf, 0, '\0' );
+#endif
    }
 
    return BREF( new_input_port );
@@ -1375,8 +1389,9 @@ bgl_input_port_buffer_set( obj_t ip, obj_t buffer ) {
    if( PORT( ip ).kindof == KINDOF_STRING ) {
       BGL_INPUT_PORT_LENGTH_SET( ip, STRING_LENGTH( buffer ) );
    } else {
-      /* RGC 0 */
+#if( defined( RGC_0 ) )
       STRING_SET( buffer, 0 , '\0' );
+#endif      
    }
 }
 
@@ -1500,7 +1515,9 @@ bgl_input_file_seek( obj_t port, long pos ) {
    INPUT_PORT( port ).forward = 0;
    INPUT_PORT( port ).bufpos = 0;
    INPUT_PORT( port ).lastchar = '\n';
+#if( defined( RGC_0 ) )
    RGC_BUFFER_SET( port, 0, '\0' );
+#endif
 }
    
 /*---------------------------------------------------------------------*/
@@ -1624,7 +1641,9 @@ bgl_open_input_substring_bang( obj_t buffer, long offset, long end ) {
 			       KINDOF_STRING,
 			       buffer );
 
+#if( defined( RGC_0 ) )
    STRING_SET( buffer, end, '\0' );
+#endif
    CREF( port )->input_port_t.eof = 1;
    CREF( port )->input_port_t.bufpos = end;
    CREF( port )->input_port_t.length = end;
@@ -1898,7 +1917,9 @@ bgl_input_port_reopen( obj_t port ) {
    INPUT_PORT( port ).forward = 0;
    INPUT_PORT( port ).bufpos = 0;
    INPUT_PORT( port ).lastchar = '\n';
+#if( defined( RGC_0 ) )
    RGC_BUFFER_SET( port, 0, '\0' );
+#endif
 
    return BTRUE;
 }
@@ -1930,7 +1951,9 @@ reset_console( obj_t port ) {
       INPUT_PORT( port ).matchstop = 0;
       INPUT_PORT( port ).bufpos = 0;
       INPUT_PORT( port ).lastchar = '\n';
+#if( defined( RGC_0 ) )
       RGC_BUFFER_SET( port, 0, '\0' );
+#endif
    }
 
    return BUNSPEC;

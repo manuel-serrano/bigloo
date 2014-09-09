@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Mon Sep  8 18:13:25 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 07:53:10 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -281,8 +281,9 @@ _loop:
       INPUT_PORT( p ).lastchar = '\n';
       
       INPUT_PORT( p ).lastchar = '\n';
-      /* RGC 0 */
+#if( defined( RGC_0 ) )
       RGC_BUFFER_SET( p, 0, '\0' );
+#endif
 
       INPUT_PORT( p ).filepos += (o - o0);
 
@@ -302,7 +303,9 @@ rgc_buffer_unget_char( obj_t ip, int c ) {
       INPUT_PORT( ip ).matchstop--;
    } else {
       RGC_BUFFER_SET( ip , 0, c );
+#if( defined( RGC_0 ) )
       RGC_BUFFER_SET( ip , 1, '\0' );
+#endif
    }
 
    return c;
@@ -329,7 +332,9 @@ rgc_reserve_space( obj_t port, long amount ) {
 	       (char *)&RGC_BUFFER_REF( port, matchstop ),
 	       bufpos - matchstop );
 
+#if( defined( RGC_0 ) )
       RGC_BUFFER_SET( port, bufpos + diff, 0 );
+#endif
 
       INPUT_PORT( port ).bufpos += diff;
       INPUT_PORT( port ).matchstop += diff;
@@ -497,7 +502,7 @@ rgc_buffer_eof_p( obj_t ip ) {
    long p = INPUT_PORT( ip ).bufpos;
    long s = BGL_INPUT_PORT_BUFSIZ( ip );
 
-   return (f >= s) || (RGC_BUFFER_PEEK_CHAR( ip ) == 0) && (f == p);
+   return (f == s) && (f == p);
 }
 
 /*---------------------------------------------------------------------*/
