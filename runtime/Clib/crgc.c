@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Sep  9 08:27:48 2014 (serrano)                */
+/*    Last change :  Tue Sep  9 08:53:57 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -154,67 +154,61 @@ rgc_fillsize_buffer( obj_t port, char *buf, int bufpos, int size ) {
 /*    rgc_fill_buffer ...                                              */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-rgc_fill_buffer( obj_t port ) {
+rgc_fill_buffer2( obj_t port ) {
    if( INPUT_PORT_CLOSEP( port ) ) {
       C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "read", "input-port closed", port );
-   }
-
-   /* In every case, forward has to be unwound  */
-   /* because forward has reached the sentinel  */
-   INPUT_PORT( port ).forward--;
-
-   /* the input port that has seen its eof      */
-   /* cannot be filled anymore                  */
-   if( INPUT_PORT( port ).eof ) {
-      return (bool_t)0;
    } else {
-      unsigned char *buf = &RGC_BUFFER_REF( port, 0 );
-      long bufsize = BGL_INPUT_PORT_BUFSIZ( port );
       long bufpos = INPUT_PORT( port ).bufpos;
+      
+      /* the read reached end-of-buffer, update the forward ptr  */
+      INPUT_PORT( port ).forward = bufpos;
 
-      if( bufpos < bufsize ) {
-fill:
-	 /* the buffer is not full, we fill it */
-	 if( rgc_fillsize_buffer( port, buf, bufpos, bufsize - bufpos ) ) {
-	    /* add the new sentinel */
-	    /* RGC 0 */
-	    buf[ INPUT_PORT( port ).bufpos ] = 0;
-	    return (bool_t)1;
-	 } else {
-	    return (bool_t)0;
-	 }
+      /* the input port that has seen its eof      */
+      /* cannot be filled anymore                  */
+      if( INPUT_PORT( port ).eof ) {
+	 return (bool_t)0;
       } else {
-	 if( INPUT_PORT( port ).matchstart > 0 ) {
-	    /* we are in the middle of a match, shift the buffer first */
-	    rgc_shift_buffer( port );
-	    
-	    bufpos = INPUT_PORT( port ).bufpos;
+	 unsigned char *buf = &RGC_BUFFER_REF( port, 0 );
+	 long bufsize = BGL_INPUT_PORT_BUFSIZ( port );
 
-	    goto fill;
+	 if( bufpos < bufsize ) {
+	 fill:
+	    /* the buffer is not full, we fill it */
+#if( defined( RGC_0 ) )	 
+	    if( rgc_fillsize_buffer( port, buf, bufpos, bufsize - bufpos ) ) {
+	       /* add the new sentinel */
+	       /* RGC 0 */
+	       buf[ INPUT_PORT( port ).bufpos ] = 0;
+	       return (bool_t)1;
+	    } else {
+	       return (bool_t)0;
+	    }
+#else
+	    return rgc_fillsize_buffer( port, buf, bufpos, bufsize - bufpos );
+#endif	 
 	 } else {
-	    /* the current token is too large for the buffer */
-	    /* we have to enlarge it.                        */
-	    /* Note: see rgc_size_fil_buffer for other       */
-	    /* enlarge_buffer                                */
-	    rgc_double_buffer( port );
-
-	    bufsize = BGL_INPUT_PORT_BUFSIZ( port );
-	    buf = &RGC_BUFFER_REF( port, 0 );
+	    if( INPUT_PORT( port ).matchstart > 0 ) {
+	       /* we are in the middle of a match, shift the buffer first */
+	       rgc_shift_buffer( port );
 	    
-	    goto fill;
+	       bufpos = INPUT_PORT( port ).bufpos;
+
+	       goto fill;
+	    } else {
+	       /* the current token is too large for the buffer */
+	       /* we have to enlarge it.                        */
+	       /* Note: see rgc_size_fil_buffer for other       */
+	       /* enlarge_buffer                                */
+	       rgc_double_buffer( port );
+
+	       bufsize = BGL_INPUT_PORT_BUFSIZ( port );
+	       buf = &RGC_BUFFER_REF( port, 0 );
+	    
+	       goto fill;
+	    }
 	 }
       }
    }
-}
-
-/*---------------------------------------------------------------------*/
-/*    bool_t                                                           */
-/*    rgc_fill_buffer ...                                              */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF bool_t
-rgc_fill_buffer2( obj_t port ) {
-   INPUT_PORT( port ).forward = INPUT_PORT( port ).bufpos + 1;
-   return rgc_fill_buffer( port );
 }
 
 /*---------------------------------------------------------------------*/

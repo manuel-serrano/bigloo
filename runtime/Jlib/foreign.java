@@ -6437,8 +6437,9 @@ public final class foreign
 	 }
       }
 
-   public static boolean rgc_fill_buffer(input_port p) {
-      --p.forward;
+   public static boolean rgc_fill_buffer2(input_port p) {
+      p.forward = p.bufpos;
+      
       if (p.eof) { 
 	 return false;
       }
@@ -6460,11 +6461,6 @@ public final class foreign
 	    p );
 	 return false;
       }
-   }
-
-   public static boolean rgc_fill_buffer2(input_port p) {
-      p.forward = p.bufpos + 1;
-      return rgc_fill_buffer( p );
    }
       
    public static byte[] rgc_buffer_substring(input_port p, int o, int e)
