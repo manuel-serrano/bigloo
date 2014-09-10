@@ -482,7 +482,7 @@ Returns the current position (a character number), in the @var{port}.
 @deffnx {bigloo procedure} set-output-port-position! port pos
 These functions set the file position indicator for @var{port}. The new 
 position, measured in bytes, is specified by @var{pos}. It is an error 
-to seek a port that cannot be changed (for instance, a string or a 
+to seek a port that cannot be changed (for instance, a procedure or a 
 console port). The result of these functions is unspecified. An error
 is raised if the position cannot be changed.
 @end deffn

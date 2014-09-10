@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Sep  4 17:25:05 2014 (serrano)                */
+/*    Last change :  Wed Sep 10 08:35:08 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -855,7 +855,9 @@ bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
 
    if( ssl->BgL_isserverz00 ) {
    } else {
-      SSL_set_tlsext_host_name( _ssl, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
+      if( STRINGP( ssl->BgL_serverzd2namezd2 ) ) {
+	 SSL_set_tlsext_host_name( _ssl, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
+      }
    }
 
    SSL_set_bio( _ssl, ssl->BgL_z42biozd2readz90, ssl->BgL_z42biozd2writez90 );

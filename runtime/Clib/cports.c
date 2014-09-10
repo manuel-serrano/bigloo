@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Sep  9 08:09:28 2014 (serrano)                */
+/*    Last change :  Wed Sep 10 17:59:55 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1281,6 +1281,9 @@ bgl_make_input_port( obj_t name, FILE *file, obj_t kindof, obj_t buf ) {
       case (long)KINDOF_GZIP:
 	 new_input_port = GC_MALLOC( INPUT_GZIP_PORT_SIZE );
 	 break;
+      case (long)KINDOF_STRING:
+	 new_input_port = GC_MALLOC( INPUT_STRING_PORT_SIZE );
+	 break;
       default:
 	 new_input_port = GC_MALLOC( INPUT_PORT_SIZE );
    }
@@ -1576,11 +1579,13 @@ bgl_open_input_file( obj_t name, obj_t buffer ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_input_string_seek( obj_t port, long pos ) {
+   long offset = CREF( port )->input_string_port_t.offset;
+   
    if( pos >= 0 && pos < BGL_INPUT_PORT_BUFSIZ( port ) ) {
-      INPUT_PORT( port ).filepos = pos;
-      INPUT_PORT( port ).matchstart = pos;
-      INPUT_PORT( port ).matchstop = pos;
-      INPUT_PORT( port ).forward = pos;
+      INPUT_PORT( port ).filepos = pos + offset;
+      INPUT_PORT( port ).matchstart = pos + offset;
+      INPUT_PORT( port ).matchstop = pos + offset;
+      INPUT_PORT( port ).forward = pos + offset;
    } else {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"set-input-port-position!",
@@ -1625,6 +1630,7 @@ bgl_open_input_substring_bang( obj_t buffer, long offset, long end ) {
    CREF( port )->input_port_t.matchstart = offset;
    CREF( port )->input_port_t.matchstop = offset;
    CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
+   CREF( port )->input_string_port_t.offset = offset;
 
    return port;
 }

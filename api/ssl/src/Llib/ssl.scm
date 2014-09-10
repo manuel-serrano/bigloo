@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Wed Sep  3 17:12:40 2014 (serrano)                */
+;*    Last change :  Wed Sep 10 08:34:12 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -201,7 +201,7 @@
 	      (ctx::secure-context read-only)
 	      (isserver::bool read-only)
 	      (request-cert::bool read-only (default #f))
-	      (server-name::bstring read-only (default ""))
+	      (server-name::obj read-only (default #f))
 	      (reject-unauthorized::bool read-only))))
       (else
        (export

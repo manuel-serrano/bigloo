@@ -3,6 +3,8 @@ package bigloo;
 import java.io.*;
 
 public class input_string_port extends input_port {
+   int offset;
+   
    public input_string_port( final byte[] s, int start, int end ) {
       super( "[string]", new byte[ end - start ] );
 
@@ -12,6 +14,7 @@ public class input_string_port extends input_port {
       for ( int i= 0 ; i < size ; ++i ) buffer[i] = s[i + start];
       
       bufpos = size;
+      offset = start;
       eof = true;
    }
 
@@ -55,10 +58,10 @@ public class input_string_port extends input_port {
 
    Object bgl_input_port_seek( final int  pos ) throws IOException {
       if (pos < buffer.length) {
-	 filepos = pos;
-	 matchstart = pos;
-	 matchstop = pos;
-	 forward = pos;
+	 filepos = pos + offset;
+	 matchstart = pos + offset;
+	 matchstop = pos + offset;
+	 forward = pos + offset;
 	 return foreign.BTRUE;
       }
 

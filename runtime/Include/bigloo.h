@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Sep  9 14:32:31 2014 (serrano)                */
+/*    Last change :  Wed Sep 10 17:56:06 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -497,6 +497,14 @@ typedef union scmobj {
       long length;
    } input_port_t;
 
+   /* string input ports */
+   struct input_string_port {
+      /* common port */
+      struct input_port iport;
+      /* offset */
+      long offset;
+   } input_string_port_t;
+	 
    /* procedure input ports */
    struct input_procedure_port {
       /* common port */
@@ -2152,6 +2160,7 @@ BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
 #define INPUT_PORT_SIZE (sizeof( struct input_port ))
 #define INPUT_PROCEDURE_PORT_SIZE (sizeof( struct input_procedure_port ))
 #define INPUT_GZIP_PORT_SIZE (sizeof( struct input_gzip_port ))
+#define INPUT_STRING_PORT_SIZE (sizeof( struct input_string_port ))
 
 #define INPUT_GZIP_PORT( o ) CREF( o )->input_gzip_port_t
 #define INPUT_PROCEDURE_PORT( o ) CREF( o )->input_procedure_port_t

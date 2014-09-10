@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Sep  6 08:04:27 2014 (serrano)                */
+;*    Last change :  Wed Sep 10 13:52:19 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -92,7 +92,6 @@
 	    ($open-input-resource::obj (::bstring ::bstring) "bgl_open_input_resource")
  	    ($open-input-c-string::obj (::string) "bgl_open_input_c_string")
 	    ($reopen-input-c-string::obj (::input-port ::string) "bgl_reopen_input_c_string")
-	    ($open-input-string::input-port (::bstring ::long) "bgl_open_input_string")
 	    ($open-input-substring::input-port (::bstring ::long ::long) "bgl_open_input_substring")
 	    ($open-input-substring!::input-port (::bstring ::long ::long) "bgl_open_input_substring_bang")
 	    ($open-input-procedure::input-port (::procedure ::bstring) "bgl_open_input_procedure")
@@ -239,8 +238,6 @@
 		       "bgl_open_input_c_string")
 	       (method static $reopen-input-c-string::obj (::input-port ::string)
 		       "bgl_reopen_input_c_string")
-	       (method static $open-input-string::input-port (::bstring ::int)
-		       "bgl_open_input_string")
 	       (method static $open-input-substring::input-port (::bstring ::int ::int)
 		       "bgl_open_input_substring")
 	       (method static $open-input-substring!::input-port (::bstring ::int ::int)
@@ -1040,13 +1037,13 @@
 	   #!optional (start 0) (end (string-length string)))
    (cond
       ((<fx start 0)
-       (error "open-input-string" "Illegal start offset" start))
+       (error "open-input-string!" "Illegal start offset" start))
       ((>fx start (string-length string))
-       (error "open-input-string" "Start offset out of bounds" start))
+       (error "open-input-string!" "Start offset out of bounds" start))
       ((>fx start end)
-       (error "open-input-string" "Start offset greater than end" start))
+       (error "open-input-string!" "Start offset greater than end" start))
       ((>fx end (string-length string))
-       (error "open-input-string" "End offset out of bounds" end))
+       (error "open-input-string!" "End offset out of bounds" end))
       (else
        ($open-input-substring! string start end))))
 
