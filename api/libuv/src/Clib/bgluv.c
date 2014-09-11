@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Sep 10 14:58:43 2014 (serrano)                */
+/*    Last change :  Wed Sep 10 19:34:01 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1496,7 +1496,7 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    obj_t offset = sobj->BgL_z52offsetz52;
 
    sobj->BgL_z52allocz52 = BUNSPEC;
-   fprintf( stderr, "OnRead nread=%d\n", nread );
+   fprintf( stderr, "OnRead (%s) nread=%d\n", __FILE__, nread );
    gc_unmark( obj );
 
    if( PROCEDUREP( p ) ) {
@@ -1578,7 +1578,7 @@ bgl_uv_shutdown_cb( uv_shutdown_t* req, int status ) {
    gc_unmark( p );
 
    free( req );
-   
+
    PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
 }
    
