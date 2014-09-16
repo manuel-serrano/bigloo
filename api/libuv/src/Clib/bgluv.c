@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Sep 10 19:34:01 2014 (serrano)                */
+/*    Last change :  Sun Sep 14 11:48:17 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1501,8 +1501,8 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
 
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
-	 fprintf( stderr, "bgl_uv_read_start, read_cb (%s) offset=%d read=%d\n",
-		  __FILE__, CINT( offset ), nread );
+/* 	 fprintf( stderr, "bgl_uv_read_start, read_cb (%s) offset=%d read=%d\n", */
+/* 		  __FILE__, CINT( offset ), nread );                   */
 	 PROCEDURE_ENTRY( p )( p, allocobj, offset, BINT( nread ), BEOA );
       } else if( nread < 0 ) {
 	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( -1 ), BINT( -1 ), BEOA );
@@ -1526,7 +1526,7 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
 	    __FILE__, CINT( offset ), ssize );
    if( !STRINGP( chunk ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start, onalloc",
-			"wrong chunk type, string expected",
+			"string",
 			chunk );
    }
    stream->BgL_z52allocz52 = allocobj;
@@ -1541,6 +1541,7 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
+   fprintf( stderr, "bgl_uv_read_start...\n" );
    if( !PROCEDUREP( proca ) || (!PROCEDURE_CORRECT_ARITYP( proca, 2 )) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
 			"wrong onalloc", proca );
@@ -1561,6 +1562,7 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 
 	 int r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
 
+	 fprintf( stderr, "bgl_uv_read_start r=%d\n", r );
 	 return r;
       }
    }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Wed Sep 10 08:35:08 2014 (serrano)                */
+/*    Last change :  Mon Sep 15 09:25:24 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -720,7 +720,7 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
    return string_to_bstring( buf );
 }
 
-#include "ssl_debug.h"
+//#include "ssl_debug.h"
 
 /*---------------------------------------------------------------------*/
 /*    bool_t                                                           */
@@ -1006,7 +1006,11 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
 	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       } else {
+#if( SSL_DEBUG )	 
 	 if( (n = SSL_connect2( "start", _ssl )) <= 0 ) {
+#else	    
+	 if( (n = SSL_connect( _ssl )) <= 0 ) {
+#endif	    
 	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       }
@@ -1025,22 +1029,27 @@ BGL_RUNTIME_DEF long
 bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
    long int n = BIO_read( ssl->BgL_z42biozd2writez90, buf + off, len );
 
+   fprintf( stderr, "%s (bgl_ssl_connection_read) off=%d len=%d bytes_read=%d\n", __FILE__, off, len, n );
+   
    if( n < 0 ) {
       handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n, "connection_read" );
    }
+#if( SSL_DEBUG )	 
    else {
       int bytes_read = n;
       if( bytes_read >= 0 ) {
+#if( SSL_DEBUG >=2 )	 
 	 int i;
-
-	 fprintf( stderr, "%s (bgl_ssl_connection_read) off=%d len=%d bytes_read=%d\n", __FILE__, off, len, bytes_read );
 	 for( i = 0; i < bytes_read; i++ ) {
 	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
 	 }
 
 	 fprintf( stderr, "\n" );
+#endif	 
       }
    }
+   
+#endif   
 #if( SSL_DEBUG )    
    set_shutdown_flags2( "connection_read", ssl );
 #else
@@ -1058,17 +1067,22 @@ BGL_RUNTIME_DEF long
 bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
    long int n = BIO_write( ssl->BgL_z42biozd2readz90, buf + off, len );
 
+      fprintf( stderr, "%s (bgl_ssl_connection_write) off=%d len=%d\n", __FILE__, off, len );
+      
+#if( SSL_DEBUG )	 
    {
       int i;
 
-      fprintf( stderr, "%s (bgl_ssl_connection_write) off=%d len=%d\n", __FILE__, off, len );
+#if( SSL_DEBUG >=2 )	 
       for( i = 0; i < (len < 160 ? len : 160); i++ ) {
 	 fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
       }
 
       fprintf( stderr, "\n" );
+#endif      
    }
-
+#endif
+   
    if( n < 0 ) {
       handle_bio_error( ssl, ssl->BgL_z42biozd2readz90, n, "connection_write" );
    }
@@ -1102,7 +1116,11 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 	 return m;
       } else {
 	 int m;
+#if( SSL_DEBUG ) 
 	 if( (m = SSL_connect2( name, _ssl )) <= 0 ) {
+#else	    
+	 if( (m = SSL_connect( _ssl )) <= 0 ) {
+#endif	    
 	    handle_ssl_error( ssl, m, "ssl-connection-clear (connect)" );
 	 }
 	 return m;
@@ -1138,6 +1156,14 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
+   {
+	 int i;
+	 for( i = 0; i < len; i++ ) {
+	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
+	 }
+
+	 fprintf( stderr, "\n" );
+   }
    return bgl_ssl_connection_clear( ssl, buf, off, len,
 				    (int (*)( SSL *, void *, int))&SSL_write,
 				    "connection-clear-in" );

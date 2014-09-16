@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 16:17:03 1992                          */
-;*    Last change :  Sun May 30 07:35:59 2010 (serrano)                */
+;*    Last change :  Sat Sep 13 09:41:49 2014 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de reader                                               */
 ;*---------------------------------------------------------------------*/
@@ -56,7 +56,7 @@
 	 '(16 2 2 5 2 7 34))
    (test "read" (cdr '((foo . bar) . hux)) 'hux)
    (test "circular"
-	 (caddr (read (open-input-string "((1 . #0=(6 7)) 5 . #0#)"))) 6)
+	 (caddr (read (open-input-string "((1 . #0=(-6 7)) 5 . #0#)"))) -6)
    (test "read-C-string"
 	 (call-with-input-string "\"foo\n\tbar\"" read)
 	 "foo\n\tbar"))
