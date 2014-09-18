@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Sep 15 09:25:24 2014 (serrano)                */
+/*    Last change :  Thu Sep 18 08:08:34 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -767,6 +767,46 @@ bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_ssl_ctx_add_ca_cert ...                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_ctx_add_ca_cert( secure_context sc, obj_t cert, long offset, long len ) {
+   char newCAStore = 0;
+   BIO *bio = BIO_new( BIO_s_mem() );
+   X509 *x509;
+   
+   if( !bio ) {
+      return 0;
+   }
+
+   BIO_write( bio, &STRING_REF( cert, offset ), len );
+   
+   if( sc->BgL_z42cazd2storez90 == 0L ) {
+      sc->BgL_z42cazd2storez90 = X509_STORE_new();
+      newCAStore = 1;
+  }
+
+  x509 = PEM_read_bio_X509( bio, NULL, NULL, NULL );
+  BIO_free( bio );
+  
+  if( !x509) {
+     return 0;
+  }
+
+  X509_STORE_add_cert( sc->BgL_z42cazd2storez90, x509 );
+  SSL_CTX_add_client_CA( sc->BgL_z42nativez42, x509 );
+
+  X509_free( x509 );
+
+  if( newCAStore ) {
+    SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
+  }
+
+  return 1;
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bgl_info_callback ...                                            */
 /*---------------------------------------------------------------------*/
@@ -1156,14 +1196,21 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
+/*    {                                                                */
+/* 	 int i;                                                        */
+/* 	 for( i = 0; i < len; i++ ) {                                  */
+/* 	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] ); */
+/* 	 }                                                             */
+/*                                                                     */
+/* 	 fprintf( stderr, "\n" );                                      */
+/*    }                                                                */
    {
-	 int i;
-	 for( i = 0; i < len; i++ ) {
-	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
-	 }
-
-	 fprintf( stderr, "\n" );
+      char s[ len + 1 ];
+      strncpy( s, buf + off, len );
+      s[ len ] = 0;
+      fprintf( stderr, "%s:%d clearin [%s]\n", __FILE__, __LINE__, s );
    }
+   
    return bgl_ssl_connection_clear( ssl, buf, off, len,
 				    (int (*)( SSL *, void *, int))&SSL_write,
 				    "connection-clear-in" );

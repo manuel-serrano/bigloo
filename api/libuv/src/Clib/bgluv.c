@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Sep 14 11:48:17 2014 (serrano)                */
+/*    Last change :  Wed Sep 17 14:21:40 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1226,17 +1226,17 @@ bgl_uv_tcp_connectX( obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loo
 			"wrong callback", proc );
    } else {
       uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
-
-      req->data = proc;
-      
       ((bgl_uv_stream_t)obj)->BgL_z52writereqz52 =
 	 GC_MALLOC( sizeof( uv_write_t ) );
       uv_tcp_t *handle =
 	 (uv_tcp_t *)(((bgl_uv_handle_t)obj)->BgL_z42builtinz42);
+      int r;
 
+      req->data = proc;
+      
       gc_mark( proc );
 
-      int r = uv_tcp_connect( req, handle, address, uv_tcp_connect_cb );
+      r = uv_tcp_connect( req, handle, address, uv_tcp_connect_cb );
 
       if( r != 0 ) {
 	 free( req );
@@ -1450,7 +1450,6 @@ bgl_uv_write_cb( uv_write_t *req, int status ) {
    obj_t p = (obj_t)req->data;
 
    gc_unmark( p );
-
    PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
 }
 
@@ -1469,6 +1468,7 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
       uv_write_t *req = (uv_write_t *)(stream->BgL_z52writereqz52);
       uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
       uv_buf_t *buf = (uv_buf_t *)(&(stream->BgL_z52wbufz52));
+      int r;
 
       req->data = proc;
       
@@ -1476,9 +1476,13 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
       
       stream->BgL_z52wbufz52 = buffer + offset;
       stream->BgL_z52wbuflenz52 = length;
+      
+      r = uv_write( req, handle, buf, 1, bgl_uv_write_cb );
 
-      int r = uv_write( req, handle, buf, 1, bgl_uv_write_cb );
-
+      if( r ) {
+	 fprintf( stderr, "ERR: %d %s\n", r, uv_strerror( r ) );
+      }
+      
       return r;
    }
 }
@@ -1553,6 +1557,7 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 	 uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+	 int r;
 
 	 stream->BgL_z52allocz52 = BUNSPEC;
 	 stream->BgL_z52procaz52 = proca;
@@ -1560,7 +1565,7 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 
 	 gc_mark( obj );
 
-	 int r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
+	 r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
 
 	 fprintf( stderr, "bgl_uv_read_start r=%d\n", r );
 	 return r;

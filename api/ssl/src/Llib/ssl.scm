@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Wed Sep 10 08:34:12 2014 (serrano)                */
+;*    Last change :  Wed Sep 17 19:14:36 2014 (serrano)                */
 ;*    Copyright   :  2005-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -28,10 +28,12 @@
 	   (type $ssl-ctx void* "void *")
 	   (type $ssl void* "void *")
 	   (type $bio void* "void *")
+	   (type $X509-store void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
 	   (macro $ssl-nil::$ssl "0L")
 	   (macro $bio-nil::$bio "0L")
+	   (macro $X509-store-nil::$X509-store "0L")
            
            ($certificate-subject::bstring (::certificate)
 	      "bgl_ssl_certificate_subject")
@@ -60,6 +62,9 @@
 	   
 	   ($bgl-secure-context-add-root-certs!::bool (::secure-context)
 	      "bgl_ssl_ctx_add_root_certs")
+
+	   ($bgl-secure-context-add-ca-cert!::bool (::secure-context ::bstring ::long ::long)
+	      "bgl_ssl_ctx_add_ca_cert")
 
 	   ($bgl-ssl-connection-init!::obj (::ssl-connection)
 	      "bgl_ssl_connection_init")
@@ -171,6 +176,7 @@
 
 	   (generic secure-context-init ::secure-context)
 	   (generic secure-context-add-root-certs!::bool ::secure-context)
+	   (generic secure-context-add-ca-cert!::bool ::secure-context ::bstring ::long ::long)
 
 	   (generic ssl-connection-init ::ssl-connection)
 	   (generic ssl-connection-start::int ::ssl-connection)
@@ -184,6 +190,7 @@
 	   (generic ssl-connection-set-session ssl::ssl-connection ::bstring)
 	   (generic ssl-connection-verify-error ::ssl-connection)
 	   (generic ssl-connection-get-peer-certificate ::ssl-connection))
+	   
    
    (cond-expand
       (bigloo-c
@@ -191,6 +198,7 @@
 	  (class secure-context
 	     (secure-context-init)
 	     ($native::$ssl-ctx (default $ssl-ctx-nil))
+	     ($ca-store::$X509-store (default $X509-store-nil))
 	     (method::bstring read-only (default "SSLv23_method")))
 
 	  (class ssl-connection
@@ -370,6 +378,16 @@
    (cond-expand
       (bigloo-c
        ($bgl-secure-context-add-root-certs! sc))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-add-ca-cert! ::secure-context ...                 */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-add-ca-cert! sc::secure-context cert offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-add-ca-cert! sc cert offset len))
       (else
        #f)))
 
