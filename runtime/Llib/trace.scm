@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Fri Sep 19 14:03:26 2014 (serrano)                */
+;*    Last change :  Fri Sep 19 14:05:36 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -174,7 +174,7 @@
 (define (trace-item . args)
    (when (>fx (bigloo-debug) 0)
       (let ((al (trace-alist)))
-	 (when (>=fx (bigloo-debug) (trace-alist-get al 'margin-level))
+	 (when (trace-active? (trace-alist-get al 'margin-level))
 	    (let ((p (trace-port)))
 	       (display (trace-alist-get al 'margin) p)
 	       (display (tty-trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
@@ -189,15 +189,18 @@
 ;*---------------------------------------------------------------------*/
 ;*    trace-env-debug ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (trace-env-debug)
+(define (trace-env-debug lvl)
    (cond
-      ((or (pair? env-debug) (nil? env-debug)) env-debug)
+      ((null? env-debug) #f)
+      ((pair? env-debug) (memq lvl env-debug))
       ((getenv "BIGLOO_DEBUG")
        =>
        (lambda (e)
-	  (set! env-debug (map string->symbol (string-split e)))))
+	  (set! env-debug (map string->symbol (string-split e)))
+	  (trace-env-debug lvl)))
       (else
-       (set! env-debug '()))))
+       (set! env-debug '())
+       #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-active? ...                                                */
