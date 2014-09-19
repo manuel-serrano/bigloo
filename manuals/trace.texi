@@ -78,13 +78,19 @@ Traces generation is controlled by a set of functions and parameters
 
 @deffn {bigloo syntax} with-trace level label . body
 
-The variable @var{level} is the level of a trace. It is a positive
-integer. It enables simple filtering for traces. A trace is displayed
-if and only if the debugging level used to compile or to execute the
-program is greater than the trace level. The variable @var{label} is a
-label, .e.i., an identifier denoting the trace. This identifier will
-be displayed in debug mode.  The variable @var{body} is the body of
-the form, that is, the expression to be evaluated.
+The variable @var{level} is the level of a trace. It might be a positive
+integer or a symbol. It enables simple filtering for traces.
+
+If @var{level} is an integer, the trace is displayed if and only if
+the debugging level used to compile or to execute the program is
+greater than the trace level. If @var{level} is a symbol, the trace
+is displayed only if that symbol is a word contained in the 
+shell environment variable @code{BIGLOO_DEBUG}.
+
+The variable @var{label} is a label, .e.i., an identifier denoting the
+trace. This identifier will be displayed in debug mode.  The variable
+@var{body} is the body of the form, that is, the expression to be
+evaluated.
 
 Unless a trace is activated @code{(with-trace lv la body)} (when its
 level @var{lv} is greater than the current debug level) is equivalent

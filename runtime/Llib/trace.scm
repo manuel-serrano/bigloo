@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Sat Nov 23 12:42:20 2013 (serrano)                */
-;*    Copyright   :  2003-13 Manuel Serrano                            */
+;*    Last change :  Fri Sep 19 13:49:27 2014 (serrano)                */
+;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
 ;*=====================================================================*/
@@ -61,7 +61,7 @@
 	   (trace-string ::obj)
 	   (trace-item . ::obj)
 	   
-	   (%with-trace ::int ::obj ::procedure)))
+	   (%with-trace ::obj ::obj ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *trace-mutex* ...                                                */
@@ -181,13 +181,32 @@
 	       (newline p))))))
 
 ;*---------------------------------------------------------------------*/
+;*    env-debug ...                                                    */
+;*---------------------------------------------------------------------*/
+(define env-debug #f)
+
+;*---------------------------------------------------------------------*/
+;*    trace-env-debug ...                                              */
+;*---------------------------------------------------------------------*/
+(define (trace-env-debug)
+   (cond
+      (env-debug env-debug)
+      ((getenv "BIGLOO_DEBUG")
+       =>
+       (lambda (e) (set! env-debug (map string->symbol (string-split e)))))
+      (else
+       (set! env-debug '()))))
+
+;*---------------------------------------------------------------------*/
 ;*    %with-trace ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (%with-trace lvl lbl thunk)
    (let* ((al (trace-alist))
 	  (ol (trace-alist-get al 'margin-level)))
       (trace-alist-set! al 'margin-level lvl)
-      (if (>=fx (bigloo-debug) lvl)
+      (if (cond
+	     ((integer? lvl) (>=fx (bigloo-debug) lvl))
+	     ((symbol? lvl) (memq lvl (trace-env-debug))))
 	  (let* ((d (trace-alist-get al 'depth))
 		 (om (trace-alist-get al 'margin))
 		 (ma (tty-trace-color d "  |")))
