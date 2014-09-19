@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Tue Aug 13 07:28:46 2013 (serrano)                */
+;*    Last change :  Fri Sep 19 13:59:46 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -54,12 +54,12 @@
 ;*---------------------------------------------------------------------*/
 (define (make-expand-when-trace mode)
    (lambda (x e)
-   (match-case x
+      (match-case x
 	 ((?- ?level . ?exp)
 	  (if (if (eq? mode 'compiler)
 		  (>fx (bigloo-compiler-debug) 0)
 		  (>fx (bigloo-debug) 0))
-	      (e `(if (>=fx (bigloo-debug) ,level)
+	      (e `(if (trace-active? ,level)
 		      (begin ,@exp)
 		      #unspecified)
 		 e)

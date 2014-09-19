@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Fri Sep 19 13:49:27 2014 (serrano)                */
+;*    Last change :  Fri Sep 19 14:03:26 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -60,6 +60,7 @@
 	   (trace-bold::bstring . ::obj)
 	   (trace-string ::obj)
 	   (trace-item . ::obj)
+	   (trace-active? ::obj)
 	   
 	   (%with-trace ::obj ::obj ::procedure)))
 
@@ -190,12 +191,21 @@
 ;*---------------------------------------------------------------------*/
 (define (trace-env-debug)
    (cond
-      (env-debug env-debug)
+      ((or (pair? env-debug) (nil? env-debug)) env-debug)
       ((getenv "BIGLOO_DEBUG")
        =>
-       (lambda (e) (set! env-debug (map string->symbol (string-split e)))))
+       (lambda (e)
+	  (set! env-debug (map string->symbol (string-split e)))))
       (else
        (set! env-debug '()))))
+
+;*---------------------------------------------------------------------*/
+;*    trace-active? ...                                                */
+;*---------------------------------------------------------------------*/
+(define (trace-active? lvl)
+   (cond
+      ((integer? lvl) (>=fx (bigloo-debug) lvl))
+      ((symbol? lvl) (trace-env-debug lvl))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %with-trace ...                                                  */
@@ -204,9 +214,7 @@
    (let* ((al (trace-alist))
 	  (ol (trace-alist-get al 'margin-level)))
       (trace-alist-set! al 'margin-level lvl)
-      (if (cond
-	     ((integer? lvl) (>=fx (bigloo-debug) lvl))
-	     ((symbol? lvl) (memq lvl (trace-env-debug))))
+      (if (trace-active? lvl)
 	  (let* ((d (trace-alist-get al 'depth))
 		 (om (trace-alist-get al 'margin))
 		 (ma (tty-trace-color d "  |")))
