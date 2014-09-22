@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Sep 10 17:56:06 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 14:35:33 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -746,6 +746,8 @@ typedef union scmobj {
    /* dates */
    struct bgl_date {
       header_t header;
+      /* number of useconds */
+      BGL_LONGLONG_T usec;
       /* number of seconds [0..59] */
       int sec;
       /* number of minutes [0..59] */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Tue Jul 15 17:59:59 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 14:38:00 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -156,6 +156,16 @@ bgl_date_to_seconds( obj_t date ) {
    n = mktime( &t );
    
    return (long)n;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF BGL_LONGLONG_T                                   */
+/*    bgl_date_to_useconds ...                                         */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BGL_LONGLONG_T
+bgl_date_to_useconds( obj_t date ) {
+   return (BGL_LONGLONG_T)bgl_date_to_seconds( date ) * 1000000 +
+      BGL_DATE( date ).usec;
 }
 
 /*---------------------------------------------------------------------*/

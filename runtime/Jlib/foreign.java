@@ -3553,6 +3553,11 @@ public final class foreign
 	 return (d.calendar.getTime().getTime() / 1000);
       }
 
+   public static long bgl_date_to_microseconds(date d)
+      {
+	 return (d.calendar.getTime().getTime() * 1000);
+      }
+
    public static byte[] bgl_seconds_to_string(long sec)
       {
 	 return bgl_seconds_to_date(sec).calendar.getTime().toString().getBytes();

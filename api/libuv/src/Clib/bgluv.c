@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Sep 21 09:29:51 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 09:22:06 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -513,7 +513,8 @@ bgl_uv_fstat( uv_stat_t buf ) {
    obj_t res = BNIL;
 
    uv_init_stat();
-   
+
+   fprintf( stderr, "bgl_uv_fstat=%ld\n", buf.st_mode );
    res = MAKE_PAIR(
       MAKE_PAIR( _ctime, ELONG_TO_BELONG( buf.st_ctim.tv_sec ) ),
       res );
@@ -667,6 +668,7 @@ bgl_uv_fs_stat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
    } else {
       uv_fs_t req;
 
+      fprintf( stderr, "STAT=%s\n", path );
       if( uv_fs_stat( loop, &req, path, 0L ) < 0 ) {
 	 uv_fs_req_cleanup( &req );
 	 return BINT( req.result );
