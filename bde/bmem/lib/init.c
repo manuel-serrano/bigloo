@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Sat Sep  6 07:47:02 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 16:39:22 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -400,6 +400,8 @@ bmem_init_inner() {
    ____bgl_open_input_pipe = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
    ____bgl_open_input_resource = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
    ____bgl_open_input_string = (void *(*)( void *, long ))get_function( hdl, "bgl_open_input_string" );
+   ____bgl_open_input_substring = (void *(*)( void *, long, long ))get_function( hdl, "bgl_open_input_substring" );
+   ____bgl_open_input_substring_bang = (void *(*)( void *, long, long ))get_function( hdl, "bgl_open_input_substring_bang" );
    ____bgl_open_input_c_string = (void *(*)( char * ))get_function( hdl, "bgl_open_input_c_string" );
    ____bgl_reopen_input_c_string = (void *(*)( void *, char * ))get_function( hdl, "bgl_reopen_input_c_string" );
    ____bgl_input_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_input_port_timeout_set" );

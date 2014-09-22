@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Mon Sep 22 15:53:23 2014 (serrano)                */
+;*    Last change :  Mon Sep 22 16:17:20 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -321,7 +321,7 @@
 ;*    current-date ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (current-date)
-   ($date-from-seconds ($date-current-seconds)))
+   ($date-from-nanoseconds ($date-current-nanoseconds)))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->date ...                                                */

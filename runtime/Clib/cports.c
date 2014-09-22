@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Wed Sep 10 17:59:55 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 16:39:32 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1615,7 +1615,7 @@ bgl_file_to_input_port( FILE *file ) {
 BGL_RUNTIME_DEF obj_t
 bgl_open_input_substring_bang( obj_t buffer, long offset, long end ) {
    obj_t port;
-   
+
    port = bgl_make_input_port( string_to_bstring( "[string]" ),
 			       0L,
 			       KINDOF_STRING,

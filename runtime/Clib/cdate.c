@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Sep 22 16:00:22 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 16:16:26 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -81,6 +81,7 @@ tm_to_date( struct tm *tm ) {
    date->date_t.timezone = bgl_get_timezone();   
 #endif
 
+   date->date_t.nsec = 0;
    date->date_t.sec = tm->tm_sec;
    date->date_t.min = tm->tm_min;
    date->date_t.hour = tm->tm_hour;
