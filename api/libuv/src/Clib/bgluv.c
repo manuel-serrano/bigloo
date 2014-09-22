@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Sep 17 14:21:40 2014 (serrano)                */
+/*    Last change :  Sun Sep 21 09:29:51 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -894,7 +894,6 @@ int
 bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long position, obj_t proc, bgl_uv_loop_t bloop ) {
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    bgl_uv_file_t file = (bgl_uv_file_t)port;
-   uv_fs_t *req = file->BgL_z52readreqz52;
    uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
    int fd = file->BgL_fdz00;
    int len = 0;
@@ -905,23 +904,29 @@ bgl_uv_fs_read( obj_t port, obj_t buffer, long offset, long length, long positio
 			BINT( len ) );
    }
 
-   if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
-      /* uv_buf_init inlined */
-      file->BgL_z52rbufz52 = (void *)&(STRING_REF( buffer, offset ));
-      file->BgL_z52rbuflenz52 = length;
+   /* uv_buf_init inlined */
+   file->BgL_z52rbufz52 = (void *)&(STRING_REF( buffer, offset ));
+   file->BgL_z52rbuflenz52 = length;
 
 /*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
 /*    uv_buf_t iov;                                                    */
 /*                                                                     */
 /*    iov = uv_buf_init( buf, length );                                */
 
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
+      uv_fs_t *req = file->BgL_z52readreqz52;
+      
       req->data = proc;
       gc_mark( proc );
 
       uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_readwrite_cb );
-      uv_fs_req_cleanup( req );
    } else {
-      return pread( fd, &(STRING_REF( buffer, offset )), length, position );
+      uv_fs_t req;
+
+      int r = uv_fs_read( loop, &req, fd, buf, 1, position, 0L );
+      uv_fs_req_cleanup( &req );
+
+      return r;
    }
 }
 
@@ -1554,7 +1559,6 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
 			   "wrong callback", procc );
       } else {
-	 uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
 	 int r;

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Dec 27 18:10:34 2013 (serrano)                */
-;*    Copyright   :  2006-13 Manuel Serrano                            */
+;*    Last change :  Sat Sep 20 07:04:43 2014 (serrano)                */
+;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -571,7 +571,7 @@
 	   ident))
 	 (else
 	  (if (>fx (bigloo-debug-module) 0)
-	      (%with-trace 0 ident
+	      (%with-trace 'module ident
 		 (lambda ()
 		    (trace-item "path=" path)
 		    (load-module)))

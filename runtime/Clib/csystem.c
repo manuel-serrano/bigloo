@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sat Jul 13 10:29:28 2013 (serrano)                */
-/*    Copyright   :  2002-13 Manuel Serrano                            */
+/*    Last change :  Sun Sep 21 08:33:30 2014 (serrano)                */
+/*    Copyright   :  2002-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -109,6 +109,19 @@ bgl_signal( int sig, obj_t obj ) {
 	 sigemptyset( &(sigact.sa_mask) );
 	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
+
+	 if( sig == SIGSEGV ) {
+	    /* create an alternate stack for SEGV */
+	    sigact.sa_flags |= SA_ONSTACK;
+	    stack_t ss;
+
+	    ss.ss_flags = 0L;
+	    ss.ss_sp = malloc( SIGSTKSZ );
+	    ss.ss_size = SIGSTKSZ;
+
+	    sigaltstack( &ss, 0L );
+	 }
+	 
 	 sigaction( sig, &sigact, NULL );
       }
 #else      

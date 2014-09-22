@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sun Aug 31 18:17:48 2014 (serrano)                */
+;*    Last change :  Fri Sep 19 15:14:40 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -25,6 +25,7 @@
       (macro $string-nil::string "0L")
       
       (type double* void* "double *")
+      (macro &double::double* (::double) "&")
       (macro $f64vector->double*::double* (::f64vector ::int) "&BGL_F64VREF")
       (macro $u8vector->double*::double* (::u8vector ::int) "&BGL_F64VREF")
 
@@ -170,6 +171,7 @@
       (macro $uv-get-free-memory::double () "uv_get_free_memory")
       (macro $uv-get-total-memory::double () "uv_get_total_memory")
       ($uv-cpus::vector () "bgl_uv_cpus")
+      (macro $uv-uptime::int (::double*) "uv_uptime")
 
       ;; dns
       ($uv-getaddrinfo::int (::string ::string ::int ::obj ::UvLoop)

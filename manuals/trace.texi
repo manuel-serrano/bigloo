@@ -85,7 +85,8 @@ If @var{level} is an integer, the trace is displayed if and only if
 the debugging level used to compile or to execute the program is
 greater than the trace level. If @var{level} is a symbol, the trace
 is displayed only if that symbol is a word contained in the 
-shell environment variable @code{BIGLOO_DEBUG}.
+Bigloo parameter @code{bigloo-trace}, which is, by default, initialized
+from shell environment variable @code{BIGLOODEBUG}.
 
 The variable @var{label} is a label, .e.i., an identifier denoting the
 trace. This identifier will be displayed in debug mode.  The variable

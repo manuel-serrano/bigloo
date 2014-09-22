@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Jul 18 17:04:56 2014 (serrano)                */
+;*    Last change :  Fri Sep 19 15:14:53 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV os                                                         */
@@ -21,7 +21,8 @@
    (export  (uv-loadavg ::f64vector)
 	    (inline uv-get-free-memory::double)
 	    (inline uv-get-total-memory::double)
-	    (inline uv-cpus::vector)))
+	    (inline uv-cpus::vector)
+	    (uv-uptime::double)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-loadavg ...                                                   */
@@ -47,3 +48,11 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-cpus)
    ($uv-cpus))
+
+;*---------------------------------------------------------------------*/
+;*    uv-uptime ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (uv-uptime)
+   (let ((uptime::double (pragma::double "0.0")))
+      ($uv-uptime (&double uptime))
+      uptime))

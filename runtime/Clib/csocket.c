@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Sep  1 13:21:51 2014 (serrano)                */
+/*    Last change :  Fri Sep 19 15:38:01 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1032,8 +1032,9 @@ bgl_gethostinterfaces() {
 	 tmpAddrPtr = &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 	 inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
 
-	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
-	 tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), tmp );
+	 tmp = MAKE_PAIR( BBOOL( ifa->ifa_flags & IFF_LOOPBACK ), BNIL );
+	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), tmp );
+	 tmp = MAKE_PAIR( string_to_bstring( "IPv4" ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( ifa->ifa_name ), tmp );
 			  
@@ -1044,8 +1045,9 @@ bgl_gethostinterfaces() {
 	 tmpAddrPtr = &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
 	 
 	 inet_ntop( AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN );
-	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), BNIL );
-	 tmp = MAKE_PAIR( string_to_bstring( "ipv6" ), tmp );
+	 tmp = MAKE_PAIR( BBOOL( ifa->ifa_flags & IFF_LOOPBACK ), BNIL );
+	 tmp = MAKE_PAIR( gethwaddr( ifa->ifa_name ), tmp );
+	 tmp = MAKE_PAIR( string_to_bstring( "IPv6" ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
 	 tmp = MAKE_PAIR( string_to_bstring( ifa->ifa_name ), tmp );
 
@@ -1081,8 +1083,9 @@ bgl_gethostinterfaces() {
 	       tmpAddrPtr = &((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr;
 	       inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
 	       
-	       tmp = MAKE_PAIR( gethwaddr( ifr->ifr_name ), BNIL );
-	       tmp = MAKE_PAIR( string_to_bstring( "ipv4" ), tmp );
+	       tmp = MAKE_PAIR( BBOOL( ifr->ifr_flags & IFF_LOOPBACK ), BNIL );
+	       tmp = MAKE_PAIR( gethwaddr( ifr->ifr_name ), tmp );
+	       tmp = MAKE_PAIR( string_to_bstring( "IPv4" ), tmp );
 	       tmp = MAKE_PAIR( string_to_bstring( addressBuffer ), tmp );
 	       tmp = MAKE_PAIR( string_to_bstring( ifr->ifr_name ), tmp );
 
