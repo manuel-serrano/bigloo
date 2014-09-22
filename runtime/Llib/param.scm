@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Sun Nov 18 14:56:08 2012 (serrano)                */
-;*    Copyright   :  2004-12 Manuel Serrano                            */
+;*    Last change :  Mon Sep 22 07:34:37 2014 (serrano)                */
+;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
 ;*=====================================================================*/
@@ -59,6 +59,9 @@
 	   
 	   (bigloo-trace-color::bool)
 	   (bigloo-trace-color-set! ::bool)
+
+	   (bigloo-trace::pair-nil)
+	   (bigloo-trace-set! ::pair-nil)
 	   
 	   (bigloo-case-sensitive::symbol)
 	   (bigloo-case-sensitive-set! ::symbol)
@@ -179,7 +182,16 @@
 ;*    bigloo-trace-color ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-parameter bigloo-trace-color #t)
-   
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-trace ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-parameter bigloo-trace
+   (let ((env-value (getenv "BIGLOOTRACE")))
+      (if (string? env-value)
+	  (map string->symbol (string-split env-value))
+	  '())))
+
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-trace-stack-depth ...                                     */
 ;*    -------------------------------------------------------------    */

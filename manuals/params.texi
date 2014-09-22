@@ -75,6 +75,18 @@ The @code{bigloo-debug} parameter is used to control traces
 (see @ref{Tracing}).
 @end deffn
 
+@c -- bigloo-trace --------------------------------------------------- @c
+@deffn {bigloo function} bigloo-trace
+@deffnx {bigloo function} bigloo-trace-set! list
+
+Specifies the active trace (see @code{with-trace} form). The argument
+@var{list} is the list of symbols which are active and which triggers
+the display of a @code{with-trace} form. 
+
+This parameter is dynamically adjusted according to the value of the
+SHELL variable @var{BIGLOOSTACKDEPTH}.
+@end deffn
+
 @c -- bigloo-trace-color --------------------------------------------- @c
 @deffn {bigloo function} bigloo-trace-color
 @deffnx {bigloo function} bigloo-trace-color-set! bool
@@ -85,7 +97,7 @@ Enables/disables traces coloring (see @ref{Tracing}).
 @deffn {bigloo function} bigloo-trace-stack-depth
 @deffnx {bigloo function} bigloo-trace-stack-depth-set! integer
 Controls the depth of the stack trace to be displayed on errors. With
-systems that supports shell variables (such as Unix) this parameters
+systems that supports shell variables (such as Unix) this parameter
 is dynamically adjusted according to the value of the SHELL variable
 @var{BIGLOOSTACKDEPTH}.
 @end deffn

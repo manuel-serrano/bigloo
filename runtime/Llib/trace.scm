@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Fri Sep 19 14:05:36 2014 (serrano)                */
+;*    Last change :  Mon Sep 22 07:30:39 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -182,33 +182,12 @@
 	       (newline p))))))
 
 ;*---------------------------------------------------------------------*/
-;*    env-debug ...                                                    */
-;*---------------------------------------------------------------------*/
-(define env-debug #f)
-
-;*---------------------------------------------------------------------*/
-;*    trace-env-debug ...                                              */
-;*---------------------------------------------------------------------*/
-(define (trace-env-debug lvl)
-   (cond
-      ((null? env-debug) #f)
-      ((pair? env-debug) (memq lvl env-debug))
-      ((getenv "BIGLOO_DEBUG")
-       =>
-       (lambda (e)
-	  (set! env-debug (map string->symbol (string-split e)))
-	  (trace-env-debug lvl)))
-      (else
-       (set! env-debug '())
-       #f)))
-
-;*---------------------------------------------------------------------*/
 ;*    trace-active? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (trace-active? lvl)
    (cond
       ((integer? lvl) (>=fx (bigloo-debug) lvl))
-      ((symbol? lvl) (trace-env-debug lvl))))
+      ((symbol? lvl) (memq lvl (bigloo-trace)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    %with-trace ...                                                  */
