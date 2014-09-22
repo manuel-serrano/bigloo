@@ -5,8 +5,10 @@ import java.util.*;
 public class date extends obj {
    public Calendar calendar;
    public int timezone;
+   public long nsec;
 
-   public date( final int s,
+   public date( final long ns,
+		final int s,
 		final int min,
 		final int h,
 		final int d,
@@ -15,6 +17,7 @@ public class date extends obj {
 		final long tz,
 		final boolean istz,
 		final int dst ) {
+      nsec = ns;
       if( !istz ) {
 	 calendar = new GregorianCalendar( y, mon, d, h, min, s );
 	 final TimeZone tmz = calendar.getTimeZone();
@@ -37,5 +40,16 @@ public class date extends obj {
       calendar.setTime( d );
       final TimeZone tmz = calendar.getTimeZone();
       timezone = -tmz.getRawOffset() / 1000;
+   }
+   
+   public date( final long nseconds, boolean _ ) {
+      calendar = new GregorianCalendar();
+      final Date d = new Date();
+	 
+      d.setTime( nseconds / 1000000 );
+      calendar.setTime( d );
+      final TimeZone tmz = calendar.getTimeZone();
+      timezone = -tmz.getRawOffset() / 1000;
+      nsec = (nseconds % 1000000);
    }
 }

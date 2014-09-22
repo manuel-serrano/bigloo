@@ -57,13 +57,16 @@ Returns a @code{date} object representing the current date.
 
 @deffn {bigloo procedure} current-seconds
 @deffnx {bigloo procedure} current-microseconds
+@deffnx {bigloo procedure} current-nanoseconds
 Returns an @code{elong} integer representing the current epoch (i.e., the
 date since 0:00:00 UTC on the morning of 1 January 1970, expressed
 in seconds (resp. in micro seconds).
 @end deffn
 
 @deffn {bigloo procedure} date->seconds
+@deffn {bigloo procedure} date->nanoseconds
 @deffnx {bigloo procedure} seconds->date
+@deffnx {bigloo procedure} nanoeconds->date
 Convert from @code{date} and @code{elong}.
 @end deffn
 
@@ -79,7 +82,8 @@ Returns the number of seconds of a date, in the range @code{0...59}.
 @end deffn
 
 @deffn {bigloo procedure} date-nanosecond date
-Returns the number of nano seconds of a date.
+Returns the number of nano seconds of a date (to be added to 
+@code{date-second}).
 @end deffn
 
 @deffn {bigloo procedure} date-minute date

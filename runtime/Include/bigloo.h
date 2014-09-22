@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep 22 14:35:33 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 15:26:55 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -746,8 +746,8 @@ typedef union scmobj {
    /* dates */
    struct bgl_date {
       header_t header;
-      /* number of useconds */
-      BGL_LONGLONG_T usec;
+      /* number of nanoRseconds */
+      BGL_LONGLONG_T nsec;
       /* number of seconds [0..59] */
       int sec;
       /* number of minutes [0..59] */
@@ -2475,6 +2475,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_DATE_SIZE (sizeof( struct bgl_date ) )
 #define BGL_DATE( f ) CREF( f )->date_t
 
+#define BGL_DATE_NANOSECOND( f ) (BGL_DATE( f ).nsec)
 #define BGL_DATE_SECOND( f ) (BGL_DATE( f ).sec)
 #define BGL_DATE_MINUTE( f ) (BGL_DATE( f ).min)
 #define BGL_DATE_HOUR( f ) (BGL_DATE( f ).hour)

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Sep 22 14:38:00 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 16:00:22 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -17,6 +17,10 @@
 #include <time.h>
 #include <ctype.h>
 #include <sys/time.h>
+
+#define MILLIBASE 1000
+#define MICROBASE (1000 * MILLIBASE)
+#define NANOBASE ((BGL_LONGLONG_T)(1000 * MICROBASE))
 
 /*---------------------------------------------------------------------*/
 /*    date mutex                                                       */
@@ -109,12 +113,31 @@ bgl_seconds_to_date( long sec ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
+/*    bgl_nanoseconds_to_date ...                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
+   obj_t res;
+   long sec = (long)(nsec / NANOBASE);
+
+   BGL_MUTEX_LOCK( date_mutex );
+   res = tm_to_date( localtime( (time_t *)&sec ) );
+   BGL_MUTEX_UNLOCK( date_mutex );
+
+   BGL_DATE( res ).nsec = (nsec - ((BGL_LONGLONG_T) sec * NANOBASE));
+   
+   return res;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
 /*    bgl_make_date ...                                                */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_make_date( int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
+bgl_make_date( long ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
    struct tm tm;
    time_t t;
+   obj_t date;
 
    tm.tm_sec = s;
    tm.tm_min = m; 
@@ -126,14 +149,12 @@ bgl_make_date( int s, int m, int hr, int mday, int mon, int year, long tz, bool_
 
    t = mktime( &tm );
 
-   if( istz ) {
-      obj_t date = bgl_seconds_to_date( t );
-      date->date_t.timezone = tz;
+   date = bgl_seconds_to_date( t );
+   date->date_t.nsec = ns;
+   
+   if( istz ) date->date_t.timezone = tz;
 
-      return date;
-   } else {
-      return bgl_seconds_to_date( t );
-   }
+   return date;
 }
 
 /*---------------------------------------------------------------------*/
@@ -160,12 +181,12 @@ bgl_date_to_seconds( obj_t date ) {
 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF BGL_LONGLONG_T                                   */
-/*    bgl_date_to_useconds ...                                         */
+/*    bgl_date_to_nanoseconds ...                                      */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BGL_LONGLONG_T
-bgl_date_to_useconds( obj_t date ) {
-   return (BGL_LONGLONG_T)bgl_date_to_seconds( date ) * 1000000 +
-      BGL_DATE( date ).usec;
+bgl_date_to_nanoseconds( obj_t date ) {
+   return (BGL_LONGLONG_T)bgl_date_to_seconds( date ) * NANOBASE +
+      BGL_DATE( date ).nsec;
 }
 
 /*---------------------------------------------------------------------*/
@@ -186,7 +207,7 @@ bgl_current_microseconds() {
 #if( BGL_HAVE_TIMEVAL )   
    struct timeval tv;
    if( gettimeofday( &tv, 0 ) == 0 ) {
-      return (BGL_LONGLONG_T)(tv.tv_sec) * 1000000 +
+      return (BGL_LONGLONG_T)(tv.tv_sec) * MICROBASE +
 	 (BGL_LONGLONG_T)(tv.tv_usec);
    } else {
       C_SYSTEM_FAILURE( BGL_ERROR,
@@ -195,7 +216,29 @@ bgl_current_microseconds() {
 			BUNSPEC );
    }
 #else
-   return (BGL_LONGLONG_T)(bgl_current_seconds() ) * 1000000;
+   return (BGL_LONGLONG_T)(bgl_current_seconds() ) * MICROBASE;
+#endif
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_LONGLONG_T                                                   */
+/*    bgl_current_nanoseconds ...                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BGL_LONGLONG_T
+bgl_current_nanoseconds() {
+#if( BGL_HAVE_TIMEVAL )   
+   struct timeval tv;
+   if( gettimeofday( &tv, 0 ) == 0 ) {
+      return (BGL_LONGLONG_T)(tv.tv_sec) * NANOBASE +
+	 (BGL_LONGLONG_T)(tv.tv_usec) * 1000;
+   } else {
+      C_SYSTEM_FAILURE( BGL_ERROR,
+			"current-nanoseconds",
+			strerror( errno ),
+			BUNSPEC );
+   }
+#else
+   return (BGL_LONGLONG_T)(bgl_current_seconds() ) * NANOBASE;
 #endif
 }
 
