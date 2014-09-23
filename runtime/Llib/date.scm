@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Mon Sep 22 16:17:20 2014 (serrano)                */
+;*    Last change :  Tue Sep 23 08:30:25 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -186,7 +186,7 @@
 ;*    make-date ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (make-date #!key
-	   (nsec 0)
+	   (nsec #l0)
 	   (sec 0) (min 0) (hour 0)
 	   (day 1) (month 1) (year 1970)
 	   timezone (dst -1))

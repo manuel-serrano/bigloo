@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Nov 20 16:16:48 2013 (serrano)                */
+;*    Last change :  Mon Sep 22 17:50:35 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -810,14 +810,14 @@
    (when (<fx i 0)
       (error "utf8-string-ref" "index out of range" i))
    (let ((len (string-length str)))
-      (let loop ((r 0))
+      (let loop ((r 0) (i i))
 	 (if (=fx r len)
 	     (error "utf8-string-ref" "index out of range" i)
 	     (let* ((c (string-ref str r))
 		    (s (utf8-char-size c)))
-		(if (=fx r i)
+		(if (=fx i 0)
 		    (substring str r (+fx r s))
-		    (loop (+fx r s))))))))
+		    (loop (+fx r s) (-fx i 1))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-substring ...                                               */

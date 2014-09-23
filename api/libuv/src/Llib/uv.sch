@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri Sep 19 15:14:40 2014 (serrano)                */
+;*    Last change :  Mon Sep 22 17:09:07 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -37,6 +37,7 @@
       (type $uv_close_cb void* "uv_close_cb")
       (macro $uv-handle-t::$uv_handle_t (::void*) "(uv_handle_t *)")
       
+      (macro $uv-handle->integer::long (::$uv_handle_t) "(long)")
       (macro $uv_handle_nil::$uv_handle_t "0L")
       (macro $uv_handle_nilp::bool (::$uv_handle_t) "((uv_handle_t *)0L) == ")
       

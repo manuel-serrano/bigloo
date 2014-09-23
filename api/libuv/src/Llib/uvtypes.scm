@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Mon Sep  1 07:01:12 2014 (serrano)                */
+;*    Last change :  Mon Sep 22 17:10:08 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -78,7 +78,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    object-print ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (object-print obj::%Uv port print-slot::procedure)
+(define-method (object-print obj::UvHandle port print-slot::procedure)
    
    (define (class-field-write/display field)
       (let* ((name (class-field-name field))
@@ -98,6 +98,10 @@
 	  (len (vector-length fields)))
       (display "#|" port)
       (display class-name port)
+      (display " (0x" port)
+      (with-access::UvHandle obj ($builtin)
+	 (display (integer->string ($uv-handle->integer $builtin)) port)
+	 (display ")" port))
       (if (nil? obj)
 	  (display " nil|" port)
 	  (let loop ((i 0))

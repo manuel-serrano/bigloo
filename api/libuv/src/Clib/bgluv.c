@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Sep 22 09:22:06 2014 (serrano)                */
+/*    Last change :  Mon Sep 22 17:53:06 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -668,7 +668,6 @@ bgl_uv_fs_stat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
    } else {
       uv_fs_t req;
 
-      fprintf( stderr, "STAT=%s\n", path );
       if( uv_fs_stat( loop, &req, path, 0L ) < 0 ) {
 	 uv_fs_req_cleanup( &req );
 	 return BINT( req.result );
