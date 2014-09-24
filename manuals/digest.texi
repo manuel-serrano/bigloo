@@ -22,15 +22,26 @@
 @cindex sha256
 
 @deffn {bigloo procedure} base64-encode string [padding 64]
-@deffnx {bigloo procedure} base64-decode string
+@deffnx {bigloo procedure} base64-decode string [no-eof-padding]
 @cindex base64
 Encodes (respec. decodes) a string into a base64 representation.
+
+When decoding, if the optional parameter @var{no-eof-padding} is
+@code{#t}, the decoding success even if the input stream is not padded
+with @code{=} characters.
 @end deffn
 
 @deffn {bigloo procedure} base64-encode-port input-port output-port [padding 64]
-@deffnx {bigloo procedure} base64-decode-port input-port output-port
+@deffnx {bigloo procedure} base64-decode-port input-port output-port [no-eof-padding]
 @cindex base64
 Encodes (respec. decodes) an input port into a base64 representation.
+
+When decode succeeds, @var{base64-decode-port} returns @code{#t}, it
+returns @code{#f} otherwise.
+
+When decoding, if the optional parameter @var{no-eof-padding} is
+@code{#t}, the decoding success even if the input stream is not padded
+with @code{=} characters.
 @end deffn
 
 @deffn {bigloo procedure} pem-read-file file-name

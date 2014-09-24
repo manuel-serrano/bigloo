@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 29 17:52:57 2004                          */
-;*    Last change :  Tue Jun 17 15:19:46 2014 (serrano)                */
+;*    Last change :  Wed Sep 24 19:29:48 2014 (serrano)                */
 ;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    base64 encoding/decoding                                         */
@@ -47,9 +47,9 @@
    (import __param)
    
    (export (base64-encode::bstring ::bstring #!optional (padding 76))
-	   (base64-decode::bstring ::bstring)
+	   (base64-decode::bstring ::bstring #!optional eof-no-padding)
 	   (base64-encode-port ::input-port ::output-port  #!optional (padding 76))
-	   (base64-decode-port ::input-port ::output-port)
+	   (base64-decode-port ::input-port ::output-port #!optional eof-no-padding)
 	   (pem-decode-port ::input-port ::output-port)
 	   (pem-read-file::bstring ::bstring)))
 
@@ -183,7 +183,9 @@
 	    (byte-set! table (+fx i (char->integer #\0)) (+fx i 52))
 	    (loop (+fx i 1))))
       (byte-set! table (char->integer #\+) 62)
+      (byte-set! table (char->integer #\-) 62)
       (byte-set! table (char->integer #\/) 63)
+      (byte-set! table (char->integer #\_) 63)
       table))
 
 ;*---------------------------------------------------------------------*/
@@ -213,9 +215,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    base64-decode ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (base64-decode s)
+(define (base64-decode s #!optional eof-no-padding)
    (let* ((len (actual-string-length s))
-	  (nlen (*fx (/fx len 4) 3))
+	  (nlen (if eof-no-padding
+		    (*fx (+fx 1 (/fx len 4)) 3)
+		    (*fx (/fx len 4) 3)))
 	  (res (make-string nlen)))
       (let loop ((x 0)
 		 (y 0))
@@ -225,19 +229,55 @@
 		(if (and (=fx q0 0)
 			 (or (char=? c #\Newline) (char=? c #\Return)))
 		    (loop (+fx x 1) y)
-		    (let* ((q1 (decode-char (string-ref s (+fx x 1))))
-			   (q2 (decode-char (string-ref s (+fx x 2))))
-			   (q3 (decode-char (string-ref s (+fx x 3))))
-			   (v0 (bit-or (bit-lsh q0 2)
-				       (bit-rsh q1 4)))
-			   (v1 (bit-or (bit-and (bit-lsh q1 4) #xf0)
-				       (bit-rsh q2 2)))
-			   (v2 (bit-or (bit-and (bit-lsh q2 6) #xc0)
-				       q3)))
-		       (string-set! res y (integer->char v0))
-		       (string-set! res (+fx y 1) (integer->char v1))
-		       (string-set! res (+fx y 2) (integer->char v2))
-		       (loop (+fx x 4) (+fx y 3)))))
+		    (cond
+		       ((<=fx x (-fx len 4))
+			(let* ((q1 (decode-char (string-ref s (+fx x 1))))
+			       (q2 (decode-char (string-ref s (+fx x 2))))
+			       (q3 (decode-char (string-ref s (+fx x 3))))
+			       (v0 (bit-or (bit-lsh q0 2)
+				      (bit-rsh q1 4)))
+			       (v1 (bit-or (bit-and (bit-lsh q1 4) #xf0)
+				      (bit-rsh q2 2)))
+			       (v2 (bit-or (bit-and (bit-lsh q2 6) #xc0)
+				      q3)))
+			   (string-set! res y (integer->char v0))
+			   (string-set! res (+fx y 1) (integer->char v1))
+			   (string-set! res (+fx y 2) (integer->char v2))
+			   (loop (+fx x 4) (+fx y 3))))
+		       ((and (<=fx x (-fx len 3)) eof-no-padding)
+			(let* ((c1 (string-ref s (+fx x 1)))
+			       (c2 (string-ref s (+fx x 2)))
+			       (q1 (decode-char c1))
+			       (q2 (decode-char c2))
+			       (v0 (bit-or (bit-lsh q0 2)
+				      (bit-rsh q1 4)))
+			       (v1 (bit-or (bit-and (bit-lsh q1 4) #xf0)
+				      (bit-rsh q2 2))))
+			   (string-set! res y (integer->char v0))
+			   (string-set! res (+fx y 1) (integer->char v1))
+			   (cond
+			      ((char=? c1 #\=)
+			       (string-shrink! res y))
+			      ((char=? c2 #\=)
+			       (string-shrink! res (+fx y 1)))
+			      (else
+			       (string-shrink! res (+fx y 2))))))
+		       ((and (<=fx x (-fx len 2)) eof-no-padding)
+			(let* ((c1 (string-ref s (+fx x 1)))
+			       (q1 (decode-char c1))
+			       (v0 (bit-or (bit-lsh q0 2)
+				      (bit-rsh q1 4))))
+			   (string-set! res y (integer->char v0))
+			   (if (char=? c1 #\=)
+			       (string-shrink! res y)
+			       (string-shrink! res (+fx y 1)))))
+		       ((and (<=fx x (-fx len 1)) eof-no-padding)
+			(let* ((q1 (decode-char #\=))
+			       (v0 (bit-or (bit-lsh q0 2) (bit-rsh q1 4))))
+			   (string-set! res y (integer->char v0))
+			   (string-shrink! res y)))
+		       (else
+			(string-shrink! res (+fx y 1))))))
 	     (cond
 		((and (>fx len 2) (char=? (string-ref s (-fx len 2)) #\=))
 		 (string-shrink! res (-fx y 2)))
@@ -256,8 +296,13 @@
 ;*    buffer must be a multiplier of 3.                                */
 ;*---------------------------------------------------------------------*/
 (define base64-decode-grammar
-   (regular-grammar (op buf w len hook)
-      ((= 4 (or (in ("AZ")) (in ("az")) (in ("09")) #\+ #\/))
+   ;; http://en.wikipedia.org/wiki/Base64
+   (regular-grammar ((variant (in "-+/_"))
+		     (chunk (or (in ("AZ")) (in ("az")) (in ("09")) variant))
+		     op buf w len hook
+		     eof-no-padding)
+
+      (define (chunk4)
        (let* ((q0 (decode-byte (the-byte-ref 0)))
 	      (q1 (decode-byte (the-byte-ref 1)))
 	      (q2 (decode-byte (the-byte-ref 2)))
@@ -273,9 +318,9 @@
 		 (begin
 		    (display-string buf op)
 		    (set! w 0))
-		 (set! w nw)))
-	  (ignore)))
-      ((: (= 3 (or (in ("AZ")) (in ("az")) (in ("09")) #\+ #\/)) #\=)
+		 (set! w nw)))))
+      
+      (define (chunk3)
        (let* ((q0 (decode-byte (the-byte-ref 0)))
 	      (q1 (decode-byte (the-byte-ref 1)))
 	      (q2 (decode-byte (the-byte-ref 2)))
@@ -286,7 +331,8 @@
 	  (string-set-ur! buf (+fx w 1) (integer->char v1))
 	  (string-set-ur! buf (+fx w 2) (integer->char v2))
 	  (display-substring buf 0 (+fx w 2) op)))
-      ((: (= 2 (or (in ("AZ")) (in ("az")) (in ("09")) #\+ #\/)) #\= #\=)
+
+      (define (chunk2)
        (let* ((q0 (decode-byte (the-byte-ref 0)))
 	      (q1 (decode-byte (the-byte-ref 1)))
 	      (v0 (bit-or (bit-lsh q0 2) (bit-rsh q1 4)))
@@ -294,24 +340,46 @@
 	  (string-set-ur! buf w (integer->char v0))
 	  (string-set-ur! buf (+fx w 1) (integer->char v1))
 	  (display-substring buf 0 (+fx w 1) op)))
-      ((: (= 3 (or (in ("AZ")) (in ("az")) (in ("09")) #\+ #\/)) #\= #\= #\=)
+
+      (define (chunk1)
        (let* ((q0 (decode-byte (the-byte-ref 0)))
-	      (q1 (decode-byte (the-byte-ref 1)))
+	      (q1 (decode-char #\=))
 	      (v0 (bit-or (bit-lsh q0 2) (bit-rsh q1 4))))
 	  (string-set-ur! buf w (integer->char v0))
 	  (display-substring buf 0 w op)))
+      
+      ((= 4 chunk)
+       (chunk4)
+       (ignore))
+      ((: (= 3 chunk) #\=)
+       (chunk3))
+      ((eof (= 3 chunk))
+       (when eof-no-padding (chunk3)))
+      ((: (= 2 chunk) #\= #\=)
+       (chunk2))
+      ((eof (: (= 2 chunk) (? #\=)))
+       (when eof-no-padding (chunk2)))
+      ((: chunk #\= #\= #\=)
+       (chunk1))
+      ((eof chunk)
+       (when eof-no-padding (chunk1)))
       ((or #\Newline #\Return)
        (ignore))
       (else
        (let ((c (the-failure)))
-	  (unless (or (eof-object? c) (hook c))
+	  (if (or (eof-object? c) (hook c))
+	      (begin
+		 (when (>fx w 0)
+		    (display-substring buf 0 w op))
+		 #t)
 	     (ignore))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    base64-decode-port ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (base64-decode-port ip op)
-   (read/rp base64-decode-grammar ip op (make-string 84) 0 84 (lambda (c) #f)))
+(define (base64-decode-port ip op #!optional eof-no-padding)
+   (read/rp base64-decode-grammar ip op (make-string 84) 0 84
+      (lambda (c) #f) #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    pem-markup-grammar ...                                           */
@@ -364,7 +432,8 @@
       (if (substring-at? start "BEGIN " 0)
 	  (read/rp base64-decode-grammar ip op (make-string 84) 0 84
 		   (lambda (c)
-		      (hook (substring start 7 (string-length start)) c)))
+		      (hook (substring start 7 (string-length start)) c))
+		   #f)
 	  (raise
 	   (instantiate::&io-parse-error
 	      (proc "pem-decode-port")

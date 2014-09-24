@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Sep 22 16:16:26 2014 (serrano)                */
+/*    Last change :  Wed Sep 24 07:07:55 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -135,7 +135,7 @@ bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
 /*    bgl_make_date ...                                                */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_make_date( long ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
+bgl_make_date( BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst ) {
    struct tm tm;
    time_t t;
    obj_t date;
