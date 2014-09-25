@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Sep 24 13:20:08 2014 (serrano)                */
+;*    Last change :  Thu Sep 25 07:53:42 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -165,6 +165,7 @@
 	    (inline utf8-string->ucs2-string::ucs2string ::bstring)
 	    (inverse-utf8-table ::vector)
 	    (utf8-char-size::long c::char)
+	    (ascii-string?::bool ::bstring)
 	    (utf8-string?::bool ::bstring #!optional strict::bool)
 	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
@@ -633,6 +634,15 @@
 		(else
 		 (loop (+fx size 1) (+fx i 6))))))))
 
+;*---------------------------------------------------------------------*/
+;*    ascii-string? ...                                                */
+;*    -------------------------------------------------------------    */
+;*    To be replaced with an effective fast test.                      */
+;*---------------------------------------------------------------------*/
+(define (ascii-string? str)
+   ;; MS CARE: 25 sep 2014, to be replaced
+   #f)
+	   
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string? ...                                                 */
 ;*---------------------------------------------------------------------*/

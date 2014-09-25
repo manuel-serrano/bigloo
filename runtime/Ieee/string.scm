@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Jun 15 07:02:50 2014 (serrano)                */
+;*    Last change :  Thu Sep 25 05:34:21 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -233,7 +233,7 @@
 	       #!optional (start1 0) (start2 0))
 	    (string-hex-intern::bstring ::bstring)
 	    (string-hex-intern!::bstring ::bstring)
-	    (string-hex-extern::bstring ::bstring))
+	    (string-hex-extern::bstring str::bstring #!optional (start::int 0) (end::long (string-length str))))
    
    (pragma  ($string? fail-safe (predicate-of bstring) no-cfa-top nesting)
 	    (string? fail-safe side-effect-free no-cfa-top nesting)
@@ -1095,7 +1095,7 @@
       ((char? rs)
        (string-char-skip s rs))
       ((procedure? rs)
-       (string-pred-skip string rs))
+       (string-pred-skip s rs))
       ((not (string? rs))
        (error 'string-index-right "Illegal regset" rs))
       ((=fx (string-length rs) 1)
@@ -1500,18 +1500,30 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-hex-extern ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (string-hex-extern str)
-   (define (integer->hex n)
-      (string-ref "0123456789abcdef" n))
-   (let* ((len (string-length str))
-	  (res (make-string (*fx 2 len))))
-      (let loop ((i 0)
-		 (j 0))
-	 (if (=fx i len)
-	     res
-	     (let* ((n (char->integer (string-ref str i)))
-		    (d0 (remainderfx n 16))
-		    (d1 (/fx n 16)))
-		(string-set! res j (integer->hex d1))
-		(string-set! res (+fx j 1) (integer->hex d0))
-		(loop (+fx i 1) (+fx j 2)))))))
+(define (string-hex-extern::bstring str::bstring #!optional
+	   (start::int 0) (end::long (string-length str)))
+   
+   (define (integer->hex n) (string-ref "0123456789abcdef" n))
+   
+   (let ((len (string-length str)))
+      (cond
+	 ((or (<fx start 0) (>fx start len))
+	  (error "string-hex-extern"
+	     (string-append "Illegal start index " (fixnum->string start))
+	     (list (string-length str) str)))
+	 ((or (<fx end start) (>fx end len))
+	  (error "string-hex-extern"
+	     (string-append "Illegal end index " (fixnum->string end))
+	     (list (string-length str) str)))
+	 (else
+	  (let ((res (make-string (*fx 2 (-fx end start)))))
+	     (let loop ((i start)
+			(j 0))
+		(if (=fx i end)
+		    res
+		    (let* ((n (char->integer (string-ref str i)))
+			   (d0 (remainderfx n 16))
+			   (d1 (/fx n 16)))
+		       (string-set! res j (integer->hex d1))
+		       (string-set! res (+fx j 1) (integer->hex d0))
+		       (loop (+fx i 1) (+fx j 2))))))))))

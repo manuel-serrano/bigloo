@@ -1445,8 +1445,18 @@ string of @code{n/2} characters.
 @end smalllisp
 @end deffn
 
-@deffn {bigloo procedure} string-hex-extern string
+@deffn {bigloo procedure} string-hex-extern string [start [end]]
 Converts a @var{string} into a hexadecimal representation.
+
+@var{string} must be a string, and @var{start} and @var{end} must be
+exact integers satisfying:
+
+@smallexample
+  0 <= START <= END <= (string-length STRING)
+@end smallexample
+
+The optional argument @var{start} default to 0. The optional argument
+@var{end} defaults to @code{(string-length STRING)}.
 
 @smalllisp
 (string-hex-extern "JKL") @result{} "4a4b4c"
@@ -1532,6 +1542,11 @@ UTF-8 string. Otherwise returns @code{#f}.
 If the optional argument @var{strict} is @code{#t}, half utf16-surrogates are
 rejected. The optional argument @var{strict} defaults to @code{#f}.
 
+@end deffn
+
+@deffn {bigloo procedure} ascii-string? string
+Returns @code{#t} if and only if the argument @var{string} is only composed
+of ascii characters. Otherwise returns @code{#f}.
 @end deffn
 
 @deffn {bigloo procedure} utf8-string-encode string [strict @code{#f}]
