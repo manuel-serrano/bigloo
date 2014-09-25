@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed Jul 30 14:34:40 2014 (serrano)                */
+;*    Last change :  Thu Sep 25 12:11:04 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -773,7 +773,7 @@
 		(else (wrt)))
 	     (let ((c (string-ref str i)))
 		(case c
-		   ((#\Space #\Newline #\Tab #\Return #\` #\' #\" #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\,)
+		   ((#\Newline #\Tab #\Return #\` #\' #\" #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\,)
 		    (wrt))
 		   ((#\:)
 		    (cond
@@ -791,7 +791,7 @@
 			(wrt)
 			(loop (+fx i 1) a)))
 		   (else
-		    (if (char>=? c #a127)
+		    (if (or (char<=? c #\space) (char>=? c #a127))
 			(wrt)
 			(loop (+fx i 1)
 			   (or a
