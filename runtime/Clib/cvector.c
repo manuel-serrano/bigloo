@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Fri Sep 16 10:36:13 2011 (serrano)                */
+/*    Last change :  Fri Sep 26 09:21:57 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -11,17 +11,26 @@
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
-/*    fill_vector ...                                                  */
+/*    bgl_fill_vector ...                                              */
 /*---------------------------------------------------------------------*/
 obj_t
-fill_vector( obj_t bvector, int len, obj_t init ) {
-   obj_t *walker = (obj_t *)(&VECTOR_REF( bvector, 0 ));
-   obj_t *stop = (walker + len);
+bgl_fill_vector( obj_t bvector, long start, long end, obj_t init ) {
+   obj_t *walker = (obj_t *)(&VECTOR_REF( bvector, start ));
+   obj_t *stop = (obj_t *)(&VECTOR_REF( bvector, end ));
 
    while( walker < stop )
       *walker++ = init;
 
    return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_fill_vector ...                                              */
+/*---------------------------------------------------------------------*/
+obj_t
+fill_vector( obj_t bvector, long len, obj_t init ) {
+   return bgl_fill_vector( bvector, 0, len, init );
 }
 
 /*---------------------------------------------------------------------*/
@@ -94,7 +103,7 @@ make_vector_uncollectable( int len, obj_t init ) {
    obj_t vector;
 
    vector = create_vector_uncollectable( len );
-   fill_vector( vector, len, init );
+   bgl_fill_vector( vector, 0, len, init );
 	
    return vector;
 }
@@ -108,7 +117,7 @@ make_vector( int len, obj_t init ) {
    obj_t vector;
 
    vector = create_vector( len );
-   fill_vector( vector, len, init );
+   bgl_fill_vector( vector, 0, len, init );
 	
    return vector;
 }

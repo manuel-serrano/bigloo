@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Sat Jun 21 10:10:10 2014 (serrano)                */
+;*    Last change :  Fri Sep 26 07:53:22 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -41,7 +41,7 @@
 	    ($make-vector-uncollectable::vector (::int ::obj) "make_vector_uncollectable")
 	    ($create-vector::vector (::int) "create_vector")
 	    ($create-vector-uncollectable::vector (::int) "create_vector_uncollectable")
-	    ($vector-fill!::obj (::vector ::int ::obj) "fill_vector")
+	    ($vector-fill!::obj (::vector ::long ::long ::obj) "bgl_fill_vector")
 	    (macro $vector-length::int (::vector) "VECTOR_LENGTH")
 	    (macro $vector-ref::obj (::vector ::int) "VECTOR_REF")
 	    (macro $vector-ref-ur::obj (::vector ::int) "VECTOR_REF")
@@ -65,7 +65,7 @@
 		       "create_vector")
 	       (method static $create-vector-uncollectable::vector (::int)
 		       "create_vector")
-	       (method static $vector-fill!::obj (::vector ::int ::obj)
+	       (method static $vector-fill!::obj (::vector ::int ::int ::obj)
 		       "fill_vector")
 	       (method static $vector-length::int (::vector)
 		       "VECTOR_LENGTH")
@@ -96,12 +96,14 @@
 	    (inline vector-set-ur! ::vector ::int ::obj)
 	    (vector->list::pair-nil ::vector)
 	    (list->vector::vector ::pair-nil)
-	    (vector-fill! ::vector fill)
+	    (vector-fill! vec::vector fill
+	       #!optional (start::long 0) (end::long (vector-length vec)))
 	    (inline vector-tag::int ::vector)
 	    (inline vector-tag-set! ::vector ::int)
 	    (copy-vector::vector ::vector ::int)
 	    (vector-copy::vector ::vector . args)
-	    (vector-copy! ::vector ::long source #!optional (sstart 0) (send (vector-length source)))
+	    (vector-copy! ::vector ::long source
+	       #!optional (sstart 0) (send (vector-length source)))
 	    (vector-append::vector ::vector . args)
 	    (sort ::obj ::obj)
 	    (vector-map::vector ::procedure ::vector . rests)
@@ -197,8 +199,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    vector-fill! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (vector-fill! vector fill)
-   ($vector-fill! vector (vector-length vector) fill))
+(define (vector-fill! vec fill
+	   #!optional (start::long 0) (end::long (vector-length vec)))
+   (cond
+      ((<fx start 0)
+       (error "vector-fill!" "wrong negative start" start))
+      ((>fx end (vector-length vec))
+       (error "vector-fill!" "start index too large" start))
+      ((>=fx start end)
+       (error "vector-fill!" "start index larger than end" (cons start end)))
+      (else
+       ($vector-fill! vec start end fill))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-tag ...                                                   */

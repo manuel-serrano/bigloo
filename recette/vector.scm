@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Wed Jan 11 09:19:02 2012 (serrano)                */
+;*    Last change :  Fri Sep 26 09:26:55 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -52,12 +52,24 @@
 			   (vector-set! v 2 'hello)
 			   v)
 	 '#((1 2 3) #(1 2 3) hello))
-   (test "vector-fill" (let ((v (make-vector 3 1)))
-			  (vector-fill! v 2)
-			  (+ (vector-ref v 0)
-			     (vector-ref v 1)
-			     (vector-ref v 2)))
+   (test "vector-fill.1" (let ((v (make-vector 3 1)))
+			    (vector-fill! v 2)
+			    (+ (vector-ref v 0)
+			       (vector-ref v 1)
+			       (vector-ref v 2)))
 	 6)
+   (test "vector-fill.2" (let ((v (make-vector 3 1)))
+			    (vector-fill! v 2 1)
+			    (vector->list v))
+      '(1 2 2))
+   (test "vector-fill.3" (let ((v (make-vector 3 1)))
+			    (vector-fill! v 2 1 2)
+			    (vector->list v))
+      '(1 2 1))
+   (test "vector-fill.4" (let ((v (make-vector 3 1)))
+			    (vector-fill! v 2 1 3)
+			    (vector->list v))
+      '(1 2 2))
    (test "tvector.1" (let ((t '#(1 2 3)))
 			(vector-ref t 2))
 	 3)

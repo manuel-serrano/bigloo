@@ -3873,9 +3873,9 @@ public final class foreign
 	 return new Object[n];
       }
 
-   public static Object fill_vector(Object[]v, int len, Object o)
+   public static Object fill_vector(Object[]v, int start, int len, Object o)
       {
-	 for (int i = 0; i < len; ++i)
+	 for (int i = start; i < len; ++i)
 	    v[i] = o;
 	 return unspecified.unspecified;
       }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Sep 19 15:38:01 2014 (serrano)                */
+/*    Last change :  Thu Sep 25 14:16:21 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -86,6 +86,10 @@ typedef int socklen_t;
 #if( BGL_HAVE_GETHWADDRS )
 #  include <sys/ioctl.h>
 #  include <net/if.h>
+#endif
+
+#if( !defined( IFF_LOOPBACK ) )
+#  define IFF_LOOPBACK 0
 #endif
 
 /*---------------------------------------------------------------------*/
