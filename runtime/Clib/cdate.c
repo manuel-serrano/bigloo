@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Wed Sep 24 07:07:55 2014 (serrano)                */
+/*    Last change :  Wed Oct  1 14:53:26 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -28,8 +28,6 @@
 static obj_t date_mutex = BUNSPEC;
 DEFINE_STRING( date_mutex_name, _2, "date-mutex", 10 );
 
-static bgl_timezone = 23;
-
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_init_date ...                                                */
@@ -44,24 +42,42 @@ bgl_init_date() {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static long                                                      */
+/*    bgl_get_timezone ...                                             */
+/*---------------------------------------------------------------------*/
+static long
+bgl_get_timezone( long s ) {
+   struct tm *tm = localtime( &s );
+   long m1, h1, d1;
+
+   m1 = tm->tm_min;
+   h1 = tm->tm_hour;
+   d1 = tm->tm_yday;
+
+   tm = gmtime( &s );
+
+   if( tm->tm_yday == d1 ) {
+      return (h1 - tm->tm_hour) * 3600 + (m1 - tm->tm_min);
+   } else if( tm->tm_yday > d1 ) {
+      return (h1 - (tm->tm_hour + 24)) * 3600 + (m1 - tm->tm_min);
+   } else {
+      return (h1 - (tm->tm_hour - 24)) * 3600 + (m1 - tm->tm_min);
+   }
+}
+   
+/*---------------------------------------------------------------------*/
 /*    long                                                             */
 /*    bgl_timezone ...                                                 */
 /*---------------------------------------------------------------------*/
 static long
-bgl_get_timezone() {
-   if( bgl_timezone == 23 ) {
-      long s = time( 0 );
-      struct tm *tm = localtime( &s );
-      long m1, h1, d1;
+bgl_timezone() {
+   static timezone = 23;
 
-      m1 = tm->tm_min;
-      h1 = tm->tm_hour;
-
-      tm = gmtime( &s );
-      bgl_timezone = (tm->tm_hour - h1) * 3600 + (tm->tm_min - m1);
+   if( timezone == 23 ) {
+      timezone = bgl_get_timezone( time( 0 ) );
    }
 
-   return bgl_timezone;
+   return timezone;
 }
        
 /*---------------------------------------------------------------------*/
@@ -76,9 +92,9 @@ tm_to_date( struct tm *tm ) {
    date->date_t.header = MAKE_HEADER( DATE_TYPE, 0 );
 
 #if( BGL_HAVE_GMTOFF )
-   date->date_t.timezone = -tm->tm_gmtoff;
+   date->date_t.timezone = tm->tm_gmtoff;
 #else
-   date->date_t.timezone = bgl_get_timezone();   
+   date->date_t.timezone = bgl_timezone();   
 #endif
 
    date->date_t.nsec = 0;
@@ -146,13 +162,13 @@ bgl_make_date( BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int y
    tm.tm_mday = mday;
    tm.tm_mon = mon - 1;
    tm.tm_year = year - 1900;
-   tm.tm_isdst = -1;
+   tm.tm_isdst = isdst;
 
    t = mktime( &tm );
 
    date = bgl_seconds_to_date( t );
    date->date_t.nsec = ns;
-   
+
    if( istz ) date->date_t.timezone = tz;
 
    return date;
@@ -164,8 +180,9 @@ bgl_make_date( BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int y
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_date_to_seconds( obj_t date ) {
-   struct tm t;
-   time_t n;
+   struct tm t, *tl;
+   time_t n, m;
+   long tz;
 
    t.tm_sec = BGL_DATE( date ).sec;
    t.tm_min = BGL_DATE( date ).min;
@@ -176,8 +193,21 @@ bgl_date_to_seconds( obj_t date ) {
    t.tm_isdst = BGL_DATE( date ).isdst;
 
    n = mktime( &t );
-   
-   return (long)n;
+
+   BGL_MUTEX_LOCK( date_mutex );
+#if( BGL_HAVE_GMTOFF )
+   /* get the timezone at that date */
+   tl = localtime( &n );
+   tz = tl->tm_gmtoff;
+#else
+   /* mid-month to avoid day overflow */
+   t.tm_mday = 15;
+   m = mktime( &t );
+   tz = bgl_get_timezone( n );
+#endif
+
+   BGL_MUTEX_UNLOCK( date_mutex );
+   return (long)n + (tz - (BGL_DATE( date ).timezone));
 }
 
 /*---------------------------------------------------------------------*/

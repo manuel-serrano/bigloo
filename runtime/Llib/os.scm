@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Mon Sep  1 16:43:49 2014 (serrano)                */
+;*    Last change :  Mon Sep 29 08:12:50 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -60,6 +60,7 @@
 	    (c-date::string () "c_date")
 	    (macro c-chdir::bool (::string) "chdir")
 	    (macro c-getcwd::string (::string ::int) "(char *)(long)getcwd")
+	    (macro $chdir::int (::string) "chdir")
 	    (c-chmod::bool (::string ::bool ::bool ::bool) "bgl_chmod")
 	    (macro c-chmod-int::bool (::string ::int) "chmod")
 	    

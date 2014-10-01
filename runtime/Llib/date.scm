@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Sep 24 07:07:20 2014 (serrano)                */
+;*    Last change :  Wed Oct  1 14:24:16 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -144,8 +144,8 @@
 	    (inline nanoseconds->date::date ::llong)
 	    (inline date->seconds::elong ::date)
 	    (inline date->nanoseconds::llong ::date)
-	    (inline date->string::bstring ::date)
-	    (inline date->utc-string::bstring ::date)
+	    (date->string::bstring ::date)
+	    (date->utc-string::bstring ::date)
 	    (inline seconds->string::bstring ::elong)
 	    (inline seconds->utc-string::bstring ::elong)
 	    
@@ -350,14 +350,44 @@
 ;*---------------------------------------------------------------------*/
 ;*    date->string ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define-inline (date->string date)
-   (seconds->string (date->seconds date)))
+(define (date->string date)
+   (let ((tz (date-timezone date)))
+      (if (=fx tz 0)
+	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a"
+	     (day-aname (date-wday date))
+	     (month-aname (date-month date))
+	     (date-day date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date)
+	     (date-year date))
+	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a ~a~3,0d"
+	     (day-aname (date-wday date))
+	     (month-aname (date-month date))
+	     (date-day date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date)
+	     (date-year date)
+	     (if (<fx tz 0) "-" "+")
+	     (absfx (/fx tz 60))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->utc-string ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-inline (date->utc-string date)
-   (seconds->utc-string (date->seconds date)))
+(define (date->utc-string date)
+   (let ((tz (date-timezone date)))
+      (if (=fx tz 0)
+	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
+	     (day-aname (date-wday date))
+	     (date-day date)
+	     (month-aname (date-month date))
+	     (date-year date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date))
+	  (let ((d (seconds->date (-fx (date->seconds date) tz))))
+	     (date->utc-string (date-copy d :timezone 0))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    seconds->string ...                                              */
@@ -519,13 +549,13 @@
 	     (read/rp time-grammar (the-port))
 	     (let ((zone (read/rp zone-grammar (the-port))))
 		(make-date :sec second
-			    :min minute
-			    :hour hour
-			    :month month
-			    :year (if (<fx year 100) (+fx year 2000) year)
-			    :day day
-			    :timezone zone
-			    :dst 0)))))
+		   :min minute
+		   :hour hour
+		   :month month
+		   :year (if (<fx year 100) (+fx year 2000) year)
+		   :day day
+		   :timezone zone
+		   :dst 0)))))
       ((+ digit)
        (let* ((day (the-fixnum))
 	      (month (read/rp month-grammar (the-port)))
@@ -543,8 +573,8 @@
 		   :dst 0)))))
       (else
        (parse-error "rfc2822-parse-date"
-		    "Illegal day of week"
-		    (the-failure) (the-port)))))
+	  "Illegal day of week"
+	  (the-failure) (the-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fixnum-grammar ...                                               */
@@ -658,7 +688,9 @@
      (PDT . -7)
      (PST . -8)
      (CEST . +1)
-     (UT . 0)))
+     (UT . 0)
+     (GMT . 0)
+     (BST . +1)))
 
 ;*---------------------------------------------------------------------*/
 ;*    zone-grammar ...                                                 */

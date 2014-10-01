@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Tue Jul 29 11:45:18 2014 (serrano)                */
+;*    Last change :  Mon Sep 29 09:20:26 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -282,7 +282,7 @@
 (define (uv-fs-write fd buffer length 
 	   #!key callback (offset 0) (position -1)
 	   (loop::UvLoop (uv-default-loop)))
-   ($uv-fs-read fd buffer offset length position callback loop))
+   ($uv-fs-write fd buffer offset length position callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-read ...                                                   */

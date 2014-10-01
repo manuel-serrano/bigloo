@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Sep 25 07:53:42 2014 (serrano)                */
+;*    Last change :  Wed Oct  1 06:54:32 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -934,10 +934,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    UTF8 string-append. This function assumes an illegal code point  */
-;*    for halt UTF16 code point concatanated during a string-append.   */
-;*    See the function cucs2_string_to_utf8_string defined in          */
-;*    bigloo/runtime/Clib/cunicode.c                                   */
+;*    This function handles situtation where the last char of the      */
+;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append left right)
    (let ((lenf (string-length left)))

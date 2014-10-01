@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Sep 22 17:53:06 2014 (serrano)                */
+/*    Last change :  Mon Sep 29 09:22:47 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -514,7 +514,6 @@ bgl_uv_fstat( uv_stat_t buf ) {
 
    uv_init_stat();
 
-   fprintf( stderr, "bgl_uv_fstat=%ld\n", buf.st_mode );
    res = MAKE_PAIR(
       MAKE_PAIR( _ctime, ELONG_TO_BELONG( buf.st_ctim.tv_sec ) ),
       res );
@@ -867,23 +866,23 @@ bgl_uv_fs_write( obj_t port, obj_t buffer, long offset, long length, long positi
 			BINT( STRING_LENGTH( buffer ) ) );
    }
 
-   if( bgl_check_fs_cb( proc, 1, "uv_fs_write" ) ) {
-      /* uv_buf_init inlined */
-      file->BgL_z52rbufz52 = &(STRING_REF( buffer, offset ));
-      file->BgL_z52rbuflenz52 = length;
+   /* uv_buf_init inlined */
+   file->BgL_z52rbufz52 = &(STRING_REF( buffer, offset ));
+   file->BgL_z52rbuflenz52 = length;
 
-/*    void* buf = (void *)&(STRING_REF( buffer, offset ));             */
-/*    uv_buf_t iov;                                                    */
-/*                                                                     */
-/*    iov = uv_buf_init( buf, length );                                */
+   if( bgl_check_fs_cb( proc, 1, "uv_fs_write" ) ) {
 
       req->data = proc;
       gc_mark( proc );
 
       uv_fs_write( loop, req, fd, buf, 1, position, &bgl_uv_fs_readwrite_cb );
-      uv_fs_req_cleanup( req );
    } else {
-      return pwrite( fd, &(STRING_REF( buffer, offset )), length, offset );
+      uv_fs_t req;
+
+      int r = uv_fs_write( loop, &req, fd, buf, 1, position, 0L );
+      uv_fs_req_cleanup( &req );
+
+      return r;
    }
 }
       
