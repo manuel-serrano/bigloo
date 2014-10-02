@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Mon Aug 25 10:10:47 2014 (serrano)                */
+/*    Last change :  Thu Oct  2 14:40:55 2014 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -170,11 +170,18 @@ _bigloo_main( int argc,
    }
 
 #if( BGL_GC == BGL_BOEHM_GC )
+   if( mega_size > 2048 ) {
+      char mes[ 80 ];
+
+      sprintf( mes, "%ldMB wanted", mega_size );
+      c_error( "Heap size too large (> 2048MB)", mes, -10 );
+      return 1;
+   }
    heap_size = MegToByte( mega_size );
 #endif
 
    if( !INIT_ALLOCATION( heap_size ) ) {
-      char mes[ 600 ];
+      char mes[ 80 ];
 
       sprintf( mes, "%ldMB wanted", heap_size );
       c_error( "Can't allocate heap", mes, -10 );

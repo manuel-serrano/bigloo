@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Sep 22 17:09:07 2014 (serrano)                */
+;*    Last change :  Thu Oct  2 12:26:18 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -137,7 +137,7 @@
 	 "bgl_uv_fs_link")
       ($uv-fs-symlink::int (::string ::string ::obj ::UvLoop)
 	 "bgl_uv_fs_symlink")
-      ($uv-fs-readlink::int (::string ::obj ::UvLoop)
+      ($uv-fs-readlink::obj (::string ::obj ::UvLoop)
 	 "bgl_uv_fs_readlink")
       ($uv-fs-unlink::int (::string ::obj ::UvLoop)
 	 "bgl_uv_fs_unlink")

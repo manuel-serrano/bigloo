@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Mon Sep 22 17:10:08 2014 (serrano)                */
+;*    Last change :  Thu Oct  2 08:10:19 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -55,9 +55,12 @@
 	   (class UvFile
 	      (fd::int read-only)
 	      (path::bstring read-only)
+	      (%rproc::obj (default #f))
 	      (%readreq::void* (default $void*_nil))
 	      (%rbuf::string (default $string-nil))
 	      (%rbuflen::int (default 0))
+	      (%wproc::obj (default #f))
+	      (%writereq::void* (default $void*_nil))
 	      (%wbuf::string (default $string-nil))
 	      (%wbuflen::int (default 0)))
 	   
