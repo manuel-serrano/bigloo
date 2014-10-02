@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu Oct  2 14:45:35 2014 (serrano)                */
+/*    Last change :  Thu Oct  2 15:44:46 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -413,8 +413,8 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
    } else {
       obj_t name = string_to_bstring( (char *)req->path );
       obj = bgl_uv_new_file( req->result, name );
-      ((bgl_uv_file_t)obj)->BgL_z52readreqz52 =
-	 GC_MALLOC( sizeof( uv_fs_t ) );
+/*       ((bgl_uv_file_t)obj)->BgL_z52readreqz52 =                     */
+/* 	 GC_MALLOC( sizeof( uv_fs_t ) );                               */
    }
    
    uv_fs_req_cleanup( req );
@@ -451,8 +451,8 @@ bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloo
 	 res = BINT( req.result );
       } else {
 	 res = bgl_uv_new_file( req.result, bpath );
-	 ((bgl_uv_file_t)res)->BgL_z52readreqz52 =
-	    GC_MALLOC( sizeof( uv_fs_t ) );
+/* 	 ((bgl_uv_file_t)res)->BgL_z52readreqz52 =                     */
+/* 	    GC_MALLOC( sizeof( uv_fs_t ) );                            */
       }
 
       uv_fs_req_cleanup( &req );
@@ -822,17 +822,18 @@ bgl_uv_fs_utime( char *path, double atime, double mtime, obj_t proc, bgl_uv_loop
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_uv_fs_readwrite_cb ...                                       */
+/*    bgl_uv_fs_rw_cb ...                                              */
 /*---------------------------------------------------------------------*/
 static void
-bgl_uv_fs_write_cb( uv_fs_t *req ) {
-   bgl_uv_file_t file = (bgl_uv_file_t )req->data;
-   obj_t p = file->BgL_z52wprocz52;
+bgl_uv_fs_rw_cb( uv_fs_t *req ) {
+   obj_t proc = (obj_t)req->data;
+   gc_unmark( proc );
+   
+   PROCEDURE_ENTRY( proc )( proc, BINT( req->result ), BEOA );
 
-   file->BgL_z52wprocz52 = BFALSE;
-   gc_unmark( (obj_t)file );
-
-   PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
+   uv_fs_req_cleanup( req );
+   
+   free( req );
 }
 
 /*---------------------------------------------------------------------*/
@@ -849,56 +850,30 @@ bgl_uv_fs_write( obj_t obj, obj_t buffer, long offset, long length, long positio
       C_SYSTEM_FAILURE( BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-write",
 			"offset+length out of buffer range",
 			BINT( STRING_LENGTH( buffer ) ) );
-   }
-
-   if( bgl_check_fs_cb( proc, 1, "uv_fs_write" ) ) {
-      uv_fs_t *req = file->BgL_z52readreqz52;
-      uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
-
-      if( file->BgL_z52wprocz52 != BFALSE ) {
-	 /* fd locked, this is an error */
-	 PROCEDURE_ENTRY( proc )( proc, BINT( -1 ), BEOA );
-      } else {
-	 file->BgL_z52wprocz52 = proc;
-      }
-
-      req->data = obj;
-      gc_mark( obj );
-
-      /* uv_buf_init inlined */
-      file->BgL_z52rbufz52 = &(STRING_REF( buffer, offset ));
-      file->BgL_z52rbuflenz52 = length;
-
-      uv_fs_write( loop, req, fd, buf, 1, position, &bgl_uv_fs_write_cb );
    } else {
-      uv_fs_t req;
       uv_buf_t iov;
-      int r;
 
       iov = uv_buf_init( &(STRING_REF( buffer, offset )), length );
+      
+      if( bgl_check_fs_cb( proc, 1, "uv_fs_write" ) ) {
+	 uv_fs_t *req = malloc( sizeof( uv_fs_t ) );
 
-      r = uv_fs_write( loop, &req, fd, &iov, 1, position, 0L );
-      uv_fs_req_cleanup( &req );
+	 req->data = proc; 
+	 gc_mark( proc );
 
-      return r;
+	 uv_fs_write( loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb );
+      } else {
+	 uv_fs_t req;
+	 int r;
+
+	 r = uv_fs_write( loop, &req, fd, &iov, 1, position, 0L );
+	 uv_fs_req_cleanup( &req );
+	 
+	 return r;
+      }
    }
 }
       
-/*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_uv_fs_read_cb ...                                            */
-/*---------------------------------------------------------------------*/
-static void
-bgl_uv_fs_read_cb( uv_fs_t *req ) {
-   bgl_uv_file_t file = (bgl_uv_file_t)req->data;
-   obj_t p = file->BgL_z52rprocz52;
-
-   file->BgL_z52rprocz52 = BFALSE;
-   gc_unmark( (obj_t)file );
-      
-   PROCEDURE_ENTRY( p )( p, BINT( req->result ), BEOA );
-}
-
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
 /*    bgl_uv_fs_read ...                                               */
@@ -914,39 +889,26 @@ bgl_uv_fs_read( obj_t obj, obj_t buffer, long offset, long length, long position
       C_SYSTEM_FAILURE( BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-read",
 			"offset+length out of buffer range",
 			BINT( len ) );
-   }
-
-   if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
-      uv_fs_t *req = file->BgL_z52readreqz52;
-      uv_buf_t *buf = (uv_buf_t *)(&(file->BgL_z52rbufz52));
-
-      if( file->BgL_z52rprocz52 != BFALSE ) {
-	 /* fd locked, this is an error */
-	 PROCEDURE_ENTRY( proc )( proc, BINT( -1 ), BEOA );
-      } else {
-	 file->BgL_z52rprocz52 = proc;
-      }
-
-      /* uv_buf_init inlined */
-      file->BgL_z52rbufz52 = (void *)&(STRING_REF( buffer, offset ));
-      file->BgL_z52rbuflenz52 = length;
-
-      req->data = obj;
-      gc_mark( obj );
-
-      uv_fs_read( loop, req, fd, buf, 1, position, &bgl_uv_fs_read_cb );
-      return 0;
    } else {
-      uv_fs_t req;
       uv_buf_t iov;
-      int r;
-
       iov = uv_buf_init( (void *)&(STRING_REF( buffer, offset )), length );
 
-      r = uv_fs_read( loop, &req, fd, &iov, 1, position, 0L );
-      uv_fs_req_cleanup( &req );
+      if( bgl_check_fs_cb( proc, 1, "uv_fs_read" ) ) {
+	 uv_fs_t *req = malloc( sizeof( uv_fs_t ) );
 
-      return r;
+	 req->data = proc;
+	 gc_mark( proc );
+
+	 uv_fs_read( loop, req, fd, &iov, 1, position, &bgl_uv_fs_rw_cb );
+      } else {
+	 uv_fs_t req;
+	 int r;
+
+	 r = uv_fs_read( loop, &req, fd, &iov, 1, position, 0L );
+	 uv_fs_req_cleanup( &req );
+
+	 return r;
+      }
    }
 }
 
@@ -1251,8 +1213,6 @@ bgl_uv_tcp_connectX( obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loo
 			"wrong callback", proc );
    } else {
       uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
-      ((bgl_uv_stream_t)obj)->BgL_z52writereqz52 =
-	 GC_MALLOC( sizeof( uv_write_t ) );
       uv_tcp_t *handle =
 	 (uv_tcp_t *)(((bgl_uv_handle_t)obj)->BgL_z42builtinz42);
       int r;
@@ -1476,6 +1436,8 @@ bgl_uv_write_cb( uv_write_t *req, int status ) {
 
    gc_unmark( p );
    PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
+
+   free( req );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1490,24 +1452,19 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
    } else {
       uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
       bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-      uv_write_t *req = (uv_write_t *)(stream->BgL_z52writereqz52);
+      uv_write_t *req = malloc( sizeof( uv_write_t ) );
       uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
-      uv_buf_t *buf = (uv_buf_t *)(&(stream->BgL_z52wbufz52));
+      uv_buf_t iov;
       int r;
 
       req->data = proc;
       
       gc_mark( proc );
-      
-      stream->BgL_z52wbufz52 = buffer + offset;
-      stream->BgL_z52wbuflenz52 = length;
-      
-      r = uv_write( req, handle, buf, 1, bgl_uv_write_cb );
 
-      if( r ) {
-	 fprintf( stderr, "ERR: %d %s\n", r, uv_strerror( r ) );
-      }
+      iov = uv_buf_init( buffer + offset, length );
       
+      r = uv_write( req, handle, &iov, 1, bgl_uv_write_cb );
+
       return r;
    }
 }
@@ -1530,8 +1487,6 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
 
    if( PROCEDUREP( p ) ) {
       if( nread > 0 ) {
-/* 	 fprintf( stderr, "bgl_uv_read_start, read_cb (%s) offset=%d read=%d\n", */
-/* 		  __FILE__, CINT( offset ), nread );                   */
 	 PROCEDURE_ENTRY( p )( p, allocobj, offset, BINT( nread ), BEOA );
       } else if( nread < 0 ) {
 	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( -1 ), BINT( -1 ), BEOA );
