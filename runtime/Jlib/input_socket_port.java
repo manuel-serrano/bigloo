@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Mon Sep  8 17:43:36 2014 (serrano)                */
+/*    Last change :  Fri Oct  3 18:12:52 2014 (serrano)                */
 /*    Copyright   :  2000-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
@@ -62,8 +62,9 @@ public class input_socket_port extends input_port {
       final int matchstart = this.matchstart;
 
       // if the buffer is not full, we fill it */
-      if (bufpose < bufsize)
+      if (bufpose < bufsize) {
 	 return rgc_size_fill_con_buffer( bufpose, bufsize-bufpose );
+      }
 
       if (0 < matchstart) {
 	 // we shift the buffer left and we fill the buffer */
@@ -97,7 +98,10 @@ public class input_socket_port extends input_port {
 
       // FIX Dustin DeWeese" <dustin.deweese gmail.com> Feb 2006.
       // final int nbread = in.read( buffer, bufpose-1, (a < size ? a : size) );
-      final int nbread = in.read( buffer, bufpose-1, size );
+      System.out.println( "bufpose=" + bufpose + " size=" + size + " len="
+			+ buffer.length );
+      final int nbread = in.read( buffer, bufpose, size );
+      System.out.println( "nread=" + nbread );
 
       if (nbread == -1)
 	 eof = true;

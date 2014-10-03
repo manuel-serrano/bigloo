@@ -6451,7 +6451,6 @@ public final class foreign
       } catch( Exception e ) {
 	 String msg = e.getMessage();
 
-	 System.err.println( "TO BE REMOVED (foreign.java)" );
 	 final stackwriter sw = new stackwriter( System.out, true );
 	 e.printStackTrace( sw );
 	 
