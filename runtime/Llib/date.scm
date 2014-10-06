@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Oct  1 14:24:16 2014 (serrano)                */
+;*    Last change :  Mon Oct  6 13:25:23 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -351,26 +351,7 @@
 ;*    date->string ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (date->string date)
-   (let ((tz (date-timezone date)))
-      (if (=fx tz 0)
-	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a"
-	     (day-aname (date-wday date))
-	     (month-aname (date-month date))
-	     (date-day date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date)
-	     (date-year date))
-	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a ~a~3,0d"
-	     (day-aname (date-wday date))
-	     (month-aname (date-month date))
-	     (date-day date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date)
-	     (date-year date)
-	     (if (<fx tz 0) "-" "+")
-	     (absfx (/fx tz 60))))))
+   (date->rfc2822-date date))
 
 ;*---------------------------------------------------------------------*/
 ;*    date->utc-string ...                                             */
@@ -496,29 +477,27 @@
 ;*    date->rfc2822-date ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (date->rfc2822-date date)
-   
-   (define (2digits num)
-      (if (<fx num 10)
-          (string #\0 (integer->char (+fx (char->integer #\0) num)))
-          (integer->string num)))
-   
-   (define (date/timezone date timezone)
-      (let* ((tz (/fx timezone 60))
-	     (h (/fx tz 60))
-	     (m (remainderfx tz 60)))
-	 (format "~a, ~a ~a ~a ~a:~a:~a ~a~a~a"
-	    (day-aname (date-wday date))
-	    (date-day date)
-	    (month-aname (date-month date))
-	    (date-year date)
-	    (2digits (date-hour date))
-	    (2digits (date-minute date))
-	    (2digits (date-second date))
-	    (if (<fx tz 0) "+" "-")
-	    (2digits (absfx h))
-	    (2digits m))))
-   
-   (date/timezone date (date-timezone date)))
+   (let ((tz (date-timezone date)))
+      (if (=fx tz 0)
+	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a"
+	     (day-aname (date-wday date))
+	     (month-aname (date-month date))
+	     (date-day date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date)
+	     (date-year date))
+	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a ~a~2,0d~2,0d"
+	     (day-aname (date-wday date))
+	     (month-aname (date-month date))
+	     (date-day date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date)
+	     (date-year date)
+	     (if (<fx tz 0) "-" "+")
+	     (absfx (/fx tz 3600))
+	     (absfx (remainder tz 3600))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parse-error ...                                                  */
