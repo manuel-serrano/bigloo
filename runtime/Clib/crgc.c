@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Sat Sep 13 10:01:19 2014 (serrano)                */
+/*    Last change :  Sat Oct  4 08:07:46 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -227,6 +227,8 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 
    if( INPUT_PORT( p ).eof ) {
       /* no need try to read anything new, use what we have */
+/*       fprintf( stderr, "rgc_blit_string.2 EOF l=%d avail=%d matchstart=%d matchstop=%d bufpos=%d\n", l, */
+/* 	       INPUT_PORT( p ).matchstart, INPUT_PORT( p ).matchstop, INPUT_PORT( p ).bufpos ); */
       if( l > avail ) l = avail;
    }
 
@@ -272,8 +274,6 @@ _loop:
       INPUT_PORT( p ).bufpos = 0;
       INPUT_PORT( p ).matchstart = 0;
       INPUT_PORT( p ).matchstop = 0;
-      INPUT_PORT( p ).lastchar = '\n';
-      
       INPUT_PORT( p ).lastchar = '\n';
 #if( defined( RGC_0 ) )
       RGC_BUFFER_SET( p, 0, '\0' );
@@ -462,9 +462,12 @@ BGL_RUNTIME_DEF bool_t
 rgc_buffer_eof_p( obj_t ip ) {
    long f = INPUT_PORT( ip ).forward;
    long p = INPUT_PORT( ip ).bufpos;
+   long e = INPUT_PORT( ip ).eof;
    long s = BGL_INPUT_PORT_BUFSIZ( ip );
 
-   return (f == s) && (f == p);
+/*    fprintf( stderr, "rgc_buffer_eof_p f=%d s=%d p=%d\n", f, s, p ); */
+/*    return (f == s) && (f == p);                                     */
+   return e && (f == p);
 }
 
 /*---------------------------------------------------------------------*/
