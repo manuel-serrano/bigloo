@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Mon Oct  6 13:25:23 2014 (serrano)                */
+;*    Last change :  Mon Oct  6 18:16:22 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -534,7 +534,7 @@
 		   :year (if (<fx year 100) (+fx year 2000) year)
 		   :day day
 		   :timezone zone
-		   :dst 0)))))
+		   :dst -1)))))
       ((+ digit)
        (let* ((day (the-fixnum))
 	      (month (read/rp month-grammar (the-port)))
@@ -549,7 +549,7 @@
 		   :year (if (<fx year 100) (+fx year 2000) year)
 		   :day day
 		   :timezone zone
-		   :dst 0)))))
+		   :dst -1)))))
       (else
        (parse-error "rfc2822-parse-date"
 	  "Illegal day of week"
@@ -666,7 +666,7 @@
      (MST . -7)
      (PDT . -7)
      (PST . -8)
-     (CEST . +1)
+     (CEST . +2)
      (UT . 0)
      (GMT . 0)
      (BST . +1)))
@@ -681,13 +681,13 @@
       ((: (in "+-") (= 4 digit))
        (let ((h (+fx (*fx 10 (the-digit 1)) (the-digit 2)))
 	     (m (+fx (*fx 10 (the-digit 3)) (the-digit 4))))
-	  (if (=fx (the-byte-ref 0) (char->integer #\+))
+	  (if (=fx (the-byte-ref 0) (char->integer #\-))
 	      (negfx (*fx 60 (+fx (*fx h 60) m)))
 	      (*fx 60 (+fx (*fx h 60) m)))))
       ((: (in "+-") (= 3 digit))
        (let ((h (the-digit 1))
 	     (m (+fx (*fx 10 (the-digit 2)) (the-digit 3))))
-	  (if (=fx (the-byte-ref 0) (char->integer #\+))
+	  (if (=fx (the-byte-ref 0) (char->integer #\-))
 	      (negfx (*fx 60 (+fx (*fx h 60) m)))
 	      (*fx 60 (+fx (*fx h 60) m)))))
       ((: "--" (= 3 digit))

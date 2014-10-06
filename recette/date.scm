@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  5 10:03:10 2003                          */
-;*    Last change :  Mon Sep 22 16:06:17 2014 (serrano)                */
+;*    Last change :  Mon Oct  6 18:26:26 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test date features                                               */
@@ -242,7 +242,7 @@
    (test "rfc2822-date->date.1"
 	 (rfc2822-date->date "Wed, 22 Oct 2008 17:04:22 +0200")
 	 (make-date :year 2008 :month 10 :day 22
-	    :hour 17 :min 04 :sec 22 :timezone -7200 :dst 0))
+	    :hour 17 :min 04 :sec 22 :timezone 7200))
    (test "nano.1"
       (let* ((nsec (current-nanoseconds))
 	     (usec (/llong nsec #l1000))
