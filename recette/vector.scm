@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Fri Sep 26 09:26:55 2014 (serrano)                */
+;*    Last change :  Tue Oct  7 13:39:50 2014 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -93,4 +93,8 @@
       '#(5 7 9))
    (let ((v (vector 1 2 3)))
       (vector-map! (lambda (x) (+ 1 x)) v)
-      (test "vector-map!" v '#(2 3 4))))
+      (test "vector-map!" v '#(2 3 4)))
+   (let* ((v (vector 1 2 3))
+	  (v2 (vector 0)))
+      (vector-copy! v2 0 v 1 2)
+      (test "vector-copy!" v2 '#(2))))
