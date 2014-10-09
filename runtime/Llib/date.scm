@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Mon Oct  6 18:16:22 2014 (serrano)                */
+;*    Last change :  Thu Oct  9 17:53:45 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -359,7 +359,7 @@
 (define (date->utc-string date)
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
+	  (format "~a ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
 	     (day-aname (date-wday date))
 	     (date-day date)
 	     (month-aname (date-month date))
@@ -479,22 +479,22 @@
 (define (date->rfc2822-date date)
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a"
+	  (format "~a, ~a ~a ~2,0d:~2,0d:~2,0d"
 	     (day-aname (date-wday date))
-	     (month-aname (date-month date))
 	     (date-day date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date)
-	     (date-year date))
-	  (format "~a ~a ~a ~2,0d:~2,0d:~2,0d ~a ~a~2,0d~2,0d"
-	     (day-aname (date-wday date))
 	     (month-aname (date-month date))
-	     (date-day date)
-	     (date-hour date)
-	     (date-minute date)
-	     (date-second date)
 	     (date-year date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date))
+	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d ~a~2,0d~2,0d"
+	     (day-aname (date-wday date))
+	     (date-day date)
+	     (month-aname (date-month date))
+	     (date-year date)
+	     (date-hour date)
+	     (date-minute date)
+	     (date-second date)
 	     (if (<fx tz 0) "-" "+")
 	     (absfx (/fx tz 3600))
 	     (absfx (remainder tz 3600))))))
