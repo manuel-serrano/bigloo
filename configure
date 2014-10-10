@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul 28 15:30:50 2014 (serrano)                */
+#*    Last change :  Fri Oct 10 07:53:32 2014 (serrano)                */
 #*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1182,6 +1182,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   crypto_is_enabled=no
   openpgp_is_enabled=no
   gstreamer_is_enabled=no
+  libuv_is_enabled=no
   
   for a in $apis; do
     case $a in
@@ -1198,6 +1199,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       crypto) crypto_is_enabled="yes";;
       openpgp) openpgp_is_enabled="yes";;
       gstreamer) gstreamer_is_enabled="yes";;
+      libuv) libuv_is_enabled="yes";;
     esac
   done
   
@@ -1970,7 +1972,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    LIBUV configuration                                              */
 #*---------------------------------------------------------------------*/
-if [ "$customlibuv " = "yes " ]; then
+if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
   echo ""
 
   echo "+ Installing custom libuv ($libuvsrc) source code."
@@ -2214,7 +2216,7 @@ fi
 #*    libuv                                                            */
 #*---------------------------------------------------------------------*/
 # find out the C library for libuv
-if [ "$libuv " = " " ]; then
+if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
    if [ "$customlibuv " = "yes " ]; then
      libuvlibs="-luv"
      libuv="yes"
@@ -3650,7 +3652,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # LIBUV
   echo "LIBUV=$libuv" >> $makefile_cfg
-  if [ "$libuv " != "no " ]; then
+  if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
     echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
     echo "LIBUV_LD_LIBRARY_PATH=$buildir/libuv/libuv-$libuvversion/.libs" >> $makefile_cfg
@@ -3680,6 +3682,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
        fi
     done
     apis=$napis;
+    echo "LIBUVCUSTOM=no" >> $makefile_cfg
     echo "LIBUVLIBS=" >> $makefile_cfg
     echo "LIBUVCFLAGS=" >> $makefile_cfg
   fi

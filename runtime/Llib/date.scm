@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Thu Oct  9 17:53:45 2014 (serrano)                */
+;*    Last change :  Thu Oct  9 18:45:45 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -359,7 +359,7 @@
 (define (date->utc-string date)
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
+	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
 	     (day-aname (date-wday date))
 	     (date-day date)
 	     (month-aname (date-month date))
