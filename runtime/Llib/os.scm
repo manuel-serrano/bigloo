@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Mon Sep 29 08:12:50 2014 (serrano)                */
+;*    Last change :  Sat Oct 11 08:20:06 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -87,6 +87,7 @@
 	    ($setgid::obj (::int) "bgl_setgid")
 	    ($getpwnam::obj (::string) "bgl_getpwnam")
 	    ($getpwuid::obj (::int) "bgl_getpwuid")
+	    (macro $umask::long (::long) "umask")
 	    (macro $getpid::int () "getpid"))
 
    (java    (class foreign
@@ -129,7 +130,9 @@
 	       (method static %dunload::int (::string)
 		  "bgl_dunload")
 	       (method static %dload-error::string ()
-		  "bgl_dload_error"))
+		  "bgl_dload_error")
+	       (method static $umask::int (::int)
+		  "bgl_umask"))
       
       (class runtime
 	 (field static default-executable-name::string
@@ -214,7 +217,8 @@
 	    (setgid ::int)
 	    (getpwnam ::bstring)
 	    (getpwuid ::int)
-	    (inline getpid::int)))
+	    (inline getpid::int)
+	    (umask::int #!optional mask)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Variables setup ...                                              */
@@ -1074,3 +1078,13 @@
    (cond-expand
       (bigloo-c ($getpid))
       (else 0)))
+
+;*---------------------------------------------------------------------*/
+;*    umask ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (umask #!optional mask)
+   (if (integer? mask)
+       ($umask mask)
+       (let ((old ($umask 0)))
+	  ($umask old)
+	  old)))

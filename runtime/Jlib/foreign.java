@@ -5645,6 +5645,10 @@ public final class foreign
    public static long getpid() {
       return 0;
    }
+
+   public static int umask( int m ) {
+      return 0;
+   }
    
    public static byte[] c_date()
       {

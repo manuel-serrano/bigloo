@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Sat Oct  4 08:07:46 2014 (serrano)                */
+/*    Last change :  Sat Oct 11 10:33:45 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -159,7 +159,7 @@ rgc_fill_buffer( obj_t port ) {
       C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "read", "input-port closed", port );
    } else {
       long bufpos = INPUT_PORT( port ).bufpos;
-      
+
       /* the read reached end-of-buffer, update the forward ptr  */
       INPUT_PORT( port ).forward = bufpos;
 
@@ -460,14 +460,14 @@ rgc_buffer_bof_p( obj_t ip ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 rgc_buffer_eof_p( obj_t ip ) {
-   long f = INPUT_PORT( ip ).forward;
+   long m = INPUT_PORT( ip ).matchstop;
    long p = INPUT_PORT( ip ).bufpos;
    long e = INPUT_PORT( ip ).eof;
    long s = BGL_INPUT_PORT_BUFSIZ( ip );
 
 /*    fprintf( stderr, "rgc_buffer_eof_p f=%d s=%d p=%d\n", f, s, p ); */
 /*    return (f == s) && (f == p);                                     */
-   return e && (f == p);
+   return e && (m == p);
 }
 
 /*---------------------------------------------------------------------*/
@@ -533,10 +533,10 @@ bgl_rgc_charready( obj_t port ) {
 	 return 0;
 	 
       case (long)KINDOF_STRING:
-	 return ((INPUT_PORT( port ).forward) < INPUT_PORT( port ).bufpos);
+	 return ((INPUT_PORT( port ).matchstop) < INPUT_PORT( port ).bufpos);
 	 
       case (long)KINDOF_FILE:
-	 return ((INPUT_PORT( port ).forward) < INPUT_PORT( port ).bufpos)
+	 return ((INPUT_PORT( port ).matchstop) < INPUT_PORT( port ).bufpos)
 	    || (!feof( PORT_FILE( port ) )
 		&& !INPUT_PORT( port ).eof);
 	 
@@ -545,7 +545,7 @@ bgl_rgc_charready( obj_t port ) {
       case (long)KINDOF_CONSOLE:
       case (long)KINDOF_SOCKET:
       case (long)KINDOF_DATAGRAM:
-	 return ((INPUT_PORT( port ).forward) < INPUT_PORT( port ).bufpos)
+	 return ((INPUT_PORT( port ).matchstop) < INPUT_PORT( port ).bufpos)
 	    || file_charready( PORT_FILE( port ) );
 	 
       case (long)KINDOF_PROCEDURE:

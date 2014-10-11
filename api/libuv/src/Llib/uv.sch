@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Thu Oct  2 12:26:18 2014 (serrano)                */
+;*    Last change :  Fri Oct 10 19:22:52 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -151,7 +151,7 @@
 	 "bgl_uv_fs_fdatasync")
       ($uv-fs-futime::int (::UvFile ::double ::double ::obj ::UvLoop)
 	 "bgl_uv_fs_futime")
-      ($uv-fs-utime::int (::bstring ::double ::double ::obj ::UvLoop)
+      ($uv-fs-utime::int (::string ::double ::double ::obj ::UvLoop)
 	 "bgl_uv_fs_utime")
       ($uv-fs-write::int (::UvFile ::bstring ::long ::long ::long ::obj ::UvLoop)
 	 "bgl_uv_fs_write")

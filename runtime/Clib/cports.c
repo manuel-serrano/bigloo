@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Sep 22 16:39:32 2014 (serrano)                */
+/*    Last change :  Sat Oct 11 09:50:41 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2294,7 +2294,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
       size_t m;
 
 #ifdef DEBUG_SENDCHARS
-      fprintf( stderr, "copyfile op=%p ip=%p sz=%d\n", op, ip, sz );
+      fprintf( stderr, "copyfile.1 p=%p/%p sz=%d\n", ip, op, sz );
 #endif
 
    loopr:
@@ -2310,7 +2310,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
       }
 
 #ifdef DEBUG_SENDCHARS
-      fprintf( stderr, "copyfile_with_timeout rsz=%d\n", rsz );
+      fprintf( stderr, "copyfile.2.1 p=%p/%p rsz=%d\n", ip, op, rsz );
 #endif
 
       bgl_output_flush( op, 0, 0 );
@@ -2327,7 +2327,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
 #endif
 
 #ifdef DEBUG_SENDCHARS
-      fprintf( stderr, "copyfile_with_timeout op=%p ip=%p sz=%d\n", op, ip, sz );
+      fprintf( stderr, "copyfile.3 p=%p/%p sz=%d\n", ip, op, sz );
 #endif
       
    loopr2:
@@ -2349,7 +2349,7 @@ copyfile( obj_t op, void *ip, long sz, long (*sysread)() ) {
       }
 
 #ifdef DEBUG_SENDCHARS
-      fprintf( stderr, "copyfile_with_timeout rsz=%d\n", rsz );
+      fprintf( stderr, "copyfile.4 p=%p/%p rsz=%d\n", ip, op, rsz );
 #endif
       
       bgl_output_flush( op, 0, 0 );
@@ -2436,11 +2436,13 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 
    dsz = RGC_BUFFER_AVAILABLE( ip );
 #ifdef DEBUG_SENDCHARS   
-   fprintf( stderr, "bgl_sendchars.1: sz=%d offset=%d dsz=%d\n", sz, offset, dsz );
+   fprintf( stderr, "bgl_sendchars.1: p=%p/%p sz=%d offset=%d dsz=%d\n",
+	    ip, op, sz, offset, dsz );
 #endif	 
    bgl_output_flush( op, 0, 0 );
 #ifdef DEBUG_SENDCHARS   
-   fprintf( stderr, "bgl_sendchars.1b: sz=%d offset=%d dsz=%d\n", sz, offset, dsz );
+   fprintf( stderr, "bgl_sendchars.1b: p=%p/%p sz=%d offset=%d dsz=%d\n",
+	    ip, op, sz, offset, dsz );
 #endif	 
 
    if( dsz > 0 ) {
@@ -2451,7 +2453,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       w = outp.syswrite( op, &STRING_REF( inp.buf, inp.matchstop ), ws );
 	 
 #ifdef DEBUG_SENDCHARS   
-      fprintf( stderr, "bgl_sendchars.3: sz=%d offset=%d w=%d ws=%d\n", sz, offset, w, ws );
+      fprintf( stderr, "bgl_sendchars.3: p=%p/%p sz=%d offset=%d w=%d ws=%d\n",
+	       ip, op, sz, offset, w, ws );
 #endif	 
       inp.matchstop += (long)w;
       inp.forward = inp.matchstop;
@@ -2463,7 +2466,8 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       if( sz > 0 ) {
 	 if( dsz >= sz ) {
 #ifdef DEBUG_SENDCHARS   
-	    fprintf( stderr, "bgl_sendchars.4: RETURN ws=%d\n", ws );
+	    fprintf( stderr, "bgl_sendchars.4: p=%p/%p RETURN ws=%d\n",
+		     ip, op, ws );
 #endif	       
 	    BGL_MUTEX_UNLOCK( OUTPUT_PORT( op ).mutex );
 	    return BINT( ws );
@@ -2494,7 +2498,15 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
       || 0 ) {
 #endif /* BGL_HAVE_SENDFILE */
       if( sz != 0 ) {
+#ifdef DEBUG_SENDCHARS   
+	 fprintf( stderr, "bgl_sendchars.5: p=%p/%p >>> copy sz=%d\n",
+		  ip, op, sz );
+#endif       
 	 n = copyfile( op, ip, sz, INPUT_PORT( ip ).sysread );
+#ifdef DEBUG_SENDCHARS   
+	 fprintf( stderr, "bgl_sendchars.5: p=%p/%p <<< copy sz=%d -> n=%d\n",
+		  ip, op, sz, n );
+#endif       
       } else {
 	 n = 0;
       }
@@ -2525,13 +2537,13 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 	 si.off = 0L;
 
 #ifdef DEBUG_SENDCHARS   
-	 fprintf( stderr, "bgl_sendchars.5: sz=%d offset=%d\n", sz, offset );
+	 fprintf( stderr, "bgl_sendchars.5: p=%p/%p sz=%d offset=%d\n", ip, op, sz, offset );
 #endif	    
 	 bgl_gc_do_blocking( &gc_sendfile, &si );
 
 	 n = si.res;
 #ifdef DEBUG_SENDCHARS   
-	 fprintf( stderr, "bgl_sendchars.6: n=%d\n", n );
+	 fprintf( stderr, "bgl_sendchars.6: p=%p/%p n=%d\n", ip, op, n );
 #endif	    
 #  else
       -> error BGL_GC_HAVE_BLOCKING or BGL_GC_HAVE_DO_BLOCKING required
@@ -2554,6 +2566,9 @@ bgl_sendchars( obj_t ip, obj_t op, long sz, long offset ) {
 
    BGL_MUTEX_UNLOCK( OUTPUT_PORT( op ).mutex );
    
+#ifdef DEBUG_SENDCHARS   
+   fprintf( stderr, "bgl_sendchars.7: p=%p/%p RETURN %d\n", ip, op, n + ws );
+#endif	    
    return BINT( n + ws );
 
 fail:
