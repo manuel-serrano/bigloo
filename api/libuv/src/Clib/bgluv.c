@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Oct 10 19:23:14 2014 (serrano)                */
+/*    Last change :  Sat Oct 11 16:37:33 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -23,6 +23,7 @@ typedef BgL_uvhandlez00_bglt bgl_uv_handle_t;
 typedef BgL_uvstreamz00_bglt bgl_uv_stream_t;
 typedef BgL_uvwatcherz00_bglt bgl_uv_watcher_t;
 typedef BgL_uvasyncz00_bglt bgl_uv_async_t;
+typedef BgL_uvfseventz00_bglt bgl_uv_fs_event_t;
 
 /*---------------------------------------------------------------------*/
 /*    bgl_uv_mutex                                                     */
@@ -94,6 +95,34 @@ bgl_uv_timer_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
    new->close_cb = &bgl_uv_close_cb;
 
    uv_timer_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   return new;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_fs_event_cb ...                                           */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_fs_event_cb( uv_handle_t *handle, char *path, int events, int status ) {
+   bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
+   obj_t p = o->BgL_cbz00;
+
+   if( PROCEDUREP( p ) ) {
+      PROCEDURE_ENTRY( p )( p, o, string_to_bstring( path ), BINT( events ), BINT( status ), BEOA );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_fs_event_t *                                                  */
+/*    bgl_uv_fs_event_new ...                                          */
+/*---------------------------------------------------------------------*/
+uv_fs_event_t *
+bgl_uv_fs_event_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
+   uv_fs_event_t *new = (uv_fs_event_t *)GC_MALLOC( sizeof( uv_fs_event_t ) );
+   new->data = o;
+   new->close_cb = &bgl_uv_close_cb;
+
+   uv_fs_event_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
    return new;
 }
 

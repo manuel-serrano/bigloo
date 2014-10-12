@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Oct  1 06:54:32 2014 (serrano)                */
+;*    Last change :  Sun Oct 12 07:42:07 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -170,6 +170,7 @@
 	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
+	    (utf8-string-index->string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-substring::bstring string::bstring ::long #!optional (end::long (utf8-string-length string)))
 	    (utf8->8bits::bstring ::bstring ::obj)
@@ -999,6 +1000,23 @@
 		(if (=fx i 0)
 		    (substring str r (+fx r s))
 		    (loop (+fx r s) (-fx i 1))))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-index->string-index ...                              */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-index->string-index str i)
+   (if (<fx i 0)
+       -1
+       (let ((len (string-length str)))
+	  (let loop ((r 0) (i i))
+	     (cond
+		((=fx i 0)
+		 r)
+		((<fx r len)
+		 (let ((c (string-ref str r)))
+		    (loop (+fx r (utf8-char-size c)) (-fx i 1))))
+		(else
+		 -1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-substring ...                                               */

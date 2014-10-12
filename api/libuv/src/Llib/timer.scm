@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Mon Jul 28 13:46:18 2014 (serrano)                */
+;*    Last change :  Sat Oct 11 16:00:08 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV timers                                                     */
@@ -33,7 +33,7 @@
 ;*    uv-timer-start ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (uv-timer-start o::UvTimer t::uint64 r::uint64)
-   (with-access::UvTimer o ($builtin loop %proc)
+   (with-access::UvTimer o ($builtin loop)
       (with-access::UvLoop loop (%mutex %gcmarks)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC

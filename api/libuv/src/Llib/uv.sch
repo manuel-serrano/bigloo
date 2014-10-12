@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri Oct 10 19:22:52 2014 (serrano)                */
+;*    Last change :  Sat Oct 11 16:21:48 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -65,6 +65,23 @@
       
       (macro $UV_RUN_DEFAULT::int "UV_RUN_DEFAULT")
 
+      ;; fs-event
+      (type $uv_fs_event_t void* "uv_fs_event_t *")
+      (type $uv_fs_event_cb void* "uv_fs_event_cb")
+      (macro $uv-fs-event-t::$uv_fs_event_t (::$uv_handle_t) "(uv_fs_event_t *)")
+      
+      (macro $uv_fs_event_nil::$uv_fs_event_t "0L")
+      
+      ($bgl_uv_fs_event_new::$uv_fs_event_t (::UvFsEvent ::UvLoop) "bgl_uv_fs_event_new")
+      (macro $uv_fs_event_start::void (::$uv_fs_event_t ::$uv_fs_event_cb ::string ::int) "uv_fs_event_start")
+      (macro $uv_fs_event_stop::void (::$uv_fs_event_t) "uv_fs_event_stop")
+
+      ($bgl_uv_fs_event_cb::$uv_fs_event_cb (::$uv_fs_event_t ::string ::int ::int) "bgl_uv_fs_event_cb")
+      (macro $BGL_UV_FS_EVENT_CB::$uv_fs_event_cb "(uv_fs_event_cb)&bgl_uv_fs_event_cb")
+
+      (macro $UV_RENAME::int "UV_RENAME")
+      (macro $UV_CHANGE::int "UV_CHANGE")
+      
       ;; timer
       (type $uv_timer_t void* "uv_timer_t *")
       (type $uv_timer_cb void* "uv_timer_cb")

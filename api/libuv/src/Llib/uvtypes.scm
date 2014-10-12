@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Thu Oct  2 15:41:40 2014 (serrano)                */
+;*    Last change :  Sat Oct 11 16:26:25 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -49,6 +49,8 @@
 	   (class UvFile
 	      (fd::int read-only)
 	      (path::bstring read-only))
+
+	   (class UvFsEvent::UvWatcher)
 	   
 	   (generic %uv-init ::UvHandle)
 
