@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Sat Oct 11 16:00:08 2014 (serrano)                */
+;*    Last change :  Fri Oct 17 08:00:20 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV timers                                                     */
@@ -16,7 +16,8 @@
 
    (include "uv.sch")
 
-   (import __libuv_types)
+   (import __libuv_types
+	   __libuv_handle)
    
    (export (uv-timer-start ::UvTimer ::uint64 ::uint64)
 	   (uv-timer-stop ::UvTimer)))
@@ -33,7 +34,8 @@
 ;*    uv-timer-start ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (uv-timer-start o::UvTimer t::uint64 r::uint64)
-   (with-access::UvTimer o ($builtin loop)
+   (with-access::UvTimer o ($builtin loop repeat ref)
+      (set! repeat r)
       (with-access::UvLoop loop (%mutex %gcmarks)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
@@ -46,6 +48,28 @@
 ;*    uv-timer-stop ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (uv-timer-stop o::UvTimer)
-   (with-access::UvTimer o ($builtin)
+   (with-access::UvTimer o ($builtin count)
       ($uv_timer_stop ($uv-timer-t $builtin))))
       
+;*---------------------------------------------------------------------*/
+;*    uv-ref ::UvTimer ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (uv-ref o::UvTimer)
+   (with-access::UvTimer o (ref)
+      (set! ref #t)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-unref ::UvTimer ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (uv-unref o::UvTimer)
+   (with-access::UvTimer o (ref)
+      (set! ref #f)
+      (call-next-method)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-has-ref? ::UvTimer ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (uv-has-ref? o::UvTimer)
+   (with-access::UvTimer o (ref)
+      ref))

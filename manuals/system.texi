@@ -189,6 +189,10 @@ failure, this procedure raises an error.
 Get the current process identifier.
 @end deffn
 
+@deffn {bigloo procedure} getppid
+Get the parent process identifier.
+@end deffn
+
 @deffn {bigloo procedure} getpwnam name
 @deffnx {bigloo procedure} getpwuid uid
 These two procedures returns information about a user. The procedure 

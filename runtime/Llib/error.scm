@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sat Jul  5 06:55:16 2014 (serrano)                */
+;*    Last change :  Wed Oct 22 16:35:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -43,6 +43,9 @@
 	    (macro sigbus::int "SIGBUS")
 	    (macro sigsegv::int "SIGSEGV")
 	    (macro sigpipe::int "SIGPIPE")
+	    (macro sigterm::int "SIGTERM")
+	    (macro sigint::int "SIGINT")
+	    (macro sigkill::int "SIGKILL")
 	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
@@ -108,6 +111,9 @@
 	       (field static sigbus::int "SIGBUS")
 	       (field static sigsegv::int "SIGSEGV")
 	       (field static sigpipe::int "SIGPIPE")
+	       (field static sigterm::int "SIGTERM")
+	       (field static sigint::int "SIGINT")
+	       (field static sigkill::int "SIGKILL")
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")

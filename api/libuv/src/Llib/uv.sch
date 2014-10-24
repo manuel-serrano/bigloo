@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sat Oct 11 16:21:48 2014 (serrano)                */
+;*    Last change :  Thu Oct 23 10:26:09 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -19,10 +19,12 @@
 
    (extern
       (include "uv.h")
+      (include "buv.h")
 
       ;; misc
       (macro $void*_nil::void* "0L")
       (macro $string-nil::string "0L")
+      (macro $string-nilp::bool (::string) "((char *)0L) ==" )
       
       (type double* void* "double *")
       (macro &double::double* (::double) "&")
@@ -43,6 +45,7 @@
       
       (macro $uv-handle-ref::void (::$uv_handle_t) "uv_ref")
       (macro $uv-handle-unref::void (::$uv_handle_t) "uv_unref")
+      (macro $uv-handle-has-ref?::bool (::$uv_handle_t) "uv_has_ref")
       (macro $uv-handle-close::void (::$uv_handle_t ::$uv_close_cb) "uv_close")
       (macro $uv-handle-active?::bool (::$uv_handle_t) "uv_is_active")
 
@@ -59,12 +62,26 @@
       (macro $uv_loop_new::$uv_loop_t () "uv_loop_new")
       (macro $uv_default_loop::$uv_loop_t () "uv_default_loop")
       
-      (macro $uv-run::void (::$uv_loop_t ::int) "uv_run")
+      (macro $uv-run::int (::$uv_loop_t ::int) "uv_run")
       (macro $uv-stop::void (::$uv_loop_t) "uv_stop")
       (macro $uv-loop-alive?::bool (::$uv_handle_t) "uv_loop_alive")
+      (macro $uv-update-time::void (::$uv_handle_t) "uv_update_time")
+      (macro $uv-now::uint64 (::$uv_handle_t) "uv_now")
       
       (macro $UV_RUN_DEFAULT::int "UV_RUN_DEFAULT")
 
+      ;; queue
+      (type $uv_work_t void* "uv_work_t *")
+      
+      (macro $uv_work_nil::$uv_work_t "0L")
+      
+      ($bgl_uv_queue_work::void (::UvWork ::UvLoop) "bgl_uv_queue_work")
+      (macro $uv_cancel::void (::$uv_req_t) "uv_cancel")
+
+      ;; request
+      (type $uv_req_t void* "uv_req_t *")
+      (macro $uv-req-t::$uv_req_t (::$uv_work_t) "(uv_req_t *)")
+				   
       ;; fs-event
       (type $uv_fs_event_t void* "uv_fs_event_t *")
       (type $uv_fs_event_cb void* "uv_fs_event_cb")
@@ -109,6 +126,20 @@
 
       ($bgl_uv_idle_cb::$uv_idle_cb (::$uv_idle_t ::int) "bgl_uv_handle_cb")
       (macro $BGL_UV_IDLE_CB::$uv_idle_cb "(uv_idle_cb)&bgl_uv_handle_cb")
+
+      ;; check
+      (type $uv_check_t void* "uv_check_t *")
+      (type $uv_check_cb void* "uv_check_cb")
+      (macro $uv-check-t::$uv_check_t (::$uv_handle_t) "(uv_check_t *)")
+      
+      (macro $uv_check_nil::$uv_check_t "0L")
+      
+      ($bgl_uv_check_new::$uv_check_t (::UvCheck ::UvLoop) "bgl_uv_check_new")
+      (macro $uv_check_start::void (::$uv_check_t ::$uv_check_cb) "uv_check_start")
+      (macro $uv_check_stop::void (::$uv_check_t) "uv_check_stop")
+
+      ($bgl_uv_check_cb::$uv_check_cb (::$uv_check_t ::int) "bgl_uv_handle_cb")
+      (macro $BGL_UV_CHECK_CB::$uv_check_cb "(uv_check_cb)&bgl_uv_handle_cb")
 
       ;; async
       (type $uv_async_t void* "uv_async_t *")
@@ -184,6 +215,22 @@
       (macro $uv-handle-file::int "UV_FILE")
       (macro $uv-handle-unknown::int "UV_UNKNOWN_HANDLE")
 
+      ;; pipe
+      (type $uv_pipe_t void* "uv_pipe_t *")
+      (macro $uv-pipe-t::$uv_pipe_t (::$uv_handle_t) "(uv_pipe_t *)")
+      
+      (macro $uv-pipe-init::int (::$uv_loop_t ::$uv_pipe_t ::int)
+	 "uv_pipe_init")
+      ($uv-pipe-create::$uv_pipe_t (::$uv_loop_t ::obj ::bool)
+	 "bgl_uv_pipe_create")
+      (macro $uv-pipe-open::int (::$uv_loop_t ::int)
+	     "uv_pipe_open")
+      (macro $uv-pipe-bind::int (::$uv_pipe_t ::string)
+	     "uv_pipe_bind")
+      ($uv-pipe-connect::void (::UvPipe ::string ::obj ::UvLoop)
+	 "bgl_uv_pipe_connect")
+      (macro $uv-pipe-pending-instances::int (::$uv_pipe_t ::int)
+	     "uv_pipe_pending_instances")
       ;; os
       (macro $uv-loadavg::void (::double*) "uv_loadavg")
       (macro $uv-get-free-memory::double () "uv_get_free_memory")
@@ -216,6 +263,12 @@
 	 "bgl_uv_listen")
       (macro $uv-accept::int (::$uv_stream_t ::$uv_stream_t)
 	 "uv_accept")
+      (macro $uv-is-closing::int (::$uv_stream_t)
+	     "uv_is_closing")
+      (macro $uv-is-writable::int (::$uv_stream_t)
+	     "uv_is_writable")
+      (macro $uv-is-readable::int (::$uv_stream_t)
+	     "uv_is_readable")
       
       ;; net
       (type $uv_tcp_t void* "uv_tcp_t *")
@@ -242,7 +295,90 @@
 	 "bgl_uv_tcp_getsockname")
       ($uv-tcp-getpeername::obj (::$uv_tcp_t)
 	 "bgl_uv_tcp_getpeername")
+
+      ;; process
+      (type $uv_process_t void* "uv_process_t *")
+      (type $uv_process_options_t void* "uv_process_options_t *")
+      (type $uv_stdio_container_t void* "uv_stdio_container_t *")
       
+      (macro $uv-process-t::$uv_process_t (::$uv_handle_t) "(uv_process_t *)")
+
+      ($uv-process-new::$uv_process_t (::UvProcess) "bgl_uv_process_new")
+      (macro $uv-process-spawn::int (::UvLoop ::UvProcess ::UvProcessOptions ::obj)
+	 "bgl_uv_spawn")
+      (macro $uv-process-kill::int (::$uv_process_t ::int)
+	 "uv_process_kill")
+      (macro $uv-kill::int (::int ::int)
+	 "uv_kill")
+
+      (infix macro $uv-process-pid::int (::$uv_process_t) "->pid")
+      
+      (infix macro $uv-process-options-new::$uv_process_options_t ()
+	 "(uv_process_options_t *)GC_MALLOC( sizeof( uv_process_options_t ) )")
+
+      (macro $uv-process-options-file::string (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_FILE_GET" )
+      (macro $uv-process-options-file-set!::void (::$uv_process_options_t ::string)
+	     "BGL_UV_PROCESS_OPTIONS_FILE_SET")
+      ($uv-process-options-args::vector (::$uv_process_options_t)
+	     "bgl_uv_process_options_args_get" )
+      ($uv-process-options-args-set!::void (::$uv_process_options_t ::vector)
+	     "bgl_uv_process_options_args_set")
+      ($uv-process-options-env::vector (::$uv_process_options_t)
+	     "bgl_uv_process_options_env_get" )
+      ($uv-process-options-env-set!::void (::$uv_process_options_t ::vector)
+	     "bgl_uv_process_options_env_set")
+      (macro $uv-process-options-cwd::string (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_CWD_GET" )
+      (macro $uv-process-options-cwd-set!::void (::$uv_process_options_t ::string)
+	     "BGL_UV_PROCESS_OPTIONS_CWD_SET")
+      (macro $uv-process-options-flags::int (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_FLAGS_GET" )
+      (macro $uv-process-options-flags-set!::void (::$uv_process_options_t ::int)
+	     "BGL_UV_PROCESS_OPTIONS_FLAGS_SET")
+      (macro $uv-process-options-stdio-count::int (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_COUNT_GET" )
+      (macro $uv-process-options-stdio-count-set!::void (::$uv_process_options_t ::int)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_COUNT_SET")
+      (macro $uv-process-options-stdio::$uv_stdio_container_t (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_GET" )
+      (macro $uv-process-options-stdio-set!::void (::$uv_process_options_t ::$uv_stdio_container_t)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_SET")
+      (macro $uv-process-options-uid::int (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_UID_GET" )
+      (macro $uv-process-options-uid-set!::void (::$uv_process_options_t ::int)
+	     "BGL_UV_PROCESS_OPTIONS_UID_SET")
+      (macro $uv-process-options-gid::int (::$uv_process_options_t)
+	     "BGL_UV_PROCESS_OPTIONS_GID_GET" )
+      (macro $uv-process-options-gid-set!::void (::$uv_process_options_t ::int)
+	     "BGL_UV_PROCESS_OPTIONS_GID_SET")
+
+      (macro $uv-process-options-stdio-container-set!::void
+	 (::$uv_process_options_t ::int)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_CONTAINER_SET")
+      (macro $uv-process-options-stdio-container-stream-set!::void
+	 (::$uv_process_options_t ::int ::$uv_stream_t)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_CONTAINER_STREAM_SET")
+      (macro $uv-process-options-stdio-container-fd-set!::void
+	 (::$uv_process_options_t ::int ::int)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_CONTAINER_FD_SET")
+      (macro $uv-process-options-stdio-container-flags-set!::void
+	 (::$uv_process_options_t ::int ::int)
+	     "BGL_UV_PROCESS_OPTIONS_STDIO_CONTAINER_FLAGS_SET")
+
+      (macro $UV_PROCESS_SETUID::int "UV_PROCESS_SETUID")
+      (macro $UV_PROCESS_SETGID::int "UV_PROCESS_SETGID")
+      (macro $UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS::int "UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS")
+      (macro $UV_PROCESS_DETACHED::int "UV_PROCESS_DETACHED")
+      (macro $UV_PROCESS_WINDOWS_HIDE::int "UV_PROCESS_WINDOWS_HIDE")
+
+      (macro $UV_IGNORE::int "UV_IGNORE")
+      (macro $UV_INHERIT-FD::int "UV_INHERIT_FD")
+      (macro $UV_INHERIT-STREAM::int "UV_INHERIT_STREAM")
+      (macro $UV_CREATE_PIPE::int "UV_CREATE_PIPE")
+      (macro $UV_READABLE_PIPE::int "UV_READABLE_PIPE")
+      (macro $UV_WRITABLE_PIPE::int "UV_WRITABLE_PIPE")
+
       ))
 
 

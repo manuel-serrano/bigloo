@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Aug  4 06:28:53 2014 (serrano)                */
+#*    Last change :  Thu Oct 23 10:18:08 2014 (serrano)                */
 #*    Copyright   :  2002-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the LIBUV examples                         */
@@ -23,7 +23,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = hello async timer idle atimer fs io serv
+SOURCES = hello async async2 timer idle atimer fs io serv loops # queue
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -39,6 +39,9 @@ hello: hello.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 async: async.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+async2: async2.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 timer: timer.o
@@ -57,6 +60,12 @@ io: io.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 serv: serv.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+loops: loops.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+queue: queue.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:

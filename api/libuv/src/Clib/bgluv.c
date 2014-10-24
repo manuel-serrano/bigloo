@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sat Oct 11 16:37:33 2014 (serrano)                */
+/*    Last change :  Fri Oct 24 09:31:27 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -24,6 +24,9 @@ typedef BgL_uvstreamz00_bglt bgl_uv_stream_t;
 typedef BgL_uvwatcherz00_bglt bgl_uv_watcher_t;
 typedef BgL_uvasyncz00_bglt bgl_uv_async_t;
 typedef BgL_uvfseventz00_bglt bgl_uv_fs_event_t;
+typedef BgL_uvprocessz00_bglt bgl_uv_process_t;
+typedef BgL_uvprocessoptionsz00_bglt bgl_uv_process_options_t;
+typedef BgL_uvworkz00_bglt bgl_uv_work_t;
 
 /*---------------------------------------------------------------------*/
 /*    bgl_uv_mutex                                                     */
@@ -31,6 +34,7 @@ typedef BgL_uvfseventz00_bglt bgl_uv_fs_event_t;
 extern obj_t bgl_uv_mutex;
 extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t bgl_uv_new_file( int, obj_t );
+extern obj_t create_vector( int );
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -63,11 +67,16 @@ gc_unmark( obj_t obj ) {
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
 /*    bgl_uv_close_cb ...                                              */
+/*    -------------------------------------------------------------    */
+/*    The data argument can either be a handle, or a pair when         */
+/*    uv_close is automatically on an active handle, as those          */
+/*    involved in a uv_listen action.                                  */
 /*---------------------------------------------------------------------*/
 void
 bgl_uv_close_cb( uv_handle_t *handle ) {
-   bgl_uv_handle_t o = (bgl_uv_handle_t)handle->data;
-   obj_t p = o->BgL_onclosez00;
+   obj_t o = (obj_t)handle->data;
+   bgl_uv_handle_t h = (bgl_uv_handle_t)(PAIRP( o ) ? CAR( o ) : o);
+   obj_t p = h->BgL_z52onclosez52;
 
    if( PROCEDUREP( p ) ) PROCEDURE_ENTRY( p )( p, BEOA );
 }
@@ -137,6 +146,20 @@ bgl_uv_idle_new( BgL_uvidlez00_bglt o, bgl_uv_loop_t loop ) {
    new->close_cb = &bgl_uv_close_cb;
 
    uv_idle_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   return new;
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_check_t *                                                     */
+/*    bgl_uv_check_new ...                                             */
+/*---------------------------------------------------------------------*/
+uv_check_t *
+bgl_uv_check_new( BgL_uvcheckz00_bglt o, bgl_uv_loop_t loop ) {
+   uv_check_t *new = (uv_check_t *)GC_MALLOC( sizeof( uv_check_t ) );
+   new->data = o;
+   new->close_cb = &bgl_uv_close_cb;
+
+   uv_check_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
    return new;
 }
 
@@ -1217,10 +1240,10 @@ bgl_uv_tcp_create( uv_loop_t *loop, obj_t obj ) {
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    uv_tcp_connect_cb ...                                            */
+/*    bcl_connect_cb ...                                               */
 /*---------------------------------------------------------------------*/
 static void
-uv_tcp_connect_cb( uv_connect_t *req, int status ) {
+bgl_connect_cb( uv_connect_t *req, int status ) {
    obj_t p = (obj_t)req->data;
    obj_t handle = req->handle->data;
 
@@ -1250,7 +1273,7 @@ bgl_uv_tcp_connectX( obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loo
       
       gc_mark( proc );
 
-      r = uv_tcp_connect( req, handle, address, uv_tcp_connect_cb );
+      r = uv_tcp_connect( req, handle, address, bgl_connect_cb );
 
       if( r != 0 ) {
 	 free( req );
@@ -1511,14 +1534,15 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    obj_t offset = sobj->BgL_z52offsetz52;
 
    sobj->BgL_z52allocz52 = BUNSPEC;
-   fprintf( stderr, "OnRead (%s) nread=%d\n", __FILE__, nread );
    gc_unmark( obj );
 
    if( PROCEDUREP( p ) ) {
-      if( nread > 0 ) {
-	 PROCEDURE_ENTRY( p )( p, allocobj, offset, BINT( nread ), BEOA );
-      } else if( nread < 0 ) {
-	 PROCEDURE_ENTRY( p )( p, BINT( nread ), BINT( -1 ), BINT( -1 ), BEOA );
+      if( nread >= 0 ) {
+	 PROCEDURE_ENTRY( p )( p, BTRUE, allocobj, offset, BINT( nread ), BEOA );
+      } else if( nread == UV_EOF ) {
+	 PROCEDURE_ENTRY( p )( p, BEOF, allocobj, BINT( -1 ), BINT( -1 ), BEOA );
+      } else {
+	 PROCEDURE_ENTRY( p )( p, BFALSE, allocobj, BINT( -1 ), BINT( nread ), BEOA );
       }
    }
 }
@@ -1535,8 +1559,6 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
    obj_t chunk = BGL_MVALUES_VAL( 1 );
    obj_t offset = BGL_MVALUES_VAL( 2 );
 
-   fprintf( stderr, "bgl_uv_read_start, alloc_cb (%s) offset=%d ssize=%d\n",
-	    __FILE__, CINT( offset ), ssize );
    if( !STRINGP( chunk ) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start, onalloc",
 			"string",
@@ -1554,12 +1576,11 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
-   fprintf( stderr, "bgl_uv_read_start...\n" );
    if( !PROCEDUREP( proca ) || (!PROCEDURE_CORRECT_ARITYP( proca, 2 )) ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
 			"wrong onalloc", proca );
    } else {
-      if( !(PROCEDUREP( procc ) && (PROCEDURE_CORRECT_ARITYP( procc, 3 )) ) ) {
+      if( !(PROCEDUREP( procc ) && (PROCEDURE_CORRECT_ARITYP( procc, 4 )) ) ) {
 	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
 			   "wrong callback", procc );
       } else {
@@ -1570,13 +1591,11 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 	 stream->BgL_z52allocz52 = BUNSPEC;
 	 stream->BgL_z52procaz52 = proca;
 	 stream->BgL_z52proccz52 = procc;
+	 stream->BgL_z52offsetz52 = BINT( -1 );
 
 	 gc_mark( obj );
 
-	 r = uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
-
-	 fprintf( stderr, "bgl_uv_read_start r=%d\n", r );
-	 return r;
+	 return uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
       }
    }
 }
@@ -1623,3 +1642,200 @@ bgl_uv_shutdown( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
       return r;
    }
 }
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    string_array_to_vector ...                                       */
+/*---------------------------------------------------------------------*/
+static obj_t
+string_array_to_vector( char *array[] ) {
+   long len, i;
+   char **runner;
+   obj_t res;
+
+   for( len = 0, runner = array; *runner; len++, runner++ );
+
+   res = create_vector( len );
+
+   for( i = 0, runner = array; i < len; i++, runner++ ) {
+      VECTOR_SET( res, i, string_to_bstring( *runner ) );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static char **                                                   */
+/*    vector_to_string_array ...                                       */
+/*---------------------------------------------------------------------*/
+static char **
+vector_to_string_array( obj_t vec ) {
+   char **res = (char **)GC_MALLOC( sizeof( char * ) * VECTOR_LENGTH( vec ) + 1 );
+   long i;
+
+   res[ VECTOR_LENGTH( vec ) ] = 0;
+   
+   for( i = VECTOR_LENGTH( vec ) - 1; i >= 0; i-- ) {
+      res[ i ] = BSTRING_TO_STRING( VECTOR_REF( vec, i ) );
+   }
+
+   return res;
+}
+   
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_process_options_args_get ...                              */
+/*---------------------------------------------------------------------*/
+obj_t bgl_uv_process_options_args_get( uv_process_options_t *opt ) {
+   return string_array_to_vector( opt->args );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_process_options_args_set ...                              */
+/*---------------------------------------------------------------------*/
+void bgl_uv_process_options_args_set( uv_process_options_t *opt, obj_t vec ) {
+   opt->args = vector_to_string_array( vec );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_process_options_env_get ...                               */
+/*---------------------------------------------------------------------*/
+obj_t bgl_uv_process_options_env_get( uv_process_options_t *opt ) {
+   return string_array_to_vector( opt->env );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_process_options_env_set ...                               */
+/*---------------------------------------------------------------------*/
+void bgl_uv_process_options_env_set( uv_process_options_t *opt, obj_t vec ) {
+   opt->env = vector_to_string_array( vec );
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_process_t *                                                   */
+/*    bgl_uv_process_new ...                                           */
+/*---------------------------------------------------------------------*/
+uv_process_t *
+bgl_uv_process_new( bgl_uv_process_t o ) {
+   uv_process_t *new = (uv_process_t *)GC_MALLOC( sizeof( uv_process_t ) );
+   new->data = o;
+   
+   return new;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    process_exit_cb ...                                              */
+/*---------------------------------------------------------------------*/
+static void process_exit_cb( uv_process_t *handle, int64_t status, int term ) {
+   bgl_uv_process_t o = handle->data;
+   obj_t p = o->BgL_z42onexitz42;
+
+   if( PROCEDUREP( p ) ) {
+      PROCEDURE_ENTRY( p )( p, o, BGL_INT64_TO_BINT64( status ), BINT( term ) );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_spawn ...                                                 */
+/*---------------------------------------------------------------------*/
+int bgl_uv_spawn( bgl_uv_loop_t loop,
+		  bgl_uv_process_t process,
+		  bgl_uv_process_options_t opts,
+		  obj_t callback ) {
+   uv_process_options_t *options = opts->BgL_z42builtinz42;
+
+   if( PROCEDUREP( callback ) ) {
+      bgl_check_fs_cb( callback, 3, "uv_spawn" );
+      options->exit_cb = &process_exit_cb;
+      process->BgL_z42onexitz42 = callback;
+   }
+
+   process->BgL_z42builtinz42->data = process;
+
+   return uv_spawn( (uv_loop_t *)loop->BgL_z42builtinz42,
+		    (uv_process_t *)process->BgL_z42builtinz42,
+		    options );
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_pipe_t *                                                      */
+/*    bgl_uv_pipe_create ...                                           */
+/*---------------------------------------------------------------------*/
+uv_pipe_t *
+bgl_uv_pipe_create( uv_loop_t *loop, obj_t obj, bool_t ipc ) {
+   uv_pipe_t *pipe = (uv_pipe_t *)GC_MALLOC( sizeof( uv_pipe_t ) );
+
+   uv_pipe_init( loop, pipe, ipc );
+
+   pipe->data = obj;
+   return pipe;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_pipe_connect ...                                          */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_pipe_connect( obj_t obj, char *name, obj_t proc, bgl_uv_loop_t bloop ) {
+   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 2 )) ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-pipe-connect",
+			"wrong callback", proc );
+   } else {
+      uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
+      uv_pipe_t *handle =
+	 (uv_pipe_t *)(((bgl_uv_handle_t)obj)->BgL_z42builtinz42);
+      int r;
+
+      req->data = proc;
+      
+      gc_mark( proc );
+
+      uv_pipe_connect( req, handle, name, bgl_connect_cb );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_work_queue_cb ...                                            */
+/*---------------------------------------------------------------------*/
+static void
+bgl_work_queue_cb( uv_work_t *req ) {
+   bgl_uv_work_t w = (bgl_uv_work_t)req->data;
+   obj_t p = w->BgL_z52workzd2cbz80;
+
+   PROCEDURE_ENTRY( p )( p, BEOA );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_after_queue_cb ...                                           */
+/*---------------------------------------------------------------------*/
+static void
+bgl_after_queue_cb( uv_work_t *req, int status ) {
+   bgl_uv_work_t w = (bgl_uv_work_t)req->data;
+   obj_t p = w->BgL_z52afterzd2cbz80;
+
+   PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_queue_work ...                                            */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_queue_work( bgl_uv_work_t w, bgl_uv_loop_t bloop ) {
+   fprintf( stderr, "(%s:%d) BROKEN as libuv uses its own threads\n",
+	    __FILE__, __LINE__ );
+   w->BgL_z42builtinz42 = (uv_work_t *)GC_MALLOC( sizeof( uv_work_t ) );
+   w->BgL_z42builtinz42->data = w;
+
+   uv_queue_work( (uv_loop_t *)bloop->BgL_z42builtinz42,
+		  w->BgL_z42builtinz42,
+		  bgl_work_queue_cb,
+		  bgl_after_queue_cb );
+}
+   

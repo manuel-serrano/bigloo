@@ -1,34 +1,39 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/examples/timer.scm         */
+;*    serrano/prgm/project/bigloo/api/libuv/examples/async2.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:10:13 2014                          */
-;*    Last change :  Thu Oct 23 10:29:03 2014 (serrano)                */
+;*    Last change :  Thu Oct 23 10:56:43 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
-;*    LIBUV timer                                                      */
+;*    LIBUV async example                                              */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module libuv_hello
-   (library libuv)
+   (library libuv pthread)
    (main main))
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main args)
-   (let ((loop (uv-default-loop)))
-      (letrec* ((n 5)
-		(timer (instantiate::UvTimer
-			  (loop loop)
-			  (cb (lambda (t s)
-				 (tprint "n=" n " T=" t)
-				 (set! n (-fx n 1))
-				 (when (=fx n 0)
-				    (uv-timer-stop t)))))))
-	 (uv-timer-start timer #u64:800 #u64:400)
-	 (uv-run loop)
-	 (print "loop alive=" (uv-loop-alive? loop)))))
+   (let* ((loop (instantiate::UvLoop))
+	  (async (instantiate::UvAsync
+		    (loop loop)
+		    (cb (lambda (a)
+			   (tprint "async")
+			   (let ((timer (instantiate::UvTimer
+					   (loop loop)
+					   (cb (lambda (t c)
+						  (tprint "timer"))))))
+			      (uv-timer-start timer #u64:100 #u64:500)))))))
+      (uv-async-send async)
+      (thread-join!
+	 (thread-start-joinable!
+	    (instantiate::pthread
+	       (body (lambda ()
+			(display "Looping forever.\n")
+			(uv-run loop))))))))

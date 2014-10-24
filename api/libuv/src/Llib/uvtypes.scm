@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Sat Oct 11 16:26:25 2014 (serrano)                */
+;*    Last change :  Thu Oct 23 07:48:35 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -21,7 +21,8 @@
 
 	   (class UvHandle::%Uv
 	      ($builtin::$uv_handle_t (default $uv_handle_nil))
-	      (onclose (default #f)))
+	      (%onclose (default #f))
+	      (closed::bool (default #f)))
 
 	   (class UvLoop::UvHandle
 	      (%mutex::mutex read-only (default (make-mutex)))
@@ -40,7 +41,12 @@
 
 	   (class UvTcp::UvStream)
 	   
-	   (class UvTimer::UvWatcher)
+	   (class UvPipe::UvStream
+	      (ipc::bool read-only))
+	   
+	   (class UvTimer::UvWatcher
+	      (repeat::uint64 (default #u64:0))
+	      (ref::bool (default #t)))
 
 	   (class UvIdle::UvWatcher)
 
@@ -51,15 +57,99 @@
 	      (path::bstring read-only))
 
 	   (class UvFsEvent::UvWatcher)
+
+	   (class UvCheck::UvWatcher)
+
+	   (class UvProcess::UvHandle
+	      ($onexit (default #unspecified))
+	      (pid::int
+		 (get (lambda (this)
+			 (with-access::UvProcess this ($builtin)
+			    ($uv-process-pid ($uv-process-t $builtin)))))
+		 read-only))
+
+	   (class UvProcessOptions::%Uv
+	      ($builtin::$uv_process_options_t read-only
+		 (default ($uv-process-options-new)))
+	      (file
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-file $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-file-set! $builtin val)
+			    #unspecified))))
+	      (args
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-args $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-args-set! $builtin val)
+			    #unspecified))))
+	      (env
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-env $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-env-set! $builtin val)
+			    #unspecified))))
+	      (cwd
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-cwd $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-cwd-set! $builtin val)
+			    #unspecified))))
+	      (flags
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-flags $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-flags-set! $builtin val)
+			    #unspecified))))
+	      (uid
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-uid $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-uid-set! $builtin val)
+			    #unspecified))))
+	      (gid
+		 (get (lambda (this)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-gid $builtin))))
+		 (set (lambda (this val)
+			 (with-access::UvProcessOptions this ($builtin)
+			    ($uv-process-options-gid-set! $builtin val)
+			    #unspecified)))))
+
+	   (class UvWork::%Uv
+	      ($builtin::$uv_work_t (default $uv_work_nil))
+	      (%work-cb::procedure read-only)
+	      (%after-cb::procedure read-only))
 	   
-	   (generic %uv-init ::UvHandle)
+	   (generic %uv-init ::%Uv)
+
+	   (uv-id::int ::UvHandle)
 
 	   (uv-new-file::UvFile ::int ::bstring)
-	   (uv-strerror::string ::int)
-	   (uv-err-name::string ::int))
+	   (uv-strerror::bstring ::int)
+	   (uv-err-name::bstring ::int))
 
    (extern (export uv-new-file "bgl_uv_new_file")))
 
+;*---------------------------------------------------------------------*/
+;*    uv-id ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (uv-id o::UvHandle)
+   (with-access::UvHandle o ($builtin)
+      ($uv-handle->integer $builtin)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ...                                                     */
 ;*---------------------------------------------------------------------*/
@@ -90,9 +180,8 @@
       (display "#|" port)
       (display class-name port)
       (display " (0x" port)
-      (with-access::UvHandle obj ($builtin)
-	 (display (integer->string ($uv-handle->integer $builtin)) port)
-	 (display ")" port))
+      (display (integer->string (uv-id obj) 16) port)
+      (display ")" port)
       (if (nil? obj)
 	  (display " nil|" port)
 	  (let loop ((i 0))
@@ -114,10 +203,16 @@
 ;*    uv-strerror ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (uv-strerror errno)
-   ($uv-strerror errno))
+   (let ((s::string ($uv-strerror errno)))
+      (if ($string-nilp s)
+	  ""
+	  s)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-err-name ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (uv-err-name errno)
-   ($uv-err-name errno))
+   (let ((s::string ($uv-err-name errno)))
+      (if ($string-nilp s)
+	  ""
+	  s)))

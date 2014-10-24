@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Wed Jul  9 16:21:27 2014 (serrano)                */
+;*    Last change :  Fri Oct 24 07:46:47 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -33,6 +33,8 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    *json-lexer* ...                                                 */
+;*    -------------------------------------------------------------    */
+;*    http://json.org/ for the exact grammar                           */
 ;*---------------------------------------------------------------------*/
 (define *json-lexer*
    
@@ -101,7 +103,7 @@
       ((: (or #\_ alpha) (* (or #\_ alpha digit)))
        (case (the-symbol)
 	  ((null) (return 'CONSTANT '()))
-	  ((undefined) (return 'CONSTANT #unspecified))
+;* 	  ((undefined) (return 'CONSTANT #unspecified))                */
 	  ((true) (return 'CONSTANT #t))
 	  ((false) (return 'CONSTANT #f))
 	  (else (return 'ERROR (the-symbol)))))

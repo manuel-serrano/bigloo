@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sat Oct 11 08:20:06 2014 (serrano)                */
+;*    Last change :  Wed Oct 22 12:05:20 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -88,7 +88,8 @@
 	    ($getpwnam::obj (::string) "bgl_getpwnam")
 	    ($getpwuid::obj (::int) "bgl_getpwuid")
 	    (macro $umask::long (::long) "umask")
-	    (macro $getpid::int () "getpid"))
+	    (macro $getpid::int () "getpid")
+	    (macro $getppid::int () "getppid"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -214,10 +215,12 @@
 	    (unix-path->list::pair-nil ::bstring)
 	    (getuid::int)
 	    (setuid ::int)
+	    (getgid::int)
 	    (setgid ::int)
 	    (getpwnam ::bstring)
 	    (getpwuid ::int)
 	    (inline getpid::int)
+	    (inline getppid::int)
 	    (umask::int #!optional mask)))
 
 ;*---------------------------------------------------------------------*/
@@ -1077,6 +1080,14 @@
 (define-inline (getpid)
    (cond-expand
       (bigloo-c ($getpid))
+      (else 0)))
+
+;*---------------------------------------------------------------------*/
+;*    getppid ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (getppid)
+   (cond-expand
+      (bigloo-c ($getppid))
       (else 0)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Fri Aug  1 19:59:23 2014 (serrano)                */
+;*    Last change :  Thu Oct 23 10:25:54 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV loops                                                      */
@@ -21,9 +21,14 @@
    (import __libuv_types)
    
    (export (uv-default-loop::UvLoop)
-	   (uv-run ::UvLoop #!optional mode)
+	   (uv-run::int ::UvLoop #!optional mode)
 	   (uv-stop ::UvLoop)
 	   (uv-loop-alive?::bool ::UvLoop)
+	   (uv-update-time ::UvLoop)
+	   (uv-now::uint64 ::UvLoop)
+;* 	   (uv-queue-work::UvWork ::procedure ::procedure              */
+;* 	      #!key (loop (uv-default-loop)))                          */
+;* 	   (uv-cancel ::UvWork)                                        */
 	   %uv-mutex)
 
    (extern (export %uv-mutex "bgl_uv_mutex")))
@@ -68,8 +73,7 @@
 	    (set! gc-loops (cons loop gc-loops))
 	    ($uv-run ($uv-loop-t $builtin) (or mode $UV_RUN_DEFAULT)))
 	 (synchronize %uv-mutex
-	    (set! gc-loops (remq! loop gc-loops))))
-      loop))
+	    (set! gc-loops (remq! loop gc-loops))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stop ...                                                      */
@@ -86,3 +90,43 @@
 (define (uv-loop-alive? loop::UvLoop)
    (with-access::UvLoop loop ($builtin)
       ($uv-loop-alive? ($uv-loop-t $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-update-time ...                                               */
+;*---------------------------------------------------------------------*/
+(define (uv-update-time loop::UvLoop)
+   (with-access::UvLoop loop ($builtin)
+      ($uv-update-time ($uv-loop-t $builtin))
+      loop))
+   
+;*---------------------------------------------------------------------*/
+;*    uv-now ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (uv-now loop::UvLoop)
+   (with-access::UvLoop loop ($builtin)
+      ($uv-now ($uv-loop-t $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-queue-work ...                                                */
+;*---------------------------------------------------------------------*/
+(define (uv-queue-work work-cb after-cb #!key (loop (uv-default-loop)))
+   (tprint "BROKEN AS LIBUV uses its own thread (and not Bigloo threads)")
+   (let ((w (instantiate::UvWork
+	       (%work-cb work-cb)
+	       (%after-cb after-cb))))
+      (cond
+	 ((not (correct-arity? work-cb 0))
+	  (error "uv-queue-work" "wrong work callback arity" work-cb))
+	 ((not (correct-arity? after-cb 1))
+	  (error "uv-queue-work" "wrong after callback arity" after-cb))
+	 (else
+	  ($bgl_uv_queue_work w loop)
+	  w))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-cancel ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (uv-cancel w::UvWork)
+   (with-access::UvWork w ($builtin)
+      ($uv_cancel ($uv-req-t $builtin))
+      w))

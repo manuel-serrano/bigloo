@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Thu Oct  2 16:03:44 2014 (serrano)                */
+;*    Last change :  Fri Oct 24 07:00:15 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -34,9 +34,12 @@
 	    (uv-stream-read-stop ::UvStream)
 	    (uv-stream-shutdown ::UvStream
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-listen ::UvTcp ::int
+	    (uv-listen ::UvStream ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-accept ::UvTcp ::UvTcp)
+	    (uv-accept ::UvStream ::UvTcp)
+	    (uv-closing?::bool ::UvStream)
+	    (uv-writable?::bool ::UvStream)
+	    (uv-readable?::bool ::UvStream)
 	    
 	    (uv-tcp-connect ::UvTcp ::bstring ::int
 	       #!key (family::int 4) callback (loop (uv-default-loop)))
@@ -133,6 +136,27 @@
       (with-access::UvStream client (($cbuiltin $builtin))
 	 ($uv-accept ($uv-stream-t $sbuiltin) ($uv-stream-t $cbuiltin)))))
 
+;*---------------------------------------------------------------------*/
+;*    uv-closing? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-closing? handle)
+   (with-access::UvStream handle ($builtin)
+      ($uv-is-closing $builtin)))
+      
+;*---------------------------------------------------------------------*/
+;*    uv-writable? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (uv-writable? handle)
+   (with-access::UvStream handle ($builtin)
+      ($uv-is-writable ($uv-stream-t $builtin))))
+      
+;*---------------------------------------------------------------------*/
+;*    uv-readable? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (uv-readable? handle)
+   (with-access::UvStream handle ($builtin)
+      ($uv-is-readable ($uv-stream-t $builtin))))
+      
 ;*---------------------------------------------------------------------*/
 ;*    uv-tcp-connect ...                                               */
 ;*---------------------------------------------------------------------*/

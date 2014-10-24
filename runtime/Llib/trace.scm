@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Mon Sep 22 07:30:39 2014 (serrano)                */
+;*    Last change :  Wed Oct 22 10:51:23 2014 (serrano)                */
 ;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
@@ -176,10 +176,12 @@
       (let ((al (trace-alist)))
 	 (when (trace-active? (trace-alist-get al 'margin-level))
 	    (let ((p (trace-port)))
-	       (display (trace-alist-get al 'margin) p)
-	       (display (tty-trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
-	       (for-each (lambda (a) (display-circle a p)) args)
-	       (newline p))))))
+	       (synchronize (trace-mutex)
+		  (display (trace-alist-get al 'margin) p)
+		  (display (tty-trace-color (-fx (trace-alist-get al 'depth) 1) "- ") p)
+		  (for-each (lambda (a) (display-circle a p)) args)
+		  (newline p)
+		  (flush-output-port p)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-active? ...                                                */
@@ -207,7 +209,8 @@
 		      (display (if (=fx d 0)
 				   (tty-trace-color d "+ " lbl)
 				   (tty-trace-color d "--+ " lbl)))
-		      (newline))))
+		      (newline)
+		      (flush-output-port (current-output-port)))))
 	     (trace-alist-set! al 'depth (+fx d 1))
 	     (trace-alist-set! al 'margin (string-append om ma))
 	     (unwind-protect

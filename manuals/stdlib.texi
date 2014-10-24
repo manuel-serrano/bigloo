@@ -1165,8 +1165,8 @@ Returns the first occurrence of a character of @var{char-or-set} in
 If no character is found, @code{string-index} returns @code{#f}.
 @end deffn
 
-@deffn {bigloo procedure} string-skip string c [start 0]
-@deffnx {bigloo procedure} string-skip-right string c [start len-1]
+@deffn {bigloo procedure} string-skip string charset [start 0]
+@deffnx {bigloo procedure} string-skip-right string charset [start len-1]
 @cindex SRFI-13
 
 @code{string-skip} (resp. @code{string-skip-right}) searches through

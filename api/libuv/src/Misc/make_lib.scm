@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sat Oct 11 15:34:23 2014 (serrano)                */
+;*    Last change :  Sun Oct 19 11:34:06 2014 (serrano)                */
 ;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -23,15 +23,24 @@
 	   __libuv_fs
 	   __libuv_os
 	   __libuv_net
-	   __libuv_fs-event)
+	   __libuv_pipe
+	   __libuv_fs-event
+	   __libuv_check
+	   __libuv_process)
    
    (eval   (export-all)
       
       (class %Uv)
       (class UvLoop)
-      (class UvWatcher)
+      (class UvHandle)
+      (class UvStream)
+      (class UvTcp)
+      (class UvPipe)
       (class UvTimer)
       (class UvIdle)
       (class UvAsync)
-      (class UvFsEvent)))
+      (class UvFsEvent)
+      (class UvCheck)
+      (class UvProcess)
+      (class UvProcessOptions)))
 
