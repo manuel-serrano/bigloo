@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Jul 28 11:49:02 2014 (serrano)                */
+#*    Last change :  Sat Oct 25 08:36:10 2014 (serrano)                */
 #*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -152,7 +152,7 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 #*    Boot a new Bigloo system on a new host. This boot makes use      */
 #*    of the pre-compiled C files.                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: checkconf boot boot-jvm boot-dotnet boot-bde boot-api boot-bglpkg
+.PHONY: checkconf boot boot-jvm boot-bde boot-api boot-bglpkg
 
 build: checkconf boot
 
@@ -163,6 +163,14 @@ checkconf:
 	fi
 
 boot: checkgmake
+	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
+         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
+         export LD_LIBRARY_PATH; \
+         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
+         export DYLD_LIBRARY_PATH; \
+         $(MAKE) boot-c);
+
+boot-c: 
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp boot; \
         fi
@@ -186,9 +194,6 @@ boot: checkgmake
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) boot-jvm; \
         fi
-	if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-	  $(MAKE) boot-dotnet; \
-        fi
 	$(MAKE) boot-bde
 	$(MAKE) boot-api
 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
@@ -204,14 +209,6 @@ boot-jvm:
          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
          export DYLD_LIBRARY_PATH; \
          $(MAKE) -C runtime boot-jvm);
-
-boot-dotnet:
-	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
-         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-         $(MAKE) -C runtime boot-dotnet);
 
 boot-bde:
 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
@@ -253,10 +250,6 @@ cross-rts: checkgmake
 	if [ "$(JVMBACKEND)" = "yes" ]; then \
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
             $(MAKE) -C runtime boot-jvm); \
-        fi
-	if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-           (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
-            $(MAKE) -C runtime boot-dotnet); \
         fi
 	(BIGLOOLIB=$(BOOTLIBDIR); \
            export BIGLOOLIB; \
