@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Sep 25 14:16:21 2014 (serrano)                */
+/*    Last change :  Fri Oct 31 20:36:16 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -291,7 +291,9 @@ client_socket_error( char *proc, obj_t hostname, int port, char *msg, int err ) 
    char buffer2[ 512 ];
 
    if( msg ) sprintf( buffer1, "%s, ", msg );
+   BGL_MUTEX_LOCK( socket_mutex );
    sprintf( buffer1, "%s (%d)", strerror( err ), err );
+   BGL_MUTEX_UNLOCK( socket_mutex );
    
    if( port >= 0 ) {
       sprintf( buffer2, "%s:%d", socket_hostname( hostname ), port );
@@ -328,7 +330,9 @@ static void
 system_error( char *who, obj_t val ) {
    char buffer[ 512 ];
 
+   BGL_MUTEX_LOCK( socket_mutex );
    sprintf( buffer, "%s (%d)", strerror( errno ), errno );
+   BGL_MUTEX_UNLOCK( socket_mutex );
 
    socket_error( who, buffer, val );
 }
@@ -1240,16 +1244,20 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
    if( (t == -1) || (s == -1) ) {
       char *buffer = alloca( 1024 );
       
+      BGL_MUTEX_LOCK( socket_mutex );
       sprintf( buffer, "%s: cannot duplicate io port, %s",
 	       who, strerror( errno ) );
+      BGL_MUTEX_UNLOCK( socket_mutex );
       socket_error( "set_socket_io_ports", buffer, BUNSPEC );
    }
 
    if( !(fs = fdopen( t, "r" )) ) { 
       char *buffer = alloca( 1024 );
       
+      BGL_MUTEX_LOCK( socket_mutex );
       sprintf( buffer, "%s: cannot create socket io ports, %s (s=%d->%p)",
 	       who, strerror( errno ), t, fs );
+      BGL_MUTEX_UNLOCK( socket_mutex );
       socket_error( "set_socket_io_ports", buffer, sock );
    }
 
@@ -1364,6 +1372,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
       if( errno == EINPROGRESS ) {
 	 fd_set writefds;
 	 struct timeval timeout;
+	 int _errno;
 
 	 FD_ZERO( &writefds );
 	 FD_SET( s, &writefds );
@@ -1378,6 +1387,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	    close( s );
 	    socket_timeout_error( hostname, port );
 	 } else {
+	    _errno = errno;
 	    if( err < 0 ) {
 	       /* we have experienced a failure so we */
 	       /* invalidate the host name entry */
@@ -1393,7 +1403,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 		  /* we have experienced a failure so we */
 		  /* invalidate the host name entry */
 		  close( s );
-		  tcp_client_socket_error( hostname, port, 0, err );
+		  tcp_client_socket_error( hostname, port, 0, _errno );
 	       }
 	    }
 	 }
@@ -1588,8 +1598,15 @@ socket_local_addr( obj_t sock ) {
 
    if( getsockname( SOCKET( sock ).fd,
 		    (struct sockaddr *)&sin,
-		    (socklen_t *) &len) )
-      socket_error( "socket-local-address", strerror( errno ), sock );
+		    (socklen_t *) &len) ) {
+      char *buffer = alloca( 1024 );
+      
+      BGL_MUTEX_LOCK( socket_mutex );
+      strcpy( buffer, strerror( errno ) );
+      BGL_MUTEX_UNLOCK( socket_mutex );
+      
+      socket_error( "socket-local-address", buffer, sock );
+   }
 
    return bgl_inet_ntop( &(sin.sin_addr) );
 }
@@ -1616,7 +1633,9 @@ socket_shutdown( obj_t sock, int close_socket ) {
 	 if( shutdown( fd, SHUT_RDWR ) ) {
 	    char *buffer = alloca( 1024 );
 	    
+	    BGL_MUTEX_LOCK( socket_mutex );
 	    sprintf( buffer, "cannot shutdown socket, %s", strerror( errno ) );
+	    BGL_MUTEX_UNLOCK( socket_mutex );
 	    socket_error( "socket-shutdown", buffer, sock );
 	 }
       }
@@ -1750,13 +1769,18 @@ bgl_socket_accept_many( obj_t serv, bool_t errp, obj_t inbs, obj_t outbs, obj_t 
       if( errno == EINTR )
 	 continue;
 
-      if( errp )
-	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,
-			   "socket-accept-many",
-			   strerror( errno ),
-			   serv );
-      else
+      if( errp ) {
+	 char *buffer = alloca( 1024 );
+
+	 BGL_MUTEX_LOCK( socket_mutex );
+	 strcpy( buffer, strerror( errno ) );
+	 BGL_MUTEX_UNLOCK( socket_mutex );
+
+	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR, "socket-accept-many",
+			   buffer, serv );
+      } else {
 	 return 0;
+      }
    }
 
    /* fill the result vector */
@@ -2340,7 +2364,9 @@ datagram_socket_write( obj_t port, void *buf, size_t len ) {
 		    sizeof( struct sockaddr_in ) )) == -1 ) {
       char buffer[ 512 ];
       
+      BGL_MUTEX_LOCK( socket_mutex );
       sprintf( buffer, "%s (%d)", strerror( errno ), errno );
+      BGL_MUTEX_UNLOCK( socket_mutex );
 
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"datagram-socket-write",
@@ -2504,8 +2530,10 @@ bgl_make_datagram_server_socket( int portnum ) {
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
 
+      BGL_MUTEX_LOCK( socket_mutex );
       sprintf( buffer, "%s: cannot create datagram server socket io port, %s (s=%d->%p)",
 	       msg, strerror( errno ), s, fs );
+      BGL_MUTEX_UNLOCK( socket_mutex );
       socket_error( "bgl_make_datagram_server_socket", buffer, sock );
    }
 
@@ -2562,8 +2590,10 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
 
+      BGL_MUTEX_LOCK( socket_mutex );
       sprintf( buffer, "%s: cannot create datagram server socket io port, %s (s=%d->%p)",
 	       msg, strerror( errno ), s, fs );
+      BGL_MUTEX_UNLOCK( socket_mutex );
       socket_error( "bgl_make_datagram_server_socket", buffer, sock );
    }
 
