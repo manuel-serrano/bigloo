@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Tue Jun 17 09:25:10 2014 (serrano)                */
+;*    Last change :  Mon Nov  3 18:08:28 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -149,7 +149,7 @@
    
    ;; *pointer*
    (define *pointer* 0)
-
+   
    ;; str-len
    (define *strlen* (string-length s))
    
@@ -158,7 +158,7 @@
    
    ;; *defining*
    (define *defining* #f)
-
+   
    ;; string-guard!
    (define (string-guard! sz)
       (when (>fx (+fx sz *pointer*) *strlen*)
@@ -187,15 +187,15 @@
    ;; read-char
    (define (read-char s)
       (integer->char (read-integer s)))
-
+   
    ;; read-word
    (define (read-word::long s sz::int)
       (let ((acc::long 0))
 	 (string-guard! sz)
 	 (for i 0 sz
-	      (let ((d (string-ref s *pointer*)))
-		 (set! acc (+fx (*fx 256 acc) (char->integer d)))
-		 (set! *pointer* (+fx *pointer* 1))))
+	    (let ((d (string-ref s *pointer*)))
+	       (set! acc (+fx (*fx 256 acc) (char->integer d)))
+	       (set! *pointer* (+fx *pointer* 1))))
 	 acc))
    
    ;; read-long-word
@@ -203,10 +203,10 @@
       (let ((acc::llong 0))
 	 (string-guard! sz)
 	 (for i 0 sz
-	      (let ((d (string-ref s *pointer*)))
-		 (set! acc (+llong (*llong #l256 acc)
-				   (fixnum->llong (char->integer d))))
-		 (set! *pointer* (+fx *pointer* 1))))
+	    (let ((d (string-ref s *pointer*)))
+	       (set! acc (+llong (*llong #l256 acc)
+			    (fixnum->llong (char->integer d))))
+	       (set! *pointer* (+fx *pointer* 1))))
 	 acc))
    
    ;; read-size
@@ -225,32 +225,32 @@
 	    (set! *defining* #f))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
-
+   
    ;; read-definition
    (define (read-definition)
       (set! *defining* (read-item))
       (read-item))
-
+   
    ;; read-reference
    (define (read-reference)
       (vector-ref *definitions* (read-item)))
-
+   
    ;; read-symbol
    (define (read-symbol)
       (string->symbol (read-item)))
-
+   
    ;; read-keyword
    (define (read-keyword)
       (string->keyword (read-item)))
-
+   
    ;; read-cnst
    (define (read-cnst)
       (integer->cnst (read-integer s)))
-
+   
    ;; read-ucs2
    (define (read-ucs2)
       (integer->ucs2 (read-integer s)))
-
+   
    ;; read-custom
    (define (read-custom)
       (let* ((str (read-string s))
@@ -259,28 +259,28 @@
 	 (if (not (procedure? unserializer))
 	     (error "string->obj" "Can't unserialize custom object" str)
 	     (unserializer str2))))
-
+   
    ;; read-extension
    (define (read-extension)
       (let ((item (read-item)))
 	 (if (procedure? extension)
 	     (extension item)
 	     item)))
-
+   
    ;; read-elong
    (define (read-elong)
       (let* ((sz (read-size s))
 	     (res (string->elong (substring s *pointer* (+fx *pointer* sz)))))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
-
+   
    ;; read-llong
    (define (read-llong)
       (let* ((sz (read-size s))
 	     (res (string->llong (substring s *pointer* (+fx *pointer* sz)))))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
-
+   
    ;; read-vector
    (define (read-vector)
       (let* ((sz (read-size s))
@@ -290,7 +290,7 @@
 	    (set! *defining* #f))
 	 (for i 0 sz (vector-set! res i (read-item)))
 	 res))
-
+   
    ;; read-hvector
    (define (read-hvector)
       (let ((len (read-size s))
@@ -338,7 +338,7 @@
 	     (let ((res (make-f64vector len)))
 		(for i 0 len (f64vector-set! res i (read-float s)))
 		res)))))
-
+   
    ;; read-tagged-vector
    (define (read-tagged-vector)
       (let* ((tag (read-item))
@@ -350,7 +350,7 @@
 	    (set! *defining* #f))
 	 (for i 0 sz (vector-set! res i (read-item)))
 	 res))
-
+   
    ;; read-typed-vector
    (define (read-typed-vector)
       (let* ((id (read-item))
@@ -360,7 +360,7 @@
 	    (vector-set! *definitions* *defining* tv)
 	    (set! *defining* #f))
 	 tv))
-
+   
    ;; read-list
    (define (read-list)
       (let* ((sz (read-size s))
@@ -379,7 +379,7 @@
 		   (set-cdr! hd (cons '() '()))
 		   (loop (+fx i 1) (cdr hd)))))
 	 res))
-
+   
    ;; read-extended-list
    (define (read-extended-list)
       (let* ((sz (read-size s))
@@ -400,7 +400,7 @@
 		   (set-cdr! hd (econs '() '() #unspecified))
 		   (loop (+fx i 1) (cdr hd)))))
 	 res))
-
+   
    ;; read-cell
    (define (read-cell)
       (let ((res (make-cell (unspecified))))
@@ -409,7 +409,7 @@
 	    (set! *defining* #f))
 	 (cell-set! res (read-item))
 	 res))
-
+   
    ;; read-weakptr
    (define (read-weakptr)
       (let ((res (make-weakptr (unspecified))))
@@ -418,7 +418,7 @@
 	    (set! *defining* #f))
 	 (weakptr-data-set! res (read-item))
 	 res))
-
+   
    ;; read-special
    (define (read-special s converter)
       ;; unserialize a process or an opaque
@@ -429,7 +429,7 @@
 	    (set! *defining* #f))
 	 (set! *pointer* (+fx *pointer* sz))
 	 (converter res)))
-
+   
    ;; read-structure
    (define (read-structure)
       (let* ((defining (let ((old *defining*))
@@ -444,7 +444,7 @@
 	 res))
    
    ;; read-object
-   (define (read-object)
+   (define (read-object s)
       (let* ((defining (let ((old *defining*))
 			  (set! *defining* #f)
 			  old))
@@ -465,11 +465,11 @@
 	       (let ((f (vector-ref-ur fields i)))
 		  (unless (class-field-virtual? f)
 		     ((class-field-mutator f) obj (read-item))))))
-	 (let ((hash (read-item)))
+	 (let ((hash (read-integer s)))
 	    (if (=fx hash (class-hash klass))
 		obj
 		(error "string->obj" "corrupted class" cname)))))
-
+   
    ;; read-custom-object
    (define (read-custom-object)
       (let* ((defining (let ((old *defining*))
@@ -478,13 +478,13 @@
 	     (obj (read-item))
 	     (hash (read-item))
 	     (unserializer (find-class-unserializer hash))
-	     (object (unserializer obj)))
+	     (val (unserializer obj)))
 	 (when (fixnum? defining)
-	    (vector-set! *definitions* defining object))
-	 (if (=fx hash (class-hash (object-class object)))
-	     object
-	     (error "string->obj" "corrupted custom object" object))))
-
+	    (vector-set! *definitions* defining val))
+	 (if (=fx hash (class-hash (object-class val)))
+	     val
+	     (error "string->obj" "corrupted custom object" val))))
+   
    (define (read-class)
       (let ((name (read-symbol)))
 	 (read-item)
@@ -499,23 +499,23 @@
 	 (for i 0 len (procedure-set! p i (read-item)))
 	 (procedure-attr-set! p (read-item))
 	 p))
-
+   
    ;; stdint
    (define (read-int8 s)
       (fixnum->int8 (read-word s 1)))
    (define (read-uint8 s)
       (fixnum->uint8 (read-word s 1)))
-
+   
    (define (read-int16 s)
       (fixnum->int16 (read-word s 2)))
    (define (read-uint16 s)
       (fixnum->uint16 (read-word s 2)))
-
+   
    (define (read-int32 s)
       (fixnum->int32 (read-word s 4)))
    (define (read-uint32 s)
       (fixnum->uint32 (read-word s 4)))
-
+   
    (define (read-int64 s)
       (let ((acc::int64 #s64:0))
 	 (string-guard! 8)
@@ -525,7 +525,7 @@
 			    (fixnum->int64 (char->integer d))))
 	       (set! *pointer* (+fx *pointer* 1))))
 	 acc))
-
+   
    (define (read-uint64 s)
       (let ((acc::uint64 #u64:0))
 	 (string-guard! 8)
@@ -539,7 +539,7 @@
    ;; read-item
    (define (read-item)
       (string-guard! 1)
-      (let ((d (string-ref s *pointer*)))
+      (let ((d::char (string-ref s *pointer*)))
 	 (set! *pointer* (+fx *pointer* 1))
 	 (case d
 	    ((#\=) (read-definition))
@@ -562,7 +562,7 @@
 	    ((#\() (read-list))
 	    ((#\^) (read-extended-list))
 	    ((#\{) (read-structure))
-	    ((#\|) (read-object))
+	    ((#\|) (read-object s))
 	    ((#\O) (read-custom-object))
 	    ((#\f) (read-float s))
 	    ((#\z) (read-bignum s))
@@ -589,14 +589,14 @@
 	    ((#\l) (read-int64 s))
 	    ((#\W) (read-uint64 s))
 	    (else (set! *pointer* (-fx *pointer* 1)) (read-integer s)))))
-
+   
    (set! *definitions* 4)
    (string-guard! 1)
    (let ((d (string-ref s *pointer*)))
       (when (char=? d #\c)
 	 (set! *pointer* (+fx *pointer* 1))
 	 (set! *definitions* (make-vector (read-size s)))))
-   
+
    (read-item))
 
 ;*---------------------------------------------------------------------*/
@@ -854,13 +854,13 @@
 		      (print-item (when (pair? (cdr x)) (cadr x)))))
 		  (else
 		   (print-item ((class-field-accessor f) item))))))
-	 (print-item (class-hash klass))))
+	 (print-fixnum (class-hash klass))))
    
    ;; print-object-custom
    (define (print-object-custom item o)
       (!print-markup #\O)
       (print-item o)
-      (print-item (class-hash (object-class item))))
+      (print-fixnum (class-hash (object-class item))))
    
    ;; print-struct
    (define (print-struct markup item)
