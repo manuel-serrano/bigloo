@@ -19,11 +19,13 @@ Description: Bigloo core Libraries
 @IFALSA@ Package: libalsa-bigloo
 @IFALSA@ Architecture: any
 @IFALSA@ Depends: libasound2, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SSLDEPEND@, @EXTRADEPEND@
+@IFALSA@ Build-Depends: libasound2-dev
 @IFALSA@ Description: Bigloo bindings for the ALSA library
 
 @IFFLAC@ Package: libflac-bigloo
 @IFFLAC@ Architecture: any
 @IFFLAC@ Depends: libflac8, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
+@IFFLAC@ Build-Depends: libflac-dev
 @IFFLAC@ Description: Bigloo bindings for the FLAC library
 
 @IFWAV@ Package: libwav-bigloo
@@ -34,6 +36,7 @@ Description: Bigloo core Libraries
 @IFMPG123@ Package: libmpg123-bigloo
 @IFMPG123@ Architecture: any
 @IFMPG123@ Depends: libmpg123-0, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
+@IFMPG123@ Build-Depends: libmpg123-dev
 @IFMPG123@ Description: Bigloo bindings for the MPG123 library
 
 @IFAVAHI@ Package: libavahi-bigloo
