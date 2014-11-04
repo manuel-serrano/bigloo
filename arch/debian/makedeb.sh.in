@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Mon Nov  3 18:21:27 2014 (serrano)                */
+#*    Last change :  Tue Nov  4 07:52:01 2014 (serrano)                */
 #*    Copyright   :  2012-14 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -22,8 +22,8 @@ bglconfigureopt=
 
 #* depend=libpcre3                                                    */
 #* builddepend=libpcre3-dev                                           */
-builddepend=libasound2-dev
-depend=
+builddepend=libasound2-dev libflac-dev libavahi-client-dev libavahi-common-dev libmpg123-dev libsqlite3-dev libssl-dev
+depend=libasound2 libflac8 libavahi-client3 libavahi-common3 libmpg123-0 libsqlite3-0 libssl1.0.0
 
 fakeroot=fakeroot
 
