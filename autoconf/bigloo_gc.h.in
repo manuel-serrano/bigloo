@@ -130,6 +130,11 @@
 #  else
 #    define STRING_DISPLACEMENT() 0
 #  endif
+#  if( defined( TAG_SYMBOL ) && ( TAG_SYMBOL != 0) )
+#    define SYMBOL_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_SYMBOL ) 
+#  else
+#    define SYMBOL_DISPLACEMENT() 0
+#  endif
 #  if( defined( TAG_REAL ) && ( TAG_REAL != 0) )
 #    define REAL_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_REAL ) 
 #  else
@@ -146,6 +151,7 @@
        CELL_DISPLACEMENT(), \
        STRUCTURE_DISPLACEMENT(), \
        STRING_DISPLACEMENT(), \
+       SYMBOL_DISPLACEMENT(), \
        REAL_DISPLACEMENT(), \
        1 )
 #  define FREE_ALLOCATION() \

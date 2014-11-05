@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:37:24 2003                          */
-/*    Last change :  Wed Oct 24 08:40:55 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Wed Nov  5 19:35:07 2014 (serrano)                */
+/*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Extended symbols                                                 */
 /*=====================================================================*/
@@ -23,4 +23,4 @@ typedef struct esymbol {
 #define ESYMBOL_SIZE (sizeof( struct esymbol ) )
 
 #define ESYMBOL_TO_STRING( sym ) \
-   BSTRING_TO_STRING( SYMBOL_TO_STRING( CREF( sym ) ) )
+   BSTRING_TO_STRING( SYMBOL_TO_STRING( CSYMBOL( sym ) ) )

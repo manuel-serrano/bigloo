@@ -3,24 +3,20 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Fri Mar  7 18:44:18 2014 (serrano)                */
+/*    Last change :  Wed Nov  5 19:38:02 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/
 #include <bigloo.h>
 #include <esymbol.h>
+#include <bmem.h>
 
 extern void set_alloc_type( int, int  );
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
 /*---------------------------------------------------------------------*/
-extern void *(*____bgl_get_symtab)();
-extern long (*____get_hash_power_number)( char *, unsigned long );
-extern void *(*____string_to_bstring)( char * );
-extern void *(*____string_to_bstring_len)( char *, unsigned long );
-
 extern int bmem_debug;
 
 /*---------------------------------------------------------------------*/
@@ -30,7 +26,7 @@ static obj_t
 make_symbol( obj_t name ) {
    obj_t symbol;
 
-   set_alloc_type( SYMBOL_TYPE, 0 );
+   set_alloc_type( SYMBOL_TYPE_NUM, 0 );
    
    symbol = GC_MALLOC( ESYMBOL_SIZE );
 
@@ -39,7 +35,10 @@ make_symbol( obj_t name ) {
       fprintf( stderr, "make_symbol: %s %p\n", BSTRING_TO_STRING( name ), symbol );
    }
 #endif
+#if( !defined( TAG_SYMBOL ) )   
    symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
+#endif
+   
    symbol->symbol_t.string = name;
    symbol->symbol_t.cval   = BNIL;
 
@@ -48,7 +47,7 @@ make_symbol( obj_t name ) {
    ((esymbol_t *)(symbol))->class_offset = 0;
    ((esymbol_t *)(symbol))->stamp = -3;
 
-   return BREF( symbol );
+   return BSYMBOL( symbol );
 }
    
 /*---------------------------------------------------------------------*/

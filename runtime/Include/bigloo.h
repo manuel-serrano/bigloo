@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Sep 22 15:26:55 2014 (serrano)                */
+/*    Last change :  Wed Nov  5 18:57:00 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -180,10 +180,10 @@ extern "C" {
 #endif
 
 #if( PTR_ALIGNMENT >= 3 )
-#   define TAG_VECTOR    4     /*  vector tagging            ...100    */
+#   define TAG_VECTOR    4     /*  vector tagging           ...100     */
 #   define TAG_CELL      5     /*  Cells tagging            ...101     */
 #   define TAG_REAL      6     /*  Reals tagging            ...110     */
-#   define TAG_STRING    7     /*  Strings tagging          ...111     */
+#   define TAG_SYMBOL    7     /*  Strings tagging          ...111     */
 #endif
 
 #if( TAG_STRUCT != 0 )
@@ -214,9 +214,9 @@ extern "C" {
 #define SIZE_MASK ((1 << HEADER_SIZE_BIT_SIZE) - 1)
 #define HEADER_SIZE_BIT_SIZE 16
 #define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
-   
+
 #define MAKE_HEADER( _i, _sz ) \
-   ((header_t)TAG( (_i), TYPE_SHIFT, (_sz) << HEADER_SHIFT ))
+   ((header_t)TAG( (_i), TYPE_SHIFT, (_sz & SIZE_MASK) << HEADER_SHIFT ))
 
 #define HEADER_TYPE( _i ) (long)UNTAG( (_i), TYPE_SHIFT, 0 )
 
@@ -247,7 +247,9 @@ extern "C" {
 #define OPAQUE_TYPE 5
 #define CUSTOM_TYPE 6
 #define KEYWORD_TYPE 7
-#define SYMBOL_TYPE 8
+#if( !defined( TAG_SYMBOL ) )
+#  define SYMBOL_TYPE 8
+#endif       
 #define STACK_TYPE 9
 #define INPUT_PORT_TYPE 10
 #define OUTPUT_PORT_TYPE 11
@@ -365,14 +367,14 @@ typedef union scmobj {
 #if( !defined( TAG_STRING ) )
       header_t header;
 #endif		
-      int length;
+      long length;
       unsigned char char0[ 1 ];
    } string_t;
 
    /* ucs2/utf16 strings */
    struct ucs2_string {
       header_t header;
-      int length;
+      long length;
       ucs2_t char0;
    } ucs2_string_t; 
 
@@ -411,10 +413,18 @@ typedef union scmobj {
 
    /* symbols and keywords */
    struct symbol {
+#if( !defined( TAG_SYMBOL ) )
       header_t header;
+#endif      
       union scmobj *string;
       union scmobj *cval;
    } symbol_t;
+   
+   struct keyword {
+      header_t header;
+      union scmobj *string;
+      union scmobj *cval;
+   } keyword_t;
    
    /* common ports structure (output, input, procedure, gzip) */
    struct port {
@@ -1200,12 +1210,12 @@ typedef struct BgL_objectz00_bgl {
 #   define BSTRING( p ) ((obj_t)((long)p + TAG_STRING))
 #   define CSTRING( p ) ((obj_t)((long)p - TAG_STRING))
 #   define DEFINE_STRING( name, aux, str, len ) \
-      static struct { __CNST_ALIGN int length; \
+      static struct { __CNST_ALIGN long length; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER, len, str }; \
          static obj_t name = BSTRING( &(aux.length) )
 #   define DEFINE_STRING_START( name, aux, len ) \
-      static struct { __CNST_ALIGN int length; \
+      static struct { __CNST_ALIGN long length; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER, len
 #   define DEFINE_STRING_STOP( name, aux ) \
@@ -1216,13 +1226,13 @@ typedef struct BgL_objectz00_bgl {
 #   define CSTRING( p ) CREF( p )
 #   define DEFINE_STRING( name, aux, str, len ) \
       static struct { __CNST_ALIGN header_t header; \
-                      int length; \
+                      long length; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, 0 ), len, str }; \
          static obj_t name = BSTRING( &(aux.header) )
 #   define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN header_t header; \
-                      int length; \
+                      long length; \
                       char string[ len + 1]; } \
          aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, 0 ), len 
 #   define DEFINE_STRING_STOP( name, aux ) \
@@ -1244,6 +1254,16 @@ typedef struct BgL_objectz00_bgl {
 #define STRING_SET( s, i, c ) (STRING_REF( s, i ) = c, BUNSPEC)
 #define STRING_PTR_NULL( _p ) (_p == 0)
 
+#if( defined( TAG_STRING ) )
+#  define STRING_ASCII_SENTINEL( s ) 0
+#  define STRING_ASCII_SENTINEL_SET( s, i ) 0
+#else
+#  define STRING_ASCII_SENTINEL( s ) \
+     HEADER_SIZE( CREF( s )->header )
+#  define STRING_ASCII_SENTINEL_SET( s, i ) \
+   (CREF( s )->header = MAKE_HEADER( STRING_TYPE, i ), BUNSPEC)
+#endif   
+   
 /*---------------------------------------------------------------------*/
 /*    UCS2/UTF16 Strings                                               */
 /*---------------------------------------------------------------------*/
@@ -1573,9 +1593,17 @@ typedef struct BgL_objectz00_bgl {
 /*---------------------------------------------------------------------*/
 /*    Symbols                                                          */
 /*---------------------------------------------------------------------*/
-#define SYMBOLP( o ) (POINTERP( o ) && (TYPE( o ) == SYMBOL_TYPE))
+#if( defined( TAG_SYMBOL ) )
+#   define SYMBOLP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_SYMBOL)))
+#   define BSYMBOL( p ) ((obj_t)((long)p + TAG_SYMBOL))
+#   define CSYMBOL( p ) ((obj_t)((long)p - TAG_SYMBOL))
+#else   
+#   define SYMBOLP( o ) (POINTERP( o ) && (TYPE( o ) == SYMBOL_TYPE))
+#   define BSYMBOL( p ) BREF( p )
+#   define CSYMBOL( p ) CREF( p )
+#endif   
 
-#define SYMBOL( o ) (CREF( o )->symbol_t)
+#define SYMBOL( o ) (CSYMBOL( o )->symbol_t)
    
 #define SYMBOL_SIZE (sizeof( struct symbol ))
 
@@ -1586,16 +1614,14 @@ typedef struct BgL_objectz00_bgl {
 
 #define SET_SYMBOL_PLIST( o, v ) (GET_SYMBOL_PLIST( o ) = v, BUNSPEC)
 
-#define SYMBOL_CASE_SENSTIVE_P( obj ) ((obj)->header & (1 << HEADER_SHIFT))
-   
 /*---------------------------------------------------------------------*/
 /*    Keywords                                                         */
 /*---------------------------------------------------------------------*/
 #define KEYWORDP( o ) (POINTERP( o ) && (TYPE( o ) == KEYWORD_TYPE))
 
-#define KEYWORD( o ) (CREF( o )->symbol_t)
+#define KEYWORD( o ) (CREF( o )->keyword_t)
    
-#define KEYWORD_SIZE (sizeof( struct symbol ))
+#define KEYWORD_SIZE (sizeof( struct keyword ))
 
 #define KEYWORD_TO_STRING( o ) KEYWORD( o ).string
 

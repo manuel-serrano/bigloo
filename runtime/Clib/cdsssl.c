@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Sun Feb  2 10:45:53 2014 (serrano)                */
+/*    Last change :  Wed Nov  5 18:45:15 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -45,10 +45,10 @@ make_keyword( obj_t name ) {
    obj_t keyword;
 
    keyword = GC_MALLOC( KEYWORD_SIZE );
-   
-   keyword->symbol_t.header = MAKE_HEADER( KEYWORD_TYPE, KEYWORD_SIZE );
-   keyword->symbol_t.string = name;
-   keyword->symbol_t.cval   = BNIL;
+
+   keyword->keyword_t.header = MAKE_HEADER( KEYWORD_TYPE, KEYWORD_SIZE );
+   keyword->keyword_t.string = name;
+   keyword->keyword_t.cval   = BNIL;
    
    return BREF( keyword );
 }

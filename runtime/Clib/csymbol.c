@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Sun Feb  2 10:47:01 2014 (serrano)                */
+/*    Last change :  Wed Nov  5 07:37:59 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -61,12 +61,14 @@ make_symbol( obj_t name ) {
    obj_t symbol;
 
    symbol = GC_MALLOC( SYMBOL_SIZE );
-   
-   symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
-   symbol->symbol_t.string = name;
-   symbol->symbol_t.cval   = BNIL;
 
-   return BREF( symbol );
+#if( !defined( TAG_SYMBOL ) )   
+   symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
+#endif   
+   symbol->symbol_t.string = name;
+   symbol->symbol_t.cval = BNIL;
+
+   return BSYMBOL( symbol );
 }
 
 /*---------------------------------------------------------------------*/

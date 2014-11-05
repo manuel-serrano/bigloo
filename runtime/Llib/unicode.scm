@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Oct 12 07:42:07 2014 (serrano)                */
+;*    Last change :  Wed Nov  5 11:27:51 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -466,7 +466,7 @@
 ;*    ucs2-string->utf8-string ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (ucs2-string->utf8-string ucs2)
-   (c-ucs2-string->utf8-string ucs2))
+   (string-ascii-sentinel-mark! (c-ucs2-string->utf8-string ucs2)))
 
 ;*---------------------------------------------------------------------*/
 ;*    8bits ...                                                        */
@@ -637,13 +637,22 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    ascii-string? ...                                                */
-;*    -------------------------------------------------------------    */
-;*    To be replaced with an effective fast test.                      */
 ;*---------------------------------------------------------------------*/
 (define (ascii-string? str)
-   ;; MS CARE: 25 sep 2014, to be replaced
-   #f)
-	   
+   (>=fx (string-ascii-sentinel str) (string-length str)))
+
+;*---------------------------------------------------------------------*/
+;*    string-ascii-sentinel-mark! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (string-ascii-sentinel-mark! string)
+   (let ((len (string-length string)))
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (if (>fx (char->integer (string-ref string i)) 127)
+		(string-ascii-sentinel-set! string i)
+		(loop (+fx i 1)))))
+      string))
+
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string? ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -747,12 +756,19 @@
       (string-set! s (+fx j 1) #a191)
       (string-set! s (+fx j 2) #a189))
 
-   (if (or (>fx end (string-length str))
+   (cond
+      ((or (>fx end (string-length str))
 	   (<fx start 0)
 	   (>fx start end))
-       (error "utf8-string-encode" "Illegal indexes" (cons start end))
+       (error "utf8-string-encode" "Illegal indexes" (cons start end)))
+      ((ascii-string? str)
+       ;; no need to replace anything, its an ascii string
+       (string-copy str))
+      (else
        (let* ((len (-fx end start))
 	      (res (make-string (*fx 3 len))))
+	  ;; mask the UTF8 sentinel
+	  (string-ascii-sentinel-set! res (string-ascii-sentinel str))
 	  (let loop ((r start)
 		     (w 0))
 	     (if (=fx r end)
@@ -899,7 +915,7 @@
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
 		       (else
-			#f))))))))
+			#f)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
@@ -925,23 +941,37 @@
 ;*    Return the number of characters of an UTF8 string.               */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-length str)
-   (let ((len (string-length str)))
-      (let loop ((r 0)
-		 (l 0))
-	 (if (=fx r len)
-	     l
-	     (loop (+fx r (utf8-char-size (string-ref str r))) (+fx l 1))))))
+   (let ((len (string-length str))
+	 (sen (string-ascii-sentinel str)))
+      (if (>=fx sen len)
+	  len
+	  (let loop ((r sen)
+		     (l sen))
+	     (if (=fx r len)
+		 l
+		 (loop (+fx r (utf8-char-size (string-ref str r)))
+		    (+fx l 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    This function handles situtation where the last char of the      */
+;*    This function handles cases where the last char of the           */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append left right)
+   
+   (define (string-append-utf8-left left right)
+      ;; append two strings, the left one being UTF8
+      (let ((s (string-append left right)))
+	 (string-ascii-sentinel-set! s (string-ascii-sentinel left))
+	 s))
+   
    (let ((lenf (string-length left)))
-      (if (and (>=fx lenf 4)
+      (cond
+	 ((and (>=fx lenf 4)
 	       (=fx (char->integer (string-ref-ur left (-fx lenf 4))) #xf8))
+	  ;; the left string is an UTF8 string with potentially a
+	  ;; replace char at its last index
 	  (let ((lenr (string-length right)))
 	     (if (>=fx lenr 4)
 		 (let ((cr1 (char->integer (string-ref-ur right 0))))
@@ -981,32 +1011,43 @@
 			   (string-set! tmp (-fx lenf 1)
 			      (integer->char cr4))
 			   tmp)
-			(string-append left right)))
-		 (string-append left right)))
-	  (string-append left right))))
+			(string-append-utf8-left left right)))
+		 (string-append-utf8-left left right))))
+	 ((not (ascii-string? left))
+	  (string-append-utf8-left left right))
+	 ((not (ascii-string? right))
+	  (let ((s (string-append left right)))
+	     (string-ascii-sentinel-set! s
+		(+fx (string-length left) (string-ascii-sentinel right)))
+	     s))
+	 (else
+	  (string-append left right)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-ref ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-ref str i)
-   (when (<fx i 0)
-      (error "utf8-string-ref" "index out of range" i))
-   (let ((len (string-length str)))
-      (let loop ((r 0) (i i))
-	 (if (=fx r len)
-	     (error "utf8-string-ref" "index out of range" i)
-	     (let* ((c (string-ref str r))
-		    (s (utf8-char-size c)))
-		(if (=fx i 0)
-		    (substring str r (+fx r s))
-		    (loop (+fx r s) (-fx i 1))))))))
+   (let ((sentinel (string-ascii-sentinel str)))
+      (if (<fx i sentinel)
+	  (string (string-ref str i))
+	  (let ((len (string-length str)))
+	     (let loop ((r sentinel) (i (-fx i sentinel)))
+		(let* ((c (string-ref str r))
+		       (s (utf8-char-size c)))
+		   (if (=fx i 0)
+		       (substring str r (+fx r s))
+		       (loop (+fx r s) (-fx i 1)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-index->string-index ...                              */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-index->string-index str i)
-   (if (<fx i 0)
-       -1
+   (cond
+      ((<fx i 0)
+       -1)
+      ((<fx i (string-ascii-sentinel str))
+       i)
+      (else
        (let ((len (string-length str)))
 	  (let loop ((r 0) (i i))
 	     (cond
@@ -1016,35 +1057,37 @@
 		 (let ((c (string-ref str r)))
 		    (loop (+fx r (utf8-char-size c)) (-fx i 1))))
 		(else
-		 -1))))))
+		 -1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-substring ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (utf8-substring string::bstring start::long
-			#!optional (end::long (utf8-string-length string)))
+	   #!optional (end::long (utf8-string-length string)))
    (let ((len (string-length string)))
       (cond
 	 ((or (<fx start 0) (>fx start len))
 	  (error "utf8-substring"
-		 (string-append "Illegal start index \"" string "\"")
-		 start))
+	     (string-append "Illegal start index \"" string "\"")
+	     start))
 	 ((<fx end 0)
 	  (error "utf8-substring"
-		 (string-append "Illegal end index \"" string "\"")
-		 end))
+	     (string-append "Illegal end index \"" string "\"")
+	     end))
 	 ((or (<fx end start) (>fx end len))
 	  (error "utf8-substring"
-		 (string-append "Illegal end index \"" string "\"")
-		 end))
+	     (string-append "Illegal end index \"" string "\"")
+	     end))
 	 ((=fx start end)
 	  "")
+	 ((ascii-string? string)
+	  (substring string start end))
 	 (else
 	  (let loop ((r 0)
 		     (n 0)
 		     (i -1))
 	     (if (=fx r len)
-		 (substring string i r)
+		 (string-ascii-sentinel-mark! (substring string i r))
 		 (let* ((c (string-ref string r))
 			(s (utf8-char-size c)))
 		    (cond
@@ -1095,7 +1138,7 @@
    (let loop ((r 0)
 	      (w 0))
       (if (=fx r len)
-	  nstr
+	  (string-ascii-sentinel-mark! nstr)
 	  (let* ((c (string-ref str r))
 		 (n (char->integer c)))
 	     (cond
@@ -1215,7 +1258,7 @@
    (let loop ((r 0)
 	      (w 0))
       (if (=fx r len)
-	  nstr
+	  (string-ascii-sentinel-mark! nstr)
 	  (let ((c (char->integer (string-ref-ur str r))))
 	     (cond
 		((>=fx c #xc0)

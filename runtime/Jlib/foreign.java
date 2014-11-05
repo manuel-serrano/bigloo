@@ -2684,6 +2684,16 @@ public final class foreign
 	 return s.length;
       }
 
+   public static int STRING_ASCII_SENTINEL(byte[]s)
+      {
+	 return 0;
+      }
+
+   public static Object STRING_ASCII_SENTINEL_SET(byte[]s, int l)
+      {
+	 return unspecified.unspecified;
+      }
+
    // Creations
    public static byte[] make_string(int n, int init)
       {

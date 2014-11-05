@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Sep 25 05:34:21 2014 (serrano)                */
+;*    Last change :  Wed Nov  5 11:44:56 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -43,6 +43,11 @@
 	    (macro $string-length::long (::bstring) "STRING_LENGTH")
 	    (macro $string-ref::uchar (::bstring ::long) "STRING_REF")
 	    (macro $string-set!::obj (::bstring ::long ::uchar) "STRING_SET")
+
+	    (macro $string-ascii-sentinel::long (::bstring)
+		   "STRING_ASCII_SENTINEL")
+	    (macro $string-ascii-sentinel-set!::obj (::bstring ::long)
+		   "STRING_ASCII_SENTINEL_SET")
 	    
 	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
 	    ($substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
@@ -92,6 +97,11 @@
 		       "STRING_REF")
 	       (method static $string-set!::obj (::bstring ::long ::uchar)
 		       "STRING_SET")
+	       
+	       (method static $string-ascii-sentinel::long (::bstring)
+		       "STRING_ASCII_SENTINEL")
+	       (method static $string-ascii-sentinel-set!::obj (::bstring ::long)
+		       "STRING_ASCII_SENTINEL_SET")
 	       
 	       (method static $string=?::bool (::bstring ::bstring)
 		       "bigloo_strcmp")
@@ -161,6 +171,9 @@
 	    (inline string-set!::obj ::bstring ::long ::uchar)
 	    (inline string-ref-ur::uchar ::bstring ::long)
 	    (inline string-set-ur!::obj ::bstring ::long ::uchar)
+	    (inline string-ascii-sentinel::long ::bstring)
+	    (inline string-ascii-sentinel-set!::obj ::bstring ::long)
+	    (string-ascii-sentinel-mark!::bstring ::bstring)	    
 	    (inline string=?::bool ::bstring ::bstring)
 	    (inline string-ci=?::bool ::bstring ::bstring)
 	    (inline substring=?::bool ::bstring ::bstring ::long)
@@ -243,6 +256,10 @@
 	    (string-ref side-effect-free no-cfa-top nesting)
 	    ($string-length fail-safe side-effect-free no-cfa-top nesting args-safe)
 	    (string-length fail-safe side-effect-free no-cfa-top nesting)
+	    ($string-ascii-sentinel fail-safe side-effect-free no-cfa-top nesting args-safe)
+	    (string-ascii-sentinel fail-safe side-effect-free no-cfa-top nesting)
+	    (string-ascii-sentinel-set! fail-safe side-effect-free no-cfa-top nesting)
+	    ($string-ascii-sentinel-set! fail-safe side-effect-free no-cfa-top nesting)
 	    ($string-bound-check? fail-safe side-effect-free no-cfa-top nesting)
 	    ($string=? fail-safe side-effect-free nesting)
 	    ($substring=? fail-safe side-effect-free nesting)
@@ -300,6 +317,30 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (string-length string)
    ($string-length string))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn string-ascii-sentinel@ ...                                */
+;*---------------------------------------------------------------------*/
+(define-inline (string-ascii-sentinel string)
+   ($string-ascii-sentinel string))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn string-ascii-sentinel-set!@ ...                           */
+;*---------------------------------------------------------------------*/
+(define-inline (string-ascii-sentinel-set! string len)
+   ($string-ascii-sentinel-set! string len))
+
+;*---------------------------------------------------------------------*/
+;*    string-ascii-sentinel-mark! ...                                  */
+;*---------------------------------------------------------------------*/
+(define (string-ascii-sentinel-mark! string)
+   (let ((len (string-length string)))
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (if (>fx (char->integer (string-ref string i)) 127)
+		(string-ascii-sentinel-set! string i)
+		(loop (+fx i 1)))))
+      string))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ref@ ...                                           */
