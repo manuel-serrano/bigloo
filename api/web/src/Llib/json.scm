@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Fri Oct 24 07:46:47 2014 (serrano)                */
+;*    Last change :  Fri Nov  7 19:38:20 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -20,7 +20,7 @@
    (export (json-parse o::input-port #!key
 	      array-alloc array-set array-return
 	      object-alloc object-set object-return
-	      parse-error reviver expr)))
+	      parse-error (undefined #t) reviver expr)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return ...                                                       */
@@ -38,16 +38,11 @@
 ;*---------------------------------------------------------------------*/
 (define *json-lexer*
    
-   (regular-grammar ()
+   (regular-grammar (undefined)
       
       ;; blank
       ((+ (in #\space #\newline #\tab #\return))
        (ignore))
-      
-;*       ;; comment                                                    */
-;*       ((or (: "/*" (* (or (out #\*) (: (+ #\*) (out #\/ #\*)))) (+ #\*) "/") */
-;* 	   (: "//" (* all)))                                           */
-;*        (ignore))                                                    */
       
       ;; commas
       (#\,
@@ -103,7 +98,7 @@
       ((: (or #\_ alpha) (* (or #\_ alpha digit)))
        (case (the-symbol)
 	  ((null) (return 'CONSTANT '()))
-;* 	  ((undefined) (return 'CONSTANT #unspecified))                */
+	  ((undefined) (return (if undefined 'CONSTANT 'ERROR) #unspecified))
 	  ((true) (return 'CONSTANT #t))
 	  ((false) (return 'CONSTANT #f))
 	  (else (return 'ERROR (the-symbol)))))
@@ -165,7 +160,7 @@
 (define (json-parse o::input-port #!key
 	   array-alloc array-set array-return
 	   object-alloc object-set object-return
-	   parse-error reviver expr)
+	   parse-error (undefined #t) reviver expr)
    
    (define (check-procedure proc arity name)
       (unless (and (procedure? proc) (correct-arity? proc arity))
@@ -178,7 +173,7 @@
    (define last-token #f)
    
    (define (read-token)
-      (let ((t (read/rp *json-lexer* o)))
+      (let ((t (read/rp *json-lexer* o undefined)))
 	 (set! last-token t)
 	 t))
    

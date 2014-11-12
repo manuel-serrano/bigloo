@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Nov 15 11:38:23 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Wed Nov 12 10:34:04 2014 (serrano)                */
+;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -199,7 +199,7 @@
 ;*    token-grammar ...                                                */
 ;*---------------------------------------------------------------------*/
 (define token-grammar
-   (regular-grammar ((str (* (or (out #\" #\\) (: #\\ all)))))
+   (regular-grammar ((str (* (or (out #\" #\\) (: #\\ all)))) name)
       ((+ (in "+*-_./'%&" ("azAZ09")))
        (the-string))
       ((: #\" str #\")
@@ -209,10 +209,10 @@
 	      (i (string-index s #\")))
 	  (substring s i (string-length s))))
       (else
-       (parse-error 'mime-content-type-decode
-		    "Illegal token"
-		    (the-failure)
-		    (the-port)))))
+       (parse-error "mime-content-type-decode"
+	  (format "Illegal value (~s)" name)
+	  (the-failure)
+	  (the-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    parameter-grammar ...                                            */
@@ -225,31 +225,32 @@
        (ignore))
       ((: (+ (out "; \t\n\r=")) #\=)
        (let* ((name (string-downcase! (the-substring 0 -1)))
-	      (val (read/rp token-grammar (the-port))))
+	      (val (read/rp token-grammar (the-port) name)))
 	  (cons (cons (string->symbol name) val) (ignore))))
-      ((: (+ (out "; \t\n\r=")) #\= (+ (or #\Space #\Newline)))
+      ((: (+ (out "; \t\n\r=")) #\= (+ (or #\Space #\Return #\Newline)))
        (let* ((str (the-substring 0 -2))
 	      (i (string-index str " \n"))
 	      (name (if i
 			(string-downcase! (substring str 0 i))
 			(string-downcase! str)))
-	      (val (read/rp token-grammar (the-port))))
+	      (val (read/rp token-grammar (the-port) name)))
 	  (cons (cons (string->symbol name) val) (ignore))))
-      ((: (+ (out "; \t\n\r=")) (+ (or #\Space #\Newline))
-				#\= (* (or #\Space #\Newline)))
+      ((: (+ (out "; \t\n\r="))
+	  (+ (or #\Space #\Return #\Newline))
+	  #\= (* (or #\Space #\Return #\Newline)))
        (let* ((str (the-substring 0 -1))
 	      (i (string-index str " \n"))
 	      (name (string-downcase! (substring str 0 i)))
-	      (val (read/rp token-grammar (the-port))))
+	      (val (read/rp token-grammar (the-port) name)))
 	  (cons (cons (string->symbol name) val) (ignore))))
       (else
        (let ((c (the-failure)))
 	  (if (eof-object? c)
 	      '()
-	      (parse-error 'mime-content-type-decode
-			   "Illegal parameter"
-			   (the-failure)
-			   (the-port)))))))
+	      (parse-error "mime-content-type-decode"
+		 "Illegal parameter name"
+		 (the-failure)
+		 (the-port)))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    content-type-grammar ...                                         */
@@ -260,17 +261,17 @@
        (ignore))
       ((: (+ (in "-_." ("azAZ09"))) "/")
        (let* ((ty (string-downcase! (the-substring 0 -1)))
-	      (sty (string-downcase! (read/rp token-grammar (the-port))))
+	      (sty (string-downcase! (read/rp token-grammar (the-port) ty)))
 	      (parameters (read/rp parameter-grammar (the-port))))
 	  (list (string->symbol ty) (string->symbol sty) parameters)))
       ((: "=?" (+ (out #\?)) "?" (in ("azAZ")) "?")
        ;; rfc2047 header to be skipped
        (ignore))
       (else
-       (parse-error 'mime-content-type-decode
-		    "Illegal token"
-		    (the-failure)
-		    (the-port)))))
+       (parse-error "mime-content-type-decode"
+	  "Illegal main type"
+	  (the-failure)
+	  (the-port)))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    mime-content-type-decode-port ...                                */
@@ -302,10 +303,10 @@
        (let ((dispo (string-downcase! (the-string))))
 	  (list (string->symbol dispo) '())))
       (else
-       (parse-error 'parse-content-disposition
-		    "Illegal token"
-		    (the-failure)
-		    (the-port)))))
+       (parse-error "parse-content-disposition"
+	  "Illegal token"
+	  (the-failure)
+	  (the-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mime-content-disposition-decode-port ...                         */
@@ -426,11 +427,20 @@
 						  (when (>fx (bigloo-warning) 0)
 						     (display "*** WARNING:multipart"
 							(current-error-port))
-						     (display " Illegal mimetype \""
+						     (display " Illegal mimetype ("
+							(current-error-port))
+						     (if (isa? e &error)
+							 (with-access::&error e (msg obj)
+							    (display msg (current-error-port))
+							    (display " [" (current-error-port))
+							    (write obj (current-error-port))
+							    (display " ]" (current-error-port)))
+							 (display (typeof e) (current-error-port)))
+						     (display ") \""
 							(current-error-port))
 						     (display (cdr c)
 							(current-error-port))
-						     (display "\", assuming text/plain\n"
+						     (display "\", assuming text/plain.\n"
 							(current-error-port)))
 						  '(text plain))
 					       (raise e)))
