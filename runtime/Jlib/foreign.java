@@ -4051,30 +4051,30 @@ public final class foreign
       v.objs[l] = o;
    }
    
-   public static int BGL_S16U8VREF(u8vector v, int l) {
-      return v.objs[l+2]<<8 + v.objs[l+3];
+   public static int BGL_S16_U8VREF(u8vector v, int l) {
+      return v.objs[l]<<8 + v.objs[l+1];
    }
-   public static void BGL_S16U8VSET(u8vector v, int l, int o) {
+   public static void BGL_S16_U8VSET(u8vector v, int l, int o) {
       v.objs[l] = (byte)(o>>8 & 0xff);
       v.objs[l+1] = (byte)(o & 0xff);
    }
 
-   public static int BGL_S32U8VREF(u8vector v, int l) {
+   public static int BGL_S32_U8VREF(u8vector v, int l) {
       return v.objs[l]<<24 + v.objs[l+1]<<16 + v.objs[l+2]<<8 + v.objs[l+3];
    }
-   public static void BGL_S32U8VSET(u8vector v, int l, int o) {
+   public static void BGL_S32_U8VSET(u8vector v, int l, int o) {
       v.objs[l] = (byte)(o>>24);
       v.objs[l+1] = (byte)(o>>16 & 0xff);
       v.objs[l+2] = (byte)(o>>8 & 0xff);
       v.objs[l+3] = (byte)(o & 0xff);
    }
 
-   public static long BGL_S64U8VREF(u8vector v, int l) {
+   public static long BGL_S64_U8VREF(u8vector v, int l) {
       return
 	 v.objs[l]<<56 + v.objs[l+1]<<48 + v.objs[l+2]<<40 + v.objs[l+3]<<32 +
 	 v.objs[l+4]<<24 + v.objs[l+5]<<16 + v.objs[l+6]<<8 + v.objs[l+7];
    }
-   public static void BGL_S64U8VSET(u8vector v, int l, long o) {
+   public static void BGL_S64_U8VSET(u8vector v, int l, long o) {
       v.objs[l] = (byte)(o>>56 & 0xff);
       v.objs[l+1] = (byte)(o>>48 & 0xff);
       v.objs[l+2] = (byte)(o>>40 & 0xff);
@@ -4085,11 +4085,11 @@ public final class foreign
       v.objs[l+7] = (byte)(o & 0xff);
    }
 
-   public static float BGL_F32U8VREF(u8vector v, int l) {
-      return Float.intBitsToFloat( BGL_S32U8VREF( v, l ) );
+   public static float BGL_F32_U8VREF(u8vector v, int l) {
+      return Float.intBitsToFloat( BGL_S32_U8VREF( v, l ) );
    }
    
-   public static void BGL_F32U8VSET(u8vector v, int l, float f) {
+   public static void BGL_F32_U8VSET(u8vector v, int l, float f) {
       int bits = Float.floatToIntBits(f);
       v.objs[l] = (byte)(bits & 0xff);
       v.objs[l+1] = (byte)((bits >> 8) & 0xff);
@@ -4097,11 +4097,11 @@ public final class foreign
       v.objs[l+3] = (byte)((bits >> 24) & 0xff);
    }
    
-   public static double BGL_F64U8VREF(u8vector v, int l) {
-      return Double.longBitsToDouble( BGL_S64U8VREF( v, l ) );
+   public static double BGL_F64_U8VREF(u8vector v, int l) {
+      return Double.longBitsToDouble( BGL_S64_U8VREF( v, l ) );
    }
    
-   public static void BGL_F64U8VSET(u8vector v, int l, double f) {
+   public static void BGL_F64_U8VSET(u8vector v, int l, double f) {
       long bits = Double.doubleToLongBits(f);
       v.objs[l] = (byte)(bits & 0xff);
       v.objs[l+1] = (byte)((bits >> 8) & 0xff);
@@ -4119,20 +4119,6 @@ public final class foreign
 	 t.objs[ ts + i ] = s.objs[ ss + i ];
       }
    }
-   
-/*    public static void BGL_SU8VECTOR_COPY_FROM_STRING(u8vector t, int ts, byte[] s, int ss, int se ) { */
-/*       int len = se - ss;                                            */
-/*       for( int i = 0; i < len; i++ ) {                              */
-/* 	 t.objs[ ts + i ] = s[ ss + i ];                               */
-/*       }                                                             */
-/*    }                                                                */
-/*                                                                     */
-/*    public static void BGL_SU8VECTOR_COPY_TO_STRING(u8vector t, int ts, byte[] s, int ss, int se ) { */
-/*       int len = se - ss;                                            */
-/*       for( int i = 0; i < len; i++ ) {                              */
-/* 	 s[ ss + i ] = t.objs[ ts + i ];                               */
-/*       }                                                             */
-/*    }                                                                */
    
    public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se ) {
       int len = se - ss;

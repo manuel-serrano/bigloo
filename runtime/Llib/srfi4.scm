@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  6 16:28:39 2006                          */
-;*    Last change :  Sun Aug 31 16:44:58 2014 (serrano)                */
+;*    Last change :  Fri Nov 14 08:05:50 2014 (serrano)                */
 ;*    Copyright   :  2006-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo srfi-4 implementation                                 */
@@ -166,50 +166,46 @@
 		  "BGL_F64VSET")
 	   
 	   (macro $s16/u8vector-ref::int16 (::u8vector ::long)
-		  "BGL_S16VREF")
+		  "BGL_S16_U8VREF")
 	   (macro $s16/u8vector-set!::void (::u8vector ::long ::int16)
-		  "BGL_S16VSET")
+		  "BGL_S16_U8VSET")
 	   (macro $u16/u8vector-ref::uint16 (::u8vector ::long)
-		  "BGL_U16VREF")
+		  "BGL_U16_U8VREF")
 	   (macro $u16/u8vector-set!::void (::u8vector ::long ::uint16)
-		  "BGL_U16VSET")
+		  "BGL_U16_U8VSET")
 	   
 	   (macro $s32/u8vector-ref::int32 (::u8vector ::long)
-		  "BGL_S32VREF")
+		  "BGL_S32_U8VREF")
 	   (macro $s32/u8vector-set!::void (::u8vector ::long ::int32)
-		  "BGL_S32VSET")
+		  "BGL_S32_U8VSET")
 	   (macro $u32/u8vector-ref::uint32 (::u8vector ::long)
-		  "BGL_U32VREF")
+		  "BGL_U32_U8VREF")
 	   (macro $u32/u8vector-set!::void (::u8vector ::long ::uint32)
-		  "BGL_U32VSET")
+		  "BGL_U32_U8VSET")
 
 	   (macro $s64/u8vector-ref::int64 (::u8vector ::long)
-		  "BGL_S64VREF")
+		  "BGL_S64_U8VREF")
 	   (macro $s64/u8vector-set!::void (::u8vector ::long ::int64)
-		  "BGL_S64VSET")
+		  "BGL_S64_U8VSET")
 	   (macro $u64/u8vector-ref::uint64 (::u8vector ::long)
-		  "BGL_U64VREF")
+		  "BGL_U64_U8VREF")
 	   (macro $u64/u8vector-set!::void (::u8vector ::long ::uint64)
-		  "BGL_U64VSET")
+		  "BGL_U64_U8VSET")
 
 	   (macro $f32/u8vector-ref::float (::u8vector ::long)
-		  "BGL_F32VREF")
+		  "BGL_F32_U8VREF")
 	   (macro $f32/u8vector-set!::void (::u8vector ::long ::float)
-		  "BGL_F32VSET")
+		  "BGL_F32_U8VSET")
 	   
 	   (macro $f64/u8vector-ref::double (::u8vector ::long)
-		  "BGL_F64VREF")
+		  "BGL_F64_U8VREF")
 	   (macro $f64/u8vector-set!::void (::u8vector ::long ::double)
-		  "BGL_F64VSET")
+		  "BGL_F64_U8VSET")
 
 	   (macro $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
 		  "BGL_SU8VECTOR_COPY")
 	   (macro $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
 		  "BGL_SU8VECTOR_COPY")
-;* 	   (macro $u8vector-copy-from-string!::void (::u8vector ::long ::bstring ::long ::long) */
-;* 		  "BGL_SU8VECTOR_COPY_FROM_STRING")                    */
-;* 	   (macro $u8vector-copy-to-string!::void (::u8vector ::long ::bstring ::long ::long) */
-;* 		  "BGL_SU8VECTOR_COPY_TO_STRING")                      */
 	   (macro $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
 		  "BGL_SU16VECTOR_COPY")
 	   (macro $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)
@@ -375,50 +371,46 @@
 	      
 	      
 	      (method static $s16/u8vector-ref::int16 (::u8vector ::long)
-		 "BGL_S16U8VREF")
+		 "BGL_S16_U8VREF")
 	      (method static $s16/u8vector-set!::void (::u8vector ::long ::int16)
-		 "BGL_S16U8VSET")
+		 "BGL_S16_U8VSET")
 	      (method static $u16/u8vector-ref::int16 (::u8vector ::long)
-		 "BGL_S16U8VREF")
+		 "BGL_S16_U8VREF")
 	      (method static $u16/u8vector-set!::void (::u8vector ::long ::int16)
-		 "BGL_S16U8VSET")
+		 "BGL_S16_U8VSET")
 	      
 	      (method static $s32/u8vector-ref::int32 (::u8vector ::long)
-		 "BGL_S32U8VREF")
+		 "BGL_S32_U8VREF")
 	      (method static $s32/u8vector-set!::void (::u8vector ::long ::int32)
-		 "BGL_S32U8VSET")
+		 "BGL_S32_U8VSET")
 	      (method static $u32/u8vector-ref::int32 (::u8vector ::long)
-		 "BGL_S32U8VREF")
+		 "BGL_S32_U8VREF")
 	      (method static $u32/u8vector-set!::void (::u8vector ::long ::int32)
-		 "BGL_S32U8VSET")
+		 "BGL_S32_U8VSET")
 
 	      (method static $s64/u8vector-ref::int64 (::u8vector ::long)
-		 "BGL_S64U8VREF")
+		 "BGL_S64_U8VREF")
 	      (method static $s64/u8vector-set!::void (::u8vector ::long ::int64)
-		 "BGL_S64U8VSET")
+		 "BGL_S64_U8VSET")
 	      (method static $u64/u8vector-ref::int64 (::u8vector ::long)
-		 "BGL_S64U8VREF")
+		 "BGL_S64_U8VREF")
 	      (method static $u64/u8vector-set!::void (::u8vector ::long ::int64)
-		 "BGL_S64U8VSET")
+		 "BGL_S64_U8VSET")
 
 	      (method static $f32/8vector-ref::float (::u8vector ::long)
-		 "BGL_F32U8VREF")
+		 "BGL_F32_U8VREF")
 	      (method static $f32/8vector-set!::void (::u8vector ::long ::float)
-		 "BGL_F32U8VREF")
+		 "BGL_F32_U8VREF")
 	      
-	      (method static $f64/8vector-ref::double (::u8vector ::long)
-		 "BGL_F64U8VREF")
-	      (method static $f64/8vector-set!::void (::u8vector ::long ::double)
-		 "BGL_F64U8VREF")
+	      (method static $f64/u8vector-ref::double (::u8vector ::long)
+		 "BGL_F64_U8VREF")
+	      (method static $f64/u8vector-set!::void (::u8vector ::long ::double)
+		 "BGL_F64_U8VREF")
 	      
 	      (method static $s8vector-copy!::void (::s8vector ::long ::s8vector ::long ::long)
 		 "BGL_SU8VECTOR_COPY")
 	      (method static $u8vector-copy!::void (::u8vector ::long ::u8vector ::long ::long)
 		 "BGL_SU8VECTOR_COPY")
-;* 	      (method static $u8vector-copy-from-string!::void (::u8vector ::long ::bstring ::long ::long) */
-;* 		 "BGL_SU8VECTOR_COPY_FROM_STRING")                     */
-;* 	      (method static $u8vector-copy-to-string!::void (::u8vector ::long ::bstring ::long ::long) */
-;* 		 "BGL_SU8VECTOR_COPY_TO_STRING")                       */
 	      (method static $s16vector-copy!::void (::s16vector ::long ::s16vector ::long ::long)
 		 "BGL_SU16VECTOR_COPY")
 	      (method static $u16vector-copy!::void (::u16vector ::long ::u16vector ::long ::long)

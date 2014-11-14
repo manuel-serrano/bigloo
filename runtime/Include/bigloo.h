@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Nov  5 18:57:00 2014 (serrano)                */
+/*    Last change :  Fri Nov 14 08:04:41 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2012,6 +2012,32 @@ extern bool_t BXNEGATIVE( obj_t );
 #define BGL_F64VREF( v, i ) (&(STVECTOR( v, double )->obj0))[ i ]
 #define BGL_F64VSET( v, i, o ) (BGL_F64VREF( v, i ) = o, BUNSPEC)
 
+#define BGL_XXX_U8VREF( v, i, type ) \
+   (*((type *)(&BGL_S8VREF( v, i ))))
+#define BGL_XXX_U8VSET( v, i, o, type ) \
+   (*((type *)(&BGL_S8VREF( v, i ))) = (o), BUNSPEC)
+   
+#define BGL_S16_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, int16_t )
+#define BGL_S16_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, int16_t )
+#define BGL_U16_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, uint16_t )
+#define BGL_U16_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, uint16_t )
+   
+#define BGL_S32_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, int32_t )
+#define BGL_S32_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, int32_t )
+#define BGL_U32_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, uint32_t )
+#define BGL_U32_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, uint32_t )
+   
+#define BGL_S64_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, int64_t )
+#define BGL_S64_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, int64_t )
+#define BGL_U64_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, uint64_t )
+#define BGL_U64_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, uint64_t )
+   
+#define BGL_F32_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, float )
+#define BGL_F32_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, float )
+   
+#define BGL_F64_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, double )
+#define BGL_F64_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, double )
+   
 BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
    
 #define BGL_ALLOC_S8VECTOR( len ) \
@@ -2047,14 +2073,6 @@ BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
 #define BGL_SU8VECTOR_COPY( target, tstart, source, sstart, ssend ) \
    memcpy( (void *)&BGL_S8VREF( target, tstart ), (void *)&BGL_S8VREF( source, sstart ), \
 	   (ssend - sstart) )
-   
-/* #define BGL_SU8VECTOR_COPY_FROM_STRING( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_S8VREF( target, tstart ), (void *)&STRING_REF( source, sstart ), \ */
-/* 	   (ssend - sstart) )                                          */
-/*                                                                     */
-/* #define BGL_SU8VECTOR_COPY_TO_STRING( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&STRING_REF( source, sstart ), (void *)&BGL_S8VREF( target, tstart ), \ */
-/*            (ssend - sstart) )                                       */
    
 #define BGL_SU16VECTOR_COPY( target, tstart, source, sstart, ssend ) \
    memcpy( (void *)&BGL_S16VREF( target, tstart ), (void *)&BGL_S16VREF( source, sstart ), \
