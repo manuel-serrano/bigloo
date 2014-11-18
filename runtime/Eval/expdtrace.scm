@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Fri Sep 19 13:59:46 2014 (serrano)                */
+;*    Last change :  Sat Nov 15 07:43:28 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -56,9 +56,11 @@
    (lambda (x e)
       (match-case x
 	 ((?- ?level . ?exp)
-	  (if (if (eq? mode 'compiler)
-		  (>fx (bigloo-compiler-debug) 0)
-		  (>fx (bigloo-debug) 0))
+	  (if (if (=fx (bigloo-profile) 0)
+		  (if (eq? mode 'compiler)
+		      (>fx (bigloo-compiler-debug) 0)
+		      (>fx (bigloo-debug) 0))
+		  #f)
 	      (e `(if (trace-active? ,level)
 		      (begin ,@exp)
 		      #unspecified)
@@ -74,9 +76,11 @@
    (lambda (x e)
       (match-case x
 	 ((?- ?level ?lbl . ?arg*)
-	  (if (if (eq? mode 'compiler)
-		  (>fx (bigloo-compiler-debug) 0)
-		  (>fx (bigloo-debug) 0))
+	  (if (if (=fx (bigloo-profile) 0)
+		  (if (eq? mode 'compiler)
+		      (>fx (bigloo-compiler-debug) 0)
+		      (>fx (bigloo-debug) 0))
+		  #f)
 	      (let* ((f (gensym 'f))
 		     (nx `(let ((,f (lambda () (begin ,@arg*))))
 			     (if (>fx (bigloo-debug) 0)
@@ -92,9 +96,11 @@
 ;*---------------------------------------------------------------------*/
 (define (make-expand-trace-item mode)
    (lambda (x e)
-      (if (if (eq? mode 'compiler)
+      (if (if (=fx (bigloo-profile) 0)
+	      (if (eq? mode 'compiler)
 		  (>fx (bigloo-compiler-debug) 0)
 		  (>fx (bigloo-debug) 0))
+	      #f)
 	  `(if (>fx (bigloo-debug) 0)
 	       (trace-item ,@(map (lambda (x) (e x e)) (cdr x)))
 	       #unspecified)

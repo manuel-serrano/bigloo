@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:37:24 2003                          */
-/*    Last change :  Wed Nov  5 19:35:07 2014 (serrano)                */
+/*    Last change :  Fri Nov 14 18:24:08 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Extended symbols                                                 */
@@ -23,4 +23,7 @@ typedef struct esymbol {
 #define ESYMBOL_SIZE (sizeof( struct esymbol ) )
 
 #define ESYMBOL_TO_STRING( sym ) \
-   BSTRING_TO_STRING( SYMBOL_TO_STRING( CSYMBOL( sym ) ) )
+   BSTRING_TO_STRING( SYMBOL_TO_STRING( sym ) )
+
+#define CESYMBOL( sym ) \
+   ((esymbol_t *)(CSYMBOL( sym )))

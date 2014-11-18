@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Thu Oct  2 14:40:55 2014 (serrano)                */
+/*    Last change :  Fri Nov 14 18:14:12 2014 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Thu Sep 19 09:49:40 2013 (serrano)                */
-;*    Copyright   :  2010-13 Manuel Serrano                            */
+;*    Last change :  Tue Nov 18 14:33:39 2014 (serrano)                */
+;*    Copyright   :  2010-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -45,7 +45,7 @@
 	    __r4_ports_6_10_1
 	    __r4_output_6_10_3
 	    __r5_control_features_6_4
-
+	    
 	    __pp
 	    __reader
 	    __progn
@@ -54,16 +54,17 @@
 	    __evcompile
 	    __everror
 	    __evmodule
-
+	    
 	    __evaluate_types
 	    __evaluate_avar
 	    __evaluate_fsize
 	    __evaluate_uncomp
 	    __evaluate_comp)
-
+   
    (export  (evaluate2 sexp env loc)
 	    (get-evaluation-context)
-	    (set-evaluation-context! v)))
+	    (set-evaluation-context! v)
+	    (evaluate2-restore-state! ::int)))
 
 ;*---------------------------------------------------------------------*/
 ;*    untype-ident ...                                                 */
@@ -106,6 +107,13 @@
 	    (when (<fx i bp)
 	       (vector-set! s i (vector-ref v i))
 	       (rec (+fx i 1)) )))))
+
+;*---------------------------------------------------------------------*/
+;*    evaluate2-restore-state! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (evaluate2-restore-state! bp)
+   (let ((s ($evmeaning-evstate (current-dynamic-env))))
+      (vector-set! s 0 bp)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evaluate2 ...                                                    */

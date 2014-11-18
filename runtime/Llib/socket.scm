@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Mon Feb 17 10:45:00 2014 (serrano)                */
+;*    Last change :  Tue Nov 18 09:00:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -60,7 +60,10 @@
 				 "bgl_socket_accept")
 	    ($socket-accept-many::long (::socket ::bool ::vector ::vector ::vector)
 				       "bgl_socket_accept_many")
-	    (c-socket-local-addr::bstring (::socket) "socket_local_addr")
+	    ($socket-host-addr::obj (::socket) "bgl_socket_host_addr")
+	    ($socket-local-addr::bstring (::socket) "bgl_socket_local_addr")
+	    ($socket-local?::bool (::socket) "bgl_socket_localp")
+	    ($socket-host-addr=?::bool (::socket ::bstring) "bgl_socket_host_addr_cmp")
 	    (c-socket-shutdown::obj (::socket ::bool) "socket_shutdown")
 	    ($socket-close::obj (::socket) "socket_close")
 	    (macro c-socket-server?::bool (::obj) "BGL_SOCKET_SERVERP")
@@ -133,7 +136,9 @@
 	       
 	       (method static $socket-accept::socket (::socket ::bool ::bstring ::bstring)
 		  "bgl_socket_accept")
-	       (method static c-socket-local-addr::bstring (::socket)
+	       (method static $socket-host-addr::obj (::socket)
+		  "socket_host_addr")
+	       (method static $socket-local-addr::bstring (::socket)
 		  "socket_local_addr")
 	       (method static c-socket-shutdown::obj (::socket ::bool)
 		  "socket_shutdown")
@@ -204,6 +209,9 @@
 	    (inline socket-client?::bool ::obj)
 	    (inline socket-hostname::obj ::socket)
 	    (inline socket-host-address::obj ::socket)
+	    (inline socket-host-address=?::bool ::socket ::bstring)
+	    (inline socket-local-address ::socket)
+	    (inline socket-local?::bool ::socket)
 	    (inline socket-down?::bool ::socket)
 	    (inline socket-port-number::bint ::socket)
 	    (inline socket-input::input-port ::socket)
@@ -218,7 +226,6 @@
 	    (socket-accept::obj ::socket #!key (inbuf #t) (outbuf #t) (errp #t))
 	    (socket-accept-many::obj ::socket ::vector
 				     #!key (inbufs #t) (outbufs #t) (errp #t))
-	    (inline socket-local-address ::socket)
 	    (inline socket-shutdown::obj ::socket #!optional (close #t))
 	    (inline socket-close::obj ::socket)
 	    (inline host::bstring ::bstring)
@@ -310,8 +317,28 @@
 ;*    socket-local-address ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-local-address socket::socket)
-   (c-socket-local-addr socket))
+   ($socket-local-addr socket))
 
+;*---------------------------------------------------------------------*/
+;*    socket-local? ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (socket-local? socket::socket)
+   (cond-expand
+      (bigloo-c
+       ($socket-local? socket))
+      (else
+       (string=? (socket-local-address socket) (socket-host-address socket)))))
+       
+;*---------------------------------------------------------------------*/
+;*    socket-host-address=? ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (socket-host-address=? socket::socket addr::bstring)
+   (cond-expand
+      (bigloo-c
+       ($socket-host-addr=? socket addr))
+      (else
+       (string=? (socket-host-address socket) addr))))
+      
 ;*---------------------------------------------------------------------*/
 ;*    socket-down? ...                                                 */
 ;*---------------------------------------------------------------------*/

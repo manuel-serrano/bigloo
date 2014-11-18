@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Sat Apr 30 06:47:08 2011 (serrano)                */
-/*    Copyright   :  2000-11 Manuel Serrano                            */
+/*    Last change :  Tue Nov 18 08:59:55 2014 (serrano)                */
+/*    Copyright   :  2000-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
 /*=====================================================================*/

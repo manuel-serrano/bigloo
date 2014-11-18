@@ -5772,6 +5772,11 @@ public final class foreign
 	 return ((server_socket) s).accept(inbuf, outbuf, errp);
       }
 
+   public static Object socket_host_addr(socket s)
+      {
+	 return s.HOSTIP();
+      }
+
    public static byte[] socket_local_addr(socket s)
       {
 	 return s.local_addr();

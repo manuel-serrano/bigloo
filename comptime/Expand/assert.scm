@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  9 16:41:17 1993                          */
-;*    Last change :  Mon Aug  7 15:08:54 2006 (serrano)                */
-;*    Copyright   :  1993-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Nov 18 10:37:37 2014 (serrano)                */
+;*    Copyright   :  1993-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    L'expansion des formes `assert'                                  */
 ;*=====================================================================*/
@@ -31,7 +31,9 @@
 	  (replace! x new)
 	  (e x e)))
       ((?- (and ?vars (? list?)) . ?pred)
-       (if (or (and (fixnum? *compiler-debug*) (>=fx *compiler-debug* 1))
+       (if (or (and (fixnum? *compiler-debug*)
+		    (>=fx *compiler-debug* 1)
+		    (not *bmem-profiling*))
 	       (and (memq 'bdb (backend-debug-support (the-backend)))
 		    (fixnum? *bdb-debug*)
 		    (>=fx *bdb-debug* 1)))

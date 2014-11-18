@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sat Sep  6 07:46:17 2014 (serrano)                */
+/*    Last change :  Tue Nov 18 11:55:39 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -152,6 +152,7 @@ extern long (*____bgl_socket_accept_many )( void *, int, void *, void *, void * 
 extern void *(*____bgl_host )( void * );
 
 extern void *(*____bgl_seconds_to_date )( long );
+extern void *(*____bgl_nanoseconds_to_date )( long );
 extern void *(*____bgl_make_date )( int, int, int, int, int, int, long, int, int );
 extern void *(*____bgl_seconds_format )( long, void * );
 
@@ -169,6 +170,9 @@ extern void *(*____pthread_getspecific)( pthread_key_t );
 extern int (*____pthread_setspecific)( pthread_key_t, void * );
 extern int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
 extern int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
+
+extern long (*____get_hash_power_number)( char *, unsigned long );
+extern void *(*____bgl_get_symtab)();
 
 /*---------------------------------------------------------------------*/
 /*    Functions                                                        */

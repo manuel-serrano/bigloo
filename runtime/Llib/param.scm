@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Mon Sep 22 07:34:37 2014 (serrano)                */
+;*    Last change :  Sat Nov 15 07:40:14 2014 (serrano)                */
 ;*    Copyright   :  2004-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
@@ -50,6 +50,9 @@
 	   
 	   (bigloo-debug-module::int)
 	   (bigloo-debug-module-set! ::int)
+
+	   (bigloo-profile::int)
+	   (bigloo-profile-set! ::int)
 	   
 	   (bigloo-warning::int)
 	   (bigloo-warning-set! ::int)
@@ -176,6 +179,18 @@
    (lambda (val)
       (if (and (fixnum? val) (<fx val 0))
 	  (error 'bigloo-warning-set! "Illegal warning level" val)
+	  val)))
+
+;*---------------------------------------------------------------------*/
+;*    bigloo-profile ...                                               */
+;*    -------------------------------------------------------------    */
+;*    The runtime profile level (a positive integer).                  */
+;*---------------------------------------------------------------------*/
+(define-parameter bigloo-profile
+   0
+   (lambda (val)
+      (if (and (fixnum? val) (<fx val 0))
+	  (error 'bigloo-profile-set! "Illegal profile level" val)
 	  val)))
 
 ;*---------------------------------------------------------------------*/

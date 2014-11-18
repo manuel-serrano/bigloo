@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Wed Nov  5 19:38:02 2014 (serrano)                */
+/*    Last change :  Fri Nov 14 17:50:19 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
@@ -25,7 +25,6 @@ extern int bmem_debug;
 static obj_t
 make_symbol( obj_t name ) {
    obj_t symbol;
-
    set_alloc_type( SYMBOL_TYPE_NUM, 0 );
    
    symbol = GC_MALLOC( ESYMBOL_SIZE );
@@ -59,7 +58,6 @@ bgl_bstring_to_symbol( obj_t name ) {
    long hash_number;
    obj_t bucket;
    char *cname = BSTRING_TO_STRING( name );
-
    hash_number = ____get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
    
    bucket = VECTOR_REF( ____bgl_get_symtab(), hash_number );

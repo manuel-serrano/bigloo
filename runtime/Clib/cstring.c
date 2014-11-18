@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Mon Sep 29 18:23:49 2014 (serrano)                */
+/*    Last change :  Fri Nov 14 18:20:04 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -105,7 +105,6 @@ make_string_sans_fill( int len ) {
    string->string_t.length = len;
 
    STRING_SET( BSTRING( string ), len, '\0' );
-		
    return BSTRING( string );
 }
 

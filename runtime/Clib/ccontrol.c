@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Mon Jan 13 16:35:13 2014 (serrano)                */
+/*    Last change :  Tue Nov 18 12:20:44 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -35,12 +35,12 @@ bgl_make_procedure( obj_t entry, int arity, int size ) {
 BGL_RUNTIME_DEF
 obj_t
 make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
-
    if( size > (1 << HEADER_SIZE_BIT_SIZE) ) {
       C_FAILURE( "make-fx-procedure", "Environment to large", BINT( size ) );
    } else {
       int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
       obj_t a_tproc = GC_MALLOC( byte_size );
+      static long count = 0;
 	      
       a_tproc->procedure_t.header = MAKE_HEADER( PROCEDURE_TYPE, size );
       a_tproc->procedure_t.entry = entry; 

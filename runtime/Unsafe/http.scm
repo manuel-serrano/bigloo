@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Sat Oct 11 10:34:00 2014 (serrano)                */
+;*    Last change :  Sat Nov 15 08:01:45 2014 (serrano)                */
 ;*    Copyright   :  2007-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -508,8 +508,6 @@
 		 (ignore))
 		((connection:)
 		 (set! connection (read/rp symbol+-grammar (the-port)))
-		 (unless (symbol? connection)
-		    (tprint "PAS GLOP: " connection " " header))
 		 (set! header (cons (cons k connection) header))
 		 (ignore))
 		((proxy-authorization:)
@@ -534,7 +532,7 @@
 			(raise
 			   (instantiate::&io-parse-error
 			      (obj (the-port))
-			      (proc 'expect-header)
+			      (proc "expect-header")
 			      (msg (format "Expectation failed (~a)" e))))))))
 		(else
 		 (let ((v (read/rp value-grammar (the-port))))
@@ -567,7 +565,7 @@
 				   port content-length
 				   transfer-encoding authorization
 				   proxy-authorization connection))
-			   (proc 'http-parse-header)
+			   (proc "http-parse-header")
 			   (msg (format "Illegal characters: ~a"
 				   (http-parse-error-msg
 				      (the-failure) (the-port)))))))))))

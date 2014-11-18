@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Mon Sep 22 16:39:22 2014 (serrano)                */
+/*    Last change :  Tue Nov 18 11:55:27 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -137,6 +137,7 @@ void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 
 /* date */
 void *(*____bgl_seconds_to_date )( long );
+void *(*____bgl_nanoseconds_to_date )( long );
 void *(*____bgl_make_date )( int, int, int, int, int, int, long, bool_t, int );
 void *(*____bgl_seconds_format )( long, void * );
 					   
@@ -417,6 +418,7 @@ bmem_init_inner() {
    ____bgl_host = (void *(*)( void * ))get_function( hdl, "bgl_host" );
    /* date */
    ____bgl_seconds_to_date = (void *(*)( long ))get_function( hdl, "bgl_seconds_to_date" );
+   ____bgl_nanoseconds_to_date = (void *(*)( long ))get_function( hdl, "bgl_nanoseconds_to_date" );
    ____bgl_make_date = (void *(*)( int, int, int, int, int, int, long, bool_t, int ))get_function( hdl, "bgl_make_date" );
    ____bgl_seconds_format = (void *(*)( long, void * ))get_function( hdl, "bgl_seconds_format" );
 
@@ -614,13 +616,13 @@ bgl_init_objects() {
    mark_function( unknown_ident, 0, ante_bgl_init_dsz, 0, -1, -1, -1 );
 
    bgl_socket_accept_symbol = string_to_symbol( "$socket-accept" );
-   ((esymbol_t *)(CREF(bgl_socket_accept_symbol)))->class_alloc = HOSTENT_TYPE_NUM;
+   ((esymbol_t *)(CSYMBOL(bgl_socket_accept_symbol)))->class_alloc = HOSTENT_TYPE_NUM;
 
    bgl_socket_accept_many_symbol = string_to_symbol( "$socket-accept-many" );
-   ((esymbol_t *)(CREF(bgl_socket_accept_many_symbol)))->class_alloc = HOSTENT_TYPE_NUM;
+   ((esymbol_t *)(CSYMBOL(bgl_socket_accept_many_symbol)))->class_alloc = HOSTENT_TYPE_NUM;
 
    bgl_make_input_port_symbol = string_to_symbol( "$make-input-port" );
-   ((esymbol_t *)(CREF(bgl_make_input_port_symbol)))->class_alloc = UNKNOWN_ATOMIC_TYPE_NUM;
+   ((esymbol_t *)(CSYMBOL(bgl_make_input_port_symbol)))->class_alloc = UNKNOWN_ATOMIC_TYPE_NUM;
 
    /* signal registration */
    signal( 2, bmem_dump );

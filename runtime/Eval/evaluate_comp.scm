@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Mon Jul 22 12:07:47 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Tue Nov 18 14:33:50 2014 (serrano)                */
+;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -87,6 +87,16 @@
        `(unwind-protect ,e1 ,e2)
        `(let ( (____r ,e1) )
 	   (begin ,e2 ____r) )))
+
+(define-macro (unwind-protect-state expr s bp)
+   ;; see runtime __bexit
+   `(let ( (e ($get-exitd-top)) )
+      ((@ exitd-push-protect! __bexit) e ,bp)
+      (let ( (acc ,expr) )
+        (begin
+          ((@ exitd-pop-protect! __bexit) e)
+          (vector-set! ,s 0 ,bp)
+          acc ))))
 
 (define-macro (step s bp size . l)
    (if #f
@@ -1095,8 +1105,8 @@
 									,extra
 									loc))) )
 					       (step s bp size '(entry main cont2))
-					       (foo_unwind-protect (catch-trampoline run s bp)
-							       (vector-set! s 0 bp) ))
+					       (unwind-protect-state (catch-trampoline run s bp)
+							       s bp))
 					    (let ( (ns (make-state)) )
 					       (vector-set! ns 1 s)
 					       ,@(map (lambda (i v) `(vector-set! ns ,(+fx 2 i) ,v))

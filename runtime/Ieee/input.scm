@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Sat Oct  4 07:46:45 2014 (serrano)                */
+;*    Last change :  Sat Nov 15 08:10:13 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -99,7 +99,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    In optimized mode, read/rp is overriden by a compiler macro.     */
 ;*    In consequence prototype changes must be propagate to the        */
-;*    compiler (Expand/initia.scm).                                    */
+;*    compiler (Expand/initial.scm).                                   */
 ;*---------------------------------------------------------------------*/
 (define (read/rp grammar port . opts)
    (cond

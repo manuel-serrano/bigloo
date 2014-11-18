@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Wed Oct 24 10:19:16 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Tue Nov 18 10:48:03 2014 (serrano)                */
+;*    Copyright   :  2003-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
 ;*=====================================================================*/
@@ -51,13 +51,11 @@
 	     (hsize (caddr gc))
 	     (asize (cadr gc))
 	     (per 0)
-	     (sum 0)
+	     (sum #l0)
 	     (cell* (map (lambda (f)
 			    (with-access::funinfo f (num ident)
 			       (let* ((fgc (funinfo-find-gc f n))
-				      (size (if (pair? fgc)
-						(cadr fgc)
-						#l0))
+				      (size (if (pair? fgc) (cadr fgc) #l0))
 				      (nf num)
 				      (id (format "function~a" nf)))
 				  (set! sum (+llong sum size))
@@ -69,11 +67,11 @@
 					(word->size size)
 					(% size asize))))))
 			 fun*)))
-	 (if (>=llong (absllong (-llong asize sum)) #l1024)
-	     (warning "make-gc-function-table"
-		      "incorrect allocation size --"
-		      " GC=" n " sum=" sum " alloc=" asize
-		      " delta=" (-llong asize sum)))
+	 (when (>=llong (absllong (-llong asize sum)) #l1024)
+	    (warning "make-gc-function-table"
+	       "incorrect allocation size --"
+	       " GC=" n " sum=" sum " alloc=" asize
+	       " delta=" (-llong asize sum)))
 	 (append cell*
 		 (list (list (-fx (% hsize maxhsize) per)
 			     "gc0"

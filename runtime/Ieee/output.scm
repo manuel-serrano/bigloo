@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Wed Oct  1 11:41:19 2014 (serrano)                */
+;*    Last change :  Tue Nov 18 11:29:16 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -413,14 +413,17 @@
    (let ((len (string-length _fmt)))
       (let loop ((i 0)
 		 (os objs))
+	 
 	 (define (next os fmt)
 	    (if (null? os)
 		(error procname "Insufficient number of arguments" fmt)
 		(car os)))
+	 
 	 (define (print-radix radix num)
 	    (if (not (number? num))
 		(error procname "Illegal number" num)
 		(display (number->string num radix) p)))
+	 
 	 (define (print-flat-list l p sep)
 	    (cond
 	       ((pair? l)
@@ -435,6 +438,7 @@
 		       (print-flat-list (cdr l) p sep)))))
 	       ((not (null? l))
 		(display l p))))
+	 
 	 (define (print-list i l p)
 	    (let ((j (string-index _fmt #\) i)))
 	       (if (not j)
@@ -442,6 +446,7 @@
 		   (let ((sep (substring _fmt (+fx i 1) j)))
 		      (print-flat-list l p sep)
 		      (+fx j 1)))))
+	 
 	 (define (print-padded-number i num mincol padding)
 	    (if (=fx i len)
 		(error procname "Illegal tag" _fmt)
@@ -461,6 +466,7 @@
 		      (display (make-string (-fx mincol l) padding) p))
 		   (display s p)
 		   (+fx i 1))))
+	 
 	 (define (print-formatted-number i num p)
 	    (if (not (number? num))
 		(error procname "Illegal number" num)
@@ -480,6 +486,7 @@
 			  num
 			  (string->integer (substring _fmt i j))
 			  #\space))))))
+
 	 (define (handle-tag f i alt?)
 	    (case f
 	       ((#\a #\A)
@@ -537,7 +544,8 @@
 		    (let ((ni (print-formatted-number i (next os f) p)))
 		       (loop ni (cdr os)))
 		    (error procname
-		       (string-append "Illegal tag \"" (string f) "\"") _fmt)))))
+		       (string-append
+			  "Illegal tag \"" (string f) "\"") _fmt)))))
 
 	 (if (<fx i len)
 	     (let ((c (string-ref _fmt i)))

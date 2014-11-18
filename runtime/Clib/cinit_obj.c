@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Wed Dec 19 09:09:19 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Fri Nov 14 18:14:06 2014 (serrano)                */
+/*    Copyright   :  2002-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -75,6 +75,7 @@ void bgl_init_objects() {
    bigloo_nan = DOUBLE_TO_REAL( bgl_nan() );
    bigloo_infinity = DOUBLE_TO_REAL( bgl_infinity() );
    bigloo_minfinity = DOUBLE_TO_REAL( -bgl_infinity() );
+   
 }
 
 /*---------------------------------------------------------------------*/

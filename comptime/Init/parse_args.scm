@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Sep 22 07:34:31 2014 (serrano)                */
+;*    Last change :  Sat Nov 15 07:53:40 2014 (serrano)                */
 ;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -576,13 +576,17 @@
       (("-pmem" (help "-pmem[2]" "Compile files for memory profiling"))
        (bigloo-compiler-debug-set! 1)
        (set! *compiler-debug* 1)
+       (set! *compiler-debug-trace* 1)
        (set! *jas-peephole* #f)
-       (set! *bmem-profiling* #t))
+       (set! *bmem-profiling* #t)
+       (bigloo-profile-set! 1))
       (("-pmem2")
        (bigloo-compiler-debug-set! 2)
+       (set! *compiler-debug-trace* 2)
        (set! *compiler-debug* 2)
        (set! *jas-peephole* #f)
-       (set! *bmem-profiling* #t))
+       (set! *bmem-profiling* #t)
+       (bigloo-profile-set! 2))
       (("-psync" (help "Profile synchronize expr (see $exitd-mutex-profile)"))
        (set! *sync-profiling* #t))
       

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Sat Sep  6 07:45:28 2014 (serrano)                */
+/*    Last change :  Tue Nov 18 11:55:52 2014 (serrano)                */
 /*    Copyright   :  2003-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -145,8 +145,8 @@ void
 fun_dump( void *ident, FILE *f ) {
    esymbol_t *fun = (esymbol_t *)ident;
 
-   fprintf( f, "\n    (|%s|\n", BSTRING_TO_STRING( SYMBOL_TO_STRING( (obj_t)fun ) ) );
-   for_each( (void (*)(void *, void *))alloc_dump, fun->alloc_info, f );
+   fprintf( f, "\n    (|%s|\n", ESYMBOL_TO_STRING( (obj_t)fun ) );
+   for_each( (void (*)(void *, void *))alloc_dump, CESYMBOL( fun )->alloc_info, f );
    fprintf( f, "      )" );
 }
    
@@ -172,7 +172,7 @@ alloc_reset_statistics() {
 
    while( PA_PAIRP( aux ) ) {
       void *id = PA_CAR( aux );
-      esymbol_t *fun = (esymbol_t *)CREF( id );
+      esymbol_t *fun = (esymbol_t *)CSYMBOL( id );
 
       fun->alloc_info = 0L;
       
@@ -264,9 +264,9 @@ mark_function( void *id, long gc, long dsz, long isz, int dt, int it, long stamp
    esymbol_t *fun;
 
    if( !SYMBOLP( id ) ) {
-      if( unknown_ident )
+      if( unknown_ident ) {
 	 mark_function( unknown_ident, gc, dsz, isz, dt, it, stamp );
-      else {
+      } else {
 	 if( !gc ) {
 	    ante_bgl_init_dsz += dsz;
 	 } else
@@ -277,7 +277,7 @@ mark_function( void *id, long gc, long dsz, long isz, int dt, int it, long stamp
       return;
    }
 
-   fun = (esymbol_t *)CREF( id );
+   fun = (esymbol_t *)CSYMBOL( id );
 
    if( !dsz && (fun->stamp == stamp) ) {
       return;
@@ -471,8 +471,8 @@ GC_malloc_find_type( int lb, int unknown ) {
    void *top = bgl_debug_trace_top( get_alloc_type_offset() );
 
    if( SYMBOLP( top ) ) {
-      int ty = ((esymbol_t *)CREF( top ))->class_alloc;
-      int to = ((esymbol_t *)CREF( top ))->class_offset;
+      int ty = ((esymbol_t *)CSYMBOL( top ))->class_alloc;
+      int to = ((esymbol_t *)CSYMBOL( top ))->class_offset;
 
       set_alloc_type( ty == -1 ? unknown : ty, to );
 #if BMEMDEBUG
@@ -634,13 +634,13 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
 
    sprintf( tmp, "%%allocate-%s", cname );
    alloc = string_to_symbol( tmp );
-   ((esymbol_t *)(CREF(alloc)))->class_alloc = tnum;
-   ((esymbol_t *)(CREF(alloc)))->class_offset = 1;
+   ((esymbol_t *)(CSYMBOL(alloc)))->class_alloc = tnum;
+   ((esymbol_t *)(CSYMBOL(alloc)))->class_offset = 1;
 
    sprintf( tmp, "widening-%s", cname );
    alloc = string_to_symbol( tmp );
-   ((esymbol_t *)(CREF(alloc)))->class_alloc = tnum;
-   ((esymbol_t *)(CREF(alloc)))->class_offset = 1;
+   ((esymbol_t *)(CSYMBOL(alloc)))->class_alloc = tnum;
+   ((esymbol_t *)(CSYMBOL(alloc)))->class_offset = 1;
 
    class = ____register_class( name, super, abstract, creator, allocate,
 			       nil, predicate,
@@ -807,6 +807,7 @@ WRAPPER( bgl_host, HOSTENT_TYPE_NUM, (obj_t s), (s) )
 
 /* date */
 WRAPPER( bgl_seconds_to_date, DATE_TYPE_NUM, (long s), (s) )
+WRAPPER( bgl_nanoseconds_to_date, DATE_TYPE_NUM, (long s), (s) )
 WRAPPER( bgl_make_date, DATE_TYPE_NUM, (int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst), (s, m, hr, mday, mon, year, tz, istz, isdst) )
 WRAPPER( bgl_seconds_format, STRING_TYPE_NUM, (long s, obj_t f), (s, f) )
 
