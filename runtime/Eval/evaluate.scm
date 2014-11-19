@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Tue Nov 18 14:33:39 2014 (serrano)                */
+;*    Last change :  Wed Nov 19 13:25:11 2014 (serrano)                */
 ;*    Copyright   :  2010-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
@@ -64,7 +64,8 @@
    (export  (evaluate2 sexp env loc)
 	    (get-evaluation-context)
 	    (set-evaluation-context! v)
-	    (evaluate2-restore-state! ::int)))
+	    (evaluate2-restore-bp! ::int)
+	    (evaluate2-restore-state! ::vector)))
 
 ;*---------------------------------------------------------------------*/
 ;*    untype-ident ...                                                 */
@@ -109,11 +110,18 @@
 	       (rec (+fx i 1)) )))))
 
 ;*---------------------------------------------------------------------*/
-;*    evaluate2-restore-state! ...                                     */
+;*    evaluate2-restore-bp! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (evaluate2-restore-state! bp)
+(define (evaluate2-restore-bp! bp)
    (let ((s ($evmeaning-evstate (current-dynamic-env))))
       (vector-set! s 0 bp)))
+
+;*---------------------------------------------------------------------*/
+;*    evaluate2-restore-state! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (evaluate2-restore-state! state)
+   (let ((env (current-dynamic-env)))
+      ($evmeaning-evstate-set! env state)))
 
 ;*---------------------------------------------------------------------*/
 ;*    evaluate2 ...                                                    */

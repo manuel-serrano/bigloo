@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Nov 18 10:21:05 2014 (serrano)                */
+/*    Last change :  Wed Nov 19 06:43:44 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -410,7 +410,8 @@ make_inet_array( char **src, int size ) {
 /*---------------------------------------------------------------------*/
 static struct bglhostent *
 make_bglhostent( obj_t hostaddr, struct hostent *hp ) {
-   struct bglhostent *bhp = (struct bglhostent *)GC_MALLOC( sizeof( struct bglhostent ) );
+   struct bglhostent *bhp =
+      (struct bglhostent *)GC_MALLOC( sizeof( struct bglhostent ) );
 
    bhp->header = MAKE_HEADER( OPAQUE_TYPE, 0 );
    bhp->hostaddr = hostaddr;
@@ -440,7 +441,8 @@ make_bglhostent( obj_t hostaddr, struct hostent *hp ) {
 #if( BGL_HAVE_GETADDRINFO )
 static struct bglhostent *
 make_bglhostent_from_name( obj_t hostaddr, struct sockaddr_in *sin, char *n ) {
-   struct bglhostent *bhp = (struct bglhostent *)GC_MALLOC( sizeof( struct bglhostent ) );
+   struct bglhostent *bhp =
+      (struct bglhostent *)GC_MALLOC( sizeof( struct bglhostent ) );
    char **l = (char **)GC_MALLOC( sizeof( char * ) + 1 );
    void *d = GC_MALLOC_ATOMIC( sizeof( *sin ) );
 
@@ -645,7 +647,7 @@ invalidate_hostbyname( obj_t hostname ) {
 /*                                                                     */
 /*    This function is thread-safe. It can be called simultaneously    */
 /*    by several threads. It returns a fresh data-structure so         */
-/*    client don't have to deploy a locking machinery for using it.    */
+/*    client don't have to deploy a locking machinery to use it.       */
 /*---------------------------------------------------------------------*/
 static struct hostent *
 bglhostbyname( obj_t hostname, int canon ) {
@@ -1447,7 +1449,8 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.portnum = ntohs( server.sin_port );
    a_socket->socket_t.hostname = hname;
-   a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(server.sin_addr) );
+   //a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(server.sin_addr) );
+   a_socket->socket_t.hostip = BUNSPEC;
    a_socket->socket_t.family = AF_INET;
    a_socket->socket_t.address.in_addr = server.sin_addr;
    a_socket->socket_t.fd = s;
@@ -1456,7 +1459,6 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    a_socket->socket_t.stype = BGL_SOCKET_CLIENT;
    a_socket->socket_t.userdata = BUNSPEC;
 
-   fprintf( stderr, "AF_INT=%d\n", AF_INET );
    set_socket_io_ports( s, BREF( a_socket ), "make-client-socket", inb, outb );
    
    return BREF( a_socket );
@@ -1856,7 +1858,8 @@ bgl_socket_accept( obj_t serv, bool_t errp, obj_t inb, obj_t outb ) {
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.portnum = ntohs( sin.sin_port );
    a_socket->socket_t.hostname = BUNSPEC;
-   a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(sin.sin_addr) );
+/*    a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(sin.sin_addr) ); */
+   a_socket->socket_t.hostip = BUNSPEC;
    a_socket->socket_t.family = AF_INET;
    a_socket->socket_t.fd = new_s;
    a_socket->socket_t.stype = BGL_SOCKET_CLIENT;
@@ -2588,7 +2591,8 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
    a_socket->datagram_socket_t.portnum = ntohs( server->sin_port );
    a_socket->datagram_socket_t.hostname = hname;
-   a_socket->datagram_socket_t.hostip = bgl_inet_ntop( AF_INET, &(server->sin_addr) );
+/*    a_socket->datagram_socket_t.hostip = bgl_inet_ntop( AF_INET, &(server->sin_addr) ); */
+   a_socket->datagram_socket_t.hostip = BUNSPEC;
    a_socket->datagram_socket_t.family = AF_INET;
    a_socket->datagram_socket_t.stype = BGL_SOCKET_CLIENT;
    a_socket->datagram_socket_t.fd = s;

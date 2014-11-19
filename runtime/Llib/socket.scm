@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Tue Nov 18 09:00:16 2014 (serrano)                */
+;*    Last change :  Wed Nov 19 06:42:29 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -256,6 +256,10 @@
    (pragma  (c-socket? nesting fail-safe)
 	    (c-socket-hostname nesting fail-safe)
 	    (c-socket-hostip nesting fail-safe)
+	    ($socket-host-addr nesting fail-safe)
+	    ($socket-host-addr=? nesting fail-safe)
+	    ($socket-local-addr nesting fail-safe)
+	    ($socket-local? nesting fail-safe)
 	    (c-socket-down? nesting fail-safe)
 	    (c-socket-port-number nesting fail-safe)
 	    (c-socket-input nesting fail-safe)
@@ -311,7 +315,7 @@
 ;*    socket-host-address ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-host-address socket)
-   (c-socket-hostip socket))
+   ($socket-host-addr socket))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-local-address ...                                         */
@@ -330,7 +334,7 @@
        (string=? (socket-local-address socket) (socket-host-address socket)))))
        
 ;*---------------------------------------------------------------------*/
-;*    socket-host-address=? ...                                         */
+;*    socket-host-address=? ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (socket-host-address=? socket::socket addr::bstring)
    (cond-expand
