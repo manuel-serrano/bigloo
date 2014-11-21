@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Nov 18 10:13:23 2014 (serrano)                */
+/*    Last change :  Fri Nov 21 08:21:35 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1279,12 +1279,12 @@ typedef struct BgL_objectz00_bgl {
 
 #if( defined( TAG_STRING ) )
 #  define STRING_ASCII_SENTINEL( s ) 0
-#  define STRING_ASCII_SENTINEL_SET( s, i ) 0
+#  define STRING_ASCII_SENTINEL_SET( s, i ) s
 #else
 #  define STRING_ASCII_SENTINEL( s ) \
      HEADER_SIZE( CREF( s )->header )
 #  define STRING_ASCII_SENTINEL_SET( s, i ) \
-   (CREF( s )->header = MAKE_HEADER( STRING_TYPE, i ), BUNSPEC)
+   (CREF( s )->header = MAKE_HEADER( STRING_TYPE, i ), s)
 #endif   
    
 /*---------------------------------------------------------------------*/

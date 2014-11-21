@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Nov  5 11:44:56 2014 (serrano)                */
+;*    Last change :  Fri Nov 21 08:22:07 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -46,7 +46,7 @@
 
 	    (macro $string-ascii-sentinel::long (::bstring)
 		   "STRING_ASCII_SENTINEL")
-	    (macro $string-ascii-sentinel-set!::obj (::bstring ::long)
+	    (macro $string-ascii-sentinel-set!::bstring (::bstring ::long)
 		   "STRING_ASCII_SENTINEL_SET")
 	    
 	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
@@ -100,7 +100,7 @@
 	       
 	       (method static $string-ascii-sentinel::long (::bstring)
 		       "STRING_ASCII_SENTINEL")
-	       (method static $string-ascii-sentinel-set!::obj (::bstring ::long)
+	       (method static $string-ascii-sentinel-set!::bstring (::bstring ::long)
 		       "STRING_ASCII_SENTINEL_SET")
 	       
 	       (method static $string=?::bool (::bstring ::bstring)
@@ -172,7 +172,7 @@
 	    (inline string-ref-ur::uchar ::bstring ::long)
 	    (inline string-set-ur!::obj ::bstring ::long ::uchar)
 	    (inline string-ascii-sentinel::long ::bstring)
-	    (inline string-ascii-sentinel-set!::obj ::bstring ::long)
+	    (inline string-ascii-sentinel-set!::bstring ::bstring ::long)
 	    (string-ascii-sentinel-mark!::bstring ::bstring)	    
 	    (inline string=?::bool ::bstring ::bstring)
 	    (inline string-ci=?::bool ::bstring ::bstring)

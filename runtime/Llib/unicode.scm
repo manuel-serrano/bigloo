@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Nov  5 11:27:51 2014 (serrano)                */
+;*    Last change :  Thu Nov 20 07:35:08 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -172,6 +172,7 @@
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-index->string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
+	    (utf8-string-append*::bstring . strings)
 	    (utf8-substring::bstring string::bstring ::long #!optional (end::long (utf8-string-length string)))
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
@@ -1022,6 +1023,16 @@
 	     s))
 	 (else
 	  (string-append left right)))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-append* ...                                          */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-append* . strings)
+   ;; to be re-implmented with n-1 string allocations
+   (let loop ((strings strings))
+      (if (null? strings)
+	  ""
+	  (utf8-string-append (car strings) (loop (cdr strings))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-ref ...                                              */

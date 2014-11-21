@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Nov 19 06:43:44 2014 (serrano)                */
+/*    Last change :  Thu Nov 20 07:16:58 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1470,7 +1470,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
-#   if( BGL_HAVE_UNIX_SOCKET )
+#if( BGL_HAVE_UNIX_SOCKET )
    int s, err;
    obj_t a_socket;
    struct sockaddr_un saddr;
@@ -1510,7 +1510,8 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.hostname = path;
    a_socket->socket_t.portnum = -1;
-   a_socket->socket_t.hostip = BUNSPEC;
+   a_socket->socket_t.hostip = BFALSE;
+   a_socket->socket_t.family = AF_UNIX;
    a_socket->socket_t.fd = s;
    a_socket->socket_t.input = BFALSE;
    a_socket->socket_t.output = BFALSE;
@@ -1614,9 +1615,18 @@ bgl_socket_host_addr( obj_t sock ) {
    if( SOCKET( sock ).hostip != BUNSPEC ) {
       return SOCKET( sock ).hostip;
    } else {
-      SOCKET( sock ).hostip =
-	 bgl_inet_ntop( AF_INET, (struct in_addr *)&(SOCKET( sock ).address) );
+      switch( SOCKET( sock ).family ) {
+	 case AF_INET: 
+	    SOCKET( sock ).hostip =
+	       bgl_inet_ntop( AF_INET, (struct in_addr *)&(SOCKET( sock ).address) );
+	    break;
 
+	 case AF_INET6: 
+	    SOCKET( sock ).hostip =
+	       bgl_inet_ntop( AF_INET6, (struct in_addr *)&(SOCKET( sock ).address) );
+	    break;
+      }
+	       
       return SOCKET( sock ).hostip;
    }
 }
@@ -1861,6 +1871,7 @@ bgl_socket_accept( obj_t serv, bool_t errp, obj_t inb, obj_t outb ) {
 /*    a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(sin.sin_addr) ); */
    a_socket->socket_t.hostip = BUNSPEC;
    a_socket->socket_t.family = AF_INET;
+   a_socket->socket_t.address.in_addr = sin.sin_addr;
    a_socket->socket_t.fd = new_s;
    a_socket->socket_t.stype = BGL_SOCKET_CLIENT;
    a_socket->socket_t.userdata = BUNSPEC;
@@ -2594,6 +2605,8 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
 /*    a_socket->datagram_socket_t.hostip = bgl_inet_ntop( AF_INET, &(server->sin_addr) ); */
    a_socket->datagram_socket_t.hostip = BUNSPEC;
    a_socket->datagram_socket_t.family = AF_INET;
+   a_socket->datagram_socket_t.address.in_addr = server->sin_addr;
+   
    a_socket->datagram_socket_t.stype = BGL_SOCKET_CLIENT;
    a_socket->datagram_socket_t.fd = s;
    

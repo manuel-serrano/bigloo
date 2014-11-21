@@ -2689,9 +2689,9 @@ public final class foreign
 	 return 0;
       }
 
-   public static Object STRING_ASCII_SENTINEL_SET(byte[]s, int l)
+   public static byte[] STRING_ASCII_SENTINEL_SET(byte[]s, int l)
       {
-	 return unspecified.unspecified;
+	 return s;
       }
 
    // Creations
