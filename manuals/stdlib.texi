@@ -1562,6 +1562,12 @@ if the string is not a well formed UTF-8 string (i.e., it does satisfies
 the @code{utf8-string?} predicate.
 @end deffn
 
+@deffn {bigloo procedure} utf8-codepoint-length string
+Returns the number of code points of an UTF-8 string. The code points
+length is the number of 16bits long values needed to encode the utf8
+strings in utf16.
+@end deffn
+
 @deffn {bigloo procedure} utf8-string-ref string i
 Returns the character (represented as an UTF-8 string) at the position
 @var{i} in @var{string}.

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Nov 20 07:35:08 2014 (serrano)                */
+;*    Last change :  Sat Nov 22 06:31:10 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -169,6 +169,7 @@
 	    (utf8-string?::bool ::bstring #!optional strict::bool)
 	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
+	    (utf8-codepoint-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-index->string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
@@ -643,7 +644,7 @@
    (>=fx (string-ascii-sentinel str) (string-length str)))
 
 ;*---------------------------------------------------------------------*/
-;*    string-ascii-sentinel-mark! ...                                           */
+;*    string-ascii-sentinel-mark! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (string-ascii-sentinel-mark! string)
    (let ((len (string-length string)))
@@ -952,6 +953,29 @@
 		 l
 		 (loop (+fx r (utf8-char-size (string-ref str r)))
 		    (+fx l 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-codepoint-length ...                                        */
+;*    -------------------------------------------------------------    */
+;*    Returns the number of code points required to encode that        */
+;*    UTF8 string (might be bigger than the UTF8 length).              */
+;*---------------------------------------------------------------------*/
+(define (utf8-codepoint-length str)
+   (let ((len (string-length str))
+	 (sen (string-ascii-sentinel str)))
+      (if (>fx sen len)
+	  len
+	  (let loop ((r 0)
+		     (l 0))
+	     (if (=fx r len)
+		 l
+		 (let* ((c (string-ref str r))
+			(s (utf8-char-size c)))
+		    (if (and (=fx s 4)
+			     (or (=fx (char->integer c) #xf0)
+				 (=fx (char->integer c) #xf4)))
+			(loop (+fx r s) (+fx l 2))
+			(loop (+fx r s) (+fx l 1)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */
