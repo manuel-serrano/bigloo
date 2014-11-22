@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Nov 20 07:16:58 2014 (serrano)                */
+/*    Last change :  Sat Nov 22 10:30:02 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1726,7 +1726,7 @@ bgl_socket_host_addr_cmp( obj_t sock, obj_t addr ) {
 
       if( r <= 0 ) goto error;
 	 
-      return buf.s_addr = sizeof( (SOCKET( sock ).address.in_addr.s_addr) );
+      return buf.s_addr == SOCKET( sock ).address.in_addr.s_addr;
    }
 
 error: {
