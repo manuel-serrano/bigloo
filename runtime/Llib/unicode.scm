@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sat Nov 22 06:31:10 2014 (serrano)                */
+;*    Last change :  Sun Nov 23 07:52:48 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -167,6 +167,8 @@
 	    (utf8-char-size::long c::char)
 	    (ascii-string?::bool ::bstring)
 	    (utf8-string?::bool ::bstring #!optional strict::bool)
+	    (inline utf8-string-left-replacement? ::bstring ::long)
+	    (inline utf8-string-right-replacement? ::bstring ::long)
 	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
 	    (utf8-codepoint-length::long ::bstring)
@@ -978,19 +980,37 @@
 			(loop (+fx r s) (+fx l 1)))))))))
 
 ;*---------------------------------------------------------------------*/
+;*    utf8-string-left-replacement? ...                                */
+;*    -------------------------------------------------------------    */
+;*    This predicate returns #t iff the last UTF8 char is a            */
+;*    replacement char.                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (utf8-string-left-replacement? str len)
+   (and (>=fx len 4) (=fx (char->integer (string-ref-ur str (-fx len 4))) #xf8)))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-right-replacement? ...                               */
+;*    -------------------------------------------------------------    */
+;*    Does the STR starts with the right-end-side of an UTF8           */
+;*    replacement char?                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (utf8-string-right-replacement? str len)
+   (and (>=fx len 4) (=fx (char->integer (string-ref-ur str 0)) #xfc)))
+   
+;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */
 ;*    -------------------------------------------------------------    */
 ;*    This function handles cases where the last char of the           */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-append left right)
-   
+(define (utf8-string-append-old left right)
+
    (define (string-append-utf8-left left right)
       ;; append two strings, the left one being UTF8
       (let ((s (string-append left right)))
 	 (string-ascii-sentinel-set! s (string-ascii-sentinel left))
 	 s))
-   
+
    (let ((lenf (string-length left)))
       (cond
 	 ((and (>=fx lenf 4)
@@ -1049,14 +1069,110 @@
 	  (string-append left right)))))
 
 ;*---------------------------------------------------------------------*/
+;*    utf8-string-append-fill! ...                                     */
+;*    -------------------------------------------------------------    */
+;*    This function must used only in left to right string append.     */
+;*    -------------------------------------------------------------    */
+;*    Append the LEFT and RIGHT string into the BUFFER at index        */
+;*    This function handles cases where the last char of the           */
+;*    concatanated char is a UNICODE remplacement char.                */
+;*    -------------------------------------------------------------    */
+;*    This function sets the BUFFER ascii sentinel.                    */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-append-fill! buffer index str)
+   (let ((len (string-length str)))
+      (cond
+	 ((ascii-string? str)
+	  ;; left string is ascii
+	  (blit-string! str 0 buffer index len)
+	  ;; update the sentinel
+	  (let ((nindex (+fx index len))
+		(sentinel (string-ascii-sentinel buffer)))
+	     (when (>=fx sentinel index)
+		(string-ascii-sentinel-set! buffer nindex))
+	     nindex))
+	 ((and (>=fx index 4)
+	       (utf8-string-right-replacement? str len)
+	       (utf8-string-left-replacement? buffer index))
+	  (blit-string! str 4 buffer index (-fx len 4))
+	  ;; collapsed character
+	  (let* ((cl1 (char->integer (string-ref-ur buffer (-fx index 4))))
+		 (cl2 (char->integer (string-ref-ur buffer (-fx index 3))))
+		 (cl3 (char->integer (string-ref-ur buffer (-fx index 2))))
+		 (cl4 (char->integer (string-ref-ur buffer (-fx index 1))))
+		 (cr2 (char->integer (string-ref-ur str 1)))
+		 (cr3 (char->integer (string-ref-ur str 2)))
+		 (cr4 (char->integer (string-ref-ur str 3)))
+		 (zzzzzz (bit-and #b111111 cr4))
+		 (yyyy (bit-and #b1111 cr3))
+		 (xx (bit-and (bit-rsh cl3 4) #b11))
+		 (wwww (bit-and cl3 #b1111))
+		 (uuuuu (bit-or
+			   (bit-lsh (bit-and cl4 #b111) 2)
+			   (bit-and (bit-rsh cl2 4) #b11))))
+	     ;; byte 1
+	     (string-set! buffer (-fx index 4)
+		(integer->char
+		   (bit-or
+		      (bit-and cl1 #b11110000)
+		      (bit-rsh uuuuu 2))))
+	     ;; byte 2
+	     (string-set! buffer (-fx index 3)
+		(integer->char cl2))
+	     ;; byte 3
+	     (string-set! buffer (-fx index 2)
+		(integer->char
+		   (bit-or #x80
+		      (bit-or (bit-lsh xx 4) yyyy))))
+	     ;; byte 4
+	     (string-set! buffer (-fx index 1)
+		(integer->char cr4)))
+	  ;; shrink the buffer
+	  (+fx index (-fx len 4)))
+	 (else
+	  ;; an utf8 string
+	  (blit-string! str 0 buffer index len)
+	  (let ((sentinel (string-ascii-sentinel buffer)))
+	     (when (>=fx sentinel index)
+		(string-ascii-sentinel-set! buffer (+fx index (string-ascii-sentinel str))))
+	     (+fx index len))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-append ...                                           */
+;*    -------------------------------------------------------------    */
+;*    Append two UTF8 strings and update the ascii-sentinel.           */
+;*    -------------------------------------------------------------    */
+;*    This function handles cases where the last char of the           */
+;*    concatanated char is a UNICODE remplacement char.                */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-append left right)
+   (let* ((llen (string-length left))
+	  (rlen (string-length right))
+	  (buffer ($make-string/wo-fill (+fx llen rlen))))
+      (let ((nindex (utf8-string-append-fill! buffer 0 left)))
+	 (let ((nindex (utf8-string-append-fill! buffer nindex right)))
+	    (let ((s (string-shrink! buffer nindex)))
+	       (if (string=? s (utf8-string-append-old left right))
+		   s
+		   (error "utf8-string-append" "bad append"
+		      (cons left right))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    utf8-string-append* ...                                          */
+;*    -------------------------------------------------------------    */
+;*    Append N UTF8 strings and update the ascii-sentinel.             */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append* . strings)
-   ;; to be re-implmented with n-1 string allocations
-   (let loop ((strings strings))
-      (if (null? strings)
-	  ""
-	  (utf8-string-append (car strings) (loop (cdr strings))))))
+   (let ((len 0))
+      (for-each (lambda (str)
+		   (set! len (+fx len (string-length str))))
+	 strings)
+      (let ((buffer ($make-string/wo-fill len))
+	    (index 0))
+	 (for-each (lambda (str)
+		      (set! index (utf8-string-append-fill! buffer index str)))
+	    strings)
+	 (string-shrink! buffer index))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-ref ...                                              */
@@ -1070,7 +1186,8 @@
 		(let* ((c (string-ref str r))
 		       (s (utf8-char-size c)))
 		   (if (=fx i 0)
-		       (substring str r (+fx r s))
+		       (string-ascii-sentinel-mark!
+			  (substring str r (+fx r s)))
 		       (loop (+fx r s) (-fx i 1)))))))))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sun Aug 17 07:03:41 2014 (serrano)                */
+;*    Last change :  Sun Nov 23 09:05:21 2014 (serrano)                */
 ;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -377,7 +377,7 @@
 (define (alsa-snd-pcm-cleanup pcm::alsa-snd-pcm)
    (let loop ()
       (let ((state (alsa-snd-pcm-get-state pcm)))
-	 (tprint "alsa-snd-pcm-cleanup state=" state)
+	 ;; (tprint "alsa-snd-pcm-cleanup state=" state)
 	 (case state
 	    ((open prepared)
 	     #f)
@@ -390,14 +390,14 @@
 	    ((running)
 	     (with-handler
 		(lambda (e)
-		   (tprint "alsa-snd-pcm-cleanup drain error: " e)
+		   ;; (tprint "alsa-snd-pcm-cleanup drain error: " e)
 		   #f)
 		(alsa-snd-pcm-drain pcm))
 	     (loop))
 	    (else
 	     (with-handler
 		(lambda (e)
-		   (tprint "alsa-snd-pcm-cleanup wait error: " e)
+		   ;; (tprint "alsa-snd-pcm-cleanup wait error: " e)
 		   #f)
 		(alsa-snd-pcm-wait pcm 1000))
 	     (loop))))))
