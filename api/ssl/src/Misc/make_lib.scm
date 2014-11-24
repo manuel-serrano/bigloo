@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Apr 20 19:57:09 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Mon Nov 24 16:07:01 2014 (serrano)                */
+;*    Copyright   :  2001-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -16,4 +16,9 @@
 
    (import __ssl_ssl)
 
-   (eval   (export-all)))
+   (eval   (export-all)
+
+      (class certificate)
+      (class private-key)
+      (class secure-context)
+      (class ssl-connection)))

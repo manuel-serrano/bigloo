@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Fri Nov  7 19:38:20 2014 (serrano)                */
+;*    Last change :  Mon Nov 24 12:32:03 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -20,7 +20,8 @@
    (export (json-parse o::input-port #!key
 	      array-alloc array-set array-return
 	      object-alloc object-set object-return
-	      parse-error (undefined #t) reviver expr)))
+	      parse-error (undefined #t) reviver expr
+	      constant-alloc string-alloc)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return ...                                                       */
@@ -38,7 +39,7 @@
 ;*---------------------------------------------------------------------*/
 (define *json-lexer*
    
-   (regular-grammar (undefined)
+   (regular-grammar (undefined constant-alloc string-alloc)
       
       ;; blank
       ((+ (in #\space #\newline #\tab #\return))
@@ -70,7 +71,7 @@
       
       ;; integer constant
       ((: (? (in "+-")) (+ digit))
-       (return 'CONSTANT (the-integer)))
+       (return 'CONSTANT (constant-alloc (the-integer))))
       
       ;; floating-point constant
       ((or (: (? #\-) (+ digit)
@@ -79,7 +80,7 @@
 	   (: (? #\-) (or (: (+ digit) #\. (* digit)) (: #\. (+ digit)))
 		      (? (: (in #\e #\E) (? (in #\- #\+)) (+ digit)))
 		      (? (in #\f #\F #\l #\L))))
-       (return 'CONSTANT (the-flonum)))
+       (return 'CONSTANT (constant-alloc (the-flonum))))
       
       ;; string constant
       ((: "\"" (* (or (out #a000 #a001 #a002 #a003 #a004 #a005
@@ -92,15 +93,17 @@
 		      (: #\\ #\u (= 4 (in ("09afAF"))))))
 	  "\"")
        (let ((str (ucs2->utf8 (the-substring 1 (-fx (the-length) 1)) 0)))
-	  (return 'STRING (string-as-read str))))
+	  (return 'STRING (string-alloc (string-as-read str)))))
       
       ;; identifier
       ((: (or #\_ alpha) (* (or #\_ alpha digit)))
        (case (the-symbol)
-	  ((null) (return 'CONSTANT '()))
-	  ((undefined) (return (if undefined 'CONSTANT 'ERROR) #unspecified))
-	  ((true) (return 'CONSTANT #t))
-	  ((false) (return 'CONSTANT #f))
+	  ((null) (return 'CONSTANT (constant-alloc '())))
+	  ((undefined) (if undefined
+			   (return 'CONSTANT (constant-alloc #unspecified))
+			   (return 'ERROR #unspecified)))
+	  ((true) (return 'CONSTANT (constant-alloc #t)))
+	  ((false) (return 'CONSTANT (constant-alloc #f)))
 	  (else (return 'ERROR (the-symbol)))))
       
       (else
@@ -160,7 +163,8 @@
 (define (json-parse o::input-port #!key
 	   array-alloc array-set array-return
 	   object-alloc object-set object-return
-	   parse-error (undefined #t) reviver expr)
+	   parse-error (undefined #t) reviver expr
+	   constant-alloc string-alloc)
    
    (define (check-procedure proc arity name)
       (unless (and (procedure? proc) (correct-arity? proc arity))
@@ -171,9 +175,19 @@
 	       (obj proc)))))
    
    (define last-token #f)
-   
+
+   (define cnst-alloc
+      (if (and (procedure? constant-alloc) (correct-arity? constant-alloc 1))
+	  constant-alloc
+	  (lambda (x) x)))
+
+   (define str-alloc
+      (if (and (procedure? string-alloc) (correct-arity? string-alloc 1))
+	  string-alloc
+	  (lambda (x) x)))
+      
    (define (read-token)
-      (let ((t (read/rp *json-lexer* o undefined)))
+      (let ((t (read/rp *json-lexer* o undefined cnst-alloc str-alloc)))
 	 (set! last-token t)
 	 t))
    

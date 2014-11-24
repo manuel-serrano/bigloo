@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Nov 22 10:30:02 2014 (serrano)                */
+/*    Last change :  Mon Nov 24 15:42:46 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1249,7 +1249,7 @@ bgl_socket_flush( obj_t port ) {
 static void
 set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb ) {
    int t, port;
-   obj_t host;
+   obj_t name;
    FILE *fs;
 
    /* if on windows obtain a C run-time compatible file descriptor */
@@ -1281,9 +1281,11 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
       BGL_MUTEX_UNLOCK( socket_mutex );
       socket_error( "set_socket_io_ports", buffer, sock );
    }
+   
+   name = SOCKET( sock ).hostname;
 
    /* Create input port */
-   SOCKET( sock ).input = bgl_make_input_port( sock, fs, KINDOF_SOCKET, inb );
+   SOCKET( sock ).input = bgl_make_input_port( name, fs, KINDOF_SOCKET, inb );
    SOCKET( sock ).input->input_port_t.sysread = bgl_read;
    SOCKET( sock ).input->input_port_t.sysseek = bgl_input_socket_seek;
    SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
@@ -1449,7 +1451,6 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.portnum = ntohs( server.sin_port );
    a_socket->socket_t.hostname = hname;
-   //a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(server.sin_addr) );
    a_socket->socket_t.hostip = BUNSPEC;
    a_socket->socket_t.family = AF_INET;
    a_socket->socket_t.address.in_addr = server.sin_addr;
