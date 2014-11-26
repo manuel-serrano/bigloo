@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Sep 18 08:08:34 2014 (serrano)                */
+/*    Last change :  Tue Nov 25 16:15:18 2014 (serrano)                */
 /*    Copyright   :  2005-14 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -179,7 +179,7 @@ free_pkey( void* obj, void* pkey ) {
 /*---------------------------------------------------------------------*/
 static long
 sslread( obj_t port, char *ptr, long len ) {
-   int r;
+   long r;
    SSL *ssl = (SSL*)CAR( PORT( port ).userdata );
 
 loop:   
@@ -1137,19 +1137,19 @@ bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static int                                                       */
+/*    static long                                                      */
 /*    bgl_ssl_connection_clear ...                                     */
 /*---------------------------------------------------------------------*/
-static int
+static long
 bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 			  int (*SSL_fun)( SSL *, void *, int ),
 			  char *name ) {
    SSL *_ssl = ssl->BgL_z42nativez42;
-   int n;
+   long n;
 
    if( !SSL_is_init_finished( _ssl ) ) {
       if( ssl->BgL_isserverz00 ) {
-	 int m;
+	 long m;
 	 if( (m = SSL_accept( _ssl )) <= 0 ) {
 	    handle_ssl_error( ssl, m, "ssl-connection-clear (accept)" );
 	 }
@@ -1191,19 +1191,11 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 }
    
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    long                                                             */
 /*    bgl_ssl_connection_clear_in ...                                  */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF int
+BGL_RUNTIME_DEF long
 bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
-/*    {                                                                */
-/* 	 int i;                                                        */
-/* 	 for( i = 0; i < len; i++ ) {                                  */
-/* 	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] ); */
-/* 	 }                                                             */
-/*                                                                     */
-/* 	 fprintf( stderr, "\n" );                                      */
-/*    }                                                                */
    {
       char s[ len + 1 ];
       strncpy( s, buf + off, len );
@@ -1217,10 +1209,10 @@ bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len )
 }
 
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
-/*    bgl_ssl_connection_clear_out ...                                  */
+/*    long                                                             */
+/*    bgl_ssl_connection_clear_out ...                                 */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF int
+BGL_RUNTIME_DEF long
 bgl_ssl_connection_clear_out( ssl_connection ssl, char *buf, long off, long len ) {
    return bgl_ssl_connection_clear( ssl, buf, off, len,
 				    &SSL_read,

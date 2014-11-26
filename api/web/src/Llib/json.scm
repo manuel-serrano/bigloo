@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Mon Nov 24 12:32:03 2014 (serrano)                */
+;*    Last change :  Tue Nov 25 12:40:11 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -238,7 +238,7 @@
 		(object-return object))
 	       (else
 		(parse-error
-		   (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
+		   (format "wrong ~a token: \"~a\"" (car token) (cadr token))
 		   (caddr token)
 		   (cadddr token)))))))
    
@@ -254,12 +254,12 @@
 		(cadr token))
 	       ((ERROR)
 		(parse-error
-		   (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
+		   (format "wrong ~a token: \"~a\"" (car token) (cadr token))
 		   (caddr token) (cadddr token)))
 	       (else
 		(unless (eq? (car token) end)
 		   (parse-error
-		      (format "wrong JSON ~a token: \"~a\"" (car token) (cadr token))
+		      (format "wrong ~a token: \"~a\"" (car token) (cadr token))
 		      (caddr token)
 		      (cadddr token))))))))
    
