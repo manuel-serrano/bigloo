@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Mon Nov  3 18:08:28 2014 (serrano)                */
+;*    Last change :  Sun Nov 30 08:59:34 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -851,7 +851,20 @@
 		  ((and (pair? iv) (memq :serialize iv))
 		   =>
 		   (lambda (x)
-		      (print-item (when (pair? (cdr x)) (cadr x)))))
+		      (print-item
+			 (cond
+			    ((pair? (cdr x))
+			     (cadr x))
+			    ((class-field-default-value? f)
+			     (class-field-default-value f))
+			    ((not (eq? (class-field-type f) 'obj))
+			     (error "obj->string"
+				(format "Bad type \"~a\" for unserialized field"
+				   
+				   (class-field-type f))
+				(class-field-name f)))
+			    (else
+			     #f)))))
 		  (else
 		   (print-item ((class-field-accessor f) item))))))
 	 (print-fixnum (class-hash klass))))
