@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Nov 30 08:59:34 2014 (serrano)                */
+;*    Last change :  Mon Dec  8 08:22:09 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -107,9 +107,7 @@
 	    (set! *unsafe-range*  #t)
 	    (set! *unsafe-struct* #t))
    
-   (pragma  (string->obj side-effect-free)
-	    (obj->string side-effect-free)
-	    (cnst->integer nesting)
+   (pragma  (cnst->integer nesting)
 	    (integer->cnst nesting)
 	    (pointer? nesting)))
 
@@ -124,7 +122,7 @@
 	       (,loop (+fx ,var 1))))))
 
 ;*---------------------------------------------------------------------*/
-;*    Les variables de controle de `string->obj'                       */
+;*    serialization configuration                                      */
 ;*---------------------------------------------------------------------*/
 (define *epair?* #t)
 
@@ -481,9 +479,7 @@
 	     (val (unserializer obj)))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining val))
-	 (if (=fx hash (class-hash (object-class val)))
-	     val
-	     (error "string->obj" "corrupted custom object" val))))
+	 val))
    
    (define (read-class)
       (let ((name (read-symbol)))
@@ -871,6 +867,9 @@
    
    ;; print-object-custom
    (define (print-object-custom item o)
+      ;; add an extension mark to give a chance to string->obj
+      ;; to apply finalization on the unserialized object
+      (!print-markup #\X)
       (!print-markup #\O)
       (print-item o)
       (print-fixnum (class-hash (object-class item))))
