@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Nov 24 15:42:46 2014 (serrano)                */
+/*    Last change :  Sun Dec 14 15:21:17 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -91,6 +91,10 @@ typedef int socklen_t;
 #if( !defined( IFF_LOOPBACK ) )
 #  define IFF_LOOPBACK 0
 #endif
+
+#if( !defined( SHUT_RDWR ) )
+#  define SHUT_RDWR 2
+#endif   
 
 /*---------------------------------------------------------------------*/
 /*    DEBUG_SEGV                                                       */
@@ -1186,7 +1190,7 @@ static int
 bgl_sclose_rd( FILE *stream ) {
 #if( !defined( SHUT_RD ) )
 #  define SHUT_RD 1
-#endif   
+#endif
    shutdown( fileno( stream ), SHUT_RD );
    return fclose( stream );
 }
@@ -1781,63 +1785,6 @@ error: {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    socket_shutdown ...                                              */
-/*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-socket_shutdown( obj_t sock, int close_socket ) {
-   int fd = SOCKET( sock ).fd;
-   obj_t chook = SOCKET_CHOOK( sock );
-
-   if( fd > 0 ) {
-      /* MS: 19 Aug 2008, we don't have to close fd */
-      /* since it will be closed automatically with */
-      /* SOCKET( sock ).input                       */
-      SOCKET( sock ).fd = -1;
-      
-      if( close_socket ) {
-#if( !defined( SHUT_RDWR ) )
-#  define SHUT_RDWR 2
-#endif   
-	 if( shutdown( fd, SHUT_RDWR ) ) {
-	    char *buffer = alloca( 1024 );
-	    
-	    BGL_MUTEX_LOCK( socket_mutex );
-	    sprintf( buffer, "cannot shutdown socket, %s", strerror( errno ) );
-	    BGL_MUTEX_UNLOCK( socket_mutex );
-	    socket_error( "socket-shutdown", buffer, sock );
-	 }
-      }
-
-      if( PROCEDUREP( chook ) ) {
-	 if( PROCEDURE_ARITY(chook) == 1 ) {
-	    PROCEDURE_ENTRY( chook )( chook, sock, BEOA );
-	 } else {
-	    C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
-			      "socket-shutdown",
-			      "illegal close hook arity",
-			      chook );
-	 }
-      }
-
-      if( INPUT_PORTP( SOCKET(sock).input ) ) {
-	 bgl_close_input_port( SOCKET( sock ).input );
-	 /* MS: 26 apr 2008, don't loose the port */
-	 /* SOCKET( sock ).input = BFALSE; */
-      }
-   
-      if( OUTPUT_PORTP( SOCKET( sock ).output ) ) {
-	 bgl_close_output_port( SOCKET( sock ).output );
-	 /* MS: 26 apr 2008, don't loose the port */
-	 /* SOCKET(sock).output = BFALSE; */
-      }
-
-   }
-   
-   return BUNSPEC;
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
 /*    bgl_socket_accept ...                                            */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
@@ -2100,6 +2047,34 @@ socket_close( obj_t sock ) {
       }
    }
 
+   return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    socket_shutdown ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+socket_shutdown( obj_t sock, int close_socket ) {
+   int fd = SOCKET( sock ).fd;
+
+   if( fd > 0 ) {
+      if( close_socket ) {
+	 if( shutdown( fd, SHUT_RDWR ) ) {
+	    char *buffer = alloca( 1024 );
+
+	    /* force closing the socket anyhow */
+	    socket_close( sock );
+	    
+	    BGL_MUTEX_LOCK( socket_mutex );
+	    sprintf( buffer, "cannot shutdown socket, %s %d", strerror( errno ), fd );
+	    BGL_MUTEX_UNLOCK( socket_mutex );
+	    socket_error( "socket-shutdown", buffer, sock );
+	 }
+      }
+      socket_close( sock );
+   }
+   
    return BUNSPEC;
 }
 
@@ -2813,10 +2788,6 @@ bgl_datagram_socket_close( obj_t sock ) {
 
    if( fd > 0 ) {
       obj_t chook = BGL_DATAGRAM_SOCKET( sock ).chook;
-#if( !defined( SHUT_RDWR ) )
-#  define SHUT_RDWR 1
-#endif   
-
       shutdown( BGL_DATAGRAM_SOCKET( sock ).fd, SHUT_RDWR );
       close( BGL_DATAGRAM_SOCKET( sock ).fd );
       
