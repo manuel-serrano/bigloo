@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Sep 19 15:14:53 2014 (serrano)                */
+;*    Last change :  Fri Dec 19 18:13:15 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV os                                                         */
@@ -22,7 +22,8 @@
 	    (inline uv-get-free-memory::double)
 	    (inline uv-get-total-memory::double)
 	    (inline uv-cpus::vector)
-	    (uv-uptime::double)))
+	    (uv-uptime::double)
+	    (inline uv-exepath::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-loadavg ...                                                   */
@@ -56,3 +57,9 @@
    (let ((uptime::double (pragma::double "0.0")))
       ($uv-uptime (&double uptime))
       uptime))
+
+;*---------------------------------------------------------------------*/
+;*    uv-exepath ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-exepath)
+   ($uv-exepath))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Nov 25 10:44:32 2014 (serrano)                */
+/*    Last change :  Fri Dec 19 18:10:47 2014 (serrano)                */
 /*    Copyright   :  2014 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -271,6 +271,20 @@ bgl_uv_cpus() {
       uv_free_cpu_info( cpus, count );
       return vec;
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_exepath ...                                               */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_exepath() {
+   char buffer[ 1024 ];
+   size_t n = 1024;
+
+   uv_exepath( buffer, &n );
+
+   return string_to_bstring_len( buffer, n );
 }
 
 /*---------------------------------------------------------------------*/

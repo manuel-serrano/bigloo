@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Thu Oct 23 10:26:09 2014 (serrano)                */
+;*    Last change :  Fri Dec 19 18:08:44 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -236,6 +236,7 @@
       (macro $uv-get-free-memory::double () "uv_get_free_memory")
       (macro $uv-get-total-memory::double () "uv_get_total_memory")
       ($uv-cpus::vector () "bgl_uv_cpus")
+      ($uv-exepath::bstring () "bgl_uv_exepath")
       (macro $uv-uptime::int (::double*) "uv_uptime")
 
       ;; dns
