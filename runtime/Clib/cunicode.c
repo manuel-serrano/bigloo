@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Sat Feb 15 09:37:09 2014 (serrano)                */
+/*    Last change :  Tue Dec 23 09:43:24 2014 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -620,49 +620,69 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
    for( read = 0, write = 0; read < len; write++ ) {
       unsigned char byte = cutf8[ read++ ];
 
-      if( byte <= 0x7f )
+      if( byte <= 0x7f ) {
          aux[ write ] = (ucs2_t)byte;
-      else {
-         if( (byte <= 0xbf) || (byte >= 0xfd) )
-            C_FAILURE( "utf8-string->ucs2-string",
-                       "Illegal first byte",
-                       BCHAR( byte ) );
-         else {
-            unsigned long ucs2 = (unsigned long)byte;
-            int bits = 6;
+      } else if( byte == 0xf8 ) {
+	 char b1 = cutf8[ read++ ];
+	 char b2 = cutf8[ read++ ];
+	 char b3 = cutf8[ read++ ];
+	 int u4u3 = (b3 & 0x3) << 2;
+	 int xx = (b2 >> 4) & 0x3;
+	 int wwww = b1 & 0xf;
+	 int u2u1 = (b1 >> 4) & 0x3;
+	 int uuuu = u4u3 | u2u1;
+	 int vvvv = uuuu -1;
+	 int hi = 0x36;
+	 
+	 aux[ write ] = (ucs2_t)( xx | (wwww << 2) | (vvvv << 6) | (hi << 10) );
+      } else if( byte == 0xfc ) {
+	 char b1 = cutf8[ read++ ];
+	 char b2 = cutf8[ read++ ];
+	 char b3 = cutf8[ read++ ];
+	 int zzzzzz = b3 & 0x3f;
+	 int yyyy = b2 & 0xf;
+	 int hi = 0x37;
+	 
+	 aux[ write ] = (ucs2_t)( zzzzzz | (yyyy << 6) | (hi << 10) );
+      } else if( (byte <= 0xbf) || (byte >= 0xfd) ) {
+	 C_FAILURE( "utf8-string->ucs2-string",
+		    "Illegal first byte",
+		    BINT( byte ) );
+      } else {
+	 unsigned long ucs2 = (unsigned long)byte;
+	 int bits = 6;
 
-            while( byte & 0x40 ) {
-               unsigned char next = cutf8[ read++ ];
+	 while( byte & 0x40 ) {
+	    unsigned char next = cutf8[ read++ ];
                
-               if( (next <= 0x7f) || (next > 0xbf) )
-                  C_FAILURE( "utf8-string->ucs2-string",
-                             "Illegal following byte",
-                             BCHAR( next ) );
+	    if( (next <= 0x7f) || (next > 0xbf) )
+	       C_FAILURE( "utf8-string->ucs2-string",
+			  "Illegal following byte",
+			  BINT( next ) );
                
-               ucs2 = (ucs2 << 6) + (next & 0x3f);
-               byte <<= 1;
-               bits += 5;
-            }
+	    ucs2 = (ucs2 << 6) + (next & 0x3f);
+	    byte <<= 1;
+	    bits += 5;
+	 }
 
-            ucs2 &= (1<<bits) - 1;
+	 ucs2 &= (1<<bits) - 1;
 
-            if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
-                !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {
-	       // characters fffe and ffff are accepted, see:
-	       // http://www.unicode.org/versions/Unicode5.2.0/ch16.pdf#G19635
-               C_FAILURE( "utf8-string->ucs2-string",
-                          "Illegal utf8 character encoding",
-                          BINT( ucs2 ) );
+	 if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
+	     !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {
+	    // characters fffe and ffff are accepted, see:
+	    // http://www.unicode.org/versions/Unicode5.2.0/ch16.pdf#G19635
+	    C_FAILURE( "utf8-string->ucs2-string",
+		       "Illegal utf8 character encoding",
+		       BINT( ucs2 ) );
+	 } else {
+	    if( ucs2 >= 0x10000 ) {
+	       ucs2 -= 0x10000;
+	       aux[ write++ ] = (ucs2_t)((ucs2 >> 10) + 0xd800);
+	       aux[ write ] = (ucs2_t)((ucs2 & 0x3FF) + 0xdc00);
 	    } else {
-	       if( ucs2 >= 0x10000 ) {
-		  ucs2 -= 0x10000;
-		  aux[ write++ ] = (ucs2_t)((ucs2 >> 10) + 0xd800);
-		  aux[ write ] = (ucs2_t)((ucs2 & 0x3FF) + 0xdc00);
-	       } else {
-		  aux[ write ] = (ucs2_t)ucs2;
-	       }
+	       aux[ write ] = (ucs2_t)ucs2;
 	    }
-         }
+	 }
       }
    }
          

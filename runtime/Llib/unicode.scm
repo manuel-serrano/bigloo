@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Nov 26 07:09:20 2014 (serrano)                */
+;*    Last change :  Tue Dec 23 06:33:09 2014 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -171,12 +171,11 @@
 	    (inline utf8-string-right-replacement? ::bstring ::long)
 	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
-	    (utf8-codepoint-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-index->string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-string-append*::bstring . strings)
-	    (utf8-substring::bstring string::bstring ::long #!optional (end::long (utf8-string-length string)))
+	    (utf8-substring::bstring str::bstring ::long #!optional (end::long (utf8-string-length str)))
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
 	    (utf8->iso-latin::bstring ::bstring)
@@ -745,7 +744,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-encode ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    Replace all the occurrence of illegal UTF8 characters with       */
+;*    Replace all the occurrences of illegal UTF8 characters with      */
 ;*    the UNICODE replacement character EF BF BD.                      */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-encode str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
@@ -788,7 +787,7 @@
 			;; error, reserved
 			(string-unicode-fix! res w)
 			(loop (+fx r 1) (+fx w 3)))
-		       ((<fx n #xdf)
+		       ((<fx n #xd8)
 			;; two chars encoding
 			(if (and (<fx (+fx 1 r) len)
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
@@ -801,7 +800,7 @@
 			       (loop (+fx r 1) (+fx w 3)))))
 		       ((and (>=fx n #xd8) (<=fx n #xdb))
 			;; utf16 escape
-			(when (and (<fx r (-fx len 3))
+			(if (and (<fx r (-fx len 3))
 				   (in-range? (string-ref str (+fx r 1)) #xdc #xdf)
 				   (in-range? (string-ref str (+fx r 2)) #xdc #xdf)
 				   (in-range? (string-ref str (+fx r 3)) #xdc #xdf))
@@ -957,27 +956,40 @@
 		    (+fx l 1)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-codepoint-length ...                                        */
-;*    -------------------------------------------------------------    */
-;*    Returns the number of code points required to encode that        */
-;*    UTF8 string (might be bigger than the UTF8 length).              */
+;*    utf8-string-ref ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (utf8-codepoint-length str)
-   (let ((len (string-length str))
-	 (sen (string-ascii-sentinel str)))
-      (if (>fx sen len)
-	  len
-	  (let loop ((r 0)
-		     (l 0))
-	     (if (=fx r len)
-		 l
-		 (let* ((c (string-ref str r))
-			(s (utf8-char-size c)))
-		    (if (and (=fx s 4)
-			     (or (=fx (char->integer c) #xf0)
-				 (=fx (char->integer c) #xf4)))
-			(loop (+fx r s) (+fx l 2))
-			(loop (+fx r s) (+fx l 1)))))))))
+(define (utf8-string-ref str i)
+   (let ((sentinel (string-ascii-sentinel str)))
+      (if (<fx i sentinel)
+	  (string-ascii-sentinel-mark! (string (string-ref str i)))
+	  (let ((len (string-length str)))
+	     (let loop ((r sentinel) (i (-fx i sentinel)))
+		(let* ((c (string-ref str r))
+		       (s (utf8-char-size c)))
+		   (if (=fx i 0)
+		       (string-ascii-sentinel-mark! (substring str r (+fx r s)))
+		       (loop (+fx r s) (-fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-index->string-index ...                              */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-index->string-index str i)
+   (cond
+      ((<fx i 0)
+       -1)
+      ((<fx i (string-ascii-sentinel str))
+       i)
+      (else
+       (let ((len (string-length str)))
+	  (let loop ((r 0) (i i))
+	     (cond
+		((=fx i 0)
+		 r)
+		((<fx r len)
+		 (let ((c (string-ref str r)))
+		    (loop (+fx r (utf8-char-size c)) (-fx i 1))))
+		(else
+		 -1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-left-replacement? ...                                */
@@ -1175,78 +1187,41 @@
 	 (string-shrink! buffer index))))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-string-ref ...                                              */
-;*---------------------------------------------------------------------*/
-(define (utf8-string-ref str i)
-   (let ((sentinel (string-ascii-sentinel str)))
-      (if (<fx i sentinel)
-	  (string (string-ref str i))
-	  (let ((len (string-length str)))
-	     (let loop ((r sentinel) (i (-fx i sentinel)))
-		(let* ((c (string-ref str r))
-		       (s (utf8-char-size c)))
-		   (if (=fx i 0)
-		       (string-ascii-sentinel-mark!
-			  (substring str r (+fx r s)))
-		       (loop (+fx r s) (-fx i 1)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    utf8-string-index->string-index ...                              */
-;*---------------------------------------------------------------------*/
-(define (utf8-string-index->string-index str i)
-   (cond
-      ((<fx i 0)
-       -1)
-      ((<fx i (string-ascii-sentinel str))
-       i)
-      (else
-       (let ((len (string-length str)))
-	  (let loop ((r 0) (i i))
-	     (cond
-		((=fx i 0)
-		 r)
-		((<fx r len)
-		 (let ((c (string-ref str r)))
-		    (loop (+fx r (utf8-char-size c)) (-fx i 1))))
-		(else
-		 -1)))))))
-
-;*---------------------------------------------------------------------*/
 ;*    utf8-substring ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (utf8-substring string::bstring start::long
-	   #!optional (end::long (utf8-string-length string)))
-   (let ((len (string-length string)))
+(define (utf8-substring str::bstring start::long
+	   #!optional (end::long (utf8-string-length str)))
+   (let ((len (string-length str)))
       (cond
 	 ((or (<fx start 0) (>fx start len))
 	  (error "utf8-substring"
-	     (string-append "Illegal start index \"" string "\"")
+	     (string-append "Illegal start index \"" str "\"")
 	     start))
 	 ((<fx end 0)
 	  (error "utf8-substring"
-	     (string-append "Illegal end index \"" string "\"")
+	     (string-append "Illegal end index \"" str "\"")
 	     end))
 	 ((or (<fx end start) (>fx end len))
 	  (error "utf8-substring"
-	     (string-append "Illegal end index \"" string "\"")
+	     (string-append "Illegal end index \"" str "\"")
 	     end))
 	 ((=fx start end)
 	  "")
-	 ((ascii-string? string)
-	  (substring string start end))
+	 ((ascii-string? str)
+	  (substring str start end))
 	 (else
 	  (let loop ((r 0)
 		     (n 0)
 		     (i -1))
 	     (if (=fx r len)
-		 (string-ascii-sentinel-mark! (substring string i r))
-		 (let* ((c (string-ref string r))
+		 (string-ascii-sentinel-mark! (substring str i r))
+		 (let* ((c (string-ref str r))
 			(s (utf8-char-size c)))
 		    (cond
 		       ((=fx n start)
 			(loop (+fx r s) (+fx n 1) r))
 		       ((=fx n end)
-			(substring string i r))
+			(substring str i r))
 		       (else
 			(loop (+fx r s) (+fx n 1) i))))))))))
 
