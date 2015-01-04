@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Oct  6 18:24:00 2014 (serrano)                */
-/*    Copyright   :  2003-14 Manuel Serrano                            */
+/*    Last change :  Sat Jan  3 18:49:14 2015 (serrano)                */
+/*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
@@ -260,6 +260,7 @@ BGL_RUNTIME_DEF BGL_LONGLONG_T
 bgl_current_nanoseconds() {
 #if( BGL_HAVE_TIMEVAL )   
    struct timeval tv;
+
    if( gettimeofday( &tv, 0 ) == 0 ) {
       return (BGL_LONGLONG_T)(tv.tv_sec) * NANOBASE +
 	 (BGL_LONGLONG_T)(tv.tv_usec) * 1000;

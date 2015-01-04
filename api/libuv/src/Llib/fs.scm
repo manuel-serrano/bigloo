@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Oct 10 19:22:44 2014 (serrano)                */
+;*    Last change :  Mon Dec 29 07:31:40 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -75,8 +75,7 @@
 	       #!key
 	       callback (offset 0) (position -1)
 	       (loop::UvLoop (uv-default-loop)))
-	    (uv-fs-flags::int ::symbol)
-	    (uv-guess-handle::symbol ::UvFile)))
+	    (uv-fs-flags::int ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Constants                                                        */
@@ -309,18 +308,3 @@
       ((a+) (bit-or O_APPEND (bit-or O_CREAT O_RDWR)))
       ((ax+ xa+) (bit-or O_APPEND (bit-or O_CREAT (bit-or O_RDWR O_EXCL))))
       (else (error "uv-fs-flags" "Illegal flag" flag))))
-
-;*---------------------------------------------------------------------*/
-;*    uv-guess-handle ...                                              */
-;*---------------------------------------------------------------------*/
-(define (uv-guess-handle file::UvFile)
-   (with-access::UvFile file (fd)
-      (let ((r ($uv-guess-handle fd)))
-	 (cond
-	    ((=fx r $uv-handle-tcp) 'TCP)
-	    ((=fx r $uv-handle-tty) 'TTY)
-	    ((=fx r $uv-handle-udp) 'UDP)
-	    ((=fx r $uv-handle-pipe) 'PIPE)
-	    ((=fx r $uv-handle-file) 'FILE)
-	    ((=fx r $uv-handle-unknown) 'UNKNOWN)
-	    (else 'UNDEFINED)))))

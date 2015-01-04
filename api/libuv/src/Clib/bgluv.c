@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Dec 19 18:10:47 2014 (serrano)                */
-/*    Copyright   :  2014 Manuel Serrano                               */
+/*    Last change :  Sun Jan  4 09:38:44 2015 (serrano)                */
+/*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
@@ -21,12 +21,15 @@ typedef BgL_uvloopz00_bglt bgl_uv_loop_t;
 typedef BgL_uvfilez00_bglt bgl_uv_file_t;
 typedef BgL_uvhandlez00_bglt bgl_uv_handle_t;
 typedef BgL_uvstreamz00_bglt bgl_uv_stream_t;
+typedef BgL_uvudpz00_bglt bgl_uv_udp_t;
 typedef BgL_uvwatcherz00_bglt bgl_uv_watcher_t;
 typedef BgL_uvasyncz00_bglt bgl_uv_async_t;
 typedef BgL_uvfseventz00_bglt bgl_uv_fs_event_t;
 typedef BgL_uvprocessz00_bglt bgl_uv_process_t;
 typedef BgL_uvprocessoptionsz00_bglt bgl_uv_process_options_t;
 typedef BgL_uvworkz00_bglt bgl_uv_work_t;
+
+extern obj_t bgl_uv_handle_type_symbol( long );
 
 /*---------------------------------------------------------------------*/
 /*    bgl_uv_mutex                                                     */
@@ -1239,6 +1242,168 @@ bgl_uv_inet_pton( char *addr, int family ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_write_cb ...                                              */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_write_cb( uv_write_t *req, int status ) {
+   obj_t p = (obj_t)req->data;
+
+   gc_unmark( p );
+   PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
+
+   free( req );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_write ...                                                 */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl_uv_loop_t bloop ) {
+   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 1 )) ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
+			"wrong callback", proc );
+   } else {
+      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+      uv_write_t *req = malloc( sizeof( uv_write_t ) );
+      uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      uv_buf_t iov;
+      int r;
+
+      req->data = proc;
+      
+      gc_mark( proc );
+
+      iov = uv_buf_init( buffer + offset, length );
+      
+      r = uv_write( req, handle, &iov, 1, bgl_uv_write_cb );
+
+      return r;
+   }
+}
+   
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_write2 ...                                                */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_write2( obj_t obj, char *buffer, long offset, long length, obj_t sendhandle, obj_t proc, bgl_uv_loop_t bloop ) {
+   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 1 )) ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
+			"wrong callback", proc );
+   } else {
+      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+      uv_write_t *req = malloc( sizeof( uv_write_t ) );
+      uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      uv_stream_t *sendhdl =
+	 (sendhandle == BFALSE ? 0L : (uv_stream_t *)(((bgl_uv_stream_t)sendhandle)->BgL_z42builtinz42));
+      uv_buf_t iov;
+      int r;
+
+      req->data = proc;
+      
+      gc_mark( proc );
+
+      iov = uv_buf_init( buffer + offset, length );
+
+      r = uv_write2( req, handle, &iov, 1, sendhdl, bgl_uv_write_cb );
+
+      return r;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_read_cb ...                                               */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
+   obj_t obj = (obj_t)stream->data;
+   bgl_uv_stream_t sobj = (bgl_uv_stream_t)obj;
+   obj_t p = sobj->BgL_z52proccz52;
+   obj_t allocobj = sobj->BgL_z52allocz52;
+   obj_t offset = sobj->BgL_z52offsetz52;
+   int c = 0;
+   obj_t pendingsym = BFALSE;
+
+   sobj->BgL_z52allocz52 = BUNSPEC;
+   gc_unmark( obj );
+
+   if( (stream->type == UV_NAMED_PIPE) ) {
+      if( uv_pipe_pending_count( (uv_pipe_t*)stream ) > 0 ) {
+	uv_handle_type pending = uv_pipe_pending_type( (uv_pipe_t*)stream );
+	pendingsym = bgl_uv_handle_type_symbol( (long)pending );
+      }
+   }
+
+   if( PROCEDUREP( p ) ) {
+      if( nread >= 0 ) {
+	 PROCEDURE_ENTRY( p )( p, BTRUE, allocobj, offset, BINT( nread ), pendingsym, BEOA );
+      } else if( nread == UV_EOF ) {
+	 PROCEDURE_ENTRY( p )( p, BEOF, allocobj, BINT( -1 ), BINT( -1 ), pendingsym, BEOA );
+      } else {
+	 PROCEDURE_ENTRY( p )( p, BFALSE, allocobj, BINT( -1 ), BINT( nread ), pendingsym, BEOA );
+      }
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_uv_alloc_cb ...                                              */
+/*---------------------------------------------------------------------*/
+static void
+bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
+   bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
+   obj_t p = stream->BgL_z52procaz52;
+   obj_t allocobj = PROCEDURE_ENTRY( p )( p, stream, BINT( ssize ) );
+   obj_t chunk = BGL_MVALUES_VAL( 1 );
+   obj_t offset = BGL_MVALUES_VAL( 2 );
+
+   if( !STRINGP( chunk ) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start, onalloc",
+			"string",
+			chunk );
+   }
+   stream->BgL_z52allocz52 = allocobj;
+   stream->BgL_z52offsetz52 = offset;
+
+   *buf = uv_buf_init( &(STRING_REF( chunk, CINT( offset ) )), ssize );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_read_start ...                                            */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
+   if( !PROCEDUREP( proca ) || (!PROCEDURE_CORRECT_ARITYP( proca, 2 )) ) {
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
+			"wrong onalloc", proca );
+   } else {
+      if( !(PROCEDUREP( procc ) && (PROCEDURE_CORRECT_ARITYP( procc, 5 )) ) ) {
+	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
+			   "wrong callback", procc );
+      } else {
+	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+	 int r;
+
+	 stream->BgL_z52allocz52 = BUNSPEC;
+	 stream->BgL_z52procaz52 = proca;
+	 stream->BgL_z52proccz52 = procc;
+	 stream->BgL_z52offsetz52 = BINT( -1 );
+
+	 gc_mark( obj );
+
+	 return uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
+      }
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    uv_tcp_t *                                                       */
 /*    bgl_uv_tcp_create ...                                            */
 /*---------------------------------------------------------------------*/
@@ -1438,7 +1603,7 @@ bgl_address( struct sockaddr *addr ) {
 	 
 	 res = MAKE_PAIR( MAKE_PAIR( _port, BINT( ntohs( a6->sin6_port ) ) ),
 			  res );
-	 res = MAKE_PAIR( MAKE_PAIR( _family, _IPv4 ), res );
+	 res = MAKE_PAIR( MAKE_PAIR( _family, _IPv6 ), res );
 	 res = MAKE_PAIR( MAKE_PAIR( _address, string_to_bstring( ip ) ), res );
 	 break;
       }
@@ -1493,113 +1658,162 @@ bgl_uv_tcp_getpeername( uv_tcp_t *handle ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    uv_tty_t *                                                       */
+/*    bgl_uv_tty_create ...                                            */
+/*---------------------------------------------------------------------*/
+uv_tty_t *
+bgl_uv_tty_create( uv_loop_t *loop, obj_t obj, int fd, bool_t readable ) {
+   uv_tty_t *tty = (uv_tty_t *)GC_MALLOC( sizeof( uv_tty_t ) );
+
+   uv_tty_init( loop, tty, fd, readable );
+
+   tty->data = obj;
+   return tty;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_tty_get_winsize ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t bgl_uv_tty_get_winsize( uv_tty_t *handle ) {
+   int width, height;
+   obj_t vec = create_vector( 2 );
+
+   uv_tty_get_winsize( handle, &width, &height );
+   VECTOR_SET( vec, 0, BINT( width ) );
+   VECTOR_SET( vec, 1, BINT( height ) );
+   return vec;
+}
+    
+
+/*---------------------------------------------------------------------*/
+/*    uv_udp_t *                                                       */
+/*    bgl_uv_udp_create ...                                            */
+/*---------------------------------------------------------------------*/
+uv_udp_t *
+bgl_uv_udp_create( uv_loop_t *loop, obj_t obj ) {
+   uv_udp_t *udp = (uv_udp_t *)GC_MALLOC( sizeof( uv_udp_t ) );
+
+   uv_udp_init( loop, udp );
+
+   udp->data = obj;
+   return udp;
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_uv_udp_bind ...                                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family ) {
+   union addr {
+      struct sockaddr_in ip4;
+      struct sockaddr_in6 ip6;
+   } address;
+   int r;
+
+   if( family == 4 ) {
+      r = uv_ip4_addr( addr, port, &(address.ip4) );
+      if( r ) return r;
+      if( r ) fprintf( stderr, "ERROR: %s\n", strerror( -r ));
+   } else {
+      r = uv_ip6_addr( addr, port, &(address.ip6) );
+      if( r ) return r;
+   }
+   return uv_udp_bind( handle, (struct sockaddr *)&address, 0 );
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_uv_write_cb ...                                              */
+/*    bgl_uv_udp_send_cb ...                                           */
 /*---------------------------------------------------------------------*/
 static void
-bgl_uv_write_cb( uv_write_t *req, int status ) {
-   obj_t p = (obj_t)req->data;
-
-   gc_unmark( p );
-   PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
+bgl_uv_udp_send_cb( uv_udp_send_t *req, int status ) {
+   obj_t proc = (obj_t)req->data;
+   gc_unmark( proc );
+   
+   PROCEDURE_ENTRY( proc )( proc, BINT( status ), BEOA );
 
    free( req );
 }
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_uv_write ...                                                 */
+/*    bgl_uv_udp_send ...                                              */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl_uv_loop_t bloop ) {
-   if( !(PROCEDUREP( proc ) && (PROCEDURE_CORRECT_ARITYP( proc, 1 )) ) ) {
-      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
-			"wrong callback", proc );
+bgl_uv_udp_send( uv_udp_t *handle, obj_t buffer, long offset, long length,
+		 long port, char *addr,
+		 int family, obj_t proc, bgl_uv_loop_t bloop ) {
+   union addr {
+      struct sockaddr_in ip4;
+      struct sockaddr_in6 ip6;
+   } address;
+   int r;
+   uv_udp_send_t *req = malloc( sizeof( uv_udp_send_t ) );
+   uv_buf_t iov;
+
+   req->data = proc;
+   iov = uv_buf_init( &(STRING_REF( buffer, offset )), length );
+
+   if( family == 4 ) {
+      uv_ip4_addr( addr, port, &(address.ip4) );
    } else {
-      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-      uv_write_t *req = malloc( sizeof( uv_write_t ) );
-      uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
-      uv_buf_t iov;
-      int r;
-
-      req->data = proc;
-      
-      gc_mark( proc );
-
-      iov = uv_buf_init( buffer + offset, length );
-      
-      r = uv_write( req, handle, &iov, 1, bgl_uv_write_cb );
-
-      return r;
+      uv_ip6_addr( addr, port, &(address.ip6) );
    }
-}
+
+   gc_mark( req->data );
+
+   r = uv_udp_send( req, handle, &iov, 1, (struct sockaddr *)&address, &bgl_uv_udp_send_cb );
    
+   if( r ) free( req );
+
+   return r;
+}
+
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_uv_read_cb ...                                               */
+/*    bgl_uv_udp_recv_cb ...                                           */
 /*---------------------------------------------------------------------*/
 static void
-bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
-   obj_t obj = (obj_t)stream->data;
-   bgl_uv_stream_t sobj = (bgl_uv_stream_t)obj;
+bgl_uv_udp_recv_cb( uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf,
+		    const struct sockaddr* addr,
+		    unsigned flags ) {
+   obj_t obj = (obj_t)handle->data;
+   bgl_uv_udp_t sobj = (bgl_uv_udp_t)obj;
    obj_t p = sobj->BgL_z52proccz52;
    obj_t allocobj = sobj->BgL_z52allocz52;
    obj_t offset = sobj->BgL_z52offsetz52;
 
    sobj->BgL_z52allocz52 = BUNSPEC;
-   gc_unmark( obj );
 
    if( PROCEDUREP( p ) ) {
-      if( nread >= 0 ) {
-	 PROCEDURE_ENTRY( p )( p, BTRUE, allocobj, offset, BINT( nread ), BEOA );
+      if( nread > 0 ) {
+	 PROCEDURE_ENTRY( p )( p, BTRUE, allocobj, offset, BINT( nread ), bgl_address( (struct sockaddr *)addr), BEOA );
       } else if( nread == UV_EOF ) {
-	 PROCEDURE_ENTRY( p )( p, BEOF, allocobj, BINT( -1 ), BINT( -1 ), BEOA );
+	 PROCEDURE_ENTRY( p )( p, BEOF, allocobj, BINT( -1 ), BINT( -1 ), BNIL, BEOA );
       } else {
-	 PROCEDURE_ENTRY( p )( p, BFALSE, allocobj, BINT( -1 ), BINT( nread ), BEOA );
+	 PROCEDURE_ENTRY( p )( p, BFALSE, allocobj, BINT( -1 ), BINT( nread ), BNIL, BEOA );
       }
    }
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_uv_alloc_cb ...                                              */
-/*---------------------------------------------------------------------*/
-static void
-bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
-   bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
-   obj_t p = stream->BgL_z52procaz52;
-   obj_t allocobj = PROCEDURE_ENTRY( p )( p, stream, BINT( ssize ) );
-   obj_t chunk = BGL_MVALUES_VAL( 1 );
-   obj_t offset = BGL_MVALUES_VAL( 2 );
-
-   if( !STRINGP( chunk ) ) {
-      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start, onalloc",
-			"string",
-			chunk );
-   }
-   stream->BgL_z52allocz52 = allocobj;
-   stream->BgL_z52offsetz52 = offset;
-
-   *buf = uv_buf_init( &(STRING_REF( chunk, CINT( offset ) )), ssize );
-}
-
-/*---------------------------------------------------------------------*/
 /*    int                                                              */
-/*    bgl_uv_read_start ...                                            */
+/*    bgl_uv_udp_recv_start ...                                        */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
+bgl_uv_udp_recv_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
    if( !PROCEDUREP( proca ) || (!PROCEDURE_CORRECT_ARITYP( proca, 2 )) ) {
-      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
+      C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-udp_recv-start",
 			"wrong onalloc", proca );
    } else {
-      if( !(PROCEDUREP( procc ) && (PROCEDURE_CORRECT_ARITYP( procc, 4 )) ) ) {
-	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
+      if( !(PROCEDUREP( procc ) && (PROCEDURE_CORRECT_ARITYP( procc, 5 )) ) ) {
+	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-udp_recv-start",
 			   "wrong callback", procc );
       } else {
 	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+	 uv_udp_t *s = (uv_udp_t *)(stream->BgL_z42builtinz42);
 	 int r;
 
 	 stream->BgL_z52allocz52 = BUNSPEC;
@@ -1607,10 +1821,25 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT( -1 );
 
-	 gc_mark( obj );
-
-	 return uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
+	 return uv_udp_recv_start( s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb );
       }
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_udp_getsockname ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_udp_getsockname( uv_udp_t *handle ) {
+   struct sockaddr_storage address;
+   int addrlen = sizeof( address );
+   int r = uv_udp_getsockname( handle, (struct sockaddr *)&address, &addrlen );
+
+   if( r ) { 
+      return BINT( r );
+   } else {
+      return bgl_address( (struct sockaddr *)&address );
    }
 }
 

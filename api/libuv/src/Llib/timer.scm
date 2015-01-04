@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Fri Oct 17 08:00:20 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Sat Jan  3 19:45:48 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV timers                                                     */
 ;*=====================================================================*/
@@ -20,7 +20,9 @@
 	   __libuv_handle)
    
    (export (uv-timer-start ::UvTimer ::uint64 ::uint64)
-	   (uv-timer-stop ::UvTimer)))
+	   (uv-timer-stop ::UvTimer)
+	   (uv-hrtime::uint64)))
+   
 
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ::UvTimer ...                                           */
@@ -37,11 +39,10 @@
    (with-access::UvTimer o ($builtin loop repeat ref)
       (set! repeat r)
       (with-access::UvLoop loop (%mutex %gcmarks)
-	 (synchronize %mutex
-	    ;; store in the loop for the GC
-	    (set! %gcmarks (cons o %gcmarks))
-	    ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
-	    (when (null? %gcmarks) ($bgl_uv_timer_cb $uv_timer_nil 0))))
+	 ;; store in the loop for the GC
+	 (set! %gcmarks (cons o %gcmarks))
+	 ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
+	 (when (null? %gcmarks) ($bgl_uv_timer_cb $uv_timer_nil 0)))
       ($uv_timer_start ($uv-timer-t $builtin) $BGL_UV_TIMER_CB t r)))
 
 ;*---------------------------------------------------------------------*/
@@ -73,3 +74,9 @@
 (define-method (uv-has-ref? o::UvTimer)
    (with-access::UvTimer o (ref)
       ref))
+
+;*---------------------------------------------------------------------*/
+;*    uv-hrtime ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (uv-hrtime)
+   ($uv-hrtime))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Tue Nov 25 12:31:00 2014 (serrano)                */
+;*    Last change :  Sun Jan  4 08:56:10 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -38,14 +38,21 @@
 	    (macro $set-error-notifiers!::obj (::obj) "BGL_ERROR_NOTIFIERS_SET")
 	    (macro $get-interrupt-notifier::obj () "BGL_INTERRUPT_NOTIFIER_GET")
 	    (macro $set-interrupt-notifier!::void (::obj) "BGL_INTERRUPT_NOTIFIER_SET")
-	    (macro sigfpe::int "SIGFPE")
+	    (macro sighup::int "SIGHUP")
+	    (macro sigquit::int "SIGQUIT")
 	    (macro sigill::int "SIGILL")
+	    (macro sigabrt::int "SIGABRT")
+	    (macro sigfpe::int "SIGFPE")
+	    (macro sigkill::int "SIGKILL")
 	    (macro sigbus::int "SIGBUS")
 	    (macro sigsegv::int "SIGSEGV")
 	    (macro sigpipe::int "SIGPIPE")
+	    (macro sigalrm::int "SIGALRM")
 	    (macro sigterm::int "SIGTERM")
 	    (macro sigint::int "SIGINT")
-	    (macro sigkill::int "SIGKILL")
+	    (macro sigusr1::int "SIGUSR1")
+	    (macro sigusr2::int "SIGUSR2")
+	    (macro sigwinch::int "SIGWINCH")
 	    
 	    (macro $foreign-typeof::string (::obj) "FOREIGN_TYPE_NAME")
 	    
@@ -106,14 +113,21 @@
 	       (method static $set-interrupt-notifier!::void (::obj)
 		       "BGL_INTERRUPT_NOTIFIER_SET")
 	       
-	       (field static sigfpe::int "SIGFPE")
+	       (field static sighup::int "SIGHUP")
+	       (field static sigint::int "SIGINT")
+	       (field static sigquit::int "SIGQUIT")
 	       (field static sigill::int "SIGILL")
-	       (field static sigbus::int "SIGBUS")
+	       (field static sigabrt::int "SIGABRT")
+	       (field static sigfpe::int "SIGFPE")
 	       (field static sigsegv::int "SIGSEGV")
+	       (field static sigalrm::int "SIGALRM")
+	       (field static sigbus::int "SIGBUS")
 	       (field static sigpipe::int "SIGPIPE")
 	       (field static sigterm::int "SIGTERM")
-	       (field static sigint::int "SIGINT")
 	       (field static sigkill::int "SIGKILL")
+	       (field static sigusr1::int "SIGUSR1")
+	       (field static sigusr2::int "SIGUSR2")
+	       (field static sigwinch::int "SIGWINCH")
 	       
 	       (field static $errno-type-error::int
 		      "BGL_TYPE_ERROR")

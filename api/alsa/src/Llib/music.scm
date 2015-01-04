@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Oct  4 08:08:42 2014 (serrano)                */
+;*    Last change :  Fri Dec 26 07:30:11 2014 (serrano)                */
 ;*    Copyright   :  2011-14 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -276,14 +276,12 @@
 	    (alsa-snd-pcm-open pcm))))
    
    (define (pcm-reset! o)
-      (tprint ">>> alsa pcm-rest...")
       (with-access::alsamusic o (pcm)
 	 (let ((pcm-state (alsa-snd-pcm-get-state pcm)))
 	    (unless (eq? pcm-state 'not-open)
 	       (when (memq pcm-state '(running prepared))
 		  (alsa-snd-pcm-drop pcm))
-	       (alsa-snd-pcm-cleanup pcm))))
-      (tprint "<<< alsa pcm-reset..."))
+	       (alsa-snd-pcm-cleanup pcm)))))
    
    (define (prepare-next-buffer o buffer url::bstring)
       (with-handler

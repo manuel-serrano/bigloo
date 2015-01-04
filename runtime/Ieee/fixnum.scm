@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Mon Sep 29 18:24:04 2014 (serrano)                */
+;*    Last change :  Sat Jan  3 18:57:15 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -68,6 +68,7 @@
 	    (macro $int32->llong::llong (::uint32)  "(BGL_LONGLONG_T)")
 	    (macro $uint32->elong::elong (::uint32)  "(long)")
 	    (macro $uint32->llong::llong (::uint32)  "(BGL_LONGLONG_T)")
+	    (macro $uint32->uint64::uint64 (::uint32)  "(uint64_t)")
 	    (macro $llong->uint32::uint32 (::llong)  "(long)")
 	    (macro $llong->int32::int32 (::llong)  "(long)")
 	    
@@ -285,6 +286,8 @@
 	       (method static $int32->llong::llong (::int32)
 		  "INT32_TO_LLONG")
 	       (method static $uint32->llong::llong (::uint32)
+		  "INT32_TO_LLONG")
+	       (method static $uint32->uint64::uint64 (::uint32)
 		  "INT32_TO_LLONG")
 	       (method static $llong->int32::uint32 (::llong)
 		  "LLONG_TO_INT32")
@@ -660,6 +663,7 @@
 	    (inline uint16->int16::int16 ::uint16)
 	    (inline int32->uint32::uint32 ::int32)
 	    (inline uint32->int32::int32 ::uint32)
+	    (inline uint32->uint64::uint64 ::uint32)
 	    (inline int64->uint64::uint64 ::int64)
 	    (inline uint64->int64::int64 ::uint64)
 	    
@@ -1405,6 +1409,7 @@
 
 (define-inline (int32->llong n) ($int32->llong n))
 (define-inline (uint32->llong n) ($uint32->llong n))
+(define-inline (uint32->uint64 n) ($uint32->uint64 n))
 (define-inline (llong->int32 n) ($llong->int32 n))
 (define-inline (llong->uint32 n) ($llong->uint32 n))
 

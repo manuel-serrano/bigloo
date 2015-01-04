@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Oct 19 10:29:52 2014                          */
-;*    Last change :  Sun Oct 19 13:51:17 2014 (serrano)                */
+;*    Last change :  Mon Dec 29 07:37:54 2014 (serrano)                */
 ;*    Copyright   :  2014 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV pipe                                                       */
@@ -21,6 +21,7 @@
    
    (export  (uv-pipe-open::int ::UvPipe ::int)
 	    (uv-pipe-bind ::UvPipe ::bstring)
+	    (uv-pipe-ipc?::bool ::UvPipe)
 	    (uv-pipe-connect ::UvPipe ::bstring
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-pipe-pending-instances ::UvPipe ::int)))
@@ -47,6 +48,13 @@
 (define (uv-pipe-bind handle name)
    (with-access::UvPipe handle ($builtin)
       ($uv-pipe-bind ($uv-pipe-t $builtin) name)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-pipe-ipc? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (uv-pipe-ipc? handle)
+   (with-access::UvPipe handle ($builtin)
+      ($uv-pipe-ipc? ($uv-pipe-t $builtin))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-pipe-connect ...                                              */

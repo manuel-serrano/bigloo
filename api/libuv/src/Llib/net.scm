@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Fri Oct 24 07:00:15 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Sun Jan  4 08:41:18 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
 ;*=====================================================================*/
@@ -17,7 +17,8 @@
    (include "uv.sch")
    
    (import  __libuv_types
-	    __libuv_loop)
+	    __libuv_loop
+	    __libuv_handle)
    
    (export  (uv-getaddrinfo ::bstring service
 	       #!key (family 0) callback (loop (uv-default-loop)))
@@ -29,6 +30,8 @@
 	    (uv-stream-fd::long o::UvStream)
 	    (uv-stream-write ::UvStream ::bstring ::long ::long
 	       #!key callback (loop (uv-default-loop)))
+	    (uv-stream-write2 ::UvStream ::bstring ::long ::long ::obj
+	       #!key callback (loop (uv-default-loop)))
 	    (uv-stream-read-start ::UvStream 
 	       #!key onalloc callback (loop (uv-default-loop)))
 	    (uv-stream-read-stop ::UvStream)
@@ -36,7 +39,7 @@
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-listen ::UvStream ::int
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-accept ::UvStream ::UvTcp)
+	    (uv-accept ::UvStream ::UvStream)
 	    (uv-closing?::bool ::UvStream)
 	    (uv-writable?::bool ::UvStream)
 	    (uv-readable?::bool ::UvStream)
@@ -49,7 +52,23 @@
 	    (uv-tcp-keepalive::int ::UvTcp ::bool ::int)
 	    (uv-tcp-simultaneous-accepts::int ::UvTcp ::bool)
 	    (uv-tcp-getsockname::obj ::UvTcp)
-	    (uv-tcp-getpeername::obj ::UvTcp)))
+	    (uv-tcp-getpeername::obj ::UvTcp)
+	    
+	    (uv-udp-bind ::UvUdp ::bstring ::int #!key (family::int 4))
+	    (uv-udp-getsockname::obj ::UvUdp)
+	    (uv-udp-send::obj ::UvUdp ::bstring ::long ::long ::long ::bstring
+	       #!key (family 4) callback (loop (uv-default-loop)))
+	    (uv-udp-recv-start ::UvUdp
+	       #!key onalloc callback (loop (uv-default-loop)))
+	    (uv-udp-recv-stop::int ::UvUdp)
+	    (uv-udp-set-ttl handle::UvUdp ::int)
+	    (uv-udp-set-multicast-ttl handle::UvUdp ::int)
+	    (uv-udp-set-multicast-loop ::UvUdp ::bool)
+	    (uv-udp-set-broadcast ::UvUdp ::bool)
+	    (uv-udp-set-membership ::UvUdp ::bstring ::obj ::symbol)
+	    
+	    (uv-tty-mode-set! ::UvTty ::symbol)
+	    (uv-tty-get-window-size::vector ::UvTty)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %uv-init ::UvTcp ...                                             */
@@ -59,6 +78,24 @@
       (with-access::UvLoop loop (($loop $builtin))
 	 (set! $tcp ($uv-tcp-create ($uv-loop-t $loop) o))
 	 o)))
+
+;*---------------------------------------------------------------------*/
+;*    %uv-init ::UvUdp ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (%uv-init o::UvUdp)
+   (with-access::UvUdp o (($udp $builtin) loop)
+      (with-access::UvLoop loop (($loop $builtin))
+	 (set! $udp ($uv-udp-create ($uv-loop-t $loop) o)))
+      o))
+
+;*---------------------------------------------------------------------*/
+;*    %uv-init ::UvTty ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (%uv-init o::UvTty)
+   (with-access::UvTty o (($tty $builtin) loop fd readable)
+      (with-access::UvLoop loop (($loop $builtin))
+	 (set! $tty ($uv-tty-create ($uv-loop-t $loop) o fd readable)))
+      o))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-getaddrinfo ...                                               */
@@ -95,13 +132,21 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-stream-fd o::UvStream)
    (with-access::UvStream o ($builtin)
-      ($uv-stream-fd ($uv-stream-t $builtin))))
+      (if (isa? o UvUdp)
+	  ($uv-udp-fd ($uv-udp-t $builtin))
+	  ($uv-stream-fd ($uv-stream-t $builtin)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (uv-stream-write o::UvStream buf offset length #!key callback (loop (uv-default-loop)))
    ($uv-write o buf offset length callback loop))
+
+;*---------------------------------------------------------------------*/
+;*    uv-stream-write2 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (uv-stream-write2 o::UvStream buf offset length handle::obj #!key callback (loop (uv-default-loop)))
+   ($uv-write2 o buf offset length handle callback loop))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */
@@ -161,7 +206,27 @@
 ;*    uv-tcp-connect ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (uv-tcp-connect handle host port #!key (family::int 4) callback (loop (uv-default-loop)))
-   ($uv-tcp-connect handle host port family callback loop))
+   (let ((r ($uv-tcp-connect handle host port family callback loop)))
+      (when (=fx r 0)
+	 (with-access::UvStream handle (%gcmarks)
+	    (set! %gcmarks (cons callback %gcmarks)))
+	 (with-access::UvLoop loop (%gcmarks)
+	    (set! %gcmarks (cons handle %gcmarks))))
+      r))
+
+;*---------------------------------------------------------------------*/
+;*    tcp-servers ...                                                  */
+;*---------------------------------------------------------------------*/
+(define tcp-servers '())
+(define tcp-mutex (make-mutex))
+
+;*---------------------------------------------------------------------*/
+;*    uv-close ::UvTcp ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (uv-close o::UvTcp #!optional callback)
+   (synchronize tcp-mutex
+      (set! tcp-servers (remq! o tcp-servers)))
+   (call-next-method))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-tcp-open ...                                                  */
@@ -174,6 +239,8 @@
 ;*    uv-tcp-bind ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (uv-tcp-bind handle host port #!key (family::int 4))
+   (synchronize tcp-mutex
+      (set! tcp-servers (cons handle tcp-servers)))
    (with-access::UvTcp handle ($builtin)
       ($uv-tcp-bind ($uv-tcp-t $builtin) host port family)))
 
@@ -211,3 +278,123 @@
 (define (uv-tcp-getpeername::obj handle)
    (with-access::UvTcp handle ($builtin)
       ($uv-tcp-getpeername ($uv-tcp-t $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    udp-servers ...                                                  */
+;*---------------------------------------------------------------------*/
+(define udp-servers '())
+(define udp-mutex (make-mutex))
+
+;*---------------------------------------------------------------------*/
+;*    uv-close ::UvUdp ...                                             */
+;*---------------------------------------------------------------------*/
+(define-method (uv-close o::UvUdp #!optional callback)
+   (synchronize udp-mutex
+      (set! udp-servers (remq! o udp-servers)))
+   (call-next-method))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-bind ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-bind handle host port #!key (family::int 4))
+   (synchronize udp-mutex
+      (set! udp-servers (cons handle udp-servers)))
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-bind ($uv-udp-t $builtin) host port family)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-recv-start ...                                            */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-recv-start o::UvUdp #!key onalloc callback (loop (uv-default-loop)))
+   (with-access::UvUdp o (%procm)
+      (set! %procm (cons callback %procm))
+      ($uv-udp-recv-start o onalloc callback loop)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-recv-stop ...                                             */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-recv-stop handle)
+   (with-access::UvUdp handle ($builtin %procm)
+      (set! %procm '())
+      ($uv-udp-recv-stop ($uv-udp-t $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-getsockname ...                                           */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-getsockname::obj handle)
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-getsockname ($uv-udp-t $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-send ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-send handle::UvUdp buf offset length port address #!key (family 4) callback (loop (uv-default-loop)))
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-send ($uv-udp-t $builtin) buf
+	 offset length
+	 port address
+	 family callback loop)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-set-ttl ...                                               */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-set-ttl handle::UvUdp ttl)
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-set-ttl ($uv-udp-t $builtin) ttl)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-set-multicast-ttl ...                                     */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-set-multicast-ttl handle::UvUdp ttl)
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-set-multicast-ttl ($uv-udp-t $builtin) ttl)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-set-multicast-loop ...                                    */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-set-multicast-loop handle::UvUdp on)
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-set-multicast-loop ($uv-udp-t $builtin) on)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-set-broadcast ...                                         */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-set-broadcast handle::UvUdp on)
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-set-broadcast ($uv-udp-t $builtin) on)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-udp-set-membership ...                                        */
+;*---------------------------------------------------------------------*/
+(define (uv-udp-set-membership handle::UvUdp addr iface membership)
+   (with-access::UvUdp handle ($builtin)
+      ($uv-udp-set-membership ($uv-udp-t $builtin)
+	 addr (if (string? iface) iface $string-nil)
+	 (if (eq? membership 'join-group)
+	     $uv-membership-join-group
+	     $uv-membership-leave-group))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-tty-mode-set! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (uv-tty-mode-set! handle::UvTty mode)
+   (with-access::UvTty handle ($builtin)
+      ;; uv 1.1.1
+      #;($uv-tty-set-mode ($uv-tty-t $builtin)
+	(case mode
+	   ((normal) $uv-tty-mode-normal)
+	   ((raw) $uv-tty-mode-raw)
+	   ((io) $uv-tty-mode-io)
+	   (else (error "uv-tty-mode" "bad mode" mode))))
+      ($uv-tty-set-mode ($uv-tty-t $builtin)
+	 (case mode
+	    ((normal) 0)
+	    ((raw) 1)
+	    (else (error "uv-tty-mode" "bad mode" mode))))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-tty-get-window-size ...                                       */
+;*---------------------------------------------------------------------*/
+(define (uv-tty-get-window-size handle::UvTty)
+   (with-access::UvTty handle ($builtin)
+      ($uv-tty-get-winsize ($uv-tty-t $builtin))))

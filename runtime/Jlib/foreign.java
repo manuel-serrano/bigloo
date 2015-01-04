@@ -5425,14 +5425,21 @@ public final class foreign
    // SYSTEM and OS
    //////
    public static final int PTR_ALIGNMENT = 2;
+   public static final int SIGHUP = 1;
+   public static final int SIGQUIT = 2;
    public static final int SIGINT = 3;
-   public static final int SIGKILL = 9;
    public static final int SIGILL = 4;
+   public static final int SIGABRT = 5;
+   public static final int SIGKILL = 9;
    public static final int SIGFPE = 8;
    public static final int SIGBUS = 7;
    public static final int SIGSEGV = 11;
+   public static final int SIGALRM = 14;
    public static final int SIGPIPE = 13;
    public static final int SIGTERM = 15;
+   public static final int SIGUSR1 = 16;
+   public static final int SIGUSR2 = 17;
+   public static final int SIGWINCH = 20;
 
    public static int sigsetmask(int n)
       {

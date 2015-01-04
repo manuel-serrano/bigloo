@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Oct 17 17:34:44 2014                          */
-/*    Last change :  Mon Oct 20 08:28:29 2014 (serrano)                */
-/*    Copyright   :  2014 Manuel Serrano                               */
+/*    Last change :  Thu Jan  1 10:17:19 2015 (serrano)                */
+/*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C macros for the Bigloo UV binding                               */
 /*=====================================================================*/

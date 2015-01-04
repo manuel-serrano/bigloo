@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Fri Nov 14 18:20:04 2014 (serrano)                */
+/*    Last change :  Thu Jan  1 19:21:47 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -518,11 +518,12 @@ bool_t
 bigloo_strcmp( obj_t o1, obj_t o2 ) {
    int l1 = STRING_LENGTH( o1 );
 
-   if( l1 == STRING_LENGTH( o2 ) )
+   if( l1 == STRING_LENGTH( o2 ) ) {
       return !memcmp( (void *)BSTRING_TO_STRING( o1 ),
 		      (void *)BSTRING_TO_STRING( o2 ), l1 );
-   else
+   } else {
       return 0;
+   }
 }
 
 /*---------------------------------------------------------------------*/

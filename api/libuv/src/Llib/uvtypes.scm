@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Thu Oct 23 07:48:35 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Sat Jan  3 19:04:41 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
 ;*=====================================================================*/
@@ -15,6 +15,10 @@
 (module __libuv_types
 
    (include "uv.sch")
+
+   (extern (export uv-handle-type-symbol "bgl_uv_handle_type_symbol")
+	   (export uv-new-file "bgl_uv_new_file")
+	   (export uv-guess-handle "bgl_uv_guess_handle"))
    
    (export (abstract-class %Uv
 	      (%uv-init))
@@ -22,11 +26,11 @@
 	   (class UvHandle::%Uv
 	      ($builtin::$uv_handle_t (default $uv_handle_nil))
 	      (%onclose (default #f))
+	      (%gcmarks::pair-nil (default '()))
 	      (closed::bool (default #f)))
 
 	   (class UvLoop::UvHandle
-	      (%mutex::mutex read-only (default (make-mutex)))
-	      (%gcmarks::pair-nil (default '())))
+	      (%mutex::mutex read-only (default (make-mutex))))
 
 	   (abstract-class UvWatcher::UvHandle
 	      (loop::UvLoop read-only)
@@ -41,8 +45,15 @@
 
 	   (class UvTcp::UvStream)
 	   
+	   (class UvUdp::UvStream
+	      (%procm::pair-nil (default '())))
+	   
 	   (class UvPipe::UvStream
 	      (ipc::bool read-only))
+	   
+	   (class UvTty::UvStream
+	      (fd::int read-only)
+	      (readable::bool read-only))
 	   
 	   (class UvTimer::UvWatcher
 	      (repeat::uint64 (default #u64:0))
@@ -139,9 +150,11 @@
 
 	   (uv-new-file::UvFile ::int ::bstring)
 	   (uv-strerror::bstring ::int)
-	   (uv-err-name::bstring ::int))
+	   (uv-err-name::bstring ::int)
 
-   (extern (export uv-new-file "bgl_uv_new_file")))
+	   (uv-handle-type-symbol ::int)
+	   (uv-guess-handle::symbol ::int)))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-id ...                                                        */
@@ -216,3 +229,22 @@
       (if ($string-nilp s)
 	  ""
 	  s)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-guess-handle ...                                              */
+;*---------------------------------------------------------------------*/
+(define (uv-guess-handle fd::int)
+   (uv-handle-type-symbol ($uv-guess-handle fd)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-handle-type-symbol ...                                        */
+;*---------------------------------------------------------------------*/
+(define (uv-handle-type-symbol r)
+   (cond
+      ((=fx r $uv-handle-tcp) 'TCP)
+      ((=fx r $uv-handle-tty) 'TTY)
+      ((=fx r $uv-handle-udp) 'UDP)
+      ((=fx r $uv-handle-pipe) 'PIPE)
+      ((=fx r $uv-handle-file) 'FILE)
+      ((=fx r $uv-handle-unknown) 'UNKNOWN)
+      (else 'UNDEFINED)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Thu Oct 23 10:25:54 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Sat Jan  3 19:56:59 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV loops                                                      */
 ;*=====================================================================*/
@@ -67,19 +67,21 @@
 ;*    uv-run ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (uv-run loop::UvLoop #!optional mode)
-   (with-access::UvLoop loop ($builtin)
+   (with-access::UvLoop loop ($builtin %gcmarks)
       (unwind-protect
 	 (begin
 	    (set! gc-loops (cons loop gc-loops))
 	    ($uv-run ($uv-loop-t $builtin) (or mode $UV_RUN_DEFAULT)))
-	 (synchronize %uv-mutex
-	    (set! gc-loops (remq! loop gc-loops))))))
+	 (begin
+	    (set! %gcmarks '())
+	    (synchronize %uv-mutex
+	       (set! gc-loops (remq! loop gc-loops)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stop ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (uv-stop loop::UvLoop)
-   (with-access::UvLoop loop ($builtin)
+   (with-access::UvLoop loop ($builtin %gcmarks)
       (synchronize %uv-mutex
 	 (set! gc-loops (remq! loop gc-loops)))
       ($uv-stop ($uv-loop-t $builtin))))
