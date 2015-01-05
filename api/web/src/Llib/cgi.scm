@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Tue Mar 27 17:28:20 2007 (serrano)                */
-;*    Copyright   :  2003-07 Manuel Serrano                            */
+;*    Last change :  Mon Jan  5 21:48:33 2015 (serrano)                */
+;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
 ;*=====================================================================*/
@@ -26,6 +26,43 @@
    (string (integer->char (string->integer hexadecimal-string 16))))
 
 ;*---------------------------------------------------------------------*/
+;*    hex-string-ref ...                                               */
+;*---------------------------------------------------------------------*/
+(define (hex-string-ref str i)
+   (let ((n (string-ref-ur str i)))
+      (cond
+	 ((and (char>=? n #\0) (char<=? n #\9))
+	  (-fx (char->integer n) (char->integer #\0)))
+	 ((and (char>=? n #\a) (char<=? n #\f))
+	  (+fx 10 (-fx (char->integer n) (char->integer #\a))))
+	 (else
+	  (+fx 10 (-fx (char->integer n) (char->integer #\A)))))))
+
+;*---------------------------------------------------------------------*/
+;*    unhex+! ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (unhex+! hexstr)
+   (let ((len (string-length hexstr)))
+      (let loop ((i 0)
+		 (j 0))
+	 (if (=fx i len)
+	     (string-shrink! hexstr j)
+	     (let ((c (string-ref hexstr i)))
+		(cond
+		   ((char=? c #\%)
+		    (let* ((c1 (hex-string-ref hexstr (+fx i 1)))
+			   (c2 (hex-string-ref hexstr (+fx i 2)))
+			   (n (+fx (*fx c1 16) c2)))
+		       (string-set! hexstr j (integer->char n))
+		       (loop (+fx i 3) (+fx j 1))))
+		   ((char=? c #\+)
+		    (string-set! hexstr j #\space)
+		    (loop (+fx i 1) (+fx j 1)))
+		   (else
+		    (string-set! hexstr j c)
+		    (loop (+fx i 1) (+fx j 1)))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    decode ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (decode str)
@@ -44,67 +81,76 @@
 ;*    cgi-args->list ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (cgi-args->list query)
-   (let* ((fields-list '())
-	  (field-name "")
-	  (field-value "")
-	  (gram (regular-grammar ()
-		   ((when (not (rgc-context? 'val))
-		       (+ (or (: (? #a013) #\newline) #\&)))
-		    (ignore))
-		   ((when (not (rgc-context? 'val))
-		       (: (* (out "=%&")) "="))
-		    (set! field-name
-			  (string-append
-			   field-name
-			   (decode (the-substring 0 (-fx (the-length) 1)))))
-		    (rgc-context 'val)
-		    (ignore))
-		   ((when (not (rgc-context? 'val))
-		       (: (* (out "=%&")) "%" xdigit xdigit))
-		    (set! field-name
-			  (string-append
-			   field-name
-			   (decode (the-substring 0 (-fx (the-length) 3)))
-			   (unhex (the-substring (-fx (the-length) 2)
-						 (the-length)))))
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (+ (or (: (? #a013) #\newline) #\&)))
-		    (set! fields-list (cons (cons field-name field-value)
-					    fields-list))
-		    (set! field-name "")
-		    (set! field-value "")
-		    (rgc-context)
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (: (* (out "&%+")) #\% xdigit xdigit))
-		    (set! field-value
-			  (string-append
-			   field-value
-			   (the-substring 0 (-fx (the-length) 3))
-			   (unhex (the-substring (-fx (the-length) 2)
-						 (the-length)))))
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (: (* (out "&%+")) "+"))
-		    (set! field-value (string-append
-				       field-value
-				       (the-substring 0 (-fx (the-length) 1))
-				       " "))
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (* (out "&%+")))
-		    (set! field-value (string-append field-value
-						     (the-string)))
-		    (set! fields-list (cons (cons field-name field-value)
-					    fields-list))
-		    (set! field-name "")
-		    (set! field-value "")
-		    (rgc-context)
-		    (ignore))
-		   (else (reverse fields-list)))))
+   (let ((gram (regular-grammar (fields-list field-name)
+		  ((when (not (rgc-context? 'val))
+		      (+ (or (: (? #a013) #\newline) #\&)))
+		   (ignore))
+		  ((when (not (rgc-context? 'val)) (: (* (out "=%&")) "="))
+		   (set! field-name
+		      (string-append field-name
+			 (decode (the-substring 0 (-fx (the-length) 1)))))
+		   (rgc-context 'val)
+		   (ignore))
+		  ((when (not (rgc-context? 'val))
+		      (+ (: (* (out "=%&")) "%" xdigit xdigit)))
+		   (set! field-name
+		      (string-append field-name (unhex+! (the-string))))
+		   (ignore))
+;* 		  ((when (rgc-context? 'val)                           */
+;* 		      (+ (or (: (? #a013) #\newline) #\&)))            */
+;* 		   (set! fields-list                                   */
+;* 		      (cons (cons field-name field-value) fields-list)) */
+;* 		   (set! field-name "")                                */
+;* 		   (set! field-value "")                               */
+;* 		   (rgc-context)                                       */
+;* 		   (ignore))                                           */
+;* 		   ((when (rgc-context? 'val)                          */
+;* 		       (: (* (out "&%+")) #\% xdigit xdigit))          */
+;* 		    (set! field-value                                  */
+;* 			  (string-append                               */
+;* 			   field-value                                 */
+;* 			   (the-substring 0 (-fx (the-length) 3))      */
+;* 			   (unhex (the-substring (-fx (the-length) 2)  */
+;* 						 (the-length)))))      */
+;* 		    (ignore))                                          */
+		  ((when (rgc-context? 'val)
+		      (+ (or (out #\& #\+ #a013 #\Newline)
+			     (: #\% xdigit xdigit)
+			     (: #a013 (out #\Newline))
+			     (: (? #a013) #\Newline (out #\&)))))
+		   (set! fields-list
+		      (cons (cons field-name (unhex+! (the-string)))
+			 fields-list))
+		   (set! field-name "")
+		   (rgc-context)
+		   (ignore))
+;* 		   ((when (rgc-context? 'val)                          */
+;* 		       (: (* (out "&%+")) #\% xdigit xdigit))          */
+;* 		    (set! field-value                                  */
+;* 			  (string-append                               */
+;* 			   field-value                                 */
+;* 			   (the-substring 0 (-fx (the-length) 3))      */
+;* 			   (unhex (the-substring (-fx (the-length) 2)  */
+;* 						 (the-length)))))      */
+;* 		    (ignore))                                          */
+;* 		   ((when (rgc-context? 'val) (: (* (out "&%+")) "+")) */
+;* 		    (set! field-value                                  */
+;* 		       (string-append field-value                      */
+;* 			  (the-substring 0 (-fx (the-length) 1))       */
+;* 			  " "))                                        */
+;* 		    (ignore))                                          */
+;* 		   ((when (rgc-context? 'val) (* (out "&%+")))         */
+;* 		    (set! field-value (string-append field-value       */
+;* 						     (the-string)))    */
+;* 		    (set! fields-list (cons (cons field-name field-value) */
+;* 					    fields-list))              */
+;* 		    (set! field-name "")                               */
+;* 		    (set! field-value "")                              */
+;* 		    (rgc-context)                                      */
+;* 		    (ignore))                                          */
+		  (else (reverse! fields-list)))))
       (let ((p (open-input-string query)))
-	 (let ((res (read/rp gram p)))
+	 (let ((res (read/rp gram p '() "")))
 	    (close-input-port p)
 	    res))))
 

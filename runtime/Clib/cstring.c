@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Thu Jan  1 19:21:47 2015 (serrano)                */
+/*    Last change :  Mon Jan  5 18:47:40 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1108,7 +1108,7 @@ create_string_for_read( obj_t bstring, int symbolp ) {
    else
       dst = buffer;
 #undef BUFFER_SIZE
-	
+
    for( r = 0, w = 0; r < len; r++ )
       switch( src[ r ] ) {
          case '\n' :

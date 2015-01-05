@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Nov 21 08:22:07 2014 (serrano)                */
+;*    Last change :  Mon Jan  5 20:12:34 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -949,7 +949,7 @@
       ((char? rs)
        (string-char-index string rs))
       ((not (string? rs))
-       (error 'string-index "Illegal regset" rs))
+       (error "string-index" "Illegal regset" rs))
       ((=fx (string-length rs) 1)
        (string-char-index string (string-ref rs 0)))
       ((<=fx (string-length rs) 10)
@@ -999,11 +999,11 @@
 	     (loop (-fx i 1))))))
    (cond
       ((>fx start (string-length s))
-       (error 'string-index "index out of bound" start))
+       (error "string-index" "index out of bound" start))
       ((char? rs)
        (string-char-index s rs))
       ((not (string? rs))
-       (error 'string-index-right "Illegal regset" rs))
+       (error "string-index-right" "Illegal regset" rs))
       ((=fx (string-length rs) 1)
        (string-char-index s (string-ref rs 0)))
       ((<=fx (string-length rs) 10)
@@ -1070,7 +1070,7 @@
       ((procedure? rs)
        (string-pred-skip string rs))
       ((not (string? rs))
-       (error 'string-skip "Illegal regset" rs))
+       (error "string-skip" "Illegal regset" rs))
       ((=fx (string-length rs) 1)
        (string-char-skip string (string-ref rs 0)))
       ((<=fx (string-length rs) 10)
@@ -1132,13 +1132,13 @@
    
    (cond
       ((>fx start (string-length s))
-       (error 'string-index "index out of bound" start))
+       (error "string-index" "index out of bound" start))
       ((char? rs)
        (string-char-skip s rs))
       ((procedure? rs)
        (string-pred-skip s rs))
       ((not (string? rs))
-       (error 'string-index-right "Illegal regset" rs))
+       (error "string-index-right" "Illegal regset" rs))
       ((=fx (string-length rs) 1)
        (string-char-skip s (string-ref rs 0)))
       ((<=fx (string-length rs) 10)
@@ -1499,7 +1499,7 @@
 	 ((and (char>=? n #\A) (char<=? n #\F))
 	  (+fx 10 (-fx (char->integer n) (char->integer #\A))))
 	 (else
-	  (error 'hex-string->string
+	  (error "hex-string->string"
 		 "Illegal string (illegal character)"
 		 str)))))
 
@@ -1509,7 +1509,7 @@
 (define (string-hex-intern str)
    (let ((len (string-length str)))
       (if (oddfx? len)
-	  (error 'string-hex "Illegal string (length is odd)" str)
+	  (error "string-hex" "Illegal string (length is odd)" str)
 	  (let ((res (make-string (/fx len 2))))
 	     (let loop ((i 0)
 			(j 0))
@@ -1527,7 +1527,7 @@
 (define (string-hex-intern! str)
    (let ((len (string-length str)))
       (if (oddfx? len)
-	  (error 'string-hex-intern! "Illegal string (length is odd)" str)
+	  (error "string-hex-intern!" "Illegal string (length is odd)" str)
 	  (let loop ((i 0)
 		     (j 0))
 	     (if (=fx i len)

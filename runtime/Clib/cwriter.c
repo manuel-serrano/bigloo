@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Mon Mar  3 10:43:31 2014 (serrano)                */
+/*    Last change :  Mon Jan  5 18:53:18 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -134,7 +134,7 @@ obj_t
 bgl_display_string( obj_t o, obj_t op ) {
    obj_t res;
    obj_t mutex = OUTPUT_PORT( op ).mutex;
-   
+
    BGL_MUTEX_LOCK( mutex );
    res = bgl_write( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) );
    BGL_MUTEX_UNLOCK( mutex );
