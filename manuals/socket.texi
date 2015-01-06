@@ -75,7 +75,7 @@ Example:
 ;; open a client socket on port 80:
 (make-client-socket "www.inria.fr" 80) 
 ;; open an unbufferized connection
-(make-client-socket "www.inria.fr" 80 :buffer #f)
+(make-client-socket "www.inria.fr" 80 :inbuf #f :outbuf #f)
 @end smalllisp
 
 @end deffn
@@ -262,7 +262,7 @@ First, here is the code of the client:
 @smalllisp
 (module client)
 
-(let* ((s (make-client-socket "localhost" 8080 #f))
+(let* ((s (make-client-socket "localhost" 8080 :outbuf #f))
        (p (socket-output s)))
    (display "string" p)
    (newline p)
