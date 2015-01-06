@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Mon Jan  5 21:48:33 2015 (serrano)                */
+;*    Last change :  Tue Jan  6 08:02:37 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -83,71 +83,20 @@
 (define (cgi-args->list query)
    (let ((gram (regular-grammar (fields-list field-name)
 		  ((when (not (rgc-context? 'val))
-		      (+ (or (: (? #a013) #\newline) #\&)))
-		   (ignore))
-		  ((when (not (rgc-context? 'val)) (: (* (out "=%&")) "="))
+		      (: (* (or (out "=%&") (: "%" xdigit xdigit))) "="))
 		   (set! field-name
-		      (string-append field-name
-			 (decode (the-substring 0 (-fx (the-length) 1)))))
+		      (unhex+! (the-substring 0 (-fx (the-length) 1))))
 		   (rgc-context 'val)
 		   (ignore))
-		  ((when (not (rgc-context? 'val))
-		      (+ (: (* (out "=%&")) "%" xdigit xdigit)))
-		   (set! field-name
-		      (string-append field-name (unhex+! (the-string))))
-		   (ignore))
-;* 		  ((when (rgc-context? 'val)                           */
-;* 		      (+ (or (: (? #a013) #\newline) #\&)))            */
-;* 		   (set! fields-list                                   */
-;* 		      (cons (cons field-name field-value) fields-list)) */
-;* 		   (set! field-name "")                                */
-;* 		   (set! field-value "")                               */
-;* 		   (rgc-context)                                       */
-;* 		   (ignore))                                           */
-;* 		   ((when (rgc-context? 'val)                          */
-;* 		       (: (* (out "&%+")) #\% xdigit xdigit))          */
-;* 		    (set! field-value                                  */
-;* 			  (string-append                               */
-;* 			   field-value                                 */
-;* 			   (the-substring 0 (-fx (the-length) 3))      */
-;* 			   (unhex (the-substring (-fx (the-length) 2)  */
-;* 						 (the-length)))))      */
-;* 		    (ignore))                                          */
 		  ((when (rgc-context? 'val)
-		      (+ (or (out #\& #\+ #a013 #\Newline)
-			     (: #\% xdigit xdigit)
-			     (: #a013 (out #\Newline))
-			     (: (? #a013) #\Newline (out #\&)))))
+		      (+ (or (out "&%") (: #\% xdigit xdigit))))
 		   (set! fields-list
 		      (cons (cons field-name (unhex+! (the-string)))
 			 fields-list))
-		   (set! field-name "")
 		   (rgc-context)
 		   (ignore))
-;* 		   ((when (rgc-context? 'val)                          */
-;* 		       (: (* (out "&%+")) #\% xdigit xdigit))          */
-;* 		    (set! field-value                                  */
-;* 			  (string-append                               */
-;* 			   field-value                                 */
-;* 			   (the-substring 0 (-fx (the-length) 3))      */
-;* 			   (unhex (the-substring (-fx (the-length) 2)  */
-;* 						 (the-length)))))      */
-;* 		    (ignore))                                          */
-;* 		   ((when (rgc-context? 'val) (: (* (out "&%+")) "+")) */
-;* 		    (set! field-value                                  */
-;* 		       (string-append field-value                      */
-;* 			  (the-substring 0 (-fx (the-length) 1))       */
-;* 			  " "))                                        */
-;* 		    (ignore))                                          */
-;* 		   ((when (rgc-context? 'val) (* (out "&%+")))         */
-;* 		    (set! field-value (string-append field-value       */
-;* 						     (the-string)))    */
-;* 		    (set! fields-list (cons (cons field-name field-value) */
-;* 					    fields-list))              */
-;* 		    (set! field-name "")                               */
-;* 		    (set! field-value "")                              */
-;* 		    (rgc-context)                                      */
-;* 		    (ignore))                                          */
+		  (#\&
+		   (ignore))
 		  (else (reverse! fields-list)))))
       (let ((p (open-input-string query)))
 	 (let ((res (read/rp gram p '() "")))
@@ -282,16 +231,16 @@
    (multiple-value-bind (len crlf)
       (fill-line! buffer port)
       ;; according to RFC 2046, there may be additional characters
-      ;; on the line after the boundary
+      ;; on line after the boundary
       (if (is-boundary? buffer boundary)
 	  (begin
 	     (unless crlf (flush-line port))
 	     (last-boundary? buffer boundary))
 	  (raise (instantiate::&io-parse-error
-		    (proc 'cgi-multipart->list)
+		    (proc "cgi-multipart->list")
 		    (msg "Illegal boundary")
 		    (obj (format "\n wanted:--~a\n  found:~a" boundary
-				 (substring buffer 0 len))))))))
+			    (substring buffer 0 len))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-parse-content-disposition ...                                */
@@ -307,17 +256,17 @@
 			  (pref "; filename=\""))
 		       (if (substring-at? rest pref  0)
 			   (let ((fname (substring
-					 rest
-					 (string-length pref)
-					 (-fx (string-length rest) 1))))
+					   rest
+					   (string-length pref)
+					   (-fx (string-length rest) 1))))
 			      (values s fname))
 			   (values s #f)))
 		    (raise (instantiate::&io-parse-error
-			      (proc 'cgi-multipart->list)
+			      (proc "cgi-multipart->list")
 			      (msg "Illegal name")
 			      (obj s)))))
 	     (raise (instantiate::&io-parse-error
-		       (proc 'cgi-multipart->list)
+		       (proc "cgi-multipart->list")
 		       (msg "Illegal Content-Disposition: ")
 		       (obj buf)))))))
 
@@ -353,15 +302,15 @@
 	 ((: (* (in #\space #\tab)) (? #\Return) #\Newline)
 	  header)
 	 (else
-	  ;; accumultate all the character to EOL for a better error message
+	  ;; accumultate all the characters to EOL for a better error message
 	  (let ((c (the-failure)))
 	     (let ((s (if (char? c)
 			  (string-for-read
-			   (string-append "<" (string c) ">"
-					  (read-line (the-port))))
+			     (string-append "<" (string c) ">"
+				(read-line (the-port))))
 			  c)))
 		(raise (instantiate::&io-parse-error
-			  (proc 'cgi-multipart->list)
+			  (proc "cgi-multipart->list")
 			  (msg "Illegal characters")
 			  (obj s))))))))
    (read/rp header-grammar port '()))
@@ -376,7 +325,7 @@
       (let ((op (open-output-file path)))
 	 (if (not (output-port? op))
 	     (raise (instantiate::&io-file-not-found-error
-		       (proc 'cgi-multipart->list)
+		       (proc "cgi-multipart->list")
 		       (msg "Can't open file for output")
 		       (obj path)))
 	     (unwind-protect
@@ -387,9 +336,9 @@
 			  (begin
 			     (unless crlf (flush-line port))
 			     (values (last-boundary? buffer boundary)
-				     (list name
-					   :file path
-					   :header header)))
+				(list name
+				   :file path
+				   :header header)))
 			  (begin
 			     (when ocrlf (display "\r\n" op))
 			     (display-substring buffer 0 len op)
@@ -408,9 +357,9 @@
 	     (begin
 		(unless crlf (flush-line port))
 		(values (last-boundary? buffer boundary)
-			(list name
-			      :data (apply string-append (reverse! lines))
-			      :header header)))
+		   (list name
+		      :data (apply string-append (reverse! lines))
+		      :header header)))
 	     (if (or first (not crlf))
 		 (loop (cons (substring buffer 0 len) lines) #f)
 		 (loop (cons* (substring buffer 0 len) "\r\n" lines) #f))))))

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon Jan  5 18:59:55 2015 (serrano)                */
+/*    Last change :  Tue Jan  6 05:40:12 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -698,7 +698,7 @@ strseek( void *port, long offset, int whence ) {
    \
    while( _slen > 0 ) { \
       if( (_n = _syswrite( port, _str, _slen )) < 0 ) { \
-	 if( errno == EINTR ) { \
+	 if( errno == EINTR || errno == EAGAIN ) { \
 	    continue; \
 	 } else if( err ) { \
 	    OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR; \
