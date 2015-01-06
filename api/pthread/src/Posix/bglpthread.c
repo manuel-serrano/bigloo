@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Wed Oct 22 07:49:45 2014 (serrano)                */
-/*    Copyright   :  2002-14 Manuel Serrano                            */
+/*    Last change :  Tue Jan  6 16:18:27 2015 (serrano)                */
+/*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -217,14 +217,14 @@ bglpth_thread_start( bglpthread_t thread, obj_t bglthread, bool_t dt ) {
 
    pthread_attr_init( &a );
    
-#ifdef BGL_ANDROID
+#if( defined( BGL_ANDROID ) || defined( GC_DARWIN_THREADS ) )
    size_t stacksize;
-#define ANDROID_STACKSIZE (4 * 1024 * 1024)
+#define MIN_STACKSIZE (4 * 1024 * 1024)
    
    if( !pthread_attr_getstacksize( &a, &stacksize ) ) {
-      if( stacksize < ANDROID_STACKSIZE ) {
+      if( stacksize < MIN_STACKSIZE ) {
 	 // enlarge to 4MB the stack size
-	 pthread_attr_setstacksize( &a, ANDROID_STACKSIZE );
+	 pthread_attr_setstacksize( &a, MIN_STACKSIZE );
 	 pthread_attr_getstacksize( &a, &stacksize );
       }
    }
