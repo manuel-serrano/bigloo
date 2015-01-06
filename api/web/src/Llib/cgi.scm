@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Tue Jan  6 08:02:37 2015 (serrano)                */
+;*    Last change :  Tue Jan  6 09:27:18 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -356,6 +356,8 @@
 	 (if (is-boundary? buffer boundary)
 	     (begin
 		(unless crlf (flush-line port))
+		(tprint "cgi-read-data len="
+		   (apply + (map string-length lines)))
 		(values (last-boundary? buffer boundary)
 		   (list name
 		      :data (apply string-append (reverse! lines))
