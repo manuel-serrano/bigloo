@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Wed Jan  7 10:02:48 2015 (serrano)                */
+;*    Last change :  Wed Jan  7 10:54:54 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -15,6 +15,7 @@
 (module __web_cgi
 
    (export (cgi-args->list::pair-nil ::bstring)
+	   (cgi-fetch-arg ::bstring ::bstring)
 	   (cgi-multipart->list ::bstring ::input-port ::elong ::bstring)
 	   (cgi-post-arg-field ::obj ::pair-nil)))
 
@@ -102,6 +103,14 @@
 	    (close-input-port p)
 	    res))))
 
+;*---------------------------------------------------------------------*/
+;*    cgi-fetch-arg ...                                                */
+;*---------------------------------------------------------------------*/
+(define (cgi-fetch-arg arg query)
+   (let* ((args (cgi-args->list query))
+	  (c (assoc arg args)))
+      (when (pair? c) (cdr c))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    fill-line! ...                                                   */
 ;*---------------------------------------------------------------------*/
