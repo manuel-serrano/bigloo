@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Mon Sep 22 16:39:35 2014 (serrano)                */
+;*    Last change :  Wed Jan  7 07:57:04 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -189,6 +189,9 @@
 	    ($directory->path-list::obj (::string ::int ::char)
 					"bgl_directory_to_path_list")
 	    ($modification-time::elong (::string) "bgl_last_modification_time")
+	    ($access-time::elong (::string) "bgl_last_access_time")
+	    ($utime::int (::string ::elong ::elong) "bgl_utime")
+	    
 	    ($file-size::elong (::string) "bgl_file_size")
 	    ($file-uid::int (::string) "bgl_file_uid")
 	    ($file-gid::int (::string) "bgl_file_gid")
@@ -361,6 +364,10 @@
 		       "bgl_directory_to_list")
 	       (method static $modification-time::elong (::string)
 		       "bgl_last_modification_time")
+	       (method static $access-time::elong (::string)
+		       "bgl_last_access_time")
+	       (method static $utime::int (::string ::elong ::elong)
+		       "bgl_utime")
 	       (method static $file-size::elong (::string)
 		       "bgl_file_size")
 	       
@@ -476,6 +483,8 @@
 	    (inline directory->list ::string)
 	    (directory->path-list ::bstring)
 	    (inline file-modification-time::elong ::string)
+	    (inline file-access-time::elong ::string)
+	    (inline file-times-set!::int ::string ::elong ::elong)
 	    (inline file-size::elong ::string)
 	    (inline file-uid::int ::string)
 	    (inline file-gid::int ::string)
@@ -1508,6 +1517,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (file-modification-time file)
    ($modification-time file))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn file-access-time@ ...                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (file-access-time file)
+   ($access-time file))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn file-times-set!@ ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (file-times-set! file atime mtime)
+   ($utime file atime mtime))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-size@ ...                                            */

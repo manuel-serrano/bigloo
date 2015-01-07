@@ -5374,6 +5374,24 @@ public final class foreign
 	 }
       }
 
+   public static long bgl_last_access_time(byte[]file)
+      {
+	 return 0;
+      }
+
+   public static int bgl_utime(byte[]file, long atime, long mtime)
+      {
+	 if( is_resourcep( file ) ) {
+	    return 0;
+	 } else {
+	    if( (new File(new String(file))).setLastModified( mtime ) ) {
+	       return 0;
+	    } else {
+	       return 1;
+	    }
+	 }
+      }
+
    public static Object bgl_directory_to_list(byte[]name)
       {
 	 if( is_resourcep( name ) ) {

@@ -1,0 +1,426 @@
+diff -Naur gc-7.4.2.orig/Makefile.am gc-7.4.2/Makefile.am
+--- gc-7.4.2.orig/Makefile.am	2014-06-03 08:08:01.000000000 +0200
++++ gc-7.4.2/Makefile.am	2015-01-07 09:20:11.120046268 +0100
+@@ -53,12 +53,24 @@
+ libgc_la_SOURCES = extra/gc.c
+ else
+ EXTRA_DIST += extra/gc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++#libgc_la_SOURCES = \
++#    allchblk.c alloc.c backgraph.c blacklst.c checksums.c dbg_mlc.c \
++#    dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
++#    mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
++#    obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
++#    specific.c stubborn.c thread_local_alloc.c typd_mlc.c
+ libgc_la_SOURCES = \
+-    allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
++    allchblk.c alloc.c inline_alloc.c gc_intf.c blacklst.c checksums.c dbg_mlc.c \
+     dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
+     mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+     obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+     specific.c stubborn.c thread_local_alloc.c typd_mlc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ 
+ # C Library: Architecture Dependent
+ # ---------------------------------
+diff -Naur gc-7.4.2.orig/Makefile.direct gc-7.4.2/Makefile.direct
+--- gc-7.4.2.orig/Makefile.direct	2014-06-03 08:08:01.000000000 +0200
++++ gc-7.4.2/Makefile.direct	2015-01-07 09:26:11.360048141 +0100
+@@ -36,7 +36,14 @@
+ AO_SRC_DIR=$(srcdir)/libatomic_ops
+ AO_INSTALL_DIR=$(srcdir)/libatomic_ops-install
+ 
+-CFLAGS= -O -I$(srcdir)/include -I$(AO_INSTALL_DIR)/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION -DALL_INTERIOR_POINTERS
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (14 dec 2010)                                       */
++#*---------------------------------------------------------------------*/
++#CFLAGS= -O -I$(srcdir)/include -I$(AO_INSTALL_DIR)/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION -DALL_INTERIOR_POINTERS
++CFLAGS= -O -I$(srcdir)/include -I$(AO_INSTALL_DIR)/include -DATOMIC_UNCOLLECTABLE -DNO_EXECUTE_PERMISSION
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (14 dec 2010)                                        */
++#*---------------------------------------------------------------------*/
+ 
+ # To build the parallel collector on Linux, add to the above:
+ # -DGC_LINUX_THREADS -DPARALLEL_MARK -DTHREAD_LOCAL_ALLOC
+@@ -70,12 +77,24 @@
+ RANLIB= ranlib
+ 
+ 
+-OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (14 dec 2010)                                       */
++#*---------------------------------------------------------------------*/
++#OBJS= alloc.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o \
++#  headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o  \
++#  malloc.o stubborn.o checksums.o pthread_support.o pthread_stop_world.o \
++#  darwin_stop_world.o typd_mlc.o ptr_chck.o mallocx.o gcj_mlc.o specific.o \
++#  gc_dlopen.o backgraph.o win32_threads.o pthread_start.o \
++#  thread_local_alloc.o fnlz_mlc.o
++OBJS= alloc.o inline_alloc.o gc_intf.o reclaim.o allchblk.o misc.o mach_dep.o os_dep.o mark_rts.o \
+   headers.o mark.o obj_map.o blacklst.o finalize.o new_hblk.o dbg_mlc.o  \
+   malloc.o stubborn.o checksums.o pthread_support.o pthread_stop_world.o \
+   darwin_stop_world.o typd_mlc.o ptr_chck.o mallocx.o gcj_mlc.o specific.o \
+   gc_dlopen.o backgraph.o win32_threads.o pthread_start.o \
+   thread_local_alloc.o fnlz_mlc.o
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (14 dec 2010)                                        */
++#*---------------------------------------------------------------------*/
+ 
+ CSRCS= reclaim.c allchblk.c misc.c alloc.c mach_dep.c os_dep.c mark_rts.c \
+   headers.c mark.c obj_map.c pcr_interface.c blacklst.c finalize.c \
+@@ -168,7 +187,7 @@
+ # not time-critical anyway.
+ # Set SPECIALCFLAGS to -q nodirect_code on Encore.
+ 
+-all: gc.a gctest
++all: $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a gctest
+ 
+ # if AO_INSTALL_DIR doesn't exist, we assume that it is pointing to
+ # the default location, and we need to build
+@@ -177,19 +196,19 @@
+ 
+ LEAKFLAGS=$(CFLAGS) -DFIND_LEAK
+ 
+-BSD-pkg-all: bsd-libgc.a bsd-libleak.a
++BSD-pkg-all: bsd-lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a bsd-libleak.a
+ 
+-bsd-libgc.a:
++bsd-lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a:
+ 	$(MAKE) CFLAGS="$(CFLAGS)" clean c++-t
+-	mv gc.a bsd-libgc.a
++	mv $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a bsd-lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a
+ 
+ bsd-libleak.a:
+ 	$(MAKE) -f Makefile.direct CFLAGS="$(LEAKFLAGS)" clean c++-nt
+-	mv gc.a bsd-libleak.a
++	mv $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a bsd-libleak.a
+ 
+ BSD-pkg-install: BSD-pkg-all
+-	${CP} bsd-libgc.a libgc.a
+-	${INSTALL_DATA} libgc.a ${PREFIX}/lib
++	${CP} bsd-lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a
++	${INSTALL_DATA} lib$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a ${PREFIX}/lib
+ 	${INSTALL_DATA} gc.h gc_cpp.h ${PREFIX}/include
+ 	${INSTALL_MAN} doc/gc.man ${PREFIX}/man/man3/gc.3
+ 
+@@ -228,26 +247,26 @@
+ tests:
+ 	mkdir tests
+ 
+-base_lib gc.a: $(OBJS) dyn_load.o $(UTILS)
++base_lib $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a: $(OBJS) dyn_load.o $(UTILS)
+ 	echo > base_lib
+ 	rm -f dont_ar_1
+-	cp $(AO_INSTALL_DIR)/lib/libatomic_ops.a gc.a
++	cp $(AO_INSTALL_DIR)/lib/libatomic_ops.a $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a
+ 	./if_mach SPARC SOLARIS touch dont_ar_1
+-	./if_mach SPARC SOLARIS $(AR) rus gc.a $(OBJS) dyn_load.o
++	./if_mach SPARC SOLARIS $(AR) rus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(OBJS) dyn_load.o
+ 	./if_mach M68K AMIGA touch dont_ar_1
+-	./if_mach M68K AMIGA $(AR) -vrus gc.a $(OBJS) dyn_load.o
+-	./if_not_there dont_ar_1 $(AR) ru gc.a $(OBJS) dyn_load.o
+-	./if_not_there dont_ar_1 $(RANLIB) gc.a || cat /dev/null
++	./if_mach M68K AMIGA $(AR) -vrus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(OBJS) dyn_load.o
++	./if_not_there dont_ar_1 $(AR) ru $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(OBJS) dyn_load.o
++	./if_not_there dont_ar_1 $(RANLIB) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a || cat /dev/null
+ #	ignore ranlib failure; that usually means it doesn't exist, and isn't needed
+ 
+ cords: $(CORD_OBJS) cord/cordtest $(UTILS)
+ 	rm -f dont_ar_3
+ 	./if_mach SPARC SOLARIS touch dont_ar_3
+-	./if_mach SPARC SOLARIS $(AR) rus gc.a $(CORD_OBJS)
++	./if_mach SPARC SOLARIS $(AR) rus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(CORD_OBJS)
+ 	./if_mach M68K AMIGA touch dont_ar_3
+-	./if_mach M68K AMIGA $(AR) -vrus gc.a $(CORD_OBJS)
+-	./if_not_there dont_ar_3 $(AR) ru gc.a $(CORD_OBJS)
+-	./if_not_there dont_ar_3 $(RANLIB) gc.a || cat /dev/null
++	./if_mach M68K AMIGA $(AR) -vrus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(CORD_OBJS)
++	./if_not_there dont_ar_3 $(AR) ru $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(CORD_OBJS)
++	./if_not_there dont_ar_3 $(RANLIB) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a || cat /dev/null
+ 
+ gc_cpp.o: $(srcdir)/gc_cpp.cc $(srcdir)/include/gc_cpp.h $(srcdir)/include/gc.h Makefile
+ 	$(CXX) -c $(CXXFLAGS) $(srcdir)/gc_cpp.cc
+@@ -255,8 +274,8 @@
+ test_cpp: $(srcdir)/tests/test_cpp.cc $(srcdir)/include/gc_cpp.h gc_cpp.o $(srcdir)/include/gc.h \
+     base_lib $(UTILS)
+ 	rm -f test_cpp
+-	./if_mach HP_PA HPUX $(CXX) $(CXXFLAGS) -o test_cpp $(srcdir)/tests/test_cpp.cc gc_cpp.o gc.a -ldld `./threadlibs`
+-	./if_not_there test_cpp $(CXX) $(CXXFLAGS) -o test_cpp $(srcdir)/tests/test_cpp.cc gc_cpp.o gc.a `./threadlibs`
++	./if_mach HP_PA HPUX $(CXX) $(CXXFLAGS) -o test_cpp $(srcdir)/tests/test_cpp.cc gc_cpp.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -ldld `./threadlibs`
++	./if_not_there test_cpp $(CXX) $(CXXFLAGS) -o test_cpp $(srcdir)/tests/test_cpp.cc gc_cpp.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
+ 
+ c++-t: c++
+ 	./test_cpp 1
+@@ -267,11 +286,11 @@
+ c++: gc_cpp.o $(srcdir)/include/gc_cpp.h test_cpp
+ 	rm -f dont_ar_4
+ 	./if_mach SPARC SOLARIS touch dont_ar_4
+-	./if_mach SPARC SOLARIS $(AR) rus gc.a gc_cpp.o
++	./if_mach SPARC SOLARIS $(AR) rus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a gc_cpp.o
+ 	./if_mach M68K AMIGA touch dont_ar_4
+-	./if_mach M68K AMIGA $(AR) -vrus gc.a gc_cpp.o
+-	./if_not_there dont_ar_4 $(AR) ru gc.a gc_cpp.o
+-	./if_not_there dont_ar_4 $(RANLIB) gc.a || cat /dev/null
++	./if_mach M68K AMIGA $(AR) -vrus $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a gc_cpp.o
++	./if_not_there dont_ar_4 $(AR) ru $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a gc_cpp.o
++	./if_not_there dont_ar_4 $(RANLIB) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a || cat /dev/null
+ 	./test_cpp 1
+ 	echo > c++
+ 
+@@ -356,24 +375,24 @@
+ 	$(CC) $(CFLAGS) -c -I$(srcdir) $(srcdir)/cord/cordprnt.c
+ 	mv cordprnt.o cord/cordprnt.o
+ 
+-cord/cordtest: $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) gc.a $(UTILS)
++cord/cordtest: $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(UTILS)
+ 	rm -f cord/cordtest
+-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) gc.a -lucb
+-	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) gc.a -ldld `./threadlibs`
+-	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) gc.a `./threadlibs`
+-	./if_not_there cord/cordtest $(CC) $(CFLAGS) -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) gc.a `./threadlibs`
++	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lucb
++	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -ldld `./threadlibs`
++	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
++	./if_not_there cord/cordtest $(CC) $(CFLAGS) -o cord/cordtest $(srcdir)/cord/tests/cordtest.c $(CORD_OBJS) $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
+ 
+-cord/de: $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a $(UTILS)
++cord/de: $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(UTILS)
+ 	rm -f cord/de
+-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a $(CURSES) -lucb `./threadlibs`
+-	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a $(CURSES) -ldld `./threadlibs`
+-	./if_mach POWERPC AIX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a -lcurses
+-	./if_mach POWERPC DARWIN $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a
+-	./if_mach I386 LINUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a -lcurses `./threadlibs`
+-	./if_mach ALPHA LINUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a -lcurses `./threadlibs`
+-	./if_mach IA64 LINUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a -lcurses `./threadlibs`
+-	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a -lcurses
+-	./if_not_there cord/de $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o gc.a $(CURSES) `./threadlibs`
++	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(CURSES) -lucb `./threadlibs`
++	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(CURSES) -ldld `./threadlibs`
++	./if_mach POWERPC AIX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lcurses
++	./if_mach POWERPC DARWIN $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a
++	./if_mach I386 LINUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lcurses `./threadlibs`
++	./if_mach ALPHA LINUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lcurses `./threadlibs`
++	./if_mach IA64 LINUX $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lcurses `./threadlibs`
++	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lcurses
++	./if_not_there cord/de $(CC) $(CFLAGS) -o cord/de $(srcdir)/cord/tests/de.c cord/cordbscs.o cord/cordxtra.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(CURSES) `./threadlibs`
+ 
+ if_mach: $(srcdir)/tools/if_mach.c $(srcdir)/include/private/gcconfig.h
+ 	$(HOSTCC) $(HOSTCFLAGS) -o if_mach $(srcdir)/tools/if_mach.c
+@@ -385,17 +404,17 @@
+ 	$(HOSTCC) $(HOSTCFLAGS) -o if_not_there $(srcdir)/tools/if_not_there.c
+ 
+ clean:
+-	rm -f gc.a *.o *.exe tests/*.o gctest gctest_dyn_link test_cpp \
++	rm -f $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a *.o *.exe tests/*.o gctest gctest_dyn_link test_cpp \
+ 	      setjmp_test  mon.out gmon.out a.out core if_not_there if_mach \
+ 	      base_lib c++ threadlibs $(CORD_OBJS) cord/cordtest cord/de
+ 	-rm -f *~
+ 
+-gctest: tests/test.o gc.a $(UTILS)
++gctest: tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a $(UTILS)
+ 	rm -f gctest
+-	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o gctest  tests/test.o gc.a -lucb
+-	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o gctest  tests/test.o gc.a -ldld `./threadlibs`
+-	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o gctest  tests/test.o gc.a `./threadlibs`
+-	./if_not_there gctest $(CC) $(CFLAGS) -o gctest tests/test.o gc.a `./threadlibs`
++	./if_mach SPARC DRSNX $(CC) $(CFLAGS) -o gctest  tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -lucb
++	./if_mach HP_PA HPUX $(CC) $(CFLAGS) -o gctest  tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a -ldld `./threadlibs`
++	./if_mach M68K AMIGA $(CC) $(CFLAGS) -UGC_AMIGA_MAKINGLIB -o gctest  tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
++	./if_not_there gctest $(CC) $(CFLAGS) -o gctest tests/test.o $(BOOTLIBDIR)/libbigloogc-$(RELEASE).a `./threadlibs`
+ 
+ # If an optimized setjmp_test generates a segmentation fault,
+ # odds are your compiler is broken.  Gctest may still work.
+diff -Naur gc-7.4.2.orig/Makefile.in gc-7.4.2/Makefile.in
+--- gc-7.4.2.orig/Makefile.in	2014-06-03 22:09:25.000000000 +0200
++++ gc-7.4.2/Makefile.in	2015-01-07 09:24:13.088047526 +0100
+@@ -228,14 +228,20 @@
+ 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+ 	$(libcord_la_LDFLAGS) $(LDFLAGS) -o $@
+ am__DEPENDENCIES_1 =
+-am__libgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c checksums.c \
+-	dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c \
+-	headers.c mach_dep.c malloc.c mallocx.c mark.c mark_rts.c \
+-	misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c \
+-	ptr_chck.c real_malloc.c reclaim.c specific.c stubborn.c \
+-	thread_local_alloc.c typd_mlc.c win32_threads.c \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++am__libgc_la_SOURCES_DIST = allchblk.c alloc.c inline_alloc.c gc_intf.c blacklst.c \
++	checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c \
++	gcj_mlc.c headers.c mach_dep.c malloc.c mallocx.c mark.c \
++	mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c \
++	pcr_interface.c ptr_chck.c real_malloc.c reclaim.c specific.c \
++	stubborn.c thread_local_alloc.c typd_mlc.c win32_threads.c \
+ 	pthread_start.c pthread_support.c darwin_stop_world.c \
+ 	pthread_stop_world.c backgraph.c fnlz_mlc.c extra/gc.c
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@am__objects_1 =  \
+ @SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_TRUE@	win32_threads.lo
+ @PTHREADS_TRUE@@SINGLE_GC_OBJ_FALSE@@WIN32_THREADS_FALSE@am__objects_2 = pthread_start.lo \
+@@ -246,7 +252,10 @@
+ @MAKE_BACK_GRAPH_TRUE@@SINGLE_GC_OBJ_FALSE@	backgraph.lo
+ @ENABLE_DISCLAIM_TRUE@@SINGLE_GC_OBJ_FALSE@am__objects_6 =  \
+ @ENABLE_DISCLAIM_TRUE@@SINGLE_GC_OBJ_FALSE@	fnlz_mlc.lo
+-@SINGLE_GC_OBJ_FALSE@am_libgc_la_OBJECTS = allchblk.lo alloc.lo \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@SINGLE_GC_OBJ_FALSE@am_libgc_la_OBJECTS = allchblk.lo alloc.lo inline_alloc.lo gc_intf.lo \
+ @SINGLE_GC_OBJ_FALSE@	blacklst.lo checksums.lo dbg_mlc.lo \
+ @SINGLE_GC_OBJ_FALSE@	dyn_load.lo finalize.lo gc_dlopen.lo \
+ @SINGLE_GC_OBJ_FALSE@	gcj_mlc.lo headers.lo mach_dep.lo \
+@@ -259,6 +268,9 @@
+ @SINGLE_GC_OBJ_FALSE@	$(am__objects_2) $(am__objects_3) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__objects_4) $(am__objects_5) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__objects_6)
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_TRUE@am_libgc_la_OBJECTS = extra/gc.lo $(am__objects_1) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_2) $(am__objects_3) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__objects_4) $(am__objects_5) \
+@@ -990,7 +1002,10 @@
+ 	libstaticrootslib2_test.la
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = bdw-gc.pc
+-@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c blacklst.c \
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@SINGLE_GC_OBJ_FALSE@libgc_la_SOURCES = allchblk.c alloc.c inline_alloc.c gc_intf.c blacklst.c \
+ @SINGLE_GC_OBJ_FALSE@	checksums.c dbg_mlc.c dyn_load.c \
+ @SINGLE_GC_OBJ_FALSE@	finalize.c gc_dlopen.c gcj_mlc.c \
+ @SINGLE_GC_OBJ_FALSE@	headers.c mach_dep.c malloc.c mallocx.c \
+@@ -1002,6 +1017,9 @@
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_2) $(am__append_3) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_4) $(am__append_5) \
+ @SINGLE_GC_OBJ_FALSE@	$(am__append_6) $(am__append_7)
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @SINGLE_GC_OBJ_TRUE@libgc_la_SOURCES = extra/gc.c $(am__append_2) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_3) $(am__append_4) \
+ @SINGLE_GC_OBJ_TRUE@	$(am__append_5) $(am__append_6) \
+@@ -1437,6 +1455,13 @@
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
++#*---------------------------------------------------------------------*/
++#*    Bigloo start (16 mars 2012)                                      */
++#*---------------------------------------------------------------------*/
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline_alloc.Plo@am__quote@
++#*---------------------------------------------------------------------*/
++#*    Bigloo stop (16 mars 2012)                                       */
++#*---------------------------------------------------------------------*/
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blacklst.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checksums.Plo@am__quote@
+diff -Naur gc-7.4.2.orig/alloc.c gc-7.4.2/alloc.c
+--- gc-7.4.2.orig/alloc.c	2014-06-03 08:08:01.000000000 +0200
++++ gc-7.4.2/alloc.c	2015-01-07 09:20:11.120046268 +0100
+@@ -540,6 +540,40 @@
+     RESTORE_CANCEL(cancel_state);
+ }
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++static void (*GC_gcollect_hook)() = 0;
++GC_add_gc_hook( void (*f)() ) {
++   GC_gcollect_hook = f;
++}
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: stop                                 */
++/*---------------------------------------------------------------------*/
++
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++static long allocated_bytes = 0;
++
++GC_get_allocated_bytes() {
++   return allocated_bytes;
++}
++
++void GC_reset_allocated_bytes() {
++   GC_gcollect();
++   allocated_bytes = 0;
++}
++
++#ifdef KEEP_BACK_PTRS
++int GC_heap_info_available = 1;
++#else
++int GC_heap_info_available = 0;
++#endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++/*---------------------------------------------------------------------*/
++
+ GC_INNER void (*GC_check_heap)(void) = 0;
+ GC_INNER void (*GC_print_all_smashed)(void) = 0;
+ 
+@@ -837,6 +871,15 @@
+         GC_check_tls();
+ #   endif
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo start                                                     */
++/*---------------------------------------------------------------------*/
++#   ifdef KEEP_BACK_PTRS
++    allocated_bytes += GC_get_bytes_since_gc();
++#   endif
++/*---------------------------------------------------------------------*/
++/*    Bigloo stop                                                      */
++
+ #   ifndef SMALL_CONFIG
+       if (GC_print_stats)
+         GET_TIME(start_time);
+@@ -934,6 +977,17 @@
+                           COMMA_IF_USE_MUNMAP((unsigned long)
+                                               GC_unmapped_bytes));
+ 
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    if( GC_gcollect_hook )
++       GC_gcollect_hook( GC_heapsize,
++			 (unsigned long)(GC_atomic_in_use)+
++			 (unsigned long)(GC_composite_in_use) );
++/*---------------------------------------------------------------------*/
++/*    Bigloo profiling 13Apr2003: start                                */
++/*---------------------------------------------------------------------*/
++    
+     /* Reset or increment counters for next cycle */
+     GC_n_attempts = 0;
+     GC_is_full_gc = FALSE;
+diff -Naur gc-7.4.2.orig/configure.ac gc-7.4.2/configure.ac
+--- gc-7.4.2.orig/configure.ac	2014-06-03 08:08:01.000000000 +0200
++++ gc-7.4.2/configure.ac	2015-01-07 09:20:11.120046268 +0100
+@@ -650,10 +650,15 @@
+ dnl ALL_INTERIOR_POINTERS and NO_EXECUTE_PERMISSION can be overridden
+ dnl in the startup code.
+ AC_DEFINE([NO_EXECUTE_PERMISSION], [1],
+-          [Define to make the collector not allocate executable memory
+-           by default.])
+-AC_DEFINE([ALL_INTERIOR_POINTERS], [1],
+-          [Define to recognise all pointers to the interior of objects.])
++          [Define to make the collector not allocate executable memory by default.])
++dnl ---------------------------------------------------------------------*/
++dnl Bigloo start                                                         */
++dnl ---------------------------------------------------------------------*/
++dnl AC_DEFINE([ALL_INTERIOR_POINTERS], [1],
++dnl          [Define to recognise all pointers to the interior of objects.])
++dnl ---------------------------------------------------------------------*/
++dnl Bigloo stop                                                          */
++dnl ---------------------------------------------------------------------*/
+ 
+ 
+ dnl Interface Selection

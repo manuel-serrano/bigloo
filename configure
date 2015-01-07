@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Oct 25 08:30:06 2014 (serrano)                */
-#*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Jan  7 09:06:28 2015 (serrano)                */
+#*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -223,7 +223,7 @@ customgc=yes
 #gccustom=gc-7.3alpha1-20120316
 #gccustom=gc-7.3alpha2
 #gccustom=gc-7.3alpha3-20130330
-gccustom=gc-7.4.0
+gccustom=gc-7.4.2
 gcversion=
 # the following variable is relevant only when using
 # standard (i.e. already existing and operational) Boehm's GC

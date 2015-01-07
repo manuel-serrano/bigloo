@@ -3,12 +3,14 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sun Jan  4 09:33:36 2015 (serrano)                */
+/*    Last change :  Wed Jan  7 08:12:57 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
+#include <sys/types.h>
 #include <time.h>
+#include <utime.h>
 #include <sys/time.h>
 #include <signal.h>
 #include <string.h>
@@ -36,7 +38,6 @@
 #include <bigloo.h>
 
 #if BGL_HAVE_GETUID
-#  include <sys/types.h>
 #  include <pwd.h>
 #else
 #define uid_t int
@@ -213,6 +214,37 @@ bgl_last_modification_time( char *file ) {
       return -1;
    else
       return (long)(_stati.st_mtime);
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_last_access_time ...                                         */
+/*---------------------------------------------------------------------*/
+long
+bgl_last_access_time( char *file ) {
+   struct stat _stati;
+
+   if( lstat( file, &_stati ) )
+      return -1;
+   else
+      return (long)(_stati.st_atime);
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_utime ...                                                    */
+/*---------------------------------------------------------------------*/
+int
+bgl_utime( char *file, long atime, long mtime ) {
+   struct utimbuf buf = { .actime = (time_t)atime, .modtime= (time_t)mtime };
+   int r = utime( file, &buf );
+   
+   if( r < 0 ) {
+      C_SYSTEM_FAILURE( BGL_ERROR, "file-times-set!",
+			strerror( errno ),
+			string_to_bstring( file ) );
+   }
+   return r;
 }
 
 /*---------------------------------------------------------------------*/

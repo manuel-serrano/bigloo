@@ -442,9 +442,12 @@ whose dirname is @var{string}.
 @end deffn
 
 @deffn {bigloo procedure} file-modification-time string
-The date (in second) of the last modification for file @var{string}. The
-number of seconds is represented by a value that may be converted into
-a date by the means of @code{seconds->date} (see @ref{Date}).
+@deffn {bigloo procedure} file-access-time string
+@deffn {bigloo procedure} file-times-set! string atime mtime
+The date (in second) of the last modification (respec. access) for
+file @var{string}. The number of seconds is represented by a value
+that may be converted into a date by the means of @code{seconds->date}
+(see @ref{Date}).
 @end deffn
 
 @deffn {bigloo procedure} file-size string
