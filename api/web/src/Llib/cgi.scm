@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Tue Jan  6 09:27:18 2015 (serrano)                */
+;*    Last change :  Wed Jan  7 10:02:48 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -15,7 +15,6 @@
 (module __web_cgi
 
    (export (cgi-args->list::pair-nil ::bstring)
-	   (cgi-fetch-arg ::bstring ::bstring)
 	   (cgi-multipart->list ::bstring ::input-port ::elong ::bstring)
 	   (cgi-post-arg-field ::obj ::pair-nil)))
 
@@ -100,74 +99,6 @@
 		  (else (reverse! fields-list)))))
       (let ((p (open-input-string query)))
 	 (let ((res (read/rp gram p '() "")))
-	    (close-input-port p)
-	    res))))
-
-;*---------------------------------------------------------------------*/
-;*    cgi-fetch-arg ...                                                */
-;*---------------------------------------------------------------------*/
-(define (cgi-fetch-arg arg query)
-   (let* ((fields-list '())
-	  (field-name "")
-	  (field-value "")
-	  (gram (regular-grammar ()
-		   ((when (not (rgc-context? 'val))
-		       (+ (or (: (? #a013) #\newline) #\&)))
-		    (ignore))
-		   ((when (not (rgc-context? 'val))
-		       (: (* (out "=%&")) "="))
-		    (set! field-name
-			  (string-append
-			   field-name
-			   (decode (the-substring 0 (-fx (the-length) 1)))))
-		    (rgc-context 'val)
-		    (ignore))
-		   ((when (not (rgc-context? 'val))
-		       (: (* (out "=%&")) "%" xdigit xdigit))
-		    (set! field-name
-			  (string-append
-			   field-name
-			   (decode (the-substring 0 (-fx (the-length) 3)))
-			   (unhex (the-substring (-fx (the-length) 2)
-						 (the-length)))))
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (+ (or (: (? #a013) #\newline) #\&)))
-		    (if (string=? field-name arg)
-			field-value
-			(begin
-			   (set! field-name "")
-			   (set! field-value "")
-			   (rgc-context)
-			   (ignore))))
-		   ((when (rgc-context? 'val)
-		       (: (* (out "&%+")) #\% xdigit xdigit))
-		    (set! field-value
-			  (string-append
-			   field-value
-			   (the-substring 0 (-fx (the-length) 3))
-			   (unhex (the-substring (-fx (the-length) 2)
-						 (the-length)))))
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (: (* (out "&%+")) "+"))
-		    (set! field-value (string-append
-				       field-value
-				       (the-substring 0 (-fx (the-length) 1))
-				       " "))
-		    (ignore))
-		   ((when (rgc-context? 'val)
-		       (* (out "&%+")))
-		    (if (string=? field-name arg)
-			(string-append field-value (the-string))
-			(begin
-			   (set! field-name "")
-			   (set! field-value "")
-			   (rgc-context)
-			   (ignore))))
-		   (else #f))))
-      (let ((p (open-input-string query)))
-	 (let ((res (read/rp gram p)))
 	    (close-input-port p)
 	    res))))
 
@@ -356,8 +287,6 @@
 	 (if (is-boundary? buffer boundary)
 	     (begin
 		(unless crlf (flush-line port))
-		(tprint "cgi-read-data len="
-		   (apply + (map string-length lines)))
 		(values (last-boundary? buffer boundary)
 		   (list name
 		      :data (apply string-append (reverse! lines))
