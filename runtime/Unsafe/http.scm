@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Wed Jan  7 09:59:36 2015 (serrano)                */
+;*    Last change :  Sat Jan 10 14:55:00 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -244,6 +244,7 @@
 			   (caar a) "\";" (cadar a) port)
 			(display-line "Content-Disposition: form-data; name=\""
 			   (car a) "\"" port))
+		    (when (pair? (cddr a)) (display-line (caddr a) port))
 		    (display-line port)
 		    (display-line (cadr a) port)
 		    (loop (cdr args))))))))

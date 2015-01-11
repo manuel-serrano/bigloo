@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Wed Jan  7 10:54:54 2015 (serrano)                */
+;*    Last change :  Sat Jan 10 15:01:35 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -18,12 +18,6 @@
 	   (cgi-fetch-arg ::bstring ::bstring)
 	   (cgi-multipart->list ::bstring ::input-port ::elong ::bstring)
 	   (cgi-post-arg-field ::obj ::pair-nil)))
-
-;*---------------------------------------------------------------------*/
-;*    unhex ...                                                        */
-;*---------------------------------------------------------------------*/
-(define (unhex hexadecimal-string)
-   (string (integer->char (string->integer hexadecimal-string 16))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hex-string-ref ...                                               */
@@ -62,21 +56,6 @@
 		    (string-set! hexstr j c)
 		    (loop (+fx i 1) (+fx j 1)))))))))
 
-;*---------------------------------------------------------------------*/
-;*    decode ...                                                       */
-;*---------------------------------------------------------------------*/
-(define (decode str)
-   (let ((len (string-length str)))
-      (let loop ((i 0))
-	 (cond
-	    ((=fx i len)
-	     str)
-	    ((char=? (string-ref str i) #\+)
-	     (string-set! str i #\space)
-	     (loop (+fx i 1)))
-	    (else
-	     (loop (+fx i 1)))))))
-	     
 ;*---------------------------------------------------------------------*/
 ;*    cgi-args->list ...                                               */
 ;*---------------------------------------------------------------------*/
@@ -120,7 +99,7 @@
 	 (if (>=fx i (-fx len 2))
 	     (values i #f)
 	     (let ((c (read-char port)))
-		(string-set! buffer i c)
+		(string-set! buffer i c)p
 		(if (char=? c #\Return)
 		    (let ((c2 (read-char port)))
 		       (string-set! buffer (+fx i 1) c2)
@@ -128,59 +107,15 @@
 			   (values i #t)
 			   (loop (+fx i 2))))
 		    (loop (+fx i 1))))))))
-   
-;*---------------------------------------------------------------------*/
-;*    flush-line ...                                                   */
-;*---------------------------------------------------------------------*/
-(define (flush-line port)
-   (let ((grammar (regular-grammar ((xall (or (out #\Return)
-					      (: #\Return (out #\Newline))
-					      #a000)))
-		     ((: (* xall) #\Return #\Newline)
-		      (the-substring 0 -2))
-		     ((+ xall)
-		      (the-string))
-		     (else
-		      (the-failure)))))
-      (read/rp grammar port)))
 
 ;*---------------------------------------------------------------------*/
-;*    is-boundary? ...                                                 */
+;*    read-name ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (is-boundary? line boundary)
-   (and (>=fx (string-length line) (+fx 2 (string-length boundary)))
-	(char=? (string-ref line 0) #\-)
-	(char=? (string-ref line 1) #\-)
-	(substring-at? line boundary 2)))
-
-;*---------------------------------------------------------------------*/
-;*    last-boundary? ...                                               */
-;*---------------------------------------------------------------------*/
-(define (last-boundary? line boundary)
-   (let ((len (string-length boundary)))
-      (and (>=fx (string-length line) (+fx 4 len))
-	   (char=? (string-ref line 0) #\-)
-	   (char=? (string-ref line 1) #\-)
-	   (char=? (string-ref line (+fx 2 len)) #\-)
-	   (char=? (string-ref line (+fx 3 len)) #\-))))
-
-;*---------------------------------------------------------------------*/
-;*    cgi-parse-boundary ...                                           */
-;*---------------------------------------------------------------------*/
-(define (cgi-parse-boundary buffer port boundary)
-   (multiple-value-bind (len crlf)
-      (fill-line! buffer port)
-      ;; according to RFC 2046, there may be additional characters
-      ;; on line after the boundary
-      (if (is-boundary? buffer boundary)
-	  (begin
-	     (unless crlf (flush-line port))
-	     (last-boundary? buffer boundary))
-	  (raise (instantiate::&io-parse-error
-		    (proc "cgi-multipart->list")
-		    (msg "Illegal boundary")
-		    (obj (format "\n wanted:--~a\n  found:~a" boundary
-			    (substring buffer 0 len))))))))
+(define (read-name port)
+   (let ((g (regular-grammar ()
+	       ((: #\" (* (or (out #\" #\\) (: #\\ #\"))) #\")
+		(the-substring 1 -1)))))
+      (read/rp g port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-parse-content-disposition ...                                */
@@ -190,11 +125,11 @@
 	  (len (string-length str)))
       (let ((buf (read-chars len port)))
 	 (if (string-ci=? str buf)
-	     (let ((s (read port)))
+	     (let ((s (read-name port)))
 		(if (string? s)
-		    (let ((rest (flush-line port))
+		    (let ((rest (read-line port))
 			  (pref "; filename=\""))
-		       (if (substring-at? rest pref  0)
+		       (if (substring-at? rest pref 0)
 			   (let ((fname (substring
 					   rest
 					   (string-length pref)
@@ -237,7 +172,7 @@
 	 ((: (+ (or (out " :\r\n\t") (: #\space (out #\:)))) #\:)
 	  (let ((k (the-downcase-keyword)))
 	     (let ((v (read/rp value-grammar (the-port))))
-		(set! header (cons (cons k v) header))
+		(set! header (cons* k v header))
 		(ignore))))
 	 ((: (* (in #\space #\tab)) (? #\Return) #\Newline)
 	  header)
@@ -258,7 +193,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    cgi-read-file ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (cgi-read-file name header buffer port file tmp boundary)
+(define (cgi-read-file name header port file tmp boundary)
    (let* ((path (make-file-name tmp file))
 	  (dir (dirname (file-name-canonicalize path))))
       (when (substring-at? dir tmp 0) (make-directory dir))
@@ -269,65 +204,146 @@
 		       (msg "Can't open file for output")
 		       (obj path)))
 	     (unwind-protect
-		(let loop ((ocrlf #f))
-		   (multiple-value-bind (len crlf)
-		      (fill-line! buffer port)
-		      (if (is-boundary? buffer boundary)
-			  (begin
-			     (unless crlf (flush-line port))
-			     (values (last-boundary? buffer boundary)
-				(list name
-				   :file path
-				   :header header)))
-			  (begin
-			     (when ocrlf (display "\r\n" op))
-			     (display-substring buffer 0 len op)
-			     (loop crlf)))))
+		(multiple-value-bind (last data)
+		   (read/rp cgi-multipart-data-grammar port boundary '())
+		   (display data op)
+		   (values last (list name :file path :header header)))
 		(close-output-port op))))))
 
 ;*---------------------------------------------------------------------*/
+;*    cgi-multipart-data-grammar ...                                   */
+;*---------------------------------------------------------------------*/
+(define cgi-multipart-data-grammar
+   (regular-grammar (boundary lines)
+      ((+ (or (out "\r\n")
+	      (: "\n" (or (out "-") (: "-" (out "-"))))
+	      (: "\r" (or (out "\n") (: "\n" (out "-")) (: "\n-" (out "-"))))))
+       (set! lines (cons (the-string) lines))
+       (ignore))
+      ((: (? #\Return) "\n--")
+       ;; a beginning of boundary
+       (let* ((str (read-chars (string-length boundary) (the-port)))
+	      (c (read-char (the-port))))
+	  (cond
+	     ((and (char=? c #\Return) (string=? str boundary))
+	      (let ((c2 (read-char (the-port))))
+		 (if (or (char=? c2 #\Newline) (eof-object? c2))
+		     (values #f (apply string-append (reverse! lines)))
+		     (begin
+			(set! lines
+			   (cons* (string c c2) str (the-string) lines))
+			(ignore)))))
+	     ((and (char=? c #\-) (string=? str boundary))
+	      (let* ((c2 (read-char (the-port)))
+		     (c3 (read-char (the-port)))
+		     (c4 (read-char (the-port))))
+		 (if (and (char=? c2 #\-) (char=? c3 #\Return)
+			  (or (char=? c4 #\Newline) (eof-object? c4)))
+		     ;; last boundary
+		     (values #t (apply string-append (reverse! lines)))
+		     ;; a regular line
+		     (begin
+			(set! lines
+			   (cons* (string c c2 c3 c4) str (the-string) lines))
+			(ignore)))))
+	     (else
+	      (set! lines (cons (the-string) lines))
+	      (ignore)))))
+      (else
+       (let* ((c (the-failure))
+	      (s (if (char? c)
+		     (string-for-read
+			(string-append "<" (string c) ">"
+			   (read-line (the-port))))
+		     c)))
+	  (raise
+	     (instantiate::&io-parse-error
+		(proc "cgi-multipart->list")
+		(msg "Illegal data character")
+		(obj s)))))))
+
+;*---------------------------------------------------------------------*/
+;*    cgi-multipart-boundary-grammar ...                               */
+;*---------------------------------------------------------------------*/
+(define cgi-multipart-boundary-grammar
+   (regular-grammar (boundary)
+      ((: "--" (+ (out "\n\r")) #\Newline)
+       (if (string=? (the-substring 2 -1) boundary)
+	   'start
+	   (raise
+	      (instantiate::&io-parse-error
+		 (proc "cgi-multipart->list")
+		 (msg "Illegal start boundary character")
+		 (obj (the-failure))))))
+      ((: "--" (+ all) #\Return #\Newline)
+       (if (string=? (the-substring 2 -2) boundary)
+	   'start
+	   (raise
+	      (instantiate::&io-parse-error
+		 (proc "cgi-multipart->list")
+		 (msg "Illegal start boundary character")
+		 (obj (the-failure))))))
+      ((: "--" (+ (out "\r\n-")) "--" #\Newline)
+       (if (string=? (the-substring 2 3) boundary)
+	   'end
+	   (raise
+	      (instantiate::&io-parse-error
+		 (proc "cgi-multipart->list")
+		 (msg "Illegal end boundary character")
+		 (obj (the-failure))))))
+      ((: "--" (+ (out "\n-")) "--" #\return #\Newline)
+       (if (string=? (the-substring 2 4) boundary)
+	   'end
+	   (raise
+	      (instantiate::&io-parse-error
+		 (proc "cgi-multipart->list")
+		 (msg "Illegal end boundary character")
+		 (obj (the-failure))))))
+      (else
+       (or (eof-object? (the-failure))
+	   (let* ((c (the-failure))
+		  (s (if (char? c)
+			 (string-for-read
+			    (string-append "<" (string c) ">"
+			       (read-line (the-port))))
+			 c)))
+	      (raise
+		 (instantiate::&io-parse-error
+		    (proc "cgi-multipart->list")
+		    (msg "Illegal boundary character")
+		    (obj s))))))))
+      
+;*---------------------------------------------------------------------*/
 ;*    cgi-read-data ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (cgi-read-data name header buffer port boundary)
-   (let loop ((lines '())
-	      (first #t))
-      (multiple-value-bind (len crlf)
-	 (fill-line! buffer port)
-	 (if (is-boundary? buffer boundary)
-	     (begin
-		(unless crlf (flush-line port))
-		(values (last-boundary? buffer boundary)
-		   (list name
-		      :data (apply string-append (reverse! lines))
-		      :header header)))
-	     (if (or first (not crlf))
-		 (loop (cons (substring buffer 0 len) lines) #f)
-		 (loop (cons* (substring buffer 0 len) "\r\n" lines) #f))))))
+(define (cgi-read-data name header port boundary)
+   (multiple-value-bind (last data)
+      (read/rp cgi-multipart-data-grammar port boundary '())
+      (values last (list name :data data :header header))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-parse-entry ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (cgi-parse-entry buffer port tmp boundary)
+(define (cgi-parse-entry port tmp boundary)
    (multiple-value-bind (name file)
       (cgi-parse-content-disposition port)
       (let ((header (cgi-parse-header port)))
 	 (if (string? file)
-	     (cgi-read-file name header buffer port file tmp boundary)
-	     (cgi-read-data name header buffer port boundary)))))
+	     (cgi-read-file name header port file tmp boundary)
+	     (cgi-read-data name header port boundary)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-multipart->list ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (cgi-multipart->list tmp port content-length boundary)
-   (let ((buffer (make-string (+fx (string-length boundary) 256))))
-      (if (cgi-parse-boundary buffer port boundary)
-	  '()
-	  (let loop ((res '()))
-	     (multiple-value-bind (last entry)
-		(cgi-parse-entry buffer port tmp boundary)
-		(if last
-		    (reverse! (cons entry res))
-		    (loop (cons entry res))))))))
+   (if (read/rp cgi-multipart-boundary-grammar port boundary)
+       (let loop ((res '()))
+	  (multiple-value-bind (last entry)
+	     (cgi-parse-entry port tmp boundary)
+	     (if last
+		 (reverse! (cons entry res))
+		 (loop (cons entry res)))))
+       '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-post-arg-field ...                                           */
