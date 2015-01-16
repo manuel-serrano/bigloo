@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 20 07:51:32 2005                          */
-;*    Last change :  Wed Jun  4 18:14:32 2014 (serrano)                */
-;*    Copyright   :  2005-14 Manuel Serrano                            */
+;*    Last change :  Wed Jan 14 11:12:43 2015 (serrano)                */
+;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CSS lexing                                                       */
 ;*=====================================================================*/
@@ -145,7 +145,11 @@
        (return 'EMS))
       ((: +/-num "ex")
        (return 'EXS))
-      ((: +/-num (or "px" "cm" "mm" "in" "pt" "pc"))
+      ((: +/-num "ch")
+       (return 'CHS))
+      ((: +/-num "rem")
+       (return 'REMS))
+      ((: +/-num (or "px" "cm" "mm" "in" "pt" "pc" "vw" "vh" "vmin" "vmax"))
        (return 'LENGTH))
       ((: +/-num (or "deg" "rad" "grad"))
        (return 'ANGLE))

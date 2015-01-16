@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Tue Nov 18 08:59:55 2014 (serrano)                */
-/*    Copyright   :  2000-14 Manuel Serrano                            */
+/*    Last change :  Tue Jan 13 18:12:11 2015 (serrano)                */
+/*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -80,7 +80,7 @@ public class client_socket extends socket {
    public Object shutdown( final boolean close_socket ) {
       try {
 	 close();
-	 down= true;
+	 down = true;
       } catch( Throwable _ ) {
 	 ;
       }

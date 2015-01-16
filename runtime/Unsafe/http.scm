@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Sat Jan 10 14:55:00 2015 (serrano)                */
+;*    Last change :  Fri Jan 16 10:26:50 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -167,12 +167,23 @@
        (cond
 	  ((eq? content-type 'multipart/form-data)
 	   (let* ((boundary (generate-http-boundary))
-		  (content (generate-http-post-body boundary args)))
-	      (display-line "Content-Length: " (string-length content) out)
+		  (content (make-http-post-body boundary args))
+		  (content-length (apply + (map string-length content))))
+	      (display-line "Content-Length: " content-length out)
 	      (display-line "Content-Type: multipart/form-data; boundary="
 		 (substring boundary 2 (string-length boundary)) out)
 	      (display-line out)
-	      (display content out)))
+	      (for-each (lambda (o) (display-string o out)) content)))
+;* 	  ((eq? content-type 'multipart/form-data)                     */
+;* 	   (let* ((boundary (generate-http-boundary))                  */
+;* 		  (content (generate-http-post-body boundary args)))   */
+;* 	      (tprint "ctn={" content "}")                             */
+;* 	      (tprint "len=" (string-length content))                  */
+;* 	      (display-line "Content-Length: " (string-length content) out) */
+;* 	      (display-line "Content-Type: multipart/form-data; boundary=" */
+;* 		 (substring boundary 2 (string-length boundary)) out)  */
+;* 	      (display-line out)                                       */
+;* 	      (display content out)))                                  */
 	  (else
 	   (let ((content (x-www-form-urlencode args))
 		 (ct (or content-type "application/x-www-form-urlencoded")))
@@ -249,6 +260,36 @@
 		    (display-line (cadr a) port)
 		    (loop (cdr args))))))))
 
+;*---------------------------------------------------------------------*/
+;*    make-http-post-body ...                                          */
+;*---------------------------------------------------------------------*/
+(define (make-http-post-body boundary args)
+   
+   (define (->string a)
+      (if (string? a)
+	  a
+	  (call-with-output-string (lambda (p) (display a p)))))
+   
+   (if (null? args)
+       '("\r\n")
+       (let loop ((args args))
+	  (if (null? args)
+	      (list boundary "--" "\r\n")
+	      (let* ((a (car args))
+		     (body (cons* (->string (cadr a)) "\r\n"
+			      (loop (cdr args))))
+		     (hd (if (pair? (cddr a))
+			     (cons* (caddr a) "\r\n\r\n" body)
+			     (cons "\r\n" body)))
+		     (disp (if (pair? (car a))
+			       (cons* "Content-Disposition: form-data; name=\""
+				  (caar a) "\";" (cadar a) "\r\n"
+				  hd)
+			       (cons* "Content-Disposition: form-data; name=\""
+				  (car a) "\"\r\n"
+				  hd))))
+		 (cons* boundary "\r\n" disp))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    generate-http-boundary ...                                       */
 ;*---------------------------------------------------------------------*/
