@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Tue Jan 13 18:12:11 2015 (serrano)                */
+/*    Last change :  Mon Jan 19 16:38:52 2015 (serrano)                */
 /*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
@@ -77,12 +77,25 @@ public class client_socket extends socket {
       return socket.getLocalAddress().getHostAddress().getBytes();
    }
 
-   public Object shutdown( final boolean close_socket ) {
-      try {
-	 close();
-	 down = true;
-      } catch( Throwable _ ) {
-	 ;
+   public Object shutdown( final int how ) {
+      if( !down ) {
+	 try {
+	    switch( how ) {
+	       case 0:
+		  socket.shutdownOutput();
+		  socket.shutdownInput();
+		  break;
+	       case 1:
+		  socket.shutdownInput();
+		  break;
+	       default:
+		  socket.shutdownOutput();
+	       break;
+	    }
+	    down = true;
+	 } catch( Throwable _ ) {
+	    socket_error( "shutdown", "Cannot shutdown socket", this );
+	 }
       }
       return bigloo.foreign.BUNSPEC;
    }

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Wed Feb 17 16:13:18 2010 (serrano)                */
-/*    Copyright   :  2000-10 Manuel Serrano                            */
+/*    Last change :  Mon Jan 19 16:38:24 2015 (serrano)                */
+/*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -78,16 +78,25 @@ public class server_socket extends socket {
       return new client_socket( accepted_socket, inbuf, outbuf );
    }
 
-   public Object shutdown( final boolean close_socket ) {
+   public Object shutdown( final int how ) {
       try {
 	 if (client_socket != null)
 	    try {
-	       client_socket.shutdownOutput();
-	       client_socket.shutdownInput();
+	       switch( how ) {
+		  case 0:
+		     client_socket.shutdownOutput();
+		     client_socket.shutdownInput();
+		     break;
+		  case 1:
+		     client_socket.shutdownInput();
+		     break;
+		  default:
+		     client_socket.shutdownOutput();
+		     break;
+	       }
 	    } catch (Exception _) {
+	       socket_error( "shutdown", "Cannot shutdown socket", this );
 	    }
-
-	 if( close_socket ) close();
       } catch( Throwable _ ) {
 	 ;
       }

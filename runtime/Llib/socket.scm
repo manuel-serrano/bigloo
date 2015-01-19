@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sat Nov 22 10:25:21 2014 (serrano)                */
+;*    Last change :  Mon Jan 19 16:32:32 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -64,7 +64,7 @@
 	    ($socket-local-addr::bstring (::socket) "bgl_socket_local_addr")
 	    ($socket-local?::bool (::socket) "bgl_socket_localp")
 	    ($socket-host-addr=?::bool (::socket ::bstring) "bgl_socket_host_addr_cmp")
-	    (c-socket-shutdown::obj (::socket ::bool) "socket_shutdown")
+	    ($socket-shutdown::obj (::socket ::int) "socket_shutdown")
 	    ($socket-close::obj (::socket) "socket_close")
 	    (macro c-socket-server?::bool (::obj) "BGL_SOCKET_SERVERP")
 	    (macro c-socket-client?::bool (::obj) "BGL_SOCKET_CLIENTP")
@@ -140,7 +140,7 @@
 		  "socket_host_addr")
 	       (method static $socket-local-addr::bstring (::socket)
 		  "socket_local_addr")
-	       (method static c-socket-shutdown::obj (::socket ::bool)
+	       (method static $socket-shutdown::obj (::socket ::int)
 		  "socket_shutdown")
 	       (method static $socket-close::obj (::socket)
 		  "socket_close")
@@ -226,7 +226,7 @@
 	    (socket-accept::obj ::socket #!key (inbuf #t) (outbuf #t) (errp #t))
 	    (socket-accept-many::obj ::socket ::vector
 				     #!key (inbufs #t) (outbufs #t) (errp #t))
-	    (inline socket-shutdown::obj ::socket #!optional (close #t))
+	    (socket-shutdown::obj ::socket #!optional (how #t))
 	    (inline socket-close::obj ::socket)
 	    (inline host::bstring ::bstring)
 	    (inline hostinfo::pair-nil ::bstring)
@@ -433,8 +433,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    socket-shutdown ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (socket-shutdown socket::socket #!optional (close #t))
-   (c-socket-shutdown socket close))
+(define (socket-shutdown socket::socket #!optional (how #t))
+   (cond
+      ((eq? how #t)
+       ($socket-shutdown socket 0)
+       (socket-close socket))
+      ((or (eq? how #f) (eq? how 'RDWR))
+       ($socket-shutdown socket 0))
+      ((eq? how 'RD)
+       ($socket-shutdown socket 1))
+      ((eq? how 'WR)
+       ($socket-shutdown socket 2))
+      (else
+       (error "socket-shutdown" "wront optional argument" how))))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-close ...                                                 */

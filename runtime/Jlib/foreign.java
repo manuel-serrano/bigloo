@@ -5807,9 +5807,9 @@ public final class foreign
 	 return s.local_addr();
       }
 
-   public static Object socket_shutdown(socket s, boolean b) {
+   public static Object socket_shutdown(socket s, int how) {
 
-	 return s.shutdown(b);
+	 return s.shutdown(how);
       }
 
    public static Object socket_close(socket s) {

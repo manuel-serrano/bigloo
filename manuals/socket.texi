@@ -204,13 +204,22 @@ The function @code{socket-close} closes the connection established with
 a @code{socket-client}.
 @end deffn
 
-@deffn {bigloo procedure} socket-shutdown socket #!optional (close #t)
+@deffn {bigloo procedure} socket-shutdown socket #!optional (how #t)
 @code{Socket-shutdown} shutdowns the connection associated to @var{socket}.
-@var{Close} is a boolean; it indicates if the socket must be closed or not, 
-when the connection is destroyed. Closing the socket forbids further 
-connections on the same port with the @code{socket-accept} 
-procedure. Omitting a value for @var{close} implies the closing of socket.
-The result of @code{socket-shutdown} is undefined. 
+
+@var{Close} is either a boolean or one of the symbols @code{RDWR}, @code{RD}, or
+@code{WR}. The meaning of the optional how (which defaults to @code{#t})
+is as follows:
+
+@itemize @bullet
+@item @code{#t}, the socket is shutdown for reading and writing
+@emph{and} the socket is closed.
+@item @code{#f}, the socket is shutdown for reading and writing.
+@item @code{RDWR}, the socket is shutdown for reading and writing.
+@item @code{RD}, the socket is shutdown for reading.
+@item @code{WD}, the socket is shutdown for writing.
+@end itemize
+
 @end deffn
 
 @deffn {bigloo procedure} socket-down? socket

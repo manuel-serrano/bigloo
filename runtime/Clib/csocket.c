@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sun Dec 14 15:21:17 2014 (serrano)                */
+/*    Last change :  Mon Jan 19 16:35:53 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -92,6 +92,12 @@ typedef int socklen_t;
 #  define IFF_LOOPBACK 0
 #endif
 
+#if( !defined( SHUT_RD ) )
+#  define SHUT_RD 0
+#endif
+#if( !defined( SHUT_WR ) )
+#  define SHUT_WR 1
+#endif
 #if( !defined( SHUT_RDWR ) )
 #  define SHUT_RDWR 2
 #endif   
@@ -136,6 +142,7 @@ debug_socket_segv( char *fun, unsigned char *ptr, int len ) {
 /*---------------------------------------------------------------------*/
 extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t bgl_close_input_port( obj_t );
+extern obj_t bgl_close_output_port( obj_t );
 extern long bgl_read( obj_t, char *, long );
 extern obj_t make_vector( int, obj_t );
 extern unsigned char get_hash_number( char * );
@@ -1188,11 +1195,26 @@ socket_cleanup() {
 /*---------------------------------------------------------------------*/
 static int
 bgl_sclose_rd( FILE *stream ) {
-#if( !defined( SHUT_RD ) )
-#  define SHUT_RD 1
-#endif
-   shutdown( fileno( stream ), SHUT_RD );
-   return fclose( stream );
+   int r = shutdown( fileno( stream ), SHUT_RD );
+   if( !r ) {
+      return fclose( stream );
+   } else {
+      return r;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    bgl_sclose_wd ...                                                */
+/*---------------------------------------------------------------------*/
+static int
+bgl_sclose_wd( int stream ) {
+   int r = shutdown( stream, SHUT_WR );
+   if( !r ) {
+      return close( stream );
+   } else {
+      return r;
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -1301,7 +1323,7 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
 						 outb,
 						 bgl_syswrite,
 						 lseek,
-						 close );
+						 &bgl_sclose_wd );
    SOCKET( sock ).output->output_port_t.sysflush = &bgl_socket_flush;
       
    if( STRING_LENGTH( outb ) <= 1 )
@@ -2038,8 +2060,6 @@ socket_close( obj_t sock ) {
 
       if( INPUT_PORTP( SOCKET( sock ).input ) ) {
 	 bgl_close_input_port( SOCKET( sock ).input );
-	 /* MS: 26 apr 2008, don't loose the port */
-	 /* SOCKET( sock ).input = BFALSE; */
       }
    
       if( OUTPUT_PORTP( SOCKET( sock ).output ) ) {
@@ -2055,24 +2075,28 @@ socket_close( obj_t sock ) {
 /*    socket_shutdown ...                                              */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-socket_shutdown( obj_t sock, int close_socket ) {
+socket_shutdown( obj_t sock, int how ) {
    int fd = SOCKET( sock ).fd;
 
    if( fd > 0 ) {
-      if( close_socket ) {
-	 if( shutdown( fd, SHUT_RDWR ) ) {
-	    char *buffer = alloca( 1024 );
-
-	    /* force closing the socket anyhow */
-	    socket_close( sock );
-	    
-	    BGL_MUTEX_LOCK( socket_mutex );
-	    sprintf( buffer, "cannot shutdown socket, %s %d", strerror( errno ), fd );
-	    BGL_MUTEX_UNLOCK( socket_mutex );
-	    socket_error( "socket-shutdown", buffer, sock );
-	 }
+      int h;
+      switch( how ) {
+	 case 0: h = SHUT_RDWR; break;
+	 case 1: h = SHUT_RD; break;
+	 default: h = SHUT_WR; break;
       }
-      socket_close( sock );
+      
+      if( shutdown( fd, h ) ) {
+	 char *buffer = alloca( 1024 );
+
+	 /* force closing the socket anyhow */
+	 socket_close( sock );
+	    
+	 BGL_MUTEX_LOCK( socket_mutex );
+	 sprintf( buffer, "cannot shutdown socket, %s %d", strerror( errno ), fd );
+	 BGL_MUTEX_UNLOCK( socket_mutex );
+	 socket_error( "socket-shutdown", buffer, sock );
+      }
    }
    
    return BUNSPEC;
@@ -2595,7 +2619,7 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
 			    make_string_sans_fill( 0 ),
 			    &datagram_socket_write,
 			    0L,
-			    close );
+			    &bgl_sclose_wd );
    OUTPUT_PORT( oport ).sysflush = &bgl_socket_flush;
    OUTPUT_PORT( oport ).bufmode = BGL_IONB;
    
