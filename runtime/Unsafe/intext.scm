@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Mon Dec  8 08:22:09 2014 (serrano)                */
+;*    Last change :  Sat Jan 17 19:32:38 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -86,6 +86,8 @@
 	    
 	    (string->obj ::bstring #!optional extension)
 	    (obj->string::bstring ::obj)
+
+	    (make-serialization-substring ::bstring ::long ::long)
 	    
 	    (register-custom-serialization! ::bstring ::procedure ::procedure)
 	    (get-custom-serialization ::bstring)
@@ -120,6 +122,11 @@
 	    (when (<fx ,var ,max)
 	       ,@body
 	       (,loop (+fx ,var 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    serialization-substring ...                                      */
+;*---------------------------------------------------------------------*/
+(define-struct __serialization-substring str offset size)
 
 ;*---------------------------------------------------------------------*/
 ;*    serialization configuration                                      */
@@ -569,6 +576,7 @@
 	    ((#\E) (read-elong))
 	    ((#\L) (read-llong))
 	    ((#\d) (seconds->date (string->elong (read-string s))))
+	    ((#\D) (nanoseconds->date (string->llong (read-string s))))
 	    ((#\k) (read-class))
 	    ((#\r) (pregexp (read-string s)))
 	    ((#\u) (read-ucs2))
@@ -679,6 +687,23 @@
       (print-word size)
       (check-buffer! size)
       (blit-string! s 0 buffer ptr size)
+      (set! ptr (+fx ptr size)))
+   
+   ;; print-subchars
+   (define (!print-subchars item)
+      (let ((s (__serialization-substring-str item))
+	    (offset (__serialization-substring-offset item))
+	    (size (__serialization-substring-size item)))
+	 (print-word size)
+	 (check-buffer! size)
+	 (blit-string! s offset buffer ptr size)
+	 (set! ptr (+fx ptr size))))
+   
+   ;; print-subchars
+   (define (!print-subchars index s size)
+      (print-word size)
+      (check-buffer! size)
+      (blit-string! s index buffer ptr size)
       (set! ptr (+fx ptr size)))
    
    ;; print-int-as-char
@@ -981,8 +1006,6 @@
 	  (print-composite item print-object))
 	 ((class? item)
 	  (print-composite item print-class))
-	 ((struct? item)
-	  (print-composite item (lambda (item mark) (print-struct #\{ item))))
 	 ((char? item)
 	  (!print-markup #\a)
 	  (print-fixnum (char->integer item)))
@@ -1052,8 +1075,8 @@
 	  (let ((s (llong->string item)))
 	     (!print-chars s (string-length s))))
 	 ((date? item)
-	  (!print-markup #\d)
-	  (let ((s (elong->string (date->seconds item))))
+	  (!print-markup #\D)
+	  (let ((s (llong->string (date->nanoseconds item))))
 	     (!print-chars s (string-length s))))
 	 ((bignum? item)
 	  (!print-markup #\z)
@@ -1067,9 +1090,15 @@
 	  (print-composite item (lambda (i m) (print-special #\e i m))))
 	 ((opaque? item)
 	  (print-composite item (lambda (i m) (print-special #\o i m))))
+	 ((__serialization-substring? item)
+	  (!print-markup #\")
+	  (!print-subchars item))
+	 ((struct? item)
+	  (print-composite item (lambda (item mark) (print-struct #\{ item))))
 	 ((regexp? item)
 	  (!print-markup #\r)
-	  (print-item (regexp-pattern item)))
+	  (let ((s (regexp-pattern item)))
+	     (!print-chars s (string-length s))))
 	 (else
 	  (error "obj->string" "Unknown object" item))))
 
@@ -1280,6 +1309,12 @@
 		    (+fx r 1)
 		    (loop vcdr (+fx r 1))))
 	     (+fx r 1)))))
+
+;*---------------------------------------------------------------------*/
+;*    make-serialization-substring ...                                 */
+;*---------------------------------------------------------------------*/
+(define (make-serialization-substring str offset size)
+   (__serialization-substring str offset size))
 
 ;*---------------------------------------------------------------------*/
 ;*    *custom-serialization* ...                                       */
