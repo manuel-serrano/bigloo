@@ -220,6 +220,8 @@ is as follows:
 @item @code{WD}, the socket is shutdown for writing.
 @end itemize
 
+The function @code{socket-shutdown} returns an integer which is @code{0}
+is the operation has succeeded and a positive integer otherwise.
 @end deffn
 
 @deffn {bigloo procedure} socket-down? socket

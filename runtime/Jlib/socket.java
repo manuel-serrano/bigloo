@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Mon Jan 19 16:32:50 2015 (serrano)                */
+/*    Last change :  Tue Jan 20 19:37:35 2015 (serrano)                */
 /*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Socket implementation for the JVM back-end.                  */
@@ -90,7 +90,7 @@ public abstract class socket extends obj {
    /*--- public abstract methods --------------------------------------*/
    public abstract Object HOSTNAME();
    public abstract Object HOSTIP();
-   public abstract Object shutdown( int how );
+   public abstract int shutdown( int how );
    public abstract int PORT();
    public abstract byte[] local_addr();
 }

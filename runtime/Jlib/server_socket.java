@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Mon Jan 19 16:38:24 2015 (serrano)                */
+/*    Last change :  Tue Jan 20 19:37:59 2015 (serrano)                */
 /*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
@@ -78,7 +78,7 @@ public class server_socket extends socket {
       return new client_socket( accepted_socket, inbuf, outbuf );
    }
 
-   public Object shutdown( final int how ) {
+   public int shutdown( final int how ) {
       try {
 	 if (client_socket != null)
 	    try {
@@ -95,13 +95,13 @@ public class server_socket extends socket {
 		     break;
 	       }
 	    } catch (Exception _) {
-	       socket_error( "shutdown", "Cannot shutdown socket", this );
+	       return 2;
 	    }
       } catch( Throwable _ ) {
-	 ;
+	 return 1;
       }
 
-      return bigloo.foreign.BUNSPEC;
+      return 0;
    }
 
    public Object close() {

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Jan 19 16:35:53 2015 (serrano)                */
+/*    Last change :  Tue Jan 20 19:36:48 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -2071,10 +2071,10 @@ socket_close( obj_t sock ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
+/*    int                                                              */
 /*    socket_shutdown ...                                              */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
+BGL_RUNTIME_DEF int
 socket_shutdown( obj_t sock, int how ) {
    int fd = SOCKET( sock ).fd;
 
@@ -2086,20 +2086,10 @@ socket_shutdown( obj_t sock, int how ) {
 	 default: h = SHUT_WR; break;
       }
       
-      if( shutdown( fd, h ) ) {
-	 char *buffer = alloca( 1024 );
-
-	 /* force closing the socket anyhow */
-	 socket_close( sock );
-	    
-	 BGL_MUTEX_LOCK( socket_mutex );
-	 sprintf( buffer, "cannot shutdown socket, %s %d", strerror( errno ), fd );
-	 BGL_MUTEX_UNLOCK( socket_mutex );
-	 socket_error( "socket-shutdown", buffer, sock );
-      }
+      return shutdown( fd, h );
    }
    
-   return BUNSPEC;
+   return 0;
 }
 
 /*---------------------------------------------------------------------*/
