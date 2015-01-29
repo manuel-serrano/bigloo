@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Jan  4 09:38:44 2015 (serrano)                */
+/*    Last change :  Wed Jan 28 12:29:09 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -482,8 +482,6 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
    } else {
       obj_t name = string_to_bstring( (char *)req->path );
       obj = bgl_uv_new_file( req->result, name );
-/*       ((bgl_uv_file_t)obj)->BgL_z52readreqz52 =                     */
-/* 	 GC_MALLOC( sizeof( uv_fs_t ) );                               */
    }
    
    uv_fs_req_cleanup( req );
@@ -1240,7 +1238,6 @@ bgl_uv_inet_pton( char *addr, int family ) {
       return BFALSE;
    }
 }
-
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bgl_uv_write_cb ...                                              */
@@ -1254,6 +1251,7 @@ bgl_uv_write_cb( uv_write_t *req, int status ) {
 
    free( req );
 }
+int c = 0;
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
@@ -1273,14 +1271,11 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
       int r;
 
       req->data = proc;
-      
       gc_mark( proc );
 
       iov = uv_buf_init( buffer + offset, length );
       
-      r = uv_write( req, handle, &iov, 1, bgl_uv_write_cb );
-
-      return r;
+      return uv_write( req, handle, &iov, 1, bgl_uv_write_cb );
    }
 }
    
@@ -1306,12 +1301,9 @@ bgl_uv_write2( obj_t obj, char *buffer, long offset, long length, obj_t sendhand
       req->data = proc;
       
       gc_mark( proc );
-
       iov = uv_buf_init( buffer + offset, length );
 
-      r = uv_write2( req, handle, &iov, 1, sendhdl, bgl_uv_write_cb );
-
-      return r;
+      return uv_write2( req, handle, &iov, 1, sendhdl, bgl_uv_write_cb );
    }
 }
 
@@ -1330,7 +1322,6 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    obj_t pendingsym = BFALSE;
 
    sobj->BgL_z52allocz52 = BUNSPEC;
-   gc_unmark( obj );
 
    if( (stream->type == UV_NAMED_PIPE) ) {
       if( uv_pipe_pending_count( (uv_pipe_t*)stream ) > 0 ) {
@@ -1395,8 +1386,6 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 	 stream->BgL_z52procaz52 = proca;
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT( -1 );
-
-	 gc_mark( obj );
 
 	 return uv_read_start( s, bgl_uv_alloc_cb, bgl_uv_read_cb );
       }
@@ -1496,8 +1485,6 @@ uv_listen_cb( uv_stream_t *handle, int status ) {
    obj_t data = (obj_t)handle->data;
    obj_t p, obj;
 
-   gc_unmark( data );
-
    obj = CAR( data );
    p = CDR( data );
 
@@ -1518,7 +1505,6 @@ bgl_uv_listen( obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop ) {
       uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
 
       s->data = MAKE_PAIR( obj, proc );
-      gc_mark( s->data );
 
       return uv_listen( s, backlog, uv_listen_cb );
    }
@@ -1851,11 +1837,7 @@ static void
 bgl_uv_shutdown_cb( uv_shutdown_t* req, int status ) {
    obj_t p = (obj_t)req->data;
    obj_t handle = req->handle->data;
-
-   gc_unmark( p );
-
    free( req );
-
    PROCEDURE_ENTRY( p )( p, BINT( status ), handle, BEOA );
 }
    
@@ -1873,8 +1855,6 @@ bgl_uv_shutdown( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
       uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
       uv_shutdown_t *req = malloc( sizeof( uv_shutdown_t ) );
       int r;
-
-      gc_mark( obj );
 
       req->data = proc;
 

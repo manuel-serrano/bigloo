@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Tue Jun 17 20:24:04 2014 (serrano)                */
-;*    Copyright   :  2006-14 Marc Feeley                               */
+;*    Last change :  Thu Jan 29 11:48:17 2015 (serrano)                */
+;*    Copyright   :  2006-15 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
 ;*    native support is available. Hence, its performance is           */
@@ -919,12 +919,12 @@
 		 (let ((d (char->digit (string-ref str i) rad)))
 		    (if d
 			(loop (+fx i 1) (cons d digits))
-			#f))
+			($fixnum->bignum-fresh 0)))
 		 (let ((n (fixnum-list->bignum digits (-fx rad 1))))
 		    (if (and sign (char=? sign #\-))
 			($negbx n)
 			n))))
-	  #f))
+	  ($fixnum->bignum-fresh 0)))
    
    (define (sign-prefix rad i)
       (cond ((and (<=fx (+fx i 2) (string-length str)) ;; need at least two chars

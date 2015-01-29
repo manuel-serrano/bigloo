@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:51:22 2014                          */
-;*    Last change :  Sun Jan  4 08:30:28 2015 (serrano)                */
+;*    Last change :  Fri Jan 23 08:15:28 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV handles                                                    */
@@ -54,12 +54,14 @@
       (when (procedure? callback)
 	 (unless (correct-arity? callback 0)
 	    (error "uv-close" "wrong procedure arity" callback))
-	 (set! %onclose callback))
+	 (set! %gcmarks (cons callback %gcmarks))
+	 (set! %onclose (lambda ()
+			   (let ((r (callback)))
+			      (set! %gcmarks '())))))
       (when ($uv_handle_nilp $builtin) ($bgl_uv_close_cb $builtin))
       (unless closed
 	 (set! closed #t)
-	 ($uv-handle-close $builtin $BGL_UV_CLOSE_CB))
-      (set! %gcmarks '())))
+	 ($uv-handle-close $builtin $BGL_UV_CLOSE_CB))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-active? ...                                                   */

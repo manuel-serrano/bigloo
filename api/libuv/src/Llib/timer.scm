@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Sat Jan  3 19:45:48 2015 (serrano)                */
+;*    Last change :  Fri Jan 23 07:50:49 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV timers                                                     */
@@ -38,7 +38,7 @@
 (define (uv-timer-start o::UvTimer t::uint64 r::uint64)
    (with-access::UvTimer o ($builtin loop repeat ref)
       (set! repeat r)
-      (with-access::UvLoop loop (%mutex %gcmarks)
+      (with-access::UvLoop loop (%gcmarks)
 	 ;; store in the loop for the GC
 	 (set! %gcmarks (cons o %gcmarks))
 	 ;; force Bigloo to add the extern clause for bgl_uv_timer_cb
@@ -49,7 +49,9 @@
 ;*    uv-timer-stop ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (uv-timer-stop o::UvTimer)
-   (with-access::UvTimer o ($builtin count)
+   (with-access::UvTimer o ($builtin count loop)
+      (with-access::UvLoop loop (%gcmarks)
+	 (set! %gcmarks (remq! o %gcmarks)))
       ($uv_timer_stop ($uv-timer-t $builtin))))
       
 ;*---------------------------------------------------------------------*/

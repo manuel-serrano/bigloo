@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Tue Dec  6 16:39:21 2011 (serrano)                */
-/*    Copyright   :  2002-11 Manuel Serrano                            */
+/*    Last change :  Thu Jan 22 07:27:09 2015 (serrano)                */
+/*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -189,5 +189,3 @@ int bgl_debug_top_stack() {
 
    return 0;
 }
-      
-
