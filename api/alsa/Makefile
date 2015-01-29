@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Mar 27 12:06:47 2012 (serrano)                */
-#*    Copyright   :  2001-12 Manuel Serrano                            */
+#*    Last change :  Thu Jan 29 16:02:11 2015 (serrano)                */
+#*    Copyright   :  2001-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -64,7 +64,6 @@ pop:
 #*---------------------------------------------------------------------*/
 clean:
 	(cd src && $(MAKE) clean)
-	(cd recette && $(MAKE) clean)
 	(cd examples && $(MAKE) clean)
 
 distclean: clean
