@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Fri Feb 14 07:42:28 2014 (serrano)                */
-;*    Copyright   :  2011-14 Manuel Serrano                            */
+;*    Last change :  Sat Jan 31 18:26:02 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
 ;*=====================================================================*/

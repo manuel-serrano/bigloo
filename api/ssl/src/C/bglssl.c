@@ -3,14 +3,15 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Nov 25 16:15:18 2014 (serrano)                */
-/*    Copyright   :  2005-14 Manuel Serrano                            */
+/*    Last change :  Sat Jan 31 13:11:48 2015 (serrano)                */
+/*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/bio.h>
+#include <openssl/crypto.h>
 #include <fcntl.h>
 
 #if defined( _MSC_VER) || defined( _MINGW_VER )
@@ -153,6 +154,15 @@ bgl_ssl_init() {
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
+}
+
+/*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    bgl_ssl_version ...                                              */
+/*---------------------------------------------------------------------*/
+char *
+bgl_ssl_version() {
+   return (char *)SSLeay_version( SSLEAY_VERSION );
 }
 
 /*---------------------------------------------------------------------*/

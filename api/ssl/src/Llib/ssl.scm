@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Wed Sep 17 19:14:36 2014 (serrano)                */
-;*    Copyright   :  2005-14 Manuel Serrano                            */
+;*    Last change :  Sat Jan 31 13:11:02 2015 (serrano)                */
+;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -34,7 +34,8 @@
 	   (macro $ssl-nil::$ssl "0L")
 	   (macro $bio-nil::$bio "0L")
 	   (macro $X509-store-nil::$X509-store "0L")
-           
+
+	   (macro $ssl-version::string () "bgl_ssl_version")
            ($certificate-subject::bstring (::certificate)
 	      "bgl_ssl_certificate_subject")
            ($certificate-issuer::bstring (::certificate)
@@ -141,6 +142,8 @@
 	   
 	   (class private-key
 	      ($native::$private-key read-only))
+
+	   (ssl-version::string)
 	   
 	   (read-private-key::private-key ::bstring)
 	   (read-certificate::certificate ::bstring)
@@ -219,6 +222,14 @@
 	  (class ssl-connection
 	     (ctx::secure-context read-only)
 	     (issserver::bool read-only))))))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-version ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (ssl-version)
+   (cond-expand
+      (bigloo-c ($ssl-version))
+      (else "-1")))
 
 ;*---------------------------------------------------------------------*/
 ;*    sanity-args-checks ...                                           */

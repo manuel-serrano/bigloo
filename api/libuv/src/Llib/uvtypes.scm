@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Sat Jan  3 19:04:41 2015 (serrano)                */
+;*    Last change :  Sat Jan 31 13:04:33 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -146,6 +146,7 @@
 	   
 	   (generic %uv-init ::%Uv)
 
+	   (uv-version::string)
 	   (uv-id::int ::UvHandle)
 
 	   (uv-new-file::UvFile ::int ::bstring)
@@ -155,6 +156,11 @@
 	   (uv-handle-type-symbol ::int)
 	   (uv-guess-handle::symbol ::int)))
 
+;*---------------------------------------------------------------------*/
+;*    uv-version ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (uv-version)
+   ($uv-version))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-id ...                                                        */

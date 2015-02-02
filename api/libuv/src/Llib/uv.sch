@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sat Jan  3 18:51:30 2015 (serrano)                */
+;*    Last change :  Sat Jan 31 13:03:48 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -33,6 +33,8 @@
       
       (macro $uv-strerror::string (::int) "(char *)uv_strerror")
       (macro $uv-err-name::string (::int) "(char *)uv_err_name")
+
+      (macro $uv-version::string () "(char *)uv_version_string")
       
       ;; handle
       (type $uv_handle_t void* "uv_handle_t *")

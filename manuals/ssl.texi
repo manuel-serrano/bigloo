@@ -26,6 +26,10 @@
 Bigloo allows access to SSL sockets, certificates and private keys, in
 order to build secure encrypted and/or signed communications.
 
+@deffn {SSL library procedure} ssl-version
+Returns a string representing the SSL library version number.
+@end deffn
+
 @node SSL Sockets, Certificates, , SSL
 @comment  node-name,  next,  previous,  up
 @subsubsection SSL Sockets
