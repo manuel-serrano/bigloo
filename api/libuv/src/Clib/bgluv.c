@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Jan 30 08:42:43 2015 (serrano)                */
+/*    Last change :  Wed Feb  4 17:51:06 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -250,6 +250,21 @@ bgl_uv_cpu( uv_cpu_info_t cpu ) {
    return res;
 }
 
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_uv_resident_memory ...                                       */
+/*---------------------------------------------------------------------*/
+long
+bgl_uv_resident_memory() {
+   size_t rss;
+
+  if( uv_resident_set_memory( &rss ) != 0 ) {
+     return 0;
+  } else {
+     return rss;
+  }
+}
+   
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_uv_cpus ...                                                  */
@@ -1149,42 +1164,42 @@ bgl_uv_getaddrinfo_cb( uv_getaddrinfo_t *req, int status, struct addrinfo *res )
    } else {
       char *addr;
       obj_t acc = BNIL;
+      struct addrinfo *tmp;
       
       char ip[ MAX_IP_LEN ];
-      
-      for( ; res; res = res->ai_next ) {
-	 switch( res->ai_family ) {
-	    case AF_INET: {
-	       // ipv4 address
-	       addr = (char *)&((struct sockaddr_in *)res->ai_addr)->sin_addr;
-	       int err = uv_inet_ntop( res->ai_family, addr,
-				       ip, INET_ADDRSTRLEN );
-	       if( err != 0 ) {
-		  continue;
-	       } else {
-		  acc = MAKE_PAIR( string_to_bstring( ip ), acc );
-	       }
-	    }
-	       break;
-	       
-	    case AF_INET6: {
-	       // ipv6 address
-	       addr = (char*)&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr;
-	       int err = uv_inet_ntop( res->ai_family, addr,
+
+      // iterate over the IPv6 addresses 
+      for( tmp = res; tmp; tmp = tmp->ai_next ) {
+	 if( tmp->ai_family == AF_INET6 ) {
+	    addr = (char*)&((struct sockaddr_in6 *)tmp->ai_addr)->sin6_addr;
+	       int err = uv_inet_ntop( tmp->ai_family, addr,
 				       ip, INET6_ADDRSTRLEN );
 	       if( err != 0 ) {
 		  continue;
 	       } else {
 		  acc = MAKE_PAIR( string_to_bstring( ip ), acc );
 	       }
+	 }
+      }
+      
+      // iterate over the IPv4 addresses 
+      for( tmp = res; tmp; tmp = tmp->ai_next ) {
+	 if( tmp->ai_family == AF_INET ) {
+	    // ipv4 addtmps
+	    addr = (char *)&((struct sockaddr_in *)tmp->ai_addr)->sin_addr;
+	    int err = uv_inet_ntop( tmp->ai_family, addr,
+				    ip, INET_ADDRSTRLEN );
+	    if( err != 0 ) {
+	       continue;
+	    } else {
+	       acc = MAKE_PAIR( string_to_bstring( ip ), acc );
 	    }
-	       break;
 	 }
       }
 
       uv_freeaddrinfo( res );
 
-      PROCEDURE_ENTRY( p )( p, bgl_reverse_bang( acc ), BEOA );
+      PROCEDURE_ENTRY( p )( p, acc, BEOA );
    }
 }
 

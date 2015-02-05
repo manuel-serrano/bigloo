@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Dec 19 18:13:15 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Wed Feb  4 17:55:30 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV os                                                         */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
    (export  (uv-loadavg ::f64vector)
 	    (inline uv-get-free-memory::double)
 	    (inline uv-get-total-memory::double)
+	    (inline uv-get-resident-memory::long)
 	    (inline uv-cpus::vector)
 	    (uv-uptime::double)
 	    (inline uv-exepath::bstring)))
@@ -43,6 +44,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-get-total-memory)
    ($uv-get-total-memory))
+
+;*---------------------------------------------------------------------*/
+;*    uv-get-resident-memory ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-get-resident-memory)
+   ($uv-resident-memory))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-cpus ...                                                      */

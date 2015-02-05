@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat Jan 31 13:11:02 2015 (serrano)                */
+;*    Last change :  Tue Feb  3 17:22:56 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -35,7 +35,7 @@
 	   (macro $bio-nil::$bio "0L")
 	   (macro $X509-store-nil::$X509-store "0L")
 
-	   (macro $ssl-version::string () "bgl_ssl_version")
+	   ($ssl-version::string () "bgl_ssl_version")
            ($certificate-subject::bstring (::certificate)
 	      "bgl_ssl_certificate_subject")
            ($certificate-issuer::bstring (::certificate)
@@ -66,7 +66,12 @@
 
 	   ($bgl-secure-context-add-ca-cert!::bool (::secure-context ::bstring ::long ::long)
 	      "bgl_ssl_ctx_add_ca_cert")
-
+	   ($bgl-secure-context-set-key!::bool (::secure-context ::bstring ::long ::long ::obj) "bgl_ssl_set_key")
+	   ($bgl-secure-context-set-cert!::bool (::secure-context ::bstring ::long ::long) "bgl_ssl_set_cert")
+	   (macro $ssl-ctx-set-cipher-list::void (::$ssl-ctx ::string)
+	      "SSL_CTX_set_cipher_list")
+	   (macro $ssl-ctx-set-options::void (::$ssl-ctx ::int)
+	      "SSL_CTX_set_options")
 	   ($bgl-ssl-connection-init!::obj (::ssl-connection)
 	      "bgl_ssl_connection_init")
 	   
@@ -180,6 +185,10 @@
 	   (generic secure-context-init ::secure-context)
 	   (generic secure-context-add-root-certs!::bool ::secure-context)
 	   (generic secure-context-add-ca-cert!::bool ::secure-context ::bstring ::long ::long)
+	   (generic secure-context-set-key!::bool ::secure-context ::bstring ::long ::long #!optional passphrase)
+	   (generic secure-context-set-cert!::bool ::secure-context ::bstring ::long ::long)
+	   (generic secure-context-set-ciphers!::bool ::secure-context ::bstring)
+	   (generic secure-context-set-options!::bool ::secure-context ::int)
 
 	   (generic ssl-connection-init ::ssl-connection)
 	   (generic ssl-connection-start::int ::ssl-connection)
@@ -213,7 +222,8 @@
 	      (isserver::bool read-only)
 	      (request-cert::bool read-only (default #f))
 	      (server-name::obj read-only (default #f))
-	      (reject-unauthorized::bool read-only))))
+	      (reject-unauthorized::bool read-only)
+	      (info-callback (default #f)))))
       (else
        (export
 	  (class secure-context
@@ -399,6 +409,50 @@
    (cond-expand
       (bigloo-c
        ($bgl-secure-context-add-ca-cert! sc cert offset len))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-set-key! ::secure-context ...                     */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-set-key! sc::secure-context cert offset len #!optional passphrase)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-set-key! sc cert offset len passphrase))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-set-cert! ::secure-context ...                    */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-set-cert! sc::secure-context cert offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-set-cert! sc cert offset len))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-set-ciphers! ::secure-context ...                 */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-set-ciphers! sc::secure-context ciphers)
+   (cond-expand
+      (bigloo-c
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-set-cipher-list $native ciphers))
+       #t)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-set-options! ::secure-context ...                 */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-set-options! sc::secure-context options)
+   (cond-expand
+      (bigloo-c
+       (with-access::secure-context sc ($native)
+	  ($ssl-ctx-set-cipher-list $native options))
+       #t)
       (else
        #f)))
 

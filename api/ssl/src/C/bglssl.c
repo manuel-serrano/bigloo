@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sat Jan 31 13:11:48 2015 (serrano)                */
+/*    Last change :  Wed Feb  4 09:04:53 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -265,7 +265,7 @@ ssl_error_message( char *buf ) {
    if( errid == SSL_ERROR_SYSCALL ) {
       return "unexpected EOF";
    } else {
-      if( errid && (ERR_GET_LIB(errid) == ERR_LIB_SYS) ) {
+      if( errid && (ERR_GET_LIB( errid ) == ERR_LIB_SYS) ) {
 	 return "Cannot create SSL";
       } else {
 	 memset( buf, 0, 121 );
@@ -733,6 +733,76 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
 //#include "ssl_debug.h"
 
 /*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    SSL_CTX_use_certificate_chain ...                                */
+/*---------------------------------------------------------------------*/
+static int
+SSL_CTX_use_certificate_chain( SSL_CTX *ctx, BIO *in ) {
+   // Read a file that contains our certificate in "PEM" format,
+   // possibly followed by a sequence of CA certificates that should be
+   // sent to the peer in the Certificate message.
+   //
+   // Taken from OpenSSL - editted for style.
+   int ret = 0;
+   X509 *x = NULL;
+
+   x = PEM_read_bio_X509_AUX( in, NULL, NULL, NULL );
+
+   if( x == NULL ) {
+      SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_CHAIN_FILE, ERR_R_PEM_LIB );
+      goto end;
+   }
+
+   ret = SSL_CTX_use_certificate( ctx, x );
+
+   if( ERR_peek_error() != 0 ) {
+      // Key/certificate mismatch doesn't imply ret==0 ...
+      ret = 0;
+   }
+
+   if( ret ) {
+      // If we could set up our certificate, now proceed to
+      // the CA certificates.
+      X509 *ca;
+      int r;
+      unsigned long err;
+
+      if( ctx->extra_certs != NULL ) {
+	 sk_X509_pop_free( ctx->extra_certs, X509_free );
+	 ctx->extra_certs = NULL;
+      }
+
+      while( (ca = PEM_read_bio_X509(in, NULL, NULL, NULL)) ) {
+	 r = SSL_CTX_add_extra_chain_cert( ctx, ca );
+
+	 if( !r ) {
+	    X509_free( ca );
+	    ret = 0;
+	    goto end;
+	 }
+	 // Note that we must not free r if it was successfully
+	 // added to the chain (while we must free the main
+	 // certificate, since its reference count is increased
+	 // by SSL_CTX_use_certificate).
+      }
+
+      // When the while loop ends, it's usually just EOF.
+      err = ERR_peek_last_error();
+      if( ERR_GET_LIB( err ) == ERR_LIB_PEM &&
+	  ERR_GET_REASON( err ) == PEM_R_NO_START_LINE ) {
+	 ERR_clear_error();
+      } else  {
+	 // some real error
+	 ret = 0;
+      }
+   }
+
+end:
+   if( x != NULL ) X509_free( x );
+   return ret;
+}
+
+/*---------------------------------------------------------------------*/
 /*    bool_t                                                           */
 /*    bgl_ssl_ctx_add_root_certs ...                                   */
 /*---------------------------------------------------------------------*/
@@ -822,13 +892,16 @@ bgl_ssl_ctx_add_ca_cert( secure_context sc, obj_t cert, long offset, long len ) 
 /*---------------------------------------------------------------------*/
 static void
 bgl_info_callback( const SSL *ssl, int where, int ret ) {
-   ssl_connection *c = (ssl_connection *)(SSL_get_app_data( ssl ));
+   ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
+   obj_t cb = c->BgL_infozd2callbackzd2;
 
-   if( where & SSL_CB_HANDSHAKE_START) {
-      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
-   }
-   if( where & SSL_CB_HANDSHAKE_DONE ) {
-      fprintf( stderr, "TODO %s:%d\n", __FILE__, __LINE__ );
+   if( PROCEDUREP( cb ) ) {
+      if( where & SSL_CB_HANDSHAKE_START ) {
+	 PROCEDURE_ENTRY( cb )( cb, BINT( 0 ), BEOA );
+      }
+      if( where & SSL_CB_HANDSHAKE_DONE ) {
+	 PROCEDURE_ENTRY( cb )( cb, BINT( 1 ), BEOA );
+      }
    }
 }
 
@@ -1057,10 +1130,11 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
 	 }
       } else {
 #if( SSL_DEBUG )	 
-	 if( (n = SSL_connect2( "start", _ssl )) <= 0 ) {
+	 if( (n = SSL_connect2( "start", _ssl )) <= 0 )
 #else	    
-	 if( (n = SSL_connect( _ssl )) <= 0 ) {
-#endif	    
+	 if( (n = SSL_connect( _ssl )) <= 0 )
+#endif
+	 {
 	    handle_ssl_error( ssl, n, "ssl-connection-start" );
 	 }
       }
@@ -1079,7 +1153,9 @@ BGL_RUNTIME_DEF long
 bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
    long int n = BIO_read( ssl->BgL_z42biozd2writez90, buf + off, len );
 
+#if( SSL_DEBUG )	 
    fprintf( stderr, "%s (bgl_ssl_connection_read) off=%d len=%d bytes_read=%d\n", __FILE__, off, len, n );
+#endif   
    
    if( n < 0 ) {
       handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n, "connection_read" );
@@ -1117,9 +1193,8 @@ BGL_RUNTIME_DEF long
 bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
    long int n = BIO_write( ssl->BgL_z42biozd2readz90, buf + off, len );
 
-      fprintf( stderr, "%s (bgl_ssl_connection_write) off=%d len=%d\n", __FILE__, off, len );
-      
 #if( SSL_DEBUG )	 
+   fprintf( stderr, "%s (bgl_ssl_connection_write) off=%d len=%d\n", __FILE__, off, len );
    {
       int i;
 
@@ -1167,10 +1242,11 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
       } else {
 	 int m;
 #if( SSL_DEBUG ) 
-	 if( (m = SSL_connect2( name, _ssl )) <= 0 ) {
+	 if( (m = SSL_connect2( name, _ssl )) <= 0 )
 #else	    
-	 if( (m = SSL_connect( _ssl )) <= 0 ) {
-#endif	    
+	 if( (m = SSL_connect( _ssl )) <= 0 )
+#endif
+	 {
 	    handle_ssl_error( ssl, m, "ssl-connection-clear (connect)" );
 	 }
 	 return m;
@@ -1206,12 +1282,15 @@ bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
+#if( defined( SSL_DEBUG) )   
    {
       char s[ len + 1 ];
       strncpy( s, buf + off, len );
       s[ len ] = 0;
+      
       fprintf( stderr, "%s:%d clearin [%s]\n", __FILE__, __LINE__, s );
    }
+#endif
    
    return bgl_ssl_connection_clear( ssl, buf, off, len,
 				    (int (*)( SSL *, void *, int))&SSL_write,
@@ -1451,6 +1530,61 @@ bgl_ssl_connection_verify_error( ssl_connection ssl ) {
    }
 }
 
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_set_key ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
+   BIO *bio = BIO_new( BIO_s_mem() );
+
+   BIO_write( bio, &STRING_REF( cert, offset ), len );
+   EVP_PKEY *key =  PEM_read_bio_PrivateKey(
+      bio, NULL, NULL,
+      STRINGP( passphrase ) ? BSTRING_TO_STRING( passphrase ) : NULL );
+
+   BIO_free( bio );
+   
+   if( !key ) {
+      char ebuf[ 121 ];
+      
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "set-key",
+			ssl_error_message( ebuf ),
+			(obj_t)sc );
+   }
+
+   SSL_CTX_use_PrivateKey( sc->BgL_z42nativez42, key );
+
+   EVP_PKEY_free( key );
+
+   return BTRUE;
+}
+	 
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_set_cert ...                                             */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
+   BIO *bio = BIO_new( BIO_s_mem() );
+   int rv;
+   
+   BIO_write( bio, &STRING_REF( cert, offset ), len );
+
+   rv = SSL_CTX_use_certificate_chain( sc->BgL_z42nativez42, bio );
+   BIO_free( bio );
+
+   if( !rv ) {
+      char ebuf[ 121 ];
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "set-key",
+			ssl_error_message( ebuf ),
+			(obj_t)sc );
+   }
+
+   return BTRUE;
+}
+	 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    cons ...                                                         */
@@ -1657,8 +1791,7 @@ bgl_ssl_ctx_init( secure_context sc ) {
    if( !(sc->BgL_z42nativez42) ) {
       char errbuf[ 121 ];
       
-      C_SYSTEM_FAILURE( BGL_IO_ERROR,
-			"secure-context-init",
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "secure-context-init",
 			ssl_error_message( errbuf ),
 			(obj_t)sc );
       return (obj_t)sc;
@@ -1680,3 +1813,4 @@ unsupported:
 	 sc->BgL_methodz00 );
    return (obj_t)sc;
 }
+   

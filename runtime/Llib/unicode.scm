@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Dec 23 06:33:09 2014 (serrano)                */
+;*    Last change :  Wed Feb  4 10:57:53 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -928,7 +928,7 @@
       (cond
 	 ((<=fx n #x7f) 1)
 	 ((<=fx n #xc0) 2)
-	 ((<fx n #xc2) (error "utf8-string" "Badly formed UTF8 string" c))
+	 ((<fx n #xc2) (error "utf8-char-size" "Badly formed UTF8 string" c))
 	 ((<=fx n #xdf) 2)
 	 ((<=fx n #xef) 3)
 	 ((or (=fx n #xf0) (=fx n #xf4) (<=fx n #xf7)) 4)
@@ -936,7 +936,7 @@
 	 ((<=fx n #xfb) 5)
 	 ((=fx n #xfc) 4) ;; see utf8-string-append
 	 ((<=fx n #xfd) 6)
-	 (else (error "utf8-string" "Badly formed UTF8 string" c)))))
+	 (else (error "utf8-char-size" "Badly formed UTF8 string" c)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-length ...                                           */

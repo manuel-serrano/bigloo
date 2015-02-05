@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sat Jan 31 13:03:48 2015 (serrano)                */
+;*    Last change :  Wed Feb  4 17:55:48 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -240,6 +240,7 @@
       (macro $uv-loadavg::void (::double*) "uv_loadavg")
       (macro $uv-get-free-memory::double () "uv_get_free_memory")
       (macro $uv-get-total-memory::double () "uv_get_total_memory")
+      ($uv-resident-memory::long () "bgl_uv_resident_memory")
       ($uv-cpus::vector () "bgl_uv_cpus")
       ($uv-exepath::bstring () "bgl_uv_exepath")
       (macro $uv-uptime::int (::double*) "uv_uptime")
