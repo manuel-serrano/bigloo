@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Wed Jan 28 11:23:40 2015 (serrano)                */
+;*    Last change :  Fri Feb  6 07:46:14 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -155,13 +155,35 @@
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (uv-stream-write o::UvStream buf offset length #!key callback (loop (uv-default-loop)))
-   ($uv-write o buf offset length callback loop))
+   (letrec ((cb (lambda (status)
+		   ;; make sure buf is referenced to prevent
+		   ;; premature collection
+		   (unless (eq? buf cb)
+		      (with-access::UvStream o (%gcmarks)
+			 (set! %gcmarks (remq! cb %gcmarks))
+			 (callback status))))))
+      (let ((r ($uv-write o buf offset length cb loop)))
+	 (when (=fx r 0)
+	    (with-access::UvStream o (%gcmarks)
+	       (set! %gcmarks (cons cb %gcmarks))))
+	 r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write2 ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (uv-stream-write2 o::UvStream buf offset length handle::obj #!key callback (loop (uv-default-loop)))
-   ($uv-write2 o buf offset length handle callback loop))
+   (letrec ((cb (lambda (status)
+		   ;; make sure buf is referenced to prevent
+		   ;; premature collection
+		   (unless (eq? buf cb)
+		      (with-access::UvStream o (%gcmarks)
+			 (set! %gcmarks (remq! cb %gcmarks))
+			 (callback status))))))
+      (let ((r ($uv-write2 o buf offset length handle cb loop)))
+	 (when (=fx r 0)
+	    (with-access::UvStream o (%gcmarks)
+	       (set! %gcmarks (cons cb %gcmarks))))
+	 r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-read-start ...                                         */

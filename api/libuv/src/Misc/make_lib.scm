@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sun Oct 19 11:34:06 2014 (serrano)                */
-;*    Copyright   :  2001-14 Manuel Serrano                            */
+;*    Last change :  Fri Feb  6 11:17:11 2015 (serrano)                */
+;*    Copyright   :  2001-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	   __libuv_net
 	   __libuv_pipe
 	   __libuv_fs-event
+	   __libuv_fs-poll
 	   __libuv_check
 	   __libuv_process)
    

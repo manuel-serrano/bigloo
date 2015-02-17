@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Wed Feb  4 17:55:48 2015 (serrano)                */
+;*    Last change :  Fri Feb  6 12:17:32 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -35,6 +35,10 @@
       (macro $uv-err-name::string (::int) "(char *)uv_err_name")
 
       (macro $uv-version::string () "(char *)uv_version_string")
+
+      ;; uv-state
+      (type $uv_stat_t void* "uv_stat_t *")
+      (macro $uv-stat-nil::$uv_stat_t "0L")
       
       ;; handle
       (type $uv_handle_t void* "uv_handle_t *")
@@ -100,6 +104,20 @@
       
       (macro $UV_RENAME::int "UV_RENAME")
       (macro $UV_CHANGE::int "UV_CHANGE")
+      
+      ;; fs-poll
+      (type $uv_fs_poll_t void* "uv_fs_poll_t *")
+      (type $uv_fs_poll_cb void* "uv_fs_poll_cb")
+      (macro $uv-fs-poll-t::$uv_fs_poll_t (::$uv_handle_t) "(uv_fs_poll_t *)")
+      
+      (macro $uv_fs_poll_nil::$uv_fs_poll_t "0L")
+      
+      ($bgl_uv_fs_poll_new::$uv_fs_poll_t (::UvFsPoll ::UvLoop) "bgl_uv_fs_poll_new")
+      (macro $uv_fs_poll_start::void (::$uv_fs_poll_t ::$uv_fs_poll_cb ::string ::int) "uv_fs_poll_start")
+      (macro $uv_fs_poll_stop::void (::$uv_fs_poll_t) "uv_fs_poll_stop")
+      
+      ($bgl_uv_fs_poll_cb::$uv_fs_poll_cb (::$uv_fs_poll_t ::int ::$uv_stat_t ::$uv_stat_t) "bgl_uv_fs_poll_cb")
+      (macro $BGL_UV_FS_POLL_CB::$uv_fs_poll_cb "(uv_fs_poll_cb)&bgl_uv_fs_poll_cb")
       
       ;; timer
       (type $uv_timer_t void* "uv_timer_t *")
@@ -243,6 +261,11 @@
       ($uv-resident-memory::long () "bgl_uv_resident_memory")
       ($uv-cpus::vector () "bgl_uv_cpus")
       ($uv-exepath::bstring () "bgl_uv_exepath")
+      (macro $uv-setup-args::void (::pair-nil) "bgl_uv_setup_args")
+      ($uv-process-title-init!::void () "bgl_uv_process_title_init")
+      (macro $uv-get-process-title::int (::string ::int) "uv_get_process_title")
+      (macro $uv-set-process-title!::int (::string) "uv_set_process_title")
+      
       (macro $uv-uptime::int (::double*) "uv_uptime")
       
       ;; dns

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Tue Dec 23 09:43:24 2014 (serrano)                */
+/*    Last change :  Fri Feb  6 05:54:57 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -535,7 +535,7 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
 		  cresult[ write + 2 ] =
 		     (unsigned char)((xx << 4) | yyyy) + 0x80;
 		  cresult[ write + 1 ] =
-		     (unsigned char)(((uuuuu & 3) << 4)| wwww) + 0x80;
+		     (unsigned char)(((uuuuu & 3) << 4) | wwww) + 0x80;
 		  cresult[ write ] =
 		     (unsigned char)(0xf0 | (uuuuu >> 2));
 
@@ -579,7 +579,7 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
 		  (unsigned char)(yyyy + 0x80);
 	       cresult[ write + 1 ] =
 		  (unsigned char)0x80;
-	       cresult[ write  ] =
+	       cresult[ write ] =
 		  (unsigned char)0xfc;
 
 	       write += ulen;
@@ -667,14 +667,14 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
 
 	 ucs2 &= (1<<bits) - 1;
 
-	 if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||
-	     !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {
-	    // characters fffe and ffff are accepted, see:
-	    // http://www.unicode.org/versions/Unicode5.2.0/ch16.pdf#G19635
-	    C_FAILURE( "utf8-string->ucs2-string",
-		       "Illegal utf8 character encoding",
-		       BINT( ucs2 ) );
-	 } else {
+/* 	 if( (ucs2 > 0xd7ff && ucs2 <= 0xdfff) ||                      */
+/* 	     !(ucs2 & (~(unsigned long)0<<(bits - 5))) ) {             */
+/* 	    // characters fffe and ffff are accepted, see:             */
+/* 	    // http://www.unicode.org/versions/Unicode5.2.0/ch16.pdf#G19635 */
+/* 	    C_FAILURE( "utf8-string->ucs2-string",                     */
+/* 		       "Illegal utf8 character encoding",              */
+/* 		       BINT( ucs2 ) );                                 */
+/* 	 } else {                                                      */
 	    if( ucs2 >= 0x10000 ) {
 	       ucs2 -= 0x10000;
 	       aux[ write++ ] = (ucs2_t)((ucs2 >> 10) + 0xd800);
@@ -682,7 +682,7 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
 	    } else {
 	       aux[ write ] = (ucs2_t)ucs2;
 	    }
-	 }
+/* 	 }                                                             */
       }
    }
          

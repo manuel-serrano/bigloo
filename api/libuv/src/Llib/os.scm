@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Wed Feb  4 17:55:30 2015 (serrano)                */
+;*    Last change :  Fri Feb  6 12:17:17 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV os                                                         */
@@ -24,7 +24,10 @@
 	    (inline uv-get-resident-memory::long)
 	    (inline uv-cpus::vector)
 	    (uv-uptime::double)
-	    (inline uv-exepath::bstring)))
+	    (inline uv-exepath::bstring)
+	    (inline uv-process-title-init!)
+	    (inline uv-set-process-title! ::bstring)
+	    (uv-get-process-title::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-loadavg ...                                                   */
@@ -70,3 +73,26 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (uv-exepath)
    ($uv-exepath))
+
+;*---------------------------------------------------------------------*/
+;*    uv-process-title-init! ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-process-title-init!)
+   ($uv-process-title-init!))
+
+;*---------------------------------------------------------------------*/
+;*    uv-set-process-title! ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-set-process-title! title)
+   ($uv-set-process-title! title))
+
+;*---------------------------------------------------------------------*/
+;*    uv-get-process-title ...                                         */
+;*---------------------------------------------------------------------*/
+(define (uv-get-process-title)
+   (let ((buf (make-string 80 #\-)))
+      (let ((i ($uv-get-process-title buf 512)))
+	 (if (=fx i 0)
+	     (let ((j (string-index buf #a000)))
+		(string-shrink! buf j))
+	     ""))))

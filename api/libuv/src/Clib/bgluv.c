@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Feb  4 17:51:06 2015 (serrano)                */
+/*    Last change :  Fri Feb  6 12:16:51 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -44,6 +44,7 @@ extern obj_t create_vector( int );
 /*    gc_marks ...                                                     */
 /*---------------------------------------------------------------------*/
 obj_t gc_marks = BNIL;
+static obj_t bgl_uv_fstat( uv_stat_t );
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
@@ -65,6 +66,16 @@ gc_unmark( obj_t obj ) {
    BGL_MUTEX_LOCK( bgl_uv_mutex );
    gc_marks = bgl_remq( obj, gc_marks );
    BGL_MUTEX_UNLOCK( bgl_uv_mutex );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_process_title_init ...                                    */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_process_title_init() {
+   extern char *executable_name;
+   uv_setup_args( 1, &executable_name );
 }
 
 /*---------------------------------------------------------------------*/
@@ -135,6 +146,36 @@ bgl_uv_fs_event_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
    new->close_cb = &bgl_uv_close_cb;
 
    uv_fs_event_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   return new;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_fs_poll_cb ...                                            */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_fs_poll_cb( uv_handle_t *handle, int status, const uv_stat_t* prev, const uv_stat_t* curr ) {
+   bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
+   obj_t p = o->BgL_cbz00;
+
+   if( PROCEDUREP( p ) ) {
+      PROCEDURE_ENTRY( p )( p, o, BINT( status ),
+			    bgl_uv_fstat( *prev ), bgl_uv_fstat( *curr ),
+			    BEOA );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    uv_fs_poll_t *                                                   */
+/*    bgl_uv_fs_poll_new ...                                           */
+/*---------------------------------------------------------------------*/
+uv_fs_poll_t *
+bgl_uv_fs_poll_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
+   uv_fs_poll_t *new = (uv_fs_poll_t *)GC_MALLOC( sizeof( uv_fs_poll_t ) );
+   new->data = o;
+   new->close_cb = &bgl_uv_close_cb;
+
+   uv_fs_poll_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
    return new;
 }
 
@@ -1261,12 +1302,10 @@ static void
 bgl_uv_write_cb( uv_write_t *req, int status ) {
    obj_t p = (obj_t)req->data;
 
-   gc_unmark( p );
    PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
 
    free( req );
 }
-int c = 0;
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
@@ -1286,7 +1325,6 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
       int r;
 
       req->data = proc;
-      gc_mark( proc );
 
       iov = uv_buf_init( buffer + offset, length );
       
@@ -1315,7 +1353,6 @@ bgl_uv_write2( obj_t obj, char *buffer, long offset, long length, obj_t sendhand
 
       req->data = proc;
       
-      gc_mark( proc );
       iov = uv_buf_init( buffer + offset, length );
 
       return uv_write2( req, handle, &iov, 1, sendhdl, bgl_uv_write_cb );

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Feb  4 10:57:53 2015 (serrano)                */
+;*    Last change :  Fri Feb  6 08:28:35 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -167,9 +167,7 @@
 	    (utf8-char-size::long c::char)
 	    (ascii-string?::bool ::bstring)
 	    (utf8-string?::bool ::bstring #!optional strict::bool)
-	    (inline utf8-string-left-replacement? ::bstring ::long)
-	    (inline utf8-string-right-replacement? ::bstring ::long)
-	    (utf8-string-encode::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
+	    (utf8-normalize-utf16::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-index->string-index::long ::bstring ::long)
@@ -742,12 +740,13 @@
 		    #f)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    utf8-string-encode ...                                           */
+;*    utf8-normalize-utf16 ...                                         */
 ;*    -------------------------------------------------------------    */
-;*    Replace all the occurrences of illegal UTF8 characters with      */
-;*    the UNICODE replacement character EF BF BD.                      */
+;*    Normalize UTF16 characters and replace all the occurrences of    */
+;*    illegal UTF8 characters with the UNICODE replacement character   */
+;*    EF BF BD.                                                        */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-encode str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
+(define (utf8-normalize-utf16 str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
    
    (define (in-range? c minc maxc)
       (let ((n (char->integer c)))
@@ -763,19 +762,18 @@
       ((or (>fx end (string-length str))
 	   (<fx start 0)
 	   (>fx start end))
-       (error "utf8-string-encode" "Illegal indexes" (cons start end)))
+       (error "utf8-normalize-utf16" "Illegal indexes" (cons start end)))
       ((ascii-string? str)
        ;; no need to replace anything, its an ascii string
-       (string-copy str))
+       (substring str start end))
       (else
        (let* ((len (-fx end start))
 	      (res (make-string (*fx 3 len))))
 	  ;; mask the UTF8 sentinel
-	  (string-ascii-sentinel-set! res (string-ascii-sentinel str))
 	  (let loop ((r start)
 		     (w 0))
 	     (if (=fx r end)
-		 (string-shrink! res w)
+		 (string-ascii-sentinel-mark! (string-shrink! res w))
 		 (let* ((c (string-ref str r))
 			(n (char->integer c)))
 		    (cond
@@ -789,7 +787,7 @@
 			(loop (+fx r 1) (+fx w 3)))
 		       ((<fx n #xd8)
 			;; two chars encoding
-			(if (and (<fx (+fx 1 r) len)
+			(if (and (<fx (+fx 1 r) end)
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
 			    (begin
 			       (string-set! res w c)
@@ -798,35 +796,131 @@
 			    (begin
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
-		       ((and (>=fx n #xd8) (<=fx n #xdb))
-			;; utf16 escape
-			(if (and (<fx r (-fx len 3))
-				   (in-range? (string-ref str (+fx r 1)) #xdc #xdf)
-				   (in-range? (string-ref str (+fx r 2)) #xdc #xdf)
-				   (in-range? (string-ref str (+fx r 3)) #xdc #xdf))
-			   (begin
-			      (string-set! res w c)
-			      (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
-			      (string-set! res (+fx w 2) (string-ref str (+fx r 2)))
-			      (string-set! res (+fx w 3) (string-ref str (+fx r 3)))
-			      (loop (+fx r 4) (+fx w 4)))
-			   (begin
-			      (string-unicode-fix! res w)
-			      (loop (+fx r 1) (+fx w 3)))))
+;* 		       ((and (>=fx n #xd8) (<=fx n #xdb))              */
+;* 			;; utf16 escape                                */
+;* 			(if (and (<fx r (-fx end 3)))                  */
+;* {* 				 (in-range? (string-ref str (+fx r 1)) #xdc #xdf) *} */
+;* {* 				 (in-range? (string-ref str (+fx r 2)) #xdc #xdf) *} */
+;* {* 				 (in-range? (string-ref str (+fx r 3)) #xdc #xdf)) *} */
+;* 			    (begin                                     */
+;* 			       (tprint "d8 in range")                  */
+;* 			      (string-set! res w c)                    */
+;* 			      (string-set! res (+fx w 1) (string-ref str (+fx r 1))) */
+;* 			      (string-set! res (+fx w 2) (string-ref str (+fx r 2))) */
+;* 			      (string-set! res (+fx w 3) (string-ref str (+fx r 3))) */
+;* 			      (loop (+fx r 4) (+fx w 4)))              */
+;* 			   (begin                                      */
+;* 			      (tprint "d8 pas in range r=" r " end=" end */
+;* 				 " " (integer->string (char->integer (string-ref str (+fx r 1))) 16) */
+;* 				 " " (integer->string (char->integer (string-ref str (+fx r 2))) 16) */
+;* 				 " " (integer->string (char->integer (string-ref str (+fx r 3))) 16)) */
+;* 			      (string-unicode-fix! res w)              */
+;* 			      (loop (+fx r 1) (+fx w 3)))))            */
 		       ((<=fx n #xdf)
-			;; utf16 error
-			(if (and (<fx (+fx 1 r) len)
+			(if (and (<fx (+fx 1 r) end)
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf))
 			    (begin
 			       (string-set! res w c)
 			       (string-set! res (+fx w 1) (string-ref str (+fx r 1)))
 			       (loop (+fx r 2) (+fx w 2)))
 			    (begin
+			       ;; utf16 error
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
+		       ((=fx n #xed)
+			;; ucs2 characters in the range of the utf16 surrogate
+			(if (and (<fx r (-fx end 2))
+				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
+				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf))
+			    ;; See http://en.wikipedia.org/wiki/UTF-8, section
+			    ;; Invalid code points. We encode, half utf16
+			    ;; #xdc00-#dbff with the illegal code point #xf8,
+			    ;; and 3 following bytes. This allows an application to
+			    ;; implement a correct utf8 string-append.
+			    (let* ((n1 (char->integer (string-ref str (+fx r 1))))
+				   (n2 (char->integer (string-ref str (+fx r 2))))
+				   (ucs2 (+fx (bit-lsh (bit-and n #xf) 12)
+					    (+fx (bit-lsh (bit-and n1 #x3f) 6)
+					       (bit-and n2 #x3f)))))
+			       (cond
+				  ((>fx ucs2 #xdfff)
+				   (string-unicode-fix! res w)
+				   (loop (+fx r 1) (+fx w 3)))
+				  ((and (<=fx r (-fx end 4))
+					(=fx (char->integer (string-ref str (+fx r 3))) #xed))
+				   ;; utf16 16x2 sequence
+				   (let* ((m #xed)
+					      (m1 (char->integer (string-ref str (+fx r 4))))
+					      (m2 (char->integer (string-ref str (+fx r 5))))
+					      (nu (+fx (bit-lsh (bit-and m #xf) 12)
+						     (+fx (bit-lsh (bit-and m1 #x3f) 6)
+							(bit-and m2 #x3f)))))
+					  (if (>=fx nu #xdc00)
+					      (let* ((zzzzzz (bit-and nu #x3f))
+						     (yyyy (bit-rsh (bit-and nu #x3ff) 6))
+						     (xx (bit-and ucs2 #x3))
+						     (wwww (bit-and (bit-rsh ucs2 2) #xf))
+						     (vvvv (bit-and (bit-rsh ucs2 6) #xf))
+						     (uuuuu (+fx vvvv 1)))
+						 (string-set! res (+fx w 3)
+						    (integer->char
+						       (+fx #x80 zzzzzz)))
+						 (string-set! res (+fx w 2)
+						    (integer->char
+						       (+fx #x80
+							  (bit-or (bit-lsh xx 4) yyyy))))
+						 (string-set! res (+fx w 1)
+						    (integer->char
+						       (+fx #x80
+							  (bit-or wwww
+							     (bit-lsh (bit-and uuuuu #x3) 4)))))
+						 (string-set! res w
+						    (integer->char
+						       (bit-or #xf0 (bit-rsh uuuuu 2))))
+						 (loop (+fx r 6) (+fx w 4)))
+					      (begin
+						 (string-unicode-fix! res w)
+						 (loop (+fx r 1) (+fx w 3))))))
+				  ((<=fx ucs2 #xdbff)
+				   (let* ((xx (bit-and ucs2 #x3))
+					  (wwww (bit-and (bit-rsh ucs2 2) #xf))
+					  (vvvv (bit-and (bit-rsh ucs2 6) #xf))
+					  (uuuuu (+fx vvvv 1)))
+				      (string-set! res (+fx w 3)
+					 (integer->char (bit-or #x80 (bit-rsh uuuuu 2))))
+				      (string-set! res (+fx w 2)
+					 (integer->char (+fx (bit-lsh xx 4) #x80)))
+				      (string-set! res (+fx w 1)
+					 (integer->char
+					    (+fx #x80
+					       (bit-or wwww
+						  (bit-lsh (bit-and uuuuu 3) 4)))))
+				      (string-set! res w (integer->char #xf8))
+				      (loop (+fx r 3) (+fx w 4))))
+				  (else
+				   (let ((zzzzzz (bit-and n #x3f))
+					 (yyyy (bit-rsh (bit-and n #x3ff) 6)))
+				      (string-set! res (+fx w 3)
+					 (integer->char (+fx zzzzzz #x80)))
+				      (string-set! res (+fx w 2)
+					 (integer->char (+fx yyyy #x80)))
+				      (string-set! res (+fx w 1) (integer->char #x80))
+				      (string-set! res w (integer->char #xfc))
+				      
+				      ;; check if we have to collapse the two ucs2
+				      ;; characters (see string-append for collapsing
+				      ;; sequences)
+				      (if (and (>=fx w 4)
+					       (utf8-string-left-replacement? res (+fx w 4) (-fx w 4))
+					       (utf8-string-right-replacement? res (+fx w 4) w))
+					  ;; yes, collapse
+					  (begin
+					     (utf8-collapse! res w res w)
+					     (loop (+fx r 3) w))
+					  (loop (+fx r 3) (+fx w 4)))))))))
 		       ((<=fx n #xef)
 			;; 3 bytes sequence
-			(if (and (<fx r (-fx len 2))
+			(if (and (<fx r (-fx end 2))
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf))
 			    (begin
@@ -839,7 +933,7 @@
 			       (loop (+fx r 1) (+fx w 3)))))
 		       ((=fx n #xf0)
 			;; 4 bytes sequence special1
-			(if (and (<fx r (-fx len 3))
+			(if (and (<fx r (-fx end 3))
 				 (in-range? (string-ref str (+fx r 1)) #x90 #xbf)
 				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
@@ -855,7 +949,7 @@
 		       ((or (=fx n #xf4)
 			    (and (or (=fx n #xf8) (=fx n #xfc)) (not strict)))
 			;; 4 bytes sequence special2
-			(if (and (<fx r (-fx len 3))
+			(if (and (<fx r (-fx end 3))
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
@@ -870,7 +964,7 @@
 			       (loop (+fx r 1) (+fx w 3)))))
 		       ((<=fx n #xf7)
 			;; 4 bytes sequence
-			(if (and (<fx r (-fx len 3))
+			(if (and (<fx r (-fx end 3))
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf))
@@ -884,7 +978,7 @@
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
 		       ((<=fx n #xfb)
-			(if (and (<fx r (-fx len 4))
+			(if (and (<fx r (-fx end 4))
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf)
@@ -900,7 +994,7 @@
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
 		       ((<=fx n #xfd)
-			(if (and (<fx r (-fx len 5))
+			(if (and (<fx r (-fx end 5))
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 2)) #x80 #xbf)
 				 (in-range? (string-ref str (+fx r 3)) #x80 #xbf)
@@ -997,8 +1091,9 @@
 ;*    This predicate returns #t iff the last UTF8 char is a            */
 ;*    replacement char.                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (utf8-string-left-replacement? str len)
-   (and (>=fx len 4) (=fx (char->integer (string-ref-ur str (-fx len 4))) #xf8)))
+(define-inline (utf8-string-left-replacement? str len index)
+   (and (>=fx len (+fx index 4))
+	(=fx (char->integer (string-ref-ur str index)) #xf8)))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-right-replacement? ...                               */
@@ -1006,8 +1101,9 @@
 ;*    Does the STR starts with the right-end-side of an UTF8           */
 ;*    replacement char?                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (utf8-string-right-replacement? str len)
-   (and (>=fx len 4) (=fx (char->integer (string-ref-ur str 0)) #xfc)))
+(define-inline (utf8-string-right-replacement? str len index)
+   (and (>=fx len (+fx index 4))
+	(=fx (char->integer (string-ref-ur str index)) #xfc)))
    
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */
@@ -1081,6 +1177,43 @@
 	  (string-append left right)))))
 
 ;*---------------------------------------------------------------------*/
+;*    utf8-collapse! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (utf8-collapse! buffer indexb str indexs)
+   ;; collapsed character
+   (let* ((cl1 (char->integer (string-ref-ur buffer (-fx indexb 4))))
+	  (cl2 (char->integer (string-ref-ur buffer (-fx indexb 3))))
+	  (cl3 (char->integer (string-ref-ur buffer (-fx indexb 2))))
+	  (cl4 (char->integer (string-ref-ur buffer (-fx indexb 1))))
+	  (cr2 (char->integer (string-ref-ur str (+fx indexs 1))))
+	  (cr3 (char->integer (string-ref-ur str (+fx indexs 2))))
+	  (cr4 (char->integer (string-ref-ur str (+fx indexs 3))))
+	  (zzzzzz (bit-and #b111111 cr4))
+	  (yyyy (bit-and #b1111 cr3))
+	  (xx (bit-and (bit-rsh cl3 4) #b11))
+	  (wwww (bit-and cl3 #b1111))
+	  (uuuuu (bit-or
+		    (bit-lsh (bit-and cl4 #b111) 2)
+		    (bit-and (bit-rsh cl2 4) #b11))))
+      ;; byte 1
+      (string-set! buffer (-fx indexb 4)
+	 (integer->char
+	    (bit-or
+	       (bit-and cl1 #b11110000)
+	       (bit-rsh uuuuu 2))))
+      ;; byte 2
+      (string-set! buffer (-fx indexb 3)
+	 (integer->char cl2))
+      ;; byte 3
+      (string-set! buffer (-fx indexb 2)
+	 (integer->char
+	    (bit-or #x80
+	       (bit-or (bit-lsh xx 4) yyyy))))
+      ;; byte 4
+      (string-set! buffer (-fx indexb 1)
+	 (integer->char cr4))))
+   
+;*---------------------------------------------------------------------*/
 ;*    utf8-string-append-fill! ...                                     */
 ;*    -------------------------------------------------------------    */
 ;*    This function must used only in left to right string append.     */
@@ -1104,42 +1237,11 @@
 		(string-ascii-sentinel-set! buffer nindex))
 	     nindex))
 	 ((and (>=fx index 4)
-	       (utf8-string-right-replacement? str len)
-	       (utf8-string-left-replacement? buffer index))
-	  (blit-string! str 4 buffer index (-fx len 4))
-	  ;; collapsed character
-	  (let* ((cl1 (char->integer (string-ref-ur buffer (-fx index 4))))
-		 (cl2 (char->integer (string-ref-ur buffer (-fx index 3))))
-		 (cl3 (char->integer (string-ref-ur buffer (-fx index 2))))
-		 (cl4 (char->integer (string-ref-ur buffer (-fx index 1))))
-		 (cr2 (char->integer (string-ref-ur str 1)))
-		 (cr3 (char->integer (string-ref-ur str 2)))
-		 (cr4 (char->integer (string-ref-ur str 3)))
-		 (zzzzzz (bit-and #b111111 cr4))
-		 (yyyy (bit-and #b1111 cr3))
-		 (xx (bit-and (bit-rsh cl3 4) #b11))
-		 (wwww (bit-and cl3 #b1111))
-		 (uuuuu (bit-or
-			   (bit-lsh (bit-and cl4 #b111) 2)
-			   (bit-and (bit-rsh cl2 4) #b11))))
-	     ;; byte 1
-	     (string-set! buffer (-fx index 4)
-		(integer->char
-		   (bit-or
-		      (bit-and cl1 #b11110000)
-		      (bit-rsh uuuuu 2))))
-	     ;; byte 2
-	     (string-set! buffer (-fx index 3)
-		(integer->char cl2))
-	     ;; byte 3
-	     (string-set! buffer (-fx index 2)
-		(integer->char
-		   (bit-or #x80
-		      (bit-or (bit-lsh xx 4) yyyy))))
-	     ;; byte 4
-	     (string-set! buffer (-fx index 1)
-		(integer->char cr4)))
+	       (utf8-string-right-replacement? str len 0)
+	       (utf8-string-left-replacement? buffer index (-fx index 4)))
 	  ;; shrink the buffer
+	  (blit-string! str 4 buffer index (-fx len 4))
+	  (utf8-collapse! buffer index str 0)
 	  (+fx index (-fx len 4)))
 	 (else
 	  ;; an utf8 string
@@ -1163,11 +1265,7 @@
 	  (buffer ($make-string/wo-fill (+fx llen rlen))))
       (let ((nindex (utf8-string-append-fill! buffer 0 left)))
 	 (let ((nindex (utf8-string-append-fill! buffer nindex right)))
-	    (let ((s (string-shrink! buffer nindex)))
-	       (if (string=? s (utf8-string-append-old left right))
-		   s
-		   (error "utf8-string-append" "bad append"
-		      (cons left right))))))))
+	    (string-shrink! buffer nindex)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append* ...                                          */
