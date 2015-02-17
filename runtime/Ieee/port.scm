@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Jan  7 07:57:04 2015 (serrano)                */
+;*    Last change :  Sat Feb 14 06:38:22 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -148,8 +148,10 @@
 	    (macro c-mkdir::bool (::string ::long) "!BGL_MKDIR")
 	    
 	    (macro $port-isatty?::bool (::output-port) "bgl_port_isatty")
- 	    (macro c-output-port-name::bstring (::output-port) "OUTPUT_PORT_NAME")
- 	    (macro c-input-port-name::bstring (::input-port) "INPUT_PORT_NAME")
+ 	    (macro $output-port-name::bstring (::output-port) "OUTPUT_PORT_NAME")
+ 	    (macro $output-port-name-set!::void (::output-port ::bstring) "OUTPUT_PORT_NAME_SET")
+ 	    (macro $input-port-name::bstring (::input-port) "INPUT_PORT_NAME")
+ 	    (macro $input-port-name-set!::void (::input-port ::bstring) "INPUT_PORT_NAME_SET")
 
 	    (macro c-output-port-chook::obj (::output-port)
 		   "PORT_CHOOK")
@@ -321,10 +323,14 @@
 	       
 	       (method static c-input-port-last-token-position::long (::input-port)
 		       "INPUT_PORT_TOKENPOS")
-	       (method static c-input-port-name::bstring (::input-port)
+	       (method static $input-port-name-set!::void (::input-port ::bstring)
 		       "INPUT_PORT_NAME")
-	       (method static c-output-port-name::bstring (::output-port)
+	       (method static $input-port-name::bstring (::input-port)
+		       "INPUT_PORT_NAME")
+	       (method static $output-port-name::bstring (::output-port)
 		       "OUTPUT_PORT_NAME")
+	       (method static $output-port-name-set!::void (::output-port ::bstring)
+		       "OUTPUT_PORT_NAME_SET")
 	       (method static c-output-port-chook::obj (::output-port)
 		       "OUTPUT_PORT_CHOOK")
 	       (method static c-output-port-chook-set!::void (::output-port ::procedure)
@@ -440,6 +446,7 @@
 	    (inline reset-output-port ::output-port)
 	    (inline reset-eof::bool ::input-port)
 	    (inline output-port-name::bstring ::output-port)
+	    (inline output-port-name-set! ::output-port ::bstring)
 	    (inline output-port-position::long ::output-port)
 	    (inline output-port-isatty?::bool ::output-port)
 	    (inline set-output-port-position! ::output-port ::long)
@@ -451,6 +458,7 @@
 	    (inline input-port-reopen! ::input-port)
 	    (inline input-port-clone! ::input-port ::input-port)
 	    (inline input-port-name::bstring ::input-port)
+	    (inline input-port-name-set! ::input-port ::bstring)
 	    (inline input-port-length::elong ::input-port)
 	    (inline output-port-close-hook::obj ::output-port)
 	    (inline closed-output-port?::bool ::output-port)
@@ -1229,7 +1237,13 @@
 ;*    output-port-name ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-inline (output-port-name port)
-   (c-output-port-name port))
+   ($output-port-name port))
+
+;*---------------------------------------------------------------------*/
+;*    output-port-name-set! ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (output-port-name-set! port name)
+   ($output-port-name-set! port name))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-output-port-position! ...                                    */
@@ -1257,7 +1271,13 @@
 ;*    input-port-name ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-inline (input-port-name port)
-   (c-input-port-name port))
+   ($input-port-name port))
+
+;*---------------------------------------------------------------------*/
+;*    input-port-name-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (input-port-name-set! port name)
+   ($input-port-name-set! port name))
 
 ;*---------------------------------------------------------------------*/
 ;*    input-port-length ...                                            */

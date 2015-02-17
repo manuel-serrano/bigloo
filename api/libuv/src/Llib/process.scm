@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Wed Dec 31 07:24:41 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Sun Feb 15 09:13:19 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV process callback                                           */
 ;*=====================================================================*/
@@ -17,7 +17,8 @@
    (include "uv.sch")
 
    (import __libuv_types
-	   __libuv_loop)
+	   __libuv_loop
+	   __libuv_net)
    
    (export (uv-process-spawn::int ::UvProcess ::UvProcessOptions
 	      #!key callback (loop (uv-default-loop)))
@@ -30,7 +31,7 @@
 	   (uv-process-options-stdio-container-stream-set!
 	      ::UvProcessOptions ::int ::UvHandle)
 	   (uv-process-options-stdio-container-fd-set!
-	      ::UvProcessOptions ::int ::UvFile)
+	      ::UvProcessOptions ::int ::obj)
 	   
 	   (inline UV-PROCESS-SETUID)
 	   (inline UV-PROCESS-SETGID)
@@ -97,11 +98,16 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-process-options-stdio-container-fd-set! ...                   */
 ;*---------------------------------------------------------------------*/
-(define (uv-process-options-stdio-container-fd-set! o::UvProcessOptions i file::UvFile)
+(define (uv-process-options-stdio-container-fd-set! o::UvProcessOptions i hdl::obj)
    ($uv-process-options-stdio-container-fd-set!
       (with-access::UvProcessOptions o ($builtin) $builtin)
       i
-      (with-access::UvFile file (fd) fd)))
+      (cond
+	 ((isa? hdl UvFile) (with-access::UvFile hdl (fd) fd))
+	 ((isa? hdl UvTty) (with-access::UvTty hdl (fd) fd))
+	 ((isa? hdl UvStream) (uv-stream-fd hdl))
+	 (else (bigloo-type-error "uv-process-options-stdio-container-fd-set!"
+		  "UvFile/UvTty/UvStream" hdl)))))
 	 
 ;*---------------------------------------------------------------------*/
 ;*    uv-process-options-stdio-container-flags-set! ...                */

@@ -4,7 +4,7 @@ import java.io.*;
 
 public abstract class input_port extends obj
 {
-  public final String name;
+  public String name;
   public int filepos = 0;
   public int pseudoeof = -1;
   public long length = -1;

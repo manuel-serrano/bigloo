@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Wed Jan  7 08:12:57 2015 (serrano)                */
+/*    Last change :  Sun Feb 15 18:14:52 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -604,6 +604,49 @@ bgl_symlink( char *s1, char *s2 ) {
 #endif   
 }
 
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_getgroups ...                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_getgroups() {
+#if BGL_HAVE_GETGROUPS
+   int ngroups = getgroups( 0, 0L );
+
+  if( ngroups == -1 ) {
+     C_SYSTEM_FAILURE( BGL_IO_ERROR, "getgroups", strerror( errno ), BFALSE );
+  } else {
+     gid_t* groups = alloca( sizeof( gid_t ) * ngroups );
+
+     ngroups = getgroups( ngroups, groups );
+
+     if( ngroups == -1 ) {
+	C_SYSTEM_FAILURE( BGL_IO_ERROR, "getgroups", strerror( errno ), BFALSE );
+     } else {
+	obj_t res = create_vector( ngroups + 1 );
+	gid_t egid = getegid();
+	int seen_egid = 0;
+	int i;
+
+	for( i = 0; i < ngroups; i++ ) {
+	   VECTOR_SET( res, i, BINT( groups[ i ] ) );
+	   if( groups[ i ] == egid ) seen_egid = 1;
+	}
+	
+	if( seen_egid ) {
+	   VECTOR( res ).length--;
+	} else {
+	   VECTOR_SET( res, i, BINT( egid ) );
+	}
+
+	return res;
+     }
+  }
+#else
+      return create_vector( 0 );
+#endif
+}
+   
 /*---------------------------------------------------------------------*/
 /*    bits conversions (see bigloo.h for GCC versions).                */
 /*---------------------------------------------------------------------*/

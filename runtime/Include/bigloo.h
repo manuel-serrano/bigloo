@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Nov 21 08:21:35 2014 (serrano)                */
+/*    Last change :  Sun Feb 15 18:58:13 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2245,7 +2245,9 @@ BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
 #define EOF_OBJECTP( o ) (o == BEOF)
 
 #define OUTPUT_PORT_NAME( o ) (PORT( o ).name)
+#define OUTPUT_PORT_NAME_SET( o, v ) (PORT( o ).name = v)
 #define INPUT_PORT_NAME( o ) (PORT( o ).name)
+#define INPUT_PORT_NAME_SET( o, v ) (PORT( o ).name = v)
 
 #define INPUT_PORT_FILEPOS( o ) (INPUT_PORT( o ).filepos)
 
@@ -3509,6 +3511,8 @@ BGL_RUNTIME_DECL obj_t bgl_make_class( obj_t, obj_t, long,
 				       obj_t, obj_t,
 				       obj_t, obj_t, obj_t, obj_t, obj_t,
 				       long, obj_t );
+
+BGL_RUNTIME_DECL obj_t bgl_getgroups();
    
 #if !HAVE_MMAP   
 BGL_RUNTIME_DECL unsigned char bgl_mmap_nommap_ref( obj_t, long );

@@ -6229,9 +6229,19 @@ public final class foreign
 	 return p.name.getBytes();
       }
 
+   public static void INPUT_PORT_NAME_SET(input_port p, byte[] v)
+      {
+	 p.name = new String( v );
+      }
+
    public static byte[] OUTPUT_PORT_NAME(output_port p)
       {
 	 return p.name;
+      }
+
+   public static void OUTPUT_PORT_NAME_SET(output_port p, byte[] v)
+      {
+	 p.name = v;
       }
 
    public static int RGC_BUFFER_POSITION(input_port p, int forward)

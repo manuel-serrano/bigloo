@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jan 24 07:59:31 2015 (serrano)                */
+#*    Last change :  Sun Feb 15 18:12:23 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2365,6 +2365,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Does the system have sigpipe?
   sigpipe=`$autoconf sigpipe` || exit 1
 
+  # Does the system have getgroups?
+  getgroups=`$autoconf getgroups` || exit 1
+
   # Does the system have sigsetmask?
   sigsetmask=`$autoconf sigsetmask` || exit 1
 
@@ -2871,6 +2874,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_BCOPY@|$havebcopy|" \
               -e "s|@NB_WINDOW_REGISTER@|$window|" \
               -e "s|@HAVE_SIGPIPE@|$sigpipe|" \
+              -e "s|@BGL_HAVE_GETGROUPS@|$getgroups|" \
               -e "s|@HAVE_SIGSETMASK@|$sigsetmask|" \
               -e "s|@HAVE_SIGPROCMASK@|$sigprocmask|" \
               -e "s|@HAVE_ALLOCA@|$alloca|" \

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Oct 22 12:05:20 2014 (serrano)                */
+;*    Last change :  Sun Feb 15 18:52:36 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -89,7 +89,8 @@
 	    ($getpwuid::obj (::int) "bgl_getpwuid")
 	    (macro $umask::long (::long) "umask")
 	    (macro $getpid::int () "getpid")
-	    (macro $getppid::int () "getppid"))
+	    (macro $getppid::int () "getppid")
+	    ($getgroups::vector () "bgl_getgroups"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -221,6 +222,7 @@
 	    (getpwuid ::int)
 	    (inline getpid::int)
 	    (inline getppid::int)
+	    (inline getgroups::vector)
 	    (umask::int #!optional mask)))
 
 ;*---------------------------------------------------------------------*/
@@ -1089,6 +1091,14 @@
    (cond-expand
       (bigloo-c ($getppid))
       (else 0)))
+
+;*---------------------------------------------------------------------*/
+;*    getpgroups ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-inline (getgroups)
+   (cond-expand
+      (bigloo-c ($getgroups))
+      (else '#())))
 
 ;*---------------------------------------------------------------------*/
 ;*    umask ...                                                        */

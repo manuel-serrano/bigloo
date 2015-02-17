@@ -62,8 +62,10 @@ See @ref{Ports,,r5rs.info,R5RS}, for more details.
 @end deffn
 
 @deffn {bigloo procedure} input-port-name obj
+@deffnx {bigloo procedure} input-port-name-set! obj name
 @deffnx {bigloo procedure} output-port-name obj
-Returns the file name for which @var{obj} has been opened.
+@deffnx {bigloo procedure} output-port-name-set! obj name
+Returns/sets the file name for which @var{obj} has been opened.
 @end deffn
 
 @deffn {bigloo (>=3.8d) procedure} input-port-length obj

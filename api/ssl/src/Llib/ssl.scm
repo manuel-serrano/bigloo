@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Feb  3 17:22:56 2015 (serrano)                */
+;*    Last change :  Sat Feb 14 10:04:47 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -46,6 +46,11 @@
 	      "bgl_ssl_load_pem")
            ($private-key-load::private-key (::bstring)
 	      "bgl_ssl_load_private_key")
+
+	   (macro $ssl-rand-status::bool () "RAND_status")
+	   (macro $ssl-rand-poll::bool () "RAND_poll")
+	   (macro $ssl-rand-bytes::bool (::string ::int) "RAND_bytes")
+	   (macro $ssl-rand-pseudo-bytes::bool (::string ::int) "RAND_pseudo_bytes")
 	   
 	   ($ssl-client-make-socket::obj (::bstring ::int ::int ::int
 					    ::obj ::obj ::pair-nil
@@ -153,6 +158,11 @@
 	   (read-private-key::private-key ::bstring)
 	   (read-certificate::certificate ::bstring)
 	   (read-pem-file::pair-nil ::bstring)
+
+	   (inline ssl-rand-status::bool)
+	   (inline ssl-rand-poll::bool)
+	   (ssl-rand-bytes ::int)
+	   (ssl-rand-pseudo-bytes ::int)
 	   
 	   (inline certificate-subject::bstring ::certificate)
 	   (inline certificate-issuer::bstring ::certificate)
@@ -342,6 +352,56 @@
 (define (read-pem-file::pair-nil file::bstring)
    ($certificate-load-pem file))
 
+;*---------------------------------------------------------------------*/
+;*    ssl-rand-status ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (ssl-rand-status)
+   (cond-expand
+      (bigloo-c ($ssl-rand-status))
+      (else #t)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-rand-poll ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (ssl-rand-poll)
+   (cond-expand
+      (bigloo-c ($ssl-rand-poll))
+      (else #t)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-rand-bytes ...                                               */
+;*---------------------------------------------------------------------*/
+(define (ssl-rand-bytes sz::int)
+   (let ((str (make-string sz)))
+      (cond-expand
+	 (bigloo-c
+	  ($ssl-rand-bytes str sz)
+	  str)
+	 (else
+	  (let loop ((i 0))
+	     (if (=fx i sz)
+		 str
+		 (begin
+		    (string-set! str i (integer->char (random 255)))
+		    (loop (+fx i 1)))))))))
+   
+;*---------------------------------------------------------------------*/
+;*    ssl-rand-pseudo-bytes ...                                        */
+;*---------------------------------------------------------------------*/
+(define (ssl-rand-pseudo-bytes sz::int)
+   (let ((str (make-string sz)))
+      (cond-expand
+	 (bigloo-c
+	  ($ssl-rand-pseudo-bytes str sz)
+	  str)
+	 (else
+	  (let loop ((i 0))
+	     (if (=fx i sz)
+		 str
+		 (begin
+		    (string-set! str i (integer->char (random 255)))
+		    (loop (+fx i 1)))))))))
+   
 ;*---------------------------------------------------------------------*/
 ;*    certificate-subject ...                                          */
 ;*---------------------------------------------------------------------*/
