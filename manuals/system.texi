@@ -193,6 +193,12 @@ Get the current process identifier.
 Get the parent process identifier.
 @end deffn
 
+@deffn {bigloo procedure} getgroups
+Maps the Posix @code{getgroups} function, which returns the supplementary group
+IDs of the calling process. The result is a vector of IDs. On error,
+an IO exception is raised.
+@end deffn
+
 @deffn {bigloo procedure} getpwnam name
 @deffnx {bigloo procedure} getpwuid uid
 These two procedures returns information about a user. The procedure 

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue May  6 11:38:25 2014 (serrano)                */
-#*    Copyright   :  1997-2014 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Feb 18 07:28:43 2015 (serrano)                */
+#*    Copyright   :  1997-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -56,7 +56,7 @@ POPULATION	= Makefile \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   gcconfigureopt ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
-                  gmtoff libuv
+                  gmtoff libuv getgroups
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
