@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Mar  5 10:09:47 2015 (serrano)                */
+/*    Last change :  Thu Mar  5 10:43:39 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -1852,6 +1852,6 @@ unsupported:
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_close( secure_context sc ) {
-   FreeCTXMme( sc->BgL_z42nativez42 );
+   SSL_CTX_free( sc->BgL_z42nativez42 );
 }
    
