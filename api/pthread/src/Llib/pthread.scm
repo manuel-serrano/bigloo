@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Fri Dec 13 12:15:09 2013 (serrano)                */
-;*    Copyright   :  2002-13 Manuel Serrano                            */
+;*    Last change :  Wed Mar  4 19:20:11 2015 (serrano)                */
+;*    Copyright   :  2002-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -107,6 +107,7 @@
 			       (bind-exit (exit)
 				  (signal $pthread-term-sig
 				     (lambda (s)
+					(tprint "term pthread... " s)
 					($set-uncaught-exception-handler!
 					   (lambda (val) val))
 					(exit #f)))

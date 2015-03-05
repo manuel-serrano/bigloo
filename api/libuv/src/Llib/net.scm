@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Fri Feb  6 07:46:14 2015 (serrano)                */
+;*    Last change :  Wed Mar  4 17:56:49 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -192,7 +192,7 @@
    (let ((r ($uv-read-start o onalloc callback loop)))
       (when (=fx r 0)
 	 (with-access::UvStream o (%gcmarks)
-	    (set! %gcmarks (cons callback %gcmarks)))
+	    (set! %gcmarks (cons (cons 'read callback) %gcmarks)))
 	 (with-access::UvLoop loop (%gcmarks)
 	    (set! %gcmarks (cons o %gcmarks))))
       r))
@@ -203,7 +203,7 @@
 (define (uv-stream-read-stop o::UvStream)
    (with-access::UvStream o ($builtin loop)
       (with-access::UvStream o (%gcmarks)
-	 (set! %gcmarks '()))
+	 (set! %gcmarks (filter! procedure? %gcmarks)))
       (with-access::UvLoop loop (%gcmarks)
 	 (set! %gcmarks (remq! o %gcmarks)))
       ($uv-read-stop ($uv-stream-t $builtin))))

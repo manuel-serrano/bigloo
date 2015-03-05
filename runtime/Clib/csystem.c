@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sun Feb 15 18:14:52 2015 (serrano)                */
+/*    Last change :  Wed Mar  4 19:23:05 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -106,7 +106,6 @@ bgl_signal( int sig, obj_t obj ) {
 #if HAVE_SIGACTION
       {
 	 struct sigaction sigact;
-
 	 sigemptyset( &(sigact.sa_mask) );
 	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
