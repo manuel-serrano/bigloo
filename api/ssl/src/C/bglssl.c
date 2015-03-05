@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Wed Feb  4 09:04:53 2015 (serrano)                */
+/*    Last change :  Thu Mar  5 10:09:47 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -1146,6 +1146,38 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_ssl_connection_close ...                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF int
+bgl_ssl_connection_close( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+
+   SSL_free( _ssl );
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_ssl_connection_shutdown ...                                  */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_connection_shutdown( ssl_connection ssl ) {
+   SSL *_ssl = ssl->BgL_z42nativez42;
+   int flags = SSL_get_shutdown( _ssl );
+   obj_t res = BNIL;
+
+   if( flags & SSL_SENT_SHUTDOWN ) {
+      res = MAKE_PAIR( res, string_to_symbol( "sent" ) );
+   }
+
+   if( flags & SSL_RECEIVED_SHUTDOWN ) {
+      res = MAKE_PAIR( res, string_to_symbol( "received" ) );
+   }
+   
+   SSL_free( _ssl );
+}
+
+/*---------------------------------------------------------------------*/
 /*    long                                                             */
 /*    bgl_ssl_connection_read ...                                      */
 /*---------------------------------------------------------------------*/
@@ -1812,5 +1844,14 @@ unsupported:
 	 "method not supported", 
 	 sc->BgL_methodz00 );
    return (obj_t)sc;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_ctx_close ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_ctx_close( secure_context sc ) {
+   FreeCTXMme( sc->BgL_z42nativez42 );
 }
    

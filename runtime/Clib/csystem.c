@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Wed Mar  4 19:23:05 2015 (serrano)                */
+/*    Last change :  Thu Mar  5 08:45:52 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -101,7 +101,7 @@ bgl_signal( int sig, obj_t obj ) {
 
    /* store the obj in the signal table */
    BGL_SIG_HANDLERS()[ sig ] = obj;
-
+   
    if( PROCEDUREP( obj ) ) {
 #if HAVE_SIGACTION
       {
@@ -109,7 +109,15 @@ bgl_signal( int sig, obj_t obj ) {
 	 sigemptyset( &(sigact.sa_mask) );
 	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
-
+	 
+#if HAVE_SIGPROCMASK
+	 sigset_t mask;
+	 
+	 sigemptyset( &mask );
+	 sigaddset( &mask, sig );
+	 bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );
+#endif	 
+	 
 	 if( sig == SIGSEGV ) {
 	    /* create an alternate stack for SEGV */
 	    sigact.sa_flags |= SA_ONSTACK;

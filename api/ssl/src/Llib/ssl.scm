@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat Feb 14 10:04:47 2015 (serrano)                */
+;*    Last change :  Thu Mar  5 10:08:37 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -65,6 +65,8 @@
 
 	   ($bgl-secure-context-init!::obj (::secure-context)
 	      "bgl_ssl_ctx_init")
+	   ($bgl-secure-context-close!::obj (::secure-context)
+	      "bgl_ssl_ctx_close")
 	   
 	   ($bgl-secure-context-add-root-certs!::bool (::secure-context)
 	      "bgl_ssl_ctx_add_root_certs")
@@ -82,6 +84,10 @@
 	   
 	   ($bgl-ssl-connection-start::int (::ssl-connection)
 	      "bgl_ssl_connection_start")
+	   ($bgl-ssl-connection-close::int (::ssl-connection)
+	      "bgl_ssl_connection_close")
+	   ($bgl-ssl-connection-shutdown::pair-nil (::ssl-connection)
+	      "bgl_ssl_connection_shutdown")
 	   
 	   ($bgl-ssl-connection-read::long (::ssl-connection ::string ::long ::long)
 	      "bgl_ssl_connection_read")
@@ -193,6 +199,7 @@
 	   (%private-key-$native::$private-key ::obj)
 
 	   (generic secure-context-init ::secure-context)
+	   (generic secure-context-close ::secure-context)
 	   (generic secure-context-add-root-certs!::bool ::secure-context)
 	   (generic secure-context-add-ca-cert!::bool ::secure-context ::bstring ::long ::long)
 	   (generic secure-context-set-key!::bool ::secure-context ::bstring ::long ::long #!optional passphrase)
@@ -202,6 +209,8 @@
 
 	   (generic ssl-connection-init ::ssl-connection)
 	   (generic ssl-connection-start::int ::ssl-connection)
+	   (generic ssl-connection-close::int ::ssl-connection)
+	   (generic ssl-connection-shutdown::pair-nil ::ssl-connection)
 	   (generic ssl-connection-read ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-write ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-clear-in ::ssl-connection ::bstring ::long ::long)
@@ -453,6 +462,16 @@
        sc)))
 
 ;*---------------------------------------------------------------------*/
+;*    secure-context-close ::secure-context ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-close sc::secure-context)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-close! sc))
+      (else
+       sc)))
+
+;*---------------------------------------------------------------------*/
 ;*    secure-context-add-root-certs! ::secure-context ...              */
 ;*---------------------------------------------------------------------*/
 (define-generic (secure-context-add-root-certs! sc::secure-context)
@@ -535,6 +554,26 @@
        ($bgl-ssl-connection-start ssl))
       (else
        ssl)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-close ::ssl-connection ...                        */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-close ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-close ssl))
+      (else
+       ssl)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-shutdown ::ssl-connection ...                     */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-shutdown ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-shutdown ssl))
+      (else
+       '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-connection-read ::ssl-connection ...                         */

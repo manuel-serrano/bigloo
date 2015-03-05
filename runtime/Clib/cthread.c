@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Tue Jan 29 15:51:49 2013 (serrano)                */
-/*    Copyright   :  2004-13 Manuel Serrano                            */
+/*    Last change :  Thu Mar  5 08:24:26 2015 (serrano)                */
+/*    Copyright   :  2004-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
