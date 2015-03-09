@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Feb 15 18:12:23 2015 (serrano)                */
+#*    Last change :  Mon Mar  9 08:55:50 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -158,6 +158,7 @@ pthreadlocalstorage=
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=
 openssldtls=
+opensslrand=
 opensslv2=
 opensslv23=
 
@@ -2056,6 +2057,7 @@ fi
 
 if [ "$openssllibs" != "no" ]; then
   openssldtls=`$autoconf openssl-dtls --lib="$openssllibs"` || exit 1;
+  opensslrand=`$autoconf openssl-rand --lib="$openssllibs"` || exit 1;
   opensslv2=`$autoconf openssl-v2 --lib="$openssllibs"` || exit 1;
   opensslv23=`$autoconf openssl-v23 --lib="$openssllibs"` || exit 1;
 fi
@@ -3457,6 +3459,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     dtls=1
     sslv2=1
     sslv23=1
+    randstatus=1;
+    randpoll=1;
     if [ "$openssldtls" = "no" ]; then
       dtls=0;
     fi
@@ -3466,12 +3470,18 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     if [ "$opensslv23" = "no" ]; then
       sslv23=0;
     fi
+    if [ "$opensslrand" = "no" ]; then
+      randstatus=0;
+      randpoll=0;
+    fi
 
     echo "/* automatically generated, Don't edit */" >  api/ssl/src/C/bglssl.h
     cat api/ssl/src/C/bglssl.h.in \
       | sed -e "s|@HAVEDTLS@|$dtls|g" \
             -e "s|@HAVEV2@|$sslv2|g" \
             -e "s|@HAVEV23@|$sslv23|g" \
+            -e "s|@HAVERANDSTATUS@|$randstatus|g" \
+            -e "s|@HAVERANDPOLL@|$randpoll|g" \
         >>  api/ssl/src/C/bglssl.h
   else
     napis=;

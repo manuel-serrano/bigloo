@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Feb 14 06:38:22 2015 (serrano)                */
+;*    Last change :  Sat Mar  7 07:49:12 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -954,7 +954,7 @@
 	 (cond
 	    ((not (input-port? ip))
 	     (open-input-string ""))
-	    (clen
+	    ((and (elong? clen) (>elong clen 0))
 	     (input-port-fill-barrier-set! ip (elong->fixnum clen))
 	     ($input-port-length-set! ip clen)
 	     ip)
@@ -978,7 +978,9 @@
 		(input-port-clone! ip (socket-input sock))
 		(set! ip (socket-input sock)))
 	    (input-port-close-hook-set! ip
-	       (lambda (ip) (socket-close sock)))
+	       (lambda (ip)
+		  (close-output-port op)
+		  (socket-close sock)))
 	    (input-port-seek-set! ip
 	       (lambda (ip offset)
 		  (socket-close sock)
@@ -990,9 +992,7 @@
 		  (when (isa? e &http-redirection)
 		     (with-access::&http-redirection e (url)
 			(open-input-file url bufinfo))))
-	       (let ((ip (http-parse-response ip op parser)))
-		  (close-output-port op)
-		  ip))))))
+	       (http-parse-response ip op parser))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    open-input-file ...                                              */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Mar  5 10:43:39 2015 (serrano)                */
+/*    Last change :  Mon Mar  9 08:50:34 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -65,6 +65,26 @@ const char *root_certs[] = {
 #include "root_certs.h"
   NULL
 };
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    RAND_status ...                                                  */
+/*---------------------------------------------------------------------*/
+#if( !defined( BGLSSL_HAVE_RAND_STATUS ) )
+int RAND_status() {
+   return 1;
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    RAND_poll ...                                                    */
+/*---------------------------------------------------------------------*/
+#if( !defined( BGLSSL_HAVE_RAND_POLL ) )
+int RAND_poll() {
+   return 1;
+}
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    type aliasing                                                    */
