@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Fri Dec 13 12:02:54 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Sat Mar 14 16:44:08 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
 ;*=====================================================================*/

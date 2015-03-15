@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Jan 31 18:26:02 2015 (serrano)                */
+;*    Last change :  Sat Mar 14 16:58:59 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -13,7 +13,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __flac_alsadec
-   
+
+   (extern (macro $dump::int (::string ::string ::int ::int)  "bgl_flac_dump"))
+   (extern (macro $memcpy::void (::string ::string ::long) "memcpy"))
+
    (cond-expand
       ((library alsa)
        (library alsa)))
@@ -246,27 +249,27 @@
    (with-access::flac-alsa o (%flacbuf %buffer (am %alsamusic) %decoder
 				%rate %rate-max %rate-min %last-percentage)
       (with-access::alsadecoder %decoder (%!dabort %!dpause %dcondv %dmutex)
-	 (with-access::alsabuffer %buffer (%bmutex %bcondv 
-					     %inbuf %inbufp %inlen
+	 (with-access::alsabuffer %buffer (%bmutex %bcondv
+					     %inbufp %inlen
 					     %tail %head %eof
 					     %empty
 					     url)
-	    
+
 	    (define inlen %inlen)
-	    
+
 	    (define flacbuf::string (custom-identifier %flacbuf))
-	    
+
 	    (define (buffer-percentage-filled)
 	       (llong->fixnum
 		  (/llong (*llong #l100
 			     (fixnum->llong (alsabuffer-available %buffer)))
 		     (fixnum->llong inlen))))
-	    
+
 	    (define (buffer-filled?)
 	       ;; filled when > 25%
 	       (and (not %empty)
 		    (>fx (*fx 4 (alsabuffer-available %buffer)) inlen)))
-	    
+
 	    (define (broadcast-not-full p)
 	       (when (>=fx (flac-debug) 2)
 		  (debug "--> FLAC_DECODER, broadcast not-full "
@@ -275,7 +278,7 @@
 		  (condition-variable-broadcast! %bcondv))
 	       (when (>=fx (flac-debug) 2)
 		  (debug (current-microseconds) "\n")))
-	    
+
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))

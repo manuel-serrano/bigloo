@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Tue Nov  6 09:30:51 2012 (serrano)                */
+;*    Last change :  Wed Mar 11 11:32:03 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -155,12 +155,14 @@ of the start of the containing expression."
 ;*    returns f.                                                       */
 ;*---------------------------------------------------------------------*/
 (defun bee-calculate-forced-indent ()
-  (save-excursion
-    (previous-line 1)
-    (beginning-of-line)
-    (skip-chars-forward " \t")
-    (let ((s (current-column)))
-      (and (looking-at bee-forced-indent-regexp) s))))
+  (if (= (count-lines 1 (point)) 1)
+      0
+      (save-excursion
+	(previous-line 1)
+	(beginning-of-line)
+	(skip-chars-forward " \t")
+	(let ((s (current-column)))
+	  (and (looking-at bee-forced-indent-regexp) s)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-calculate-unforced-indent ...                                */

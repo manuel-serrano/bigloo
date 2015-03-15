@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Tue Mar 12 15:17:09 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Sat Mar 14 16:33:43 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both FLAC *and* ALSA libs.      */
 ;*=====================================================================*/
@@ -29,24 +29,49 @@
 (define decode-pos 0)
 
 ;*---------------------------------------------------------------------*/
+;*    directory->files ...                                             */
+;*---------------------------------------------------------------------*/
+(define (directory->files path)
+   (if (directory? path)
+       (append-map (lambda (p)
+		      (directory->files (make-file-name path p)))
+	  (sort (lambda (s1 s2)
+		   (>fx (string-natural-compare3 s1 s2) 0))
+	     (directory->list path)))
+       (list path)))
+
+;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (main argv)
-   (let* ((dev (or (getenv "ALSADEVICE") "default"))
-	  (pcm (instantiate::alsa-snd-pcm
-		  (device dev)))
-	  (f (instantiate::flac-alsa
-		(pcm pcm))))
-      (alsa-snd-pcm-open pcm)
-      (let ((inbuf (make-string inbufsiz))
-	    (outbuf (make-string outbufsiz)))
-	 (for-each (lambda (p) (play-flac p f pcm inbuf outbuf)) (cdr argv)))
-      (flac-decoder-close f)))
+   
+   (let* ((files '())
+	  (device (or (getenv "ALSADEVICE") "default")))
+      
+      (args-parse (cdr argv)
+	 ((("-h" "--help") (help "This message"))
+	  (print "musicplay")
+	  (print "usage: musicplay [options] file1 file2 ...")
+	  (newline)
+	  (args-parse-usage #f)
+	  (exit 0))
+	 ((("-d" "--device") ?dev (help "Select device"))
+	  (set! device dev))
+	 (else
+	  (set! files (append (directory->files else) files))))
+
+      (let* ((pcm (instantiate::alsa-snd-pcm
+		     (device device)))
+	     (f (instantiate::flac-alsa
+		   (pcm pcm))))
+	 (alsa-snd-pcm-open pcm)
+	 (for-each (lambda (p) (play-flac p f pcm)) files)
+	 (flac-decoder-close f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    play-flac ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (play-flac path f pcm inbuf outbuf)
+(define (play-flac path f pcm)
    (let ((p (open-input-file path)))
       (when (input-port? p)
 	 (print "playing " path "...")
@@ -87,6 +112,7 @@
 	    (set! decode-pos (flac-decoder-position o))
 	    (display ".")
 	    (flush-output-port (current-output-port)))
+	 ($dump "alsa" outbuf 0 20)
 	 (alsa-snd-pcm-write pcm outbuf size)
 	 #t)))
 

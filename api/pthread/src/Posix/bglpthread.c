@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Jan  6 16:18:27 2015 (serrano)                */
+/*    Last change :  Thu Mar 12 10:17:43 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
