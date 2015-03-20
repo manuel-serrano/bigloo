@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Mar 14 16:58:59 2015 (serrano)                */
+;*    Last change :  Tue Mar 17 15:29:14 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -216,6 +216,7 @@
 			    ((16) 's16)
 			    ((24) 's24-3le)
 			    ((32) 's32))))
+	    (alsa-snd-pcm-hw-free! pcm)
 	    (alsa-snd-pcm-hw-set-params! pcm
 	       :rate-resample 1
 	       :access 'rw-interleaved

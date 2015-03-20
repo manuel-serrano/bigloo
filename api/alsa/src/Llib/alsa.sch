@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Fri Feb  1 07:08:08 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Tue Mar 17 15:23:50 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
 ;*=====================================================================*/
@@ -44,6 +44,8 @@
 	 (::$snd-pcm) "(char *)snd_pcm_name")
       (macro $bgl-snd-pcm-close::int
 	 (::obj) "bgl_snd_pcm_close")
+      (macro $snd-pcm-hw-free!::int
+	 (::$snd-pcm) "snd_pcm_hw_free")
       (macro $snd-pcm-close::int
 	 (::$snd-pcm) "snd_pcm_close")
       (macro $snd-pcm-get-state::$snd-pcm-state
@@ -248,15 +250,27 @@
       (macro $snd-pcm-hw-params-set-access!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::$snd-pcm-access)
 	 "snd_pcm_hw_params_set_access")
+      (macro $snd-pcm-hw-params-test-access?::bool
+	 (::$snd-pcm ::$snd-pcm-hw-params ::$snd-pcm-access)
+	 "snd_pcm_hw_params_test_access")
       (macro $snd-pcm-hw-params-set-format!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::$snd-pcm-format)
 	 "snd_pcm_hw_params_set_format")
+      (macro $snd-pcm-hw-params-test-format?::bool
+	 (::$snd-pcm ::$snd-pcm-hw-params ::$snd-pcm-format)
+	 "snd_pcm_hw_params_test_format")
       (macro $snd-pcm-hw-params-set-channels!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "snd_pcm_hw_params_set_channels")
+      (macro $snd-pcm-hw-params-test-channels?::bool
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
+	 "snd_pcm_hw_params_test_channels")
       (macro $snd-pcm-hw-params-set-rate!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int ::int)
 	 "snd_pcm_hw_params_set_rate")
+      (macro $snd-pcm-hw-params-test-rate?::bool
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int ::int)
+	 "snd_pcm_hw_params_test_rate")
       (macro $bgl-snd-pcm-hw-params-set-rate-near!::uint
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_rate_near")
@@ -287,6 +301,12 @@
       (macro $bgl-snd-pcm-hw-params-set-period-size-near!::uint
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_period_size_near")
+      (macro $bgl-snd-pcm-hw-params-test-period-size-near?::bool
+	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
+	 "bgl_snd_pcm_hw_params_test_period_size_near")
+      (macro $bgl-snd-pcm-hw-params-get-rates::int
+	 (::$snd-pcm)
+	 "bgl_snd_pcm_hw_params_get_rates")
       
       ;; snd-pcm-sw-params
       (type $snd-pcm-sw-params void* "snd_pcm_sw_params_t *")

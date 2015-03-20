@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Mar 14 16:21:05 2015 (serrano)                */
+;*    Last change :  Tue Mar 17 15:31:20 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -31,7 +31,6 @@
 	    
    (export  (class alsamusic::music
 	       (inbuf::bstring read-only (default (make-string (*fx 1024 1024))))
-	       
 	       (pcm::alsa-snd-pcm read-only (default (instantiate::alsa-snd-pcm)))
 	       (decoders::pair-nil read-only (default '()))
 	       (mkthread::procedure read-only (default make-thread))

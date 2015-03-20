@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Tue Feb 18 19:27:15 2014 (serrano)                */
-/*    Copyright   :  2011-14 Manuel Serrano                            */
+/*    Last change :  Thu Mar 19 08:21:34 2015 (serrano)                */
+/*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/

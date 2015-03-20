@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sun Nov 23 09:05:21 2014 (serrano)                */
-;*    Copyright   :  2011-14 Manuel Serrano                            */
+;*    Last change :  Tue Mar 17 15:38:51 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
 ;*=====================================================================*/
@@ -44,9 +44,12 @@
 	   (alsa-snd-pcm-drop ::alsa-snd-pcm)
 	   (alsa-snd-pcm-drain ::alsa-snd-pcm)
 	   (alsa-snd-pcm-cleanup ::alsa-snd-pcm)
+	   (alsa-snd-pcm-hw-free! ::alsa-snd-pcm)
 	   (alsa-snd-pcm-hw-set-params! ::alsa-snd-pcm . rest)
+	   (alsa-snd-pcm-hw-test-params? ::alsa-snd-pcm . rest)
 	   (alsa-snd-pcm-hw-params-get-buffer-size::int ::alsa-snd-pcm)
 	   (alsa-snd-pcm-hw-params-get-buffer-time::int ::alsa-snd-pcm)
+	   (alsa-snd-pcm-hw-params-get-rates ::alsa-snd-pcm)
 	   (alsa-snd-pcm-sw-set-params! ::alsa-snd-pcm . rest)
 
 	   (alsa-snd-pcm-write::long ::alsa-snd-pcm ::string ::long)
@@ -403,6 +406,18 @@
 	     (loop))))))
 
 ;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-hw-free! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-hw-free! pcm::alsa-snd-pcm)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (let ((err ($snd-pcm-hw-free! $builtin)))
+	 (when (<fx err 0)
+	    (raise (instantiate::&alsa-error
+		      (proc "alsa-snd-pcm-hw-free!")
+		      (msg ($snd-strerror err))
+		      (obj pcm)))))))
+   
+;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-hw-set-params! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-hw-set-params! pcm::alsa-snd-pcm . rest)
@@ -494,6 +509,42 @@
       #unspecified))
 		       
 ;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-hw-test-params? ...                                 */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-hw-test-params? pcm::alsa-snd-pcm . rest)
+   (let (($hw::$snd-pcm-hw-params ($bgl-snd-pcm-hw-params-malloc)))
+      (unwind-protect
+	 (with-access::alsa-snd-pcm pcm ($builtin)
+	    ($snd-pcm-hw-params-any $builtin $hw)
+	    (let loop ((rest rest))
+	       (if (null? rest)
+		   #t
+		   (case (car rest)
+		      ((:access)
+		       (unless ($snd-pcm-hw-params-test-access?
+				$builtin $hw (symbol->access (cadr rest)))
+			  (loop (cddr rest))))
+		      ((:format)
+		       (unless ($snd-pcm-hw-params-test-format?
+				$builtin $hw (symbol->format (cadr rest)))
+			  (loop (cddr rest))))
+		      ((:channels)
+		       (unless ($snd-pcm-hw-params-test-channels?
+				$builtin $hw (cadr rest))
+			  (loop (cddr rest))))
+		      ((:rate)
+		       (unless ($snd-pcm-hw-params-test-rate?
+				$builtin $hw (cadr rest) 0)
+			  (loop (cddr rest))))
+		      ((:period-size-near)
+		       (unless ($bgl-snd-pcm-hw-params-test-period-size-near?
+				$builtin $hw (cadr rest))
+			  (loop (cddr rest))))
+		      (else
+		       (loop (cddr rest)))))))
+	 ($bgl-snd-pcm-hw-params-free $hw))))
+		       
+;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-hw-params-get-buffer-size ...                       */
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-hw-params-get-buffer-size pcm::alsa-snd-pcm)
@@ -522,6 +573,24 @@
 
    (with-access::alsa-snd-pcm pcm ($builtin)
       (check-error ($bgl-snd-pcm-hw-params-get-buffer-time $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-hw-params-get-rates ...                             */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-hw-params-get-rates pcm::alsa-snd-pcm)
+   
+   (define (check-error err)
+      (when (<fx err 0)
+	 (raise (instantiate::&alsa-error
+		   (proc "alsa-snd-pcm-hw-params-get-rates")
+		   (msg ($snd-strerror err))
+		   (obj pcm)))))
+   
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (multiple-value-bind (min max)
+	 ($bgl-snd-pcm-hw-params-get-rates $builtin)
+	 (check-error min)
+	 (values min max))))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-sw-set-params! ...                                  */

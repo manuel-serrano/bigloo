@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Nov 18 11:29:16 2014 (serrano)                */
+;*    Last change :  Thu Mar 19 08:36:23 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -421,7 +421,7 @@
 	 
 	 (define (print-radix radix num)
 	    (if (not (number? num))
-		(error procname "Illegal number" num)
+		(bigloo-type-error procname "number" num)
 		(display (number->string num radix) p)))
 	 
 	 (define (print-flat-list l p sep)
@@ -469,7 +469,7 @@
 	 
 	 (define (print-formatted-number i num p)
 	    (if (not (number? num))
-		(error procname "Illegal number" num)
+		(bigloo-type-error procname "number" num)
 		(let ((j (string-skip _fmt "0123456789" i)))
 		   (cond
 		      ((not j)

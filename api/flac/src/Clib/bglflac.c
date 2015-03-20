@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sun Mar 15 11:56:31 2015 (serrano)                */
+/*    Last change :  Tue Mar 17 08:14:11 2015 (serrano)                */
 /*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -332,7 +332,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	 long sample;
 	 unsigned char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
 
-	 if( vol >= 0.99 || h.channels != 2 ) {
+	 if( vol >= 0.99 ) {
 	    for( sample = 0; sample < h.blocksize; sample++ ) {
 	       long channel;
 
