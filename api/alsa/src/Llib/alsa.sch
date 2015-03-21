@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Tue Mar 17 15:23:50 2015 (serrano)                */
+;*    Last change :  Sat Mar 21 19:17:33 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -40,6 +40,9 @@
       (macro $bgl-snd-pcm-open::int
 	 (::obj ::string ::$snd-pcm-stream ::int)
 	 "bgl_snd_pcm_open")
+      (macro $bgl-snd-pcm-reopen::int
+	 (::obj ::string ::$snd-pcm-stream ::int)
+	 "bgl_snd_pcm_reopen")
       (macro $snd-pcm-name::string
 	 (::$snd-pcm) "(char *)snd_pcm_name")
       (macro $bgl-snd-pcm-close::int

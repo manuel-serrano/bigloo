@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Fri Mar 13 07:55:42 2015 (serrano)                */
+/*    Last change :  Sat Mar 21 07:31:26 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -110,13 +110,13 @@ bgl_signal( int sig, obj_t obj ) {
 	 sigact.sa_handler = (void (*)( int ))signal_handler;
 	 sigact.sa_flags = SA_RESTART;
 	 
-#if HAVE_SIGPROCMASK
-	 sigset_t mask;
-
-	 sigemptyset( &mask );
-	 sigaddset( &mask, sig );
-	 bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );
-#endif
+/* #if HAVE_SIGPROCMASK                                                */
+/* 	 sigset_t mask;                                                */
+/*                                                                     */
+/* 	 sigemptyset( &mask );                                         */
+/* 	 sigaddset( &mask, sig );                                      */
+/* 	 bgl_sigprocmask( SIG_UNBLOCK, &mask, 0 );                     */
+/* #endif                                                              */
 	 
 	 if( sig == SIGSEGV ) {
 	    /* create an alternate stack for SEGV */

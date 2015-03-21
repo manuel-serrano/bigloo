@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Tue Mar 17 15:38:51 2015 (serrano)                */
+;*    Last change :  Sat Mar 21 19:19:21 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -28,6 +28,7 @@
 	   (%$snd-pcm-nil)
 	   
 	   (alsa-snd-pcm-open ::alsa-snd-pcm)
+	   (alsa-snd-pcm-reopen ::alsa-snd-pcm)
 	   (alsa-snd-pcm-close ::alsa-snd-pcm)
 	   (alsa-snd-pcm-get-state ::alsa-snd-pcm)
 	   (alsa-snd-pcm-avail::long ::alsa-snd-pcm)
@@ -102,6 +103,28 @@
       (unless ($snd-pcm-nil? $builtin)
 	 (unless (eq? (alsa-snd-pcm-get-state pcm) 'disconnected)
 	    ($bgl-snd-pcm-close pcm)))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-reopen ...                                          */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-reopen pcm::alsa-snd-pcm)
+   (with-access::alsa-snd-pcm pcm ($builtin device stream mode name)
+      (if ($snd-pcm-nil? $builtin)
+	  (raise (instantiate::&alsa-error
+		    (proc "alsa-snd-pcm-open")
+		    (msg "pcm device not open")
+		    (obj pcm)))
+	  (let ((err ($bgl-snd-pcm-reopen
+			pcm
+			device
+			(symbol->stream stream)
+			(symbol->pcm-mode mode))))
+	     (if (<fx err 0)
+		 (raise (instantiate::&alsa-error
+			   (proc "alsa-snd-pcm-open")
+			   (msg ($snd-strerror err))
+			   (obj device)))
+		 (set! name ($snd-pcm-name $builtin)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-get-state ...                                       */
