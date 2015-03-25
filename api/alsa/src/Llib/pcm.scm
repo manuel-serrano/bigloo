@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sat Mar 21 19:19:21 2015 (serrano)                */
+;*    Last change :  Mon Mar 23 17:54:15 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -530,7 +530,7 @@
 	    ($snd-pcm-hw-params $builtin $hw))
 	 ($bgl-snd-pcm-hw-params-free $hw))
       #unspecified))
-		       
+
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-hw-test-params? ...                                 */
 ;*---------------------------------------------------------------------*/
@@ -558,10 +558,6 @@
 		      ((:rate)
 		       (unless ($snd-pcm-hw-params-test-rate?
 				$builtin $hw (cadr rest) 0)
-			  (loop (cddr rest))))
-		      ((:period-size-near)
-		       (unless ($bgl-snd-pcm-hw-params-test-period-size-near?
-				$builtin $hw (cadr rest))
 			  (loop (cddr rest))))
 		      (else
 		       (loop (cddr rest)))))))
@@ -610,10 +606,10 @@
 		   (obj pcm)))))
    
    (with-access::alsa-snd-pcm pcm ($builtin)
-      (multiple-value-bind (min max)
+      (multiple-value-bind (cur min max)
 	 ($bgl-snd-pcm-hw-params-get-rates $builtin)
 	 (check-error min)
-	 (values min max))))
+	 (values cur min max))))
 		       
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-sw-set-params! ...                                  */

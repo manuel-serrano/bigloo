@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Sat Mar 21 19:16:59 2015 (serrano)                */
+/*    Last change :  Mon Mar 23 18:03:57 2015 (serrano)                */
 /*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -295,15 +295,23 @@ int
 bgl_snd_pcm_hw_params_get_rates( snd_pcm_t *pcm ) {
    snd_pcm_hw_params_t *hw;
    int err;
+   int rate_num, rate_den;
 
    snd_pcm_hw_params_alloca( &hw );
 
-   err = snd_pcm_hw_params_any( pcm, hw );
+   err = snd_pcm_hw_params_current( pcm, hw );
+/*    snd_pcm_hw_params_get_rate_numden( hw, &rate_num, &rate_den );   */
+/*    snd_pcm_hw_params_get_sbits( hw );                               */
+/*    fprintf( stderr, "rate_num=%d rate_den=%d\n", rate_num, rate_den ); */
+/*    fprintf( stderr, "sbit=%d\n", snd_pcm_hw_params_get_sbits( hw ) ); */
 
    if( err < 0 ) {
       return err;
    } else {
-      int min, max;
+      int cur, min, max;
+      err = snd_pcm_hw_params_get_rate( hw, &cur, 0 );
+
+      if( err ) return err;
       err = snd_pcm_hw_params_get_rate_min( hw, &min, 0 );
 
       if( err ) return err;
@@ -315,10 +323,11 @@ bgl_snd_pcm_hw_params_get_rates( snd_pcm_t *pcm ) {
       } else {
 	 obj_t env = BGL_CURRENT_DYNAMIC_ENV();
    
-	 BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
-	 BGL_ENV_MVALUES_VAL_SET( env, 1, BINT( max ) );
+	 BGL_ENV_MVALUES_NUMBER_SET( env, 3 );
+	 BGL_ENV_MVALUES_VAL_SET( env, 1, BINT( min ) );
+	 BGL_ENV_MVALUES_VAL_SET( env, 2, BINT( max ) );
 
-	 return min;
+	 return cur;
       }
    }
 }

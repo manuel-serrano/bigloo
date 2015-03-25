@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Sat Mar 21 19:17:33 2015 (serrano)                */
+;*    Last change :  Mon Mar 23 17:45:08 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -250,6 +250,8 @@
 	 (::$snd-pcm ::$snd-pcm-hw-params) "snd_pcm_hw_params")
       (macro $snd-pcm-hw-params-any::int
 	 (::$snd-pcm ::$snd-pcm-hw-params) "snd_pcm_hw_params_any")
+      (macro $snd-pcm-hw-params-current::int
+	 (::$snd-pcm ::$snd-pcm-hw-params) "snd_pcm_hw_params_current")
       (macro $snd-pcm-hw-params-set-access!::int
 	 (::$snd-pcm ::$snd-pcm-hw-params ::$snd-pcm-access)
 	 "snd_pcm_hw_params_set_access")
@@ -304,9 +306,6 @@
       (macro $bgl-snd-pcm-hw-params-set-period-size-near!::uint
 	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
 	 "bgl_snd_pcm_hw_params_set_period_size_near")
-      (macro $bgl-snd-pcm-hw-params-test-period-size-near?::bool
-	 (::$snd-pcm ::$snd-pcm-hw-params ::int)
-	 "bgl_snd_pcm_hw_params_test_period_size_near")
       (macro $bgl-snd-pcm-hw-params-get-rates::int
 	 (::$snd-pcm)
 	 "bgl_snd_pcm_hw_params_get_rates")
