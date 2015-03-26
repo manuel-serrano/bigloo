@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Thu Mar 26 08:54:28 2015 (serrano)                */
+;*    Last change :  Thu Mar 26 11:01:39 2015 (serrano)                */
 ;*    Copyright   :  2002-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -810,8 +810,13 @@
       (test "cycles.2"
 	 (call-with-output-string
 	    (lambda (op)
-	       (write-circle (call-with-input-string "#0=(#0# #1=(#1#))" read)
-		  op)))
+	       (write-circle (call-with-input-string s read) op)))
+	 s))
+   (let ((s "#0=(#0# #1=(#1# #2=(#2#)) #2#)"))
+      (test "cycles.3"
+	 (call-with-output-string
+	    (lambda (op)
+	       (write-circle (call-with-input-string s read) op)))
 	 s))
    (test "args-parse" (test-args-parse) (bit-or 31 (bit-or 32 64)))
    (cond-expand

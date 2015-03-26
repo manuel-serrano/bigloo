@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Mar 26 08:55:10 2015 (serrano)                */
+;*    Last change :  Thu Mar 26 11:13:21 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -737,7 +737,7 @@
       ((: #\# (+ digit) "#")
        (let* ((no (string->integer (the-substring 1 (-fx (the-length) 1))))
 	      (cell (assq no cycles)))
-	  (if (not (pair? cell))
+	  (if (or (not resolve) (not (pair? cell)))
 	      (lambda () no)
 	      (cdr cell))))
       
