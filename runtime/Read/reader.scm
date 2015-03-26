@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Sep  8 15:18:35 2014 (serrano)                */
+;*    Last change :  Thu Mar 26 08:55:10 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -195,7 +195,7 @@
    (let loop ((obj obj))
       (cond
 	 ((procedure? obj)
-	  (let* ((no   (obj))
+	  (let* ((no (obj))
 		 (cell (assq no cycles)))
 	     (if (not (pair? cell))
 		 (read-error "no target for graph reference" no port)
@@ -455,6 +455,8 @@
 		     (field       (: idsans (+ (: "." idsans))))
 		     
 		     posp cycles par-open bra-open par-poses bra-poses)
+
+      (define resolve #t)
       
       ;; newlines
       ((+ #\Newline)
@@ -720,11 +722,16 @@
       ((: #\# (+ digit) "=")
        (let* ((no (string->integer (the-substring 1 (-fx (the-length) 1))))
 	      (pos (input-port-position (the-port)))
-	      (the-object (ignore)))
-	  (if (eof-object? the-object)
-	      (read-error/loc pos "Illegal cyclic reference" no (the-port)))
-	  (set! cycles (cons (cons no the-object) cycles))
-	  (unreference! the-object (the-port) cycles)))
+	      (rsvp resolve))
+	  (set! resolve #f)
+	  (let ((the-object (ignore)))
+	     (if (eof-object? the-object)
+		 (read-error/loc pos "Illegal cyclic reference" no (the-port)))
+	     (set! cycles (cons (cons no the-object) cycles))
+	     (set! resolve rsvp)
+	     (if rsvp
+		 (unreference! the-object (the-port) cycles)
+		 the-object))))
       
       ;; cyclic target reference
       ((: #\# (+ digit) "#")

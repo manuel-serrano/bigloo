@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Sun Jun 15 11:29:10 2014 (serrano)                */
-;*    Copyright   :  2002-14 Manuel Serrano                            */
+;*    Last change :  Thu Mar 26 08:54:28 2015 (serrano)                */
+;*    Copyright   :  2002-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -794,7 +794,7 @@
 	  (v   (vector 2 3 obj 5)))
       (set-car! obj v)
       (set-car! (cdr obj) obj)
-      (test "cycles" (let ((port (open-output-string)))
+      (test "cycles.1" (let ((port (open-output-string)))
 			(write-circle obj port)
 			(let* ((str (close-output-port port))
 			       (port (open-input-string str)))
@@ -806,6 +806,13 @@
 	    (let ((port (open-output-string)))
 	       (write-circle obj port)
 	       (close-output-port port))))
+   (let ((s "#0=(#0# #1=(#1#))"))
+      (test "cycles.2"
+	 (call-with-output-string
+	    (lambda (op)
+	       (write-circle (call-with-input-string "#0=(#0# #1=(#1#))" read)
+		  op)))
+	 s))
    (test "args-parse" (test-args-parse) (bit-or 31 (bit-or 32 64)))
    (cond-expand
       (bigloo-.net
