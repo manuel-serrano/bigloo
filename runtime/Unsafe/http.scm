@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Fri Jan 16 10:26:50 2015 (serrano)                */
+;*    Last change :  Sat Mar 28 17:23:19 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -139,7 +139,8 @@
        (display-proxy-method method host port path http-version out)
        (display-direct-method method host port path http-version out))
    ;; host and port
-   (if (=fx port 80)
+   (if (or (and (=fx port 80) (eq? protocol 'http))
+	   (and (=fx port 443) (eq? protocol 'https)))
        (display-line "Host: " host out)
        (display-line "Host: " host ":" port out))
    ;; user additional header
