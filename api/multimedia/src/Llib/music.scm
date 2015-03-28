@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 30 14:07:08 2005                          */
-;*    Last change :  Fri Dec 13 12:05:23 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Last change :  Sat Mar 28 07:17:35 2015 (serrano)                */
+;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generic music player API                                         */
 ;*=====================================================================*/
@@ -50,6 +50,9 @@
 	   (generic music-close ::music)
 	   (generic music-closed?::bool ::music)
 	   (generic music-reset! ::music)
+
+	   (generic music-state-set! ::music ::symbol)
+	   (generic music-error-set! ::music ::obj)
 	   
 	   (generic music-playlist-get::pair-nil ::music)
 	   (generic music-playlist-add! ::music ::bstring)
@@ -94,6 +97,28 @@
 (define-generic (music-closed? m::music))
 (define-generic (music-reset! m::music))
 
+;*---------------------------------------------------------------------*/
+;*    music-state-set! ::music ...                                     */
+;*---------------------------------------------------------------------*/
+(define-generic (music-state-set! m::music st::symbol)
+   (with-access::music m (onstate %status)
+      (with-access::musicstatus %status (state)
+         (set! state st)
+         (onstate m %status))))
+
+;*---------------------------------------------------------------------*/
+;*    music-error-set! ::music ...                                     */
+;*---------------------------------------------------------------------*/
+(define-generic (music-error-set! m::music e)
+   (with-access::music m (onerror %status)
+      (with-access::musicstatus %status (state err)
+	 (set! err e)
+         (set! state 'error)
+         (onerror m e))))
+
+;*---------------------------------------------------------------------*/
+;*    playlist                                                         */
+;*---------------------------------------------------------------------*/
 (define-generic (music-playlist-get::pair-nil m::music))
 
 (define-generic (music-playlist-add! m::music s::bstring)
@@ -137,8 +162,16 @@
 (define-generic (music-repeat-set! m::music flag::bool))
 (define-generic (music-reset-error! m::music) #unspecified)
 
+;*---------------------------------------------------------------------*/
+;*    music-volume ::music ...                                         */
+;*---------------------------------------------------------------------*/
 (define-generic (music-volume-get::obj m::music))
-(define-generic (music-volume-set! m::music v::obj))
+
+(define-generic (music-volume-set! m::music vol::obj)
+   (with-access::music m (%status onvolume)
+      (with-access::musicstatus %status (volume)
+	 (set! volume vol)
+	 (onvolume m vol))))
 
 ;*---------------------------------------------------------------------*/
 ;*    music-init ...                                                   */

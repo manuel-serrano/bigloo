@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Aug 13 12:38:03 2014 (serrano)                */
-;*    Copyright   :  2011-14 Manuel Serrano                            */
+;*    Last change :  Sat Mar 28 07:13:10 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
 ;*=====================================================================*/
@@ -117,7 +117,7 @@
 		  am::alsamusic
 		  buffer::alsabuffer)
    
-   (with-access::alsamusic am (pcm %status onerror %error)
+   (with-access::alsamusic am (pcm %status %error)
       (with-access::mpg123-alsadecoder dec (%mpg123 %dmutex %dcondv outbuf
 					      %!dabort %!dpause %!dseek)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv
@@ -188,12 +188,6 @@
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug (current-microseconds) "\n"))))
 
-	    (define (onstate am st)
-	       (with-access::alsamusic am (onstate %status)
-		  (with-access::musicstatus %status (state)
-		     (set! state st)
-		     (onstate am %status))))
-
 	    (when (>fx (mpg123-debug) 0) (debug-init! url))
 
 	    (let loop ()
@@ -202,24 +196,24 @@
 		   ;;; the decoder is asked to pause
 		   (with-access::musicstatus %status (songpos)
 		      (set! songpos (alsadecoder-position dec buffer)))
-		   (onstate am 'pause)
+		   (music-state-set! am 'pause)
 		   (synchronize %dmutex
 		      (let liip ()
 			 (when %!dpause
 			    (condition-variable-wait! %dcondv %dmutex)
 			    (liip))))
-		   (onstate am 'play)
+		   (music-state-set! am 'play)
 		   (loop))
 		  (%!dabort
 		   ;;; the decoder is asked to abort
-		   (onstate am 'stop))
+		   (music-state-set! am 'stop))
 		  (%empty
 		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
 		       (begin
 			  (when (>=fx (mpg123-debug) 2)
 			     (debug "~~~ MPG123_DECODER, EOF " url "\n"))
-			  (onstate am 'ended))
+			  (music-state-set! am 'ended))
 		       (begin
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug "<-- MPG123_DECODER, wait not-empty " url " "
@@ -228,7 +222,7 @@
 			     (with-access::musicstatus %status (buffering)
 				(set! buffering
 				   (buffer-percentage-filled))))
-			  (onstate am 'buffering)
+			  (music-state-set! am 'buffering)
 			  (synchronize %bmutex
 			     ;; wait until the buffer is filled
 			     (unless (or (not %empty)
@@ -238,7 +232,7 @@
 				(condition-variable-wait! %bcondv %bmutex)))
 			  (when (>=fx (mpg123-debug) 1)
 			     (debug (current-microseconds) "\n"))
-			  (onstate am 'play)
+			  (music-state-set! am 'play)
 			  (loop))))
 		  (else
 		   ;; the buffer contains available bytes
@@ -296,14 +290,10 @@
 			     (with-access::mpg123-handle %mpg123 (size)
 				(when (>fx size 0)
 				   (alsa-snd-pcm-write pcm outbuf size)))
-			     (onstate am 'ended))
+			     (music-state-set! am 'ended))
 			    (else
 			     ;; an error occurred
-			     (with-access::musicstatus %status (err state)
-				(set! err "mp3 decoding error")
-				(set! state 'error))
-			     (set! %error "mp3 decoding error")
-			     (onerror am "mp3 decoding error"))))))))
+			     (music-error-set! am "mp3 decoding error"))))))))
 
 	    (when (>fx (mpg123-debug) 0)
 	       (debug-stop! url))))))
@@ -319,6 +309,7 @@
 					      period-size-near-ratio)
 	 (multiple-value-bind (rate channels encoding)
 	    (mpg123-get-format %mpg123)
+	    (alsa-snd-pcm-reopen pcm)
 	    (alsa-snd-pcm-hw-set-params! pcm
 	       :access 'rw-interleaved
 	       :format encoding

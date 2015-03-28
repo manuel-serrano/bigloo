@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 21 08:15:23 2013                          */
-;*    Last change :  Fri Jun 21 20:21:47 2013 (serrano)                */
-;*    Copyright   :  2013 Manuel Serrano                               */
+;*    Last change :  Sat Mar 28 07:13:04 2015 (serrano)                */
+;*    Copyright   :  2013-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WAV music decoder                                                */
 ;*=====================================================================*/
@@ -106,7 +106,7 @@
 (define-method (alsadecoder-decode dec::wav-alsadecoder
 		  am::alsamusic
 		  buffer::alsabuffer)
-   (with-access::alsamusic am (pcm %status onerror %error)
+   (with-access::alsamusic am (pcm %status)
       (with-access::wav-alsadecoder dec (%dmutex %dcondv %header %size
 					   %!dabort %!dpause outbuf)
 	 (with-access::alsabuffer buffer (%bmutex %bcondv
@@ -175,12 +175,6 @@
 		  (when (>=fx (wav-debug) 2)
 		     (debug (current-microseconds) "\n"))))
 
-	    (define (onstate am st)
-	       (with-access::alsamusic am (onstate %status)
-		  (with-access::musicstatus %status (state)
-		     (set! state st)
-		     (onstate am %status))))
-
 	    (define (flush sz::int)
 	       (when (>fx sz 0)
 		  (flush (-fx sz (alsa-snd-pcm-write pcm outbuf sz)))))
@@ -193,24 +187,24 @@
 		   ;;; the decoder is asked to pause
 		   (with-access::musicstatus %status (songpos)
 		      (set! songpos (alsadecoder-position dec buffer)))
-		   (onstate am 'pause)
+		   (music-state-set! am 'pause)
 		   (synchronize %dmutex
 		      (let liip ()
 			 (when %!dpause
 			    (condition-variable-wait! %dcondv %dmutex)
 			    (liip))))
-		   (onstate am 'play)
+		   (music-state-set! am 'play)
 		   (loop))
 		  (%!dabort
 		   ;;; the decoder is asked to abort
-		   (onstate am 'stop))
+		   (music-state-set! am 'stop))
 		  (%empty
 		   ;;; buffer empty, unless eof wait for it to be filled
 		   (if %eof
 		       (begin
 			  (when (>=fx (wav-debug) 2)
 			     (debug "~~~ WAV_DECODER, EOF " url "\n"))
-			  (onstate am 'ended))
+			  (music-state-set! am 'ended))
 		       (begin
 			  (when (>=fx (wav-debug) 1)
 			     (debug "<-- WAV_DECODER, wait not-empty " url " "
@@ -219,7 +213,7 @@
 			     (with-access::musicstatus %status (buffering)
 				(set! buffering
 				   (buffer-percentage-filled))))
-			  (onstate am 'buffering)
+			  (music-state-set! am 'buffering)
 			  (synchronize %bmutex
 			     ;; wait until the buffer is filled
 			     (unless (or (not %empty)
@@ -229,7 +223,7 @@
 				(condition-variable-wait! %bcondv %bmutex)))
 			  (when (>=fx (wav-debug) 1)
 			     (debug (current-microseconds) "\n"))
-			  (onstate am 'play)
+			  (music-state-set! am 'play)
 			  (loop))))
 		  (else
 		   ;; the buffer contains available bytes
@@ -276,14 +270,13 @@
 			    ((=fx status $wav-status-done)
 			     ;; done playing
 			     (when (>fx %size 0) (flush %size))
-			     (onstate am 'ended))
+			     (music-state-set! am 'ended))
 			    (else
 			     ;; an error occurred
 			     (with-access::musicstatus %status (err state)
 				(set! err "wav decoding error")
 				(set! state 'error))
-			     (set! %error "wav decoding error")
-			     (onerror am "wav decoding error"))))))))
+			     (music-error-set! am "wav decoding error"))))))))
 
 	    (when (>fx (wav-debug) 0)
 	       (debug-stop! url))))))
@@ -297,12 +290,7 @@
       (if (not %header)
 	  (with-handler
 	     (lambda (e)
-		(with-access::alsamusic am (%status onerror %error)
-		   (with-access::musicstatus %status (err state)
-		      (set! err e)
-		      (set! state 'error))
-		   (set! %error e)
-		   (onerror am e)))
+		(music-error-set! am e))
 	     (let ((str (alsabuffer-substring buffer 0
 			   (elong->fixnum (wav-header-size)))))
 		(set! %header (wav-parse-header str))

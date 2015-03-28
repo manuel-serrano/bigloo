@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Mar 21 19:18:44 2015 (serrano)                */
+;*    Last change :  Sat Mar 28 07:13:13 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -17,6 +17,8 @@
    (extern (macro $dump::int (::string ::string ::int ::int)  "bgl_flac_dump"))
    (extern (macro $memcpy::void (::string ::string ::long) "memcpy"))
 
+   (library multimedia)
+   
    (cond-expand
       ((library alsa)
        (library alsa)))
@@ -192,18 +194,9 @@
 		  (flac-decoder-decode %flac)
 		  (with-access::alsabuffer %buffer (%eof)
 		     (alsa-snd-pcm-cleanup pcm)
-		     (onstate am (if %eof 'ended 'stop))
+		     (music-state-set! am (if %eof 'ended 'stop))
 		     (when (>=fx (flac-debug) 1)
 			(debug-stop! url)))))))))
-
-;*---------------------------------------------------------------------*/
-;*    onstate ...                                                      */
-;*---------------------------------------------------------------------*/
-(define (onstate am st)
-   (with-access::alsamusic am (onstate %status)
-      (with-access::musicstatus %status (state)
-         (set! state st)
-         (onstate am %status))))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-metadata ::flac-alsa ...                            */
@@ -311,7 +304,7 @@
 		       (i 0))
 	       (cond
 		  (%!dpause
-		   (onstate am 'pause)
+		   (music-state-set! am 'pause)
 		   ;;; the decoder is asked to pause
 		   (with-access::alsamusic am (%status)
 		      (with-access::musicstatus %status (songpos)
@@ -322,7 +315,8 @@
 			 (when %!dpause
 			    (condition-variable-wait! %dcondv %dmutex)
 			    (liip))))
-		   (onstate am 'play)
+		   (tprint "onplay...")
+		   (music-state-set! am 'play)
 		   (loop size i))
 		  (%!dabort
 		   ;;; the decoder is asked to abort
@@ -342,7 +336,7 @@
 			     (with-access::musicstatus %status (buffering)
 				(set! buffering
 				   (buffer-percentage-filled))))
-			  (onstate am 'buffering)
+			  (music-state-set! am 'buffering)
 			  (synchronize %bmutex
 			     ;; wait until the buffer is filled
 			     (unless (or (not %empty)
@@ -352,7 +346,8 @@
 				(condition-variable-wait! %bcondv %bmutex)))
 			  (when (>=fx (flac-debug) 1)
 			     (debug (current-microseconds) "\n"))
-			  (onstate am 'play)
+			  (tprint "onplayer...")
+			  (music-state-set! am 'play)
 			  (loop size i))))
 		  (else
 		   (let ((s (minfx size

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Tue Mar 17 15:31:20 2015 (serrano)                */
+;*    Last change :  Sat Mar 28 07:19:31 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -43,8 +43,7 @@
 	       (%aready::bool (default #t))
 	       (%amutex::mutex read-only (default (make-mutex)))
 	       (%!pid::int (default -1))
-	       (%acondv::condvar read-only (default (make-condition-variable)))
-	       (%error::obj (default #f)))
+	       (%acondv::condvar read-only (default (make-condition-variable))))
 
 	    (class alsabuffer
 	       (url::bstring read-only)
@@ -153,7 +152,7 @@
 	    (with-access::musicstatus %status (songpos songlength)
 	       (set! songpos (alsadecoder-position %decoder %buffer)))))
       %status))
-      
+
 ;*---------------------------------------------------------------------*/
 ;*    music-playlist-get ::alsamusic ...                               */
 ;*---------------------------------------------------------------------*/
@@ -258,16 +257,15 @@
 	       decoders))))
    
    (define (update-song-status! o n pid url)
-      (with-access::alsamusic o (%status onstate onvolume)
+      (with-access::alsamusic o (%status)
 	 (with-access::musicstatus %status (state song songpos songid songlength playlistid volume playlistid)
 	    (set! playlistid pid)
 	    (set! songpos 0)
 	    (set! song n)
 	    (set! songid (+fx (* 100 pid) n))
-	    (set! state 'play)
 	    (set! songlength (url-song-length url))
-	    (onstate o %status)
-	    (onvolume o volume))))
+	    (music-state-set! o 'play)
+	    (music-volume-set! o volume))))
    
    (define (pcm-init o)
       (with-access::alsamusic o (pcm)
@@ -311,7 +309,7 @@
    (define (open-port-buffer o::alsamusic d::alsadecoder url::bstring next::pair-nil)
       (let ((ip (open-file url o)))
 	 (if (input-port? ip)
-	     (with-access::alsamusic o (inbuf %buffer onerror mkthread)
+	     (with-access::alsamusic o (inbuf %buffer mkthread)
 		(let ((buffer (instantiate::alsaportbuffer
 				 (url url)
 				 (port ip)
@@ -381,12 +379,8 @@
 	     (open-port-buffer o d url (cdr urls))))))
 
    (define (play-error o::alsamusic e::&error)
-      (with-access::alsamusic o (%amutex onerror %error %status)
-	 (synchronize %amutex
-	    (with-access::musicstatus %status (state)
-	       (set! state 'error)
-	       (set! %error e)))
-	 (onerror o e)
+      (with-access::alsamusic o (%amutex %status)
+	 (music-error-set! o e)
 	 (sleep *error-sleep-duration*)))
    
    (define (play-url o::alsamusic d::alsadecoder n::int urls::pair pid::int notify::bool)
@@ -408,7 +402,7 @@
 	    (alsabuffer-close buffer))))
    
    (define (play-urls urls n)
-      (with-access::alsamusic o (%amutex %!pid onerror %decoder %status %error)
+      (with-access::alsamusic o (%amutex %!pid %decoder %status)
 	 (let ((pid %!pid))
 	    (let loop ((l urls)
 		       (n n)
@@ -628,10 +622,7 @@
 	 (lambda (e)
 	    (when (>=fx (alsa-debug) 1) (exception-notify e))
 	    (set-eof!)
-	    (with-access::alsamusic o (onerror %status %error %amutex)
-	       (onerror o e)
-	       (synchronize %amutex
-		  (set! %error e))))
+	    (music-error-set! o e))
 	 (let loop ()
 	    (cond
 	       (%eof
@@ -692,11 +683,11 @@
 ;*    music-volume-set! ::alsamusic ...                                */
 ;*---------------------------------------------------------------------*/
 (define-method (music-volume-set! o::alsamusic vol)
-   (with-access::alsamusic o (decoders %status onvolume)
-      (for-each (lambda (d) (alsadecoder-volume-set! d vol)) decoders)
+   (with-access::alsamusic o (decoders %status)
       (with-access::musicstatus %status (volume)
-	 (set! volume vol)
-	 (onvolume o vol))))
+	 (unless (= vol volume)
+	    (for-each (lambda (d) (alsadecoder-volume-set! d vol)) decoders))))
+   (call-next-method))
    
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::alsadecoder ...                               */

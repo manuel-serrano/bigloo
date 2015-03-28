@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Mon Mar 23 17:54:15 2015 (serrano)                */
+;*    Last change :  Sat Mar 28 07:33:43 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -109,22 +109,17 @@
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-reopen pcm::alsa-snd-pcm)
    (with-access::alsa-snd-pcm pcm ($builtin device stream mode name)
-      (if ($snd-pcm-nil? $builtin)
-	  (raise (instantiate::&alsa-error
-		    (proc "alsa-snd-pcm-open")
-		    (msg "pcm device not open")
-		    (obj pcm)))
-	  (let ((err ($bgl-snd-pcm-reopen
-			pcm
-			device
-			(symbol->stream stream)
-			(symbol->pcm-mode mode))))
-	     (if (<fx err 0)
-		 (raise (instantiate::&alsa-error
-			   (proc "alsa-snd-pcm-open")
-			   (msg ($snd-strerror err))
-			   (obj device)))
-		 (set! name ($snd-pcm-name $builtin)))))))
+      (let ((err ($bgl-snd-pcm-reopen
+		    pcm
+		    device
+		    (symbol->stream stream)
+		    (symbol->pcm-mode mode))))
+	 (if (<fx err 0)
+	     (raise (instantiate::&alsa-error
+		       (proc "alsa-snd-pcm-open")
+		       (msg ($snd-strerror err))
+		       (obj device)))
+	     (set! name ($snd-pcm-name $builtin))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-get-state ...                                       */
@@ -401,32 +396,34 @@
 ;*    alsa-snd-pcm-cleanup ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-cleanup pcm::alsa-snd-pcm)
-   (let loop ()
-      (let ((state (alsa-snd-pcm-get-state pcm)))
-	 ;; (tprint "alsa-snd-pcm-cleanup state=" state)
-	 (case state
-	    ((open prepared)
-	     #f)
-	    ((setup)
-	     (alsa-snd-pcm-prepare pcm)
-	     (loop))
-	    ((xrun)
-	     (alsa-snd-pcm-drop pcm)
-	     (loop))
-	    ((running)
-	     (with-handler
-		(lambda (e)
-		   ;; (tprint "alsa-snd-pcm-cleanup drain error: " e)
+   (with-access::alsa-snd-pcm pcm ($builtin)
+      (unless ($snd-pcm-nil? $builtin)
+	 (let loop ()
+	    (let ((state (alsa-snd-pcm-get-state pcm)))
+	       ;; (tprint "alsa-snd-pcm-cleanup state=" state)
+	       (case state
+		  ((open prepared)
 		   #f)
-		(alsa-snd-pcm-drain pcm))
-	     (loop))
-	    (else
-	     (with-handler
-		(lambda (e)
-		   ;; (tprint "alsa-snd-pcm-cleanup wait error: " e)
-		   #f)
-		(alsa-snd-pcm-wait pcm 1000))
-	     (loop))))))
+		  ((setup)
+		   (alsa-snd-pcm-prepare pcm)
+		   (loop))
+		  ((xrun)
+		   (alsa-snd-pcm-drop pcm)
+		   (loop))
+		  ((running)
+		   (with-handler
+		      (lambda (e)
+			 ;; (tprint "alsa-snd-pcm-cleanup drain error: " e)
+			 #f)
+		      (alsa-snd-pcm-drain pcm))
+		   (loop))
+		  (else
+		   (with-handler
+		      (lambda (e)
+			 ;; (tprint "alsa-snd-pcm-cleanup wait error: " e)
+			 #f)
+		      (alsa-snd-pcm-wait pcm 1000))
+		   (loop))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-hw-free! ...                                        */

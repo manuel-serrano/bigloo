@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Mon Mar 23 18:03:57 2015 (serrano)                */
+/*    Last change :  Sat Mar 28 07:29:48 2015 (serrano)                */
 /*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
@@ -68,9 +68,11 @@ bgl_snd_pcm_open( obj_t o, char *name, snd_pcm_stream_t stream, int mode ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_snd_pcm_reopen( obj_t o, char *name, snd_pcm_stream_t stream, int mode ) {
-   int res = snd_pcm_close( OBJ_TO_SND_PCM( o ) );
+   if( OBJ_TO_SND_PCM( o ) ) {
+      int res = snd_pcm_close( OBJ_TO_SND_PCM( o ) );
 
-   if( res ) return res;
+      if( res ) return res;
+   }
    return snd_pcm_open( &(OBJ_TO_SND_PCM( o )), name, stream, mode );
 }
 
