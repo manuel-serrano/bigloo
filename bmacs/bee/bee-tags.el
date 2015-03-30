@@ -66,7 +66,7 @@
 (defun bee-safe-read (port)
   (condition-case err
       (read port)
-    (error f)))
+    (error port)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-find-afile-module ...                                        */

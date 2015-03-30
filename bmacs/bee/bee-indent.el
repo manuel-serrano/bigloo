@@ -340,7 +340,7 @@ of the start of the containing expression."
 ;*---------------------------------------------------------------------*/
 ;*    bee-module-indent-hook ...                                       */
 ;*---------------------------------------------------------------------*/
-(defun bee-module-indent-hook (indent-state point)
+(defun bee-module-indent-hook (state point)
   (if (in-modulep state)
       (save-excursion
 	(if (= (1+ (cadr state)) (cadr (cdr state)))

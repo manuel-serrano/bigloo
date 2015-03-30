@@ -31,7 +31,7 @@
       ;; either the find or the ibuilder button
       ,@(if (bee-interface-builder-ready-p)
 	    ;; the ibuilder button
-	    `(,(ude-ibuilder-icon bee-interface-builder-start "Interface builder"))
+	    `((,ude-ibuilder-icon bee-interface-builder-start "Interface builder"))
 	  ;; the find button
 	  `((,ude-edit-icon bee-tags-find "Find definition")))
 

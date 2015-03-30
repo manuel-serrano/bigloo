@@ -308,8 +308,8 @@ If PATHS is omitted, `load-path' is used."
 ;*---------------------------------------------------------------------*/
 ;*    set-default-toolbar-visible ...                                  */
 ;*---------------------------------------------------------------------*/
-(defun set-default-toolbar-visible (t)
-  (set-specifier default-toolbar-visible-p t (selected-frame)))
+(defun set-default-toolbar-visible (b)
+  (set-specifier default-toolbar-visible-p b (selected-frame)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ude-set-nontext-pointer ...                                      */
