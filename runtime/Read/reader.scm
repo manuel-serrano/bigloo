@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Mar 26 11:13:21 2015 (serrano)                */
+;*    Last change :  Mon Mar 30 13:51:50 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -199,7 +199,10 @@
 		 (cell (assq no cycles)))
 	     (if (not (pair? cell))
 		 (read-error "no target for graph reference" no port)
-		 (cdr cell))))
+                 (let ((val (cdr cell)))
+		    (if (eq? val obj)
+			(read-error "Illegal cyclic reference" no port)
+			val)))))
 	 ((pair? obj)
 	  (set-car! obj (loop (car obj)))
 	  (set-cdr! obj (loop (cdr obj)))
@@ -737,9 +740,12 @@
       ((: #\# (+ digit) "#")
        (let* ((no (string->integer (the-substring 1 (-fx (the-length) 1))))
 	      (cell (assq no cycles)))
-	  (if (or (not resolve) (not (pair? cell)))
-	      (lambda () no)
-	      (cdr cell))))
+	  (cond ((not resolve)
+		 (lambda () no))
+		((pair? cell)
+		 (cdr cell))
+		(else
+		 (read-error "no target for graph reference" no (the-port))))))
       
       ;; special tokens
       ("#"
