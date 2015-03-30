@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Mar 30 13:51:50 2015 (serrano)                */
+;*    Last change :  Mon Mar 30 15:08:43 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -728,8 +728,11 @@
 	      (rsvp resolve))
 	  (set! resolve #f)
 	  (let ((the-object (ignore)))
-	     (if (eof-object? the-object)
+	     (cond
+		((eof-object? the-object)
 		 (read-error/loc pos "Illegal cyclic reference" no (the-port)))
+		((assq no cycles)
+                 (read-error "Illegal duplicate declaration" no (the-port))))
 	     (set! cycles (cons (cons no the-object) cycles))
 	     (set! resolve rsvp)
 	     (if rsvp
