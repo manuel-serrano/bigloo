@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Sat Mar 28 07:13:13 2015 (serrano)                */
+;*    Last change :  Mon Mar 30 20:35:09 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -315,7 +315,6 @@
 			 (when %!dpause
 			    (condition-variable-wait! %dcondv %dmutex)
 			    (liip))))
-		   (tprint "onplay...")
 		   (music-state-set! am 'play)
 		   (loop size i))
 		  (%!dabort
@@ -346,7 +345,6 @@
 				(condition-variable-wait! %bcondv %bmutex)))
 			  (when (>=fx (flac-debug) 1)
 			     (debug (current-microseconds) "\n"))
-			  (tprint "onplayer...")
 			  (music-state-set! am 'play)
 			  (loop size i))))
 		  (else
