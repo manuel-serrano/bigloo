@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Mar 30 20:35:17 2015 (serrano)                */
+/*    Last change :  Wed Apr  1 19:36:03 2015 (serrano)                */
 /*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -296,7 +296,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 		    void *client_data ) {
    FLAC__FrameHeader h = frame->header;
    obj_t obj = (obj_t)client_data;
-   float vol = BGL_DECODER_VOLUME( obj );
+   double vol = BGL_DECODER_VOLUME( obj );
    long i = 0;
 
    switch( h.bits_per_sample ) {
@@ -337,7 +337,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	       long channel;
 
 	       for( channel = 0; channel < h.channels; channel++ ) {
-		  FLAC__uint32 v = (FLAC__uint32)buffer[ channel ][ sample ];
+		  FLAC__int32 v = (FLAC__int32)(buffer[ channel ][ sample ]);
 
 		  buf[ i++ ] = (v >> 0) & 0xff;
 		  buf[ i++ ] = (v >> 8) & 0xff;
@@ -353,7 +353,7 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 
 		  buf[ i++ ] = (v >> 0) & 0xff;
 		  buf[ i++ ] = (v >> 8) & 0xff;
-		  buf[ i++ ] = ((v >> 16) & 0xff);
+		  buf[ i++ ] = (v >> 16) & 0xff;
 	       }
 	    }
 	 }
