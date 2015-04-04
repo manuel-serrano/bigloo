@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sat Mar 28 07:33:43 2015 (serrano)                */
+;*    Last change :  Sat Apr  4 18:35:36 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -23,7 +23,9 @@
 	      (name::bstring (default ""))
 	      (device::bstring read-only (default "default"))
 	      (stream::symbol read-only (default 'playback))
-	      (mode::symbol read-only (default 'default)))
+	      (mode::symbol read-only (default 'default))
+	      (hwbps::int (default 32))
+	      (hwsrate::int (default 384000)))
 
 	   (%$snd-pcm-nil)
 	   
@@ -45,6 +47,7 @@
 	   (alsa-snd-pcm-drop ::alsa-snd-pcm)
 	   (alsa-snd-pcm-drain ::alsa-snd-pcm)
 	   (alsa-snd-pcm-cleanup ::alsa-snd-pcm)
+	   (alsa-snd-pcm-hw-card-detect! ::alsa-snd-pcm ::int)
 	   (alsa-snd-pcm-hw-free! ::alsa-snd-pcm)
 	   (alsa-snd-pcm-hw-set-params! ::alsa-snd-pcm . rest)
 	   (alsa-snd-pcm-hw-test-params? ::alsa-snd-pcm . rest)
@@ -425,6 +428,112 @@
 		      (alsa-snd-pcm-wait pcm 1000))
 		   (loop))))))))
 
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-pcm-hw-card-detect! ...                                 */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-pcm-hw-card-detect! pcm::alsa-snd-pcm card::int)
+   
+   (define (alsa-string str)
+      (string-downcase! (string-replace! str #\_ #\-)))
+   
+   (define (alsa-try? card pcm #!key access format channels rate-near)
+      ;; CARE MS: 28 Mar 2015
+      ;; The following is not robust and should be radically changed.
+      ;; As of Mars 2015, I do know any better method.
+      ;; Currently, the following imprecise heuristics is used to check if a
+      ;; hardware (sound card) supports or not a certain configuration:
+      ;;   1- first, tests what alsa says (in some situation (I suspect
+      ;;      when there is not over/under-rating specified in the .asoundrc
+      ;;      file).
+      ;;   2- if alsa agrees, check if there is a /proc/asound file associated;
+      ;;      if there one, tries to set the card in the tested configuration and
+      ;;      read the /proc file to check if the configuration succeeded
+      (when (alsa-snd-pcm-hw-test-params? pcm
+	       :access access
+	       :format format
+	       :channels channels
+	       :rate-near rate-near)
+	 (if (not card)
+	     #t
+	     (let ((path ((@ format __r4_output_6_10_3)
+			  "/proc/asound/card~a/pcm0p/sub0/hw_params" card)))
+		(if (not (file-exists? path))
+		    #t
+		    (begin
+		       (alsa-snd-pcm-hw-set-params! pcm
+			  :access access
+			  :format format
+			  :channels channels
+			  :rate-near rate-near)
+		       (let* ((s (call-with-input-file path read-string))
+			      (f (pregexp-match "format: (.+)" s))
+			      (r (pregexp-match "rate: ([0-9]+)" s)))
+			  (cond
+			     ((string=? s "no setup\n")
+			      #f)
+			     ((or (not f) (not r))
+			      #t)
+			     (else
+			      (and (string-prefix?
+				      (symbol->string! format)
+				      (alsa-string (cadr f)))
+				   (=fx (string->integer (cadr r)) rate-near)))))))))))
+   
+   (with-access::alsa-snd-pcm pcm (device hwbps hwsrate)
+      (with-handler
+	 (lambda (e)
+	    (exception-notify e)
+	    #f)
+	 (alsa-snd-pcm-open pcm)
+	 (unwind-protect
+	    (cond
+	       ((alsa-try? card pcm
+		   :access 'rw-interleaved
+		   :format 's32
+		   :channels 2
+		   :rate-near 384000)
+		(set! hwbps 32)
+		(set! hwsrate 384000))
+	       ((alsa-try? card pcm
+		   :access 'rw-interleaved
+		   :format 's24-3le
+		   :channels 2
+		   :rate-near 384000)
+		(set! hwbps 24)
+		(set! hwsrate 384000))
+	       ((alsa-try? card pcm
+		   :access 'rw-interleaved
+		   :format 's24-3le
+		   :channels 2
+		   :rate-near 192000)
+		(set! hwbps 24)
+		(set! hwsrate 192000))
+	       ((alsa-try? card pcm
+		   :access 'rw-interleaved
+		   :format 's24-3le
+		   :channels 2
+		   :rate-near 96000)
+		(set! hwbps 24)
+		(set! hwsrate 96000))
+	       ((alsa-try? card pcm
+		   :access 'rw-interleaved
+		   :format 's24-3le
+		   :channels 2
+		   :rate-near 48000)
+		(set! hwbps 24)
+		(set! hwsrate 48000))
+	       ((alsa-try? card pcm
+		   :access 'rw-interleaved
+		   :format 's16
+		   :channels 2
+		   :rate-near 48000)
+		(set! hwbps 16)
+		(set! hwsrate 48000))
+	       (else
+		(set! hwbps 16)
+		(set! hwsrate 44100)))
+	    (alsa-snd-pcm-close pcm)))))
+	 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-hw-free! ...                                        */
 ;*---------------------------------------------------------------------*/

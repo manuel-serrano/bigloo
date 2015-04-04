@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Apr  1 19:36:03 2015 (serrano)                */
+/*    Last change :  Sat Apr  4 08:37:38 2015 (serrano)                */
 /*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -79,11 +79,20 @@ bgl_write_callback( const FLAC__StreamDecoder *,
 		    const FLAC__Frame *,
 		    const FLAC__int32 * const [],
 		    void * );
+static FLAC__StreamDecoderWriteStatus
+bgl_write_callback16( const FLAC__StreamDecoder *,
+		    const FLAC__Frame *,
+		    const FLAC__int32 * const [],
+		    void * );
 
 static void
 bgl_metadata_callback( const FLAC__StreamDecoder *,
 		       const FLAC__StreamMetadata *,
 		       void *client_data );
+static void
+bgl_metadata_callback16( const FLAC__StreamDecoder *,
+			 const FLAC__StreamMetadata *,
+			 void *client_data );
 
 static void
 bgl_error_callback( const FLAC__StreamDecoder *,
@@ -139,6 +148,34 @@ bgl_FLAC__stream_decoder_init_stream( FLAC__StreamDecoder *decoder,
       bgl_eof_callback,
       bgl_write_callback,
       bgl_metadata_callback,
+      bgl_error_callback,
+      (void *)obj );
+}
+
+/*---------------------------------------------------------------------*/
+/*    FLAC__StreamDecoderInitStatus                                    */
+/*    bgl_FLAC__stream_decoder_init_stream16 ...                       */
+/*---------------------------------------------------------------------*/
+FLAC__StreamDecoderInitStatus
+bgl_FLAC__stream_decoder_init_stream16( FLAC__StreamDecoder *decoder,
+				      obj_t obj ) {
+#if( defined( FLAC_DEBUG ) )
+   dbg_file = fopen( DEBUG_PATH, "w" );
+   fprintf( dbg_file, ";; index, count-read, *size, cres, count-write, rchecksum, bchecksum\n" );
+   
+   dbg_index = 0;
+   dbg_countread = 0;
+   dbg_countwrite = 0;
+#endif   
+   return FLAC__stream_decoder_init_stream(
+      decoder,
+      bgl_read_callback,
+      bgl_seek_callback,
+      bgl_tell_callback,
+      bgl_length_callback,
+      bgl_eof_callback,
+      bgl_write_callback16,
+      bgl_metadata_callback16,
       bgl_error_callback,
       (void *)obj );
 }
@@ -298,12 +335,11 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
    obj_t obj = (obj_t)client_data;
    double vol = BGL_DECODER_VOLUME( obj );
    long i = 0;
+   long sample;
+   char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
 
    switch( h.bits_per_sample ) {
       case 16: {
-	 long sample;
-	 char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
-
 	 if( vol >= 0.99 ) {
 	    for( sample = 0; sample < h.blocksize; sample++ ) {
 	       long channel;
@@ -329,9 +365,6 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	 break;
       }
       case 24: {
-	 long sample;
-	 unsigned char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
-
 	 if( vol >= 0.99 ) {
 	    for( sample = 0; sample < h.blocksize; sample++ ) {
 	       long channel;
@@ -349,11 +382,41 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 	       long channel;
 
 	       for( channel = 0; channel < h.channels; channel++ ) {
-		  FLAC__int32 v =  vol * buffer[ channel ][ sample ];
+		  FLAC__int32 v = vol * buffer[ channel ][ sample ];
 
 		  buf[ i++ ] = (v >> 0) & 0xff;
 		  buf[ i++ ] = (v >> 8) & 0xff;
 		  buf[ i++ ] = (v >> 16) & 0xff;
+	       }
+	    }
+	 }
+	 break;
+      }
+      case 32: {
+	 if( vol >= 0.99 ) {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       for( channel = 0; channel < h.channels; channel++ ) {
+		  FLAC__int32 v = (FLAC__int32)(buffer[ channel ][ sample ]);
+
+		  buf[ i++ ] = (v >> 0) & 0xff;
+		  buf[ i++ ] = (v >> 8) & 0xff;
+		  buf[ i++ ] = (v >> 16) & 0xff;
+		  buf[ i++ ] = (v >> 24) & 0xff;
+	       }
+	    }
+	 } else {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       for( channel = 0; channel < h.channels; channel++ ) {
+		  FLAC__int32 v = vol * buffer[ channel ][ sample ];
+
+		  buf[ i++ ] = (v >> 0) & 0xff;
+		  buf[ i++ ] = (v >> 8) & 0xff;
+		  buf[ i++ ] = (v >> 16) & 0xff;
+		  buf[ i++ ] = (v >> 24) & 0xff;
 	       }
 	    }
 	 }
@@ -390,6 +453,144 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
 }
 
 /*---------------------------------------------------------------------*/
+/*    static FLAC__StreamDecoderWriteStatus                            */
+/*    bgl_write_callback16 ...                                         */
+/*    -------------------------------------------------------------    */
+/*    As bgl_write_callback but forces 16bits/48Khz downsampling.      */
+/*---------------------------------------------------------------------*/
+static FLAC__StreamDecoderWriteStatus
+bgl_write_callback16( const FLAC__StreamDecoder *decoder,
+		    const FLAC__Frame *frame,
+		    const FLAC__int32 *const buffer[],
+		    void *client_data ) {
+   FLAC__FrameHeader h = frame->header;
+   obj_t obj = (obj_t)client_data;
+   double vol = BGL_DECODER_VOLUME( obj );
+   long i = 0;
+   long sample;
+   long rate = h.sample_rate;
+   char *buf = (unsigned char *)BGL_DECODER_OUTBUF( obj );
+
+   switch( h.bits_per_sample ) {
+      case 16: {
+	 if( vol >= 0.99 ) {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       for( channel = 0; channel < h.channels; channel++ ) {
+		  FLAC__int16 v = (FLAC__int16)(buffer[ channel ][ sample ]);
+		  buf[ i++ ] = (unsigned char)(v & 0xff);
+		  buf[ i++ ] = (unsigned char)((v >> 8) & 0xff);
+	       }
+	    }
+	 } else {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       for( channel = 0; channel < h.channels; channel++ ) {
+		  FLAC__int16 v = vol * (FLAC__int16)(buffer[ channel ][ sample ]);
+		  buf[ i++ ] = (unsigned char)(v & 0xff);
+		  buf[ i++ ] = (unsigned char)((v >> 8) & 0xff);
+	       }
+	    }
+	 }
+
+	 break;
+      }
+      case 24: {
+	 if( vol >= 0.99 ) {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       if( rate <= 48000 || (sample & 1) ) {
+		  for( channel = 0; channel < h.channels; channel++ ) {
+		     FLAC__int32 v = (FLAC__int32)(buffer[ channel ][ sample ]);
+
+		     buf[ i++ ] = (v >> 8) & 0xff;
+		     buf[ i++ ] = (v >> 16) & 0xff;
+		  }
+	       }
+	    }
+	 } else {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       if( rate <= 48000 || (sample & 1) ) {
+		  for( channel = 0; channel < h.channels; channel++ ) {
+		     FLAC__int32 v = vol * buffer[ channel ][ sample ];
+
+		     buf[ i++ ] = (v >> 8) & 0xff;
+		     buf[ i++ ] = (v >> 16) & 0xff;
+		  }
+	       }
+	    }
+	 }
+	 break;
+      }
+      case 32: {
+	 if( vol >= 0.99 ) {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       if( rate <= 48000 || (sample & 1) ) {
+		  for( channel = 0; channel < h.channels; channel++ ) {
+		     FLAC__int32 v = (FLAC__int32)(buffer[ channel ][ sample ]);
+
+		     buf[ i++ ] = (v >> 16) & 0xff;
+		     buf[ i++ ] = (v >> 24) & 0xff;
+		  }
+	       }
+	    }
+	 } else {
+	    for( sample = 0; sample < h.blocksize; sample++ ) {
+	       long channel;
+
+	       if( rate <= 48000 || (sample & 1) ) {
+		  for( channel = 0; channel < h.channels; channel++ ) {
+		     FLAC__int32 v = vol * buffer[ channel ][ sample ];
+
+		     buf[ i++ ] = (v >> 16) & 0xff;
+		     buf[ i++ ] = (v >> 24) & 0xff;
+		  }
+	       }
+	    }
+	 }
+	 break;
+      }
+	 
+      default: {
+	 char msg[ 128 ];
+
+	 sprintf( msg, "Bit rate unsupported: %d\n", h.bits_per_sample );
+	 bgl_flac_error( "flac-decoder-decode", msg, obj );
+      }
+   }
+
+#if( defined( FLAC_DEBUG ) )
+   dbg_countwrite += i;
+#endif
+   
+   if( h.number_type == FLAC__FRAME_NUMBER_TYPE_FRAME_NUMBER ) {
+      BGL_DECODER_SAMPLE( obj ) =
+	 (rate <= 48000) ? h.number.frame_number : h.number.frame_number / 2;
+   } else {
+      BGL_DECODER_SAMPLE( obj ) =
+	 (rate <= 48000) ? h.number.sample_number : h.number.sample_number / 2;
+   }
+
+   if( CBOOL( bgl_flac_decoder_write(
+		 (BgL_flaczd2decoderzd2_bglt)obj,
+		 i, 
+		 rate <= 48000 ? rate : 48000,
+		 h.channels,
+		 h.bits_per_sample > 16 ? 16 : h.bits_per_sample ) ) ) {
+      return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+   } else {
+      return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bgl_metadata_callback ...                                        */
 /*---------------------------------------------------------------------*/
@@ -405,6 +606,34 @@ bgl_metadata_callback( const FLAC__StreamDecoder *decoder,
 				 metadata->data.stream_info.sample_rate,
 				 metadata->data.stream_info.channels,
 				 metadata->data.stream_info.bits_per_sample );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_metadata_callback16 ...                                      */
+/*    -------------------------------------------------------------    */
+/*    Same as bgl_metadata_callback but force downsampling to 16/48Khz */
+/*---------------------------------------------------------------------*/
+static void
+bgl_metadata_callback16( const FLAC__StreamDecoder *decoder,
+		       const FLAC__StreamMetadata *metadata,
+		       void *client_data ) {
+   obj_t obj = (obj_t)client_data;
+
+   if( metadata->type == FLAC__METADATA_TYPE_STREAMINFO )  {
+      long srate =
+	 metadata->data.stream_info.sample_rate > 48000
+	 ? 48000 : metadata->data.stream_info.sample_rate;
+      long bps =
+	 metadata->data.stream_info.bits_per_sample > 16
+	 ? 16 : metadata->data.stream_info.bits_per_sample;
+      
+      bgl_flac_decoder_metadata( (BgL_flaczd2decoderzd2_bglt)obj,
+				 metadata->data.stream_info.total_samples,
+				 srate,
+				 metadata->data.stream_info.channels,
+				 bps );
    }
 }
 

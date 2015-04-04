@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 18 19:18:08 2011                          */
-;*    Last change :  Mon Mar 30 20:35:09 2015 (serrano)                */
+;*    Last change :  Sat Apr  4 18:57:52 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    FLAC Alsa decoder                                                */
@@ -191,7 +191,10 @@
 	    (with-access::alsabuffer buffer (url)
 	       (when (>=fx (flac-debug) 1) (debug-init! url))
 	       (unwind-protect
-		  (flac-decoder-decode %flac)
+		  (with-access::alsa-snd-pcm pcm (hwbps)
+		     (if (<=fx hwbps 16)
+			 (flac-decoder-decode16 %flac)
+			 (flac-decoder-decode %flac)))
 		  (with-access::alsabuffer %buffer (%eof)
 		     (alsa-snd-pcm-cleanup pcm)
 		     (music-state-set! am (if %eof 'ended 'stop))

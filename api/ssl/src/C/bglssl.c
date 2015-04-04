@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sat Mar 28 17:52:15 2015 (serrano)                */
+/*    Last change :  Fri Apr  3 17:06:11 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -65,6 +65,8 @@ const char *root_certs[] = {
 #include "root_certs.h"
   NULL
 };
+
+extern obj_t void_star_to_obj( void * );
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
@@ -270,7 +272,7 @@ input_close_hook( obj_t env, obj_t ip ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 output_close_hook( obj_t env, obj_t op ) {
-   close( (int)(PORT( op ).userdata) );
+   close( (int)(long)(PORT( op ).userdata) );
    
    return op;
 }
@@ -500,7 +502,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    PORT( ip ).sysclose = 0L;
    INPUT_PORT( ip ).sysread = &sslread;
    
-   PORT( op ).userdata = (void *)PORT_FD( op );
+   PORT( op ).userdata = (void *)(long)PORT_FD( op );
    PORT( op ).stream.channel = (obj_t)ssl;
    OUTPUT_PORT( op ).stream_type = BGL_STREAM_TYPE_CHANNEL;
    PORT( op ).sysclose = 0L;
@@ -1875,3 +1877,137 @@ bgl_ssl_ctx_close( secure_context sc ) {
    SSL_CTX_free( sc->BgL_z42nativez42 );
 }
    
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_dh_check ...                                                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_dh_check( DH *dh ) {
+   int codes;
+   
+   if( !DH_check( dh, &codes ) ) {
+      return BTRUE;
+   }
+   if( codes & DH_CHECK_P_NOT_SAFE_PRIME ) {
+      return string_to_symbol( "DH-CHECK-P-NOT-PRIME" );
+   }
+   if( codes & DH_CHECK_P_NOT_PRIME ) {
+      return string_to_symbol( "DH-CHECK-P-NOT-PRIME" );
+   }
+   
+   if( codes & DH_UNABLE_TO_CHECK_GENERATOR ) {
+      return string_to_symbol( "DH-UNABLE-TO-CHECK-GENERATOR" );
+   }
+      
+   if( codes & DH_NOT_SUITABLE_GENERATOR ) {
+      return string_to_symbol( "DH_NOT_SUITABLE_GENERATOR" );
+   }
+   return BFALSE;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_dh_check_pub_key ...                                         */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_dh_check_pub_key( DH *dh, BIGNUM *key ) {
+   int checked, checkr;
+
+   checked = DH_check_pub_key( dh, key, &checkr );
+   
+   if( !checked ) {
+      return BTRUE;
+   }
+   if( checkr ) {
+      if( checkr & DH_CHECK_PUBKEY_TOO_SMALL ) {
+	 return string_to_symbol( "DH-CHECK-PUBKEY-TOO-SMALL" );
+      }
+      if( checkr & DH_CHECK_PUBKEY_TOO_LARGE ) {
+	 return string_to_symbol( "DH-CHECK-PUBKEY-TOO-LARGE" );
+      }
+      
+      return string_to_symbol( "INVALID-KEY" );
+   }
+   return BFALSE;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BIGNUM *                                                         */
+/*    bgl_bn_bin2bn ...                                                */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BIGNUM *
+bgl_bn_bin2bn( char *s, int len ) {
+   return BN_bin2bn( s, len, 0 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BIGNUM *                                                         */
+/*    bgl_dh_private_key ...                                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BIGNUM *
+bgl_dh_private_key( DH *dh ) {
+   return dh->priv_key;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_dh_private_key_set ...                                       */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void 
+bgl_dh_private_key_set( DH *dh, BIGNUM *v ) {
+   dh->priv_key = v;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BIGNUM *                                                         */
+/*    bgl_dh_public_key ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BIGNUM *
+bgl_dh_public_key( DH *dh ) {
+   return dh->pub_key;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_dh_public_key_set ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void 
+bgl_dh_public_key_set( DH *dh, BIGNUM *v ) {
+   dh->pub_key = v;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BIGNUM *                                                         */
+/*    bgl_dh_p ...                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BIGNUM *
+bgl_dh_p( DH *dh ) {
+   return dh->p;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_dh_p_set ...                                                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void 
+bgl_dh_p_set( DH *dh, BIGNUM *v ) {
+   dh->p = v;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BIGNUM *                                                         */
+/*    bgl_dh_g ...                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BIGNUM *
+bgl_dh_g( DH *dh ) {
+   return dh->g;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_dh_g_set ...                                                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void 
+bgl_dh_g_set( DH *dh, BIGNUM *v ) {
+   dh->g = v;
+}

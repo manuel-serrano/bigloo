@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu Mar  5 10:08:37 2015 (serrano)                */
+;*    Last change :  Sat Apr  4 08:19:34 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -29,12 +29,18 @@
 	   (type $ssl void* "void *")
 	   (type $bio void* "void *")
 	   (type $X509-store void* "void *")
+	   (type $dh void* "void *")
+	   (type $bignum void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
 	   (macro $ssl-nil::$ssl "0L")
 	   (macro $bio-nil::$bio "0L")
 	   (macro $X509-store-nil::$X509-store "0L")
+	   (macro $dh-nil::$dh "0L")
 
+	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
+	   (macro $bignum->obj::obj ($bignum) "void_star_to_obj")
+	   
 	   ($ssl-version::string () "bgl_ssl_version")
            ($certificate-subject::bstring (::certificate)
 	      "bgl_ssl_certificate_subject")
@@ -114,7 +120,43 @@
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
 	   (macro $ssl-client-sslv23::int "BGLSSL_SSLV23")
 	   (macro $ssl-client-tlsv1::int "BGLSSL_TLSV1")
-	   (macro $ssl-client-dtlsv1::int "BGLSSL_DTLSV1"))
+	   (macro $ssl-client-dtlsv1::int "BGLSSL_DTLSV1")
+
+	   (macro $DH-GENERATOR-2::int "DH_GENERATOR_2")
+
+	   (macro $dh-new::$dh () "DH_new")
+	   (macro $dh-size::int (::$dh) "DH_size")
+	   (macro $dh-generate-parameters-ex::int (::$dh ::int ::int ::long)
+		  "DH_generate_parameters_ex")
+	   (macro $dh-generate-key::int (::$dh)
+		  "DH_generate_key")
+	   (macro $dh-compute-key::int (::string ::$bignum ::$dh)
+		  "DH_compute_key")
+	   ($bgl-dh-check::obj (::$dh) "bgl_dh_check")
+	   ($bgl-dh-check-pub-key::obj (::$dh ::$bignum) "bgl_dh_check_pub_key")
+	   ($bgl-bn-bin2bn::$bignum (::string ::int) "bgl_bn_bin2bn")
+	   (macro $bn-bn2bin::int (::$bignum ::string) "BN_bn2bin")
+	   (macro $bn-num-bytes::int (::$bignum) "BN_num_bytes")
+	   (macro $bn-free::void (::$bignum) "BN_free")
+	   (macro $bn-new::$bignum () "BN_new")
+	   (macro $bn-set-word::bool (::$bignum ::int) "BN_set_word")
+
+	   ($bgl-dh-private-key::$bignum (::$dh)
+	      "bgl_dh_private_key")
+	   ($bgl-dh-private-key-set!::void (::$dh $bignum)
+	      "bgl_dh_private_key_set")
+	   ($bgl-dh-public-key::$bignum (::$dh)
+	      "bgl_dh_public_key")
+	   ($bgl-dh-public-key-set!::void (::$dh $bignum)
+	      "bgl_dh_public_key_set")
+	   ($bgl-dh-p::$bignum (::$dh)
+	      "bgl_dh_p")
+	   ($bgl-dh-p-set!::void (::$dh $bignum)
+	      "bgl_dh_p_set")
+	   ($bgl-dh-g::$bignum (::$dh)
+	      "bgl_dh_g")
+	   ($bgl-dh-g-set!::void (::$dh $bignum)
+	      "bgl_dh_g_set"))
    
    (java (export %make-certificate "make_certificate")
       (export %make-private-key "make_private_key")
@@ -220,7 +262,22 @@
 	   (generic ssl-connection-clear-pending ::ssl-connection)
 	   (generic ssl-connection-set-session ssl::ssl-connection ::bstring)
 	   (generic ssl-connection-verify-error ::ssl-connection)
-	   (generic ssl-connection-get-peer-certificate ::ssl-connection))
+	   (generic ssl-connection-get-peer-certificate ::ssl-connection)
+
+	   (generic dh-size::int ::dh)
+	   (generic dh-generate-parameters-ex ::dh ::int ::symbol)
+	   (generic dh-generate-key::bool ::dh)
+	   (generic dh-check ::dh)
+	   (generic dh-check-pub-key ::dh ::foreign)
+	   (generic dh-compute-key ::dh ::foreign)
+	   
+	   (bn-bin2bn::obj ::bstring)
+	   (bn-bn2bin::bstring ::foreign)
+	   (bn-num-bytes::int ::foreign)
+	   (bn-free::obj ::foreign)
+	   (bn-new::obj)
+	   (bn-set-word::bool ::foreign ::int)
+	   )
 	   
    
    (cond-expand
@@ -231,18 +288,55 @@
 	     ($native::$ssl-ctx (default $ssl-ctx-nil))
 	     ($ca-store::$X509-store (default $X509-store-nil))
 	     (method::bstring read-only (default "SSLv23_method")))
-
+	  
 	  (class ssl-connection
-	      (ssl-connection-init)
-	      ($native::$ssl (default $ssl-nil))
-	      ($bio-read::$bio (default $bio-nil))
-	      ($bio-write::$bio (default $bio-nil))
-	      (ctx::secure-context read-only)
-	      (isserver::bool read-only)
-	      (request-cert::bool read-only (default #f))
-	      (server-name::obj read-only (default #f))
-	      (reject-unauthorized::bool read-only)
-	      (info-callback (default #f)))))
+	     (ssl-connection-init)
+	     ($native::$ssl (default $ssl-nil))
+	     ($bio-read::$bio (default $bio-nil))
+	     ($bio-write::$bio (default $bio-nil))
+	     (ctx::secure-context read-only)
+	     (isserver::bool read-only)
+	     (request-cert::bool read-only (default #f))
+	     (server-name::obj read-only (default #f))
+	     (reject-unauthorized::bool read-only)
+	     (info-callback (default #f)))
+	  
+	  (class dh
+	     (dh-init)
+	     ($native::$dh (default $dh-nil))
+	     (p
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-p $native)))))
+		(set (lambda (o::dh v::foreign)
+			(with-access::dh o ($native)
+			   ($bgl-dh-p-set! $native ($obj->bignum v))
+			   v))))
+	     (g
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-g $native)))))
+		(set (lambda (o::dh v::foreign)
+			(with-access::dh o ($native)
+			   ($bgl-dh-g-set! $native ($obj->bignum v))
+			   v))))
+	     (private-key
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-private-key $native)))))
+		(set (lambda (o::dh v::foreign)
+			(with-access::dh o ($native)
+			   ($bgl-dh-private-key-set! $native ($obj->bignum v))
+			   v))))
+	     (public-key
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-public-key $native)))))
+		(set (lambda (o::dh v::foreign)
+			(with-access::dh o ($native)
+			   ($bgl-dh-public-key-set! $native ($obj->bignum v))
+			   v)))))))
+			     
       (else
        (export
 	  (class secure-context
@@ -250,7 +344,9 @@
 
 	  (class ssl-connection
 	     (ctx::secure-context read-only)
-	     (issserver::bool read-only))))))
+	     (issserver::bool read-only))
+
+	  (class dh)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-version ...                                                  */
@@ -674,3 +770,157 @@
        ($bgl-ssl-connection-get-peer-certificate ssl))
       (else
        #f)))
+
+;*---------------------------------------------------------------------*/
+;*    dh-init ::dh ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-init dh::dh)
+   (cond-expand
+      (bigloo-c
+       (with-access::dh dh ($native)
+	  (set! $native ($dh-new))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    dh-size ::dh ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-size::int dh::dh)
+   (cond-expand
+      (bigloo-c (with-access::dh dh ($native) ($dh-size $native)))
+      (else 0)))
+   
+;*---------------------------------------------------------------------*/
+;*    dh-generate-parameters-ex ::dh ...                               */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-generate-parameters-ex dh::dh len::int generator::symbol)
+   (cond-expand
+      (bigloo-c
+       (with-access::dh dh ($native)
+	  ($dh-generate-parameters-ex $native len
+	     (case generator
+		((DH-GENERATOR-2) $DH-GENERATOR-2)
+		(else (error "dh-generate-parameters-ex" "Illegal generator"
+			 generator)))
+	     0)))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    dh-check ::dh ...                                                */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-check dh::dh)
+   (cond-expand
+      (bigloo-c
+       (with-access::dh dh ($native)
+	  ($bgl-dh-check $native)))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    dh-check-pub-key ::dh ...                                        */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-check-pub-key dh::dh key::foreign)
+   (cond-expand
+      (bigloo-c
+       (with-access::dh dh ($native)
+	  ($bgl-dh-check-pub-key $native ($obj->bignum key))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    dh-compute-key ::dh ...                                          */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-compute-key dh::dh key::foreign)
+   (cond-expand
+      (bigloo-c
+       (with-access::dh dh ($native)
+	  (let* ((size (dh-size dh))
+		 (str (make-string size)))
+	     (let ((sz ($dh-compute-key str ($obj->bignum key) $native)))
+		(cond
+		   ((=fx sz -1)
+		    #f)
+		   ((=fx sz (string-length str))
+		    str)
+		   (else
+		    (blit-string! str 0 str (-fx size sz) sz)
+		    (let loop ((i (-fx size sz)))
+		       (when (>fx i 0)
+			  (let ((ni (-fx i 1)))
+			     (string-set! str ni #a000)
+			     (loop ni))))
+		    str))))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    dh-generate-key ::dh ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (dh-generate-key dh::dh)
+   (cond-expand
+      (bigloo-c
+       (with-access::dh dh ($native)
+	  (not (=fx ($dh-generate-key $native) 0))))
+      (else
+       #f)))
+   
+;*---------------------------------------------------------------------*/
+;*    bn-bin2bn ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (bn-bin2bn::obj string)
+   (cond-expand
+      (bigloo-c
+       ($bignum->obj ($bgl-bn-bin2bn string (string-length string))))
+      (else #f)))
+
+;*---------------------------------------------------------------------*/
+;*    bn-bn2bin ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (bn-bn2bin bn::foreign)
+   (cond-expand
+      (bigloo-c
+       (let* ((sz (bn-num-bytes bn))
+	      (st (make-string sz)))
+	  ($bn-bn2bin ($obj->bignum bn) st)
+	  st))
+      (else "")))
+   
+;*---------------------------------------------------------------------*/
+;*    bn-num-bytes ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (bn-num-bytes bn)
+   (cond-expand
+      (bigloo-c
+       ($bn-num-bytes ($obj->bignum bn)))
+      (else 0)))
+   
+;*---------------------------------------------------------------------*/
+;*    bn-free ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (bn-free bn)
+   (cond-expand
+      (bigloo-c
+       ($bn-free ($obj->bignum bn))))
+   #unspecified)
+   
+;*---------------------------------------------------------------------*/
+;*    bn-new ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (bn-new)
+   (cond-expand
+      (bigloo-c
+       ($bignum->obj ($bn-new)))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    bn-set-word ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (bn-set-word bn w)
+   (cond-expand
+      (bigloo-c
+       ($bn-set-word ($obj->bignum bn) w))
+      (else
+       #f)))
+   
