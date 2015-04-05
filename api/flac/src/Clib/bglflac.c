@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat Apr  4 08:37:38 2015 (serrano)                */
+/*    Last change :  Sun Apr  5 06:23:48 2015 (serrano)                */
 /*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -341,13 +341,26 @@ bgl_write_callback( const FLAC__StreamDecoder *decoder,
    switch( h.bits_per_sample ) {
       case 16: {
 	 if( vol >= 0.99 ) {
-	    for( sample = 0; sample < h.blocksize; sample++ ) {
-	       long channel;
-
-	       for( channel = 0; channel < h.channels; channel++ ) {
-		  FLAC__int16 v = (FLAC__int16)(buffer[ channel ][ sample ]);
+	    if( h.channels == 2 ) {
+	       // fastest optimized path, 16bps, 2 channels => loop unfolded
+	       for( sample = 0; sample < h.blocksize; sample++ ) {
+		  FLAC__int16 v = (FLAC__int16)(buffer[ 0 ][ sample ]);
+		  
 		  buf[ i++ ] = (unsigned char)(v & 0xff);
 		  buf[ i++ ] = (unsigned char)((v >> 8) & 0xff);
+		  v = (FLAC__int16)(buffer[ 1 ][ sample ]);
+		  buf[ i++ ] = (unsigned char)(v & 0xff);
+		  buf[ i++ ] = (unsigned char)((v >> 8) & 0xff);
+	       }
+	    } else {
+	       for( sample = 0; sample < h.blocksize; sample++ ) {
+		  long channel;
+
+		  for( channel = 0; channel < h.channels; channel++ ) {
+		     FLAC__int16 v = (FLAC__int16)(buffer[ channel ][ sample ]);
+		     buf[ i++ ] = (unsigned char)(v & 0xff);
+		     buf[ i++ ] = (unsigned char)((v >> 8) & 0xff);
+		  }
 	       }
 	    }
 	 } else {

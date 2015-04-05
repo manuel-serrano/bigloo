@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sat Apr  4 18:35:36 2015 (serrano)                */
+;*    Last change :  Sun Apr  5 06:34:17 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -433,8 +433,9 @@
 ;*---------------------------------------------------------------------*/
 (define (alsa-snd-pcm-hw-card-detect! pcm::alsa-snd-pcm card::int)
    
-   (define (alsa-string str)
-      (string-downcase! (string-replace! str #\_ #\-)))
+   (define (alsa-string-bps str)
+      (let ((i (string-index str #\_)))
+	 (string-downcase! (if i (substring str 0 i) str))))
    
    (define (alsa-try? card pcm #!key access format channels rate-near)
       ;; CARE MS: 28 Mar 2015
@@ -446,8 +447,8 @@
       ;;      when there is not over/under-rating specified in the .asoundrc
       ;;      file).
       ;;   2- if alsa agrees, check if there is a /proc/asound file associated;
-      ;;      if there one, tries to set the card in the tested configuration and
-      ;;      read the /proc file to check if the configuration succeeded
+      ;;      if there one, tries to set the card in the tested configuration 
+      ;;      and parse the /proc file to check if the configuration succeeded
       (when (alsa-snd-pcm-hw-test-params? pcm
 	       :access access
 	       :format format
@@ -456,7 +457,8 @@
 	 (if (not card)
 	     #t
 	     (let ((path ((@ format __r4_output_6_10_3)
-			  "/proc/asound/card~a/pcm0p/sub0/hw_params" card)))
+			  "/proc/asound/card~a/pcm0p/sub0/hw_params" card))
+		   (bps (alsa-string-bps (symbol->string! format))))
 		(if (not (file-exists? path))
 		    #t
 		    (begin
@@ -474,9 +476,7 @@
 			     ((or (not f) (not r))
 			      #t)
 			     (else
-			      (and (string-prefix?
-				      (symbol->string! format)
-				      (alsa-string (cadr f)))
+			      (and (string>=? (alsa-string-bps (cadr f)) bps)
 				   (=fx (string->integer (cadr r)) rate-near)))))))))))
    
    (with-access::alsa-snd-pcm pcm (device hwbps hwsrate)
