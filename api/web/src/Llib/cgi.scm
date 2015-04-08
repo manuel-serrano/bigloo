@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Sat Jan 10 15:01:35 2015 (serrano)                */
+;*    Last change :  Wed Apr  8 11:00:26 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -177,7 +177,7 @@
 	 ((: (* (in #\space #\tab)) (? #\Return) #\Newline)
 	  header)
 	 (else
-	  ;; accumultate all the characters to EOL for a better error message
+	  ;; accumulate all the characters to EOL for a better error message
 	  (let ((c (the-failure)))
 	     (let ((s (if (char? c)
 			  (string-for-read
@@ -216,8 +216,9 @@
 (define cgi-multipart-data-grammar
    (regular-grammar (boundary lines)
       ((+ (or (out "\r\n")
-	      (: "\n" (or (out "-") (: "-" (out "-"))))
-	      (: "\r" (or (out "\n") (: "\n" (out "-")) (: "\n-" (out "-"))))))
+	      (: "\n" (or (out "-\r") (: "-" (out "-")) (: "\r" (out "\n"))))
+	      (: "\r" (or (out "\n") (: "\n" (out "-")) (: "\n-" (out "-"))))
+	      "\n"))
        (set! lines (cons (the-string) lines))
        (ignore))
       ((: (? #\Return) "\n--")

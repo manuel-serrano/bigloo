@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Sat Mar 28 17:23:19 2015 (serrano)                */
+;*    Last change :  Wed Apr  8 10:29:35 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -771,9 +771,15 @@
 		#f)
 	       ((trailer)
 		(let ((l (http-read-line ip)))
-		   (when (eof-object? l)
-		      (set! state 'eof))
-		   ""))
+		   (cond
+		      ((eof-object? l) 
+		       (set! state 'eof)
+		       "")
+		      ((or (string=? l "\r\n") (string=? l "\n"))
+		       (set! state 'eof)
+		       l)
+		      (else
+		       l))))
 	       ((chunk)
 		(cond
 		   ((=fx sz 0)
