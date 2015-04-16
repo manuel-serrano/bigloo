@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Wed Apr  8 10:29:35 2015 (serrano)                */
+;*    Last change :  Sun Apr 12 07:45:42 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -322,7 +322,7 @@
 ;*    display-authentication ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (display-authentication login out)
-   (let ((uinfo (base64-encode login)))
+   (let ((uinfo (base64-encode login -1)))
       (display-line "Authorization: Basic " uinfo out)))
 		 
 ;*---------------------------------------------------------------------*/
