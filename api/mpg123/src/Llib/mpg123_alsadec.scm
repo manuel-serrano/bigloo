@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat Mar 28 07:13:10 2015 (serrano)                */
+;*    Last change :  Sat Apr 18 07:17:08 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -27,7 +27,10 @@
        (export (class mpg123-alsadecoder::alsadecoder
 		  (outbuf::bstring read-only (default (make-string (*fx 5 1024))))
 	          (%mpg123 read-only (default (instantiate::mpg123-handle)))
-		  (%!dseek::long (default -1)))))))
+		  (%!dseek::long (default -1))
+		  (%rate::int (default 0))
+		  (%channels::int (default 0))
+		  (%encoding::symbol (default 'unknown)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa dependency                                                  */
@@ -40,7 +43,7 @@
 ;*    $compiler-debug ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-macro ($compiler-debug)
-   (begin (bigloo-compiler-debug) 1))
+   (bigloo-compiler-debug))
 
 ;*---------------------------------------------------------------------*/
 ;*    mpg123-debug ...                                                 */
@@ -55,7 +58,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (object-print o::mpg123-alsadecoder port print-slot)
    (display "#|mpg123-alsadecoder|" port))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    alsadecoder-init ::mpg123-alsadecoder ...                        */
 ;*---------------------------------------------------------------------*/
@@ -131,9 +134,9 @@
 	    (define outlen (string-length outbuf))
 	    
 	    (define decsz (minfx (*fx 2 outlen) inlen))
-
+	    
 	    (define has-been-empty-once #f)
-
+	    
 	    (define (buffer-percentage-filled)
 	       (llong->fixnum
 		  (/llong (*llong #l100
@@ -165,7 +168,7 @@
 			   "%[0m"
 			   (if %eof " EOF" "")
 			   " url=" url "\n")))))
-
+	    
 	    (define (inc-tail! size)
 	       ;; increment the tail
 	       (let ((ntail (+fx %tail size)))
@@ -187,9 +190,14 @@
 		     (condition-variable-broadcast! %bcondv))
 		  (when (>=fx (mpg123-debug) 2)
 		     (debug (current-microseconds) "\n"))))
-
+	    
 	    (when (>fx (mpg123-debug) 0) (debug-init! url))
-
+	    
+	    ;; restore last mpg123 pcm configuration
+	    (with-access::mpg123-alsadecoder dec (%rate)
+	       (when (>fx %rate 0)
+		  (mpg123-hwparams-set! dec am buffer)))
+	    
 	    (let loop ()
 	       (cond
 		  (%!dpause
@@ -294,7 +302,7 @@
 			    (else
 			     ;; an error occurred
 			     (music-error-set! am "mp3 decoding error"))))))))
-
+	    
 	    (when (>fx (mpg123-debug) 0)
 	       (debug-stop! url))))))
 
@@ -302,30 +310,43 @@
 ;*    new-format ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (new-format dec am buffer)
-   (with-access::alsamusic am (%status pcm)
-      (with-access::mpg123-alsadecoder dec (%mpg123
-					      buffer-time-near
-					      buffer-size-near-ratio
-					      period-size-near-ratio)
-	 (multiple-value-bind (rate channels encoding)
-	    (mpg123-get-format %mpg123)
-	    (alsa-snd-pcm-reopen pcm)
-	    (alsa-snd-pcm-hw-set-params! pcm
-	       :access 'rw-interleaved
-	       :format encoding
-	       :channels channels
-	       :rate-near rate
-	       :buffer-size-near-ratio buffer-size-near-ratio
-	       :period-size-near-ratio period-size-near-ratio)
-	    (alsa-snd-pcm-sw-set-params! pcm
-	       :start-threshold 1
-	       :avail-min 1)))
+   (with-access::mpg123-alsadecoder dec (%rate %channels %encoding %mpg123)
+      (multiple-value-bind (rate channels encoding)
+	 (mpg123-get-format %mpg123)
+	 (set! %rate rate)
+	 (set! %channels channels)
+	 (set! %encoding encoding)
+	 (mpg123-hwparams-set! dec am buffer)))
+   (with-access::alsamusic am (%status)
       (with-access::musicstatus %status (songpos songlength bitrate khz)
 	 (set! songpos (alsadecoder-position dec buffer))
 	 (multiple-value-bind (brate rate)
 	    (alsadecoder-info dec)
 	    (set! bitrate brate)
 	    (set! khz rate)))))
+
+;*---------------------------------------------------------------------*/
+;*    mpg123-hwparams-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define (mpg123-hwparams-set! dec am buffer)
+   (with-access::alsamusic am (%status pcm)
+      (with-access::mpg123-alsadecoder dec (buffer-time-near
+					      buffer-size-near-ratio
+					      period-size-near-ratio
+					      (rate %rate)
+					      (channels %channels)
+					      (encoding %encoding))
+	 (alsa-snd-pcm-reopen pcm)
+	 (alsa-snd-pcm-hw-set-params! pcm
+	    :access 'rw-interleaved
+	    :format encoding
+	    :channels channels
+	    :rate-near rate
+	    :buffer-size-near-ratio buffer-size-near-ratio
+	    :period-size-near-ratio period-size-near-ratio)
+	 (alsa-snd-pcm-sw-set-params! pcm
+	    :start-threshold 1
+	    :avail-min 1))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *debug-port* ...                                                 */
