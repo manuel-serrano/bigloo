@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat May 12 16:17:55 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Sat Apr 18 07:44:21 2015 (serrano)                */
+/*    Copyright   :  2011-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
 /*=====================================================================*/

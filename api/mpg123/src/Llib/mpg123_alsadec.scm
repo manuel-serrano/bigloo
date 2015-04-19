@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Sat Apr 18 07:17:08 2015 (serrano)                */
+;*    Last change :  Sun Apr 19 09:27:50 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 Alsa decoder                                              */
@@ -197,7 +197,7 @@
 	    (with-access::mpg123-alsadecoder dec (%rate)
 	       (when (>fx %rate 0)
 		  (mpg123-hwparams-set! dec am buffer)))
-	    
+
 	    (let loop ()
 	       (cond
 		  (%!dpause

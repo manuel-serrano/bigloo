@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sat Apr 18 07:36:06 2015 (serrano)                */
+;*    Last change :  Sun Apr 19 09:28:32 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -385,19 +385,19 @@
    
    (define (play-url o::alsamusic d::alsadecoder n::int urls::pair pid::int notify::bool)
       (let ((buffer (open-buffer o d urls)))
-	 (with-access::alsamusic o (%amutex %!pid %buffer %decoder)
-	    (synchronize %amutex
-	       (set! %buffer buffer)
-	       (set! %decoder d)
-	       (set! %!pid pid)
-	       (update-song-status! o n pid (car urls)))
-	    (when notify
-	       (with-access::alsamusic o (%status onevent)
-		  (with-access::musicstatus %status (playlistid)
-		     (onevent o 'playlist playlistid)))))
 	 (unwind-protect
 	    (begin
 	       (alsadecoder-reset! d)
+	       (with-access::alsamusic o (%amutex %!pid %buffer %decoder)
+		  (synchronize %amutex
+		     (set! %buffer buffer)
+		     (set! %decoder d)
+		     (set! %!pid pid)
+		     (update-song-status! o n pid (car urls)))
+		  (when notify
+		     (with-access::alsamusic o (%status onevent)
+			(with-access::musicstatus %status (playlistid)
+			   (onevent o 'playlist playlistid)))))
 	       (alsadecoder-decode d o buffer))
 	    (alsabuffer-close buffer))))
    
