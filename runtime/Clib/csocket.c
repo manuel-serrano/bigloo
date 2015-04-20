@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jan 20 19:36:48 2015 (serrano)                */
+/*    Last change :  Mon Apr 20 14:27:00 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1195,12 +1195,9 @@ socket_cleanup() {
 /*---------------------------------------------------------------------*/
 static int
 bgl_sclose_rd( FILE *stream ) {
-   int r = shutdown( fileno( stream ), SHUT_RD );
-   if( !r ) {
-      return fclose( stream );
-   } else {
-      return r;
-   }
+   shutdown( fileno( stream ), SHUT_RD );
+   // ignore shutdown errors to avoid fd leaks
+   return fclose( stream ); 
 }
 
 /*---------------------------------------------------------------------*/
@@ -1209,12 +1206,9 @@ bgl_sclose_rd( FILE *stream ) {
 /*---------------------------------------------------------------------*/
 static int
 bgl_sclose_wd( int stream ) {
-   int r = shutdown( stream, SHUT_WR );
-   if( !r ) {
-      return close( stream );
-   } else {
-      return r;
-   }
+   shutdown( stream, SHUT_WR );
+   // ignore shutdown errors to avoid fd leaks
+   return close( stream );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2081,9 +2075,9 @@ socket_shutdown( obj_t sock, int how ) {
    if( fd > 0 ) {
       int h;
       switch( how ) {
-	 case 0: h = SHUT_RDWR; break;
-	 case 1: h = SHUT_RD; break;
-	 default: h = SHUT_WR; break;
+	 case 2: h = SHUT_RDWR; break;
+	 case 1: h = SHUT_WR; break;
+	 default: h = SHUT_RD; break;
       }
       
       return shutdown( fd, h );

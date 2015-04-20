@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Tue Apr 17 07:43:51 2012 (serrano)                */
+;*    Last change :  Mon Apr 20 13:20:13 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -26,6 +26,7 @@
 (module __pp_circle
    
    (import  __error
+            __hash
             __r4_output_6_10_3)
    
    (use     __type
@@ -34,6 +35,7 @@
             __tvector
             __structure
             __tvector
+            __hash
 	    __object
 	    __ucs2
 	    __unicode
@@ -109,10 +111,18 @@
 ;*---------------------------------------------------------------------*/
 (define (circle-write/display obj port flag)
    (let* ((cache         '())
-	  (next-cardinal (let ((serial -1))
+          (cache-count   0)
+          (next-cardinal (let ((serial -1))
 			    (lambda ()
 			       (set! serial (+fx 1 serial))
 			       serial))))
+
+      (define (cache-lookup obj)
+	 (cond
+	    ((hashtable? cache)
+	     (hashtable-get cache obj))
+	    (else
+	     (assq obj cache))))
       
       ;; first stage: register object components
       (define (register obj)
@@ -125,11 +135,25 @@
 		      (cnst? obj)
 		      (null? obj)
 		      (class? obj)))
-	     (let ((match (assq obj cache)))
+	     (let ((match (cache-lookup obj)))
 		(if match
-		    (set-cdr! match #t)
-		    (begin
-		       (set! cache (cons (cons obj #f) cache))
+                    (set-cdr! match #t)
+		    (let ((entry (cons obj #f)))
+                       (cond ((hashtable? cache)
+                              (hashtable-put! cache obj entry))
+                             ((>fx cache-count 64)
+                              (let ((h (create-hashtable
+					  :eqtest eq?
+					  :bucket-expansion 2.0)))
+				 (for-each (lambda (cell)
+					      (hashtable-put! h (car cell) cell))
+				    cache)
+				 (set! cache h)
+				 (set! cache-count -1)
+				 (hashtable-put! cache obj entry)))
+                             (else
+                              (set! cache (cons entry cache))
+                              (set! cache-count (+fx cache-count 1))))
 		       (cond
 			  ((pair? obj)
 			   (register (car obj))
@@ -164,10 +188,10 @@
       ;; do output 
       (let output-component ((obj obj))
 	 (let loop-matched ((obj obj)
-			    (match (assq obj cache)))
+			    (match (cache-lookup obj)))
 	    (if match
-		(let ((value (cdr match)))
-		   (cond
+                (let ((value (cdr match)))
+                   (cond
 		      ((fixnum? value)
 		       ;; emit reference like #0#
 		       (sharp)
@@ -212,7 +236,7 @@
 		       (let ((rest (cdr l)))
 			  (if (null? rest)
 			      (putchar #\))
-			      (let ((match (assq rest cache)))
+			      (let ((match (cache-lookup rest)))
 				 (if (or (not (pair? rest))
 					 (and match (cdr match)))
 				     (begin

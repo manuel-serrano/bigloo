@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Mar 30 15:08:43 2015 (serrano)                */
+;*    Last change :  Mon Apr 20 13:23:00 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -17,6 +17,7 @@
 	    __rgc
 	    __param
 	    __object
+            __hash
 	    __thread)
    
    (use     __type
@@ -24,6 +25,7 @@
 	    __param
 	    __structure
 	    __tvector
+            __hash
 	    __dsssl
 	    __ucs2
 	    __unicode
@@ -196,13 +198,23 @@
       (cond
 	 ((procedure? obj)
 	  (let* ((no (obj))
-		 (cell (assq no cycles)))
-	     (if (not (pair? cell))
-		 (read-error "no target for graph reference" no port)
-                 (let ((val (cdr cell)))
-		    (if (eq? val obj)
-			(read-error "Illegal cyclic reference" no port)
-			val)))))
+                 (val (cond
+			 ((hashtable? cycles)
+			  (let ((val (hashtable-get cycles no)))
+			     (if (and (not val)
+				      (not (hashtable-contains? cycles no)))
+				 (read-error "no target for graph reference"
+				    no port)
+				 val)))
+			 (else
+			  (let ((cell (assq no cycles)))
+			     (if (not (pair? cell))
+				 (read-error "no target for graph reference"
+				    no port)
+				 (cdr cell)))))))
+            (if (eq? val obj)
+                (read-error "Illegal cyclic reference" no port)
+                val)))
 	 ((pair? obj)
 	  (set-car! obj (loop (car obj)))
 	  (set-cdr! obj (loop (cdr obj)))
@@ -460,6 +472,7 @@
 		     posp cycles par-open bra-open par-poses bra-poses)
 
       (define resolve #t)
+      (define cycles-count 0)
       
       ;; newlines
       ((+ #\Newline)
@@ -731,9 +744,24 @@
 	     (cond
 		((eof-object? the-object)
 		 (read-error/loc pos "Illegal cyclic reference" no (the-port)))
-		((assq no cycles)
-                 (read-error "Illegal duplicate declaration" no (the-port))))
-	     (set! cycles (cons (cons no the-object) cycles))
+                ((>=fx cycles-count 64)
+                 ;; convert to hashtable
+                 (set! cycles-count -1)
+                 (let ((h (create-hashtable :eqtest eq? :bucket-expansion 2.0)))
+		    (for-each (lambda (cell)
+				 (hashtable-put! h (car cell) (cdr cell)))
+		       cycles)
+		    (set! cycles h))))
+             (cond
+                ((hashtable? cycles)
+                 (unless (eq? (hashtable-put! cycles no the-object)
+			    the-object)
+		    (read-error "Illegal duplicate declaration" no (the-port))))
+                (else
+                 (when (assq no cycles)
+		    (read-error "Illegal duplicate declaration" no (the-port)))
+                 (set! cycles (cons (cons no the-object) cycles))
+                 (set! cycles-count (+fx cycles-count 1))))
 	     (set! resolve rsvp)
 	     (if rsvp
 		 (unreference! the-object (the-port) cycles)
@@ -741,14 +769,23 @@
       
       ;; cyclic target reference
       ((: #\# (+ digit) "#")
-       (let* ((no (string->integer (the-substring 1 (-fx (the-length) 1))))
-	      (cell (assq no cycles)))
-	  (cond ((not resolve)
-		 (lambda () no))
-		((pair? cell)
-		 (cdr cell))
-		(else
-		 (read-error "no target for graph reference" no (the-port))))))
+       (let* ((no (string->integer (the-substring 1 (-fx (the-length) 1)))))
+          (cond
+	     ((not resolve)
+	      (lambda () no))
+	     ((hashtable? cycles)
+	      (let ((val (hashtable-get cycles no)))
+		 (if (and (not val)
+			  (not (hashtable-contains? cycles no)))
+		     (read-error "no target for graph reference"
+			no (the-port))
+		     val)))
+	     (else
+	      (let ((cell (assq no cycles)))
+		 (if (pair? cell)
+		     (cdr cell)
+		     (read-error "no target for graph reference"
+			no (the-port))))))))
       
       ;; special tokens
       ("#"

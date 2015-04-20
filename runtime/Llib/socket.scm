@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Wed Jan 21 07:41:31 2015 (serrano)                */
+;*    Last change :  Mon Apr 20 14:17:32 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -436,15 +436,15 @@
 (define (socket-shutdown socket::socket #!optional (how #t))
    (cond
       ((eq? how #t)
-       (let ((r ($socket-shutdown socket 0)))
+       (let ((r ($socket-shutdown socket 2)))
 	  (socket-close socket)
 	  r))
       ((or (eq? how #f) (eq? how 'RDWR))
-       ($socket-shutdown socket 0))
-      ((eq? how 'RD)
-       ($socket-shutdown socket 1))
-      ((eq? how 'WR)
        ($socket-shutdown socket 2))
+      ((eq? how 'WR)
+       ($socket-shutdown socket 1))
+      ((eq? how 'RD)
+       ($socket-shutdown socket 0))
       (else
        (error "socket-shutdown" "wrong optional argument" how))))
 
