@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Apr 29 21:43:26 2015 (serrano)                */
+#*    Last change :  Mon May  4 17:36:17 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,10 +36,14 @@ DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
+CAPIFLAGS       = $(OPENSSLLIBSCFLAGS) 
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                    -heap-library $(API)
 BJVMFLAGS       := $(BJVMFLAGS)
+
+# C flags
+CEFLAGS		= $(CAPIFLAGS)
 
 # Additional SSL lib for C
 EXTRALIBS	= $(OPENSSLLIBS)
@@ -79,7 +83,8 @@ _WIN32_SOURCES	= $(_WIN32_SRC:%=$(WIN32_SRC_DIR)/%)
 SOURCES		= $(_BGL_SOURCES) \
                   $(_C_SOURCES) \
                   $(_JAVA_SOURCES)
-INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h
+INCLUDES	= $(C_SRC_DIR)/bglssl.h $(C_SRC_DIR)/root_certs.h \
+                  $(C_SRC_DIR)/ssl_debug.h
 
 #*---------------------------------------------------------------------*/
 #*    Java objects                                                     */

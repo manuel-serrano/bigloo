@@ -4,8 +4,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Fri Dec 13 12:49:50 2013 (serrano)                */
-;*    Copyright   :  2001-13 Manuel Serrano                            */
+;*    Last change :  Mon May  4 17:44:04 2015 (serrano)                */
+;*    Copyright   :  2001-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The SSL init file.                                               */
 ;*=====================================================================*/
@@ -28,6 +28,8 @@
    (bigloo-compile
     #;(set! *additional-include-foreign* 
 	  (cons "openssl/ssl.h" *additional-include-foreign*))
+    ;; openssl C compilation options
+    (set! *cc-options* (cons "@OPENSSLCFLAGS@" *cc-options*))
     (set! *ld-post-options* (cons "@OPENSSLLIBS@" *ld-post-options*))
     (set! *additional-bigloo-zips* (cons "commons-ssl.zip" *additional-bigloo-zips*)))
    (bigloo-eval
