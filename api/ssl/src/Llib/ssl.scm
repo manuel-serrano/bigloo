@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat May  2 08:49:55 2015 (serrano)                */
+;*    Last change :  Mon May  4 20:36:34 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -320,7 +320,7 @@
 	     (reject-unauthorized::bool read-only)
 	     (info-callback (default #f))
 	     (sni-context-callback (default #f))
-	     (newsession-callback::procedure read-only)
+	     (newsession-callback::procedure read-only (default list))
 	     (selected-npn-protos::obj (default #unspecified))
 	     (npn-protos::obj (default #unspecified))
 	     (err::obj (default #f))
