@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Jun  4 15:40:07 2014 (serrano)                */
+;*    Last change :  Mon May  4 16:45:05 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -26,6 +26,8 @@
 	    __bexit
 	    __bignum
 	    __thread
+	    __bit
+	    __hash
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

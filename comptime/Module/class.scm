@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Wed Nov 21 07:19:51 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon May  4 16:53:15 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
 ;*=====================================================================*/
@@ -255,8 +255,8 @@
 (define (get-class-hash def)
    
    (define (gethash v)
-      (bit-and (get-hashnumber v) #xffff))
-   
+      (bit-and (get-hashnumber-persistent v) #xffff))
+
    (let loop ((def def)
 	      (hash 1705))
       (cond

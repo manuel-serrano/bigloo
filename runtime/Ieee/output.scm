@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu Mar 19 08:36:23 2015 (serrano)                */
+;*    Last change :  Mon May  4 15:44:23 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -765,49 +765,55 @@
 ;*    write-symbol ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (write-symbol obj port)
+   
+   (define (wrt str)
+      (display-string "|" port)
+      (display-string (string-for-read str) port)
+      (display-string "|" port))
+   
    (let* ((str (symbol->string! obj))
 	  (len (string-length str))
 	  (len-1 (-fx len 1)))
-      (define (wrt)
-	 (display-string "|" port)
-	 (display-string (string-for-read str) port)
-	 (display-string "|" port))
       (let loop ((i 0)
 		 (a #f))
 	 (if (=fx i len)
 	     (cond
 		(a (display-string str port))
 		((or (eq? obj '+) (eq? obj '-)) (display-string str port))
-		(else (wrt)))
+		(else (wrt str)))
 	     (let ((c (string-ref str i)))
 		(case c
-		   ((#\Newline #\Tab #\Return #\` #\' #\" #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\,)
-		    (wrt))
+		   ((#\Newline #\Tab #\Return #\` #\' #\"
+		       #\# #\\ #\; #\( #\) #\[ #\] #\{ #\} #\,)
+		    (wrt str))
 		   ((#\:)
 		    (cond
 		       ((=fx i 0)
 			(if (and (>fx len-1 2)
 				 (char=? (string-ref str (+fx i 1)) #\:))
 			    (loop (+fx i 2) a)
-			    (wrt)))
+			    (wrt str)))
 		       ((=fx i len-1)
-			(wrt))
+			(wrt str))
 		       (else
 			(loop (+fx i 1) a))))
 		   ((#\.)
 		    (if (=fx len 1)
-			(wrt)
+			(wrt str)
 			(loop (+fx i 1) a)))
 		   (else
 		    (if (or (char<=? c #\space) (char>=? c #a127))
-			(wrt)
+			(wrt str)
 			(loop (+fx i 1)
 			   (or a
-			       (and (not (char-numeric? c))
-				    (not (char=? c #\e))
-				    (not (char=? c #\E))
-				    (not (char=? c #\-))
-				    (not (char=? c #\+)))))))))))))
+			       (or (and (not (char-numeric? c))
+					(not (char=? c #\e))
+					(not (char=? c #\E))
+					(not (char=? c #\-))
+					(not (char=? c #\+)))
+				   (and (=fx i 0)
+					(or (char=? c #\e)
+					    (char=? c #\E))))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    display-string ...                                               */

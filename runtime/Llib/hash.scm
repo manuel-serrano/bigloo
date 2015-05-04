@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Wed Nov 20 15:31:28 2013 (serrano)                */
+;*    Last change :  Mon May  4 16:46:53 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -32,6 +32,12 @@
 	    __bexit
 	    __bignum
 	    __thread
+	    __date
+	    __custom
+	    __ucs2
+	    __unicode
+	    __srfi4
+	    __intext
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -44,6 +50,7 @@
 	    __r4_vectors_6_8
 	    __r4_pairs_and_lists_6_3
 	    __r4_strings_6_7
+	    __r5_control_features_6_4
 	    
 	    __foreign
 	    __evenv
@@ -93,6 +100,7 @@
 			      (max-length 16384)
 			      (bucket-expansion 1.2))
 	    (get-hashnumber::long ::obj)
+	    (get-hashnumber-persistent::long ::obj)
 	    (inline get-pointer-hashnumber::long ::obj ::long)
 	    (string-hash::long ::bstring #!optional (start 0) len)
 	    (hashtable?::bool ::obj)
@@ -664,6 +672,77 @@
        (get-hashnumber (flonum->fixnum (*fl key 1000.))))
       (else
        (absfx (obj-hash-number key)))))
+
+;*---------------------------------------------------------------------*/
+;*    get-hashnumber-persistent ...                                    */
+;*    -------------------------------------------------------------    */
+;*    A non transient hashnumber (portable and session persistent).    */
+;*---------------------------------------------------------------------*/
+(define (get-hashnumber-persistent::long key)
+   
+   (define (hash n)
+      (bit-and #x7ffffff n))
+   
+   (define (homogeneous-vector-hashnumber::long key)
+      (let ((len ($hvector-length key)))
+	 (multiple-value-bind (tag _ get _ _)
+	    (homogeneous-vector-info key)
+	    (let loop ((i (-fx len 1))
+		       (acc (hash (bit-xor 98723
+				     (hash (bit-xor len (obj-hash tag)))))))
+	       (if (=fx i -1)
+		   acc
+		   (let ((o (get key i)))
+		      (loop (-fx i 1)
+			 (hash (bit-xor acc (obj-hash o))))))))))
+   (define (ucs2-string-hashnumber key)
+      (let ((len (ucs2-string-length key)))
+	 (let loop ((i (-fx len 1))
+		    (acc (hash (bit-xor 235643 len))))
+	    (if (=fx i -1)
+		acc
+		(loop (-fx i 1)
+		   (hash
+		      (bit-xor
+			 (obj-hash (ucs2-string-ref key i)) acc)))))))
+
+   (define (obj-hash key)
+      (cond
+	 ((cnst? key)
+	  (cond
+	     ((eq? key #t) 12)
+	     ((eq? key #f) 445)
+	     ((eq? key #unspecified) 3199)
+	     ((eq? key '()) 453343)
+	     (else 21354)))
+	 ((string? key)
+	  (hash (string-hash-number key)))
+	 ((symbol? key)
+	  (hash (symbol-hash-number key)))
+	 ((keyword? key)
+	  (hash (keyword-hash-number key)))
+	 ((char? key)
+	  (hash (char->integer key)))
+	 ((fixnum? key)
+	  (hash key))
+	 ((elong? key)
+	  (hash (elong-hash-number key)))
+	 ((llong? key)
+	  (hash (llong-hash-number key)))
+	 ((ucs2? key)
+	  (hash (bit-xor 39434 (ucs2->integer key))))
+	 ((date? key)
+	  (hash (bit-xor 908 (obj-hash (date->seconds key)))))
+	 ((real? key)
+	  (obj-hash (flonum->fixnum (*fl key 1000.))))
+	 ((ucs2-string? key)
+	  (hash (ucs2-string-hashnumber key)))
+	 ((homogeneous-vector? key)
+	  (homogeneous-vector-hashnumber key))
+	 (else
+	  (obj-hash (obj->string key)))))
+
+   (obj-hash key))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-pointer-hashnumber ...                                       */
