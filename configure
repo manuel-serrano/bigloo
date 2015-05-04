@@ -1,10 +1,10 @@
-#!/bin/sh
+!/bin/sh
 #*=====================================================================*/
 #*    serrano/prgm/project/bigloo/configure                            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May  4 17:57:27 2015 (serrano)                */
+#*    Last change :  Mon May  4 18:10:53 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3464,6 +3464,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # SSL
   if [ "$openssllibs" != "no" ]; then
     echo "OPENSSLLIBS=$openssllibs" >> $makefile_cfg
+    echo "OPENSSLLIBSCFLAGS=$opensslcflags" >> $makefile_cfg
     echo ";; automatically generated. Don't edit" > api/ssl/src/Misc/ssl.init
     cat api/ssl/src/Misc/ssl.init.in \
         | sed -e "s|@OPENSSLLIBS@|$openssllibs|g" \
