@@ -1,10 +1,10 @@
-!/bin/sh
+#!/bin/sh
 #*=====================================================================*/
 #*    serrano/prgm/project/bigloo/configure                            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May  4 17:44:27 2015 (serrano)                */
+#*    Last change :  Mon May  4 17:57:27 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2069,10 +2069,10 @@ if [ "$opensslcflags " = " " ]; then
 fi
 
 if [ "$openssllibs" != "no" ]; then
-  openssldtls=`$autoconf openssl-dtls --lib="$openssllibs"` || exit 1;
-  opensslrand=`$autoconf openssl-rand --lib="$openssllibs"` || exit 1;
-  opensslv2=`$autoconf openssl-v2 --lib="$openssllibs"` || exit 1;
-  opensslv23=`$autoconf openssl-v23 --lib="$openssllibs"` || exit 1;
+  openssldtls=`$autoconf openssl-dtls --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  opensslrand=`$autoconf openssl-rand --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  opensslv2=`$autoconf openssl-v2 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  opensslv23=`$autoconf openssl-v23 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/

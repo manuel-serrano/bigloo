@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Mar  9 08:54:26 2015 (serrano)                */
+#*    Last change :  Mon May  4 18:01:46 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -69,7 +69,7 @@ cat > $file.c <<EOF
 #include <openssl/err.h>
 #include <openssl/crypto.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
   return RAND_status() + RAND_poll();
 }
 EOF
