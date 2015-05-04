@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon May  4 17:36:17 2015 (serrano)                */
+#*    Last change :  Mon May  4 18:07:26 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -114,6 +114,7 @@ POPULATION	= $(SOURCES) $(C_SRC_DIR)/bglssl.h.in $(_WIN32_SOURCES) \
 		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(API).init.in \
 	          $(C_SRC_DIR)/root_certs.h \
+	          $(C_SRC_DIR)/ssl_debug.h \
                   Makefile
 
 #*---------------------------------------------------------------------*/
