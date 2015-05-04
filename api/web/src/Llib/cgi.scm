@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Wed Apr  8 11:00:26 2015 (serrano)                */
+;*    Last change :  Wed Apr 22 12:23:00 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -275,7 +275,7 @@
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal start boundary character")
-		 (obj (the-failure))))))
+		 (obj (the-string))))))
       ((: "--" (+ all) #\Return #\Newline)
        (if (string=? (the-substring 2 -2) boundary)
 	   'start
@@ -283,7 +283,7 @@
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal start boundary character")
-		 (obj (the-failure))))))
+		 (obj (the-string))))))
       ((: "--" (+ (out "\r\n-")) "--" #\Newline)
        (if (string=? (the-substring 2 3) boundary)
 	   'end
@@ -291,7 +291,7 @@
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal end boundary character")
-		 (obj (the-failure))))))
+		 (obj (the-string))))))
       ((: "--" (+ (out "\n-")) "--" #\return #\Newline)
        (if (string=? (the-substring 2 4) boundary)
 	   'end
@@ -299,7 +299,7 @@
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal end boundary character")
-		 (obj (the-failure))))))
+		 (obj (the-string))))))
       (else
        (or (eof-object? (the-failure))
 	   (let* ((c (the-failure))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat Apr  4 08:19:34 2015 (serrano)                */
+;*    Last change :  Sat May  2 08:49:55 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -17,6 +17,7 @@
    (option (set! *dlopen-init-gc* #t))
    
    (extern (include "bglssl.h")
+	   (include "ssl_debug.h")
 	   
            (export %make-certificate "bgl_make_certificate")
            (export %make-private-key "bgl_make_private_key")
@@ -31,12 +32,14 @@
 	   (type $X509-store void* "void *")
 	   (type $dh void* "void *")
 	   (type $bignum void* "void *")
+	   (type $ssl-session void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
 	   (macro $ssl-nil::$ssl "0L")
 	   (macro $bio-nil::$bio "0L")
 	   (macro $X509-store-nil::$X509-store "0L")
 	   (macro $dh-nil::$dh "0L")
+	   (macro $ssl-session-nil::$ssl-session "0L")
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
 	   (macro $bignum->obj::obj ($bignum) "void_star_to_obj")
@@ -81,7 +84,7 @@
 	      "bgl_ssl_ctx_add_ca_cert")
 	   ($bgl-secure-context-set-key!::bool (::secure-context ::bstring ::long ::long ::obj) "bgl_ssl_set_key")
 	   ($bgl-secure-context-set-cert!::bool (::secure-context ::bstring ::long ::long) "bgl_ssl_set_cert")
-	   (macro $ssl-ctx-set-cipher-list::void (::$ssl-ctx ::string)
+	   (macro $ssl-ctx-set-cipher-list::int (::$ssl-ctx ::string)
 	      "SSL_CTX_set_cipher_list")
 	   (macro $ssl-ctx-set-options::void (::$ssl-ctx ::int)
 	      "SSL_CTX_set_options")
@@ -92,7 +95,7 @@
 	      "bgl_ssl_connection_start")
 	   ($bgl-ssl-connection-close::int (::ssl-connection)
 	      "bgl_ssl_connection_close")
-	   ($bgl-ssl-connection-shutdown::pair-nil (::ssl-connection)
+	   ($bgl-ssl-connection-shutdown::obj (::ssl-connection)
 	      "bgl_ssl_connection_shutdown")
 	   
 	   ($bgl-ssl-connection-read::long (::ssl-connection ::string ::long ::long)
@@ -111,10 +114,20 @@
 	      "bgl_ssl_connection_clear_pending")
 	   ($bgl-ssl-connection-set-session::int (::ssl-connection ::bstring)
 	      "bgl_ssl_connection_set_session")
+	   ($bgl-ssl-connection-get-session::obj (::ssl-connection)
+	      "bgl_ssl_connection_get_session")
+	   ($bgl-ssl-connection-get-current-cipher::obj (::ssl-connection)
+	      "bgl_ssl_connection_get_current_cipher")
+	   ($bgl-ssl-connection-load-session::int (::ssl-connection ::bstring)
+	      "bgl_ssl_connection_load_session")
 	   ($bgl-ssl-connection-verify-error::obj (::ssl-connection)
 	      "bgl_ssl_connection_verify_error")
 	   ($bgl-ssl-connection-get-peer-certificate::obj (::ssl-connection)
 	      "bgl_ssl_connection_get_peer_certificate")
+	   (macro $ssl-session-reused::bool (::$ssl)
+	      "SSL_session_reused")
+	   ($bgl-ssl-connection-get-negotiated-protocol::obj (::ssl-connection)
+	      "bgl_ssl_connection_get_negotiated_protocol")
 	   
 	   (macro $ssl-client-sslv2::int "BGLSSL_SSLV2")
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
@@ -252,7 +265,7 @@
 	   (generic ssl-connection-init ::ssl-connection)
 	   (generic ssl-connection-start::int ::ssl-connection)
 	   (generic ssl-connection-close::int ::ssl-connection)
-	   (generic ssl-connection-shutdown::pair-nil ::ssl-connection)
+	   (generic ssl-connection-shutdown::obj ::ssl-connection)
 	   (generic ssl-connection-read ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-write ::ssl-connection ::bstring ::long ::long)
 	   (generic ssl-connection-clear-in ::ssl-connection ::bstring ::long ::long)
@@ -260,9 +273,14 @@
 	   (generic ssl-connection-init-finished? ::ssl-connection)
 	   (generic ssl-connection-enc-pending ::ssl-connection)
 	   (generic ssl-connection-clear-pending ::ssl-connection)
-	   (generic ssl-connection-set-session ssl::ssl-connection ::bstring)
+	   (generic ssl-connection-set-session ::ssl-connection ::bstring)
+	   (generic ssl-connection-get-session ::ssl-connection)
+	   (generic ssl-connection-get-current-cipher ::ssl-connection)
+	   (generic ssl-connection-load-session ::ssl-connection ::bstring)
 	   (generic ssl-connection-verify-error ::ssl-connection)
 	   (generic ssl-connection-get-peer-certificate ::ssl-connection)
+	   (generic ssl-connection-get-negotiated-protocol ::ssl-connection)
+	   (generic ssl-connection-reused?::bool ::ssl-connection)
 
 	   (generic dh-size::int ::dh)
 	   (generic dh-generate-parameters-ex ::dh ::int ::symbol)
@@ -294,12 +312,20 @@
 	     ($native::$ssl (default $ssl-nil))
 	     ($bio-read::$bio (default $bio-nil))
 	     ($bio-write::$bio (default $bio-nil))
+	     ($next-session::$ssl-session (default $ssl-session-nil))
 	     (ctx::secure-context read-only)
 	     (isserver::bool read-only)
 	     (request-cert::bool read-only (default #f))
 	     (server-name::obj read-only (default #f))
 	     (reject-unauthorized::bool read-only)
-	     (info-callback (default #f)))
+	     (info-callback (default #f))
+	     (sni-context-callback (default #f))
+	     (newsession-callback::procedure read-only)
+	     (selected-npn-protos::obj (default #unspecified))
+	     (npn-protos::obj (default #unspecified))
+	     (err::obj (default #f))
+	     (received-shutdown::bool (default #f))
+	     (sent-shutdown::bool (default #f)))
 	  
 	  (class dh
 	     (dh-init)
@@ -344,7 +370,10 @@
 
 	  (class ssl-connection
 	     (ctx::secure-context read-only)
-	     (issserver::bool read-only))
+	     (issserver::bool read-only)
+	     (sni-context-callback (default #f))
+	     (info-callback (default #f))
+	     (newsession-callback::procedure read-only))
 
 	  (class dh)))))
 
@@ -380,52 +409,52 @@
 ;*    make-ssl-client-socket ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-ssl-client-socket hostname port
-				#!key
-				(inbuf #t) (outbuf #t)
-				(timeout 0)
-                                (protocol 'sslv23)
-                                (cert #f) (pkey #f)
-                                (CAs '()) (accepted-certs #f))
+	   #!key
+	   (inbuf #t) (outbuf #t)
+	   (timeout 0)
+	   (protocol 'sslv23)
+	   (cert #f) (pkey #f)
+	   (CAs '()) (accepted-certs #f))
    (sanity-args-checks 'make-ssl-client-socket cert pkey CAs accepted-certs)
    (%socket-init!)
    ($ssl-client-make-socket hostname port timeout
-			    (ssl-protocols->integer protocol)
-			    cert pkey
-			    CAs accepted-certs
-			    (get-port-buffer 'make-ssl-client-socket
-					     inbuf
-					     c-default-io-bufsiz)
-			    (get-port-buffer 'make-ssl-client-socket
-					     outbuf
-					     c-default-io-bufsiz)))
+      (ssl-protocols->integer protocol)
+      cert pkey
+      CAs accepted-certs
+      (get-port-buffer 'make-ssl-client-socket
+	 inbuf
+	 c-default-io-bufsiz)
+      (get-port-buffer 'make-ssl-client-socket
+	 outbuf
+	 c-default-io-bufsiz)))
 
 ;*---------------------------------------------------------------------*/
 ;*    client-socket-use-ssl! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (client-socket-use-ssl! s #!key
-                                (protocol 'sslv23)
-                                (cert #f) (pkey #f)
-                                (CAs '()) (accepted-certs #f))
+	   (protocol 'sslv23)
+	   (cert #f) (pkey #f)
+	   (CAs '()) (accepted-certs #f))
    (sanity-args-checks 'client-socket-use-ssl! cert pkey CAs accepted-certs)
    (%socket-init!)
    ($ssl-client-socket-use-ssl! s
-				(ssl-protocols->integer protocol)
-				cert pkey
-				CAs accepted-certs))
+      (ssl-protocols->integer protocol)
+      cert pkey
+      CAs accepted-certs))
    
 ;*---------------------------------------------------------------------*/
 ;*    make-ssl-server-socket ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-ssl-server-socket #!optional (port 0) #!key (name #f)
-                                (protocol 'sslv23)
-                                (cert #f) (pkey #f)
-                                (CAs '()) (accepted-certs #f)
-				(backlog 5))
+	   (protocol 'sslv23)
+	   (cert #f) (pkey #f)
+	   (CAs '()) (accepted-certs #f)
+	   (backlog 5))
    (sanity-args-checks 'make-ssl-server-socket cert pkey CAs accepted-certs)
    (%socket-init!)
    ($ssl-server-make-socket name port (ssl-protocols->integer protocol)
-			    cert pkey
-			    CAs accepted-certs backlog))
+      cert pkey
+      CAs accepted-certs backlog))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-protocols->integer ...                                       */
@@ -626,7 +655,7 @@
    (cond-expand
       (bigloo-c
        (with-access::secure-context sc ($native)
-	  ($ssl-ctx-set-cipher-list $native options))
+	  ($ssl-ctx-set-options $native options))
        #t)
       (else
        #f)))
@@ -752,6 +781,36 @@
        #f)))
 
 ;*---------------------------------------------------------------------*/
+;*    ssl-connection-get-session ::ssl-connection ...                  */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-get-session ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-get-session ssl))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-get-current-cipher ::ssl-connection ...           */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-get-current-cipher ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-get-current-cipher ssl))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-load-session ::ssl-connection ...                 */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-load-session ssl::ssl-connection buf::bstring)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-load-session ssl buf))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
 ;*    ssl-connection-verify-error ::ssl-connection ...                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (ssl-connection-verify-error ssl::ssl-connection)
@@ -768,6 +827,27 @@
    (cond-expand
       (bigloo-c
        ($bgl-ssl-connection-get-peer-certificate ssl))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-reused? ::ssl-connection ...                      */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-reused? ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       (with-access::ssl-connection ssl ($native)
+	  ($ssl-session-reused $native)))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-connection-get-negotiated-protocol ::ssl-connection ...      */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-connection-get-negotiated-protocol ssl::ssl-connection)
+   (cond-expand
+      (bigloo-c
+       ($bgl-ssl-connection-get-negotiated-protocol ssl))
       (else
        #f)))
 

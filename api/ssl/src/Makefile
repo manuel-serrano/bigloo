@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Aug 25 11:06:34 2014 (serrano)                */
+#*    Last change :  Wed Apr 29 21:43:26 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -191,6 +191,9 @@ pop:
 #*---------------------------------------------------------------------*/
 $(C_SRC_DIR)/ssl.h: Llib/ssl.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+
+$(C_SRC_DIR)/bglssl.c: $(C_SRC_DIR)/ssl_debug.h
+$(BIGLOO_SRC_DIR)/ssl.scm: $(C_SRC_DIR)/ssl_debug.h
 
 #*---------------------------------------------------------------------*/
 #*    extra-clean                                                      */

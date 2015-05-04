@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Oct  8 05:11:58 2001                          */
-;*    Last change :  Fri Feb 18 18:58:35 2011 (serrano)                */
-;*    Copyright   :  2001-11 Manuel Serrano                            */
+;*    Last change :  Wed Apr 22 09:03:16 2015 (serrano)                */
+;*    Copyright   :  2001-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo libraries                                                 */
 ;*=====================================================================*/
@@ -142,6 +142,12 @@ build a library. In addition check the libraries presented below.
        "The vector sorting (SRFI 32) implementation for Bigloo"
        "W. M. Farr"
        "2.6")
+    ;; srfi-41
+    (lib "srfi 41"
+       "https://github.com/donaldsonjw/streams"
+       "SRFI-41 is a streams (lazy list) library for scheme"
+       "Joseph Donaldson"
+       "4.2")
     ;; srfi-78
   (lib "srfi 78"
        "http://web.mit.edu/farr/www/srfi-78/srfi-78.html"
