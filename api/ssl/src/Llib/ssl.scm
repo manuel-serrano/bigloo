@@ -1,9 +1,9 @@
-;*=====================================================================*/
+ ;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/ssl/src/Llib/ssl.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Mon May  4 20:36:34 2015 (serrano)                */
+;*    Last change :  Thu May  7 16:30:40 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -76,14 +76,22 @@
 	      "bgl_ssl_ctx_init")
 	   ($bgl-secure-context-close!::obj (::secure-context)
 	      "bgl_ssl_ctx_close")
-	   
+
+	   ($bgl-secure-context-add-crl!::bool (::secure-context ::bstring ::long ::long)
+	      "bgl_ssl_ctx_add_crl")
 	   ($bgl-secure-context-add-root-certs!::bool (::secure-context)
 	      "bgl_ssl_ctx_add_root_certs")
 
 	   ($bgl-secure-context-add-ca-cert!::bool (::secure-context ::bstring ::long ::long)
 	      "bgl_ssl_ctx_add_ca_cert")
-	   ($bgl-secure-context-set-key!::bool (::secure-context ::bstring ::long ::long ::obj) "bgl_ssl_set_key")
-	   ($bgl-secure-context-set-cert!::bool (::secure-context ::bstring ::long ::long) "bgl_ssl_set_cert")
+	   ($bgl-secure-context-set-key!::bool (::secure-context ::bstring ::long ::long ::obj)
+	      "bgl_ssl_ctx_set_key")
+	   ($bgl-secure-context-set-cert!::bool (::secure-context ::bstring ::long ::long)
+	      "bgl_ssl_ctx_set_cert")
+	   ($bgl-secure-context-set-session-id-context!::bool (::secure-context ::bstring ::long ::long)
+	      "bgl_ssl_ctx_set_session_id_context")
+	   ($bgl-secure-context-load-pkcs12::bool (::secure-context ::bstring ::bstring)
+	      "bgl_load_pkcs12")
 	   (macro $ssl-ctx-set-cipher-list::int (::$ssl-ctx ::string)
 	      "SSL_CTX_set_cipher_list")
 	   (macro $ssl-ctx-set-options::void (::$ssl-ctx ::int)
@@ -257,8 +265,11 @@
 	   (generic secure-context-close ::secure-context)
 	   (generic secure-context-add-root-certs!::bool ::secure-context)
 	   (generic secure-context-add-ca-cert!::bool ::secure-context ::bstring ::long ::long)
+	   (generic secure-context-add-crl!::bool ::secure-context ::bstring ::long ::long)
 	   (generic secure-context-set-key!::bool ::secure-context ::bstring ::long ::long #!optional passphrase)
 	   (generic secure-context-set-cert!::bool ::secure-context ::bstring ::long ::long)
+	   (generic secure-context-set-session-id-context!::bool ::secure-context ::bstring ::long ::long)
+	   (generic secure-context-load-pkcs12::bool ::secure-context ::bstring ::bstring)
 	   (generic secure-context-set-ciphers!::bool ::secure-context ::bstring)
 	   (generic secure-context-set-options!::bool ::secure-context ::int)
 
@@ -617,6 +628,16 @@
        #f)))
 
 ;*---------------------------------------------------------------------*/
+;*    secure-context-add-crl! ::secure-context ...                     */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-add-crl! sc::secure-context cert::bstring offset::long len::long)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-add-crl! sc cert offset len))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
 ;*    secure-context-set-key! ::secure-context ...                     */
 ;*---------------------------------------------------------------------*/
 (define-generic (secure-context-set-key! sc::secure-context cert offset len #!optional passphrase)
@@ -633,6 +654,26 @@
    (cond-expand
       (bigloo-c
        ($bgl-secure-context-set-cert! sc cert offset len))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-set-session-id! ::secure-context ...              */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-set-session-id-context! sc::secure-context sic offset len)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-set-session-id-context! sc sic offset len))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    secure-context-set-session-id! ::secure-context ...              */
+;*---------------------------------------------------------------------*/
+(define-generic (secure-context-load-pkcs12 sc::secure-context pfx pass)
+   (cond-expand
+      (bigloo-c
+       ($bgl-secure-context-load-pkcs12 sc pfx pass))
       (else
        #f)))
 

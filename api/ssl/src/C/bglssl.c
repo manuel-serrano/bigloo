@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun May  3 05:33:29 2015 (serrano)                */
+/*    Last change :  Thu May  7 16:36:50 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -12,6 +12,7 @@
 #include <openssl/err.h>
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
+#include <openssl/pkcs12.h>
 #include <fcntl.h>
 
 #if defined( _MSC_VER) || defined( _MINGW_VER )
@@ -604,6 +605,32 @@ bgl_make_ssl_server_socket( obj_t hostname, int port, int protocol,
    return serv;
 }
 
+#include "ssl_debug.h"
+
+/*---------------------------------------------------------------------*/
+/*    static BIO *                                                     */
+/*    bgl_load_bio ...                                                 */
+/*---------------------------------------------------------------------*/
+static BIO *
+bgl_load_bio( obj_t cert, long offset, long len ) {
+   BIO *bio = BIO_new( BIO_s_mem() );
+
+#if( SSL_DEBUG )
+   char s[ len + 1 ];
+   memcpy( s, &(STRING_REF( cert, offset )), len );
+   s[ len ] = 0;
+   
+   fprintf( stderr, "%s,%d:LoadBIO [%d:%s]\n", __FILE__, __LINE__, len, s );
+#endif
+   if( !bio ) return 0L;
+
+   if( BIO_write( bio, &STRING_REF( cert, offset ), len ) <= 0 ) {
+      BIO_free( bio );
+      return 0L;
+   }
+   return bio;
+}
+
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_ssl_load_private_key ...                                     */
@@ -758,8 +785,6 @@ bgl_ssl_certificate_issuer( obj_t bcert ) {
    return string_to_bstring( buf );
 }
 
-#include "ssl_debug.h"
-
 /*---------------------------------------------------------------------*/
 /*    static int                                                       */
 /*    SSL_CTX_use_certificate_chain ...                                */
@@ -870,7 +895,9 @@ bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
       BGL_MUTEX_UNLOCK( bigloo_mutex );
    }
 
+   sc->BgL_z42cazd2storez90 = root_cert_store;
    SSL_CTX_set_cert_store( sc->BgL_z42nativez42, root_cert_store );
+   
    return 1;
 }
 
@@ -910,6 +937,35 @@ bgl_ssl_ctx_add_ca_cert( secure_context sc, obj_t cert, long offset, long len ) 
   if( newCAStore ) {
     SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
   }
+
+  return 1;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_ssl_ctx_add_crl ...                                          */
+/*---------------------------------------------------------------------*/
+bool_t
+bgl_ssl_ctx_add_crl( secure_context sc, obj_t cert, long offset, long len ) {
+   X509_CRL *x509;
+   BIO *bio = bgl_load_bio( cert, offset, len );
+
+   if( !bio ) return 0;
+   
+   x509 = PEM_read_bio_X509_CRL( bio, NULL, NULL, NULL );
+   
+   if( x509 == NULL ) {
+      BIO_free( bio );
+      return 0;
+  }
+
+  X509_STORE_add_crl( sc->BgL_z42cazd2storez90, x509 );
+
+  X509_STORE_set_flags( sc->BgL_z42cazd2storez90,
+			X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL );
+
+  BIO_free( bio );
+  X509_CRL_free( x509 );
 
   return 1;
 }
@@ -967,7 +1023,7 @@ bgl_select_next_proto_callback( SSL *ssl,
    fprintf( stderr, "%s,%d:>>> SelectNextProtoCallback\n", __FILE__, __LINE__ );
 #endif   
 
-   if( !STRINGP( c->BgL_selectedzd2npnzd2protosz00 ) ) {
+   if( !STRINGP( c->BgL_npnzd2protoszd2 ) ) {
       *out = "http/1.1";
       *outlen = 8;
       c->BgL_selectedzd2npnzd2protosz00 = BFALSE;
@@ -978,8 +1034,8 @@ bgl_select_next_proto_callback( SSL *ssl,
    } else {
       int status = SSL_select_next_proto
 	 ( out, outlen, in, inlen,
-	   BSTRING_TO_STRING( c->BgL_selectedzd2npnzd2protosz00 ),
-	   STRING_LENGTH( c->BgL_selectedzd2npnzd2protosz00 ) );
+	   BSTRING_TO_STRING( c->BgL_npnzd2protoszd2 ),
+	   STRING_LENGTH( c->BgL_npnzd2protoszd2 ) );
 
 #if( SSL_DEBUG )
   {
@@ -1174,7 +1230,7 @@ bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
 #endif
    
    if( ssl->BgL_isserverz00 ) {
-      if( ssl->BgL_requestzd2certzd2 ) {
+      if( !(ssl->BgL_requestzd2certzd2) ) {
 	 verify_mode = SSL_VERIFY_NONE;
       } else {
 	 verify_mode = SSL_VERIFY_PEER;
@@ -1842,35 +1898,11 @@ bgl_ssl_connection_verify_error( ssl_connection ssl ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static BIO *                                                     */
-/*    bgl_load_bio ...                                                 */
-/*---------------------------------------------------------------------*/
-static BIO *
-bgl_load_bio( obj_t cert, long offset, long len ) {
-   BIO *bio = BIO_new( BIO_s_mem() );
-
-#if( SSL_DEBUG )
-   char s[ len + 1 ];
-   memcpy( s, &(STRING_REF( cert, offset )), len );
-   s[ len ] = 0;
-   
-   fprintf( stderr, "%s,%d:LoadBIO [%d:%s]\n", __FILE__, __LINE__, len, s );
-#endif
-   if( !bio ) return 0L;
-
-   if( BIO_write( bio, &STRING_REF( cert, offset ), len ) <= 0 ) {
-      BIO_free( bio );
-      return 0L;
-   }
-   return bio;
-}
-
-/*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
-/*    bgl_ssl_set_key ...                                              */
+/*    bgl_ssl_ctx_set_key ...                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_ssl_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
+bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
    
 #if( SSL_DEBUG )
    fprintf( stderr, "%s,%d:SetKey\n", __FILE__, __LINE__ );
@@ -1906,10 +1938,10 @@ bgl_ssl_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t pas
 	 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
-/*    bgl_ssl_set_cert ...                                             */
+/*    bgl_ssl_ctx_set_cert ...                                         */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_ssl_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
+bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
 #if( SSL_DEBUG )
    fprintf( stderr, "%s,%d:setCert\n", __FILE__, __LINE__ );
 #endif
@@ -1936,6 +1968,100 @@ bgl_ssl_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_t pa
    }
 }
 	 
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_ctx_set_session_id_context ...                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_ctx_set_session_id_context( secure_context sc, obj_t sic, long offset, long len ) {
+#if( SSL_DEBUG )
+   fprintf( stderr, "%s,%d:setSessionIdContext\n", __FILE__, __LINE__ );
+#endif
+   {
+      int r = SSL_CTX_set_session_id_context
+	 ( sc->BgL_z42nativez42, &(STRING_REF( sic, offset)), len );
+
+      if( r != 1 ) {
+	 BIO *bio;
+	 BUF_MEM *mem;
+	 char *msg;
+	 
+	 if( (bio = BIO_new( BIO_s_mem() )) ) {
+	    ERR_print_errors( bio );
+	    BIO_get_mem_ptr( bio, &mem );
+	    
+	    msg = alloca( mem->length + 1 );
+	    msg[ mem->length ] = 0;
+	    memcpy( msg, mem->data, mem->length );
+
+	    BIO_free( bio );
+	 } else {
+	    msg = "error";
+	 }
+	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "set_session_id_context",
+			   msg, (obj_t)sc );
+      }
+
+      return BTRUE;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_load_pkcs12 ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
+#if( SSL_DEBUG )
+   fprintf( stderr, "%s,%d:sload_pkcs12\n", __FILE__, __LINE__ );
+#endif
+
+   {
+      BIO *in = bgl_load_bio( pfx, 0, STRING_LENGTH( pfx ) );
+      X509 *cert = NULL;
+      PKCS12 *p12 = NULL;
+      EVP_PKEY *pkey = NULL;
+      STACK_OF(X509) *extraCerts = NULL;
+      X509 *x509;
+      char ret = 0;
+      
+      if( d2i_PKCS12_bio( in, &p12 ) &&
+	  PKCS12_parse( p12, BSTRING_TO_STRING( pass ), &pkey, &cert, &extraCerts ) &&
+	  SSL_CTX_use_certificate( sc->BgL_z42nativez42, cert ) &&
+	  SSL_CTX_use_PrivateKey( sc->BgL_z42nativez42, pkey ) ) {
+	 // set extra certs
+	 while( x509 = sk_X509_pop( extraCerts ) ) {
+	    if( !sc->BgL_z42cazd2storez90 ) {
+	       sc->BgL_z42cazd2storez90 = X509_STORE_new();
+	       SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
+	    }
+
+	    X509_STORE_add_cert( sc->BgL_z42cazd2storez90, x509 );
+	    SSL_CTX_add_client_CA( sc->BgL_z42nativez42, x509 );
+	    X509_free( x509 );
+	 }
+
+	 EVP_PKEY_free( pkey );
+	 X509_free( cert );
+	 sk_X509_free( extraCerts );
+
+	 ret = 1;
+      }
+
+      PKCS12_free( p12 );
+      BIO_free( in );
+
+      if( !ret ) {
+	 unsigned long err = ERR_get_error();
+	 char *str = (char *)ERR_reason_error_string( err );
+
+	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "load-pkcs12", str, (obj_t)sc );
+      }
+	 
+      return BTRUE;
+   }
+}
+  
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    cons ...                                                         */
@@ -2092,6 +2218,11 @@ bgl_ssl_connection_get_negotiated_protocol( ssl_connection ssl ) {
 
       SSL_get0_next_proto_negotiated( _ssl, (&npn_proto), (&npn_proto_len) );
 
+      {
+	 char *s = alloca( npn_proto_len + 1 );
+	 memcpy( s, npn_proto, npn_proto_len );
+	 s[ npn_proto_len ] = 0;
+      }
       if( !npn_proto ) {
 	 return BFALSE;
       }
