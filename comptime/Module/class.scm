@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun  5 10:52:20 1996                          */
-;*    Last change :  Mon May  4 16:53:15 2015 (serrano)                */
+;*    Last change :  Sun May 10 08:57:29 2015 (serrano)                */
 ;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class clause handling                                        */
@@ -13,8 +13,11 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module module_class
+   
    (include "Ast/unit.sch"
-	    "Tools/trace.sch")
+	    "Tools/trace.sch"
+	    "../runtime/Llib/object.sch")
+   
    (import  module_module
 	    module_impuse
 	    module_include
@@ -249,26 +252,6 @@
 	  (tclass-slots-set! class '())
 	  '())))
 		       
-;*---------------------------------------------------------------------*/
-;*    get-hash-class ...                                               */
-;*---------------------------------------------------------------------*/
-(define (get-class-hash def)
-   
-   (define (gethash v)
-      (bit-and (get-hashnumber-persistent v) #xffff))
-
-   (let loop ((def def)
-	      (hash 1705))
-      (cond
-	 ((null? def)
-	  hash)
-	 ((not (pair? def))
-	  (bit-xor (gethash def) hash))
-	 (else
-	  (loop (cdr def)
-	     (loop (car def)
-		(bit-xor 1966 hash)))))))
-
 ;*---------------------------------------------------------------------*/
 ;*    make-class-fields ...                                            */
 ;*---------------------------------------------------------------------*/

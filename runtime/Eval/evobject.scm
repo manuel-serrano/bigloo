@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Fri Nov  8 09:26:33 2013 (serrano)                */
-;*    Copyright   :  2006-13 Manuel Serrano                            */
+;*    Last change :  Sun May 10 08:57:14 2015 (serrano)                */
+;*    Copyright   :  2006-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __evobject
 
+   (include "Llib/object.sch")
+   
    (import  __type
 	    __error
 	    __bigloo
@@ -740,26 +742,6 @@
 		      (eval-expand-instantiate clazz)
 		      (eval-expand-duplicate clazz))
 		   (list cid)))))))
-
-;*---------------------------------------------------------------------*/
-;*    get-class-hash ...                                               */
-;*---------------------------------------------------------------------*/
-(define (get-class-hash def)
-   
-   (define (gethash v)
-      (bit-and (get-hashnumber v) #xffff))
-
-   (let loop ((def def)
-	      (hash 1705))
-      (cond
-	 ((null? def)
-	  hash)
-	 ((not (pair? def))
-	  (bit-xor (gethash def) hash))
-	 (else
-	  (loop (cdr def)
-	     (loop (car def)
-		(bit-xor 1966 hash)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-co-instantiate-expander ...                                 */

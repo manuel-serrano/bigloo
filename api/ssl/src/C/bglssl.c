@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu May  7 16:36:50 2015 (serrano)                */
+/*    Last change :  Sat May  9 07:49:59 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -2471,4 +2471,81 @@ bgl_dh_g( DH *dh ) {
 BGL_RUNTIME_DEF void 
 bgl_dh_g_set( DH *dh, BIGNUM *v ) {
    dh->g = v;
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_get_ciphers ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_get_ciphers() {
+   SSL_CTX* ctx = SSL_CTX_new( TLSv1_server_method() );
+   
+   if( ctx == NULL ) {
+      C_SYSTEM_FAILURE( BGL_IO_ERROR,
+			"ssl-get-ciphers",
+			"SSL_CTX_new() failed",
+			BFALSE );
+   }
+
+   SSL *ssl = SSL_new( ctx );
+   
+   if( ssl == NULL ) {
+      SSL_CTX_free( ctx );
+      C_SYSTEM_FAILURE( BGL_IO_ERROR,
+			"ssl-get-ciphers",
+			"SSL_new() failed",
+			BFALSE );
+   } else {
+      STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers( ssl );
+      obj_t res;
+      int i;
+
+      res = create_vector( sk_SSL_CIPHER_num( ciphers ) );
+      
+      for( i = 0; i < sk_SSL_CIPHER_num( ciphers ); ++i ) {
+	 SSL_CIPHER *c = sk_SSL_CIPHER_value( ciphers, i );
+	 VECTOR_SET( res, i, string_to_bstring( (char *)SSL_CIPHER_get_name( c ) ) );
+      }
+
+      SSL_free( ssl );
+      SSL_CTX_free( ctx );
+
+      return res;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    list_push ...                                                    */
+/*---------------------------------------------------------------------*/
+static void
+list_push( const void *md, const char *from, const char *to, void *arg ) {
+   CELL_SET( arg, MAKE_PAIR( string_to_bstring( (char *)from ), CELL_REF( arg ) ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_evp_get_ciphers ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_evp_get_ciphers() {
+   obj_t acc = MAKE_CELL( BNIL );
+   
+   EVP_CIPHER_do_all_sorted( list_push, (void *)acc );
+   
+   return bgl_reverse( CELL_REF( acc ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_evp_get_hashes ...                                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_evp_get_hashes() {
+   obj_t acc = MAKE_CELL( BNIL );
+   
+   EVP_MD_do_all_sorted( list_push, (void *)acc );
+   
+   return bgl_reverse( CELL_REF( acc ) );
 }

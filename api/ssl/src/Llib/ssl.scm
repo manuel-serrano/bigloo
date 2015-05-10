@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu May  7 16:30:40 2015 (serrano)                */
+;*    Last change :  Sat May  9 07:51:25 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -31,6 +31,7 @@
 	   (type $bio void* "void *")
 	   (type $X509-store void* "void *")
 	   (type $dh void* "void *")
+	   (type $ssl-hash void* "void *")
 	   (type $bignum void* "void *")
 	   (type $ssl-session void* "void *")
 
@@ -39,6 +40,7 @@
 	   (macro $bio-nil::$bio "0L")
 	   (macro $X509-store-nil::$X509-store "0L")
 	   (macro $dh-nil::$dh "0L")
+	   (macro $ssl-hash-nil::$ssl-hash "0L")
 	   (macro $ssl-session-nil::$ssl-session "0L")
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
@@ -155,12 +157,19 @@
 		  "DH_compute_key")
 	   ($bgl-dh-check::obj (::$dh) "bgl_dh_check")
 	   ($bgl-dh-check-pub-key::obj (::$dh ::$bignum) "bgl_dh_check_pub_key")
+
+	   (macro $ssl-hash-new::$ssl-hash () "NOT_IMPLEMENTED")
+	   
 	   ($bgl-bn-bin2bn::$bignum (::string ::int) "bgl_bn_bin2bn")
 	   (macro $bn-bn2bin::int (::$bignum ::string) "BN_bn2bin")
 	   (macro $bn-num-bytes::int (::$bignum) "BN_num_bytes")
 	   (macro $bn-free::void (::$bignum) "BN_free")
 	   (macro $bn-new::$bignum () "BN_new")
 	   (macro $bn-set-word::bool (::$bignum ::int) "BN_set_word")
+
+	   ($bgl-ssl-get-ciphers::vector () "bgl_ssl_get_ciphers")
+	   ($bgl-evp-get-ciphers::pair-nil () "bgl_evp_get_ciphers")
+	   ($bgl-evp-get-hashes::pair-nil () "bgl_evp_get_hashes")
 
 	   ($bgl-dh-private-key::$bignum (::$dh)
 	      "bgl_dh_private_key")
@@ -299,16 +308,19 @@
 	   (generic dh-check ::dh)
 	   (generic dh-check-pub-key ::dh ::foreign)
 	   (generic dh-compute-key ::dh ::foreign)
-	   
+
 	   (bn-bin2bn::obj ::bstring)
 	   (bn-bn2bin::bstring ::foreign)
 	   (bn-num-bytes::int ::foreign)
 	   (bn-free::obj ::foreign)
 	   (bn-new::obj)
 	   (bn-set-word::bool ::foreign ::int)
+	   
+	   (ssl-get-ciphers::vector)
+	   (evp-get-ciphers::pair-nil)
+	   (evp-get-hashes::pair-nil)
 	   )
 	   
-   
    (cond-expand
       (bigloo-c
        (export
@@ -372,7 +384,11 @@
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native)
 			   ($bgl-dh-public-key-set! $native ($obj->bignum v))
-			   v)))))))
+			   v)))))
+	  
+	  (class ssl-hash
+	     (ssl-hash-init)
+	     ($native::$ssl-hash (default $ssl-hash-nil)))))
 			     
       (else
        (export
@@ -386,7 +402,9 @@
 	     (info-callback (default #f))
 	     (newsession-callback::procedure read-only))
 
-	  (class dh)))))
+	  (class dh)
+
+	  (class ssl-hash)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-version ...                                                  */
@@ -987,12 +1005,22 @@
        #f)))
    
 ;*---------------------------------------------------------------------*/
+;*    ssl-hash-init ::ssl-hash ...                                     */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-hash-init ssl-hash::ssl-hash)
+   (cond-expand
+      (bigloo-c
+       (with-access::ssl-hash ssl-hash ($native)
+	  '(set! $native ($ssl-hash-new))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
 ;*    bn-bin2bn ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (bn-bin2bn::obj string)
    (cond-expand
-      (bigloo-c
-       ($bignum->obj ($bgl-bn-bin2bn string (string-length string))))
+      (bigloo-c ($bignum->obj ($bgl-bn-bin2bn string (string-length string))))
       (else #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -1012,8 +1040,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bn-num-bytes bn)
    (cond-expand
-      (bigloo-c
-       ($bn-num-bytes ($obj->bignum bn)))
+      (bigloo-c ($bn-num-bytes ($obj->bignum bn)))
       (else 0)))
    
 ;*---------------------------------------------------------------------*/
@@ -1021,8 +1048,7 @@
 ;*---------------------------------------------------------------------*/
 (define (bn-free bn)
    (cond-expand
-      (bigloo-c
-       ($bn-free ($obj->bignum bn))))
+      (bigloo-c ($bn-free ($obj->bignum bn))))
    #unspecified)
    
 ;*---------------------------------------------------------------------*/
@@ -1030,18 +1056,41 @@
 ;*---------------------------------------------------------------------*/
 (define (bn-new)
    (cond-expand
-      (bigloo-c
-       ($bignum->obj ($bn-new)))
-      (else
-       #f)))
+      (bigloo-c ($bignum->obj ($bn-new)))
+      (else #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bn-set-word ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (bn-set-word bn w)
    (cond-expand
-      (bigloo-c
-       ($bn-set-word ($obj->bignum bn) w))
-      (else
-       #f)))
-   
+      (bigloo-c ($bn-set-word ($obj->bignum bn) w))
+      (else #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-get-ciphers ...                                              */
+;*---------------------------------------------------------------------*/
+(define (ssl-get-ciphers)
+   (cond-expand
+      (bigloo-c ($bgl-ssl-get-ciphers))
+      (else '#())))
+
+;*---------------------------------------------------------------------*/
+;*    evp-get-ciphers ...                                              */
+;*---------------------------------------------------------------------*/
+(define (evp-get-ciphers)
+   (cond-expand
+      (bigloo-c ($bgl-evp-get-ciphers))
+      (else '())))
+
+;*---------------------------------------------------------------------*/
+;*    evp-get-hashes ...                                               */
+;*---------------------------------------------------------------------*/
+(define (evp-get-hashes)
+   (cond-expand
+      (bigloo-c ($bgl-evp-get-hashes))
+      (else '())))
+
+
+
+

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Jul 28 16:48:23 2014 (serrano)                */
-#*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun May 10 09:00:27 2015 (serrano)                */
+#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -778,6 +778,7 @@ pop: Tools/date.scm Tools/license.scm
 #*    Dependences                                                      */
 #*---------------------------------------------------------------------*/
 Engine/param.o: $(BOOTLIBDIR)/bigloo_config.h ../configure
+Module/class.o: $(BOOTDIR)/runtime/Llib/object.sch
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

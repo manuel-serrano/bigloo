@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Jul 28 15:35:17 2014 (serrano)                */
-#*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun May 10 08:59:12 2015 (serrano)                */
+#*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -914,3 +914,5 @@ objs/obj_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
 objs/obj_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/obj_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
+objs/obj_s/Llib/evobject.o: Llib/object.sch
+objs/obj_u/Llib/evobject.o: Llib/object.sch
