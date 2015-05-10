@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun May 10 08:59:12 2015 (serrano)                */
+#*    Last change :  Sun May 10 09:25:05 2015 (serrano)                */
 #*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -323,6 +323,7 @@ POPULATION_SI	= $(SRC_FILES) \
 		  Rgc/rgc-node.sch \
 		  Eval/byte-code.sch \
 		  Llib/hash.sch \
+		  Llib/object.sch \
 		  Mlib/mach_dep.c \
                   Clib/inline_alloc.c \
                   Clib/non_inline_alloc.c \
