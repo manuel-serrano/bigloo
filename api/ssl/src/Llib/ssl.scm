@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sat May  9 07:51:25 2015 (serrano)                */
+;*    Last change :  Thu May 14 07:52:39 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -31,17 +31,19 @@
 	   (type $bio void* "void *")
 	   (type $X509-store void* "void *")
 	   (type $dh void* "void *")
-	   (type $ssl-hash void* "void *")
 	   (type $bignum void* "void *")
 	   (type $ssl-session void* "void *")
+	   (type $ssl-evp-md void* "void *")
+	   (type $ssl-evp-md-ctx void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
 	   (macro $ssl-nil::$ssl "0L")
 	   (macro $bio-nil::$bio "0L")
 	   (macro $X509-store-nil::$X509-store "0L")
 	   (macro $dh-nil::$dh "0L")
-	   (macro $ssl-hash-nil::$ssl-hash "0L")
 	   (macro $ssl-session-nil::$ssl-session "0L")
+	   (macro $ssl-evp-md-nil::$ssl-evp-md "0L")
+	   (macro $ssl-evp-md-ctx-nil::$ssl-evp-md-ctx "0L")
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
 	   (macro $bignum->obj::obj ($bignum) "void_star_to_obj")
@@ -158,8 +160,6 @@
 	   ($bgl-dh-check::obj (::$dh) "bgl_dh_check")
 	   ($bgl-dh-check-pub-key::obj (::$dh ::$bignum) "bgl_dh_check_pub_key")
 
-	   (macro $ssl-hash-new::$ssl-hash () "NOT_IMPLEMENTED")
-	   
 	   ($bgl-bn-bin2bn::$bignum (::string ::int) "bgl_bn_bin2bn")
 	   (macro $bn-bn2bin::int (::$bignum ::string) "BN_bn2bin")
 	   (macro $bn-num-bytes::int (::$bignum) "BN_num_bytes")
@@ -186,7 +186,14 @@
 	   ($bgl-dh-g::$bignum (::$dh)
 	      "bgl_dh_g")
 	   ($bgl-dh-g-set!::void (::$dh $bignum)
-	      "bgl_dh_g_set"))
+	      "bgl_dh_g_set")
+
+	   ($bgl-ssl-hash-init::bool (::ssl-hash) "bgl_ssl_hash_init")
+	   ($bgl-ssl-hash-update!::obj (::ssl-hash ::bstring ::long ::long) "bgl_ssl_hash_update")
+	   ($bgl-ssl-hash-digest::obj (::ssl-hash) "bgl_ssl_hash_digest")
+
+	   (macro $ssl-op-cipher-server-preference::int
+	      "SSL_OP_CIPHER_SERVER_PREFERENCE"))
    
    (java (export %make-certificate "make_certificate")
       (export %make-private-key "make_private_key")
@@ -278,7 +285,7 @@
 	   (generic secure-context-set-key!::bool ::secure-context ::bstring ::long ::long #!optional passphrase)
 	   (generic secure-context-set-cert!::bool ::secure-context ::bstring ::long ::long)
 	   (generic secure-context-set-session-id-context!::bool ::secure-context ::bstring ::long ::long)
-	   (generic secure-context-load-pkcs12::bool ::secure-context ::bstring ::bstring)
+	   (generic secure-context-load-pkcs12::bool ::secure-context ::bstring ::obj)
 	   (generic secure-context-set-ciphers!::bool ::secure-context ::bstring)
 	   (generic secure-context-set-options!::bool ::secure-context ::int)
 
@@ -319,6 +326,8 @@
 	   (ssl-get-ciphers::vector)
 	   (evp-get-ciphers::pair-nil)
 	   (evp-get-hashes::pair-nil)
+
+	   (ssl-op-cipher-server-preference::int)
 	   )
 	   
    (cond-expand
@@ -388,7 +397,13 @@
 	  
 	  (class ssl-hash
 	     (ssl-hash-init)
-	     ($native::$ssl-hash (default $ssl-hash-nil)))))
+	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
+	     ($md-ctx::$ssl-evp-md-ctx (default $ssl-evp-md-ctx-nil))
+	     (type::bstring read-only))
+
+	  (generic ssl-hash-init ::ssl-hash)
+	  (generic ssl-hash-update! ::ssl-hash ::bstring ::long ::long)
+	  (generic ssl-hash-digest ::ssl-hash)))
 			     
       (else
        (export
@@ -1010,8 +1025,34 @@
 (define-generic (ssl-hash-init ssl-hash::ssl-hash)
    (cond-expand
       (bigloo-c
-       (with-access::ssl-hash ssl-hash ($native)
-	  '(set! $native ($ssl-hash-new))))
+       (unless ($bgl-ssl-hash-init ssl-hash)
+	  (error "ssl-hash" "Digest method not supported" ssl-hash))
+       ssl-hash)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-hash-update! ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-hash-update! ssl-hash::ssl-hash data::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-hash-update! ssl-hash data offset len)
+	  (error "ssl-hash-update!" "cannot update" ssl-hash))
+       ssl-hash)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-hash-digest ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-hash-digest ssl-hash::ssl-hash)
+   (cond-expand
+      (bigloo-c
+       (let ((r ($bgl-ssl-hash-digest ssl-hash)))
+	  (if r
+	      (string-hex-extern r)
+	      (error "ssl-hash-digest" "cannot digest" ssl-hash))))
       (else
        #f)))
 
@@ -1091,6 +1132,10 @@
       (bigloo-c ($bgl-evp-get-hashes))
       (else '())))
 
-
+;*---------------------------------------------------------------------*/
+;*    constants ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (ssl-op-cipher-server-preference)
+   (cond-expand (bigloo-c $ssl-op-cipher-server-preference) (else 0)))
 
 

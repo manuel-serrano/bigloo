@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sat May  9 07:49:59 2015 (serrano)                */
+/*    Last change :  Thu May 14 07:54:27 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -100,6 +100,7 @@ int RAND_poll() {
 /*---------------------------------------------------------------------*/
 typedef BgL_sslzd2connectionzd2_bglt ssl_connection;
 typedef BgL_securezd2contextzd2_bglt secure_context;
+typedef BgL_sslzd2hashzd2_bglt ssl_hash;
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -1015,21 +1016,15 @@ bgl_advertise_next_proto_callback( SSL *ssl,
 /*---------------------------------------------------------------------*/
 static int
 bgl_select_next_proto_callback( SSL *ssl,
-				unsigned char** out, unsigned char* outlen,
-				const unsigned char* in,
+				unsigned char **out, unsigned char *outlen,
+				const unsigned char *in,
 				unsigned int inlen, void *arg ) {
    ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
-#if( SSL_DEBUG )
-   fprintf( stderr, "%s,%d:>>> SelectNextProtoCallback\n", __FILE__, __LINE__ );
-#endif   
 
    if( !STRINGP( c->BgL_npnzd2protoszd2 ) ) {
       *out = "http/1.1";
       *outlen = 8;
       c->BgL_selectedzd2npnzd2protosz00 = BFALSE;
-#if( SSL_DEBUG )
-      fprintf( stderr, "%s,%d:<<< SelectNextProtoCallback, return empty\n", __FILE__, __LINE__ );
-#endif
       return SSL_TLSEXT_ERR_OK;
    } else {
       int status = SSL_select_next_proto
@@ -1037,15 +1032,6 @@ bgl_select_next_proto_callback( SSL *ssl,
 	   BSTRING_TO_STRING( c->BgL_npnzd2protoszd2 ),
 	   STRING_LENGTH( c->BgL_npnzd2protoszd2 ) );
 
-#if( SSL_DEBUG )
-  {
-     char *s = (char *)alloca( STRING_LENGTH( c->BgL_selectedzd2npnzd2protosz00 ) );
-     memcpy( s, BSTRING_TO_STRING( c->BgL_selectedzd2npnzd2protosz00 ), STRING_LENGTH( c->BgL_selectedzd2npnzd2protosz00 ) );
-     s[ STRING_LENGTH( c->BgL_selectedzd2npnzd2protosz00 ) ] = 0;
-     fprintf( stderr, "%s,%d:<<< SelectNextProtoCallback, protos=%s -> r=%d\n", __FILE__, __LINE__, s, status );
-  }
-#endif
-  
       switch( status ) {
 	 case OPENSSL_NPN_UNSUPPORTED:
 	    c->BgL_selectedzd2npnzd2protosz00 = BUNSPEC;
@@ -1911,7 +1897,7 @@ bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t
       BIO *bio = bgl_load_bio( cert, offset, len );
 
       if( !bio ) return BFALSE;
-      
+
       EVP_PKEY *key =  PEM_read_bio_PrivateKey(
 	 bio, NULL, NULL,
 	 STRINGP( passphrase ) ? BSTRING_TO_STRING( passphrase ) : NULL );
@@ -1974,36 +1960,31 @@ bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_set_session_id_context( secure_context sc, obj_t sic, long offset, long len ) {
-#if( SSL_DEBUG )
-   fprintf( stderr, "%s,%d:setSessionIdContext\n", __FILE__, __LINE__ );
-#endif
-   {
-      int r = SSL_CTX_set_session_id_context
-	 ( sc->BgL_z42nativez42, &(STRING_REF( sic, offset)), len );
+   int r = SSL_CTX_set_session_id_context
+      ( sc->BgL_z42nativez42, &(STRING_REF( sic, offset)), len );
 
-      if( r != 1 ) {
-	 BIO *bio;
-	 BUF_MEM *mem;
-	 char *msg;
+   if( r != 1 ) {
+      BIO *bio;
+      BUF_MEM *mem;
+      char *msg;
 	 
-	 if( (bio = BIO_new( BIO_s_mem() )) ) {
-	    ERR_print_errors( bio );
-	    BIO_get_mem_ptr( bio, &mem );
+      if( (bio = BIO_new( BIO_s_mem() )) ) {
+	 ERR_print_errors( bio );
+	 BIO_get_mem_ptr( bio, &mem );
 	    
-	    msg = alloca( mem->length + 1 );
-	    msg[ mem->length ] = 0;
-	    memcpy( msg, mem->data, mem->length );
+	 msg = alloca( mem->length + 1 );
+	 msg[ mem->length ] = 0;
+	 memcpy( msg, mem->data, mem->length );
 
-	    BIO_free( bio );
-	 } else {
-	    msg = "error";
-	 }
-	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "set_session_id_context",
-			   msg, (obj_t)sc );
+	 BIO_free( bio );
+      } else {
+	 msg = "error";
       }
-
-      return BTRUE;
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "set_session_id_context",
+			msg, (obj_t)sc );
    }
+
+   return BTRUE;
 }
 
 /*---------------------------------------------------------------------*/
@@ -2013,7 +1994,7 @@ bgl_ssl_ctx_set_session_id_context( secure_context sc, obj_t sic, long offset, l
 BGL_RUNTIME_DEF obj_t
 bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
 #if( SSL_DEBUG )
-   fprintf( stderr, "%s,%d:sload_pkcs12\n", __FILE__, __LINE__ );
+   fprintf( stderr, "%s,%d:LoadPKCS12\n", __FILE__, __LINE__ );
 #endif
 
    {
@@ -2024,9 +2005,10 @@ bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
       STACK_OF(X509) *extraCerts = NULL;
       X509 *x509;
       char ret = 0;
+      char *strpass = STRINGP( pass ) ? BSTRING_TO_STRING( pass ) : 0L;
       
       if( d2i_PKCS12_bio( in, &p12 ) &&
-	  PKCS12_parse( p12, BSTRING_TO_STRING( pass ), &pkey, &cert, &extraCerts ) &&
+	  PKCS12_parse( p12, strpass, &pkey, &cert, &extraCerts ) &&
 	  SSL_CTX_use_certificate( sc->BgL_z42nativez42, cert ) &&
 	  SSL_CTX_use_PrivateKey( sc->BgL_z42nativez42, pkey ) ) {
 	 // set extra certs
@@ -2243,13 +2225,10 @@ bgl_ssl_connection_get_negotiated_protocol( ssl_connection ssl ) {
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_init( secure_context sc ) {
    char *sslmethod = BSTRING_TO_STRING( sc->BgL_methodz00 );
-   SSL_METHOD *method;
    
 #if( SSL_DEBUG )
-   static int init = 0;
-
    BGL_MUTEX_LOCK( bigloo_mutex );
-   
+
    if( !init ) {
       init = 1;
       SSL_library_init();
@@ -2261,6 +2240,9 @@ bgl_ssl_ctx_init( secure_context sc ) {
 #else
    bgl_ssl_init();
 #endif
+
+   /* Nodejs compatibility */
+   SSLv23_method();
 
    if( !strcmp( sslmethod, "SSLv2_method" ) ) {
 #if( BGLSSL_HAVE_SSLV2 )
@@ -2532,7 +2514,9 @@ BGL_RUNTIME_DEF obj_t
 bgl_evp_get_ciphers() {
    obj_t acc = MAKE_CELL( BNIL );
    
-   EVP_CIPHER_do_all_sorted( list_push, (void *)acc );
+   EVP_CIPHER_do_all_sorted(
+      (void (*)(const EVP_CIPHER *, const char *, const char *, void *))
+      list_push, (void *)acc );
    
    return bgl_reverse( CELL_REF( acc ) );
 }
@@ -2545,7 +2529,78 @@ BGL_RUNTIME_DEF obj_t
 bgl_evp_get_hashes() {
    obj_t acc = MAKE_CELL( BNIL );
    
-   EVP_MD_do_all_sorted( list_push, (void *)acc );
+   EVP_MD_do_all_sorted(
+      (void (*)(const EVP_MD *, const char *, const char *, void *))
+      list_push, (void *)acc );
    
    return bgl_reverse( CELL_REF( acc ) );
 }
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_hash_init ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_hash_init( ssl_hash hash ) {
+#if( SSL_DEBUG )
+   BGL_MUTEX_LOCK( bigloo_mutex );
+   
+   if( !init ) {
+      init = 1;
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+   }
+   
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
+#else
+   bgl_ssl_init();
+#endif
+   
+   hash->BgL_z42mdz42 =
+      (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( hash->BgL_typez00 ) );
+   if( !(hash->BgL_z42mdz42) ) return BFALSE;
+
+   hash->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
+   
+   EVP_MD_CTX_init( hash->BgL_z42mdzd2ctxz90 );
+   EVP_DigestInit_ex( hash->BgL_z42mdzd2ctxz90, hash->BgL_z42mdz42, NULL );
+   return BTRUE;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_hash_update ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_hash_update( ssl_hash hash, obj_t data, long offset, long len ) {
+   if( hash->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      EVP_DigestUpdate( hash->BgL_z42mdzd2ctxz90,
+			&(STRING_REF( data, offset )),
+			len );
+      return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_hash_digest ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_hash_digest( ssl_hash hash ) {
+   if( hash->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      unsigned char md_value[ EVP_MAX_MD_SIZE ];
+      unsigned int md_len;
+
+      EVP_DigestFinal_ex( hash->BgL_z42mdzd2ctxz90, md_value, &md_len );
+      EVP_MD_CTX_cleanup( hash->BgL_z42mdzd2ctxz90 );
+      hash->BgL_z42mdzd2ctxz90 = 0L;
+
+      return string_to_bstring_len( md_value, md_len );
+   }
+}
+   

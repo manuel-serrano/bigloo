@@ -1,6 +1,8 @@
 #define SSL_DEBUG 3
 #undef SSL_DEBUG
 
+static int init = 0;
+
 #if( SSL_DEBUG )
 int call1name;
 int callr1;
@@ -36,6 +38,10 @@ static int count;
    (fprintf( stderr, "SSL_DEBUG(%d): " #fun "\n", count++ ), fun(a0,a1,a2,a3,a4))
 #define call6( fun, a0, a1, a2, a3, a4, a5 ) \
    (fprintf( stderr, "SSL_DEBUG(%d): " #fun "\n", count++ ), fun(a0,a1,a2,a3,a4,a5))
+#define call7( fun, a0, a1, a2, a3, a4, a5, a6 ) \
+   (fprintf( stderr, "SSL_DEBUG(%d): " #fun "\n", count++ ), fun(a0,a1,a2,a3,a4,a5,a6))
+#define call8( fun, a0, a1, a2, a3, a4, a5, a6, a7 ) \
+   (fprintf( stderr, "SSL_DEBUG(%d): " #fun "\n", count++ ), fun(a0,a1,a2,a3,a4,a5,a6,a7))
 
 #define SSLv23_method()	call0(SSLv23_method)
 #define SSLv2_method() call0(SSLv2_method)
@@ -67,7 +73,35 @@ static SSL_METHOD *__method;
 #define X509_STORE_add_cert(a0, x509) call2(X509_STORE_add_cert,a0, x509)
 #define SSL_CTX_add_client_CA(a0, x509) call2(SSL_CTX_add_client_CA,a0, x509)
 #define X509_free(x509) call1(X509_free,x509)
+
+#define EVP_md5() call0(EVP_md5)
+#define EVP_sha1() call0(EVP_sha1)
 #define EVP_PKEY_free(pkey) call1(EVP_PKEY_free,pkey)
+#define EVP_PKEY_get1_RSA(pkey) call1(EVP_PKEY_get1_RSA,pkey)
+#define EVP_PKEY_set1_RSA(a0,a1) call2(EVP_PKEY_set1_RSA,a0,a1)
+#define EVP_get_cipherbyname(name) call1(EVP_get_cipherbyname,name)
+#define EVP_BytesToKey(a0,a1,a2,a3,a4,a5,a6,a7) call8(EVP_BytesToKey,a0,a1,a2,a3,a4,a5,a6,a7)
+#define EVP_CIPHER_CTX_init(a0) call1(EVP_CIPHER_CTX_init,a0)
+#define EVP_CipherInit_ex(a0,a1,a2,a3,a4,a5) call6(EVP_CipherInit_ex,a0,a1,a2,a3,a4,a5)
+#define EVP_CIPHER_CTX_set_key_length(a0,a1) call2(EVP_CIPHER_CTX_set_key_length,a0,a1)
+#define EVP_CIPHER_CTX_cleanup(a0) call1(EVP_CIPHER_CTX_cleanup,a0)
+#define EVP_MD_CTX_cleanup(a0) call1(EVP_MD_CTX_cleanup,a0)
+#define EVP_CIPHER_iv_length(a0) call1(EVP_CIPHER_iv_length,a0)
+#define EVP_CipherUpdate(a0,a1,a2,a3,a4) call5(EVP_CipherUpdate,a0,a1,a2,a3,a4)
+#define EVP_CIPHER_CTX_set_padding(a0,a1) call2(EVP_CIPHER_CTX_set_padding,a0,a1)
+#define EVP_CIPHER_CTX_block_size(a0) call1(EVP_CIPHER_CTX_block_size,a0)
+#define EVP_CipherFinal_ex(a0,a1,a2) call3(EVP_CipherFinal_ex,a0,a1,a2)
+#define EVP_MD_CTX_init(a0) call1(EVP_MD_CTX_init,a0)
+#define EVP_DigestInit_ex(a0,a1,a2) call3(EVP_DigestInit_ex,a0,a1,a2)
+#define EVP_DigestFinal_ex(a0,a1,a2) call3(EVP_DigestFinal,a0,a1,a2)
+#define EVP_DigestUpdate(a0,a1,a2) call3(EVP_DigestUpdate,a0,a1,a2)
+#define EVP_SignFinal(a0,a1,a2,a3) call4(EVP_SignFinal,a0,a1,a2,a3)
+#define EVP_get_digestbyname(a0) call1(EVP_get_digestbyname,a0)
+#define EVP_VerifyFinal(a0,a1,a2,a3) call4(EVP_VerifyFinal,a0,a1,a2,a3)
+#define EVP_PKEY_new() call0(EVP_PKEY_new)
+#define EVP_CIPHER_do_all_sorted(a0,a1) call2(EVP_CIPHER_do_all_sorted,a0,a1)
+#define EVP_MD_do_all_sorted(a0,a1) call2(EVP_MD_do_all_sorted,a0,a1)
+
 #define PKCS12_free(p12) call1(PKCS12_free,p12)
 #define BIO_free(in) call1(BIO_free,in)
 #define SSL_get_error(ssl_, rv) call2r(SSL_get_error,ssl_, rv)
@@ -106,7 +140,7 @@ static SSL_METHOD *__method;
 #define PEM_read_bio_PrivateKey(a0,a1,a2,a3) call4(PEM_read_bio_PrivateKey,a0,a1,a2,a3)
 #define BIO_new_file(a0,a1) call2(BIO_new_file,a0,a1)
 
-#define SSL_DEBUG_INIT() (fprintf( stderr, "~~~~~~~~~~~~ SSL_DEBUG_INT ~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n" ))
+#define SSL_DEBUG_INIT() (fprintf( stderr, "~~~~~~~~~~~~ SSL_DEBUG_INIT ~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n" ))
 #define SSL_debug(name) (fprintf( stderr, "SSL_DEBUG: %s\n", name ))
 
 
