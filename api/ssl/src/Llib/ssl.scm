@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu May 14 07:52:39 2015 (serrano)                */
+;*    Last change :  Tue May 19 14:06:53 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -337,7 +337,7 @@
 	     (secure-context-init)
 	     ($native::$ssl-ctx (default $ssl-ctx-nil))
 	     ($ca-store::$X509-store (default $X509-store-nil))
-	     (method::bstring read-only (default "SSLv23_method")))
+	     (method::bstring read-only (default "default")))
 	  
 	  (class ssl-connection
 	     (ssl-connection-init)

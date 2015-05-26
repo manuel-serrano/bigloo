@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Wed Mar  4 17:56:49 2015 (serrano)                */
+;*    Last change :  Thu May 21 13:15:02 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -102,11 +102,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (uv-close o::UvStream #!optional callback)
    (if (procedure? callback)
-       (set! callback
-	  (lambda ()
-	     (with-access::UvStream o (loop)
-		(with-access::UvLoop loop (%gcmarks)
-		   (set! %gcmarks (remq! o %gcmarks))))))
+       (let ((cb callback))
+	  (set! callback
+	     (lambda ()
+		(with-access::UvStream o (loop)
+		   (with-access::UvLoop loop (%gcmarks)
+		      (set! %gcmarks (remq! o %gcmarks))))
+		cb)))
        (with-access::UvStream o (loop)
 	  (with-access::UvLoop loop (%gcmarks)
 	     (set! %gcmarks (remq! o %gcmarks)))))
@@ -285,10 +287,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (uv-close o::UvTcp #!optional callback)
    (if (procedure? callback)
-       (set! callback
-	  (lambda ()
-	     (synchronize tcp-mutex
-		(set! tcp-servers (remq! o tcp-servers)))))
+       (let ((cb callback))
+	  (set! callback
+	     (lambda ()
+		(synchronize tcp-mutex
+		   (set! tcp-servers (remq! o tcp-servers)))
+		(cb))))
        (synchronize tcp-mutex
 	  (set! tcp-servers (remq! o tcp-servers))))
    (call-next-method))
@@ -355,10 +359,12 @@
 ;*---------------------------------------------------------------------*/
 (define-method (uv-close o::UvUdp #!optional callback)
    (if (procedure? callback)
-       (set! callback
-	  (lambda ()
-	     (synchronize udp-mutex
-		(set! udp-servers (remq! o udp-servers)))))
+       (let ((cb callback))
+	  (set! callback
+	     (lambda ()
+		(synchronize udp-mutex
+		   (set! udp-servers (remq! o udp-servers)))
+		(cb))))
        (synchronize udp-mutex
 	  (set! udp-servers (remq! o udp-servers))))
    (call-next-method))

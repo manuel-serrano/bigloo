@@ -1,5 +1,5 @@
 #define SSL_DEBUG 3
-#undef SSL_DEBUG
+//#undef SSL_DEBUG
 
 static int init = 0;
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu May 14 07:54:27 2015 (serrano)                */
+/*    Last change :  Fri May 22 07:34:41 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -617,9 +617,10 @@ bgl_load_bio( obj_t cert, long offset, long len ) {
    BIO *bio = BIO_new( BIO_s_mem() );
 
 #if( SSL_DEBUG )
-   char s[ len + 1 ];
-   memcpy( s, &(STRING_REF( cert, offset )), len );
-   s[ len ] = 0;
+   int l = len > 80 ? 80 : len;
+   char s[ l + 1 ];
+   memcpy( s, &(STRING_REF( cert, offset )), l );
+   s[ l ] = 0;
    
    fprintf( stderr, "%s,%d:LoadBIO [%d:%s]\n", __FILE__, __LINE__, len, s );
 #endif
@@ -909,37 +910,37 @@ bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_ctx_add_ca_cert( secure_context sc, obj_t cert, long offset, long len ) {
    char newCAStore = 0;
-   BIO *bio = BIO_new( BIO_s_mem() );
+   BIO *bio;
    X509 *x509;
-   
-   if( !bio ) {
-      return 0;
-   }
-
-   BIO_write( bio, &STRING_REF( cert, offset ), len );
    
    if( sc->BgL_z42cazd2storez90 == 0L ) {
       sc->BgL_z42cazd2storez90 = X509_STORE_new();
       newCAStore = 1;
-  }
+   }
+   
+   bio = bgl_load_bio( cert, offset, len );
 
-  x509 = PEM_read_bio_X509( bio, NULL, NULL, NULL );
-  BIO_free( bio );
-  
-  if( !x509) {
-     return 0;
-  }
+   if( !bio ) {
+      return 0;
+   }
+   
+   x509 = PEM_read_bio_X509( bio, NULL, NULL, NULL );
+   BIO_free( bio );
+   
+   if( !x509) {
+      return 0;
+   }
 
-  X509_STORE_add_cert( sc->BgL_z42cazd2storez90, x509 );
-  SSL_CTX_add_client_CA( sc->BgL_z42nativez42, x509 );
+   X509_STORE_add_cert( sc->BgL_z42cazd2storez90, x509 );
+   SSL_CTX_add_client_CA( sc->BgL_z42nativez42, x509 );
 
-  X509_free( x509 );
+   X509_free( x509 );
 
-  if( newCAStore ) {
-    SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
-  }
+   if( newCAStore ) {
+      SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
+   }
 
-  return 1;
+   return 1;
 }
 
 /*---------------------------------------------------------------------*/
@@ -1105,20 +1106,26 @@ bgl_select_sni_context_callback( SSL *ssl, int *ad, void* arg ) {
 
    if( servername ) {
       obj_t proc = c->BgL_snizd2contextzd2callbackz00;
+      obj_t bsrv = string_to_bstring( (char *)servername );
 
-      c->BgL_serverzd2namezd2 = string_to_bstring( (char *)servername );
+      c->BgL_serverzd2namezd2 = bsrv;
       
       // Call the SNI callback and use its return value as context
       if( proc ) {
-	 obj_t ret = PROCEDURE_ENTRY( proc )( proc, BEOA );
-
-	 if( ret != BFALSE ) {
-	    secure_context sc = (secure_context)ret;
-
-	    bgl_init_npm( sc, 1 );
-	    SSL_set_SSL_CTX( ssl, sc->BgL_z42nativez42 );
+	 if( !PROCEDURE_CORRECT_ARITYP( proc, 2 ) ) {
+	    C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ssl-connection",
+			      "wrong callback arity", proc );
 	 } else {
-	    return SSL_TLSEXT_ERR_NOACK;
+	    obj_t ret = PROCEDURE_ENTRY( proc )( proc, c, bsrv, BEOA );
+
+	    if( ret != BFALSE ) {
+	       secure_context sc = (secure_context)ret;
+
+	       bgl_init_npm( sc, 1 );
+	       SSL_set_SSL_CTX( ssl, sc->BgL_z42nativez42 );
+	    } else {
+	       return SSL_TLSEXT_ERR_NOACK;
+	    }
 	 }
       }
    }
@@ -1204,6 +1211,10 @@ bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
 					      bgl_select_sni_context_callback );
    } else {
       if( STRINGP( ssl->BgL_serverzd2namezd2 ) ) {
+#if( SSL_DEBUG )
+	 fprintf( stderr, "%s,%d SSL_set_tlsext_host_name %s\n",
+		  __FILE__, __LINE__, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
+#endif	 
 	 SSL_set_tlsext_host_name( _ssl, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
       }
    }
@@ -1426,14 +1437,15 @@ bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
       if( bytes_read >= 0 ) {
 #if( SSL_DEBUG >=2 )	 
 	 int i;
-	 for( i = 0; i < bytes_read; i++ ) {
+	 int bn = bytes_read > 80 ? 80 : bytes_read;
+	 for( i = 0; i < bn; i++ ) {
 	    fprintf( stderr, "%02x ", ((unsigned char *)(buf))[ off + i ] );
 	 }
 
 	 fprintf( stderr, "\n" );
 #endif	 
 #if( SSL_DEBUG >=3 )	 
-	 for( i = 0; i < bytes_read; i++ ) {
+	 for( i = 0; i < bn; i++ ) {
 	    unsigned char c = ((unsigned char *)(buf))[ off + i ];
 	    if( c <= 127 && c >= 20 ) {
 	       fprintf( stderr, "%c", c );
@@ -1543,9 +1555,10 @@ BGL_RUNTIME_DEF long
 bgl_ssl_connection_clear_in( ssl_connection ssl, char *buf, long off, long len ) {
 #if( defined( SSL_DEBUG) )   
    {
-      char s[ len + 1 ];
-      strncpy( s, buf + off, len );
-      s[ len ] = 0;
+      int l = len > 80 ? 80 : len;
+      char s[ l + 1 ];
+      strncpy( s, buf + off, l );
+      s[ l ] = 0;
       
       fprintf( stderr, "%s:%d clearin [%s]\n", __FILE__, __LINE__, s );
    }
@@ -1630,12 +1643,17 @@ bgl_new_session_callback( SSL *ssl, SSL_SESSION *sess ) {
    
       i2d_SSL_SESSION( sess, &pserialized );
 
-      PROCEDURE_ENTRY( cb )
+      if( !PROCEDURE_CORRECT_ARITYP( cb, 2 ) ) {
+	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ssl-session",
+			   "wrong callback arity", cb );
+      } else {
+	 PROCEDURE_ENTRY( cb )
 	 ( cb,
 	   string_to_bstring_len( sess->session_id, sess->session_id_length ),
 	   serialized,
 	   BEOA );
-      return 0;
+	 return 0;
+      }
    }
 }
 
@@ -2225,6 +2243,7 @@ bgl_ssl_connection_get_negotiated_protocol( ssl_connection ssl ) {
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_init( secure_context sc ) {
    char *sslmethod = BSTRING_TO_STRING( sc->BgL_methodz00 );
+   const SSL_METHOD *method;
    
 #if( SSL_DEBUG )
    BGL_MUTEX_LOCK( bigloo_mutex );
@@ -2242,9 +2261,11 @@ bgl_ssl_ctx_init( secure_context sc ) {
 #endif
 
    /* Nodejs compatibility */
-   SSLv23_method();
+   method = SSLv23_method();
 
-   if( !strcmp( sslmethod, "SSLv2_method" ) ) {
+   if( !strcmp( sslmethod, "default" ) ) {
+      sc->BgL_z42nativez42 = SSL_CTX_new( method );
+   } else if( !strcmp( sslmethod, "SSLv2_method" ) ) {
 #if( BGLSSL_HAVE_SSLV2 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_method() );
 #else
