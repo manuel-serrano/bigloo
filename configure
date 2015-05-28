@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu May 28 07:59:20 2015 (serrano)                */
+#*    Last change :  Thu May 28 13:34:47 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2426,7 +2426,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       gmplib=-lgmp
     fi
 
-    gmpversion=`$autoconf gmp --lib $gmplib` || exit 1
+    gmpversion=`$autoconf gmp --lib=$gmplib` || exit 1
 
     if [ $gmpversion = "no" ]; then
       havegmp=0;
