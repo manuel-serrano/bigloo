@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Sun Apr 12 07:45:42 2015 (serrano)                */
+;*    Last change :  Mon Jun 15 17:40:14 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -73,6 +73,7 @@
 		 (content-type #f)
 		 (connection #unspecified)
 		 (header '((user-agent: "Mozilla/5.0")))
+		 (raw-header #f)
 		 (args '())
 		 (body #f))
 
@@ -117,6 +118,7 @@
 	   (content-type #f)
 	   (connection #unspecified)
 	   (header '((user-agent: "Mozilla/5.0")))
+	   (raw-header #f)
 	   (args '())
 	   (body #f))
    ;; preliminary checks
@@ -149,6 +151,8 @@
 		   (if (pair? (cdr h)) (cadr h) (cdr h))
 		   out))
       header)
+   (when (string? raw-header)
+      (display raw-header out))
    ;; authentication
    (cond
       ((string? login)

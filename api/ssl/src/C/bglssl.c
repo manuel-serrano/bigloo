@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Jun  8 19:38:35 2015 (serrano)                */
+/*    Last change :  Mon Jun 15 09:33:18 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -324,7 +324,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    bgl_ssl_init();
 
    BGL_MUTEX_LOCK( ssl_mutex );
-   
+
    sbio = BIO_new_socket( SOCKET( s ).fd, BIO_NOCLOSE );
    if( !sbio ) {
       C_SYSTEM_FAILURE( BGL_IO_ERROR,
@@ -534,7 +534,7 @@ bgl_client_socket_use_ssl( obj_t socket,
 			   int protocol, obj_t cert, obj_t pkey,
 			   obj_t ca_list, obj_t accepted_certs ) {
    bgl_ssl_init();
-   
+
    return socket_enable_ssl( socket, 0, ctxc[ protocol ], cert, pkey,
                              ca_list, accepted_certs );
 }

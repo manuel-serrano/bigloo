@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Jan  6 05:40:12 2015 (serrano)                */
+/*    Last change :  Mon Jun 15 09:38:59 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -513,8 +513,6 @@ syswrite_with_timeout( obj_t port, void *ptr, size_t num ) {
    if( (n = tmt->syswrite( port, ptr, num )) >= 0 ) {
       return n;
    } else {
-      // fprintf( stderr, "!!!! syswrite_timeout fd=%d  errno=%d strerr=%s port-name=%s\n", PORT_FD( port ), errno, strerror( errno ), BSTRING_TO_STRING( PORT( port ).name ) );
-
       if( (errno != EAGAIN) && (errno != EWOULDBLOCK) ) {
 	 int e = (errno == BGL_ECONNRESET ?
 		  BGL_IO_CONNECTION_ERROR : BGL_IO_WRITE_ERROR);
@@ -974,12 +972,18 @@ bool_t
 bgl_output_port_timeout_set( obj_t port, long timeout ) {
 #if defined( POSIX_FILE_OPS ) && BGL_HAVE_SELECT && BGL_HAVE_FCNTL
    if( (timeout >= 0) &&
-       ((PORT(port).kindof == KINDOF_FILE) ||
-	(PORT(port).kindof == KINDOF_PIPE) ||
-	(PORT(port).kindof == KINDOF_PROCPIPE) ||
-	(PORT(port).kindof == KINDOF_CONSOLE) ||
-	(PORT(port).kindof == KINDOF_SOCKET)) ) {
+       ((PORT( port ).kindof == KINDOF_FILE) ||
+	(PORT( port ).kindof == KINDOF_PIPE) ||
+	(PORT( port ).kindof == KINDOF_PROCPIPE) ||
+	(PORT( port ).kindof == KINDOF_CONSOLE) ||
+	(PORT( port ).kindof == KINDOF_SOCKET)) ) {
       int fd = PORT_FD( port );
+
+      if( (PORT( port ).kindof == KINDOF_SOCKET) &&
+	  (OUTPUT_PORT( port ).stream_type == BGL_STREAM_TYPE_CHANNEL ) ) {
+	 /* see ssl/bglssl.c */
+	 fd = (long)(PORT( port ).userdata);
+      }
 
       if( timeout == 0 ) {
 	 struct bgl_output_timeout *to = PORT( port ).timeout;
@@ -2591,8 +2595,15 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
    int n;
    int in;
 
-   if( PORT( op ).kindof == KINDOF_CLOSED )
+   if( (PORT( op ).kindof == KINDOF_CLOSED) ) {
       return BFALSE;
+   }
+
+   if( OUTPUT_PORT( op ).stream_type == BGL_STREAM_TYPE_CHANNEL ) {
+      /* closed socket and ssl socket do not support send file */
+      fprintf( stderr, "send file no\n" );
+      return BFALSE;
+   }
 
       /* Some operating systems (such as Linux 2.6.10) are demanding */
       /* on the input and output ports. These requirements are set   */

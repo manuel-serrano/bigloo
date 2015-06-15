@@ -131,6 +131,7 @@ The variants @code{-component} treat do not escape URI reserved characters
                                [:content-type #f]
                                [:connection "close"]
                                [:header '((user-agent: "Mozilla/5.0"))]
+                               [:raw-header ""]
                                [:args '()]
                                [:body #f]
 
@@ -139,7 +140,9 @@ Opens an HTTP connection. Returns a socket.
 It is an error to specify a header twice. In particular, it is illegal
 to re-define keyword-ed arguments in the @var{:header} list. For instance,
 it is illegal to include in the @code{:header} actual list value a 
-value for the @code{Connection} HTTP connection.
+value for the @code{Connection} HTTP connection. The argument @var{raw-header},
+when provided, should be a string, which is inserted @emph{as is}, in the
+header of the HTTP message (even the final CRLF is not included).
 
 @smalllisp
 (define (wget url)

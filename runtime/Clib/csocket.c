@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Apr 20 14:27:00 2015 (serrano)                */
+/*    Last change :  Mon Jun 15 09:26:35 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1832,7 +1832,6 @@ bgl_socket_accept( obj_t serv, bool_t errp, obj_t inb, obj_t outb ) {
    a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
    a_socket->socket_t.portnum = ntohs( sin.sin_port );
    a_socket->socket_t.hostname = BUNSPEC;
-/*    a_socket->socket_t.hostip = bgl_inet_ntop( AF_INET, &(sin.sin_addr) ); */
    a_socket->socket_t.hostip = BUNSPEC;
    a_socket->socket_t.family = AF_INET;
    a_socket->socket_t.address.in_addr = sin.sin_addr;
