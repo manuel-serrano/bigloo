@@ -1,19 +1,19 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/unistring                   */
+#*    serrano/prgm/project/bigloo/autoconf/resolv                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Sat Jun  6 11:00:17 2015 (serrano)                */
+#*    Last change :  Sat Jun  6 11:03:26 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
-#*    Check for the host unistring library.                            */
+#*    Check for the host resolv (glibc included) library.              */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
 #*    flags                                                            */
 #*---------------------------------------------------------------------*/
 cflags=
-unistringlib="unistring"
+resolvlib="resolv"
 type=
 
 #*---------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout -l$unistringlib >/dev/null"
+compile="$CC $cflags $file.c -o $aout -l$resolvlib >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -55,17 +55,33 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-#include <unistr.h>
-#include <uninorm.h>
-#include <unicase.h>
-#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <resolv.h>
+#include <netdb.h>
+
+#define N 4096
 
 int main( int argc, char *argv[] ) {
-   int res;
-   int len = strlen( argv[ 1 ] );
-   u8_normcoll( (uint8_t *)argv[ 1 ], len, (uint8_t *)argv[ 1 ], len, 
-                UNINORM_NFKC, &res );
-   return res;
+    u_char nsbuf[ N ];
+    char dispbuf[ N];
+    ns_msg msg;
+    ns_rr rr;
+    int i, l;
+
+    l = res_query( argv[ 1 ], ns_c_any, ns_t_a, nsbuf, sizeof( nsbuf ) );
+    if( l >= 0 ) {
+       ns_initparse( nsbuf, l, &msg );
+       l = ns_msg_count( msg, ns_s_an );
+       for( i = 0; i < l; i++ ) {
+	  ns_parserr( &msg, ns_s_an, 0, &rr );
+	  ns_sprintrr( &msg, &rr, NULL, NULL, dispbuf, sizeof( dispbuf ) );
+       }
+       return 0;
+    }
+    return 1;
 }
 EOF
 
@@ -73,13 +89,13 @@ EOF
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
 if eval "$BUILDSH $compile"; then
-   eval "$HOSTSH $aout aaa aaa"
+   eval "$HOSTSH $aout hop.inria.fr"
    ret_code=$?
    \rm -f $file.*
    rm -f $aout
    rm -f $aout*
    if [ $ret_code = 0 ]; then
-     echo "$unistringlib"
+     echo "$resolvlib"
    else
      echo "no"
    fi

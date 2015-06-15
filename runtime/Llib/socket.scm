@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Mon Apr 20 14:17:32 2015 (serrano)                */
+;*    Last change :  Sat Jun  6 16:45:10 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -71,6 +71,7 @@
 	    
 	    ($host::bstring (::bstring) "bgl_host")
 	    ($hostinfo::pair-nil (::bstring) "bgl_hostinfo")
+	    ($resolv::vector (::bstring ::bstring) "bgl_res_query")
 	    
 	    ($gethostname::bstring () "bgl_gethostname")
 	    ($gethostname-by-address::bstring (::bstring) "bgl_gethostname_by_address")
@@ -231,6 +232,7 @@
 	    (inline host::bstring ::bstring)
 	    (inline hostinfo::pair-nil ::bstring)
 	    (hostname::bstring #!optional hostip)
+	    (resolv::vector ::bstring ::symbol)
 	    (inline get-interfaces::pair-nil)
 	    (inline get-protocols::pair-nil)
 	    (get-protocol ::obj)
@@ -478,6 +480,16 @@
    (if hostip
        ($gethostname-by-address hostip)
        ($gethostname)))
+
+;*---------------------------------------------------------------------*/
+;*    resolv ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (resolv hostname type)
+   (cond-expand
+      (bigloo-c
+       ($resolv hostname (symbol->string! type)))
+      (else
+       '#())))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-interfaces ...                                               */

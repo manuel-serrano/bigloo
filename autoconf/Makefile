@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Mon Mar  9 08:56:46 2015 (serrano)                */
+#*    Last change :  Sat Jun  6 10:59:36 2015 (serrano)                */
 #*    Copyright   :  1997-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -52,7 +52,7 @@ POPULATION	= Makefile \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
                   gstreamer gstreameraudio \
                   alsa mpg123 flac pcre avahi \
-                  dbus gmp unistring limbs signbit rdynamic \
+                  dbus gmp resolv unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   gcconfigureopt ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \

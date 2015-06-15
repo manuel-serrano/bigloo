@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri Feb  6 12:17:32 2015 (serrano)                */
+;*    Last change :  Sun Jun  7 07:03:06 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -179,7 +179,7 @@
       
       ($uv-fs-rename::int (::string ::string ::obj ::UvLoop)
 	 "bgl_uv_fs_rename")
-      ($uv-fs-ftruncate::int (::UvFile ::long ::obj ::UvLoop)
+      ($uv-fs-ftruncate::int (::UvFile ::int64 ::obj ::UvLoop)
 	 "bgl_uv_fs_ftruncate")
       ($uv-fs-truncate::int (::string ::long ::obj ::UvLoop)
 	 "bgl_uv_fs_truncate")
@@ -223,9 +223,9 @@
 	 "bgl_uv_fs_futime")
       ($uv-fs-utime::int (::string ::double ::double ::obj ::UvLoop)
 	 "bgl_uv_fs_utime")
-      ($uv-fs-write::int (::UvFile ::bstring ::long ::long ::long ::obj ::UvLoop)
+      ($uv-fs-write::int (::UvFile ::bstring ::long ::long ::int64 ::obj ::UvLoop)
 	 "bgl_uv_fs_write")
-      ($uv-fs-read::int (::UvFile ::bstring ::long ::long ::long ::obj ::UvLoop)
+      ($uv-fs-read::int (::UvFile ::bstring ::long ::long ::int64 ::obj ::UvLoop)
 	 "bgl_uv_fs_read")
       (macro $uv-guess-handle::int (::int)
 	     "uv_guess_handle")

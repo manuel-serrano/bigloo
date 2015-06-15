@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue May 19 14:06:53 2015 (serrano)                */
+;*    Last change :  Mon Jun  8 19:38:07 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -35,6 +35,7 @@
 	   (type $ssl-session void* "void *")
 	   (type $ssl-evp-md void* "void *")
 	   (type $ssl-evp-md-ctx void* "void *")
+	   (type $ssl-hmac-ctx void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
 	   (macro $ssl-nil::$ssl "0L")
@@ -191,6 +192,10 @@
 	   ($bgl-ssl-hash-init::bool (::ssl-hash) "bgl_ssl_hash_init")
 	   ($bgl-ssl-hash-update!::obj (::ssl-hash ::bstring ::long ::long) "bgl_ssl_hash_update")
 	   ($bgl-ssl-hash-digest::obj (::ssl-hash) "bgl_ssl_hash_digest")
+
+	   ($bgl-ssl-hmac-init::bool (::ssl-hmac ::bstring ::bstring) "bgl_ssl_hmac_init")
+	   ($bgl-ssl-hmac-update!::obj (::ssl-hmac ::bstring ::long ::long) "bgl_ssl_hmac_update")
+	   ($bgl-ssl-hmac-digest::obj (::ssl-hmac) "bgl_ssl_hmac_digest")
 
 	   (macro $ssl-op-cipher-server-preference::int
 	      "SSL_OP_CIPHER_SERVER_PREFERENCE"))
@@ -400,11 +405,18 @@
 	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
 	     ($md-ctx::$ssl-evp-md-ctx (default $ssl-evp-md-ctx-nil))
 	     (type::bstring read-only))
-
+	  
 	  (generic ssl-hash-init ::ssl-hash)
 	  (generic ssl-hash-update! ::ssl-hash ::bstring ::long ::long)
-	  (generic ssl-hash-digest ::ssl-hash)))
-			     
+	  (generic ssl-hash-digest ::ssl-hash)
+	  
+	  (class ssl-hmac
+	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
+	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+	  
+	  (generic ssl-hmac-init ::ssl-hmac ::bstring ::bstring)
+	  (generic ssl-hmac-update! ::ssl-hmac ::bstring ::long ::long)
+	  (generic ssl-hmac-digest ::ssl-hmac)))
       (else
        (export
 	  (class secure-context
@@ -419,7 +431,9 @@
 
 	  (class dh)
 
-	  (class ssl-hash)))))
+	  (class ssl-hash)
+
+	  (class ssl-hmac)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-version ...                                                  */
@@ -1053,6 +1067,43 @@
 	  (if r
 	      (string-hex-extern r)
 	      (error "ssl-hash-digest" "cannot digest" ssl-hash))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-hmac-init ::ssl-hmac ...                                     */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-hmac-init ssl-hmac::ssl-hmac hmac key)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-hmac-init ssl-hmac hmac key)
+	  (error "ssl-hmac" "Digest method not supported" ssl-hmac)
+	  ssl-hmac))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-hmac-update! ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-hmac-update! ssl-hmac::ssl-hmac data::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-hmac-update! ssl-hmac data offset len)
+	  (error "ssl-hmac-update!" "cannot update" ssl-hmac))
+       ssl-hmac)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-hmac-digest ...                                              */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-hmac-digest ssl-hmac::ssl-hmac)
+   (cond-expand
+      (bigloo-c
+       (let ((r ($bgl-ssl-hmac-digest ssl-hmac)))
+	  (if r
+	      (string-hex-extern r)
+	      (error "ssl-hmac-digest" "cannot digest" ssl-hmac))))
       (else
        #f)))
 

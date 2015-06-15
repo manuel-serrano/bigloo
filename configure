@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu May 28 13:34:47 2015 (serrano)                */
+#*    Last change :  Sat Jun  6 11:08:40 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -138,6 +138,10 @@ gmpsrc=$GMPSRC
 gmpconfigureopt=
 
 srfi27force=no
+
+#*--- resolv version (left blank for autoconfiguration)    ------------*/
+resolv=
+resolvforce=no
 
 #*--- unistring version (left blank for autoconfiguration)    ---------*/
 unistring=
@@ -855,6 +859,13 @@ while : ; do
     --gmpconfigureopt=*)
       gmpconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --no-resolv|--disable-resolv)
+      resolv="no";;
+
+    --enable-resolv)
+      resolv=""
+      resolvforce="yes";;
+
     --no-unistring|--disable-unistring)
       unistring="no";;
 
@@ -1016,6 +1027,7 @@ while : ; do
       echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
       echo "   --no-share (disable shared libraries support)" >&2;
       echo "   --no-gmp (disable gmp library support)" >&2;
+      echo "   --no-resolv (disable resolv library support)" >&2;
       echo "   --no-unistring (disable unistring library support)" >&2;
       echo "   --no-pcre (disable prce library support)" >&2;
       echo "   --no-ldpreload" >&2;
@@ -1042,6 +1054,7 @@ while : ; do
       echo "   --enable-gstreamer-thread" >&2;
       echo "   --disable-gstreamer-thread" >&2;
       echo "   --disable-gmp (see --no-gmp)" >&2;
+      echo "   --disable-revolv (see --no-resolv)" >&2;
       echo "   --disable-unistring (see --no-unistring)" >&2;
       echo "   --disable-pcre (see --no-pcre)" >&2;
       echo "   --customgmp=yes|no [default yes]" >&2;
@@ -2464,6 +2477,26 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     havegmp=0;
   fi
 
+  # Is resolv available?
+  if [ "$resolv " = " " ]; then
+    resolv=`$autoconf resolv` || exit 1
+
+    if [ $resolv = "no" ]; then
+      haveresolv=0;
+      if [ $resolvforce = "yes" ]; then
+	echo "*** ERROR:configure:--enable-resolv. Cannot find RESOLV library."
+	echo "Aborting";
+ 	exit 1;
+      fi
+    else
+      haveresolv=1;
+      featureflags="-srfi enable-resolv $featureflags";
+      extralibs="-l$resolv $extralibs"
+    fi
+  else
+    haveresolv=0;
+  fi
+
   # Is unistring available?
   if [ "$customunistring" != "no" ]; then
     haveunistring=1;
@@ -2924,6 +2957,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_STRTOULL@|$have_strtoull|" \
               -e "s|@BGL_STRTOULL@|$strtoull|" \
               -e "s|@BGL_HAVE_GMP@|$havegmp|" \
+              -e "s|@BGL_HAVE_RESOLV@|$haveresolv|" \
               -e "s|@BGL_HAVE_UNISTRING@|$haveunistring|" \
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
               -e "s|@HAVE_SETENV@|$setenv|" \
@@ -4202,6 +4236,11 @@ if [ "$summary" = "yes" ]; then
     echo "  bignum support.............. scheme implementation"
   else
     echo "  bignum support.............. gmp ($gmpversion)"
+  fi
+  if [ "$resolv" = "no" ]; then
+    echo "  resolv support.............. no"
+  else
+    echo "  resolv support.............. lib$resolv"
   fi
   if [ "$unistring" = "no" ]; then
     echo "  unistring support........... minimal"

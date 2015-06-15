@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Thu May 21 13:15:02 2015 (serrano)                */
+;*    Last change :  Sun Jun  7 07:02:50 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -444,11 +444,12 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-udp-set-membership handle::UvUdp addr iface membership)
    (with-access::UvUdp handle ($builtin)
-      ($uv-udp-set-membership ($uv-udp-t $builtin)
-	 addr (if (string? iface) iface $string-nil)
-	 (if (eq? membership 'join-group)
-	     $uv-membership-join-group
-	     $uv-membership-leave-group))))
+      (let ((act (if (eq? membership 'join-group)
+		     $uv-membership-join-group
+		     $uv-membership-leave-group)))
+	 (if (string? iface)
+	     ($uv-udp-set-membership ($uv-udp-t $builtin) addr iface act)
+	     ($uv-udp-set-membership ($uv-udp-t $builtin) addr $string-nil act)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-tty-mode-set! ...                                             */

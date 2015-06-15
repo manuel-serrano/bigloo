@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu May 21 13:25:30 2015 (serrano)                */
+/*    Last change :  Sun Jun  7 07:55:36 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -158,6 +158,9 @@ bgl_uv_fs_poll_cb( uv_handle_t *handle, int status, const uv_stat_t* prev, const
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
    obj_t p = o->BgL_cbz00;
 
+   /* some libuv versions uses -2 instead of -1 for error, fix this! */
+   if( status < 0 ) { status = -1; }
+   
    if( PROCEDUREP( p ) ) {
       PROCEDURE_ENTRY( p )( p, o, BINT( status ),
 			    bgl_uv_fstat( *prev ), bgl_uv_fstat( *curr ),
@@ -466,7 +469,7 @@ bgl_uv_fs_rename( char *oldp, char *newp, obj_t proc, bgl_uv_loop_t bloop ) {
 /*    bgl_uv_fs_ftruncate ...                                          */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_fs_ftruncate( obj_t obj, long offset, obj_t proc, bgl_uv_loop_t bloop ) {
+bgl_uv_fs_ftruncate( obj_t obj, int64_t offset, obj_t proc, bgl_uv_loop_t bloop ) {
    int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
 
    BGL_UV_FS_WRAPPER1( uv_fs_ftruncate, fd, offset )
@@ -964,7 +967,7 @@ bgl_uv_fs_rw_cb( uv_fs_t *req ) {
 /*    bgl_uv_fs_write ...                                              */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_fs_write( obj_t obj, obj_t buffer, long offset, long length, long position, obj_t proc, bgl_uv_loop_t bloop ) {
+bgl_uv_fs_write( obj_t obj, obj_t buffer, long offset, long length, int64_t position, obj_t proc, bgl_uv_loop_t bloop ) {
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    bgl_uv_file_t file = (bgl_uv_file_t)obj;
    int fd = file->BgL_fdz00;
@@ -1002,7 +1005,7 @@ bgl_uv_fs_write( obj_t obj, obj_t buffer, long offset, long length, long positio
 /*    bgl_uv_fs_read ...                                               */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_fs_read( obj_t obj, obj_t buffer, long offset, long length, long position, obj_t proc, bgl_uv_loop_t bloop ) {
+bgl_uv_fs_read( obj_t obj, obj_t buffer, long offset, long length, int64_t position, obj_t proc, bgl_uv_loop_t bloop ) {
    uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
    bgl_uv_file_t file = (bgl_uv_file_t)obj;
    int fd = file->BgL_fdz00;
@@ -1750,15 +1753,23 @@ bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family ) {
    } address;
    int r;
 
+   fprintf( stderr, ">>> bgl_uv_upd_bind... fd=%d %d addr=%s port=%d\n",
+	    handle->io_watcher.fd,family, addr, port );
    if( family == 4 ) {
       r = uv_ip4_addr( addr, port, &(address.ip4) );
+      if( r ) fprintf( stderr, "%s,%d ERROR.1: %s\n",
+		       __FILE__, __LINE__,
+		       strerror( -r ));
       if( r ) return r;
-      if( r ) fprintf( stderr, "ERROR: %s\n", strerror( -r ));
    } else {
       r = uv_ip6_addr( addr, port, &(address.ip6) );
       if( r ) return r;
    }
-   return uv_udp_bind( handle, (struct sockaddr *)&address, 0 );
+   
+   // r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR );
+   fprintf( stderr, "<<< bgl_uv_upd_bind... fd=%d %d addr=%s port=%d -> %d\n",
+	    handle->io_watcher.fd,family, addr, port, r );
+   return r;
 }
 
 /*---------------------------------------------------------------------*/
@@ -1859,6 +1870,8 @@ bgl_uv_udp_recv_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop 
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT( -1 );
 
+	 fprintf( stderr, "%s,%d uv_udp_recv_start %d\n",
+		  __FILE__, __LINE__, s->io_watcher.fd );
 	 return uv_udp_recv_start( s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb );
       }
    }
@@ -2113,4 +2126,3 @@ bgl_uv_queue_work( bgl_uv_work_t w, bgl_uv_loop_t bloop ) {
 		  bgl_work_queue_cb,
 		  bgl_after_queue_cb );
 }
-   

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Fri May 22 07:34:41 2015 (serrano)                */
+/*    Last change :  Mon Jun  8 19:38:35 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -101,6 +101,7 @@ int RAND_poll() {
 typedef BgL_sslzd2connectionzd2_bglt ssl_connection;
 typedef BgL_securezd2contextzd2_bglt secure_context;
 typedef BgL_sslzd2hashzd2_bglt ssl_hash;
+typedef BgL_sslzd2hmaczd2_bglt ssl_hmac;
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -2620,6 +2621,88 @@ bgl_ssl_hash_digest( ssl_hash hash ) {
       EVP_DigestFinal_ex( hash->BgL_z42mdzd2ctxz90, md_value, &md_len );
       EVP_MD_CTX_cleanup( hash->BgL_z42mdzd2ctxz90 );
       hash->BgL_z42mdzd2ctxz90 = 0L;
+
+      return string_to_bstring_len( md_value, md_len );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_hmac_init ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
+#if( SSL_DEBUG )
+   BGL_MUTEX_LOCK( bigloo_mutex );
+   
+   if( !init ) {
+      init = 1;
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+   }
+   
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
+#else
+   bgl_ssl_init();
+#endif
+
+   fprintf( stderr, "bgl_ssl_hmac_init\n" );
+   hmac->BgL_z42mdz42 =
+      (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
+   if( !(hmac->BgL_z42mdz42) ) return BFALSE;
+
+   hmac->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( HMAC_CTX ) );
+
+   HMAC_CTX_init( hmac->BgL_z42mdzd2ctxz90 );
+
+   if( !STRINGP( key ) ) {
+      HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
+		 "",
+		 0,
+		 hmac->BgL_z42mdz42 );
+   } else {
+      HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
+		 BSTRING_TO_STRING( key ),
+		 STRING_LENGTH( key ),
+		 hmac->BgL_z42mdz42 );
+   }
+   return BTRUE;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_hmac_update ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_hmac_update( ssl_hmac hmac, obj_t data, long offset, long len ) {
+   fprintf( stderr, "bgl_ssl_hmac_update\n" );
+   if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      HMAC_Update( hmac->BgL_z42mdzd2ctxz90,
+		   &(STRING_REF( data, offset )),
+		   len );
+      return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_hmac_digest ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_hmac_digest( ssl_hmac hmac ) {
+   fprintf( stderr, "bgl_ssl_hmac_digest\n" );
+   if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      unsigned char md_value[ EVP_MAX_MD_SIZE ];
+      unsigned int md_len;
+
+      HMAC_Final( hmac->BgL_z42mdzd2ctxz90, md_value, &md_len );
+      HMAC_CTX_cleanup( hmac->BgL_z42mdzd2ctxz90 );
+      hmac->BgL_z42mdzd2ctxz90 = 0L;
 
       return string_to_bstring_len( md_value, md_len );
    }

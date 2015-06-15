@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Mon Dec 29 07:31:40 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Wed Jun  3 17:33:35 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
 ;*=====================================================================*/
@@ -23,7 +23,7 @@
 	    
 	    (uv-fs-rename::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
-	    (uv-fs-ftruncate::int ::UvFile ::long
+	    (uv-fs-ftruncate::int ::UvFile ::int64
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-truncate::int ::bstring ::long
 	       #!key callback (loop (uv-default-loop)))
