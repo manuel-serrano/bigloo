@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Jun 15 09:33:18 2015 (serrano)                */
+/*    Last change :  Tue Jun 16 10:49:37 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -2559,10 +2559,10 @@ bgl_evp_get_hashes() {
 }
 
 /*---------------------------------------------------------------------*/
-/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    BGL_RUNTIME_DEF bool_t                                           */
 /*    bgl_ssl_hash_init ...                                            */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
+BGL_RUNTIME_DEF bool_t
 bgl_ssl_hash_init( ssl_hash hash ) {
 #if( SSL_DEBUG )
    BGL_MUTEX_LOCK( bigloo_mutex );
@@ -2581,13 +2581,13 @@ bgl_ssl_hash_init( ssl_hash hash ) {
    
    hash->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( hash->BgL_typez00 ) );
-   if( !(hash->BgL_z42mdz42) ) return BFALSE;
+   if( !(hash->BgL_z42mdz42) ) return 0;
 
    hash->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
    
    EVP_MD_CTX_init( hash->BgL_z42mdzd2ctxz90 );
    EVP_DigestInit_ex( hash->BgL_z42mdzd2ctxz90, hash->BgL_z42mdz42, NULL );
-   return BTRUE;
+   return 1;
 }
    
 /*---------------------------------------------------------------------*/

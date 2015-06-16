@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Mon Jun  8 19:38:07 2015 (serrano)                */
+;*    Last change :  Tue Jun 16 10:06:24 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -1064,9 +1064,7 @@
    (cond-expand
       (bigloo-c
        (let ((r ($bgl-ssl-hash-digest ssl-hash)))
-	  (if r
-	      (string-hex-extern r)
-	      (error "ssl-hash-digest" "cannot digest" ssl-hash))))
+	  (or r (error "ssl-hash-digest" "cannot digest" ssl-hash))))
       (else
        #f)))
 
@@ -1101,9 +1099,7 @@
    (cond-expand
       (bigloo-c
        (let ((r ($bgl-ssl-hmac-digest ssl-hmac)))
-	  (if r
-	      (string-hex-extern r)
-	      (error "ssl-hmac-digest" "cannot digest" ssl-hmac))))
+	  (or r (error "ssl-hmac-digest" "cannot digest" ssl-hmac))))
       (else
        #f)))
 

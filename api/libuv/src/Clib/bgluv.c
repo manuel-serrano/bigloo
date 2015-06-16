@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Sun Jun  7 07:55:36 2015 (serrano)                */
+/*    Last change :  Tue Jun 16 10:45:32 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1766,7 +1766,7 @@ bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family ) {
       if( r ) return r;
    }
    
-   // r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR );
+   r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR );
    fprintf( stderr, "<<< bgl_uv_upd_bind... fd=%d %d addr=%s port=%d -> %d\n",
 	    handle->io_watcher.fd,family, addr, port, r );
    return r;
