@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Fri Dec 12 15:02:50 2014 (serrano)                */
-;*    Copyright   :  2003-14 Manuel Serrano                            */
+;*    Last change :  Wed Jun 17 14:34:58 2015 (serrano)                */
+;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -159,6 +159,9 @@
 	    
 	    (rfc2822-date->date::date ::bstring)
 	    (rfc2822-parse-date::date ::input-port)
+	    
+	    (iso8601-date->date::date ::bstring)
+	    (iso8601-parse-date::date ::input-port)
 	    
 	    (date->rfc2822-date::bstring ::date))
 
@@ -500,6 +503,167 @@
 	     (absfx (remainder tz 3600))))))
 
 ;*---------------------------------------------------------------------*/
+;*    the-digit ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-macro (the-digit n)
+   `(-fx (the-byte-ref ,n) (char->integer #\0)))
+
+;*---------------------------------------------------------------------*/
+;*    the-fix ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-macro (the-fix b1 b2)
+   `(+fx (*fx ,b1 10) ,b2))
+
+;*---------------------------------------------------------------------*/
+;*    iso8601-date->date ...                                           */
+;*---------------------------------------------------------------------*/
+(define (iso8601-date->date string)
+   (let ((port (open-input-string string)))
+      (unwind-protect
+	 (iso8601-parse-date port)
+	 (close-input-port port))))
+
+;*---------------------------------------------------------------------*/
+;*    iso8601-parse-date ...                                           */
+;*---------------------------------------------------------------------*/
+(define (iso8601-parse-date ip::input-port)
+
+   (define iso8601-ZMM-grammar
+      (regular-grammar (YYYY MM DD HH mm ss sss ZHH)
+	 ((: ":" (= 2 digit))
+	  (let* ((b1 (the-digit 1))
+		 (b2 (the-digit 2))
+		 (TZ (if (<fx ZHH 0)
+			 (-fx ZHH (the-fix b1 b2))
+			 (+fx ZHH (the-fix b1 b2)))))
+	     (make-date :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+		:nsec sss :timezone TZ)))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+		 :nsec sss :timezone ZHH)
+	      (parse-error "iso8601-parse-date" "Illegal time"
+		 (the-failure) (the-port))))))
+
+   (define iso8601-Z-grammar
+      (regular-grammar (YYYY MM DD HH mm ss sss)
+	 ((in "zZ")
+	  (make-date :year YYYY :month MM :day DD :hour HH :min mm :sec ss
+	     :nsec sss))
+	 ((: "+" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-ZMM-grammar (the-port)
+		YYYY MM DD HH mm ss sss (the-fix b1 b2))))
+	 ((: "-" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-ZMM-grammar (the-port)
+		YYYY MM DD HH mm ss sss (negfx (the-fix b1 b2)))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss )
+	      (parse-error "iso8601-parse-date" "Illegal time"
+		 (the-failure) (the-port))))))
+   
+   (define iso8601-sss-grammar
+      (regular-grammar (YYYY MM DD HH mm ss)
+	 ((: "." (= 3 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2))
+		(b3 (the-digit 3)))
+	     (read/rp iso8601-Z-grammar (the-port)
+		YYYY MM DD HH mm ss
+		(*llong #l1000000 (fixnum->llong (the-fix (the-fix b1 b2) b3))))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0
+		 :year YYYY :month MM :day DD :hour HH :min mm)
+	      (read/rp iso8601-Z-grammar (the-port)
+		 YYYY MM DD DD mm ss #l0)))))
+
+   (define iso8601-ss-grammar
+      (regular-grammar (YYYY MM DD HH mm)
+	 ((: ":" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-sss-grammar (the-port)
+		YYYY MM DD HH mm (the-fix b1 b2))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0
+		 :year YYYY :month MM :day DD :hour HH :min mm)
+	      (read/rp iso8601-Z-grammar (the-port)
+		 YYYY MM DD DD mm 0 #l0)))))
+
+   (define iso8601-mm-grammar
+      (regular-grammar (YYYY MM DD HH)
+	 ((: ":" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-ss-grammar (the-port)
+		YYYY MM DD HH (the-fix b1 b2))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0 :year YYYY :month MM :day DD :hour HH)
+	      (read/rp iso8601-Z-grammar (the-port)
+		 YYYY MM DD DD 0 0 #l0)))))
+   
+   (define iso8601-HH-grammar
+      (regular-grammar (YYYY MM DD)
+	 ((: "T" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-mm-grammar (the-port)
+		YYYY MM DD (the-fix b1 b2))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0 :year YYYY :month MM :day DD)
+	      (read/rp iso8601-Z-grammar (the-port)
+		 YYYY MM DD 0 0 0 #l0)))))
+
+   (define iso8601-DD-grammar
+      (regular-grammar (YYYY MM)
+	 ((: "-" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-HH-grammar (the-port)
+		YYYY MM (the-fix b1 b2))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0 :year YYYY :month MM)
+	      (read/rp iso8601-Z-grammar (the-port)
+		 YYYY MM 0 0 0 0 #l0)))))
+   
+   (define iso8601-MM-grammar
+      (regular-grammar (YYYY)
+	 ((: "-" (= 2 digit))
+	  (let ((b1 (the-digit 1))
+		(b2 (the-digit 2)))
+	     (read/rp iso8601-DD-grammar (the-port)
+		YYYY (the-fix b1 b2))))
+	 (else
+	  (if (eof-object? (the-failure))
+	      (make-date :timezone 0 :year YYYY)
+	      (read/rp iso8601-Z-grammar (the-port)
+		 YYYY 0 0 0 0 0 #l0)))))
+
+   (define iso8601-grammar
+      (regular-grammar ()
+	 ((: (= 4 digit))
+	  (let ((b1 (the-digit 0))
+		(b2 (the-digit 1))
+		(b3 (the-digit 3))
+		(b4 (the-digit 4)))
+	     (read/rp iso8601-MM-grammar (the-port) (the-fixnum))))
+	 (else
+	  (parse-error "iso8601-parse-date" "Illegal time"
+	     (the-failure) (the-port)))))
+   
+   (read/rp iso8601-grammar ip))
+
+;*---------------------------------------------------------------------*/
 ;*    parse-error ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (parse-error proc message obj port)
@@ -521,9 +685,9 @@
       ((+ FWS)
        (ignore))
       ((: (in "MTWFS") (= 2 (in "onuedhriat")) "," FWS)
-       (let* ((day (read/rp fixnum-grammar (the-port)))
+       (let* ((day (read/rp the-fixnum-grammar (the-port)))
 	      (month (read/rp month-grammar (the-port)))
-	      (year (read/rp fixnum-grammar (the-port))))
+	      (year (read/rp the-fixnum-grammar (the-port))))
 	  (multiple-value-bind (hour minute second)
 	     (read/rp time-grammar (the-port))
 	     (let ((zone (read/rp zone-grammar (the-port))))
@@ -538,7 +702,7 @@
       ((+ digit)
        (let* ((day (the-fixnum))
 	      (month (read/rp month-grammar (the-port)))
-	      (year (read/rp fixnum-grammar (the-port))))
+	      (year (read/rp the-fixnum-grammar (the-port))))
 	  (multiple-value-bind (hour minute second)
 	     (read/rp time-grammar (the-port))
 	     (let ((zone (read/rp zone-grammar (the-port))))
@@ -556,9 +720,9 @@
 	  (the-failure) (the-port)))))
 
 ;*---------------------------------------------------------------------*/
-;*    fixnum-grammar ...                                               */
+;*    the-fixnum-grammar ...                                           */
 ;*---------------------------------------------------------------------*/
-(define fixnum-grammar
+(define the-fixnum-grammar
    (regular-grammar ((FWS (in " \t\n\r")))
       ((+ FWS)
        (ignore))
@@ -598,12 +762,6 @@
 		    (the-failure) (the-port)))))
 
 ;*---------------------------------------------------------------------*/
-;*    the-digit ...                                                    */
-;*---------------------------------------------------------------------*/
-(define-macro (the-digit n)
-   `(-fx (the-byte-ref ,n) (char->integer #\0)))
-
-;*---------------------------------------------------------------------*/
 ;*    time-grammar ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define time-grammar
@@ -614,17 +772,13 @@
        (let ((b1 (the-digit 0))
 	     (b3 (the-digit 2))
 	     (b4 (the-digit 3)))
-	  (values b1
-		  (+fx (*fx 10 b3) b4)
-		  0)))
+	  (values b1 (the-fix b3 b4) 0)))
       ((: (= 2 digit) #\: (= 2 digit))
        (let ((b1 (the-digit 0))
 	     (b2 (the-digit 1))
 	     (b3 (the-digit 3))
 	     (b4 (the-digit 4)))
-	  (values (+fx (*fx 10 b1) b2)
-		  (+fx (*fx 10 b3) b4)
-		  0)))
+	  (values (the-fix b1 b2) (the-fix b3 b4) 0)))
       ((: (= 2 digit) #\: (= 2 digit) #\: (= 2 digit))
        (let ((b1 (the-digit 0))
 	     (b2 (the-digit 1))
@@ -632,27 +786,21 @@
 	     (b4 (the-digit 4))
 	     (b5 (the-digit 6))
 	     (b6 (the-digit 7)))
-	  (values (+fx (*fx 10 b1) b2)
-		  (+fx (*fx 10 b3) b4)
-		  (+fx (*fx 10 b5) b6) )))
+	  (values (the-fix b1 b2) (the-fix b3 b4) (the-fix b5 b6))))
       ((: digit #\: (= 2 digit) #\: (= 2 digit))
        (let ((b1 (the-digit 0))
 	     (b3 (the-digit 2))
 	     (b4 (the-digit 3))
 	     (b5 (the-digit 5))
 	     (b6 (the-digit 6)))
-	  (values b1
-		  (+fx (*fx 10 b3) b4)
-		  (+fx (*fx 10 b5) b6) )))
+	  (values b1 (the-fix b3 b4) (the-fix b5 b6))))
       ((: #\: (= 2 digit))
        (let ((b1 (the-digit 0))
 	     (b2 (the-digit 2)))
-	  (values 0
-		  0
-		  (+fx (*fx 10 13) b2))))
+	  (values 0 0 (the-fix b1 b2))))
       (else
        (parse-error "rfc2822-parse-date" "Illegal time"
-		    (the-failure) (the-port)))))
+	  (the-failure) (the-port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *time-zones* ...                                                 */

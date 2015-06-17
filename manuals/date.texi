@@ -164,4 +164,11 @@ Converts a Bigloo date into a string representation compliant with the RFC2822
 format.
 @end deffn
 
+@deffn {bigloo procedure} iso8601-date->date string
+@deffnx {bigloo procedure} iso8601-parse-date input-port
+Parses ISO8601 string representing a date. These functions produce
+a Bigloo date object.
+@end deffn
+
+
 
