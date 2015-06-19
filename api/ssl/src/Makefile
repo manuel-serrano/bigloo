@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue May 12 15:05:40 2015 (serrano)                */
+#*    Last change :  Thu Jun 18 08:48:28 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,7 @@ JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) #-unsafe -safee
 CAPIFLAGS       = $(OPENSSLLIBSCFLAGS) 
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \

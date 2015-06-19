@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Jun 17 14:34:58 2015 (serrano)                */
+;*    Last change :  Wed Jun 17 18:47:21 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -117,7 +117,7 @@
 		       (nsec #l0) (sec 0) (min 0) (hour 0)
 		       (day 1) (month 1) (year 1970)
 		       timezone (dst -1))
-	    (date-copy date #!key sec min hour day month year timezone)
+	    (date-copy date #!key nsec sec min hour day month year timezone)
 	    
 	    (inline integer->second::elong ::long)
 	    
@@ -200,8 +200,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    date-copy ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define (date-copy date #!key sec min hour day month year timezone)
-   ($date-new 0
+(define (date-copy date #!key nsec sec min hour day month year timezone)
+   ($date-new
+      (or nsec (date-nanosecond date))
       (or sec (date-second date))
       (or min (date-minute date))
       (or hour (date-hour date))
@@ -370,7 +371,10 @@
 	     (date-hour date)
 	     (date-minute date)
 	     (date-second date))
-	  (let ((d (seconds->date (-fx (date->seconds date) tz))))
+	  (let* ((ctz (date-timezone (date-copy date)))
+		 (d (seconds->date
+		       (-fx (date->seconds date)
+			  ctz))))
 	     (date->utc-string (date-copy d :timezone 0))))))
 
 ;*---------------------------------------------------------------------*/
@@ -534,8 +538,8 @@
 	  (let* ((b1 (the-digit 1))
 		 (b2 (the-digit 2))
 		 (TZ (if (<fx ZHH 0)
-			 (-fx ZHH (the-fix b1 b2))
-			 (+fx ZHH (the-fix b1 b2)))))
+			 (-fx ZHH (*fx 60 (the-fix b1 b2)))
+			 (+fx ZHH (*fx 60 (the-fix b1 b2))))))
 	     (make-date :year YYYY :month MM :day DD :hour HH :min mm :sec ss
 		:nsec sss :timezone TZ)))
 	 (else
@@ -548,18 +552,18 @@
    (define iso8601-Z-grammar
       (regular-grammar (YYYY MM DD HH mm ss sss)
 	 ((in "zZ")
-	  (make-date :year YYYY :month MM :day DD :hour HH :min mm :sec ss
-	     :nsec sss))
+	  (make-date :timezone 0
+	     :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss))
 	 ((: "+" (= 2 digit))
 	  (let ((b1 (the-digit 1))
 		(b2 (the-digit 2)))
 	     (read/rp iso8601-ZMM-grammar (the-port)
-		YYYY MM DD HH mm ss sss (the-fix b1 b2))))
+		YYYY MM DD HH mm ss sss (*fx 3600 (the-fix b1 b2)))))
 	 ((: "-" (= 2 digit))
 	  (let ((b1 (the-digit 1))
 		(b2 (the-digit 2)))
 	     (read/rp iso8601-ZMM-grammar (the-port)
-		YYYY MM DD HH mm ss sss (negfx (the-fix b1 b2)))))
+		YYYY MM DD HH mm ss sss (negfx (*fx 3600 (the-fix b1 b2))))))
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0
@@ -580,8 +584,10 @@
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0
 		 :year YYYY :month MM :day DD :hour HH :min mm)
-	      (read/rp iso8601-Z-grammar (the-port)
-		 YYYY MM DD DD mm ss #l0)))))
+	      (begin
+		 (unread-char! (the-failure) (the-port))
+		 (read/rp iso8601-Z-grammar (the-port)
+		    YYYY MM DD HH mm ss #l0))))))
 
    (define iso8601-ss-grammar
       (regular-grammar (YYYY MM DD HH mm)
@@ -594,8 +600,10 @@
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0
 		 :year YYYY :month MM :day DD :hour HH :min mm)
-	      (read/rp iso8601-Z-grammar (the-port)
-		 YYYY MM DD DD mm 0 #l0)))))
+	      (begin
+		 (unread-char! (the-failure) (the-port))
+		 (read/rp iso8601-Z-grammar (the-port)
+		    YYYY MM DD HH mm 0 #l0))))))
 
    (define iso8601-mm-grammar
       (regular-grammar (YYYY MM DD HH)
@@ -607,8 +615,8 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0 :year YYYY :month MM :day DD :hour HH)
-	      (read/rp iso8601-Z-grammar (the-port)
-		 YYYY MM DD DD 0 0 #l0)))))
+	      (parse-error "iso8601-parse-date" "Illegal time"
+		 (the-failure) (the-port))))))
    
    (define iso8601-HH-grammar
       (regular-grammar (YYYY MM DD)
@@ -620,8 +628,8 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0 :year YYYY :month MM :day DD)
-	      (read/rp iso8601-Z-grammar (the-port)
-		 YYYY MM DD 0 0 0 #l0)))))
+	      (parse-error "iso8601-parse-date" "Illegal time"
+		 (the-failure) (the-port))))))
 
    (define iso8601-DD-grammar
       (regular-grammar (YYYY MM)
@@ -633,8 +641,8 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0 :year YYYY :month MM)
-	      (read/rp iso8601-Z-grammar (the-port)
-		 YYYY MM 0 0 0 0 #l0)))))
+	      (parse-error "iso8601-parse-date" "Illegal time"
+		 (the-failure) (the-port))))))
    
    (define iso8601-MM-grammar
       (regular-grammar (YYYY)
@@ -646,8 +654,8 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0 :year YYYY)
-	      (read/rp iso8601-Z-grammar (the-port)
-		 YYYY 0 0 0 0 0 #l0)))))
+	      (parse-error "iso8601-parse-date" "Illegal time"
+		 (the-failure) (the-port))))))
 
    (define iso8601-grammar
       (regular-grammar ()

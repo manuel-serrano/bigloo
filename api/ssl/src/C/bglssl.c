@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Jun 16 10:49:37 2015 (serrano)                */
+/*    Last change :  Fri Jun 19 13:48:42 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -102,6 +102,10 @@ typedef BgL_sslzd2connectionzd2_bglt ssl_connection;
 typedef BgL_securezd2contextzd2_bglt secure_context;
 typedef BgL_sslzd2hashzd2_bglt ssl_hash;
 typedef BgL_sslzd2hmaczd2_bglt ssl_hmac;
+typedef BgL_sslzd2signzd2_bglt ssl_sign;
+typedef BgL_sslzd2verifyzd2_bglt ssl_verify;
+typedef BgL_sslzd2cipherzd2_bglt ssl_cipher;
+typedef BgL_sslzd2decipherzd2_bglt ssl_decipher;
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -2584,8 +2588,8 @@ bgl_ssl_hash_init( ssl_hash hash ) {
    if( !(hash->BgL_z42mdz42) ) return 0;
 
    hash->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
-   
    EVP_MD_CTX_init( hash->BgL_z42mdzd2ctxz90 );
+   
    EVP_DigestInit_ex( hash->BgL_z42mdzd2ctxz90, hash->BgL_z42mdz42, NULL );
    return 1;
 }
@@ -2653,7 +2657,6 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
    if( !(hmac->BgL_z42mdz42) ) return BFALSE;
 
    hmac->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( HMAC_CTX ) );
-
    HMAC_CTX_init( hmac->BgL_z42mdzd2ctxz90 );
 
    if( !STRINGP( key ) ) {
@@ -2695,7 +2698,7 @@ BGL_RUNTIME_DEF obj_t
 bgl_ssl_hmac_digest( ssl_hmac hmac ) {
    fprintf( stderr, "bgl_ssl_hmac_digest\n" );
    if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
-      return 0;
+      return BFALSE;
    } else {
       unsigned char md_value[ EVP_MAX_MD_SIZE ];
       unsigned int md_len;
@@ -2708,3 +2711,351 @@ bgl_ssl_hmac_digest( ssl_hmac hmac ) {
    }
 }
    
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_sign_init ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_sign_init( ssl_sign sign, obj_t type ) {
+#if( SSL_DEBUG )
+   BGL_MUTEX_LOCK( bigloo_mutex );
+   
+   if( !init ) {
+      init = 1;
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+   }
+   
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
+#else
+   bgl_ssl_init();
+#endif
+   
+   sign->BgL_z42mdz42 =
+      (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
+   if( !(sign->BgL_z42mdz42) ) return 0;
+
+   sign->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
+   EVP_MD_CTX_init( sign->BgL_z42mdzd2ctxz90 );
+   
+   EVP_SignInit_ex( sign->BgL_z42mdzd2ctxz90, sign->BgL_z42mdz42, NULL );
+   return 1;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_sign_update ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_sign_update( ssl_sign sign, obj_t data, long offset, long len ) {
+   if( sign->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      EVP_SignUpdate( sign->BgL_z42mdzd2ctxz90,
+		      &(STRING_REF( data, offset )),
+		      len );
+      return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_ssl_sign_sign ...                                            */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_ssl_sign_sign( ssl_sign sign, obj_t key_pem, long offset, long kplen ) {
+   if( sign->BgL_z42mdzd2ctxz90 == 0L ) {
+      return BFALSE;
+   } else {
+#define MAX_KEY_SIZE 8192      
+      unsigned char md_value[ MAX_KEY_SIZE ];
+      unsigned int md_len;
+      BIO *bp = BIO_new( BIO_s_mem() );
+      EVP_PKEY *pkey;
+      
+      if( !BIO_write( bp, &(STRING_REF( key_pem, offset )), kplen ) ) {
+	 return BFALSE;
+      }
+      
+      pkey = PEM_read_bio_PrivateKey( bp, NULL, NULL, NULL );
+      if( !pkey ) {
+	 ERR_print_errors_fp( stderr );
+	 return BFALSE;
+      }
+
+      if( !EVP_SignFinal( sign->BgL_z42mdzd2ctxz90, md_value, &md_len, pkey ) ) {
+	 ERR_print_errors_fp( stderr );
+	 return BFALSE;
+      }
+
+      EVP_MD_CTX_cleanup( sign->BgL_z42mdzd2ctxz90 );
+      sign->BgL_z42mdzd2ctxz90 = 0L;
+
+      EVP_PKEY_free( pkey );
+      BIO_free( bp );
+
+      return string_to_bstring_len( md_value, md_len );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_verify_init ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_verify_init( ssl_verify verify, obj_t type ) {
+#if( SSL_DEBUG )
+   BGL_MUTEX_LOCK( bigloo_mutex );
+   
+   if( !init ) {
+      init = 1;
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+   }
+   
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
+#else
+   bgl_ssl_init();
+#endif
+   
+   verify->BgL_z42mdz42 =
+      (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
+   if( !(verify->BgL_z42mdz42) ) return 0;
+
+   verify->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
+   EVP_MD_CTX_init( verify->BgL_z42mdzd2ctxz90 );
+   
+   EVP_VerifyInit_ex( verify->BgL_z42mdzd2ctxz90, verify->BgL_z42mdz42, NULL );
+   return 1;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_verify_update ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_verify_update( ssl_verify verify, obj_t data, long offset, long len ) {
+   if( verify->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      EVP_VerifyUpdate( verify->BgL_z42mdzd2ctxz90,
+			&(STRING_REF( data, offset )),
+			len );
+      return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_verify_verify ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_verify_verify( ssl_verify verify,
+		       obj_t kpem, long koffset, long klen,
+		       obj_t spem, long soffset, long slen ) {
+   
+   static const char PUBLIC_KEY_PFX[] =  "-----BEGIN PUBLIC KEY-----";
+   static const int PUBLIC_KEY_PFX_LEN = sizeof(PUBLIC_KEY_PFX) - 1;
+   static const char PUBRSA_KEY_PFX[] =  "-----BEGIN RSA PUBLIC KEY-----";
+   static const int PUBRSA_KEY_PFX_LEN = sizeof(PUBRSA_KEY_PFX) - 1;
+   static const int X509_NAME_FLAGS = ASN1_STRFLGS_ESC_CTRL
+      | ASN1_STRFLGS_ESC_MSB
+      | XN_FLAG_SEP_MULTILINE
+      | XN_FLAG_FN_SN;
+   
+   if( verify->BgL_z42mdzd2ctxz90 == 0L ) {
+      return 0;
+   } else {
+      EVP_PKEY* pkey = NULL;
+      BIO *bp = BIO_new( BIO_s_mem() );
+      X509 *x509 = NULL;
+      int r = 0;
+      char *key_pem = &(STRING_REF( kpem, koffset ));
+      char *sig = &(STRING_REF( spem, soffset ));
+
+      if( !bp ) {
+	 ERR_print_errors_fp( stderr );
+	 return 0;
+      }
+      
+      if( !BIO_write( bp, key_pem, klen ) ) {
+	 ERR_print_errors_fp(stderr);
+	 return 0;
+      }
+
+      // Check if this is a PKCS#8 or RSA public key before trying as X.509.
+      // Split this out into a separate function once we have more than one
+      // consumer of public keys.
+      if( strncmp( key_pem, PUBLIC_KEY_PFX, PUBLIC_KEY_PFX_LEN ) == 0 ) {
+	 pkey = PEM_read_bio_PUBKEY( bp, NULL, NULL, NULL );
+	 if( pkey == NULL ) {
+	    ERR_print_errors_fp( stderr );
+	    return 0;
+	 }
+      } else if( strncmp( key_pem, PUBRSA_KEY_PFX, PUBRSA_KEY_PFX_LEN ) == 0 ) {
+	 RSA* rsa = PEM_read_bio_RSAPublicKey( bp, NULL, NULL, NULL );
+	 if( rsa ) {
+	    pkey = EVP_PKEY_new();
+	    if (pkey) EVP_PKEY_set1_RSA( pkey, rsa );
+	    RSA_free( rsa );
+	 }
+	 if( !pkey ) {
+	    ERR_print_errors_fp(stderr);
+	    return 0;
+	 }
+      } else {
+	 // X.509 fallback
+	 x509 = PEM_read_bio_X509( bp, NULL, NULL, NULL );
+	 if( !x509 ) {
+	    ERR_print_errors_fp( stderr );
+	    return 0;
+	 }
+
+	 pkey = X509_get_pubkey( x509 );
+	 if( pkey == NULL ) {
+	    ERR_print_errors_fp( stderr );
+	    return 0;
+	 }
+      }
+
+      r = EVP_VerifyFinal( verify->BgL_z42mdzd2ctxz90, sig, slen, pkey );
+
+      if( pkey ) EVP_PKEY_free( pkey );
+      if( x509 ) X509_free( x509 );
+      if( bp ) BIO_free( bp );
+      EVP_MD_CTX_cleanup( verify->BgL_z42mdzd2ctxz90 );
+      verify->BgL_z42mdzd2ctxz90 = 0;
+
+      return r && (r != -1);
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_cipher_init ...                                          */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type, obj_t keybuf, long koffset, long klen ) {
+#if( SSL_DEBUG )
+   BGL_MUTEX_LOCK( bigloo_mutex );
+   
+   if( !init ) {
+      init = 1;
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+   }
+   
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
+#else
+   bgl_ssl_init();
+#endif
+   
+   cipher->BgL_z42cipherz42 =
+      (void *)EVP_get_cipherbyname( (const char *)BSTRING_TO_STRING( type ) );
+   if( !(cipher->BgL_z42cipherz42) ) {
+      return 0;
+   } else {
+      unsigned char key[ EVP_MAX_KEY_LENGTH ],iv[ EVP_MAX_IV_LENGTH ];
+      int key_len = EVP_BytesToKey( cipher->BgL_z42cipherz42,
+				    EVP_md5(), NULL,
+				    &(STRING_REF( keybuf, koffset )), klen,
+				    1, key, iv );
+      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
+
+      EVP_CIPHER_CTX_init( ctx );
+      EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42,
+			 NULL, NULL, NULL, 0 );
+      
+      if( !EVP_CIPHER_CTX_set_key_length( ctx, klen )) {
+	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
+	 EVP_CIPHER_CTX_cleanup( ctx );
+	 return 0;
+      }
+      EVP_CipherInit_ex( ctx, NULL, NULL,
+			 (unsigned char*)key,
+			 (unsigned char*)iv, 0 );
+    
+      return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_ssl_cipher_initiv ...                                        */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_cipher_initiv( ssl_cipher cipher, obj_t type, obj_t key, long koffset, long klen, obj_t iv, long ivoffset, long ivlen ) {
+#if( SSL_DEBUG )
+   BGL_MUTEX_LOCK( bigloo_mutex );
+   
+   if( !init ) {
+      init = 1;
+      SSL_library_init();
+      SSL_DEBUG_INIT();
+      SSL_load_error_strings();
+   }
+   
+   BGL_MUTEX_UNLOCK( bigloo_mutex );
+#else
+   bgl_ssl_init();
+#endif
+   
+   cipher->BgL_z42cipherz42 =
+      (void *)EVP_get_cipherbyname( (const char *)BSTRING_TO_STRING( type ) );
+
+   if( !cipher ) {
+      fprintf( stderr, "node-crypto : Unknown cipher %s\n",
+	       (const char *)BSTRING_TO_STRING( type ));
+      return 0;
+   }
+   
+   /* OpenSSL versions up to 0.9.8l failed to return the correct */
+   /* iv_length (0) for ECB ciphers */
+   if( EVP_CIPHER_iv_length( cipher->BgL_z42cipherz42 ) != ivlen &&
+       !(EVP_CIPHER_mode( cipher->BgL_z42cipherz42) == EVP_CIPH_ECB_MODE &&
+	 ivlen == 0) ) {
+      fprintf( stderr, "node-crypto : Invalid IV length %d\n", ivlen );
+      return 0;
+   } else {
+      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
+       
+      EVP_CIPHER_CTX_init( ctx );
+      EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42, NULL, NULL, NULL, 1 );
+      
+      if( !EVP_CIPHER_CTX_set_key_length( ctx, klen ) ) {
+	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
+	 EVP_CIPHER_CTX_cleanup( ctx );
+	 return 0;
+      }
+      
+      EVP_CipherInit_ex( ctx, NULL, NULL,
+			 &(STRING_REF( key, koffset )),
+			 &(STRING_REF( iv, ivoffset )),
+			 1 );
+      return 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_cipher_update ...                                            */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_cipher_update( ssl_cipher cipher, obj_t data, long offset, long len ) {
+   if( cipher->BgL_z42cipherzd2ctxz90 == 0L ) {
+      return BFALSE;
+   } else {
+      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
+      int olen = len + EVP_CIPHER_CTX_block_size( ctx );
+      obj_t str = make_string( olen, ' ' );
+      
+      EVP_CipherUpdate( ctx, &(STRING_REF( str, 0 )), &olen,
+			&(STRING_REF( data, offset )), len );
+
+      return bgl_string_shrink( str, olen );
+   }
+}
+		   

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Jun 16 10:06:24 2015 (serrano)                */
+;*    Last change :  Fri Jun 19 13:47:39 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -36,6 +36,8 @@
 	   (type $ssl-evp-md void* "void *")
 	   (type $ssl-evp-md-ctx void* "void *")
 	   (type $ssl-hmac-ctx void* "void *")
+	   (type $ssl-cipher void* "void *")
+	   (type $ssl-cipher-ctx void* "void *")
 
 	   (macro $ssl-ctx-nil::$ssl-ctx "0L")
 	   (macro $ssl-nil::$ssl "0L")
@@ -45,6 +47,8 @@
 	   (macro $ssl-session-nil::$ssl-session "0L")
 	   (macro $ssl-evp-md-nil::$ssl-evp-md "0L")
 	   (macro $ssl-evp-md-ctx-nil::$ssl-evp-md-ctx "0L")
+	   (macro $ssl-cipher-nil::$ssl-cipher "0L")
+	   (macro $ssl-cipher-ctx-nil::$ssl-cipher-ctx "0L")
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
 	   (macro $bignum->obj::obj ($bignum) "void_star_to_obj")
@@ -189,14 +193,42 @@
 	   ($bgl-dh-g-set!::void (::$dh $bignum)
 	      "bgl_dh_g_set")
 
-	   ($bgl-ssl-hash-init::bool (::ssl-hash) "bgl_ssl_hash_init")
-	   ($bgl-ssl-hash-update!::obj (::ssl-hash ::bstring ::long ::long) "bgl_ssl_hash_update")
-	   ($bgl-ssl-hash-digest::obj (::ssl-hash) "bgl_ssl_hash_digest")
+	   ($bgl-ssl-hash-init::bool (::ssl-hash)
+	      "bgl_ssl_hash_init")
+	   ($bgl-ssl-hash-update!::obj (::ssl-hash ::bstring ::long ::long)
+	      "bgl_ssl_hash_update")
+	   ($bgl-ssl-hash-digest::obj (::ssl-hash)
+	      "bgl_ssl_hash_digest")
 
-	   ($bgl-ssl-hmac-init::bool (::ssl-hmac ::bstring ::bstring) "bgl_ssl_hmac_init")
-	   ($bgl-ssl-hmac-update!::obj (::ssl-hmac ::bstring ::long ::long) "bgl_ssl_hmac_update")
-	   ($bgl-ssl-hmac-digest::obj (::ssl-hmac) "bgl_ssl_hmac_digest")
+	   ($bgl-ssl-hmac-init::bool (::ssl-hmac ::bstring ::bstring)
+	      "bgl_ssl_hmac_init")
+	   ($bgl-ssl-hmac-update!::obj (::ssl-hmac ::bstring ::long ::long)
+	      "bgl_ssl_hmac_update")
+	   ($bgl-ssl-hmac-digest::obj (::ssl-hmac)
+	      "bgl_ssl_hmac_digest")
 
+	   ($bgl-ssl-sign-init::bool (::ssl-sign ::bstring)
+	      "bgl_ssl_sign_init")
+	   ($bgl-ssl-sign-update!::obj (::ssl-sign ::bstring ::long ::long)
+	      "bgl_ssl_sign_update")
+	   ($bgl-ssl-sign-sign::obj (::ssl-sign ::bstring ::long ::long)
+	      "bgl_ssl_sign_sign")
+
+	   ($bgl-ssl-verify-init::bool (::ssl-verify ::bstring)
+	      "bgl_ssl_verify_init")
+	   ($bgl-ssl-verify-update!::obj (::ssl-verify ::bstring ::long ::long)
+	      "bgl_ssl_verify_update")
+	   ($bgl-ssl-verify-verify::bool (::ssl-verify ::bstring ::long ::long
+					   ::bstring ::long ::long)
+	      "bgl_ssl_verify_verify")
+
+	   ($bgl-ssl-cipher-init::bool (::ssl-cipher ::bstring ::bstring ::long ::long)
+	      "bgl_ssl_cipher_init")
+	   ($bgl-ssl-cipher-initiv::bool (::ssl-cipher ::bstring ::bstring ::long ::long ::bstring ::long ::long)
+	      "bgl_ssl_cipher_initiv")
+	   ($bgl-ssl-cipher-update!::obj (::ssl-cipher ::bstring ::long ::long)
+	      "bgl_cipher_update")
+	   
 	   (macro $ssl-op-cipher-server-preference::int
 	      "SSL_OP_CIPHER_SERVER_PREFERENCE"))
    
@@ -416,7 +448,49 @@
 	  
 	  (generic ssl-hmac-init ::ssl-hmac ::bstring ::bstring)
 	  (generic ssl-hmac-update! ::ssl-hmac ::bstring ::long ::long)
-	  (generic ssl-hmac-digest ::ssl-hmac)))
+	  (generic ssl-hmac-digest ::ssl-hmac)
+
+	  (class ssl-sign
+	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
+	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+
+	  (generic ssl-sign-init ::ssl-sign ::bstring)
+	  (generic ssl-sign-update! ::ssl-sign ::bstring ::long ::long)
+	  (generic ssl-sign-sign ::ssl-sign ::bstring ::long ::long)
+	  
+	  (class ssl-verify
+	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
+	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+
+	  (generic ssl-verify-init ::ssl-verify ::bstring)
+	  (generic ssl-verify-update! ::ssl-verify ::bstring ::long ::long)
+	  (generic ssl-verify-verify::bool ::ssl-verify ::bstring ::long ::long ::bstring ::long ::long)
+
+	  (class ssl-cipher
+	     ($cipher::$ssl-cipher (default $ssl-cipher-nil))
+	     ($cipher-ctx::$ssl-cipher-ctx (default $ssl-cipher-ctx-nil)))
+
+	  (generic ssl-cipher-init ::ssl-cipher ::bstring
+	     ::bstring ::long ::long)
+	  (generic ssl-cipher-initiv ::ssl-cipher ::bstring
+	     ::bstring ::long ::long
+	     ::bstring ::long ::long)
+	  (generic ssl-cipher-update! ::ssl-cipher ::bstring ::long ::long)
+	  (generic ssl-cipher-set-auto-padding::bool ::ssl-cipher)
+	  (generic ssl-cipher-final::bool ::ssl-cipher)
+
+	  (class ssl-decipher
+	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
+	     ($md-ctx::$ssl-hmac-ctx (default $ssl-evp-md-ctx-nil)))
+
+	  (generic ssl-decipher-init ::ssl-decipher ::bstring)
+	  (generic ssl-decipher-initiv ::ssl-decipher ::bstring)
+	  (generic ssl-decipher-update! ::ssl-decipher ::bstring ::long ::long)
+	  (generic ssl-decipher-set-auto-padding::bool ::ssl-decipher)
+	  (generic ssl-decipher-final::bool ::ssl-decipher)
+	  (generic ssl-decipher-finaltol::bool ::ssl-decipher)
+
+	  ))
       (else
        (export
 	  (class secure-context
@@ -430,10 +504,13 @@
 	     (newsession-callback::procedure read-only))
 
 	  (class dh)
-
 	  (class ssl-hash)
-
-	  (class ssl-hmac)))))
+	  (class ssl-hmac)
+	  (class ssl-sign)
+	  (class ssl-verify)
+	  (class ssl-cipher)
+	  (class ssl-decipher)
+	  ))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-version ...                                                  */
@@ -1100,6 +1177,211 @@
       (bigloo-c
        (let ((r ($bgl-ssl-hmac-digest ssl-hmac)))
 	  (or r (error "ssl-hmac-digest" "cannot digest" ssl-hmac))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-sign-init ::ssl-sign ...                                     */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-sign-init ssl-sign::ssl-sign sign)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-sign-init ssl-sign sign)
+	  (error "ssl-sign" "Sign method not supported" ssl-sign))
+       ssl-sign)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-sign-update! ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-sign-update! ssl-sign::ssl-sign data::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-sign-update! ssl-sign data offset len)
+	  (error "ssl-sign-update!" "cannot update" ssl-sign))
+       ssl-sign)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-sign-sign ...                                                */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-sign-sign ssl-sign::ssl-sign key::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       (let ((r ($bgl-ssl-sign-sign ssl-sign key offset len)))
+	  (or r (error "ssl-sign-sign" "cannot sign" ssl-sign))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-verify-init ::ssl-verify ...                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-verify-init ssl-verify::ssl-verify verify)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-verify-init ssl-verify verify)
+	  (error "ssl-verify" "Verify method not supported" ssl-verify))
+       ssl-verify)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-verify-update! ...                                           */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-verify-update! ssl-verify::ssl-verify data::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-verify-update! ssl-verify data offset len)
+	  (error "ssl-verify-update!" "cannot update" ssl-verify))
+       ssl-verify)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-verify-verify ...                                            */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-verify-verify ssl-verify::ssl-verify
+		   key::bstring koffset klen
+		   sig::bstring soffset slen)
+   (cond-expand
+      (bigloo-c
+       (let ((r ($bgl-ssl-verify-verify ssl-verify
+		   key koffset klen
+		   sig soffset slen)))
+	  (or r (error "ssl-verify-digest" "cannot verify" ssl-verify))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-cipher-init ::ssl-cipher ...                                 */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-cipher-init ssl-cipher::ssl-cipher cipher key offset len)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-cipher-init ssl-cipher cipher key offset len)
+	  (error "ssl-cipher-init" "Cipher method not supported" ssl-cipher))
+       ssl-cipher)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-cipher-initiv ::ssl-cipher ...                               */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-cipher-initiv ssl-cipher::ssl-cipher cipher
+		   key offset len
+		   iv ivoffset ivlen)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-cipher-initiv ssl-cipher cipher
+		  key offset len
+		  iv ivoffset ivlen)
+	  (error "ssl-cipher-initiv" "Cipher method not supported" ssl-cipher))
+       ssl-cipher)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-cipher-update! ...                                           */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-cipher-update! ssl-cipher::ssl-cipher data::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       (unless ($bgl-ssl-cipher-update! ssl-cipher data offset len)
+	  (error "ssl-cipher-update!" "cannot update" ssl-cipher))
+       ssl-cipher)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-cipher-set-auto-padding ...                                  */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-cipher-set-auto-padding ssl-cipher::ssl-cipher)
+   (cond-expand
+      (bigloo-c
+       (let ((r #t))
+	  (or r (error "ssl-cipher-set-auto-padding" "cannot cipher" ssl-cipher))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-cipher-final ...                                             */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-cipher-final ssl-cipher::ssl-cipher)
+   (cond-expand
+      (bigloo-c
+       (let ((r #t))
+	  (or r (error "ssl-cipher-final" "cannot cipher" ssl-cipher))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-decipher-init ::ssl-decipher ...                             */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-decipher-init ssl-decipher::ssl-decipher decipher)
+   (cond-expand
+      (bigloo-c
+       '(unless ($bgl-ssl-decipher-init ssl-decipher decipher)
+	  (error "ssl-decipher" "Decipher method not supported" ssl-decipher))
+       ssl-decipher)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-decipher-initiv ::ssl-decipher ...                           */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-decipher-initiv ssl-decipher::ssl-decipher decipher)
+   (cond-expand
+      (bigloo-c
+       '(unless ($bgl-ssl-decipher-initiv ssl-decipher decipher)
+	  (error "ssl-decipher" "Decipher method not supported" ssl-decipher))
+       ssl-decipher)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-decipher-update! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-decipher-update! ssl-decipher::ssl-decipher data::bstring offset len)
+   (cond-expand
+      (bigloo-c
+       '(unless ($bgl-ssl-decipher-update! ssl-decipher data offset len)
+	  (error "ssl-decipher-update!" "cannot update" ssl-decipher))
+       ssl-decipher)
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-decipher-set-auto-padding ...                                */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-decipher-set-auto-padding ssl-decipher::ssl-decipher)
+   (cond-expand
+      (bigloo-c
+       (let ((r #t))
+	  (or r (error "ssl-decipher-set-auto-padding" "cannot decipher" ssl-decipher))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-decipher-final ...                                           */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-decipher-final ssl-decipher::ssl-decipher)
+   (cond-expand
+      (bigloo-c
+       (let ((r #t))
+	  (or r (error "ssl-decipher-final" "cannot decipher" ssl-decipher))))
+      (else
+       #f)))
+
+;*---------------------------------------------------------------------*/
+;*    ssl-decipher-finaltol ...                                        */
+;*---------------------------------------------------------------------*/
+(define-generic (ssl-decipher-finaltol ssl-decipher::ssl-decipher)
+   (cond-expand
+      (bigloo-c
+       (let ((r #t))
+	  (or r (error "ssl-decipher-finaltol" "cannot decipher" ssl-decipher))))
       (else
        #f)))
 
