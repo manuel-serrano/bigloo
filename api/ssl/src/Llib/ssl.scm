@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Fri Jun 19 13:47:39 2015 (serrano)                */
+;*    Last change :  Mon Jun 22 08:36:11 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -226,8 +226,12 @@
 	      "bgl_ssl_cipher_init")
 	   ($bgl-ssl-cipher-initiv::bool (::ssl-cipher ::bstring ::bstring ::long ::long ::bstring ::long ::long)
 	      "bgl_ssl_cipher_initiv")
-	   ($bgl-ssl-cipher-update!::obj (::ssl-cipher ::bstring ::long ::long)
+	   ($bgl-ssl-cipher-update!::bstring (::ssl-cipher ::bstring ::long ::long)
 	      "bgl_cipher_update")
+	   ($bgl-ssl-cipher-set-auto-padding::bool (::ssl-cipher ::bool)
+	      "bgl_cipher_set_auto_padding")
+	   ($bgl-ssl-cipher-final::bstring (::ssl-cipher)
+	      "bgl_cipher_final")
 	   
 	   (macro $ssl-op-cipher-server-preference::int
 	      "SSL_OP_CIPHER_SERVER_PREFERENCE"))
@@ -475,9 +479,9 @@
 	  (generic ssl-cipher-initiv ::ssl-cipher ::bstring
 	     ::bstring ::long ::long
 	     ::bstring ::long ::long)
-	  (generic ssl-cipher-update! ::ssl-cipher ::bstring ::long ::long)
-	  (generic ssl-cipher-set-auto-padding::bool ::ssl-cipher)
-	  (generic ssl-cipher-final::bool ::ssl-cipher)
+	  (generic ssl-cipher-update!::bstring ::ssl-cipher ::bstring ::long ::long)
+	  (generic ssl-cipher-set-auto-padding::bool ::ssl-cipher ::bool)
+	  (generic ssl-cipher-final::bstring ::ssl-cipher)
 
 	  (class ssl-decipher
 	     ($md::$ssl-evp-md (default $ssl-evp-md-nil))
@@ -1261,7 +1265,7 @@
    (cond-expand
       (bigloo-c
        (unless ($bgl-ssl-cipher-init ssl-cipher cipher key offset len)
-	  (error "ssl-cipher-init" "Cipher method not supported" ssl-cipher))
+	  (error "ssl-cipher-init" "Cipher method not supported" cipher))
        ssl-cipher)
       (else
        #f)))
@@ -1288,20 +1292,18 @@
 (define-generic (ssl-cipher-update! ssl-cipher::ssl-cipher data::bstring offset len)
    (cond-expand
       (bigloo-c
-       (unless ($bgl-ssl-cipher-update! ssl-cipher data offset len)
-	  (error "ssl-cipher-update!" "cannot update" ssl-cipher))
-       ssl-cipher)
+       (or ($bgl-ssl-cipher-update! ssl-cipher data offset len)
+	   (error "ssl-cipher-update!" "cannot update" ssl-cipher)))
       (else
        #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-cipher-set-auto-padding ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-generic (ssl-cipher-set-auto-padding ssl-cipher::ssl-cipher)
+(define-generic (ssl-cipher-set-auto-padding ssl-cipher::ssl-cipher auto-padding)
    (cond-expand
       (bigloo-c
-       (let ((r #t))
-	  (or r (error "ssl-cipher-set-auto-padding" "cannot cipher" ssl-cipher))))
+       ($bgl-ssl-cipher-set-auto-padding ssl-cipher auto-padding))
       (else
        #f)))
 
@@ -1311,8 +1313,8 @@
 (define-generic (ssl-cipher-final ssl-cipher::ssl-cipher)
    (cond-expand
       (bigloo-c
-       (let ((r #t))
-	  (or r (error "ssl-cipher-final" "cannot cipher" ssl-cipher))))
+       (or ($bgl-ssl-cipher-final ssl-cipher)
+	   (error "ssl-cipher-final" "cannot cipher" ssl-cipher)))
       (else
        #f)))
 

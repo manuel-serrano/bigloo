@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jun 18 08:48:28 2015 (serrano)                */
+#*    Last change :  Sat Jun 20 06:33:47 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -152,6 +152,9 @@ lib-jvm: $(JAVA_SRC_DIR)/ssl_client_socket.java \
 $(BOOTLIBDIR)/$(SSL_ZIP): ../lib/$(SSL_ZIP)
 	@ echo Copying $(SSL_ZIP)
 	@ cp $< $@
+
+../lib/$(SSL_ZIP): $(JAVA_SRC_DIR)/ssl_client_socket.java \
+                   $(JAVA_SRC_DIR)/ssl_server_socket.java
 
 jvm-extra: $(JAVA_CLASSES_SRC) $(BOOTLIBDIR)/$(SSL_ZIP)
 	(cd objs/class_s && \

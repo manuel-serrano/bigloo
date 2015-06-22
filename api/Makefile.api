@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Mon Jul 28 15:41:16 2014 (serrano)                */
-#*    Copyright   :  2010-14 Manuel Serrano                            */
+#*    Last change :  Sat Jun 20 06:35:15 2015 (serrano)                */
+#*    Copyright   :  2010-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
 #*=====================================================================*/
@@ -217,7 +217,7 @@ $(BOOTLIBDIR)/bigloo$(API)_s-$(RELEASE).zip: .afile .jfile $(BGL_CLASSES) javac_
 	@ (cd objs/class_s && \
 	  $(ZIP) -q $(ZFLAGS) $@ $(CLASS_DIR:objs/class_s/%=%)/*.class)
 
-javac_s: $(JAVA_CLASSES_SRC)
+javac_s: $(JAVA_CLASSES_SRC) $(BGL_CLASSES)
 	if [ "$(JAVA_CLASSES_SRC:objs/class_s/%=%) " != " " ]; then \
 	  (cd objs/class_s && \
              $(JAVAC) $(CYGWINJVMPATH) -classpath $(JVMAPIBOOTPATH) $(JAVA_CLASSES_SRC:objs/class_s/%=%)); \
