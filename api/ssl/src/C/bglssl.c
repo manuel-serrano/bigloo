@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Jun 22 08:25:34 2015 (serrano)                */
+/*    Last change :  Tue Jun 23 15:20:20 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -105,7 +105,6 @@ typedef BgL_sslzd2hmaczd2_bglt ssl_hmac;
 typedef BgL_sslzd2signzd2_bglt ssl_sign;
 typedef BgL_sslzd2verifyzd2_bglt ssl_verify;
 typedef BgL_sslzd2cipherzd2_bglt ssl_cipher;
-typedef BgL_sslzd2decipherzd2_bglt ssl_decipher;
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -1316,7 +1315,6 @@ handle_ssl_error( ssl_connection ssl, int n, char *fun, int ignsys ) {
       BUF_MEM* mem;
       BIO *bio;
       
-      fprintf( stderr, "handle_ss_erro.6\n" );
       if( (bio = BIO_new( BIO_s_mem() )) ) {
 	 ERR_print_errors( bio );
 	 BIO_get_mem_ptr( bio, &mem );
@@ -2268,13 +2266,12 @@ bgl_ssl_ctx_init( secure_context sc ) {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
 
    /* Nodejs compatibility */
@@ -2507,13 +2504,12 @@ bgl_ssl_get_ciphers() {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    
    ctx = SSL_CTX_new( TLSv1_server_method() );
@@ -2574,13 +2570,12 @@ bgl_evp_get_ciphers() {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    acc = MAKE_CELL( BNIL );
    
@@ -2618,13 +2613,12 @@ bgl_ssl_hash_init( ssl_hash hash ) {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    
    hash->BgL_z42mdz42 =
@@ -2686,16 +2680,14 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
 
-   fprintf( stderr, "bgl_ssl_hmac_init\n" );
    hmac->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
    if( !(hmac->BgL_z42mdz42) ) return BFALSE;
@@ -2723,7 +2715,6 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_hmac_update( ssl_hmac hmac, obj_t data, long offset, long len ) {
-   fprintf( stderr, "bgl_ssl_hmac_update\n" );
    if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
       return 0;
    } else {
@@ -2740,7 +2731,6 @@ bgl_ssl_hmac_update( ssl_hmac hmac, obj_t data, long offset, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_hmac_digest( ssl_hmac hmac ) {
-   fprintf( stderr, "bgl_ssl_hmac_digest\n" );
    if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
       return BFALSE;
    } else {
@@ -2767,13 +2757,12 @@ bgl_ssl_sign_init( ssl_sign sign, obj_t type ) {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    
    sign->BgL_z42mdz42 =
@@ -2855,13 +2844,12 @@ bgl_ssl_verify_init( ssl_verify verify, obj_t type ) {
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    
    verify->BgL_z42mdz42 =
@@ -2893,12 +2881,12 @@ bgl_ssl_verify_update( ssl_verify verify, obj_t data, long offset, long len ) {
 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF bool_t                                           */
-/*    bgl_ssl_verify_verify ...                                        */
+/*    bgl_ssl_verify_final  ...                                        */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-bgl_ssl_verify_verify( ssl_verify verify,
-		       obj_t kpem, long koffset, long klen,
-		       obj_t spem, long soffset, long slen ) {
+bgl_ssl_verify_final( ssl_verify verify,
+		      obj_t kpem, long koffset, long klen,
+		      obj_t spem, long soffset, long slen ) {
    
    static const char PUBLIC_KEY_PFX[] =  "-----BEGIN PUBLIC KEY-----";
    static const int PUBLIC_KEY_PFX_LEN = sizeof(PUBLIC_KEY_PFX) - 1;
@@ -2910,6 +2898,7 @@ bgl_ssl_verify_verify( ssl_verify verify,
       | XN_FLAG_FN_SN;
    
    if( verify->BgL_z42mdzd2ctxz90 == 0L ) {
+      ERR_clear_error();
       return 0;
    } else {
       EVP_PKEY* pkey = NULL;
@@ -2921,11 +2910,13 @@ bgl_ssl_verify_verify( ssl_verify verify,
 
       if( !bp ) {
 	 ERR_print_errors_fp( stderr );
+	 ERR_clear_error();
 	 return 0;
       }
       
       if( !BIO_write( bp, key_pem, klen ) ) {
-	 ERR_print_errors_fp(stderr);
+	 ERR_print_errors_fp( stderr );
+	 ERR_clear_error();
 	 return 0;
       }
 
@@ -2936,6 +2927,7 @@ bgl_ssl_verify_verify( ssl_verify verify,
 	 pkey = PEM_read_bio_PUBKEY( bp, NULL, NULL, NULL );
 	 if( pkey == NULL ) {
 	    ERR_print_errors_fp( stderr );
+	    ERR_clear_error();
 	    return 0;
 	 }
       } else if( strncmp( key_pem, PUBRSA_KEY_PFX, PUBRSA_KEY_PFX_LEN ) == 0 ) {
@@ -2946,7 +2938,8 @@ bgl_ssl_verify_verify( ssl_verify verify,
 	    RSA_free( rsa );
 	 }
 	 if( !pkey ) {
-	    ERR_print_errors_fp(stderr);
+	    ERR_print_errors_fp( stderr );
+	    ERR_clear_error();
 	    return 0;
 	 }
       } else {
@@ -2954,17 +2947,23 @@ bgl_ssl_verify_verify( ssl_verify verify,
 	 x509 = PEM_read_bio_X509( bp, NULL, NULL, NULL );
 	 if( !x509 ) {
 	    ERR_print_errors_fp( stderr );
+	    ERR_clear_error();
 	    return 0;
 	 }
 
 	 pkey = X509_get_pubkey( x509 );
 	 if( pkey == NULL ) {
 	    ERR_print_errors_fp( stderr );
+	    ERR_clear_error();
 	    return 0;
 	 }
       }
 
       r = EVP_VerifyFinal( verify->BgL_z42mdzd2ctxz90, sig, slen, pkey );
+
+      if( !r ) {
+	 ERR_clear_error();
+      }
 
       if( pkey ) EVP_PKEY_free( pkey );
       if( x509 ) X509_free( x509 );
@@ -2982,20 +2981,19 @@ bgl_ssl_verify_verify( ssl_verify verify,
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
-		     obj_t keybuf, long koffset, long klen ) {
+		     obj_t keybuf, long koffset, long klen, bool_t enc ) {
 #if( SSL_DEBUG )
    BGL_MUTEX_LOCK( bigloo_mutex );
    
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    
    cipher->BgL_z42cipherz42 =
@@ -3023,7 +3021,7 @@ bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
       }
       EVP_CipherInit_ex( ctx, NULL, NULL,
 			 (unsigned char*)key,
-			 (unsigned char*)iv, 0 );
+			 (unsigned char*)iv, enc );
     
       return 1;
    }
@@ -3036,20 +3034,19 @@ bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_cipher_initiv( ssl_cipher cipher,
 		       obj_t type, obj_t key, long koffset, long klen,
-		       obj_t iv, long ivoffset, long ivlen ) {
+		       obj_t iv, long ivoffset, long ivlen, bool_t enc ) {
 #if( SSL_DEBUG )
    BGL_MUTEX_LOCK( bigloo_mutex );
    
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
+      SSL_DEBUG_INIT();
    }
    
    BGL_MUTEX_UNLOCK( bigloo_mutex );
 #else
    bgl_ssl_init();
-   
-   SSL_DEBUG_INIT();
 #endif
    
    cipher->BgL_z42cipherz42 =
@@ -3084,7 +3081,7 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
       EVP_CipherInit_ex( ctx, NULL, NULL,
 			 &(STRING_REF( key, koffset )),
 			 &(STRING_REF( iv, ivoffset )),
-			 1 );
+			 enc );
       return 1;
    }
 }
@@ -3129,17 +3126,52 @@ bgl_cipher_set_auto_padding( ssl_cipher cipher, bool_t auto_padding ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_cipher_final( ssl_cipher cipher ) {
+   char errbuf[ 121 ];
+
    if( cipher->BgL_z42cipherzd2ctxz90 == 0L ) {
-      return BFALSE;
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "cipher-final",
+			"uninitialized cipher",
+			(obj_t)cipher );
    } else {
       EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
       int size = EVP_CIPHER_CTX_block_size( ctx );
       obj_t obj = make_string( size, ' ' );
-      
-      int r = EVP_CipherFinal_ex( ctx, &(STRING_REF( obj, 0 )), &size );
-      
+      int r;
+
+      r = EVP_CipherFinal_ex( ctx, &(STRING_REF( obj, 0 )), &size );
       EVP_CIPHER_CTX_cleanup( ctx );
       cipher->BgL_z42cipherzd2ctxz90 = 0L;
-      return bgl_string_shrink( obj, size );
+
+      if( r ) {
+	 return bgl_string_shrink( obj, size );
+      } else {
+	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "cipher-final",
+			   ssl_error_message( errbuf ),
+			   (obj_t)cipher );
+      }
    }
 }
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_pkcs5_pbkdf2_hmac_sha1 ...                                   */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_pkcs5_pbkdf2_hmac_sha1( obj_t pass, obj_t salt, int iter, int keylen ) {
+   obj_t obj = make_string( keylen, ' ' );
+   char errbuf[ 121 ];
+
+   int r = PKCS5_PBKDF2_HMAC_SHA1(
+      &(STRING_REF( pass, 0 )), STRING_LENGTH( pass ),
+      &(STRING_REF( salt, 0 )), STRING_LENGTH( salt ),
+      iter, keylen, &(STRING_REF( obj, 0 )) );
+
+   if( !r ) {
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "pkcs2-pbkdf2-hmac-sha1",
+			ssl_error_message( errbuf ),
+			(obj_t)pass );
+   } else {
+      return obj;
+   }
+}
+      

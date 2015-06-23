@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Jan  5 20:12:34 2015 (serrano)                */
+;*    Last change :  Tue Jun 23 12:39:47 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1509,7 +1509,7 @@
 (define (string-hex-intern str)
    (let ((len (string-length str)))
       (if (oddfx? len)
-	  (error "string-hex" "Illegal string (length is odd)" str)
+	  (error "string-hex-intern" "Illegal string (length is odd)" str)
 	  (let ((res (make-string (/fx len 2))))
 	     (let loop ((i 0)
 			(j 0))

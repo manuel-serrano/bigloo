@@ -1,5 +1,16 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/api/ssl/src/C/ssl_debug.h            */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Tue Jun 23 08:29:53 2015                          */
+/*    Last change :  Tue Jun 23 08:29:54 2015 (serrano)                */
+/*    Copyright   :  2015 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    Temporary include for debugging ssl                              */
+/*=====================================================================*/
+
 #define SSL_DEBUG 3
-//#undef SSL_DEBUG
+#undef SSL_DEBUG
 
 static int init = 0;
 

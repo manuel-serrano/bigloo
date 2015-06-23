@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Feb  6 08:28:35 2015 (serrano)                */
+;*    Last change :  Tue Jun 23 10:51:40 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -850,37 +850,37 @@
 					(=fx (char->integer (string-ref str (+fx r 3))) #xed))
 				   ;; utf16 16x2 sequence
 				   (let* ((m #xed)
-					      (m1 (char->integer (string-ref str (+fx r 4))))
-					      (m2 (char->integer (string-ref str (+fx r 5))))
-					      (nu (+fx (bit-lsh (bit-and m #xf) 12)
-						     (+fx (bit-lsh (bit-and m1 #x3f) 6)
-							(bit-and m2 #x3f)))))
-					  (if (>=fx nu #xdc00)
-					      (let* ((zzzzzz (bit-and nu #x3f))
-						     (yyyy (bit-rsh (bit-and nu #x3ff) 6))
-						     (xx (bit-and ucs2 #x3))
-						     (wwww (bit-and (bit-rsh ucs2 2) #xf))
-						     (vvvv (bit-and (bit-rsh ucs2 6) #xf))
-						     (uuuuu (+fx vvvv 1)))
-						 (string-set! res (+fx w 3)
-						    (integer->char
-						       (+fx #x80 zzzzzz)))
-						 (string-set! res (+fx w 2)
-						    (integer->char
-						       (+fx #x80
-							  (bit-or (bit-lsh xx 4) yyyy))))
-						 (string-set! res (+fx w 1)
-						    (integer->char
-						       (+fx #x80
-							  (bit-or wwww
-							     (bit-lsh (bit-and uuuuu #x3) 4)))))
-						 (string-set! res w
-						    (integer->char
-						       (bit-or #xf0 (bit-rsh uuuuu 2))))
-						 (loop (+fx r 6) (+fx w 4)))
-					      (begin
-						 (string-unicode-fix! res w)
-						 (loop (+fx r 1) (+fx w 3))))))
+					  (m1 (char->integer (string-ref str (+fx r 4))))
+					  (m2 (char->integer (string-ref str (+fx r 5))))
+					  (nu (+fx (bit-lsh (bit-and m #xf) 12)
+						 (+fx (bit-lsh (bit-and m1 #x3f) 6)
+						    (bit-and m2 #x3f)))))
+				      (if (>=fx nu #xdc00)
+					  (let* ((zzzzzz (bit-and nu #x3f))
+						 (yyyy (bit-rsh (bit-and nu #x3ff) 6))
+						 (xx (bit-and ucs2 #x3))
+						 (wwww (bit-and (bit-rsh ucs2 2) #xf))
+						 (vvvv (bit-and (bit-rsh ucs2 6) #xf))
+						 (uuuuu (+fx vvvv 1)))
+					     (string-set! res (+fx w 3)
+						(integer->char
+						   (+fx #x80 zzzzzz)))
+					     (string-set! res (+fx w 2)
+						(integer->char
+						   (+fx #x80
+						      (bit-or (bit-lsh xx 4) yyyy))))
+					     (string-set! res (+fx w 1)
+						(integer->char
+						   (+fx #x80
+						      (bit-or wwww
+							 (bit-lsh (bit-and uuuuu #x3) 4)))))
+					     (string-set! res w
+						(integer->char
+						   (bit-or #xf0 (bit-rsh uuuuu 2))))
+					     (loop (+fx r 6) (+fx w 4)))
+					  (begin
+					     (string-unicode-fix! res w)
+					     (loop (+fx r 1) (+fx w 3))))))
 				  ((<=fx ucs2 #xdbff)
 				   (let* ((xx (bit-and ucs2 #x3))
 					  (wwww (bit-and (bit-rsh ucs2 2) #xf))
@@ -917,7 +917,11 @@
 					  (begin
 					     (utf8-collapse! res w res w)
 					     (loop (+fx r 3) w))
-					  (loop (+fx r 3) (+fx w 4)))))))))
+					  (loop (+fx r 3) (+fx w 4)))))))
+			    ;; error
+			    (begin
+			       (string-unicode-fix! res w)
+			       (loop (+fx r 1) (+fx w 3)))))
 		       ((<=fx n #xef)
 			;; 3 bytes sequence
 			(if (and (<fx r (-fx end 2))
@@ -1012,7 +1016,9 @@
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
 		       (else
-			#f)))))))))
+			;; utf16 error
+			(string-unicode-fix! res w)
+			(loop (+fx r 1) (+fx w 3)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-char-size ...                                               */
