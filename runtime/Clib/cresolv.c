@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jun  6 11:04:39 2015                          */
-/*    Last change :  Sat Jun  6 18:32:45 2015 (serrano)                */
+/*    Last change :  Tue Jun 23 17:50:46 2015 (serrano)                */
 /*    Copyright   :  2015 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Resolv library binding (optional)                                */
@@ -74,7 +74,7 @@ nstype( obj_t name ) {
    if( !strcmp( n, "ns_t_dname" ) ) { return ns_t_dname; }
    if( !strcmp( n, "ns_t_sink" ) ) { return ns_t_sink; }
    if( !strcmp( n, "ns_t_opt" ) ) { return ns_t_opt; }
-   if( !strcmp( n, "ns_t_apl" ) ) { return ns_t_apl; }
+   // if( !strcmp( n, "ns_t_apl" ) ) { return ns_t_apl; }
    if( !strcmp( n, "ns_t_tkey" ) ) { return ns_t_tkey; }
    if( !strcmp( n, "ns_t_tsig" ) ) { return ns_t_tsig; }
    if( !strcmp( n, "ns_t_ixfr" ) ) { return ns_t_ixfr; }
