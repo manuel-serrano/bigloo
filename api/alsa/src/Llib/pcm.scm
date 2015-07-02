@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Sun Apr  5 06:34:17 2015 (serrano)                */
+;*    Last change :  Thu Jun 25 09:02:43 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
@@ -482,7 +482,6 @@
    (with-access::alsa-snd-pcm pcm (device hwbps hwsrate)
       (with-handler
 	 (lambda (e)
-	    (exception-notify e)
 	    #f)
 	 (alsa-snd-pcm-open pcm)
 	 (unwind-protect

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Tue Feb 17 16:23:39 2015 (serrano)                */
+#*    Last change :  Wed Jul  1 14:04:43 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking if the compiler and linker support -f[pic|PIC]          */
 #*=====================================================================*/
@@ -64,6 +64,8 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
+#include <stdio.h>
+
 void direction( int new_addr ) {
    static int *old_addr;
    static int flag = 0;

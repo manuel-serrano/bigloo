@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Sat Jun  6 11:03:26 2015 (serrano)                */
+#*    Last change :  Thu Jul  2 15:32:26 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host resolv (glibc included) library.              */
 #*=====================================================================*/
@@ -99,7 +99,7 @@ if eval "$BUILDSH $compile"; then
    else
      echo "no"
    fi
-   exit $ret_code
+   exit 0
 else
    \rm -f $file.*
    echo "no"
