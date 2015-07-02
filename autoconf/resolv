@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Jose Romildo                                      */
 #*    Creation    :  Sat Nov 11 13:27:23 1995                          */
-#*    Last change :  Thu Jul  2 15:32:26 2015 (serrano)                */
+#*    Last change :  Thu Jul  2 15:53:46 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host resolv (glibc included) library.              */
 #*=====================================================================*/
@@ -81,7 +81,7 @@ int main( int argc, char *argv[] ) {
        }
        return 0;
     }
-    return 1;
+    return 0;
 }
 EOF
 
