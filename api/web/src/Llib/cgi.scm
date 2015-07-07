@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Wed Apr 22 12:23:00 2015 (serrano)                */
+;*    Last change :  Tue Jul  7 13:12:34 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -191,10 +191,33 @@
    (read/rp header-grammar port '()))
 
 ;*---------------------------------------------------------------------*/
+;*    tmp-file-mutex ...                                               */
+;*---------------------------------------------------------------------*/
+(define tmp-file-mutex #f)
+
+;*---------------------------------------------------------------------*/
+;*    make-tmp-file ...                                                */
+;*---------------------------------------------------------------------*/
+(define (make-tmp-file dir file)
+   (unless tmp-file-mutex
+      (set! tmp-file-mutex (make-mutex)))
+   (let ((path (make-file-name dir file)))
+      (synchronize tmp-file-mutex
+	 (if (file-exists? path)
+	     (let ((suffix (suffix file))
+		   (pref (prefix path)))
+		(let loop ((cnt 0))
+		   (let ((path (string-append
+				  pref "(" (fixnum->string cnt) ")." suffix)))
+		      (if (file-exists? path)
+			  (loop (+fx cnt 1))
+			  path))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    cgi-read-file ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (cgi-read-file name header port file tmp boundary)
-   (let* ((path (make-file-name tmp file))
+   (let* ((path (make-tmp-file tmp (make-file-name tmp file)))
 	  (dir (dirname (file-name-canonicalize path))))
       (when (substring-at? dir tmp 0) (make-directory dir))
       (let ((op (open-output-file path)))

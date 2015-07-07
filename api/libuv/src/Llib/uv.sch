@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Sun Jun  7 07:03:06 2015 (serrano)                */
+;*    Last change :  Mon Jul  6 14:03:42 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
@@ -355,7 +355,7 @@
       
       ($uv-udp-create::$uv_udp_t (::$uv_loop_t ::obj)
 	 "bgl_uv_udp_create")
-      ($uv-udp-bind::int (::$uv_udp_t ::string ::int ::int)
+      ($uv-udp-bind::int (::$uv_udp_t ::string ::int ::int ::int)
 	 "bgl_uv_udp_bind")
       ($uv-udp-recv-start::int (::UvHandle ::procedure ::procedure ::UvLoop)
 	 "bgl_uv_udp_recv_start")

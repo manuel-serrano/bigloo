@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Jun 16 10:45:32 2015 (serrano)                */
+/*    Last change :  Tue Jul  7 06:31:43 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1746,7 +1746,7 @@ bgl_uv_udp_create( uv_loop_t *loop, obj_t obj ) {
 /*    bgl_uv_udp_bind ...                                              */
 /*---------------------------------------------------------------------*/
 int
-bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family ) {
+bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family, int flags ) {
    union addr {
       struct sockaddr_in ip4;
       struct sockaddr_in6 ip6;
@@ -1765,8 +1765,10 @@ bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family ) {
       r = uv_ip6_addr( addr, port, &(address.ip6) );
       if( r ) return r;
    }
+
+   // r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR );
+   r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR | flags );
    
-   r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR );
    fprintf( stderr, "<<< bgl_uv_upd_bind... fd=%d %d addr=%s port=%d -> %d\n",
 	    handle->io_watcher.fd,family, addr, port, r );
    return r;
@@ -1814,7 +1816,7 @@ bgl_uv_udp_send( uv_udp_t *handle, obj_t buffer, long offset, long length,
    gc_mark( req->data );
 
    r = uv_udp_send( req, handle, &iov, 1, (struct sockaddr *)&address, &bgl_uv_udp_send_cb );
-   
+
    if( r ) free( req );
 
    return r;

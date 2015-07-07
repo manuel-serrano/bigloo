@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Sun Jun  7 07:02:50 2015 (serrano)                */
+;*    Last change :  Mon Jul  6 14:03:34 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
@@ -54,7 +54,7 @@
 	    (uv-tcp-getsockname::obj ::UvTcp)
 	    (uv-tcp-getpeername::obj ::UvTcp)
 	    
-	    (uv-udp-bind ::UvUdp ::bstring ::int #!key (family::int 4))
+	    (uv-udp-bind ::UvUdp ::bstring ::int #!key (family::int 4) (flags::int 0))
 	    (uv-udp-getsockname::obj ::UvUdp)
 	    (uv-udp-send::obj ::UvUdp ::bstring ::long ::long ::long ::bstring
 	       #!key (family 4) callback (loop (uv-default-loop)))
@@ -372,11 +372,11 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-bind ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-udp-bind handle host port #!key (family::int 4))
+(define (uv-udp-bind handle host port #!key (family::int 4) (flags::int 0))
    (synchronize udp-mutex
       (set! udp-servers (cons handle udp-servers)))
    (with-access::UvUdp handle ($builtin)
-      ($uv-udp-bind ($uv-udp-t $builtin) host port family)))
+      ($uv-udp-bind ($uv-udp-t $builtin) host port family flags)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-start ...                                            */

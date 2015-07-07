@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Jun 15 09:26:35 2015 (serrano)                */
+/*    Last change :  Tue Jul  7 11:46:15 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1311,7 +1311,8 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
    SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
 
    /* Create output port */
-   SOCKET( sock ).output = bgl_make_output_port( sock, (bgl_stream_t)s,
+   SOCKET( sock ).output = bgl_make_output_port( sock,
+						 (bgl_stream_t)dup( s ),
 						 BGL_STREAM_TYPE_FD,
 						 KINDOF_SOCKET,
 						 outb,
