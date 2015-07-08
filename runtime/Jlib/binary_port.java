@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Dec  3 11:33:29 2000                          */
-/*    Last change :  Sat Apr 19 12:19:01 2014 (serrano)                */
-/*    Copyright   :  2000-14 Manuel Serrano                            */
+/*    Last change :  Wed Jul  8 09:17:44 2015 (serrano)                */
+/*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The binary port JVM connection                                   */
 /*=====================================================================*/
@@ -60,7 +60,7 @@ public class binary_port extends obj {
       final OutputStream file = (OutputStream)stream;
 
       /* the magic key */
-      final byte[] string = bigloo.runtime.Unsafe.intext.obj_to_string( obj );
+      final byte[] string = bigloo.runtime.Unsafe.intext.obj_to_string( obj, bigloo.foreign.BFALSE );
 
       file.write( MAGIC_WORD );
 

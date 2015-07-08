@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jul  7 11:46:15 2015 (serrano)                */
+/*    Last change :  Tue Jul  7 17:47:29 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -301,9 +301,12 @@ client_socket_error( char *proc, obj_t hostname, int port, char *msg, int err ) 
    char buffer1[ 512 ];
    char buffer2[ 512 ];
 
-   if( msg ) sprintf( buffer1, "%s, ", msg );
    BGL_MUTEX_LOCK( socket_mutex );
-   sprintf( buffer1, "%s (%d)", strerror( err ), err );
+   if( msg ){
+      sprintf( buffer1, "%s (%d), %s", strerror( err ), err, msg ); 
+   } else {
+      sprintf( buffer1, "%s (%d)", strerror( err ), err );
+   }
    BGL_MUTEX_UNLOCK( socket_mutex );
    
    if( port >= 0 ) {
@@ -1292,7 +1295,7 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
       socket_error( "set_socket_io_ports", buffer, BUNSPEC );
    }
 
-   if( !(fs = fdopen( t, "r" )) ) { 
+   if( !(fs = fdopen( s, "r" )) ) { 
       char *buffer = alloca( 1024 );
       
       BGL_MUTEX_LOCK( socket_mutex );
@@ -1312,7 +1315,7 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
 
    /* Create output port */
    SOCKET( sock ).output = bgl_make_output_port( sock,
-						 (bgl_stream_t)dup( s ),
+						 (bgl_stream_t)t,
 						 BGL_STREAM_TYPE_FD,
 						 KINDOF_SOCKET,
 						 outb,
@@ -1435,7 +1438,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	       invalidate_hostbyname( hostname );
 	       
 	       close( s );
-	       tcp_client_socket_error( hostname, port, "Connection failed", errno );
+	       tcp_client_socket_error( hostname, port, "select failed", errno );
 	    } else {
 	       int len = sizeof( int );
 	       int r = getsockopt( s, SOL_SOCKET, SO_ERROR, (void *)&err, (socklen_t *)&len );
@@ -1444,7 +1447,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 		  /* we have experienced a failure so we */
 		  /* invalidate the host name entry */
 		  close( s );
-		  tcp_client_socket_error( hostname, port, 0, _errno );
+		  tcp_client_socket_error( hostname, port, "getsockopt", _errno );
 	       }
 	    }
 	 }
@@ -1455,7 +1458,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	 invalidate_hostbyname( hostname );
       
 	 close( s );
-	 tcp_client_socket_error( hostname, port, "Connection failed", errno );
+	 tcp_client_socket_error( hostname, port, "connect failed", errno );
       }
 #else
       /* we have experienced a failure so we */
@@ -1463,7 +1466,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
       invalidate_hostbyname( hostname );
       
       close( s );
-      tcp_client_socket_error( hostname, port, "Connection failed", errno );
+      tcp_client_socket_error( hostname, port, "connect failed", errno );
 #endif
    }
 

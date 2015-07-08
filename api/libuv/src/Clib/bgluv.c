@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Jul  7 06:31:43 2015 (serrano)                */
+/*    Last change :  Wed Jul  8 07:38:19 2015 (serrano)                */
 /*    Copyright   :  2014-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1753,13 +1753,8 @@ bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family, int flags )
    } address;
    int r;
 
-   fprintf( stderr, ">>> bgl_uv_upd_bind... fd=%d %d addr=%s port=%d\n",
-	    handle->io_watcher.fd,family, addr, port );
    if( family == 4 ) {
       r = uv_ip4_addr( addr, port, &(address.ip4) );
-      if( r ) fprintf( stderr, "%s,%d ERROR.1: %s\n",
-		       __FILE__, __LINE__,
-		       strerror( -r ));
       if( r ) return r;
    } else {
       r = uv_ip6_addr( addr, port, &(address.ip6) );
@@ -1769,8 +1764,6 @@ bgl_uv_udp_bind( uv_udp_t *handle, char *addr, int port, int family, int flags )
    // r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR );
    r = uv_udp_bind( handle, (struct sockaddr *)&address, UV_UDP_REUSEADDR | flags );
    
-   fprintf( stderr, "<<< bgl_uv_upd_bind... fd=%d %d addr=%s port=%d -> %d\n",
-	    handle->io_watcher.fd,family, addr, port, r );
    return r;
 }
 
@@ -1872,8 +1865,6 @@ bgl_uv_udp_recv_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop 
 	 stream->BgL_z52proccz52 = procc;
 	 stream->BgL_z52offsetz52 = BINT( -1 );
 
-	 fprintf( stderr, "%s,%d uv_udp_recv_start %d\n",
-		  __FILE__, __LINE__, s->io_watcher.fd );
 	 return uv_udp_recv_start( s, bgl_uv_alloc_cb, bgl_uv_udp_recv_cb );
       }
    }

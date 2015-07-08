@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Jun 23 15:20:20 2015 (serrano)                */
+/*    Last change :  Tue Jul  7 17:03:39 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -267,7 +267,7 @@ sslwrite( obj_t port, char *ptr, long len ) {
 static obj_t
 socket_close_hook( obj_t env, obj_t s ) {
    SSL *ssl = (SSL *)CAR( SOCKET( s ).userdata );
-
+ 
    BGL_MUTEX_LOCK( ssl_mutex );
    
    SSL_shutdown( ssl );
