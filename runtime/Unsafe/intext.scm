@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Jul  8 09:57:49 2015 (serrano)                */
+;*    Last change :  Thu Jul 16 07:51:00 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -84,7 +84,7 @@
    
    (export  (set-obj-string-mode! ::obj)
 	    
-	    (string->obj ::bstring #!optional extension)
+	    (string->obj ::bstring #!optional extension unserialize-arg)
 	    (obj->string::bstring ::obj #!optional mark-arg)
 
 	    (make-serialization-substring ::bstring ::long ::long)
@@ -150,7 +150,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string->obj@ ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (string->obj s #!optional extension)
+(define (string->obj s #!optional extension unserialize-arg)
    
    ;; *pointer*
    (define *pointer* 0)
@@ -485,7 +485,7 @@
 	     (hash (car hashobj))
 	     (obj (cdr hashobj))
 	     (unserializer (find-class-unserializer hash))
-	     (val (unserializer obj)))
+	     (val (unserializer obj unserialize-arg)))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining val))
 	 val))
@@ -1461,28 +1461,41 @@
 ;*    register-class-serialization! ...                                */
 ;*---------------------------------------------------------------------*/
 (define (register-class-serialization! class serializer unserializer)
+
+   (define (make-serializer hash serializer)
+      (case (procedure-arity serializer)
+	 ((1)
+	  (lambda (o mark-arg)
+	     (let ((so (serializer o mark-arg)))
+		(if (eq? so o) o (cons hash so)))))
+	 ((2)
+	  (lambda (o mark-arg)
+	     (let ((so (serializer o mark-arg)))
+		(if (eq? so o) so (cons hash so)))))
+	 (else
+	  (error "register-class-serialization!" "bad arity" serializer))))
+
+   (define (make-unserializer unserializer)
+      (case (procedure-arity serializer)
+	 ((1)
+	  (lambda (o arg)
+	     (unserializer o)))
+	 ((2)
+	  unserializer)
+	 (else
+	  (error "register-class-serialization!" "bad arity" unserializer))))
+   
    (let* ((hash (class-hash class))
 	  (cell (assv hash *class-serialization*)))
       (when serializer
-	 ;; optional serializer, can be #f for backward
-	 ;; serialization compatibility
+	 ;; optional serializer, can be #f for backward compatibility
 	 (generic-add-method! object-serializer
 	    class
-	    (case (procedure-arity serializer)
-	       ((1)
-		(lambda (o mark-arg)
-		   (let ((so (serializer o mark-arg)))
-		      (if (eq? so o) o (cons hash so)))))
-	       ((2)
-		(lambda (o mark-arg)
-		   (let ((so (serializer o mark-arg)))
-		      (if (eq? so o) so (cons hash so)))))
-	       (else
-		(error "register-class-serialization!" "bad arity" serializer)))
+	    (make-serializer hash serializer)
 	    (string-append (symbol->string! (class-name class)) "-serializer")))
       (unless (pair? cell)
 	 (set! *class-serialization*
-	    (cons (list hash serializer unserializer)
+	    (cons (list hash serializer (make-unserializer unserializer))
 	       *class-serialization*)))))
 
 ;*---------------------------------------------------------------------*/

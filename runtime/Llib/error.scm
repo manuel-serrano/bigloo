@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Jan  4 08:56:10 2015 (serrano)                */
+;*    Last change :  Wed Jul 15 19:12:26 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -653,6 +653,7 @@
        (notify-&error err)
        (multiple-value-bind (file lnum lpoint lstring)
 	  (location-line-num `(at ,fname ,loc))
+	  (tprint "/loc file=" file " lnum=" lnum " lstring=" lstring " loc=" loc)
 	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
 	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))
@@ -670,17 +671,17 @@
 		(port (open-input-file fname)))
 	    (if (input-port? port)
 		(unwind-protect
-		   (let loop ((lstring (read-line port))
+		   (let loop ((ostring #f)
 			      (lnum 1)
 			      (opos 0))
-		      (if (eof-object? lstring)
-			  (values fname #f #f #f)
-			  (if (>fx (input-port-position port) point)
-			      (values file lnum (-fx point opos) lstring)
-			      (let ((opos (input-port-position port)))
-				 (loop (read-line port) 
-				    (+fx lnum 1)
-				    opos)))))
+		      (let ((lstring (read-line port)))
+			 (if (eof-object? lstring)
+			     (values fname lnum (+fx 1 (-fx point opos))
+				(string-append ostring "<eof>"))
+			     (if (>fx (input-port-position port) point)
+				 (values file lnum (-fx point opos) lstring)
+				 (let ((opos (input-port-position port)))
+				    (loop lstring (+fx lnum 1) opos))))))
 		   (close-input-port port))
 		(values file #f point #f)))))
    
@@ -692,14 +693,16 @@
 		 (port (open-input-file fname)))
 	     (if (input-port? port)
 		 (unwind-protect
-		    (let loop ((lstring (read-line port))
+		    (let loop ((ostring #f)
 			       (lnum line))
-		       (if (eof-object? lstring)
-			   (values file #f #f #f)
-			   (if (=fx lnum 0)
-			       (values file line col lstring)
-			       (let ((opos (input-port-position port)))
-				  (loop (read-line port) (-fx lnum 1))))))
+		       (let ((lstring (read-line port)))
+			  (if (eof-object? lstring)
+			      (values file line (+fx col 1)
+				 (string-append ostring "<eof>"))
+			      (if (=fx lnum 0)
+				  (values file line col lstring)
+				  (let ((opos (input-port-position port)))
+				     (loop lstring (-fx lnum 1)))))))
 		    (close-input-port port))
 		 (values file line col #f)))
 	  (values file line col #f)))
