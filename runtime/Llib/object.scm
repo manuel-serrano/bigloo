@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Mon May  4 16:45:05 2015 (serrano)                */
+;*    Last change :  Fri Jul 17 08:37:24 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -250,6 +250,7 @@
 	    (inline object-class-num-set! ::object ::long)
 	    (inline object-class::obj ::object)
 	    (find-class::class ::symbol)
+	    (find-class-by-hash::obj ::int)
 	    (class-exists ::symbol)
 	    (class?::bool ::obj)
 	    (eval-class?::bool ::obj)
@@ -422,6 +423,17 @@
 (define (find-class cname)
    (or (class-exists cname) 
        (error "find-class" "Can't find class" cname)))
+
+;*---------------------------------------------------------------------*/
+;*    find-class-by-hash ...                                           */
+;*---------------------------------------------------------------------*/
+(define (find-class-by-hash hash)
+   (let loop ((i 0))
+      (unless (=fx i *nb-classes*)
+	 (let ((cla (vector-ref-ur *classes* i)))
+	    (if (eq? (class-hash cla) hash)
+		cla
+		(loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    eval-class? ...                                                  */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Jul 15 19:12:26 2015 (serrano)                */
+;*    Last change :  Thu Jul 16 09:13:22 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -653,7 +653,6 @@
        (notify-&error err)
        (multiple-value-bind (file lnum lpoint lstring)
 	  (location-line-num `(at ,fname ,loc))
-	  (tprint "/loc file=" file " lnum=" lnum " lstring=" lstring " loc=" loc)
 	  (if (not lnum)
 	      (notify-&error/location-no-loc err)
 	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))

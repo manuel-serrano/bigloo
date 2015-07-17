@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Tue Jul  7 13:12:34 2015 (serrano)                */
+;*    Last change :  Thu Jul 16 17:15:43 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -211,13 +211,14 @@
 				  pref "(" (fixnum->string cnt) ")." suffix)))
 		      (if (file-exists? path)
 			  (loop (+fx cnt 1))
-			  path))))))))
+			  path))))
+	     path))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-read-file ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (cgi-read-file name header port file tmp boundary)
-   (let* ((path (make-tmp-file tmp (make-file-name tmp file)))
+   (let* ((path (make-tmp-file tmp file))
 	  (dir (dirname (file-name-canonicalize path))))
       (when (substring-at? dir tmp 0) (make-directory dir))
       (let ((op (open-output-file path)))

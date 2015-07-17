@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Jul 16 07:51:00 2015 (serrano)                */
+;*    Last change :  Thu Jul 16 17:47:34 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -108,7 +108,7 @@
 	    (set! *unsafe-arity*  #t)
 	    (set! *unsafe-range*  #t)
 	    (set! *unsafe-struct* #t))
-   
+
    (pragma  (cnst->integer nesting)
 	    (integer->cnst nesting)
 	    (pointer? nesting)))
@@ -1466,7 +1466,7 @@
       (case (procedure-arity serializer)
 	 ((1)
 	  (lambda (o mark-arg)
-	     (let ((so (serializer o mark-arg)))
+	     (let ((so (serializer o)))
 		(if (eq? so o) o (cons hash so)))))
 	 ((2)
 	  (lambda (o mark-arg)
@@ -1476,7 +1476,7 @@
 	  (error "register-class-serialization!" "bad arity" serializer))))
 
    (define (make-unserializer unserializer)
-      (case (procedure-arity serializer)
+      (case (procedure-arity unserializer)
 	 ((1)
 	  (lambda (o arg)
 	     (unserializer o)))
