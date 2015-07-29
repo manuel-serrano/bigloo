@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Jul 16 17:47:34 2015 (serrano)                */
+;*    Last change :  Sun Jul 26 07:31:39 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -987,7 +987,8 @@
 
    ;; print-special
    (define (print-special markup item mark)
-      (print-string markup (mark-value mark)))
+      (!print-markup markup)
+      (print-item (mark-value mark)))
 
    ;; print-item
    (define (print-item item)
@@ -1119,6 +1120,9 @@
    
    ;; nbref
    (define nbref 0)
+
+   ;; error-ctx
+   (define error-ctx #f)
    
    ;; incr-mark!
    (define (incr-mark! m)
@@ -1237,7 +1241,9 @@
 
    ;; mark-procedure
    (define (mark-procedure obj)
-      (*procedure->string* obj))
+      (let ((custom (*procedure->string* obj)))
+	 (put-mark! table obj custom)
+	 (mark custom)))
    
    ;; mark-process
    (define (mark-process obj)

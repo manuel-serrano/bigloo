@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Fri Dec 13 12:51:44 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Last change :  Thu Jul 23 17:35:28 2015 (serrano)                */
+;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -144,7 +144,7 @@
 				    specials strict decoder encoding)))) 
 	     (collect ignore (cdr spec))))
 	 (else
-	  (error 'xml-parse "Illegal special handler" spec)))))
+	  (error "xml-parse" "Illegal special handler" spec)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    attribute-value-grammar ...                                      */
@@ -605,7 +605,7 @@
 			 (loop3 (cdr lattr)))))))
 	    (loop1 (cdr l))))
       (unless xml-root
-	 (error 'xml-metadata "Empty XML document !" xml))
+	 (error "xml-metadata" "Empty XML document !" xml))
       ;; Values are :
       ;; - XML Version (1.0 or 1.1) or #f
       ;; - XML Encoding (#f if unknown)

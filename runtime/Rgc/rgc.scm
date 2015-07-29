@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Tue Sep  9 15:04:25 2014 (serrano)                */
+;*    Last change :  Sun Jul 19 15:53:14 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -247,7 +247,7 @@
    ($rgc-buffer-unget-char input-port char))
 
 ;*---------------------------------------------------------------------*/
-;*    rgc-buffer-insert-substring ...                                  */
+;*    rgc-buffer-insert-substring! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (rgc-buffer-insert-substring! input-port str from to)
    ($rgc-buffer-insert-substring input-port str from to))
