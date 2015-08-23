@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 17:44:47 2007                          */
-;*    Last change :  Wed Nov 16 10:07:30 2011 (serrano)                */
-;*    Copyright   :  2007-11 Manuel Serrano                            */
+;*    Last change :  Fri Aug  7 19:37:45 2015 (serrano)                */
+;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The portable replacement for sqlite                              */
 ;*=====================================================================*/

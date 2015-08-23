@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Fri Aug 15 11:10:04 2014 (serrano)                */
-;*    Copyright   :  2007-14 Manuel Serrano                            */
+;*    Last change :  Tue Aug 11 06:38:33 2015 (serrano)                */
+;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/

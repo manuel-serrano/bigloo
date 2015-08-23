@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sun Jul 13 06:59:36 2014 (serrano)                */
+;*    Last change :  Fri Aug 21 17:38:06 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -256,6 +256,7 @@
 	    (inline opaque?::bool ::obj)
 	    (inline opaque-nil::obj)
 	    (inline procedure-arity::int ::procedure)
+	    (inline procedure-length::int ::procedure)
 	    (inline procedure-attr::obj ::procedure)
 	    (inline procedure-attr-set!::obj ::procedure ::obj)
 	    (inline unspecified::unspecified)
@@ -280,6 +281,8 @@
 	    (va-procedure? nesting fail-safe)
 	    (procedure-arity nesting args-safe fail-safe)
 	    ($procedure-arity nesting args-safe fail-safe)
+	    (procedure-length nesting args-safe fail-safe)
+	    ($procedure-length nesting args-safe fail-safe)
 	    (correct-arity? nesting args-safe fail-safe)
 	    (make-fx-procedure no-cfa-top nesting args-safe fail-safe)
 	    (make-va-procedure no-cfa-top nesting args-safe fail-safe)
@@ -342,6 +345,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (procedure-arity proc)
    ($procedure-arity proc))
+
+;*---------------------------------------------------------------------*/
+;*    procedure-length ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (procedure-length proc)
+   ($procedure-length proc))
 
 ;*---------------------------------------------------------------------*/
 ;*    procedure-attr ...                                               */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 16 18:35:10 2007                          */
-;*    Last change :  Sun Nov 18 15:11:09 2012 (serrano)                */
-;*    Copyright   :  2007-12 Manuel Serrano                            */
+;*    Last change :  Fri Aug  7 19:49:50 2015 (serrano)                */
+;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple SQLTINY evaluator                                         */
 ;*=====================================================================*/
