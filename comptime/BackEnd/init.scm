@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 17:59:38 1995                          */
-;*    Last change :  Tue Dec 10 10:57:59 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Aug 28 08:41:36 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We produce a Bigloo's `main' function.                           */
 ;*=====================================================================*/
@@ -51,6 +51,33 @@
 ;*    make-module-init ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-module-init)
+
+   (define (ubody-sans-debug)
+      `(if require-initialization
+	   (begin
+	      (set! require-initialization #f)
+	      ,(when *dlopen-init-gc* (backend-gc-init (the-backend)))
+	      ,@(unit-init-calls))
+	   #unspecified))
+
+   (define (ubody-debug)
+      (let ((tmp (gensym 'tmp)))
+	 `(if require-initialization
+	      (begin
+		 (set! require-initialization #f)
+		 ,(when *dlopen-init-gc* (backend-gc-init (the-backend)))
+		 (pragma
+		    ,(string-append "bgl_init_module_debug_start(\""
+			(symbol->string *module*)
+			"\")"))
+		 (let ((,tmp (begin ,@(unit-init-calls))))
+		    (pragma
+		       ,(string-append "bgl_init_module_debug_end(\""
+			   (symbol->string *module*)
+			   "\")"))
+		    ,tmp))
+	      #unspecified)))
+   
    (let* ((req  (def-global-svar! 'require-initialization::obj
 		   *module*
 		   'module-initalization
@@ -59,26 +86,7 @@
 	  (dbg   (and (>fx *debug-module* 0)
 		      (memq 'module (backend-debug-support bc))
 		      (backend-pragma-support bc)))
-	  (ubody `(if require-initialization
-		     (begin
-			(set! require-initialization #f)
-			,(when *dlopen-init-gc*
-			    (backend-gc-init (the-backend)))
-			,@(if dbg
-			      `((pragma
-				 ,(string-append "bgl_init_module_debug_start(\""
-						 (symbol->string *module*)
-						 "\")")))
-			      '())
-			,@(unit-init-calls)
-			,@(if dbg
-			      `((pragma
-				 ,(string-append "bgl_init_module_debug_end(\""
-						 (symbol->string *module*)
-						 "\")")))
-			      '())
-			#unspecified)
-		     #unspecified))
+	  (ubody (if dbg (ubody-debug) (ubody-sans-debug)))
 	  (body (if *unsafe-version*
 		    ubody
 		    `(if (=fx (bit-and checksum ,*module-checksum*) checksum)
@@ -94,7 +102,7 @@
 	  (nvar (make-local-svar 'from *string*))
 	  (node (let ((node (sexp->node body (list cvar nvar) '() 'value)))
 		   (lvtype-node! node)
-		   (coerce!  node req *unspec* #f)))
+		   (coerce!  node req *obj* #f)))
 	  (init (def-global-sfun-no-warning!
 		   (module-initialization-id *module*)
 		   '(checksum from)

@@ -194,7 +194,8 @@ A list of search paths for the @code{load} functions.
 
 @deffn {bigloo procedure} dynamic-load filename #!optional (init init-point)
 
-Loads a shared library named @code{filename}. 
+Loads a shared library named @code{filename}. Returns the value of the
+last top-level expression.
 
 @emph{Important note: } The function @code{dynamic-load} can only be
 used from interpreters linked against dynamic libraries. In particular,
@@ -218,16 +219,15 @@ $ new-repl
 
 @*
 
-The function @code{dynamic-load} returns the name of the loaded
-library. If @var{init-point} is specified and if it is a string and if
-the library defines a function named @code{init-point}, this function
-is called when the library is loaded. @var{Init-point} is a C
-identifier, not a Scheme identifier. In order to set the C name a
-Scheme function, use the extern @code{export} clause (see Section
-@pxref{C Interface}). If the @var{init-point} is provided and is not a
-string, no initialization function is called after the library is
-loaded. If the @var{init-point} value is not provided, once the
-library is loaded, @code{dynamic-load} uses the Bigloo default entry
+If @var{init-point} is specified and if it is a string and if the
+library defines a function named @code{init-point}, this function is
+called when the library is loaded. @var{Init-point} is a C identifier,
+not a Scheme identifier. In order to set the C name a Scheme function,
+use the extern @code{export} clause (see Section @pxref{C
+Interface}). If the @var{init-point} is provided and is not a string,
+no initialization function is called after the library is loaded. If
+the @var{init-point} value is not provided, once the library is
+loaded, @code{dynamic-load} uses the Bigloo default entry
 point. Normally you should @emph{not} provide an @var{init-point} to
 @code{dynamic-load} unless you known what you are doing. When
 producing C code, to force the Bigloo compiler to emit such a default

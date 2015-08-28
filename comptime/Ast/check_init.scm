@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 11:02:16 1999                          */
-;*    Last change :  Mon Nov 11 09:41:31 2013 (serrano)                */
+;*    Last change :  Fri Aug 28 08:26:00 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module checks that global variables are not used before     */
 ;*    being initialized. This function implements a walk thru          */
@@ -27,37 +27,6 @@
 	    module_module
 	    module_include
 	    module_class))
-
-;*---------------------------------------------------------------------*/
-;*    check-global-initialization ...                                  */
-;*---------------------------------------------------------------------*/
-(define (check-global-initialization-TOBEREMOVE-13mar2011)
-   ;; this function (and its whole module) is to be removed, it has been
-   ;; subsumed by the init flow analysis (see initflow_walk module). 
-   (let* ((init-name (symbol-append (unit-id (get-toplevel-unit)) '-init))
- 	  (global    (find-global init-name)))
-      (if (and (global? global) (sfun? (global-value global)))
-	  (begin
-	     (init-defined-globals!)
-	     ;; the object form (for class definitions)
-	     (let ((unit (get-object-unit)))
-		(if (unit? unit)
-		    (let* ((obj-name (symbol-append (unit-id unit) '-init))
-			   (global (find-global obj-name)))
-		       (if (and (global? global) (sfun? (global-value global)))
-			   ;; when processing the object-init section, we
-			   ;; have to disconnect warning because we know
-			   ;; the initialization order is uncorrect but we
-			   ;; want to hide this.
-			   (no-warning
-			    (lambda ()
-			       (check-init
-				(sfun-body (global-value global)))))))))
-	     ;; the init form (for toplevel definitions)
-	     (check-init (sfun-body (global-value global)))
-	     ;; we reset the global list of defined variable because
-	     ;; it won't be used anymore.
-	     (init-defined-globals!)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *globals* ...                                                    */

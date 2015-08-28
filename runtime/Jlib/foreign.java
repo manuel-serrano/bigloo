@@ -5692,7 +5692,7 @@ public final class foreign
    public static final byte[] BGL_DYNAMIC_LOAD_INIT =
       "BGL_DYNAMIC_LOAD_INIT".getBytes();
 
-   public static int bgl_dload( byte[] filename, byte[] init_sym, byte[] mod_sym )
+   public static Object bgl_dload( byte[] filename, byte[] init_sym, byte[] mod_sym )
       {
 	 return bigloo.dlopen.dload( filename, init_sym, mod_sym );
       }

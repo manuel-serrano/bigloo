@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 15:42:09 2000                          */
-/*    Last change :  Sun Apr 20 18:15:57 2008 (serrano)                */
-/*    Copyright   :  2000-08 Manuel Serrano                            */
+/*    Last change :  Fri Aug 28 09:02:38 2015 (serrano)                */
+/*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Dynamic class loading for the Jvm back-end.                      */
 /*=====================================================================*/
@@ -62,7 +62,7 @@ public abstract class dlopen {
 	 return new String( "" );
    }
 
-   private static void init_module( Class cla ) {
+   private static Object init_module( Class cla ) {
       Method[] ms = cla.getDeclaredMethods();
 
       for (int i = ms.length - 1; i >=0 ; i--) {
@@ -70,16 +70,19 @@ public abstract class dlopen {
 
 	 if (m.getName().equals( "BgL_modulezd2initializa7ationz75")) {
 	    try {
-	       JDK.invoke3( m, 0, "dynamic-load".getBytes() );
+	       return JDK.invoke3( m, 0, "dynamic-load".getBytes() );
 	    } catch (Exception e) {
 	       System.out.println( e.toString() );
-	       ;
+	       return symbol.make_symbol( "__dload_error".getBytes() );
 	    }
 	 }
       }
+      
+      return symbol.make_symbol( "__dload_noinit".getBytes() );
+
    }
 	       
-   private static int dloadzip( final byte[] filename,
+   private static Object dloadzip( final byte[] filename,
 				final byte[] init_sym,
 				final byte[] mod_sym )
       throws Exception {
@@ -87,6 +90,7 @@ public abstract class dlopen {
       ZipInputStream zin = new ZipInputStream( in );
       boolean init = (init_sym.length > 0);
       String mod = new String( mod_sym );
+      Object res = symbol.make_symbol( "__dload_noinit".getBytes() );
 
       while( true ) {
 	 ZipEntry zentry = zin.getNextEntry();
@@ -101,7 +105,7 @@ public abstract class dlopen {
 	    try {
 	       final Method initm = JDK.getDeclaredMethod( new_class, init_sym );
 	       init = false;
-	       JDK.invoke( initm );
+	       res = JDK.invoke( initm );
 	    } catch (Exception e) {
 	       ;
 	    }
@@ -115,10 +119,10 @@ public abstract class dlopen {
       zin.close();
       in.close();
 	    
-      return 0;
+      return res;
    }
    
-   public static int dloadresource( final byte[] filename,
+   public static Object dloadresource( final byte[] filename,
 				    final byte[] init_sym,
 				    final byte[] mod_sym )
       throws Exception {
@@ -133,17 +137,17 @@ public abstract class dlopen {
 	    JDK.invoke( init );
 	 } catch (final Exception e) {
 	    bgl_dload_error = e.toString();
-	    return  1;
+	    return symbol.make_symbol( "__dload_error".getBytes() );
 	 }
       }
       
       if( mod_sym.length > 0 ) {
-	 init_module(new_class);
+	 return init_module(new_class);
       }
-      return 0;
+      return foreign.BUNSPEC;
    }
 
-   static int dload_inner( final byte[] filename,
+   static Object dload_inner( final byte[] filename,
 			   final byte[] init_sym,
 			   final byte[] mod_sym ) {
       bgl_dload_error = NO_ERROR_YET;
@@ -166,27 +170,27 @@ public abstract class dlopen {
 	       }
 
 	       if( mod_sym.length > 0 ) {
-		  init_module(new_class);
+		  return init_module(new_class);
 	       }
-	       return 0;
+	       return foreign.BUNSPEC;
 	    }
 	 }
       } catch (final Exception e) {
 	 bgl_dload_error = e.toString();
-	 return  1;
+	 return symbol.make_symbol( "__dload_error".getBytes() );
       }
    }
 
-   public static int dload( final byte[] filename,
+   public static Object dload( final byte[] filename,
 			    final byte[] init_sym,
 			    final byte[] mod_sym ) {
       synchronized( dlopen_table ) {
 	 if( !(dlopen_table.contains( filename )) ) {
-	    int res = dload_inner( filename, init_sym, mod_sym );
+	    Object res = dload_inner( filename, init_sym, mod_sym );
 	    dlopen_table.put( filename, new Boolean( true ) );
 	    return res;
 	 } else {
-	    return 0;
+	    return foreign.BUNSPEC;
 	 }
       }
    }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Feb 15 18:52:36 2015 (serrano)                */
+;*    Last change :  Fri Aug 28 08:53:15 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -78,7 +78,7 @@
 	    (macro runtime-os-charset::string "OS_CHARSET")
 	    (c-sleep::void (::long) "bgl_sleep")
 	    (macro %dload-init-sym::string "BGL_DYNAMIC_LOAD_INIT")
-	    (%dload::int (::string ::string ::string) "bgl_dload")
+	    (%dload::obj (::string ::string ::string) "bgl_dload")
 	    (%dunload::int (::bstring) "bgl_dunload")
 	    (%dload-error::string () "bgl_dload_error")
 	    ($getuid::int () "bgl_getuid")
@@ -127,7 +127,7 @@
 		  "bgl_sleep")
 	       (field static %dload-init-sym::string
 		  "BGL_DYNAMIC_LOAD_INIT")
-	       (method static %dload::int (::string ::string ::string)
+	       (method static %dload::obj (::string ::string ::string)
 		  "bgl_dload")
 	       (method static %dunload::int (::string)
 		  "bgl_dunload")
@@ -193,18 +193,18 @@
 	    (find-file/path ::bstring ::obj)
 	    (make-static-library-name::bstring ::bstring)
 	    (make-shared-library-name::bstring ::bstring)
-            (default-executable-name)
-            (default-script-name)
-	    (os-class)
-            (os-name)
-	    (os-arch)
-	    (os-version)
-	    (os-tmp)
+            (inline default-executable-name)
+            (inline default-script-name)
+	    (inline os-class)
+            (inline os-name)
+	    (inline os-arch)
+	    (inline os-version)
+	    (inline os-tmp)
+	    (inline file-separator)
+	    (inline path-separator)
+	    (inline static-library-suffix)
+	    (inline shared-library-suffix)
 	    (os-charset)
-	    (file-separator)
-	    (path-separator)
-	    (static-library-suffix)
-	    (shared-library-suffix)
 	    *dynamic-load-path*
 	    *default-java-package*
 	    (inline sleep ::long)
@@ -228,17 +228,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    Variables setup ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (default-executable-name) runtime-default-executable-name)
-(define (default-script-name) runtime-default-script-name)
-(define (os-class) runtime-os-class)
-(define (os-name) runtime-os-name)
-(define (os-arch) runtime-os-arch)
-(define (os-version) runtime-os-version)
-(define (os-tmp) runtime-os-tmp)
-(define (file-separator) runtime-file-separator)
-(define (path-separator) runtime-path-separator)
-(define (static-library-suffix) runtime-static-library-suffix)
-(define (shared-library-suffix) runtime-shared-library-suffix)
+(define-inline (default-executable-name) runtime-default-executable-name)
+(define-inline (default-script-name) runtime-default-script-name)
+(define-inline (os-class) runtime-os-class)
+(define-inline (os-name) runtime-os-name)
+(define-inline (os-arch) runtime-os-arch)
+(define-inline (os-version) runtime-os-version)
+(define-inline (os-tmp) runtime-os-tmp)
+(define-inline (file-separator) runtime-file-separator)
+(define-inline (path-separator) runtime-path-separator)
+(define-inline (static-library-suffix) runtime-static-library-suffix)
+(define-inline (shared-library-suffix) runtime-shared-library-suffix)
 
 ;*---------------------------------------------------------------------*/
 ;*    os-charset ...                                                   */
@@ -938,47 +938,48 @@
 ;*    dynamic-load ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (dynamic-load lib #!optional (init %dload-init-sym) (module #f))
+   
    (define (proc-err proc msg obj)
       (error (string-append "dynamic-load:" proc) msg obj))
+   
    (define (err msg obj)
       (error "dynamic-load:" msg obj))
+   
    (let ((flib (cond-expand
-		  (bigloo-c
-		   (find-file/path lib *dynamic-load-path*))
-		  (bigloo-jvm
-		   lib)
-		  (else
-		   (find-file/path lib *dynamic-load-path*))))
+		  (bigloo-c (find-file/path lib *dynamic-load-path*))
+		  (bigloo-jvm lib)
+		  (else (find-file/path lib *dynamic-load-path*))))
 	 (mod (if module
 		  (cond-expand
 		     (bigloo-c
-		      (bigloo-module-mangle "module-initialization"
-					    (symbol->string! module)))
+		      (bigloo-module-mangle
+			 "module-initialization" (symbol->string! module)))
 		     (else
 		      module))
 		  "")))
       (if (not (string? flib))
 	  (err "Can't find library" lib)
-	  (let ((ini (if (not init) "" init)))
-	     (case (%dload flib ini mod)
-		((0)
-		 flib)
-		((1)
+	  (let* ((ini (if (not init) "" init))
+		 (val (%dload flib ini mod)))
+	     (case val
+		((__dload_noarch)
+		 (err "Not supported on this architecture" flib))
+		((__dload_error)
 		 (proc-err flib (%dload-error) flib))
-		((2)
+		((__dload_noinit)
 		 (cond
 		    ((and (equal? init %dload-init-sym) (not module))
 		     (warning (string-append "dynamic-load: " flib)
-			      "Cannot find library init entry point -- "
-			      init))
+			"Cannot find library init entry point -- "
+			init))
 		    ((not init)
 		     #unspecified)
 		    (else
 		     (proc-err flib
-			       "Cannot find library init entry point"
-			       init))))
-		((3)
-		 (err "Not supported on this architecture" flib)))))))
+			"Cannot find library init entry point"
+			init))))
+		(else
+		 val))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dynamic-unload ...                                               */

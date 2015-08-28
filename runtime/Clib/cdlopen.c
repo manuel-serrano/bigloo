@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Wed Jun  4 15:37:06 2014 (serrano)                */
+/*    Last change :  Fri Aug 28 08:54:00 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -26,6 +26,9 @@ static obj_t dload_list = BNIL;
 /*---------------------------------------------------------------------*/
 static obj_t dload_mutex = BUNSPEC;
 DEFINE_STRING( dload_mutex_name, _1, "dload-mutex", 12 );
+static obj_t __dload_noarch = BUNSPEC;
+static obj_t __dload_noinit = BUNSPEC;
+static obj_t __dload_error = BUNSPEC;
 
 /*---------------------------------------------------------------------*/
 /*    bgl_init_dload ...                                               */
@@ -33,8 +36,11 @@ DEFINE_STRING( dload_mutex_name, _1, "dload-mutex", 12 );
 void
 bgl_init_dload() {
    dload_mutex = bgl_make_spinlock( dload_mutex_name );
+   __dload_noarch = string_to_symbol( "__dload_noarch" );
+   __dload_error = string_to_symbol( "___dload_error" );
+   __dload_noinit = string_to_symbol( "___dload_noinit" );
 }
-          
+
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
 /*    bgl_dload_error ...                                              */
@@ -54,10 +60,10 @@ bgl_dload_error() {
 #   endif
 
 /*---------------------------------------------------------------------*/
-/*    static int                                                       */
+/*    static void *                                                    */
 /*    dload_init_call ...                                              */
 /*---------------------------------------------------------------------*/
-static int
+static void *
 dload_init_call( void *handle, char *sym ) {
    void *(*init)() = dlsym( handle, sym );
    char *error;
@@ -65,23 +71,22 @@ dload_init_call( void *handle, char *sym ) {
    if( init == NULL ) {
       strncpy( dload_error, dlerror(), DLOAD_ERROR_LEN );
 	 
-      return 2;
+      return BFALSE;
    } else {
-      init( 0, "dynamic-load" );
-      return 0;
+      return init( 0, "dynamic-load" );
    }
 }
    
 /*---------------------------------------------------------------------*/
-/*    int                                                              */
+/*    obj_t                                                            */
 /*    bgl_dload ...                                                    */
 /*---------------------------------------------------------------------*/
-int
+obj_t
 bgl_dload( char *filename, char *init_sym, char *init_mod ) {
 #if !HAVE_DLOPEN
    strcpy( dload_error, "Feature not supported" );
 
-   return 3;
+   return __dload_noarch;
 #else
    void *handle = dlopen( filename, RTLD_LAZY | RTLD_GLOBAL );
    obj_t p;
@@ -95,7 +100,7 @@ bgl_dload( char *filename, char *init_sym, char *init_mod ) {
 	 strcpy( dload_error, "dlopen error" );
       }
 
-      return 1;
+      return __dload_error;
    } else {
       p = MAKE_PAIR( string_to_bstring( filename ), handle );
 
@@ -104,16 +109,14 @@ bgl_dload( char *filename, char *init_sym, char *init_mod ) {
       BGL_MUTEX_UNLOCK( dload_mutex );
       
       if( *init_sym ) {
-	 int r = dload_init_call( handle, init_sym );
-	 if( r ) return r;
+	 return dload_init_call( handle, init_sym );
       }
 
       if( *init_mod ) {
-	 int r = dload_init_call( handle, init_mod );
-	 if( r ) return r;
+	 return dload_init_call( handle, init_mod );
       }
       
-      return 0;
+      return __dload_noinit;
    }
 #endif
 }
