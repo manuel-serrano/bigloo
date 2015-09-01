@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Fri Aug 28 08:54:00 2015 (serrano)                */
+/*    Last change :  Mon Aug 31 20:16:18 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -37,8 +37,8 @@ void
 bgl_init_dload() {
    dload_mutex = bgl_make_spinlock( dload_mutex_name );
    __dload_noarch = string_to_symbol( "__dload_noarch" );
-   __dload_error = string_to_symbol( "___dload_error" );
-   __dload_noinit = string_to_symbol( "___dload_noinit" );
+   __dload_error = string_to_symbol( "__dload_error" );
+   __dload_noinit = string_to_symbol( "__dload_noinit" );
 }
 
 /*---------------------------------------------------------------------*/
