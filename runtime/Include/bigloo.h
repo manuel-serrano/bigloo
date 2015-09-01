@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Feb 15 18:58:13 2015 (serrano)                */
+/*    Last change :  Tue Sep  1 17:22:42 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3555,7 +3555,9 @@ BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
-   
+
+BGL_RUNTIME_DECL void bgl_restore_signal_handlers();
+
 #ifdef __cplusplus
 }
 #endif

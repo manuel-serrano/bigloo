@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sat Mar 21 07:31:26 2015 (serrano)                */
+/*    Last change :  Tue Sep  1 17:19:27 2015 (serrano)                */
 /*    Copyright   :  2002-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -164,7 +164,7 @@ bgl_get_signal_handler( int sig ) {
 /*    void                                                             */
 /*    bgl_restore_signal_handlers ...                                  */
 /*---------------------------------------------------------------------*/
-void
+BGL_RUNTIME_DEF void
 bgl_restore_signal_handlers() {
 #if HAVE_SIGPROCMASK
    sigset_t set;
