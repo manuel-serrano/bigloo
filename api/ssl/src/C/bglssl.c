@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Jul  7 17:03:39 2015 (serrano)                */
+/*    Last change :  Wed Sep  2 21:17:02 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -620,6 +620,17 @@ bgl_make_ssl_server_socket( obj_t hostname, int port, int protocol,
    SOCKET( serv ).accept = socket_server_enable_ssl;
    SOCKET( serv ).userdata = data;
    return serv;
+}
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_ssl_socketp ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_socketp( obj_t o ) {
+   return (SOCKETP( o )
+	   && ((SOCKET_CHOOK( o ) == ssl_socket_close_hook)
+	       || (SOCKET( o ).accept == socket_server_enable_ssl)));
 }
 
 #include "ssl_debug.h"

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul  8 11:11:03 2005                          */
-/*    Last change :  Sun Sep  7 16:23:22 2008 (serrano)                */
-/*    Copyright   :  2005-08 Manuel Serrano                            */
+/*    Last change :  Thu Sep  3 07:54:01 2015 (serrano)                */
+/*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK>=1.5 SSL Java socket                                         */
 /*=====================================================================*/
@@ -174,6 +174,11 @@ public class ssl_client_socket extends client_socket {
 			    final byte[] inbuf,
 			    final byte[] outbuf ) {
       super(socket, inbuf, outbuf);
+   }
+   
+   public boolean client_socketp( Object o ) {
+      return (o instanceof client_socket) &&
+	 (((client_socket)o).socket instanceof SSLSocket);
    }
 }
 

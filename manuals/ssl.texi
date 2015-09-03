@@ -41,6 +41,11 @@ they are on different machines securely via encrypted
 connections. SSL Sockets are useful for creating secure client-server
 applications.
 
+@deffn {SSL library procedure} ssl-socket? obj
+Returns @code{#t} if an only if obj is a SSL socket (either client or server).
+Returns @code{#f} otherwise.
+@end deffn
+
 @deffn {SSL library procedure} make-ssl-client-socket hostname port-number #!key (buffer #t) (timeout 0) (protocol 'sslv23) (cert #f) (pkey #f) (CAs '()) (accepted-certs #f)
 @cindex unbufferized socket port
 

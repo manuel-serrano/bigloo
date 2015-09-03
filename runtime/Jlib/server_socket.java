@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Tue Jan 20 19:37:59 2015 (serrano)                */
+/*    Last change :  Thu Sep  3 08:04:47 2015 (serrano)                */
 /*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
@@ -18,7 +18,7 @@ import java.net.*;
 /*---------------------------------------------------------------------*/
 public class server_socket extends socket {
    /*--- private fields ---------------------------------------------------*/
-   protected ServerSocket server_socket;
+   public ServerSocket server_socket;
    protected Socket client_socket;
    protected boolean blocking;
 

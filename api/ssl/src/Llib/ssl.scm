@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Jun 23 15:19:35 2015 (serrano)                */
+;*    Last change :  Thu Sep  3 07:56:46 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -71,7 +71,8 @@
 	   (macro $ssl-rand-poll::bool () "RAND_poll")
 	   (macro $ssl-rand-bytes::bool (::string ::int) "RAND_bytes")
 	   (macro $ssl-rand-pseudo-bytes::bool (::string ::int) "RAND_pseudo_bytes")
-	   
+
+	   ($ssl-socket?::bool (::obj) "bgl_ssl_socketp")
 	   ($ssl-client-make-socket::obj (::bstring ::int ::int ::int
 					    ::obj ::obj ::pair-nil
 					    ::obj ::bstring ::bstring)
@@ -265,6 +266,8 @@
 	 (method static socket-use-ssl!::socket (::socket ::int ::obj ::obj
 						   ::pair-nil ::obj)
 	    "bgl_client_socket_use_ssl")
+	 (method static socket?::bool (::obj)
+	    "bgl_ssl_client_socketp")
 	 (field static sslv2::int "BGLSSL_SSLV2")
 	 (field static sslv3::int "BGLSSL_SSLV3")
 	 (field static sslv23::int "BGLSSL_SSLV23")
@@ -275,6 +278,8 @@
       (class $ssl-server
 	 (constructor make-socket (::obj ::int ::int ::obj ::obj
 				     ::pair-nil ::obj ::int))
+	 (method static socket?::bool (::obj)
+	    "bgl_ssl_server_socketp")
 	 "bigloo.ssl.ssl_server_socket"))
    
    (export (class certificate
@@ -298,6 +303,8 @@
 	   
 	   (inline certificate-subject::bstring ::certificate)
 	   (inline certificate-issuer::bstring ::certificate)
+	   
+	   (inline ssl-socket?::bool ::obj)
 	   
 	   (make-ssl-client-socket ::bstring ::int
 	      #!key
@@ -597,6 +604,14 @@
       cert pkey
       CAs accepted-certs))
    
+;*---------------------------------------------------------------------*/
+;*    ssl-socket? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (ssl-socket? obj)
+   (cond-expand
+      (bigloo-c ($ssl-socket? obj))
+      (else (or ($ssl-client-socket? obj) ($ssl-server-socket? obj)))))
+
 ;*---------------------------------------------------------------------*/
 ;*    make-ssl-server-socket ...                                       */
 ;*---------------------------------------------------------------------*/

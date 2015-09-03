@@ -16,4 +16,8 @@ public class ssl_server_socket extends server_socket {
 			     int backlog ) {
       super();
    }
+   
+   public static boolean server_socketp( Object o ) {
+      return false;
+   }
 }

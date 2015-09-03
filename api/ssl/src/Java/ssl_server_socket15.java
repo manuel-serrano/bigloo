@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Sun Sep  7 16:26:07 2008 (serrano)                */
-/*    Copyright   :  2000-08 Manuel Serrano                            */
+/*    Last change :  Thu Sep  3 08:05:27 2015 (serrano)                */
+/*    Copyright   :  2000-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -102,5 +102,9 @@ public class ssl_server_socket extends server_socket {
       }
 
       return new ssl_client_socket( accepted_socket, inbuf, outbuf );
+   }
+
+   public static boolean server_socketp( Object o ) {
+      return (o instanceof ssl_server_socket);
    }
 }
