@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Mon Jan  5 18:53:18 2015 (serrano)                */
+/*    Last change :  Fri Sep  4 09:16:54 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -21,7 +21,9 @@ extern obj_t bgl_bignum_to_string( obj_t x, long radix );
 extern obj_t bgl_write_obj( obj_t, obj_t );
 extern obj_t bgl_display_obj( obj_t, obj_t );
 extern obj_t bgl_write( obj_t, unsigned char *, size_t );
-
+extern obj_t bgl_output_flush_char( obj_t, char );
+extern obj_t bgl_output_flush( obj_t, char *, size_t );
+   
 /*---------------------------------------------------------------------*/
 /*    Les noms des caracateres                                         */
 /*---------------------------------------------------------------------*/

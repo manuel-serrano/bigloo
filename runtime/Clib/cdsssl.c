@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Wed Nov  5 18:45:15 2014 (serrano)                */
+/*    Last change :  Fri Sep  4 09:17:23 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------*/
 extern obj_t make_vector( int, obj_t );
 extern long get_hash_power_number( char *, unsigned long );
+extern bool_t bigloo_strcmp( obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    Global Keyword table                                             */

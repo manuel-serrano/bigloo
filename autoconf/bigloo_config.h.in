@@ -490,6 +490,7 @@
 /*    sigsetmask                                                       */
 /*---------------------------------------------------------------------*/
 #if( HAVE_SIGPROCMASK )
+BGL_RUNTIME_DECL int bgl_sigsetmask( int );
 #  define BGL_SIGSETMASK( _int_ ) bgl_sigsetmask( _int_ )
 #else
 #  if( HAVE_SIGSETMASK )

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Fri Dec 13 18:31:13 2013 (serrano)                */
+/*    Last change :  Fri Sep  4 09:22:38 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -519,7 +519,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
    /* proc object creation */
    proc = make_process();
 
-   switch( CBOOL( bfork ) && (pid = fork()) ) {
+   switch( CBOOL( bfork ) ? (pid = fork()) : 0 ) {
       case 0:
 	 /* The child process */
 	 for( i = 0; i < 3; i++ ) {

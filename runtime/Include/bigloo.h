@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Sep  1 17:22:42 2015 (serrano)                */
+/*    Last change :  Fri Sep  4 09:34:57 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3439,7 +3439,10 @@ BGL_RUNTIME_DECL obj_t bgl_open_output_string( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_open_output_procedure( obj_t, obj_t, obj_t, obj_t );
 BGL_RUNTIME_DECL long bgl_output_port_filepos( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_output_port_seek( obj_t, long );
-   
+BGL_RUNTIME_DECL obj_t bgl_reset_output_string_port( obj_t );
+BGL_RUNTIME_DECL bool_t bgl_output_port_truncate( obj_t, long );
+BGL_RUNTIME_DEF bool_t bgl_port_isatty( obj_t );
+					
 BGL_RUNTIME_DECL obj_t create_vector( int );
 
 BGL_RUNTIME_DECL obj_t make_string_sans_fill();
@@ -3557,6 +3560,10 @@ BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
 
 BGL_RUNTIME_DECL void bgl_restore_signal_handlers();
+
+#if( BGL_HAVE_UNISTRING )
+BGL_RUNTIME_DECL int bgl_strcoll( obj_t, obj_t );
+#endif					
 
 #ifdef __cplusplus
 }

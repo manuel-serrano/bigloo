@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Sat Jan  3 18:49:14 2015 (serrano)                */
+/*    Last change :  Fri Sep  4 09:22:59 2015 (serrano)                */
 /*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -71,7 +71,7 @@ bgl_get_timezone( long s ) {
 /*---------------------------------------------------------------------*/
 static long
 bgl_timezone() {
-   static timezone = 23;
+   static long timezone = 23;
 
    if( timezone == 23 ) {
       timezone = bgl_get_timezone( time( 0 ) );
