@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Tue Nov 18 11:55:52 2014 (serrano)                */
-/*    Copyright   :  2003-14 Manuel Serrano                            */
+/*    Last change :  Fri Sep  4 12:27:41 2015 (serrano)                */
+/*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -315,7 +315,7 @@ mark_function( void *id, long gc, long dsz, long isz, int dt, int it, long stamp
 /*---------------------------------------------------------------------*/
 void
 mark_rest_functions( void *id, void *isize ) {
-   mark_function( id, gc_number, 0, (int)isize, -1, get_alloc_type(), stamp );
+   mark_function( id, gc_number, 0, (long)isize, -1, get_alloc_type(), stamp );
 }
 
 /*---------------------------------------------------------------------*/

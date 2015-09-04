@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Tue Nov 18 16:42:51 2014 (serrano)                */
-/*    Copyright   :  2003-14 Manuel Serrano                            */
+/*    Last change :  Fri Sep  4 12:26:42 2015 (serrano)                */
+/*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -286,7 +286,7 @@ bigloo_abort( long n ) {
 /*---------------------------------------------------------------------*/
 static void
 bmem_dump( int _ ) {
-   static indump = 0;
+   static int indump = 0;
 
    if( !indump ) {
       indump = 1;
