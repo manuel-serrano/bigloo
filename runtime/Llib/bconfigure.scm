@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Mar  5 09:00:38 2014 (serrano)                */
-;*    Copyright   :  2000-14 Manuel Serrano                            */
+;*    Last change :  Tue Sep  8 20:46:29 2015 (serrano)                */
+;*    Copyright   :  2000-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -96,7 +96,8 @@
 	   (macro $configure-big-endian::bool "BGL_BIG_ENDIAN")
 	   (macro $configure-regexp-family::string "BGL_REGEXP_FAMILY")
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
-	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE"))
+	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
+	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING"))
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -151,6 +152,7 @@
 	      (field static regexp-family::string "BGL_REGEXP_FAMILY")
 	      (field static int-size::int "BGL_INT_BIT_SIZE")
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
+	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      "bigloo.configure"))
 
    (export    (bigloo-config #!optional config)
@@ -223,7 +225,8 @@
      (endianess . ,(if $configure-big-endian 'big-endian 'little-endian))
      (regexp . ,$configure-regexp-family)
      (int-size . ,$configure-int-size)
-     (elong-size . ,$configure-elong-size)))
+     (elong-size . ,$configure-elong-size)
+     (have-unistring . ,$configure-have-unistring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */

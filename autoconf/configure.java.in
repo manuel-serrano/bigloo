@@ -83,4 +83,5 @@ public class configure {
   public static final boolean BGL_DNS_CACHE = false;
   public static final byte[] OS_CHARSET = "@OS_CHARSET@".getBytes();
   public static final byte[] BGL_REGEXP_FAMILY = "@BGL_REGEXP_FAMILY@".getBytes();
+  public static final boolean BGL_HAVE_UNISTRING = false;
 }
