@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Fri Sep  4 09:15:41 2015 (serrano)                */
+/*    Last change :  Sun Sep 13 17:36:41 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -217,7 +217,7 @@ bgl_symbol_genname( obj_t o, char *name ) {
 
       hn = get_hash_power_number( gn, SYMBOL_HASH_TABLE_SIZE_SHIFT );
 
-      
+
       if( !symbol_exists_sans_lock_p( gn, hn ) ) break;
    }
 
@@ -240,7 +240,7 @@ bgl_symbol_genname( obj_t o, char *name ) {
 BGL_RUNTIME_DEF obj_t
 bgl_gensym( obj_t name ) {
    obj_t o = make_symbol( 0L );
-   
+
    if( name == BFALSE ) {
       return o;
    } else {

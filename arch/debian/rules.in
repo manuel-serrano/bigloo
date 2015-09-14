@@ -24,7 +24,7 @@ config.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
 	# CFLAGS="$(CFLAGS) -g" ./configure --prefix=/usr --stack-check=no --debug2
-	CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" ./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage @BGLCONFIGUREOPT@
+	CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" ./configure --prefix=@BGLPREFIX@ --stack-check=no --disable-srfi27 --disable-packrat --disable-thread-local-storage --abort-missing @BGLCONFIGUREOPT@
 
 
 build: build-stamp
