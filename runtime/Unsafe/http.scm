@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Mon Aug 10 14:52:16 2015 (serrano)                */
+;*    Last change :  Tue Sep 15 15:01:24 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -43,7 +43,8 @@
 	   __evenv
 	   __os
 	   __structure
-	   __param)
+	   __param
+	   __reader)
 
    (import __url
 	   __rgc
@@ -339,6 +340,36 @@
 ;*    status-line-grammar ...                                          */
 ;*---------------------------------------------------------------------*/
 (define status-line-grammar
+   (regular-grammar ((SP #\Space)
+		     (HTTP (: (+ (in "httpsHTTPS"))
+			      #\/ (+ digit) #\. (+ digit)))
+		     (ICY "ICY")
+		     (CODE (+ (in digit)))
+		     (line (or (: (+ all) "\r\n") (: (+ all) "\n") (+ all))))
+      ((: (or HTTP ICY) SP)
+       (let ((http (the-substring 0 (-fx (the-length) 1))))
+	  (let ((code (read (the-port))))
+	     (if (not (fixnum? code))
+		 (raise
+		    (instantiate::&io-parse-error
+		       (obj (http-parse-error-msg (the-failure) (the-port)))
+		       (proc 'http-parse-status-line)
+		       (msg "Illegal status code")))
+		 (values http code (read-line-newline (the-port)))))))
+      (else
+       (let ((c (the-failure)))
+	  (raise 
+	     (if (eof-object? c)
+		 (instantiate::&io-parse-error
+		    (obj (the-port))
+		    (proc 'http-parse-status-line)
+		    (msg "Illegal status line, premature end of input"))
+		 (instantiate::&io-parse-error
+		    (obj (http-parse-error-msg c (the-port)))
+		    (proc 'http-parse-status-line)
+		    (msg "Illegal status line"))))))))
+
+(define status-line-grammar-old
    (regular-grammar ((SP #\Space)
 		     (HTTP (: (+ (in "httpsHTTPS"))
 			      #\/ (+ digit) #\. (+ digit)))
