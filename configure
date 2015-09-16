@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep  4 12:32:53 2015 (serrano)                */
+#*    Last change :  Wed Sep 16 06:23:29 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -39,8 +39,8 @@ tmpdir=/tmp
 lispdir=
 
 #*--- api -------------------------------------------------------------*/
-importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 srfi27 packrat crypto openpgp csv upnp libuv"
-apis="$importantapis gstreamer phidget alsa wav flac mpg123 phone avahi"
+importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv"
+apis="$importantapis gstreamer phidget alsa wav flac mpg123 phone avahi srfi27 packrat"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
