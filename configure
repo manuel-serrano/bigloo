@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep 16 06:23:29 2015 (serrano)                */
+#*    Last change :  Wed Sep 16 07:45:53 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4080,7 +4080,7 @@ if [ "$abortmissing " = "yes " ]; then
 	exit 1;
     fi
     
-    if [ ! "$havegmp= " = "1 " ]; then
+    if [ ! "$havegmp " = "1 " ]; then
 	echo ""
 	echo "*** ERROR Missing library: gmp" >&2
 	echo "exiting..." >&2
