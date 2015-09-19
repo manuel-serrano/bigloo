@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Feb 12 09:51:47 2014 (serrano)                */
+;*    Last change :  Sat Sep 19 09:55:36 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -722,6 +722,28 @@
 ;*    make-generic-noopt-definition ...                                */
 ;*---------------------------------------------------------------------*/
 (define (make-generic-noopt-definition id module args body src)
+
+   (define (typed-ident? id)
+      (string-contains (symbol->string! id) "::"))
+   
+   (define (typed-args args generic)
+      (with-access::variable generic (value)
+	 (with-access::sfun value ((formals args))
+	    (let loop ((args args)
+		       (formals formals))
+	       (if (not (pair? args))
+		   args
+		   (with-access::local (car formals) (type)
+		      (cond
+			 ((dsssl-named-constant? (car args))
+			  args)
+			 ((typed-ident? (car args))
+			  (cons (car args)
+			     (loop (cdr args) (cdr formals))))
+			 (else
+			  (cons (make-typed-ident (car args) (type-id type))
+			     (loop (cdr args) (cdr formals)))))))))))
+   
    (if (not (and (pair? args) (symbol? (car args))))
        (begin
 	  (error-sexp->node "Bad generic formal argument" src
@@ -732,7 +754,9 @@
 	      (pid (check-id (parse-id id loc) src))
 	      (name (gensym (car pid)))
 	      (type (cdr pid))
-	      (def `(labels ((,name ,args
+	      (gbody   (make-generic-body id locals args src))
+	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody))
+	      (def `(labels ((,name ,(typed-args args generic)
 				;; use labels instead of a plain lambda expr
 				;; in order to give that default function
 				;; a pleasant debug identifier
@@ -741,12 +765,12 @@
 				      `(((@ error __error)
 					 ',name "No method for this object"
 					 ,(id-of-id (car args) (find-location src)))))))
-		       ,name))
-	      (gbody   (make-generic-body id locals args src))
-	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody)))
+		       ,name)))
 	  (trace (ast 2) " generic " (shape id) #\newline)
+	  (trace (ast 2) "       def: " (shape generic)  " " (typeof generic) #\Newline)
 	  (trace (ast 2) "      body: " (shape body) #\Newline)
 	  (trace (ast 2) "      args: " (shape args) #\Newline)
+;* 	  (trace (ast 2) "   formals: " (shape (                       */
 	  (trace (ast 2) "    locals: " (shape locals) #\Newline)
 	  (mark-method! name)
 	  (let* ((o-unit (get-generic-unit))

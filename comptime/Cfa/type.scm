@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Mon Nov 11 10:32:23 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Sep 19 09:15:11 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -13,6 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cfa_type
+   (include "Tools/trace.sch")
    (import  type_type
 	    type_cache
 	    type_typeof
@@ -36,6 +37,7 @@
 ;*    type-settings! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (type-settings! globals)
+   (trace (cfa 2) "====== type-settings! ======================\n")
    ;; set a polymorphic type for the non-optimized procedures
    (type-closures!)
    ;; type the functions body
@@ -46,6 +48,8 @@
 ;*---------------------------------------------------------------------*/
 (define (type-fun! var::variable)
    (let ((fun (variable-value var)))
+      (trace (cfa 2) "type-fun! var=" (shape var) " "
+	 (typeof fun) #\Newline)
       (cond
 	 ((intern-sfun/Cinfo? fun)
 	  ;; if it is not an `intern-sfun/Cinfo', it means that the
@@ -53,6 +57,8 @@
 	  (with-access::intern-sfun/Cinfo fun (body args approx)
 	     ;; the formals
 	     (for-each (lambda (var)
+			  (trace (cfa 3) "  formal " (shape var)
+			     " " (typeof (local-value var)) #\Newline)
 			  (type-variable! (local-value var) var))
 		       args)
 	     ;; and the function result
@@ -61,7 +67,7 @@
 	     ;; the body
 	     (set! body (type-node! body))))
 	 ((sfun? fun)
-	  (with-access::sfun fun (body )
+	  (with-access::sfun fun (body)
 	     (set! body (type-node! body))))
 	 (else
 	  (internal-error "type-fun!" "Unknown value" (shape var))))))
@@ -127,7 +133,10 @@
 ;*---------------------------------------------------------------------*/
 (define-method (type-variable! value::svar/Cinfo variable)
    (with-access::svar/Cinfo value (approx)
-      (set-variable-type! variable (get-approx-type approx value))))
+      (let ((typ (get-approx-type approx value)))
+	 (trace (cfa 4) "   type-variable " (shape variable) " -> " (shape typ)
+	    #\Newline)
+	 (set-variable-type! variable typ))))
    
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ::scnst ...                                       */

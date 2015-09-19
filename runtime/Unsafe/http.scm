@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Wed Sep 16 06:20:14 2015 (serrano)                */
+;*    Last change :  Fri Sep 18 15:58:54 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -353,54 +353,6 @@
 	     (values http code (http-read-line (the-port))))))
       (else
        (let ((c (the-failure)))
-	  (raise 
-	     (if (eof-object? c)
-		 (instantiate::&io-parse-error
-		    (obj (the-port))
-		    (proc 'http-parse-status-line)
-		    (msg "Illegal status line, premature end of input"))
-		 (instantiate::&io-parse-error
-		    (obj (http-parse-error-msg c (the-port)))
-		    (proc 'http-parse-status-line)
-		    (msg "Illegal status line"))))))))
-
-(define status-line-grammar-old
-   (regular-grammar ((SP #\Space)
-		     (HTTP (: (+ (in "httpsHTTPS"))
-			      #\/ (+ digit) #\. (+ digit)))
-		     (ICY "ICY")
-		     (CODE (+ (in digit)))
-		     (line (or (: (+ all) "\r\n") (: (+ all) "\n") (+ all))))
-      ((: (or HTTP ICY) SP)
-       (if (eq? (rgc-context) 'code)
-	   (begin
-	      (rgc-context #unspecified)
-	      (raise
-		 (instantiate::&io-parse-error
-		    (obj (http-parse-error-msg (the-failure) (the-port)))
-		    (proc 'http-parse-status-line)
-		    (msg "Illegal status line"))))
-	   (let ((http (the-substring 0 (-fx (the-length) 1))))
-	      (rgc-context 'code)
-	      (let ((code (ignore)))
-		 (if (not (fixnum? code))
-		     (raise
-			(instantiate::&io-parse-error
-			   (obj (http-parse-error-msg (the-failure) (the-port)))
-			   (proc 'http-parse-status-line)
-			   (msg "Illegal status code")))
-		     (begin
-			(rgc-context 'line)
-			(let ((phrase (ignore)))
-			   (rgc-context #unspecified)
-			   (values http code phrase))))))))
-      ((context code CODE)
-       (the-fixnum))
-      ((context line line)
-       (the-string))
-      (else
-       (let ((c (the-failure)))
-	  (rgc-context #unspecified)
 	  (raise 
 	     (if (eof-object? c)
 		 (instantiate::&io-parse-error

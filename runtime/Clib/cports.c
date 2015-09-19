@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Sep  4 09:27:59 2015 (serrano)                */
+/*    Last change :  Fri Sep 18 20:06:46 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -336,9 +336,11 @@ long
 bgl_read( obj_t port, char *ptr, long num ) {
    FILE *file = PORT_FILE( port );
    long n;
-
+/*    fprintf( stderr, ">>> bgl_read port=%p, file=%p fileno=%d ptr=%p num=%d\n", */
+/* 	    port, file, fileno( file ), ptr, num );                    */
  loop:
    if( (n = _READ( fileno( file ), ptr, num ) ) <= 0 ) {
+/*       fprintf( stderr, "<<< bgl_read port=%p, n=%d errno=%d strerror=%s\n", port, n, errno, errno ? strerror( errno ) : "" ); */
       if( n == 0 ) {
 	 INPUT_PORT( port ).eof = 1;
       } else if( errno == EINTR ) {
@@ -631,6 +633,8 @@ sysread_with_timeout( obj_t port, char *ptr, long num ) {
    struct bgl_input_timeout *tmt = PORT( port ).timeout;
    long n;
 
+/*    fprintf( stderr, "%s,%d: >>> sysread_with_timeout sysread(%p)\n", */
+/* 	    __FILE__, __LINE__, port );                                */
    if( (n = tmt->sysread( port, ptr, num )) > 0 ) {
       return n;
    } else if( n == 0 ) {
@@ -1409,6 +1413,9 @@ bgl_input_port_buffer_set( obj_t ip, obj_t buffer ) {
 bool_t
 bgl_input_port_timeout_set( obj_t port, long timeout ) {
 #if defined( POSIX_FILE_OPS ) && BGL_HAVE_SELECT && BGL_HAVE_FCNTL
+/*    fprintf( stderr, "bgl_input_port_timeout_set port=%p timeout=%d\n", */
+/* 	    port, timeout );                                           */
+
    if( (timeout >= 0) &&
        ((PORT(port).kindof == KINDOF_FILE) ||
 	(PORT(port).kindof == KINDOF_PIPE) ||

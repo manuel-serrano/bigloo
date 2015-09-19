@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Sep  4 09:34:57 2015 (serrano)                */
+/*    Last change :  Sat Sep 19 08:45:13 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3441,7 +3441,8 @@ BGL_RUNTIME_DECL long bgl_output_port_filepos( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_output_port_seek( obj_t, long );
 BGL_RUNTIME_DECL obj_t bgl_reset_output_string_port( obj_t );
 BGL_RUNTIME_DECL bool_t bgl_output_port_truncate( obj_t, long );
-BGL_RUNTIME_DEF bool_t bgl_port_isatty( obj_t );
+BGL_RUNTIME_DECL bool_t bgl_port_isatty( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_reset_output_port_error( obj_t );
 					
 BGL_RUNTIME_DECL obj_t create_vector( int );
 

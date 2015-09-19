@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  5 10:03:10 2003                          */
-;*    Last change :  Mon Oct  6 18:26:26 2014 (serrano)                */
-;*    Copyright   :  2003-14 Manuel Serrano                            */
+;*    Last change :  Sat Sep 19 08:33:34 2015 (serrano)                */
+;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test date features                                               */
 ;*=====================================================================*/
@@ -246,13 +246,13 @@
    (test "nano.1"
       (let* ((nsec (current-nanoseconds))
 	     (usec (/llong nsec #l1000))
-	     (sec (llong->fixnum (/llong usec #l1000000))))
+	     (sec (/llong usec #l1000000)))
 	 (=llong sec (/llong nsec (*llong #l1000000 #l1000))))
       #t)
    (test "nano.2"
       (let* ((sec (current-seconds))
 	     (d (nanoseconds->date
-		   (+llong (*llong (fixnum->llong sec) #l1000000000) #l1))))
+		   (+llong (*llong (elong->llong sec) #l1000000000) #l1))))
 	 (=llong (date-nanosecond d) #l1))
       #t)
    (test "nano.3"

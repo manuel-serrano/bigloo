@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Sat Oct 11 10:33:45 2014 (serrano)                */
+/*    Last change :  Fri Sep 18 19:54:48 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -108,12 +108,18 @@ rgc_shift_buffer( obj_t port ) {
 /*---------------------------------------------------------------------*/
 static long
 sysread( obj_t port, char *buf, long o, size_t size ) {
+/*    fprintf( stderr, "%s,%d: sysread sysread(%p)\n",                 */
+/* 	    __FILE__, __LINE__, port );                                */
    long r = INPUT_PORT( port ).sysread( port, &buf[ o ], size );
 
    if( r < 0 ) {
+      fprintf( stderr, "sysread port=%p buf=%p o=%d size=%d -> r=%d\n", port, buf, o, size, r );
+
       int e = (errno == BGL_ECONNRESET ?
 	       BGL_IO_CONNECTION_ERROR : BGL_IO_READ_ERROR);
 
+      fprintf( stderr, "FAIL, errno=%d\n", errno );
+      fprintf( stderr, "FAIL, errno=%s\n", strerror( errno ) );
       C_SYSTEM_FAILURE( e, "read", strerror( errno ), port );
    } else {
       return r;
