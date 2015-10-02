@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Sep 11 19:23:41 2013 (serrano)                */
-;*    Copyright   :  2007-13 Manuel Serrano                            */
+;*    Last change :  Thu Oct  1 11:50:01 2015 (serrano)                */
+;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
 ;*    (Internet Message Format) specification.                         */
@@ -26,12 +26,18 @@
 ;*    mail-header->list ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (mail-header->list header)
+
+   (define (safe-char c)
+      (if (char=? c #\Return)
+	  "{\\r}"
+	  (string #\{ c #\})))
    
    (define value-grammar
       (regular-grammar ()
-	 ((+ (out "\r\n"))
+	 ((+ (or (out "\r\n") (: "\r" (out "\n"))))
 	  (the-string))
-	 ((: (+ (out "\r\n")) (? "\r") "\n" (+ (in " \t")))
+	 ((: (+ (or (out "\r\n") (: "\r" (out "\n"))))
+	     (? "\r") "\n" (+ (in " \t")))
 	  (let ((s1 (the-string)))
 	     (string-append s1 (ignore))))
 	 ((: (or "\r\n" "\n") (+ (in " \t")))
@@ -43,10 +49,10 @@
 	     (if (eof-object? c)
 		 ""
 		 (raise (instantiate::&io-parse-error
-			   (proc "header->list")
+			   (proc "mail-header->list")
 			   (msg "Illegal value character")
-			   (obj (string-append (string #\{ c #\})
-					       (read-line (the-port)))))))))))
+			   (obj (string-append (safe-char c)
+				   (read-line (the-port)))))))))))
    
    (define field-grammar
       (regular-grammar ((id (+ (out ":\n\t\r ,;"))))
@@ -55,19 +61,19 @@
 		 (bref (the-byte-ref (-fx len 1)))
 		 (delta (if (= bref (char->integer #\Space)) 2 1))
 		 (id (string->symbol
-		      (string-downcase!
-		       (the-substring 0 (-fx len delta)))))
+			(string-downcase!
+			   (the-substring 0 (-fx len delta)))))
 		 (val (read/rp value-grammar (the-port))))
 	     (cons (cons id val) (ignore))))
 	 ((bol (: id ": " (= 2 #\Newline)))
 	  (let ((id (string->symbol
-		     (string-downcase!
-		      (the-substring 0 (-fx (the-length) 4))))))
+		       (string-downcase!
+			  (the-substring 0 (-fx (the-length) 4))))))
 	     (list (cons id ""))))
 	 ((bol (: id ": " (= 2 (: #\Return #\Newline))))
 	  (let ((id (string->symbol
-		     (string-downcase!
-		      (the-substring 0 (-fx (the-length) 6))))))
+		       (string-downcase!
+			  (the-substring 0 (-fx (the-length) 6))))))
 	     (list (cons id ""))))
 	 ((or (= 2 #\Newline) (= 2 (: #\Return #\Newline)))
 	  '())
@@ -86,15 +92,15 @@
 			(ignore))
 		       ((eof-object? line)
 			(raise (instantiate::&io-parse-error
-				  (proc "header->list:field-grammar")
+				  (proc "mail-header->list:field-grammar")
 				  (msg "Premature end of file")
 				  (obj c))))
 		       (else
 			(raise (instantiate::&io-parse-error
-				  (proc "header->list:field-grammar")
+				  (proc "mail-header->list:field-grammar")
 				  (msg "Illegal field character")
-				  (obj (string-append (string #\{ c #\})
-						      line))))))))))))
+				  (obj (string-append (safe-char c)
+					  line))))))))))))
 
    (cond
       ((string? header)

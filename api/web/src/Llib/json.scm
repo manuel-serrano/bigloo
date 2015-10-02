@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Tue Nov 25 12:40:11 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Wed Sep 30 09:19:16 2015 (serrano)                */
+;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
 ;*=====================================================================*/
@@ -198,6 +198,15 @@
 	     (parse-error (format "token \"~a\" expected" type)
 		(caddr token)
 		(cadddr token)))))
+
+   (define (parse-token-error token)
+      (if (eq? (car token) 'ERROR)
+	  (parse-error
+	     (format "wrong token: \"~a\"" (cadr token))
+	     (caddr token) (cadddr token))
+	  (parse-error
+	     (format "wrong ~a token: \"~a\"" (car token) (cadr token))
+	     (caddr token) (cadddr token))))
    
    (define (parse-array array)
       (let ((val (parse-text 'ANGLE-CLO)))
@@ -237,10 +246,7 @@
 	       ((BRA-CLO)
 		(object-return object))
 	       (else
-		(parse-error
-		   (format "wrong ~a token: \"~a\"" (car token) (cadr token))
-		   (caddr token)
-		   (cadddr token)))))))
+		(parse-token-error token))))))
    
    (define (parse-text end)
       (let loop ()
@@ -253,15 +259,10 @@
 	       ((CONSTANT STRING)
 		(cadr token))
 	       ((ERROR)
-		(parse-error
-		   (format "wrong ~a token: \"~a\"" (car token) (cadr token))
-		   (caddr token) (cadddr token)))
+		(parse-token-error token))
 	       (else
 		(unless (eq? (car token) end)
-		   (parse-error
-		      (format "wrong ~a token: \"~a\"" (car token) (cadr token))
-		      (caddr token)
-		      (cadddr token))))))))
+		   (parse-token-error token)))))))
    
    (check-procedure array-alloc 0 :array-alloc)
    (check-procedure array-set 3 :array-set)

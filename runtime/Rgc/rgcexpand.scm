@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Tue Sep  9 14:47:44 2014 (serrano)                */
+;*    Last change :  Thu Oct  1 21:19:05 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -329,8 +329,10 @@
 	  ,(if *unsafe-rgc*
 	       '(ignore)
 	       '(if (closed-input-port? (the-port))
-		 (error "regular-grammar"
-		    "Can't read on a closed input port"
-		    (the-port))
+		 (raise
+		    (instantiate::&io-closed-error
+		       (proc "regular-grammar")
+		       (msg "Can't read on a closed input port")
+		       (obj (the-port))))
 		 (ignore))))))
 		    
