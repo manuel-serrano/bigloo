@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sun May 10 09:00:27 2015 (serrano)                */
+#*    Last change :  Tue Oct  6 22:11:45 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -641,7 +641,12 @@ doboot.static: $(O_OBJECTS)
         else \
 	  gc=$(BOOTLIBDIR)/lib$(GCLIB)-$(RELEASE).a; \
         fi; \
-	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(EXTRALIBS);
+	if [ "$(GMPCUSTOM)" = "no" ]; then \
+	  $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $$gmp $(LDCOMPLIBS) $(EXTRALIBS); \
+        else \
+	  gmp=; \
+	  $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(filter-out -lbigloogmp-$(RELEASE),$(EXTRALIBS)) $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).a; \
+        fi
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
