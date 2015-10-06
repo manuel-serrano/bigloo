@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Sep 20 10:09:36 2015 (serrano)                */
+#*    Last change :  Tue Oct  6 11:04:02 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1062,7 +1062,7 @@ while : ; do
       echo "   --disable-revolv (see --no-resolv)" >&2;
       echo "   --disable-unistring (see --no-unistring)" >&2;
       echo "   --disable-pcre (see --no-pcre)" >&2;
-      echo "   --customgmp=yes|no [default yes]" >&2;
+      echo "   --customgmp=yes|no [default no]" >&2;
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
       echo "   --customunistring=yes|no [default yes]" >&2;
       echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
@@ -1989,6 +1989,8 @@ if [ "$customgmp " = "yes " ]; then
 
   gmpversion=`basename $gmpsrc .tar.gz`
   gmpversion=`basename $gmpversion .tgz`
+  gmpversion=`basename $gmpversion .tar.bz2`
+  gmpversion=`basename $gmpversion .tar.xz`
 
   (cd gmp && GMP=$gmpsrc; export GMP && . ./install-gmp) || exit 1
   (cd gmp; . ./configure-gmp) || exit 1
@@ -2462,7 +2464,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	echo "Aborting";
 	exit 1;
       else
-        echo "*** WARNING:configure: Gannot find GMP library required by SRFI27."
+        echo "*** WARNING:configure: Cannot find GMP library required by SRFI27."
         echo "Disabling SRFI27."
         napis=;
         for a in $apis; do
@@ -2840,7 +2842,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     fi
 
     java_version=`$javac -version 2>&1 | head -n 1` || exit 1
-    if echo "$java_version" | grep "1.7" > /dev/null
+    if echo "$java_version" | grep "1.9" > /dev/null
+      then java_version=1.9
+    elif echo "$java_version" | grep "1.8" > /dev/null
+      then java_version=1.8
+    elif echo "$java_version" | grep "1.7" > /dev/null
       then java_version=1.7
     elif echo "$java_version" | grep "1.6" > /dev/null
       then java_version=1.6

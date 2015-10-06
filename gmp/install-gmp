@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 19 07:52:02 2007                          */
-#*    Last change :  Fri Mar 23 08:02:14 2012 (serrano)                */
-#*    Copyright   :  2007-12 Manuel Serrano                            */
+#*    Last change :  Tue Oct  6 11:02:09 2015 (serrano)                */
+#*    Copyright   :  2007-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This shell script installs a new GMP.                            */
 #*=====================================================================*/
@@ -51,5 +51,5 @@ if [ ! -f $src ]; then
   exit 1;
 fi
 
-tar xfz $src || (echo "tar xfz $src failed"; exit 1)
+tar xf $src || (echo "tar xf $src failed"; exit 1)
 

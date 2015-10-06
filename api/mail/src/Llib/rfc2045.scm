@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Nov 12 10:34:04 2014 (serrano)                */
-;*    Copyright   :  2007-14 Manuel Serrano                            */
+;*    Last change :  Mon Oct  5 18:07:50 2015 (serrano)                */
+;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -103,7 +103,8 @@
 ;*    quoted-printable-grammar ...                                     */
 ;*---------------------------------------------------------------------*/
 (define quoted-printable-grammar
-   (regular-grammar ((XDIGIT (or digit (in ("AF")))) out rfc2047)
+   (regular-grammar ((XDIGIT (or digit (or (in ("AF")) (in ("af")))))
+		     out rfc2047)
       ((+ (out #\= #\Newline #\Return #\?))
        (display (the-string) out)
        (ignore))

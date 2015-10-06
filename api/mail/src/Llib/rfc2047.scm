@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Wed Nov 12 12:58:36 2014 (serrano)                */
-;*    Copyright   :  2007-14 Manuel Serrano                            */
+;*    Last change :  Mon Oct  5 17:54:14 2015 (serrano)                */
+;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC 2047             */
 ;*    MIME (Multipurpose Internet Mail Extensions) Part Three:         */
@@ -114,7 +114,7 @@
 ;*---------------------------------------------------------------------*/
 (define rfc2047-grammar
    (regular-grammar (out cset)
-      ((: (* " ") "=?")
+      ("=?"
        (let* ((cs (read/rp token-grammar (the-port)))
 	      (encoding (read/rp token-grammar (the-port))))
 	  (case encoding
@@ -141,10 +141,10 @@
       ((+ (out #\= #\Space #\Return #\Newline))
        (display (the-string) out)
        (ignore))
-      ((or (+ #\Space) (+ (: (? #\Return) #\Newline)))
-       (display (the-string) out)
+      (#\space
+       (display " " out)
        (ignore))
-      ((: #\Return #\Newline #\Space)
+      ((: (+ (: (? #\Return) #\Newline)) (* #\Space))
        (ignore))
       (#\?
        (write-char #\? out)

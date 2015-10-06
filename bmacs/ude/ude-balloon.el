@@ -3,9 +3,9 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  6 16:00:36 1998                          */
-;*    Last change :  Wed Jan 21 22:45:54 2004 (serrano)                */
+;*    Last change :  Sat Oct  3 09:51:38 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
-;*    My self brewed balloon implementation. This implementation is    */
+;*    My own brewed balloon implementation. This implementation is     */
 ;*    much less ambition than the official balloon but it is less      */
 ;*    instrusive because much less resource consuming...               */
 ;*=====================================================================*/
