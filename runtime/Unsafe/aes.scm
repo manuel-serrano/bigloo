@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Chris Veness                                      */
 ;*    Creation    :  Thu Jun  5 08:00:03 2008                          */
-;*    Last change :  Tue Jun 17 08:15:23 2014 (serrano)                */
-;*    Copyright   :  2005-14 Chris Veness                              */
+;*    Last change :  Wed Oct  7 11:48:25 2015 (serrano)                */
+;*    Copyright   :  2005-15 Chris Veness                              */
 ;*    -------------------------------------------------------------    */
 ;*    Advanced Encryption Standard                                     */
 ;*    -------------------------------------------------------------    */
@@ -220,6 +220,15 @@
 (define (noncesize::int) 8)
 
 ;*---------------------------------------------------------------------*/
+;*    /ceiling ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (/ceiling::long a b)
+   (let ((r (/ a b)))
+      (if (fixnum? r)
+	  r
+	  (flonum->fixnum (ceiling r)))))
+
+;*---------------------------------------------------------------------*/
 ;*    %aes-ctr-encrypt ...                                             */
 ;*    -------------------------------------------------------------    */
 ;*    The bit keys (nbits) must either be 128, 192, or 256.            */
@@ -244,7 +253,7 @@
 	  ;; initialise counter block (NIST SP800-38A B.2):
 	  ;; millisecond time-stamp for nonce in 1st 8 bytes,
 	  ;; block counter in 2nd 8 bytes
-	  (blockcount::long (inexact->exact (ceiling (/ len (blocksize)))))
+	  (blockcount::long (/ceiling len (blocksize)))
 	  (counterblock::u8vector (make-u8vector (blocksize)))
 	  (nonce::elong (current-seconds))
 
@@ -312,7 +321,7 @@
 	  (key::u8vector (aes-password->key password nbits state))
 	  (keyschedule::vector (aes-key-expansion key))
 	  (len::int (-fx (string-length ciphertext) (noncesize)))
-	  (blockcount (inexact->exact (ceiling (/ len (blocksize)))))
+	  (blockcount (/ceiling len (blocksize)))
 	  (counterblock::u8vector (make-u8vector (blocksize)))
 	  (plaintext::bstring (make-string len)))
       

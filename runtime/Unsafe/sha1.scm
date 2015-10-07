@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Tue Jun 17 17:28:44 2014 (serrano)                */
-;*    Copyright   :  2008-14 Manuel Serrano                            */
+;*    Last change :  Wed Oct  7 11:51:14 2015 (serrano)                */
+;*    Copyright   :  2008-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-1 Bigloo implementation                                      */
 ;*    -------------------------------------------------------------    */
@@ -239,14 +239,23 @@
 	 (u160->string h0 h1 h2 h3 h4))))
 
 ;*---------------------------------------------------------------------*/
+;*    /ceiling ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (/ceiling::long a b)
+   (let ((r (/ a b)))
+      (if (fixnum? r)
+	  r
+	  (flonum->fixnum (ceiling r)))))
+
+;*---------------------------------------------------------------------*/
 ;*    sha1sum-string ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (sha1sum-string str::bstring)
    
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let* ((len::long (string-length str))
-	  (l::long (+fx (inexact->exact (ceiling (/ (+fx len 1) 4))) 2))
-	  (N::long (inexact->exact (ceiling (/ l 16))))
+	  (l::long (+fx (/ceiling (+fx len 1) 4) 2))
+	  (N::long (/ceiling l 16))
 	  (M::vector (make-vector N)))
       
       (for (i 0 N)
@@ -270,8 +279,8 @@
    
    ;; convert str into 512-bit/16-integer blocks arrays of integers
    (let* ((len::long (mmap-length str))
-	  (l::long (+fx (inexact->exact (ceiling (/ (+fx len 1) 4))) 2))
-	  (N::long (inexact->exact (ceiling (/ l 16))))
+	  (l::long (+fx (/ceiling (+fx len 1) 4) 2))
+	  (N::long (/ceiling l 16))
 	  (M::vector (make-vector N)))
       
       (for (i 0 N)
@@ -315,8 +324,8 @@
 		  (u32vector-set! vec j v)))
 	    (if (<fx l 64)
 		;; we are done
-		(let* ((fl::long (+fx (inexact->exact (ceiling (/ (+fx nlen 1) 4))) 2))
-		       (N::long (inexact->exact (ceiling (/ fl 16))))
+		(let* ((fl::long (+fx (/ceiling (+fx nlen 1) 4) 2))
+		       (N::long (/ceiling fl 16))
 		       (M (list->vector
 			     (reverse!
 				(if (>fx N (+fx 1 nL))

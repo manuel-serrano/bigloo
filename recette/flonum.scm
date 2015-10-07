@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 11:59:37 1992                          */
-;*    Last change :  Sun Sep 29 14:38:25 2013 (serrano)                */
+;*    Last change :  Wed Oct  7 12:10:53 2015 (serrano)                */
 ;*                                                                     */
 ;*    On test un peu les flotants (il le faut bien).                   */
 ;*---------------------------------------------------------------------*/
@@ -29,6 +29,12 @@
 ;*---------------------------------------------------------------------*/
 (define (sqrt-test x::double)
    (sqrt x))
+
+;*---------------------------------------------------------------------*/
+;*    check-inexact? ...                                               */
+;*---------------------------------------------------------------------*/
+(define (check-inexact? z)
+   (=fl z (exact->inexact (inexact->exact z))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-flonum ...                                                  */
@@ -59,7 +65,13 @@
 	 -1e2)
    (test "flonum.13" (let ((p (open-input-string "-1e-2")))
 			(read p))
-	 -1e-2)
+      -1e-2)
+   (test "flonum.14" (check-inexact? (-fl (fixnum->flonum $minvalfx) 1.0)) #t)
+   (test "flonum.15" (check-inexact? (fixnum->flonum $minvalfx)) #t)
+   (test "flonum.16" (check-inexact? (+fl (fixnum->flonum $maxvalfx) 1.0)) #t)
+   (test "flonum.17" (check-inexact? (fixnum->flonum $maxvalfx)) #t)
+   (test "flonum.18" (check-inexact? 5.0) #t)
+   (test "flonum.18" (check-inexact? -5.0) #t)
    (test ">=fl" (if (>=fl 0.0 3.0) 1 2) 2)
    (test "cos.1" (sin 0) 0.0)
    (test "cos.2" (acos (cos 2.0)) 2.0)

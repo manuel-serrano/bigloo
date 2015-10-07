@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Sun Jun 15 12:50:48 2014 (serrano)                */
+;*    Last change :  Wed Oct  7 12:10:40 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -159,8 +159,8 @@
 	    (atan::double x . y) 
 	    (sqrt::double x) 
 	    (expt x y)
-	    (inline exact->inexact z)
-	    (inline inexact->exact z)
+	    (exact->inexact z)
+	    (inexact->exact z)
 	    (number->string::bstring x #!optional (radix 10))
 	    (string->number ::bstring #!optional (radix 10)))
 
@@ -1213,7 +1213,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    exact->inexact ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (exact->inexact z)
+(define (exact->inexact z)
    (cond
       ((fixnum? z)
        ($fixnum->flonum z))
@@ -1229,9 +1229,22 @@
        z)))
 
 ;*---------------------------------------------------------------------*/
+;*    max int values ...                                               */
+;*---------------------------------------------------------------------*/
+(define *maxintfl* (fixnum->flonum $maxvalfx))
+(define *minintfl* (fixnum->flonum $minvalfx))
+
+;*---------------------------------------------------------------------*/
 ;*    inexact->exact ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-inline (inexact->exact z)
+(define (inexact->exact z)
+   (if (inexact? z)
+       (if (and (>=fl z *maxintfl*) (<=fl z *maxintfl*))
+	   ($flonum->fixnum z)
+	   ($flonum->bignum z))
+       z))
+
+(define (inexact->exact-old z)
    (if (inexact? z)
        ($flonum->fixnum z)
        z))
