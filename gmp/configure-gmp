@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Thu Dec  3 17:36:11 2009 (serrano)                */
-#*    Copyright   :  2009 Manuel Serrano                               */
+#*    Last change :  Tue Oct  6 23:05:28 2015 (serrano)                */
+#*    Copyright   :  2009-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
@@ -13,6 +13,6 @@
 (cd $gmpversion && \
  export CC=$cc && \
  ./configure $gmpconfigureopt 2>&1 >> ../../configure.log && \
- cp gmp.h $bootdir/lib/$release || \
+ cp gmp.h $bootdir/lib/bigloo/$release || \
  (echo "configure gmp fail, see configure.log file." && exit 1)) || exit 1
 
