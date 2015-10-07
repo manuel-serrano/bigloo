@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Sep 16 07:10:58 2013 (serrano)                */
+#*    Last change :  Wed Oct  7 08:41:59 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,7 +53,7 @@ else
 EXTRALIBS	= $(GSTREAMERLIBS)
 endif
 
-GCCLOSELIB	= -l$(GCLIB)-$(RELEASE)
+#GCCLOSELIB	= -l$(GCLIB)-$(RELEASE)
 EXTRALIBS_S	= -lbigloopthread_s-$(RELEASE) -lbigloomultimedia_s-$(RELEASE)
 EXTRALIBS_U	= -lbigloopthread_u-$(RELEASE) -lbigloomultimedia_u-$(RELEASE)
 
