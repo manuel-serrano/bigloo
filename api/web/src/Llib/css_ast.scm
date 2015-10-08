@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 29 10:04:44 2009                          */
-;*    Last change :  Fri Oct  5 07:54:54 2012 (serrano)                */
-;*    Copyright   :  2009-12 Manuel Serrano                            */
+;*    Last change :  Wed Oct  7 15:30:46 2015 (serrano)                */
+;*    Copyright   :  2009-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The CSS ast class hierarchy                                      */
 ;*=====================================================================*/
@@ -169,8 +169,7 @@
 	 (css-write* comment* p))
       (when (pair? import*)
 	 (css-write* import* p))
-      (css-write* rule* p)
-      (newline p)))
+      (css-write* rule* p)))
       
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-charset ...                                      */
@@ -299,7 +298,7 @@
 	    (loop (cdr selector+))))
       (display " {\n" p)
       (css-write* declaration* p)
-      (display "}\n\n" p)))
+      (display "}\n" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    css-write ::css-keyframe ...                                     */

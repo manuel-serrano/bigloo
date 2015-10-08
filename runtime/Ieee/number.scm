@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Oct  7 12:10:40 2015 (serrano)                */
+;*    Last change :  Thu Oct  8 13:41:19 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1239,7 +1239,7 @@
 ;*---------------------------------------------------------------------*/
 (define (inexact->exact z)
    (if (inexact? z)
-       (if (and (>=fl z *maxintfl*) (<=fl z *maxintfl*))
+       (if (and (>=fl z *minintfl*) (<=fl z *maxintfl*))
 	   ($flonum->fixnum z)
 	   ($flonum->bignum z))
        z))
