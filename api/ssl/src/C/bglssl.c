@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Wed Sep  2 21:17:02 2015 (serrano)                */
+/*    Last change :  Mon Oct 12 11:36:01 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -46,6 +46,16 @@
 #include <bigloo.h>
 #include "bglssl.h"
 #include "ssl.h"
+
+#if( !defined( OPENSSL_NPN_UNSUPPORTED ) )
+#  define OPENSSL_NPN_UNSUPPORTED 0
+#endif
+#if( !defined( OPENSSL_NPN_NEGOTIATED ) )
+#  define OPENSSL_NPN_NEGOTIATED 1
+#endif
+#if( !defined( OPENSSL_NPN_NO_OVERLAP ) )
+#  define OPENSSL_NPN_NO_OVERLAP  2
+#endif
 
 #define socklen_t void
 
