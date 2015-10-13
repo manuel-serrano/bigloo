@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Oct 13 15:38:02 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 16:01:06 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -180,7 +180,7 @@ boot-c: checkgmake
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
         fi
-	if [ -x $(BGLBUILDBIGLOO) ]; then \
+	if [ -x $(BGLBUILBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \
 	  $(MAKE) -C runtime heap && \
 	  $(MAKE) -C runtime boot && \
