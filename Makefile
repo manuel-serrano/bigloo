@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Oct 13 16:01:06 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 16:17:26 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -212,7 +212,7 @@ boot-jvm: checkgmake
 #*          $(MAKE) -C runtime boot-jvm);                              */
 
 boot-bde:
-	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)")
+	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)"
 #* 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \            */
 #*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
 #*          export LD_LIBRARY_PATH; \                                  */
@@ -222,7 +222,7 @@ boot-bde:
 #*          $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)") */
 
 boot-api:
-	$(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)")
+	$(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)"
 #* 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \            */
 #*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
 #*          export LD_LIBRARY_PATH; \                                  */
@@ -232,7 +232,7 @@ boot-api:
 #*          $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)") */
 
 boot-bglpkg:
-	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)");
+	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)"
 #* 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \            */
 #*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
 #*          export LD_LIBRARY_PATH; \                                  */
