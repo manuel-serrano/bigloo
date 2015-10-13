@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Nov 16 12:19:39 2011 (serrano)                */
-#*    Copyright   :  1998-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Oct 13 16:42:31 2015 (serrano)                */
+#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -320,7 +320,7 @@ jas/classfile.sch: ../comptime/Jas/classfile.sch
 #*    Jas afile                                                        */
 #*---------------------------------------------------------------------*/
 $(JAS_AFILE): $(BGLBUILDBINDIR)/$(AFILE_EXE) $(JAS_LINKSRC)
-	(cd jas; $(BGLBUILDBINDIR)/$(AFILE_EXE) *.scm -o ../$(JAS_AFILE))
+	(cd jas; $(BGLBUILDBINDIR)/afile.sh *.scm -o ../$(JAS_AFILE))
 
 #*---------------------------------------------------------------------*/
 #*    bmake dependencies                                               */

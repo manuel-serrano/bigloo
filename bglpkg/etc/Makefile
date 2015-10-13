@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan  2 08:48:29 2007                          */
-#*    Last change :  Mon Jul 28 15:40:14 2014 (serrano)                */
-#*    Copyright   :  2007-14 Manuel Serrano                            */
+#*    Last change :  Tue Oct 13 16:41:32 2015 (serrano)                */
+#*    Copyright   :  2007-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile for building Bigloo ScmPkg packages.        */
 #*    -------------------------------------------------------------    */
@@ -99,7 +99,7 @@ uninstall-init:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
 
 $(AFILE):
-	$(BGLAFILE) $(SOURCES) -o $@
+	$(BGLBUILDBINDIR)/afile.sh $(SOURCES) -o $@
 
 #*---------------------------------------------------------------------*/
 #*    Native backend targets and rules                                 */

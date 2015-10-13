@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Tue Oct 13 09:14:07 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 17:41:10 2015 (serrano)                */
 #*    Copyright   :  1997-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -18,7 +18,7 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-POPULATION	= Makefile bigloo.sh.in \
+POPULATION	= Makefile bigloo.sh.in bglafile.sh.in \
                   bigloo_config.h.in bigloo_gc.h.in \
                   configure.java.in \
                   bigloo_config.sch.in \
