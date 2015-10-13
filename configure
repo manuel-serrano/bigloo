@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Oct 13 16:39:52 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 17:54:16 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2917,7 +2917,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh afile.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -3094,6 +3094,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
 	      -e "s|@BIGLOO@|$bigloo|" \
 	      -e "s|@AFILE@|$buildbindir/$afile|" \
+	      -e "s|@JFILE@|$buildbindir/$jfile|" \
+	      -e "s|@BTAGS@|$buildbindir/$btags|" \
         > $p
     fi
   done
@@ -3102,10 +3104,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_h` $bigloo_h
 
   # bigloo.sh
-  mv bigloo.sh $buildbindir/bigloo.sh
-  mv afile.sh $buildbindir/afile.sh
-  chmod u+rx $buildbindir/bigloo.sh
-  chmod u+rx $buildbindir/afile.sh
+  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh; do
+    mv $p $buildbindir/$p
+    chmod u+rx $buildbindir/$p
+  done
 fi
 
 #*---------------------------------------------------------------------*/
@@ -3292,9 +3294,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The tools
-  echo "AFILE_EXE=$afile" >> $makefile_cfg
-  echo "JFILE_EXE=$jfile" >> $makefile_cfg
-  echo "BTAGS_EXE=$btags" >> $makefile_cfg
+  echo "AFILE_EXE=$afile.sh" >> $makefile_cfg
+  echo "JFILE_EXE=$jfile.sh" >> $makefile_cfg
+  echo "BTAGS_EXE=$btags.sh" >> $makefile_cfg
   echo "BDEPEND_EXE=$bdepend" >> $makefile_cfg
   echo "BMAKE_EXE=$bmake" >> $makefile_cfg
   echo "BPP_EXE=$bpp" >> $makefile_cfg
