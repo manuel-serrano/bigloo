@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Apr 24 07:24:27 2009 (serrano)                */
-#*    Copyright   :  1997-2009 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Oct 13 09:13:55 2015 (serrano)                */
+#*    Copyright   :  1997-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global etc Makefile (mainly for backuping).                  */
 #*=====================================================================*/
@@ -17,7 +17,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-POPULATION	= Makefile bigloo.el emacs.icon gram.scm
+POPULATION = Makefile bigloo.el emacs.icon gram.scm
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

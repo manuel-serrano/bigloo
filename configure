@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Oct  6 11:04:02 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 13:33:18 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -376,7 +376,6 @@ bigloo_static_h=
 bigloo_config_h=
 bigloo_config_jvm=
 bigloo_config_sch=
-bigloo_config_el=
 summary=yes
 java_configured=no
 os=posix
@@ -1093,6 +1092,23 @@ while : ; do
   esac
   shift
 done
+
+# buildbindir
+if [ "$buildbindir " = " " ]; then
+  buildbindir=$bootdir/bin
+  if [ "$buildlibdir " = " " ]; then
+    buildlibdir=$bootdir/lib/bigloo/$release
+  fi
+else
+  if [ "$buildlibdir " = " " ]; then
+    buildlibdir=`$buildbindir/bigloo -eval '(begin (print *default-lib-dir*) (exit 0))'`
+  fi
+fi
+
+# bigloo
+if [ "$bigloo " = " " ]; then
+  bigloo=$buildbindir/bigloo
+fi
 
 # The bigloo.h file
 if [ "$bigloo_h " = " " ]; then
@@ -2900,8 +2916,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     ostmp=/tmp
   fi
 
-  # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch; do
+  # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bigloo.sh
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh afile.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -3073,12 +3089,23 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HEAP_DEBUG_COPT@||" \
               -e "s|@BGL_HAVE_MIXER@|$havemixer|" \
               -e "s|@BGL_REGEXP_FAMILY@|$regexp|" \
+	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
+	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
+	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
+	      -e "s|@BIGLOO@|$bigloo|" \
+	      -e "s|@AFILE@|$buildbindir/$afile|" \
         > $p
     fi
   done
 
   # bigloo_h
   cp runtime/Include/`basename $bigloo_h` $bigloo_h
+
+  # bigloo.sh
+  mv bigloo.sh $buildbindir/bigloo.sh
+  mv afile.sh $buildbindir/afile.sh
+  chmod u+rx $buildbindir/bigloo.sh
+  chmod u+rx $buildbindir/afile.sh
 fi
 
 #*---------------------------------------------------------------------*/
@@ -3304,20 +3331,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The Buildbin directory
-  if [ "$buildbindir " = " " ]; then
-      echo "BGLBUILDBINDIR=$bootdir/bin" >> $makefile_cfg
-      echo "BGLBUILDLIBDIR=$bootdir/lib/bigloo/$release" >> $makefile_cfg
-  else
-      buildlibdir=`$buildbindir/bigloo -eval '(begin (print *default-lib-dir*) (exit 0))'`
-      echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
-      echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_cfg
-  fi
+  echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
+  echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_cfg
+
   # build bigloo
-  if [ "$bigloo " = " " ]; then
-    echo "BGLBUILDBIGLOO=$""(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
-  else
-    echo "BGLBUILDBIGLOO=$bigloo" >> $makefile_cfg
-  fi
+  echo 'BGLBUILDBIGLOO=$(BGLBUILDBINDIR)/bigloo.sh' >> $makefile_cfg
   echo >> $makefile_cfg
 
   # Directories

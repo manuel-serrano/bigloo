@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sat Jun  6 11:08:56 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 13:43:08 2015 (serrano)                */
 #*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -384,27 +384,40 @@ includes: $(BOOTLIBDIR)/bigloo.h \
 
 heap: heap-c
 heap-c: $(AFILE) includes
-	@ $(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
-	BIGLOOLIB=$(BOOTLIBDIR); export BIGLOOLIB; \
-	LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-        export LD_LIBRARY_PATH; \
-	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-        export DYLD_LIBRARY_PATH; \
-        $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
+	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 
+#* heap-c: $(AFILE) includes                                           */
+#* 	@ $(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)                         */
+#* 	BIGLOOLIB=$(BOOTLIBDIR); export BIGLOOLIB; \                   */
+#* 	LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \             */
+#*         export LD_LIBRARY_PATH; \                                   */
+#* 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \         */
+#*         export DYLD_LIBRARY_PATH; \                                 */
+#*         $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE) */
+#* 	@ echo "Heap Done..."                                          */
+#* 	@ echo "-------------------------------"                       */
+
 heap-jvm: $(AFILE) $(JFILE) includes
-	@ $(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
-	BIGLOOLIB=$(BOOTLIBDIR); export BIGLOOLIB; \
-	LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-        export LD_LIBRARY_PATH; \
-	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-        export DYLD_LIBRARY_PATH; \
-        $(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
+	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
+	$(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
+
+#* heap-jvm: $(AFILE) $(JFILE) includes                                */
+#* 	@ $(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)                       */
+#* 	BIGLOOLIB=$(BOOTLIBDIR); export BIGLOOLIB; \                   */
+#* 	LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \             */
+#*         export LD_LIBRARY_PATH; \                                   */
+#* 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \         */
+#*         export DYLD_LIBRARY_PATH; \                                 */
+#*         $(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \ */
+#*                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE) */
+#* 	@ echo "Heap Done..."                                          */
+#* 	@ echo "-------------------------------"                       */
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo C libraries compilation                                   */

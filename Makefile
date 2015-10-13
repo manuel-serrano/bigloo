@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sat Oct 25 08:36:10 2014 (serrano)                */
-#*    Copyright   :  1998-2014 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Oct 13 14:02:31 2015 (serrano)                */
+#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -163,12 +163,13 @@ checkconf:
 	fi
 
 boot: checkgmake
-	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
-         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-         $(MAKE) boot-c);
+	boot-c
+#* 	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \   */
+#*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
+#*          export LD_LIBRARY_PATH; \                                  */
+#*          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \ */
+#*          export DYLD_LIBRARY_PATH; \                                */
+#*          $(MAKE) boot-c);                                           */
 
 boot-c: 
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
@@ -203,39 +204,43 @@ boot-c:
 	@ echo "-------------------------------"
 
 boot-jvm:
-	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \
-         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-         $(MAKE) -C runtime boot-jvm);
+	$(MAKE) -C runtime boot-jvm);
+#* 	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \   */
+#*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
+#*          export LD_LIBRARY_PATH; \                                  */
+#*          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \ */
+#*          export DYLD_LIBRARY_PATH; \                                */
+#*          $(MAKE) -C runtime boot-jvm);                              */
 
 boot-bde:
-	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
-         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-         export PATH; \
-         $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)")
+	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)")
+#* 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \            */
+#*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
+#*          export LD_LIBRARY_PATH; \                                  */
+#*          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \ */
+#*          export DYLD_LIBRARY_PATH; \                                */
+#*          export PATH; \                                             */
+#*          $(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)") */
 
 boot-api:
-	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
-         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-         export PATH; \
-         $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)")
+	$(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)")
+#* 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \            */
+#*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
+#*          export LD_LIBRARY_PATH; \                                  */
+#*          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \ */
+#*          export DYLD_LIBRARY_PATH; \                                */
+#*          export PATH; \                                             */
+#*          $(MAKE) -C api boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)") */
 
 boot-bglpkg:
-	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \
-         LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-         export PATH; \
-         $(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)");
+	$(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)");
+#* 	(PATH=$(BGLBUILDBINDIR):$(BGLBUILDLIBDIR):$$PATH; \            */
+#*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
+#*          export LD_LIBRARY_PATH; \                                  */
+#*          DYLD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$DYLD_LIBRARY_PATH; \ */
+#*          export DYLD_LIBRARY_PATH; \                                */
+#*          export PATH; \                                             */
+#*          $(MAKE) -C bglpkg BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR)"); */
 
 #*---------------------------------------------------------------------*/
 #*    cross-rts ...                                                    */
@@ -251,17 +256,18 @@ cross-rts: checkgmake
            (PATH=$(BOOTBINDIR):$$PATH; export PATH; \
             $(MAKE) -C runtime boot-jvm); \
         fi
-	(BIGLOOLIB=$(BOOTLIBDIR); \
-           export BIGLOOLIB; \
-           LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-           export LD_LIBRARY_PATH; \
-           DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-           export DYLD_LIBRARY_PATH; \
-           PATH=$(BOOTBINDIR):$$PATH; \
-           export PATH; \
-           $(MAKE) -C api boot)
+	$(MAKE) -C api boot)
 	@ echo "CROSS-RTS done..."
 	@ echo "-------------------------------"
+#* 	(BIGLOOLIB=$(BOOTLIBDIR); \                                    */
+#*            export BIGLOOLIB; \                                      */
+#*            LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \       */
+#*            export LD_LIBRARY_PATH; \                                */
+#*            DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \   */
+#*            export DYLD_LIBRARY_PATH; \                              */
+#*            PATH=$(BOOTBINDIR):$$PATH; \                             */
+#*            export PATH; \                                           */
+#*            $(MAKE) -C api boot)                                     */
 
 #*---------------------------------------------------------------------*/
 #*    manuals                                                          */
@@ -324,26 +330,40 @@ dobigboot:
 #*    Compile bee on an bootstrapped plateform                         */
 #*---------------------------------------------------------------------*/
 compile-bee0: 
-	@ (LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH && \
-           export LD_LIBRARY_PATH && \
-	   DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH && \
-           export DYLD_LIBRARY_PATH && \
-           (cd bdl && $(MAKE)) && \
-	   (cd cigloo && $(MAKE)) && \
-	   if [ "$(JVMBACKEND) " = "yes " ]; then \
-              (cd jigloo && $(MAKE)) \
-           fi)
-	@ if [ "$(EMACSDIR) " != " " ]; then \
-            (cd bmacs && $(MAKE) compile-bee) \
-          fi
+	$(MAKE) -C bdl
+	$(MAKE) -C cigloo
+	if [ "$(JVMBACKEND) " = "yes " ]; then \
+            $(MAKE) -C higloo) \
+        fi
+	if [ "$(EMACSDIR) " != " " ]; then \
+            $(MAKE) -C bmacs compile-bee \
+        fi
+
+#* compile-bee0:                                                       */
+#* 	@ (LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH && \        */
+#*            export LD_LIBRARY_PATH && \                              */
+#* 	   DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH && \    */
+#*            export DYLD_LIBRARY_PATH && \                            */
+#*            (cd bdl && $(MAKE)) && \                                 */
+#* 	   (cd cigloo && $(MAKE)) && \                                 */
+#* 	   if [ "$(JVMBACKEND) " = "yes " ]; then \                    */
+#*               (cd jigloo && $(MAKE)) \                              */
+#*            fi)                                                      */
+#* 	@ if [ "$(EMACSDIR) " != " " ]; then \                         */
+#*             (cd bmacs && $(MAKE) compile-bee) \                     */
+#*           fi                                                        */
 
 compile-bee1:
-	@ (LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH && \
-           export LD_LIBRARY_PATH && \
-	   DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH && \
-           export DYLD_LIBRARY_PATH && \
-           (cd bdb && $(MAKE)))
-	@ (cd runtime && $(MAKE) compile-bee)
+	$(MAKE) -C bdb
+	$(MAKE) -C runtime compile-bee
+
+#* compile-bee1:                                                       */
+#* 	@ (LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH && \        */
+#*            export LD_LIBRARY_PATH && \                              */
+#* 	   DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH && \    */
+#*            export DYLD_LIBRARY_PATH && \                            */
+#*            (cd bdb && $(MAKE)))                                     */
+#* 	@ (cd runtime && $(MAKE) compile-bee)                          */
 
 compile-bee: compile-bee0
 	@ if [ "$(INSTALLBEE)" = "full" ]; then \
@@ -658,16 +678,7 @@ test:
          fi
 
 c-test: 
-	PATH=`pwd`/bin:$$PWD/bin:$(BOOTLIBDIR):$$PATH; \
-	BIGLOOLIB=$(BOOTLIBDIR); \
-        LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-        DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-        BIGLOOCLASSPATH=$(BOOTLIBDIR); \
-        export PATH; \
-        export BIGLOOLIB; \
-        export LD_LIBRARY_PATH; \
-        export DYLD_LIBRARY_PATH; \
-        (cd recette && \
+	(cd recette && \
          $(MAKE) recette-static && \
          ./recette-static $(RECETTEFLAGS)); \
         for p in $(APIS); do \
@@ -680,18 +691,31 @@ c-test:
           fi; \
         done
 
+#* c-test:                                                             */
+#* 	PATH=`pwd`/bin:$$PWD/bin:$(BOOTLIBDIR):$$PATH; \               */
+#* 	BIGLOOLIB=$(BOOTLIBDIR); \                                     */
+#*         LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \          */
+#*         DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \      */
+#*         BIGLOOCLASSPATH=$(BOOTLIBDIR); \                            */
+#*         export PATH; \                                              */
+#*         export BIGLOOLIB; \                                         */
+#*         export LD_LIBRARY_PATH; \                                   */
+#*         export DYLD_LIBRARY_PATH; \                                 */
+#*         (cd recette && \                                            */
+#*          $(MAKE) recette-static && \                                */
+#*          ./recette-static $(RECETTEFLAGS)); \                       */
+#*         for p in $(APIS); do \                                      */
+#*           if [ -d api/$$p/recette ]; then \                         */
+#*             echo "*** $$p ********** "; \                           */
+#*             (cd api/$$p/recette && \                                */
+#*              $(MAKE) c && \                                         */
+#* 	     test -x ./recette && \                                    */
+#*              ./recette $(RECETTEFLAGS)) || exit 1; \                */
+#*           fi; \                                                     */
+#*         done                                                        */
+
 jvm-test:
-	PATH=`pwd`/bin:$$PWD/bin:$$PATH; \
-	BIGLOOLIB=$(BOOTLIBDIR); \
-        LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-        DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-        BIGLOOCLASSPATH=$(BOOTLIBDIR); \
-        export PATH; \
-        export BIGLOOLIB; \
-        export LD_LIBRARY_PATH; \
-        export DYLD_LIBRARY_PATH; \
-        export BIGLOOCLASSPATH;\
-        (cd recette && \
+	(cd recette && \
          $(MAKE) EFLAGS="-jvm-bigloo-classpath $(BOOTLIBDIR)" jvm && \
          ./recette-jvm$(SCRIPTEXTENSION) $(RECETTEFLAGS)); \
          for p in $(APIS); do \
@@ -703,6 +727,30 @@ jvm-test:
               ./recette-jvm$(SCRIPTEXTENSION) $(RECETTEFLAGS)) \
            fi; \
         done
+
+#* jvm-test:                                                           */
+#* 	PATH=`pwd`/bin:$$PWD/bin:$$PATH; \                             */
+#* 	BIGLOOLIB=$(BOOTLIBDIR); \                                     */
+#*         LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \          */
+#*         DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \      */
+#*         BIGLOOCLASSPATH=$(BOOTLIBDIR); \                            */
+#*         export PATH; \                                              */
+#*         export BIGLOOLIB; \                                         */
+#*         export LD_LIBRARY_PATH; \                                   */
+#*         export DYLD_LIBRARY_PATH; \                                 */
+#*         export BIGLOOCLASSPATH;\                                    */
+#*         (cd recette && \                                            */
+#*          $(MAKE) EFLAGS="-jvm-bigloo-classpath $(BOOTLIBDIR)" jvm && \ */
+#*          ./recette-jvm$(SCRIPTEXTENSION) $(RECETTEFLAGS)); \        */
+#*          for p in $(APIS); do \                                     */
+#*            if [ -d api/$$p/recette ]; then \                        */
+#*              echo "*** $$p ********** "; \                          */
+#*              (cd api/$$p/recette && \                               */
+#*               $(MAKE) EFLAGS="-jvm-bigloo-classpath $(BOOTLIBDIR)" jvm && \ */
+#* 	      test -x ./recette-jvm$(SCRIPTEXTENSION) && \             */
+#*               ./recette-jvm$(SCRIPTEXTENSION) $(RECETTEFLAGS)) \    */
+#*            fi; \                                                    */
+#*         done                                                        */
 
 #*---------------------------------------------------------------------*/
 #*    install & uninstall                                              */
@@ -717,16 +765,25 @@ install-progs: install-devel install-libs install-apis
 
 install-devel: install-dirs
 	$(MAKE) -C comptime install
-	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \
-         DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \
-         export LD_LIBRARY_PATH; \
-         export DYLD_LIBRARY_PATH; \
-	 $(MAKE) -C bde install)
+	$(MAKE) -C bde install
 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \
 	  $(MAKE) -C bglpkg install; \
 	fi
 	$(MAKE) -C autoconf install
 	$(MAKE) -C api install-devel
+
+#* install-devel: install-dirs                                         */
+#* 	$(MAKE) -C comptime install                                    */
+#* 	(LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \            */
+#*          DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \     */
+#*          export LD_LIBRARY_PATH; \                                  */
+#*          export DYLD_LIBRARY_PATH; \                                */
+#* 	 $(MAKE) -C bde install)                                       */
+#* 	if [ "$(ENABLE_BGLPKG)" = "yes" ]; then \                      */
+#* 	  $(MAKE) -C bglpkg install; \                                 */
+#* 	fi                                                             */
+#* 	$(MAKE) -C autoconf install                                    */
+#* 	$(MAKE) -C api install-devel                                   */
 
 install-libs: install-dirs
 	$(MAKE) -C runtime install
