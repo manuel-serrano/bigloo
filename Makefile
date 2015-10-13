@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Oct 13 14:02:31 2015 (serrano)                */
+#*    Last change :  Tue Oct 13 15:38:02 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -157,13 +157,12 @@ NO_DIST_FILES	= .bigloo.prcs_aux \
 build: checkconf boot
 
 checkconf:
-	if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \
+	@ if ! [ -f "lib/bigloo/$(RELEASE)/bigloo.h" ]; then \
 	  echo "you must configure before building!"; \
 	  exit 1; \
 	fi
 
-boot: checkgmake
-	boot-c
+boot: boot-c
 #* 	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \   */
 #*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
 #*          export LD_LIBRARY_PATH; \                                  */
@@ -171,7 +170,7 @@ boot: checkgmake
 #*          export DYLD_LIBRARY_PATH; \                                */
 #*          $(MAKE) boot-c);                                           */
 
-boot-c: 
+boot-c: checkgmake
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp boot; \
         fi
@@ -203,7 +202,7 @@ boot-c:
 	@ echo "Boot done..."
 	@ echo "-------------------------------"
 
-boot-jvm:
+boot-jvm: checkgmake
 	$(MAKE) -C runtime boot-jvm);
 #* 	(PATH=$(BOOTBINDIR):$(BGLBUILDLIBDIR):$$PATH; export PATH; \   */
 #*          LD_LIBRARY_PATH=$(BGLBUILDLIBDIR):$$LD_LIBRARY_PATH; \     */
