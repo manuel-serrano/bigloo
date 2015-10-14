@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Sep 20 07:04:43 2014 (serrano)                */
-;*    Copyright   :  2006-14 Manuel Serrano                            */
+;*    Last change :  Wed Oct 14 11:04:28 2015 (serrano)                */
+;*    Copyright   :  2006-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -173,12 +173,13 @@
 	     (mod (%evmodule make-%evmodule id path env '() mactable '())))
 	 (if (not (hashtable? *modules-table*))
 	     (begin
-		(set! *modules-table* (make-hashtable 100))
+		(set! *modules-table* (make-hashtable 256))
 		(hashtable-put! *modules-table* id mod))
 	     (let ((old (hashtable-get *modules-table* id)))
 		(if old
 		    (begin
-		       (hashtable-update! *modules-table* id (lambda (v) mod) mod)
+		       (hashtable-update! *modules-table* id
+			  (lambda (v) mod) mod)
 		       (unless (string=? (%evmodule-path old) path)
 			  (let ((msg (string-append "Module redefinition `"
 					(symbol->string id)
@@ -495,6 +496,7 @@
 
    (let ((load (or (user-load-module) evmodule-loadq)))
       (for-each (lambda (p) (load p mod)) paths))
+   
    (let ((mod (eval-find-module ident)))
       (if (evmodule? mod)
 	  (begin
@@ -578,6 +580,14 @@
 	      (load-module))))))
 
 ;*---------------------------------------------------------------------*/
+;*    location-dir ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (location-dir loc)
+   (match-case loc
+      ((at ?fname . ?-) (dirname fname))
+      (else #f)))
+
+;*---------------------------------------------------------------------*/
 ;*    evmodule-import ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-import mod clause loc)
@@ -613,31 +623,29 @@
 
    (define (import-clause s)
       (let ((loc (or (get-source-location s) loc))
-	    (abase (module-abase)))
-	 (unwind-protect
-	    (cond
-	       ((symbol? s)
-		(let ((path ((bigloo-module-resolver) s '() abase)))
-		   (evmodule-import! mod s path '() (module-abase) loc)))
-	       ((or (not (pair? s))
-		    (not (list? s))
-		    (not (or (symbol? (car s)) (alias-pair? (car s)))))
-		(import-error s))
-	       (else
-		(let ((files (find-module-files s))
-		      (imod (find symbol? s))
-		      (imports (find-module-imports s))
-		      (aliases (find-module-aliases s))
-		      (dir (pwd)))
-		   (let ((path ((bigloo-module-resolver) imod files dir)))
-		      (for-each (lambda (ap)
-				   (bind-alias! mod imod
-				      (car ap)
-				      (cadr ap)
-				      (or (get-source-location ap) loc)))
-			 aliases)
-		      (evmodule-import! mod imod path imports (module-abase) loc)))))
-	    (module-abase-set! abase))))
+	    (abase (location-dir loc)))
+	 (cond
+	    ((symbol? s)
+	     (let ((path ((bigloo-module-resolver) s '() abase)))
+		(evmodule-import! mod s path '() abase loc)))
+	    ((or (not (pair? s))
+		 (not (list? s))
+		 (not (or (symbol? (car s)) (alias-pair? (car s)))))
+	     (import-error s))
+	    (else
+	     (let ((files (find-module-files s))
+		   (imod (find symbol? s))
+		   (imports (find-module-imports s))
+		   (aliases (find-module-aliases s))
+		   (dir (or (location-dir loc) (pwd))))
+		(let ((path ((bigloo-module-resolver) imod files dir)))
+		   (for-each (lambda (ap)
+				(bind-alias! mod imod
+				   (car ap)
+				   (cadr ap)
+				   (or (get-source-location ap) loc)))
+		      aliases)
+		   (evmodule-import! mod imod path imports abase loc)))))))
    
    (if (not (list? clause))
        (import-error clause)
@@ -691,22 +699,23 @@
 ;*    evmodule-from ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (evmodule-from mod clause loc)
+   
    (define (from-error arg)
       (evcompile-error loc "eval" "Illegal `from' clause" arg))
+   
    (define (from-clause s)
       (let ((loc (or (get-source-location s) loc))
-	    (abase (module-abase)))
-	 (unwind-protect
-	    (cond
-	       ((symbol? s)
-		(let ((path ((bigloo-module-resolver) s '() abase)))
-		   (evmodule-from! mod s path '() loc)))
-	       ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
-		(from-error s))
-	       (else
-		(let ((path ((bigloo-module-resolver) (car s) (cdr s) (pwd))))
-		   (evmodule-from! mod (car s) path '() loc))))
-	    (module-abase-set! abase))))
+	    (abase (location-dir loc)))
+	 (cond
+	    ((symbol? s)
+	     (let ((path ((bigloo-module-resolver) s '() abase)))
+		(evmodule-from! mod s path '() loc)))
+	    ((or (not (pair? s)) (not (list? s)) (not (symbol? (car s))))
+	     (from-error s))
+	    (else
+	     (let ((path ((bigloo-module-resolver) (car s) (cdr s) (pwd))))
+		(evmodule-from! mod (car s) path '() loc))))))
+   
    (if (not (list? clause))
        (from-error clause)
        (for-each from-clause (cdr clause))))
@@ -869,6 +878,7 @@
 	      (evcompile-error loc "eval" "Illegal module clauses" clauses)
 	      (let* ((path (or (evcompile-loc-filename loc) "."))
 		     (mod (make-evmodule name path loc)))
+		 (module-load-access-file (dirname path))
 		 (when (procedure? hdl)
 		    (%evmodule-extension-set! mod (hdl exp)))
 		 (unwind-protect

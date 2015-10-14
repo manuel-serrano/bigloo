@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct 14 07:28:20 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 09:06:53 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -567,6 +567,9 @@ while : ; do
     --ld=*)
       ld="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --shell=*)
+      shell="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --mv=*)
       bgl_shell_mv="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -1010,6 +1013,7 @@ while : ; do
       echo "   --indent=file" >&2;
       echo "   --icc (configure for icc, Intel C compiler)"  >&2;
       echo "   --clang (configure for clang LLVM C compiler)"  >&2;
+      echo "   --shell=cmd [default $shell]" >&2;
       echo "   --mv=cmd [default $shell_mv]" >&2;
       echo "   --rm=dmd [default $shell_rm]" >&2;
       echo "" >&2;
@@ -3092,6 +3096,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
 	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
+	      -e "s|@SHELL@|$shell|" \
 	      -e "s|@BIGLOO@|$bigloo|" \
 	      -e "s|@AFILE@|$buildbindir/$afile|" \
 	      -e "s|@JFILE@|$buildbindir/$jfile|" \

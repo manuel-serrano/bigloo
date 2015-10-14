@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Fri Jun 21 08:10:17 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Oct 14 12:26:40 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
 ;*=====================================================================*/
@@ -162,8 +162,7 @@
 		  (import-vars-set! mi
 		     (cons (cons var #f) (import-vars mi))))))
 	  ;; register a new import
-	  (let ((loc (find-location/loc
-			src (find-location *module-clause*))))
+	  (let ((loc (find-location/loc src (find-location *module-clause*))))
 	     (register-import!
 		(instantiate::import
 		   (module module)
@@ -407,10 +406,12 @@
 ;*    read-import! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (read-import! import)
+   
    (define (err obj)
       (import-decl-set! import 'error)
       (user-error/location (import-loc import)
 	 'import "Cannot find module" obj '()))
+   
    (define (errfile module file)
       (import-decl-set! import 'error)
       (user-error/location
@@ -418,13 +419,14 @@
        'import
        (format "Cannot open source file for module \"~a\"" module)
        file))
+   
    (when (eq? (import-decl import) #unspecified)
       (let* ((module (import-module import))
 	     (abase (map dirname *access-files*))
 	     (fnames ((bigloo-module-resolver) module '() abase)))
 	 (verbose 2 "      [reading "
-		  (if (eq? (import-mode import) 'use) "used" "imported")
-		  " module " module "]" #\Newline)
+	    (if (eq? (import-mode import) 'use) "used" "imported")
+	    " module " module "]" #\Newline)
 	 (if (not (pair? fnames))
 	     (err module)
 	     (let ((fname (find-file/path (car fnames) *load-path*)))
@@ -446,7 +448,7 @@
 					(pro (append cm cim))
 					(code (get-include-consumed-code))
 					(check (module-checksum
-						mod *mco-include-path*)))
+						  mod *mco-include-path*)))
 				    (import-decl-set! import emdecl)
 				    (import-checksum-set! import check)
 				    (import-code-set! import code)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 26 05:19:47 2009                          */
-;*    Last change :  Fri Jun 21 09:27:49 2013 (serrano)                */
-;*    Copyright   :  2009-13 Manuel Serrano                            */
+;*    Last change :  Wed Oct 14 12:30:24 2015 (serrano)                */
+;*    Copyright   :  2009-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This part of the library implements the module resolution        */
 ;*    that is in charge of mapping module names to file names.         */
@@ -22,7 +22,8 @@
 	    __object
 	    __thread
 	    __bexit
-	    __reader)
+	    __reader
+	    __hash)
    
    (use     __type
 	    __tvector
@@ -30,6 +31,7 @@
 	    __bignum
 	    __bigloo
 	    __os
+	    __structure
 
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
@@ -60,7 +62,6 @@
 	    (bigloo-module-resolver::procedure)
 	    (bigloo-module-resolver-set! ::procedure)
 	    (module-add-access! ::symbol ::pair ::bstring)
-	    (module-read-access-file ::input-port)
 	    (module-load-access-file ::bstring)))
 
 ;*---------------------------------------------------------------------*/
@@ -202,27 +203,53 @@
 	   (read port)))
 
 ;*---------------------------------------------------------------------*/
+;*    *afiles-table* ...                                               */
+;*---------------------------------------------------------------------*/
+(define *afiles-table*
+   (make-hashtable 256))
+
+;*---------------------------------------------------------------------*/
 ;*    module-load-access-file ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (module-load-access-file name)
+(define (module-load-access-file path)
    
    (define (relative-path f abase)
       (cond
 	 ((not (string? f)) f)
 	 ((or (string=? f "") (char=? (string-ref f 0) (file-separator))) f)
 	 (else (make-file-name abase f))))
-
-   (synchronize modules-mutex
-      (call-with-input-file name
+   
+   (define (load-afile file dir abase)
+      (call-with-input-file file
 	 (lambda (port)
-	    (let ((abase (dirname name)))
-	       (for-each (lambda (access)
-			    (let ((info (if (string=? abase ".")
-					    (cdr access)
-					    (map! (lambda (f)
-						     (relative-path f abase))
-					       (cdr access)))))
-			       (module-add-access-inner! (car access) info abase)))
-		  (module-read-access-file port)))))))
+	    (hashtable-put! *afiles-table* path file)
+	    (for-each (lambda (access)
+			 (let ((info (if (string=? dir ".")
+					 (cdr access)
+					 (map! (lambda (f)
+						  (relative-path f dir))
+					    (cdr access)))))
+			    (module-add-access-inner!
+			       (car access) info abase)))
+	       (module-read-access-file port)))))
+   
+   (synchronize modules-mutex
+      (unless (hashtable-get *afiles-table* path)
+	 (cond
+	    ((directory? path)
+	     (let loop ((d path))
+		(let ((file (make-file-name d ".afile")))
+		   (if (file-exists? file)
+		       (load-afile file d path)
+		       (let ((parent (dirname d)))
+			  (unless (string=? parent d)
+			     (loop parent)))))))
+	    ((file-exists? path)
+	     (let ((dir (dirname path)))
+		(load-afile path dir dir)))))))
+	    
+	     
+	     
+			 
 
 
