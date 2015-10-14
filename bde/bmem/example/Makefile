@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Apr 24 09:18:07 2003                          */
-#*    Last change :  Wed Aug 16 06:45:10 2006 (serrano)                */
-#*    Copyright   :  2003-06 Manuel Serrano                            */
+#*    Last change :  Wed Oct 14 07:15:08 2015 (serrano)                */
+#*    Copyright   :  2003-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the bmem example                           */
 #*=====================================================================*/
@@ -20,8 +20,6 @@ POPULATION 	= $(SRC) Makefile
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= bigloo
-AFILE		= bglafile
 BFLAGS		= -g2
 BMEM		= bglmem
 BMEMRUN		= bglmemrun
@@ -62,7 +60,7 @@ pop:
 #*    ude                                                              */
 #*---------------------------------------------------------------------*/
 .afile: $(SRC)
-	@ $(AFILE) -o .afile $(SRC) 
+	@ $(BGLAFILE) -o .afile $(SRC) 
 
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */

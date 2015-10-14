@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Tue Oct  6 10:37:51 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 07:16:52 2015 (serrano)                */
 #*    Copyright   :  2003-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -32,10 +32,6 @@ POPULATION	= $(SRC:%=bmem/%) $(INCLUDE:%=bmem/%) \
 #*---------------------------------------------------------------------*/
 #*    Compilers & Flags                                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BGLBUILDBIGLOO)
-AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
-BDEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 IFLAGS		= -Ilib -I$(BOOTLIBDIR)
 CMEMFLAGS	= -DBMEMDEBUG $(CPICFLAGS)
 BMEMFLAGS	= $(BFLAGS) -g -I bmem $(EFLAGS)
@@ -88,12 +84,6 @@ $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
                $(EXTRALIBS) \
                $(LDFLAGS) \
                -o $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX))
-#*          $(LD) $(LIBOBJECT) \                                       */
-#*                -L$(BOOTLIBDIR) -lbigloo_s-$(RELEASE) \              */
-#*                $$libbigloo_gc \                                     */
-#*                $(EXTRALIBS) \                                       */
-#*                $(LDFLAGS) \                                         */
-#*                -o $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX))          */
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
@@ -167,15 +157,15 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags
 
 .afile:
-	@ $(AFILE) -o .afile $(SRC:%=bmem/%)
+	@ $(BGLAFILE) -o .afile $(SRC:%=bmem/%)
 
 .etags:
-	@ $(BTAGS) -o .etags $(SRC:%=bmem/%)
+	@ $(BGLTAGS) -o .etags $(SRC:%=bmem/%)
 
 dep:
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
-	@ $(BDEPEND) -search-path . -fno-mco $(SRC:%=bmem/%) >> /tmp/Makefile.aux
+	@ $(BGLDEPEND) -search-path . -fno-mco $(SRC:%=bmem/%) >> /tmp/Makefile.aux
 	@ mv /tmp/Makefile.aux Makefile
 
 getbinary:

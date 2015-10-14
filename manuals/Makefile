@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Fri Mar  9 11:26:45 2012 (serrano)                */
-#*    Copyright   :  1998-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Oct 13 21:30:06 2015 (serrano)                */
+#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
 #*=====================================================================*/
@@ -19,7 +19,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 DVIPS		= dvips
 MAKEDVI		= export TEXINPUTS=; $(TEXI2DVI) $(TEXI2DVIOPT)
-BIGLOO		= $(BOOTBINDIR)/bigloo
+BIGLOO		= $(BOOTBINDIR)/bigloo.sh
 SKRIBE		= skribe
 SKRIBEINFO	= skribeinfo --sui r5rs.info r5rs.sui
 

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Nov  6 15:02:00 2013 (serrano)                */
+#*    Last change :  Wed Oct 14 07:04:41 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -29,12 +29,10 @@ PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
 # The Bigloo compiler
-BIGLOO		= $(BGLBUILDBIGLOO)
-AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
+AFILE		= $(BGLBUILDBINDIR)/bglafile.sh
+JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
+DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
+BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) \

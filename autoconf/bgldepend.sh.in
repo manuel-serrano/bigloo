@@ -1,0 +1,19 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/bgldepend.sh.in             */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Oct 13 14:06:43 2015                          */
+#*    Last change :  Tue Oct 13 21:23:39 2015 (serrano)                */
+#*    Copyright   :  2015 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Afile wrapper                                                    */
+#*=====================================================================*/
+
+LD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH
+
+exec @BDEPEND@ "$@"

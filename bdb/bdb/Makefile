@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  serrano                                           */
 #*    Creation    :  Wed Jul 28 06:59:47 1999                          */
-#*    Last change :  Tue May 15 07:49:34 2007 (serrano)                */
+#*    Last change :  Wed Oct 14 07:29:05 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Automatically generated file:                                    */
 #*       bmake                                                         */
@@ -36,7 +36,7 @@ MODE		= final
 #*    Compilers, Flags and Tools ...                                   */
 #*---------------------------------------------------------------------*/
 # The Bigloo compiler
-BIGLOO          = $(BOOTBINDIR)/bigloo
+BIGLOO          = $(BOOTBINDIR)/bigloo.sh
 BFLAGS_COMMON   = -afile .afile -no-hello -L $(BOOTLIBDIR)
 BFLAGS_G        = $(BFLAGS_COMMON) -g2 -gmodule
 BFLAGS_O        = $(BFLAGS_COMMON) -O5 -unsafe
@@ -60,12 +60,6 @@ SHELL           = /bin/sh
 # Revision system
 PRCS            = prcs
 COMPRESS        = gzip
-# The Bigloo tools
-AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
-JFILE		= $(BOOTBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
-MCO		= $(BOOTBINDIR)/$(MCO_EXE)
 # Profiling
 PROF		= PROF
 PROFILE_ARGS	= 
@@ -317,7 +311,7 @@ forceafile:
           fi
 
 .afile: $(SOURCES)
-	@ $(AFILE) -o .afile $(SOURCES)
+	@ $(BGLAFILE) -o .afile $(SOURCES)
 
 forcetags:
 	@ if [ ! -f .etags ]; then            \
@@ -325,10 +319,10 @@ forcetags:
           fi
 
 .etags: $(SOURCES)
-	@ $(BTAGS) -o .etags $(SOURCES)
+	@ $(BGLTAGS) -o .etags $(SOURCES)
 
 bdepend: $(SOURCES)
-	@ $(DEPEND) -o Makefile $(SOURCES)
+	@ $(BGLDEPEND) -o Makefile $(SOURCES)
 
 updatemakefile:
 	@ $(BMAKE) -o Makefile Init/main.scm
@@ -372,369 +366,369 @@ Command/command.o: Command/command.scm
 Command/command_p.o: Command/command.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/command.scm -o Command/command_p.o
 Command/command.mco: Command/command.scm
-	$(MCO) $(MCOFLAGS) Command/command.scm -o Command/command.mco
+	$(BGLMCO) $(MCOFLAGS) Command/command.scm -o Command/command.mco
 Command/command_p.mco: Command/command.scm
-	$(MCO) $(MCOFLAGS) Command/command.scm -o Command/command_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/command.scm -o Command/command_p.mco
 
 Command/explore.o: Command/explore.scm
 	$(BIGLOO) $(BFLAGS) -c Command/explore.scm -o Command/explore.o
 Command/explore_p.o: Command/explore.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/explore.scm -o Command/explore_p.o
 Command/explore.mco: Command/explore.scm
-	$(MCO) $(MCOFLAGS) Command/explore.scm -o Command/explore.mco
+	$(BGLMCO) $(MCOFLAGS) Command/explore.scm -o Command/explore.mco
 Command/explore_p.mco: Command/explore.scm
-	$(MCO) $(MCOFLAGS) Command/explore.scm -o Command/explore_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/explore.scm -o Command/explore_p.mco
 
 Init/setrc.o: Init/setrc.scm
 	$(BIGLOO) $(BFLAGS) -c Init/setrc.scm -o Init/setrc.o
 Init/setrc_p.o: Init/setrc.scm
 	$(BIGLOO) $(BFLAGS_P) -c Init/setrc.scm -o Init/setrc_p.o
 Init/setrc.mco: Init/setrc.scm
-	$(MCO) $(MCOFLAGS) Init/setrc.scm -o Init/setrc.mco
+	$(BGLMCO) $(MCOFLAGS) Init/setrc.scm -o Init/setrc.mco
 Init/setrc_p.mco: Init/setrc.scm
-	$(MCO) $(MCOFLAGS) Init/setrc.scm -o Init/setrc_p.mco
+	$(BGLMCO) $(MCOFLAGS) Init/setrc.scm -o Init/setrc_p.mco
 
 Command/parse.o: Command/parse.scm
 	$(BIGLOO) $(BFLAGS) -c Command/parse.scm -o Command/parse.o
 Command/parse_p.o: Command/parse.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/parse.scm -o Command/parse_p.o
 Command/parse.mco: Command/parse.scm
-	$(MCO) $(MCOFLAGS) Command/parse.scm -o Command/parse.mco
+	$(BGLMCO) $(MCOFLAGS) Command/parse.scm -o Command/parse.mco
 Command/parse_p.mco: Command/parse.scm
-	$(MCO) $(MCOFLAGS) Command/parse.scm -o Command/parse_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/parse.scm -o Command/parse_p.mco
 
 Gdb/gread.o: Gdb/gread.scm
 	$(BIGLOO) $(BFLAGS) -c Gdb/gread.scm -o Gdb/gread.o
 Gdb/gread_p.o: Gdb/gread.scm
 	$(BIGLOO) $(BFLAGS_P) -c Gdb/gread.scm -o Gdb/gread_p.o
 Gdb/gread.mco: Gdb/gread.scm
-	$(MCO) $(MCOFLAGS) Gdb/gread.scm -o Gdb/gread.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/gread.scm -o Gdb/gread.mco
 Gdb/gread_p.mco: Gdb/gread.scm
-	$(MCO) $(MCOFLAGS) Gdb/gread.scm -o Gdb/gread_p.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/gread.scm -o Gdb/gread_p.mco
 
 Gdb/tools.o: Gdb/tools.scm
 	$(BIGLOO) $(BFLAGS) -c Gdb/tools.scm -o Gdb/tools.o
 Gdb/tools_p.o: Gdb/tools.scm
 	$(BIGLOO) $(BFLAGS_P) -c Gdb/tools.scm -o Gdb/tools_p.o
 Gdb/tools.mco: Gdb/tools.scm
-	$(MCO) $(MCOFLAGS) Gdb/tools.scm -o Gdb/tools.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/tools.scm -o Gdb/tools.mco
 Gdb/tools_p.mco: Gdb/tools.scm
-	$(MCO) $(MCOFLAGS) Gdb/tools.scm -o Gdb/tools_p.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/tools.scm -o Gdb/tools_p.mco
 
 Engine/engine.o: Engine/engine.scm
 	$(BIGLOO) $(BFLAGS) -c Engine/engine.scm -o Engine/engine.o
 Engine/engine_p.o: Engine/engine.scm
 	$(BIGLOO) $(BFLAGS_P) -c Engine/engine.scm -o Engine/engine_p.o
 Engine/engine.mco: Engine/engine.scm
-	$(MCO) $(MCOFLAGS) Engine/engine.scm -o Engine/engine.mco
+	$(BGLMCO) $(MCOFLAGS) Engine/engine.scm -o Engine/engine.mco
 Engine/engine_p.mco: Engine/engine.scm
-	$(MCO) $(MCOFLAGS) Engine/engine.scm -o Engine/engine_p.mco
+	$(BGLMCO) $(MCOFLAGS) Engine/engine.scm -o Engine/engine_p.mco
 
 Command/set.o: Command/set.scm
 	$(BIGLOO) $(BFLAGS) -c Command/set.scm -o Command/set.o
 Command/set_p.o: Command/set.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/set.scm -o Command/set_p.o
 Command/set.mco: Command/set.scm
-	$(MCO) $(MCOFLAGS) Command/set.scm -o Command/set.mco
+	$(BGLMCO) $(MCOFLAGS) Command/set.scm -o Command/set.mco
 Command/set_p.mco: Command/set.scm
-	$(MCO) $(MCOFLAGS) Command/set.scm -o Command/set_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/set.scm -o Command/set_p.mco
 
 Bee/etags.o: Bee/etags.scm
 	$(BIGLOO) $(BFLAGS) -c Bee/etags.scm -o Bee/etags.o
 Bee/etags_p.o: Bee/etags.scm
 	$(BIGLOO) $(BFLAGS_P) -c Bee/etags.scm -o Bee/etags_p.o
 Bee/etags.mco: Bee/etags.scm
-	$(MCO) $(MCOFLAGS) Bee/etags.scm -o Bee/etags.mco
+	$(BGLMCO) $(MCOFLAGS) Bee/etags.scm -o Bee/etags.mco
 Bee/etags_p.mco: Bee/etags.scm
-	$(MCO) $(MCOFLAGS) Bee/etags.scm -o Bee/etags_p.mco
+	$(BGLMCO) $(MCOFLAGS) Bee/etags.scm -o Bee/etags_p.mco
 
 Tools/error.o: Tools/error.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/error.scm -o Tools/error.o
 Tools/error_p.o: Tools/error.scm
 	$(BIGLOO) $(BFLAGS_P) -c Tools/error.scm -o Tools/error_p.o
 Tools/error.mco: Tools/error.scm
-	$(MCO) $(MCOFLAGS) Tools/error.scm -o Tools/error.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/error.scm -o Tools/error.mco
 Tools/error_p.mco: Tools/error.scm
-	$(MCO) $(MCOFLAGS) Tools/error.scm -o Tools/error_p.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/error.scm -o Tools/error_p.mco
 
 Command/backtrace.o: Command/backtrace.scm
 	$(BIGLOO) $(BFLAGS) -c Command/backtrace.scm -o Command/backtrace.o
 Command/backtrace_p.o: Command/backtrace.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/backtrace.scm -o Command/backtrace_p.o
 Command/backtrace.mco: Command/backtrace.scm
-	$(MCO) $(MCOFLAGS) Command/backtrace.scm -o Command/backtrace.mco
+	$(BGLMCO) $(MCOFLAGS) Command/backtrace.scm -o Command/backtrace.mco
 Command/backtrace_p.mco: Command/backtrace.scm
-	$(MCO) $(MCOFLAGS) Command/backtrace.scm -o Command/backtrace_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/backtrace.scm -o Command/backtrace_p.mco
 
 Patient/value.o: Patient/value.scm
 	$(BIGLOO) $(BFLAGS) -c Patient/value.scm -o Patient/value.o
 Patient/value_p.o: Patient/value.scm
 	$(BIGLOO) $(BFLAGS_P) -c Patient/value.scm -o Patient/value_p.o
 Patient/value.mco: Patient/value.scm
-	$(MCO) $(MCOFLAGS) Patient/value.scm -o Patient/value.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/value.scm -o Patient/value.mco
 Patient/value_p.mco: Patient/value.scm
-	$(MCO) $(MCOFLAGS) Patient/value.scm -o Patient/value_p.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/value.scm -o Patient/value_p.mco
 
 Gdb/annotate.o: Gdb/annotate.scm
 	$(BIGLOO) $(BFLAGS) -c Gdb/annotate.scm -o Gdb/annotate.o
 Gdb/annotate_p.o: Gdb/annotate.scm
 	$(BIGLOO) $(BFLAGS_P) -c Gdb/annotate.scm -o Gdb/annotate_p.o
 Gdb/annotate.mco: Gdb/annotate.scm
-	$(MCO) $(MCOFLAGS) Gdb/annotate.scm -o Gdb/annotate.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/annotate.scm -o Gdb/annotate.mco
 Gdb/annotate_p.mco: Gdb/annotate.scm
-	$(MCO) $(MCOFLAGS) Gdb/annotate.scm -o Gdb/annotate_p.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/annotate.scm -o Gdb/annotate_p.mco
 
 Gdb/autoconf.o: Gdb/autoconf.scm
 	$(BIGLOO) $(BFLAGS) -c Gdb/autoconf.scm -o Gdb/autoconf.o
 Gdb/autoconf_p.o: Gdb/autoconf.scm
 	$(BIGLOO) $(BFLAGS_P) -c Gdb/autoconf.scm -o Gdb/autoconf_p.o
 Gdb/autoconf.mco: Gdb/autoconf.scm
-	$(MCO) $(MCOFLAGS) Gdb/autoconf.scm -o Gdb/autoconf.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/autoconf.scm -o Gdb/autoconf.mco
 Gdb/autoconf_p.mco: Gdb/autoconf.scm
-	$(MCO) $(MCOFLAGS) Gdb/autoconf.scm -o Gdb/autoconf_p.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/autoconf.scm -o Gdb/autoconf_p.mco
 
 Engine/param.o: Engine/param.scm
 	$(BIGLOO) $(BFLAGS) -c Engine/param.scm -o Engine/param.o
 Engine/param_p.o: Engine/param.scm
 	$(BIGLOO) $(BFLAGS_P) -c Engine/param.scm -o Engine/param_p.o
 Engine/param.mco: Engine/param.scm
-	$(MCO) $(MCOFLAGS) Engine/param.scm -o Engine/param.mco
+	$(BGLMCO) $(MCOFLAGS) Engine/param.scm -o Engine/param.mco
 Engine/param_p.mco: Engine/param.scm
-	$(MCO) $(MCOFLAGS) Engine/param.scm -o Engine/param_p.mco
+	$(BGLMCO) $(MCOFLAGS) Engine/param.scm -o Engine/param_p.mco
 
 Tools/version.o: Tools/version.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/version.scm -o Tools/version.o
 Tools/version_p.o: Tools/version.scm
 	$(BIGLOO) $(BFLAGS_P) -c Tools/version.scm -o Tools/version_p.o
 Tools/version.mco: Tools/version.scm
-	$(MCO) $(MCOFLAGS) Tools/version.scm -o Tools/version.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/version.scm -o Tools/version.mco
 Tools/version_p.mco: Tools/version.scm
-	$(MCO) $(MCOFLAGS) Tools/version.scm -o Tools/version_p.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/version.scm -o Tools/version_p.mco
 
 Command/display.o: Command/display.scm
 	$(BIGLOO) $(BFLAGS) -c Command/display.scm -o Command/display.o
 Command/display_p.o: Command/display.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/display.scm -o Command/display_p.o
 Command/display.mco: Command/display.scm
-	$(MCO) $(MCOFLAGS) Command/display.scm -o Command/display.mco
+	$(BGLMCO) $(MCOFLAGS) Command/display.scm -o Command/display.mco
 Command/display_p.mco: Command/display.scm
-	$(MCO) $(MCOFLAGS) Command/display.scm -o Command/display_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/display.scm -o Command/display_p.mco
 
 Engine/repl.o: Engine/repl.scm
 	$(BIGLOO) $(BFLAGS) -c Engine/repl.scm -o Engine/repl.o
 Engine/repl_p.o: Engine/repl.scm
 	$(BIGLOO) $(BFLAGS_P) -c Engine/repl.scm -o Engine/repl_p.o
 Engine/repl.mco: Engine/repl.scm
-	$(MCO) $(MCOFLAGS) Engine/repl.scm -o Engine/repl.mco
+	$(BGLMCO) $(MCOFLAGS) Engine/repl.scm -o Engine/repl.mco
 Engine/repl_p.mco: Engine/repl.scm
-	$(MCO) $(MCOFLAGS) Engine/repl.scm -o Engine/repl_p.mco
+	$(BGLMCO) $(MCOFLAGS) Engine/repl.scm -o Engine/repl_p.mco
 
 Gdb/ginvoke.o: Gdb/ginvoke.scm
 	$(BIGLOO) $(BFLAGS) -c Gdb/ginvoke.scm -o Gdb/ginvoke.o
 Gdb/ginvoke_p.o: Gdb/ginvoke.scm
 	$(BIGLOO) $(BFLAGS_P) -c Gdb/ginvoke.scm -o Gdb/ginvoke_p.o
 Gdb/ginvoke.mco: Gdb/ginvoke.scm
-	$(MCO) $(MCOFLAGS) Gdb/ginvoke.scm -o Gdb/ginvoke.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/ginvoke.scm -o Gdb/ginvoke.mco
 Gdb/ginvoke_p.mco: Gdb/ginvoke.scm
-	$(MCO) $(MCOFLAGS) Gdb/ginvoke.scm -o Gdb/ginvoke_p.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/ginvoke.scm -o Gdb/ginvoke_p.mco
 
 Patient/server.o: Patient/server.scm
 	$(BIGLOO) $(BFLAGS) -c Patient/server.scm -o Patient/server.o
 Patient/server_p.o: Patient/server.scm
 	$(BIGLOO) $(BFLAGS_P) -c Patient/server.scm -o Patient/server_p.o
 Patient/server.mco: Patient/server.scm
-	$(MCO) $(MCOFLAGS) Patient/server.scm -o Patient/server.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/server.scm -o Patient/server.mco
 Patient/server_p.mco: Patient/server.scm
-	$(MCO) $(MCOFLAGS) Patient/server.scm -o Patient/server_p.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/server.scm -o Patient/server_p.mco
 
 Command/run.o: Command/run.scm
 	$(BIGLOO) $(BFLAGS) -c Command/run.scm -o Command/run.o
 Command/run_p.o: Command/run.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/run.scm -o Command/run_p.o
 Command/run.mco: Command/run.scm
-	$(MCO) $(MCOFLAGS) Command/run.scm -o Command/run.mco
+	$(BGLMCO) $(MCOFLAGS) Command/run.scm -o Command/run.mco
 Command/run_p.mco: Command/run.scm
-	$(MCO) $(MCOFLAGS) Command/run.scm -o Command/run_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/run.scm -o Command/run_p.mco
 
 Tools/speek.o: Tools/speek.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/speek.scm -o Tools/speek.o
 Tools/speek_p.o: Tools/speek.scm
 	$(BIGLOO) $(BFLAGS_P) -c Tools/speek.scm -o Tools/speek_p.o
 Tools/speek.mco: Tools/speek.scm
-	$(MCO) $(MCOFLAGS) Tools/speek.scm -o Tools/speek.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/speek.scm -o Tools/speek.mco
 Tools/speek_p.mco: Tools/speek.scm
-	$(MCO) $(MCOFLAGS) Tools/speek.scm -o Tools/speek_p.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/speek.scm -o Tools/speek_p.mco
 
 Command/all_cmd.o: Command/all_cmd.scm
 	$(BIGLOO) $(BFLAGS) -c Command/all_cmd.scm -o Command/all_cmd.o
 Command/all_cmd_p.o: Command/all_cmd.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/all_cmd.scm -o Command/all_cmd_p.o
 Command/all_cmd.mco: Command/all_cmd.scm
-	$(MCO) $(MCOFLAGS) Command/all_cmd.scm -o Command/all_cmd.mco
+	$(BGLMCO) $(MCOFLAGS) Command/all_cmd.scm -o Command/all_cmd.mco
 Command/all_cmd_p.mco: Command/all_cmd.scm
-	$(MCO) $(MCOFLAGS) Command/all_cmd.scm -o Command/all_cmd_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/all_cmd.scm -o Command/all_cmd_p.mco
 
 Tools/date.o: Tools/date.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/date.scm -o Tools/date.o
 Tools/date_p.o: Tools/date.scm
 	$(BIGLOO) $(BFLAGS_P) -c Tools/date.scm -o Tools/date_p.o
 Tools/date.mco: Tools/date.scm
-	$(MCO) $(MCOFLAGS) Tools/date.scm -o Tools/date.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/date.scm -o Tools/date.mco
 Tools/date_p.mco: Tools/date.scm
-	$(MCO) $(MCOFLAGS) Tools/date.scm -o Tools/date_p.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/date.scm -o Tools/date_p.mco
 
 Init/parse_args.o: Init/parse_args.scm
 	$(BIGLOO) $(BFLAGS) -c Init/parse_args.scm -o Init/parse_args.o
 Init/parse_args_p.o: Init/parse_args.scm
 	$(BIGLOO) $(BFLAGS_P) -c Init/parse_args.scm -o Init/parse_args_p.o
 Init/parse_args.mco: Init/parse_args.scm
-	$(MCO) $(MCOFLAGS) Init/parse_args.scm -o Init/parse_args.mco
+	$(BGLMCO) $(MCOFLAGS) Init/parse_args.scm -o Init/parse_args.mco
 Init/parse_args_p.mco: Init/parse_args.scm
-	$(MCO) $(MCOFLAGS) Init/parse_args.scm -o Init/parse_args_p.mco
+	$(BGLMCO) $(MCOFLAGS) Init/parse_args.scm -o Init/parse_args_p.mco
 
 Tools/io.o: Tools/io.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/io.scm -o Tools/io.o
 Tools/io_p.o: Tools/io.scm
 	$(BIGLOO) $(BFLAGS_P) -c Tools/io.scm -o Tools/io_p.o
 Tools/io.mco: Tools/io.scm
-	$(MCO) $(MCOFLAGS) Tools/io.scm -o Tools/io.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/io.scm -o Tools/io.mco
 Tools/io_p.mco: Tools/io.scm
-	$(MCO) $(MCOFLAGS) Tools/io.scm -o Tools/io_p.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/io.scm -o Tools/io_p.mco
 
 Command/help.o: Command/help.scm
 	$(BIGLOO) $(BFLAGS) -c Command/help.scm -o Command/help.o
 Command/help_p.o: Command/help.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/help.scm -o Command/help_p.o
 Command/help.mco: Command/help.scm
-	$(MCO) $(MCOFLAGS) Command/help.scm -o Command/help.mco
+	$(BGLMCO) $(MCOFLAGS) Command/help.scm -o Command/help.mco
 Command/help_p.mco: Command/help.scm
-	$(MCO) $(MCOFLAGS) Command/help.scm -o Command/help_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/help.scm -o Command/help_p.mco
 
 Command/print.o: Command/print.scm
 	$(BIGLOO) $(BFLAGS) -c Command/print.scm -o Command/print.o
 Command/print_p.o: Command/print.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/print.scm -o Command/print_p.o
 Command/print.mco: Command/print.scm
-	$(MCO) $(MCOFLAGS) Command/print.scm -o Command/print.mco
+	$(BGLMCO) $(MCOFLAGS) Command/print.scm -o Command/print.mco
 Command/print_p.mco: Command/print.scm
-	$(MCO) $(MCOFLAGS) Command/print.scm -o Command/print_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/print.scm -o Command/print_p.mco
 
 Patient/mangling.o: Patient/mangling.scm
 	$(BIGLOO) $(BFLAGS) -c Patient/mangling.scm -o Patient/mangling.o
 Patient/mangling_p.o: Patient/mangling.scm
 	$(BIGLOO) $(BFLAGS_P) -c Patient/mangling.scm -o Patient/mangling_p.o
 Patient/mangling.mco: Patient/mangling.scm
-	$(MCO) $(MCOFLAGS) Patient/mangling.scm -o Patient/mangling.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/mangling.scm -o Patient/mangling.mco
 Patient/mangling_p.mco: Patient/mangling.scm
-	$(MCO) $(MCOFLAGS) Patient/mangling.scm -o Patient/mangling_p.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/mangling.scm -o Patient/mangling_p.mco
 
 Command/whatis.o: Command/whatis.scm
 	$(BIGLOO) $(BFLAGS) -c Command/whatis.scm -o Command/whatis.o
 Command/whatis_p.o: Command/whatis.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/whatis.scm -o Command/whatis_p.o
 Command/whatis.mco: Command/whatis.scm
-	$(MCO) $(MCOFLAGS) Command/whatis.scm -o Command/whatis.mco
+	$(BGLMCO) $(MCOFLAGS) Command/whatis.scm -o Command/whatis.mco
 Command/whatis_p.mco: Command/whatis.scm
-	$(MCO) $(MCOFLAGS) Command/whatis.scm -o Command/whatis_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/whatis.scm -o Command/whatis_p.mco
 
 Tools/tools.o: Tools/tools.scm
 	$(BIGLOO) $(BFLAGS) -c Tools/tools.scm -o Tools/tools.o
 Tools/tools_p.o: Tools/tools.scm
 	$(BIGLOO) $(BFLAGS_P) -c Tools/tools.scm -o Tools/tools_p.o
 Tools/tools.mco: Tools/tools.scm
-	$(MCO) $(MCOFLAGS) Tools/tools.scm -o Tools/tools.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/tools.scm -o Tools/tools.mco
 Tools/tools_p.mco: Tools/tools.scm
-	$(MCO) $(MCOFLAGS) Tools/tools.scm -o Tools/tools_p.mco
+	$(BGLMCO) $(MCOFLAGS) Tools/tools.scm -o Tools/tools_p.mco
 
 Patient/pinvoke.o: Patient/pinvoke.scm
 	$(BIGLOO) $(BFLAGS) -c Patient/pinvoke.scm -o Patient/pinvoke.o
 Patient/pinvoke_p.o: Patient/pinvoke.scm
 	$(BIGLOO) $(BFLAGS_P) -c Patient/pinvoke.scm -o Patient/pinvoke_p.o
 Patient/pinvoke.mco: Patient/pinvoke.scm
-	$(MCO) $(MCOFLAGS) Patient/pinvoke.scm -o Patient/pinvoke.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/pinvoke.scm -o Patient/pinvoke.mco
 Patient/pinvoke_p.mco: Patient/pinvoke.scm
-	$(MCO) $(MCOFLAGS) Patient/pinvoke.scm -o Patient/pinvoke_p.mco
+	$(BGLMCO) $(MCOFLAGS) Patient/pinvoke.scm -o Patient/pinvoke_p.mco
 
 Command/file.o: Command/file.scm
 	$(BIGLOO) $(BFLAGS) -c Command/file.scm -o Command/file.o
 Command/file_p.o: Command/file.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/file.scm -o Command/file_p.o
 Command/file.mco: Command/file.scm
-	$(MCO) $(MCOFLAGS) Command/file.scm -o Command/file.mco
+	$(BGLMCO) $(MCOFLAGS) Command/file.scm -o Command/file.mco
 Command/file_p.mco: Command/file.scm
-	$(MCO) $(MCOFLAGS) Command/file.scm -o Command/file_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/file.scm -o Command/file_p.mco
 
 Command/break.o: Command/break.scm
 	$(BIGLOO) $(BFLAGS) -c Command/break.scm -o Command/break.o
 Command/break_p.o: Command/break.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/break.scm -o Command/break_p.o
 Command/break.mco: Command/break.scm
-	$(MCO) $(MCOFLAGS) Command/break.scm -o Command/break.mco
+	$(BGLMCO) $(MCOFLAGS) Command/break.scm -o Command/break.mco
 Command/break_p.mco: Command/break.scm
-	$(MCO) $(MCOFLAGS) Command/break.scm -o Command/break_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/break.scm -o Command/break_p.mco
 
 Command/mangle.o: Command/mangle.scm
 	$(BIGLOO) $(BFLAGS) -c Command/mangle.scm -o Command/mangle.o
 Command/mangle_p.o: Command/mangle.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/mangle.scm -o Command/mangle_p.o
 Command/mangle.mco: Command/mangle.scm
-	$(MCO) $(MCOFLAGS) Command/mangle.scm -o Command/mangle.mco
+	$(BGLMCO) $(MCOFLAGS) Command/mangle.scm -o Command/mangle.mco
 Command/mangle_p.mco: Command/mangle.scm
-	$(MCO) $(MCOFLAGS) Command/mangle.scm -o Command/mangle_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/mangle.scm -o Command/mangle_p.mco
 
 Gdb/proc.o: Gdb/proc.scm
 	$(BIGLOO) $(BFLAGS) -c Gdb/proc.scm -o Gdb/proc.o
 Gdb/proc_p.o: Gdb/proc.scm
 	$(BIGLOO) $(BFLAGS_P) -c Gdb/proc.scm -o Gdb/proc_p.o
 Gdb/proc.mco: Gdb/proc.scm
-	$(MCO) $(MCOFLAGS) Gdb/proc.scm -o Gdb/proc.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/proc.scm -o Gdb/proc.mco
 Gdb/proc_p.mco: Gdb/proc.scm
-	$(MCO) $(MCOFLAGS) Gdb/proc.scm -o Gdb/proc_p.mco
+	$(BGLMCO) $(MCOFLAGS) Gdb/proc.scm -o Gdb/proc_p.mco
 
 Command/expr.o: Command/expr.scm
 	$(BIGLOO) $(BFLAGS) -c Command/expr.scm -o Command/expr.o
 Command/expr_p.o: Command/expr.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/expr.scm -o Command/expr_p.o
 Command/expr.mco: Command/expr.scm
-	$(MCO) $(MCOFLAGS) Command/expr.scm -o Command/expr.mco
+	$(BGLMCO) $(MCOFLAGS) Command/expr.scm -o Command/expr.mco
 Command/expr_p.mco: Command/expr.scm
-	$(MCO) $(MCOFLAGS) Command/expr.scm -o Command/expr_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/expr.scm -o Command/expr_p.mco
 
 Command/info.o: Command/info.scm
 	$(BIGLOO) $(BFLAGS) -c Command/info.scm -o Command/info.o
 Command/info_p.o: Command/info.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/info.scm -o Command/info_p.o
 Command/info.mco: Command/info.scm
-	$(MCO) $(MCOFLAGS) Command/info.scm -o Command/info.mco
+	$(BGLMCO) $(MCOFLAGS) Command/info.scm -o Command/info.mco
 Command/info_p.mco: Command/info.scm
-	$(MCO) $(MCOFLAGS) Command/info.scm -o Command/info_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/info.scm -o Command/info_p.mco
 
 Bee/binvoke.o: Bee/binvoke.scm
 	$(BIGLOO) $(BFLAGS) -c Bee/binvoke.scm -o Bee/binvoke.o
 Bee/binvoke_p.o: Bee/binvoke.scm
 	$(BIGLOO) $(BFLAGS_P) -c Bee/binvoke.scm -o Bee/binvoke_p.o
 Bee/binvoke.mco: Bee/binvoke.scm
-	$(MCO) $(MCOFLAGS) Bee/binvoke.scm -o Bee/binvoke.mco
+	$(BGLMCO) $(MCOFLAGS) Bee/binvoke.scm -o Bee/binvoke.mco
 Bee/binvoke_p.mco: Bee/binvoke.scm
-	$(MCO) $(MCOFLAGS) Bee/binvoke.scm -o Bee/binvoke_p.mco
+	$(BGLMCO) $(MCOFLAGS) Bee/binvoke.scm -o Bee/binvoke_p.mco
 
 Command/quit.o: Command/quit.scm
 	$(BIGLOO) $(BFLAGS) -c Command/quit.scm -o Command/quit.o
 Command/quit_p.o: Command/quit.scm
 	$(BIGLOO) $(BFLAGS_P) -c Command/quit.scm -o Command/quit_p.o
 Command/quit.mco: Command/quit.scm
-	$(MCO) $(MCOFLAGS) Command/quit.scm -o Command/quit.mco
+	$(BGLMCO) $(MCOFLAGS) Command/quit.scm -o Command/quit.mco
 Command/quit_p.mco: Command/quit.scm
-	$(MCO) $(MCOFLAGS) Command/quit.scm -o Command/quit_p.mco
+	$(BGLMCO) $(MCOFLAGS) Command/quit.scm -o Command/quit_p.mco
 
 Init/main.o: Init/main.scm
 	$(BIGLOO) $(BFLAGS) -c Init/main.scm -o Init/main.o
 Init/main_p.o: Init/main.scm
 	$(BIGLOO) $(BFLAGS_P) -c Init/main.scm -o Init/main_p.o
 Init/main.mco: Init/main.scm
-	$(MCO) $(MCOFLAGS) Init/main.scm -o Init/main.mco
+	$(BGLMCO) $(MCOFLAGS) Init/main.scm -o Init/main.mco
 Init/main_p.mco: Init/main.scm
-	$(MCO) $(MCOFLAGS) Init/main.scm -o Init/main_p.mco
+	$(BGLMCO) $(MCOFLAGS) Init/main.scm -o Init/main_p.mco
 
 #*---------------------------------------------------------------------*/
 #*    # C objects                                                      */

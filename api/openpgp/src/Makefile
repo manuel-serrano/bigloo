@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug 11 15:36:25 2010                          */
-#*    Last change :  Tue Nov 15 20:53:13 2011 (serrano)                */
-#*    Copyright   :  2010-11 Manuel Serrano                            */
+#*    Last change :  Wed Oct 14 07:02:02 2015 (serrano)                */
+#*    Copyright   :  2010-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the OpenPGP Bigloo library.                */
 #*=====================================================================*/
@@ -30,11 +30,10 @@ PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
 # The Bigloo compiler
-BIGLOO		= $(BGLBUILDBIGLOO)
-AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
+AFILE		= $(BGLBUILDBINDIR)/bglafile.sh
+JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
+DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
+BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) \
                   -fno-reflection \

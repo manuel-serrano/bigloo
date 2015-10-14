@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Oct 22 09:46:29 2010 (serrano)                */
+#*    Last change :  Tue Oct 13 21:26:53 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdl library.                           */
 #*=====================================================================*/
@@ -33,11 +33,11 @@ CLASS_EDIR	= objs/class_es/bigloo/$(API)
 DOTNET_OBJ_DIR	= objs/dotnet_s
 DOTNET_OBJ_EDIR	= objs/dotnet_es
 # # The Bigloo compiler
-BIGLOO		= $(BOOTBINDIR)/bigloo
-AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
-JFILE		= $(BOOTBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
+BIGLOO		= $(BOOTBINDIR)/bigloo.sh
+AFILE		= $(BOOTBINDIR)/bglafile.sh
+JFILE		= $(BOOTBINDIR)/bgljfile.sh
+DEPEND		= $(BOOTBINDIR)/bgldepend.sh
+BTAGS		= $(BOOTBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap

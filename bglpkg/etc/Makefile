@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan  2 08:48:29 2007                          */
-#*    Last change :  Tue Oct 13 16:41:32 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 07:33:15 2015 (serrano)                */
 #*    Copyright   :  2007-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile for building Bigloo ScmPkg packages.        */
@@ -16,9 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Compilers and flags                                              */
 #*---------------------------------------------------------------------*/
-BIGLOO		= bigloo
-BGLAFILE	= bglafile --suffix spi --module-keyword interface
-BGLJFILE	= bgljfile
+BGLAFILEFLAGS	= --suffix spi --module-keyword interface
 
 # Common compilation flags
 EFLAGS		=
@@ -31,7 +29,7 @@ BDOTFLAGS	= -dotnet
 
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L bigloo -I bigloo \
-                  -heap-library $(LIBNAME) -afile $(AFILE)
+                  -heap-library $(LIBNAME) -afile .afile
 
 BACKEND		= native
 
@@ -49,7 +47,6 @@ PACKAGES	= @PACKAGES@
 BGLLIBDIR	= @LIBDIR@
 
 ODIR		= o
-AFILE		= .afile
 
 @LIBNAME@	= $(BYFLAGS)
 
@@ -74,7 +71,7 @@ uninstall: uninstall-init uninstall.$(BACKEND)
 clean: clean.$(BACKEND)
 
 cleanall: cleanall.$(BACKEND)
-	$(RM) -f $(AFILE)
+	$(RM) -f .afile
 
 #*---------------------------------------------------------------------*/
 #*    SUFFIXES                                                         */
@@ -98,8 +95,8 @@ install-init:
 uninstall-init:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
 
-$(AFILE):
-	$(BGLBUILDBINDIR)/afile.sh $(SOURCES) -o $@
+.afile:
+	$(BGLAFILE) $(BGLAFILEFLAGS) $(SOURCES) -o $@
 
 #*---------------------------------------------------------------------*/
 #*    Native backend targets and rules                                 */
@@ -115,7 +112,7 @@ BOOTLIBDIR	= $(BUILDDIR)
 #*---------------------------------------------------------------------*/
 @TUNING_MAKEFILE_OBJECTS@
 
-compile.native: $(AFILE) $(ODIR) $(OBJECTS)
+compile.native: .afile $(ODIR) $(OBJECTS)
 
 build.native: $(HEAP) $(ODIR) $(OBJECTS) lib-c-static lib-c-shared
 
@@ -146,7 +143,7 @@ uninstall.native:
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_e-$(VERSION)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_u-$(VERSION)
 
-$(HEAP): make_lib.scm $(AFILE)
+$(HEAP): make_lib.scm .afile
 	$(RM) -f $@
 	$(BIGLOO) -spi $(BCFLAGS) $(EFLAGS) $(BHEAPFLAGS) $< -addheap $@
 
@@ -170,7 +167,7 @@ libbigloo$(LIBNAME)_u-$(VERSION).$(SHAREDSUFFIX): libbigloo$(LIBNAME)_s-$(VERSIO
         $(LN_S) libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX) \
               libbigloo$(LIBNAME)_u-$(VERSION).$(SHAREDSUFFIX)
 
-libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX): $(AFILE) $(OBJECTS)
+libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX): .afile $(OBJECTS)
 	@ $(MAKE) shared-lib \
              FORCELD=true \
              LIBDEST=$@ \
@@ -178,7 +175,7 @@ libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX): $(AFILE) $(OBJECTS)
              SONAME=libbigloo$(LIBNAME)_s-$(VERSION).$(SHAREDSUFFIX) \
              CLOSELIBS="-lbigloo_s-$(VERSION)"
 
-libbigloo$(LIBNAME)_e-$(VERSION).$(SHAREDSUFFIX): $(AFILE) $(EOBJECTS)
+libbigloo$(LIBNAME)_e-$(VERSION).$(SHAREDSUFFIX): .afile $(EOBJECTS)
 	@ $(MAKE) shared-lib \
              OBJECTS=$(EOBJECTS) \
              LDOPTS="-L. $(LDOPTS)" \
@@ -193,7 +190,7 @@ libbigloo$(LIBNAME)_u-$(VERSION).a: libbigloo$(LIBNAME)_s-$(VERSION).a
 	$(RM) -f libbigloo$(LIBNAME)_u-$(VERSION).a && \
         $(LN_S) libbigloo$(LIBNAME)_s-$(VERSION).a libbigloo$(LIBNAME)_u-$(VERSION).a
 
-libbigloo$(LIBNAME)_s-$(VERSION).a: $(AFILE) $(OBJECTS)
+libbigloo$(LIBNAME)_s-$(VERSION).a: .afile $(OBJECTS)
 	@ $(RM) -f libbigloo$(LIBNAME)_s-$(VERSION).a
 	@ $(AR) $(ARFLAGS) libbigloo$(LIBNAME)_s-$(VERSION).a $(OBJECTS)
 	@ $(RANLIB) libbigloo$(LIBNAME)_s-$(VERSION).a

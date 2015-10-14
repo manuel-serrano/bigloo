@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sat Jun 20 06:33:47 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 07:01:00 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -29,11 +29,10 @@ WIN32_SRC_DIR 	= Win32
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
 # The Bigloo compiler
-BIGLOO		= $(BGLBUILDBIGLOO)
-AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
+AFILE		= $(BGLBUILDBINDIR)/bglafile.sh
+JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
+DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
+BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) #-unsafe -safee
 CAPIFLAGS       = $(OPENSSLLIBSCFLAGS) 

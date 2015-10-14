@@ -26,11 +26,10 @@ PBASE		= bigloo.$(API)
 CLASS_DIR	= objs/class_s/bigloo/$(API)
 CLASS_EDIR	= objs/class_es/bigloo/$(API)
 # The Bigloo compiler
-BIGLOO		= $(BGLBUILDBIGLOO)
-AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
+AFILE		= $(BGLBUILDBINDIR)/bglafile.sh
+JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
+DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
+BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
 # Flags to build a heap

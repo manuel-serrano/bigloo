@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Tue Oct 13 13:43:08 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 07:51:08 2015 (serrano)                */
 #*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -18,7 +18,6 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BGLBUILDBIGLOO)
 # The Bigloo used to bootstrap the library and to produce the heap file
 EFLAGS		=
 # the shell to be used
@@ -39,13 +38,8 @@ CLASSDIR_SYS	= class_s
 CLASSDIR_USR	= class_s
 # The class suffix
 SCMCLASSSUFFIX	= %.class
-# The module association file
-AFILE		= .afile
-AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
 # The package association file
-JFILE		= .jfile
 PBASE		= bigloo.runtime
-JFILE_BIN	= $(BGLBUILDBINDIR)/$(JFILE_EXE)
 # The qualifier of the build library
 LIBQ		=
 
@@ -65,7 +59,7 @@ BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -copt $(CPICFLAGS)
 CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
-BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile $(JFILE)
+BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile .jfile
 BJSAFEFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jvm-purify
 #*--- Bigloo, safe, debug ---------------------------------------------*/
 BGSAFEFLAGS	= $(BSAFEFLAGS) -g 
@@ -356,14 +350,14 @@ distrib:
 	cp Unsafe/pcre.scm Unsafe/regexp.scm
 	$(MAKE) DISTRIB=true dodistrib
 
-dodistrib: $(AFILE)
+dodistrib: .afile
 	@ if [ `pwd` = $(BOOTDIR)/runtime ]; then \
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi
 	@ $(MAKE) objs-sans-dirs
 	@ $(MAKE) distlibs
-	@ $(MAKE) $(JFILE)
+	@ $(MAKE) .jfile
 
 #*---------------------------------------------------------------------*/
 #*    The includes                                                     */
@@ -383,41 +377,18 @@ includes: $(BOOTLIBDIR)/bigloo.h \
 .PHONY: heap heap-c heap-jvm
 
 heap: heap-c
-heap-c: $(AFILE) includes
+heap-c: .afile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)
 	$(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
 
-#* heap-c: $(AFILE) includes                                           */
-#* 	@ $(RM) -f $(BOOTLIBDIR)/$(HEAPC_FILE)                         */
-#* 	BIGLOOLIB=$(BOOTLIBDIR); export BIGLOOLIB; \                   */
-#* 	LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \             */
-#*         export LD_LIBRARY_PATH; \                                   */
-#* 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \         */
-#*         export DYLD_LIBRARY_PATH; \                                 */
-#*         $(BIGLOO) $(BHEAPFLAGS) $(EFLAGS) -L $(BOOTLIBDIR) Llib/make_lib.scm -heap $(HEAPC_FILE) */
-#* 	@ echo "Heap Done..."                                          */
-#* 	@ echo "-------------------------------"                       */
-
-heap-jvm: $(AFILE) $(JFILE) includes
+heap-jvm: .afile .jfile includes
 	$(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)
-	$(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
+	$(BIGLOO) -target jvm -jfile .jfile -L $(BOOTLIBDIR) $(BHEAPFLAGS) \
                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE)
 	@ echo "Heap Done..."
 	@ echo "-------------------------------"
-
-#* heap-jvm: $(AFILE) $(JFILE) includes                                */
-#* 	@ $(RM) -f $(BOOTLIBDIR)/$(HEAPJVM_FILE)                       */
-#* 	BIGLOOLIB=$(BOOTLIBDIR); export BIGLOOLIB; \                   */
-#* 	LD_LIBRARY_PATH=$(BOOTLIBDIR):$$LD_LIBRARY_PATH; \             */
-#*         export LD_LIBRARY_PATH; \                                   */
-#* 	DYLD_LIBRARY_PATH=$(BOOTLIBDIR):$$DYLD_LIBRARY_PATH; \         */
-#*         export DYLD_LIBRARY_PATH; \                                 */
-#*         $(BIGLOO) -target jvm -jfile $(JFILE) -L $(BOOTLIBDIR) $(BHEAPFLAGS) \ */
-#*                   $(EFLAGS) Llib/make_lib.scm -heap $(HEAPJVM_FILE) */
-#* 	@ echo "Heap Done..."                                          */
-#* 	@ echo "-------------------------------"                       */
 
 #*---------------------------------------------------------------------*/
 #*    Bigloo C libraries compilation                                   */
@@ -592,7 +563,7 @@ one-distlib: $(C_OBJECTS)
 #*    Boot the library on a bare system.                               */
 #*---------------------------------------------------------------------*/
 boot: dirs includes
-	touch $(AFILE)
+	touch .afile
 	@ $(MAKE) boot-libs
 
 boot-libs:
@@ -611,7 +582,7 @@ boot-jvm:
 #*    pre-compiled files).                                             */
 #*---------------------------------------------------------------------*/
 bigboot:  
-	@ $(MAKE) $(AFILE)
+	@ $(MAKE) .afile
 	@ $(MAKE) objs includes dirs
 	@ $(MAKE) lib-c_s
 	@ $(MAKE) heap-c
@@ -905,21 +876,21 @@ Jlib/configure.java: $(BOOTDIR)/configure $(BOOTDIR)/Makefile
 #*---------------------------------------------------------------------*/
 .PHONY: ude
 
-ude: $(AFILE) $(JFILE)
+ude: .afile .jfile
 
 #*---------------------------------------------------------------------*/
-#*    $(AFILE)                                                         */
+#*    .afile                                                         */
 #*---------------------------------------------------------------------*/
-afile: $(AFILE)
-$(AFILE):
-	$(AFILE_BIN) -o $(AFILE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm
+afile: .afile
+.afile:
+	$(BGLAFILE) -o .afile $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm
 
 #*---------------------------------------------------------------------*/
-#*    $(JFILE)                                                         */
+#*    .jfile                                                         */
 #*---------------------------------------------------------------------*/
-jfile: $(JFILE)
-$(JFILE):
-	$(JFILE_BIN) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm > $(JFILE)
+jfile: .jfile
+.jfile:
+	$(BGLJFILE) -pbase $(PBASE) $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm > .jfile
 
 #*---------------------------------------------------------------------*/
 #*    Dependencies                                                     */

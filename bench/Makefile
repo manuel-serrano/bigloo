@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo2.3/bench/Makefile                    */
+#*    serrano/prgm/project/bigloo/bench/Makefile                       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Jul 28 09:09:06 2000 (serrano)                */
-#*    Copyright   :  1997-2000 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Oct 13 21:30:30 2015 (serrano)                */
+#*    Copyright   :  1997-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global bench Makefile (mainly for backuping).                */
 #*=====================================================================*/
@@ -17,7 +17,7 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BOOTBINDIR)/bigloo
+BIGLOO		= $(BOOTBINDIR)/bigloo.sh
 
 TIME		= /usr/bin/time
 SHELLDIR	= shell

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Dec  4 10:25:59 1995                          */
-#*    Last change :  Fri Dec  5 10:56:13 2003 (serrano)                */
-#*    Copyright   :  1995-2003 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Oct 14 07:15:56 2015 (serrano)                */
+#*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This makefile build the X11 Bigloo declaration and the examples  */
 #*    using the Xlib with Bigloo.                                      */
@@ -20,19 +20,16 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 INCLUDEDIR	= /usr/include
 XINCLUDEDIR	= $(INCLUDEDIR)/X11
-BIGLOO          = $(BOOTBINDIR)/bigloo
-CIGLOO		= $(BOOTBINDIR)/cigloo
 CGFLAGS		= -gcc -w -type Status -type Bool -type wchar_t -no-directives -macro -no-define-fun
 CPPFLAGS	= -DNeedFunctionPrototypes=1 -D_Xconst= -I$(XINCLUDEDIR) -I$(INCLUDEDIR)
-AFILE           = .afile
 SHELL           = /bin/sh
 POPULATION	= Makefile README xlib-macro.sch example
                   
 #*---------------------------------------------------------------------*/
 #*    Les flags par defauts (pour pouvoir faire make *.o)              */
 #*---------------------------------------------------------------------*/
-BDBGFLAGS	= -afile $(AFILE) -g2 -cg -O -cc $(CC) +rm -fsharing
-DOPTFLAGS	= -afile $(AFILE) -O2 -cc $(CC) -rm -fsharing -unsafe
+BDBGFLAGS	= -afile .afile -g2 -cg -O -cc $(CC) +rm -fsharing
+DOPTFLAGS	= -afile .afile -O2 -cc $(CC) -rm -fsharing -unsafe
 BFLAGS		= $(BDBGFLAGS)
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Nov 16 11:56:34 2011 (serrano)                */
-#*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Oct 14 07:21:31 2015 (serrano)                */
+#*    Copyright   :  1992-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -17,8 +17,6 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-# the executable used to bootstrap
-BIGLOO          = $(BGLBUILDBIGLOO)
 # which C compiler to be used
 CC              = `$(BIGLOO) -eval '(begin (print *cc*) (exit 0))'`
 # the shell to be used
@@ -27,12 +25,6 @@ SHELL           = /bin/sh
 LINT		= lint
 # lint options
 LINTFLAGS	= -u -v -I$(BOOTLIBDIR)
-# The package to compute afile
-AFILE		= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-# The package association tool
-JFILE		= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-# The tags producer
-BTAGS		= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
 #
 JVMCLASSPATH	= -jvm-bigloo-classpath $(BOOTLIBDIR)
 
@@ -267,25 +259,25 @@ all.lint: $(LN_OBJECTS)
 #*    .etags                                                           */
 #*---------------------------------------------------------------------*/
 .etags:
-	$(BTAGS) $(JVM_OBJECTS:%.class=%.scm) $(C_OBJECTS:%.$(C_OBJ_EXTENSION)=%.scm) -o .etags
+	$(BGLTAGS) $(JVM_OBJECTS:%.class=%.scm) $(C_OBJECTS:%.$(C_OBJ_EXTENSION)=%.scm) -o .etags
 
 #*---------------------------------------------------------------------*/
 #*    .jfile-jvm                                                       */
 #*---------------------------------------------------------------------*/
 .jfile-jvm:
-	$(JFILE) $(JVM_OBJECTS:%.class=%.scm) -o .jfile-jvm
+	$(BGLJFILE) $(JVM_OBJECTS:%.class=%.scm) -o .jfile-jvm
 
 #*---------------------------------------------------------------------*/
 #*    .afile-c                                                         */
 #*---------------------------------------------------------------------*/
 .afile-c:
-	$(AFILE) $(C_OBJECTS:%.$(C_OBJ_EXTENSION)=%.scm) -o .afile-c
+	$(BGLAFILE) $(C_OBJECTS:%.$(C_OBJ_EXTENSION)=%.scm) -o .afile-c
 
 #*---------------------------------------------------------------------*/
 #*    .afile-jvm                                                       */
 #*---------------------------------------------------------------------*/
 .afile-jvm:
-	$(AFILE) $(JVM_OBJECTS:%.class=%.scm) -o .afile-jvm
+	$(BGLAFILE) $(JVM_OBJECTS:%.class=%.scm) -o .afile-jvm
 
 #*---------------------------------------------------------------------*/
 #*    .scm.$(C_OBJ_EXTENSION)                                          */

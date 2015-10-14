@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Oct 13 17:48:14 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 08:11:37 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -17,8 +17,6 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-# Bigloo
-BIGLOO		= $(BGLBUILDBIGLOO) -no-hello
 # etags for info
 ETAGS		= etags
 # etags flags for info scanning
@@ -105,27 +103,27 @@ POPULATION	= $(SOURCES_FILES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-all: $(BOOTBINDIR)/$(AFILE_EXE) \
-     $(BOOTBINDIR)/$(JFILE_EXE) \
-     $(BOOTBINDIR)/$(BDEPEND_EXE) \
-     $(BOOTBINDIR)/$(MCO_EXE) \
-     $(BOOTBINDIR)/$(BMAKE_EXE) \
-     $(BOOTBINDIR)/$(BPP_EXE) \
-     $(BOOTBINDIR)/$(BTAGS_EXE) \
-     $(BOOTBINDIR)/$(BPROF_EXE) \
-     $(BOOTBINDIR)/$(JAS_EXE) \
+all: $(BOOTBINDIR)/bglafile \
+     $(BOOTBINDIR)/bgljfile \
+     $(BOOTBINDIR)/bgldepend \
+     $(BOOTBINDIR)/bglmco \
+     $(BOOTBINDIR)/bglmake \
+     $(BOOTBINDIR)/bglpp \
+     $(BOOTBINDIR)/bgltags \
+     $(BOOTBINDIR)/bglprof \
+     $(BOOTBINDIR)/bgljas \
      dobmem
 
 boot:
 	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative"
 
-dobmem: $(BOOTBINDIR)/$(AFILE_EXE)
+dobmem: $(BOOTBINDIR)/bglafile
 	@ if [ "$(LDPRELOADSUPPORT)" = "yes" \
                 -a "$(PTHREADLIBS)" != "no" ]; then \
 	    (cd bmem && $(MAKE)) || exit 1; \
 	  fi
 
-$(BOOTBINDIR)/$(AFILE_EXE): $(AFILE_OBJ)
+$(BOOTBINDIR)/bglafile: $(AFILE_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
 afile.class: afile/afile.scm
@@ -133,33 +131,33 @@ afile.class: afile/afile.scm
          $(BIGLOO) -c -jvm $(BFLAGS) $(EFLAGS) afile.scm -o afile.class; \
          mv afile.class ..)
 
-$(BOOTBINDIR)/$(JFILE_EXE): $(JFILE_OBJ)
+$(BOOTBINDIR)/bgljfile: $(JFILE_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
 jfile.class: jfile/jfile.scm
 	(cd jfile; $(BIGLOO) -c -jvm $(BFLAGS) $(EFLAGS) jfile.scm -o jfile.class; \
          mv jfile.class ..)
 
-$(BOOTBINDIR)/$(BDEPEND_EXE): $(BDEPEND_OBJ)
+$(BOOTBINDIR)/bgldepend: $(BDEPEND_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
-$(BOOTBINDIR)/$(BMAKE_EXE): $(BMAKE_OBJ)
+$(BOOTBINDIR)/bglmake: $(BMAKE_OBJ)
 	$(BIGLOO) -no-hello $(BFLAGS) $(EFLAGS) -o $@ $^
 
-$(BOOTBINDIR)/$(BPROF_EXE): $(BPROF_OBJ)
+$(BOOTBINDIR)/bglprof: $(BPROF_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
-$(BOOTBINDIR)/$(MCO_EXE): $(MCO_OBJ) ../comptime/Module/checksum.o
+$(BOOTBINDIR)/bglmco: $(MCO_OBJ) ../comptime/Module/checksum.o
 	$(BIGLOO) -no-hello $(BFLAGS) $(EFLAGS) -o $@ $^
 
-$(BOOTBINDIR)/$(BPP_EXE): $(BPP_OBJ)
+$(BOOTBINDIR)/bglpp: $(BPP_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
-$(BOOTBINDIR)/$(BTAGS_EXE): $(BTAGS_OBJ)
+$(BOOTBINDIR)/bgltags: $(BTAGS_OBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $^
 
-jas: $(BOOTBINDIR)/$(JAS_EXE)
-$(BOOTBINDIR)/$(JAS_EXE): $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
+jas: $(BOOTBINDIR)/bgljas
+$(BOOTBINDIR)/bgljas: $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 	$(BIGLOO) $(BFLAGS) $(EFLAGS) -o $@ $(JAS_OBJ) $(JAS_LINKOBJ)
 
 #*---------------------------------------------------------------------*/
@@ -167,24 +165,24 @@ $(BOOTBINDIR)/$(JAS_EXE): $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 #*---------------------------------------------------------------------*/
 install: all
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-	  cp $(BOOTBINDIR)/$(AFILE_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(AFILE_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(AFILE_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(JFILE_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(JFILE_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(JFILE_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(BPROF_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BPROF_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BPROF_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(MCO_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(MCO_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(MCO_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(BPP_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BPP_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BPP_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/$(JAS_EXE)$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$(JAS_EXE)$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$(JAS_EXE)$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bglafile$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bgljfile$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bgldepend$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bglmake$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bglprof$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bglmco$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglmco$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglmco$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bglpp$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bgltags$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bgljas$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX); \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX); \
 	  if [ "$(LDPRELOADSUPPORT)" = "yes" \
                -a "$(PTHREADLIBS)" != "no" ]; then \
 	    (cd bmem; $(MAKE) install) || exit 1; \
@@ -195,15 +193,15 @@ install: all
 #*    uninstall                                                        */
 #*---------------------------------------------------------------------*/
 uninstall:
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(AFILE_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(JFILE_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BDEPEND_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMAKE_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BPROF_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(MCO_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BPP_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BTAGS_EXE)$(EXE_SUFFIX)
-	- $(RM) -f $(DESTDIR)$(BINDIR)/$(JAS_EXE)$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglmco$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX)
+	- $(RM) -f $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX)
 	- (cd bmem; $(MAKE) uninstall)
 
 #*---------------------------------------------------------------------*/
@@ -237,15 +235,15 @@ clean:
 	@ echo "-------------------------------"
 
 cleanall: clean
-	@- $(RM) -f $(BOOTBINDIR)/$(AFILE_EXE) 
-	@- $(RM) -f $(BOOTBINDIR)/$(JFILE_EXE) 
-	@- $(RM) -f $(BOOTBINDIR)/$(BDEPEND_EXE) 
-	@- $(RM) -f $(BOOTBINDIR)/$(BMAKE_EXE) 
-	@- $(RM) -f $(BOOTBINDIR)/$(BPROF_EXE)
-	@- $(RM) -f $(BOOTBINDIR)/$(MCO_EXE)
-	@- $(RM) -f $(BOOTBINDIR)/$(BPP_EXE) 
-	@- $(RM) -f $(BOOTBINDIR)/$(BTAGS_EXE)
-	@- $(RM) -f $(BOOTBINDIR)/$(JAS_EXE)
+	@- $(RM) -f $(BOOTBINDIR)/bglafile 
+	@- $(RM) -f $(BOOTBINDIR)/bgljfile 
+	@- $(RM) -f $(BOOTBINDIR)/bgldepend 
+	@- $(RM) -f $(BOOTBINDIR)/bglmake 
+	@- $(RM) -f $(BOOTBINDIR)/bglprof
+	@- $(RM) -f $(BOOTBINDIR)/bglmco
+	@- $(RM) -f $(BOOTBINDIR)/bglpp 
+	@- $(RM) -f $(BOOTBINDIR)/bgltags
+	@- $(RM) -f $(BOOTBINDIR)/bgljas
 	@- $(RM) -f $(JAS_LINKSRC)
 
 distclean: cleanall
@@ -319,8 +317,8 @@ jas/classfile.sch: ../comptime/Jas/classfile.sch
 #*---------------------------------------------------------------------*/
 #*    Jas afile                                                        */
 #*---------------------------------------------------------------------*/
-$(JAS_AFILE): $(BGLBUILDBINDIR)/$(AFILE_EXE) $(JAS_LINKSRC)
-	(cd jas; $(BGLBUILDBINDIR)/bglafile.sh *.scm -o ../$(JAS_AFILE))
+$(JAS_AFILE): $(BGLBUILDBINDIR)/bglafile $(JAS_LINKSRC)
+	(cd jas; $(BGLAFILE) *.scm -o ../$(JAS_AFILE))
 
 #*---------------------------------------------------------------------*/
 #*    bmake dependencies                                               */

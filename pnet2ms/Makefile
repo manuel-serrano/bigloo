@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Thu Aug 12 11:36:16 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Oct 14 07:14:32 2015 (serrano)                */
+#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build pnet2ms.                                   */
 #*=====================================================================*/
@@ -17,24 +17,15 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-# the executable used to bootstrap
-BIGLOO=        $(BOOTBINDIR)/bigloo     
-# the .afile
-AFILE=         .afile
 # the shell to be used
 SHELL=         /bin/sh
 # the produced executable
-PNET2MS_DEST=  $(BOOTBINDIR)/bglpnet2ms$(EXE_SUFFIX)
-
-#*---------------------------------------------------------------------*/
-#*    Afile tool                                                       */
-#*---------------------------------------------------------------------*/
-AFILE_BIN=     $(BOOTBINDIR)/$(AFILE_EXE)
+PNET2MS_DEST=  $(BGLBUILDBINDIR)/bglpnet2ms$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
 #*---------------------------------------------------------------------*/
-BFLAGS=        -rm -afile $(AFILE) -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
+BFLAGS=        -rm -afile .afile -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
 
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
@@ -85,8 +76,8 @@ uninstall:
 #*    afile                                                            */
 #*---------------------------------------------------------------------*/
 afile: $(SOURCE_FILES)
-	@ echo "   - " $ $(AFILE)
-	@ $(AFILE_BIN) -o $(AFILE) $(SOURCE_FILES)
+	@ echo "   - " $ .afile
+	@ $(BGLAFILE) -o .afile $(SOURCE_FILES)
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */
@@ -109,7 +100,7 @@ distrib:
 clean:
 	@- $(RM) -f $(OBJECTS)
 	@- $(RM) -f $(OBJECTS:%.o=%.c)
-	@- $(RM) -f $(AFILE)
+	@- $(RM) -f .afile
 	@ find . \( -name '*[~%]' \
                        -o -name '.??*[~%]' \
                        -o -name '#*#' \

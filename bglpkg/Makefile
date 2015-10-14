@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Dec 13 10:04:17 2006                          */
-#*    Last change :  Thu Aug 12 11:34:59 2010 (serrano)                */
-#*    Copyright   :  2006-10 Manuel Serrano                            */
+#*    Last change :  Wed Oct 14 07:01:21 2015 (serrano)                */
+#*    Copyright   :  2006-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the Bigloo bglpkg command.                 */
 #*=====================================================================*/
@@ -22,13 +22,12 @@ BGLPKG		= bglpkg
 BACKEND		= auto
 
 # the executable used to compile
-BIGLOO     	= $(BGLBUILDBIGLOO)
 EFLAGS		= 
 
-AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-JFILE_BIN	= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-BTAGS_BIN	= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
-DEPEND_BIN	= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
+AFILE_BIN	= $(BGLBUILDBINDIR)/bglafile.sh
+JFILE_BIN	= $(BGLBUILDBINDIR)/bgljfile.sh
+BTAGS_BIN	= $(BGLBUILDBINDIR)/bgltags.sh
+DEPEND_BIN	= $(BGLBUILDBINDIR)/bgldepend.sh
 
 UNZIP		= unzip
 JAR		= jar cfm

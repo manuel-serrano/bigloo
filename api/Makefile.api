@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 06:08:20 2010                          */
-#*    Last change :  Sat Jun 20 06:35:15 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 07:32:29 2015 (serrano)                */
 #*    Copyright   :  2010-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generic rules for building and installing libraries              */
@@ -270,10 +270,10 @@ ude:
 
 .afile: $(_BGL_SOURCES)
 	$(RM) -f .afile
-	$(AFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES)
+	$(BGLAFILE) -o .afile $(EAFLAGS) $(_BGL_SOURCES)
 
 .jfile: $(_BGL_SOURCES)
-	$(JFILE) -o .jfile $(EAFLAGS) \
+	$(BGLJFILE) -o .jfile $(EAFLAGS) \
             -I $(BIGLOO_SRC_DIR) -I $(MISC_SRC_DIR) \
             -pbase bigloo.$(API) \
             make_lib.scm \
@@ -283,7 +283,7 @@ ude:
             $(_SRFI_OBJECTS:%=%.bgl)
 
 .etags: $(_BGL_SOURCES)
-	$(BTAGS) -o .etags $(_BGL_SOURCES)
+	$(BGLTAGS) -o .etags $(_BGL_SOURCES)
 
 udeclean:
 	$(RM) -f .afile .etags .jfile
@@ -291,7 +291,7 @@ udeclean:
 dep:
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
-	@ $(DEPEND) -fno-mco \
+	@ $(BGLDEPEND) -fno-mco \
                     -search-path $(BIGLOO_SRC_DIR) \
                     -strict-obj-dir objs \
                     $(_BGL_SOURCES) >> /tmp/Makefile.aux

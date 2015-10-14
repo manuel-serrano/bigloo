@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Thu Aug 12 11:35:16 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Oct 14 07:29:44 2015 (serrano)                */
+#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Cigloo. This makefile has to be processed  */
 #*    either by Gnu make or Sun make.                                  */
@@ -18,10 +18,6 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-# the executable used to bootstrap
-BIGLOO          = $(BGLBUILDBIGLOO)
-# the .afile
-AFILE           = .afile
 # the shell to be used
 SHELL           = /bin/sh
 # the produced executable
@@ -30,7 +26,7 @@ CIGLOO_DEST	= $(BOOTBINDIR)/cigloo$(EXE_SUFFIX)
 #*---------------------------------------------------------------------*/
 #*    Compilation flags                                                */
 #*---------------------------------------------------------------------*/
-BFLAGS		= -lib-dir $(BOOTLIBDIR) -afile $(AFILE) -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
+BFLAGS		= -lib-dir $(BOOTLIBDIR) -afile .afile -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
 EFLAGS		=
 
 #*---------------------------------------------------------------------*/
@@ -87,7 +83,7 @@ POPULATION	= $(SOURCE_FILES) \
 	          Example/c_file.h \
 	          Example/c_file.c \
                   README \
-                  $(AFILE)
+                  .afile
 
 #*---------------------------------------------------------------------*/
 #*     Les suffixes ...                                                */
@@ -129,8 +125,8 @@ uninstall:
 #*    afile                                                            */
 #*---------------------------------------------------------------------*/
 afile: 
-	@ echo "   - " $(AFILE)
-	@ $(AFILE_EXE) -o $(AFILE) $(SOURCE_FILES)
+	@ echo "   - " .afile
+	@ $(BGLAFILE) -o .afile $(SOURCE_FILES)
 	@ echo "   - dep"
 	@ $(MAKE) dep
 	@ echo "   - .etags"
@@ -140,7 +136,7 @@ afile:
 #*    tags                                                             */
 #*---------------------------------------------------------------------*/
 tags:
-	@ $(BTAGS_EXE) -o .etags $(SOURCE_FILES) 
+	@ $(BGLTAGS) -o .etags $(SOURCE_FILES) 
 
 #*---------------------------------------------------------------------*/
 #*    dep                                                              */
@@ -152,7 +148,7 @@ dep.old:
 	@ mv /tmp/Makefile.aux Makefile
 
 dep:
-	@ $(BDEPEND_EXE) -fno-mco $(SOURCE_FILES) -o Makefile
+	@ $(BGLDEPEND) -fno-mco $(SOURCE_FILES) -o Makefile
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

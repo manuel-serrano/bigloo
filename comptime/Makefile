@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Oct  6 22:11:45 2015 (serrano)                */
+#*    Last change :  Wed Oct 14 07:40:39 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -18,15 +18,8 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Compilers, Tools and Destinations                                */
 #*---------------------------------------------------------------------*/
-BIGLOO		= $(BGLBUILDBIGLOO)
 # the produced executable
 BIGLOO_DEST	= $(BOOTBINDIR)/bigloo
-# the .afile
-AFILE           = .afile
-# the .jfile
-JFILE           = .jfile
-# the .etags
-ETAGS           = .etags
 # the shell to be used
 SHELL           = /bin/sh
 # another produced executable
@@ -45,7 +38,7 @@ CSRCSUFFIX	=
 LIBDIRFLAGS	= -lib-dir $(BOOTLIBDIR)
 # Commmon flags
 COMMONFLAGS	= -q \
-                  -afile $(AFILE) \
+                  -afile .afile \
                   -fsharing \
                   -fno-reflection \
                   -cc $(CC) \
@@ -66,14 +59,6 @@ BJVMFLAGS	= $(BDISTFLAGS) -lib-dir $(BOOTLIBDIR)
 LDBOOTFLAGS     = -static-bigloo $(LDSTRIPFLAGS)
 # C compiler flag
 CADDFLAGS	= -I$(BOOTLIBDIR)
-
-#*---------------------------------------------------------------------*/
-#*    Afile, Jfile and Bdepend tools                                   */
-#*---------------------------------------------------------------------*/
-AFILE_BIN	= $(BGLBUILDBINDIR)/$(AFILE_EXE)
-JFILE_BIN	= $(BGLBUILDBINDIR)/$(JFILE_EXE)
-BTAGS_BIN	= $(BGLBUILDBINDIR)/$(BTAGS_EXE)
-DEPEND_BIN	= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 
 #*---------------------------------------------------------------------*/
 #*    License                                                          */
@@ -425,8 +410,8 @@ distrib:
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi
-	$(MAKE) $(AFILE)
-	$(MAKE) $(JFILE)
+	$(MAKE) .afile
+	$(MAKE) .jfile
 	$(MAKE) dist-updates
 	$(MAKE) dist-bigloo.exe CSRCSUFFIX="%.c"
 
@@ -449,9 +434,7 @@ plain: bigloo.plain
 new: bigloo.new
 so: bigloo.$(SHAREDSUFFIX)
 
-bigloo.plain: Tools/license.scm
-	$(MAKE) $(AFILE)
-	$(MAKE) $(JFILE)
+bigloo.plain: Tools/license.scm .afile .jfile
 	- $(RM) -f Tools/date.scm
 	$(MAKE) Tools/date.scm
 	$(MAKE) $(BIGLOO_DEST)$(EXE_SUFFIX)
@@ -474,7 +457,7 @@ bigloo.$(SHAREDSUFFIX):
 #*    during the linkg if BIGLOO and BIGLOO_DEST are the same          */
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
+$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT)" \
@@ -491,7 +474,7 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
 #*---------------------------------------------------------------------*/
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST).$(NEW_SUFFIX): $(AFILE) $(JFILE) $(ETAGS) $(O_OBJECTS)
+$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .jfile .etags $(O_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS)
 	@ echo "$@ done..."
@@ -555,21 +538,17 @@ Tools/license.scm: $(LICENSE)
 #*---------------------------------------------------------------------*/
 .PHONY: ude
 
-ude: Tools/date.scm Tools/license.scm $(AFILE) $(JFILE) $(ETAGS)
-	@ echo "depend:"
+ude: Tools/date.scm Tools/license.scm .afile .jfile .etags
 	$(MAKE) dep
 
-$(AFILE): $(SOURCE_FILES)
-	@ echo "$(AFILE):"
-	$(AFILE_BIN) -o $(AFILE) $(SOURCE_FILES)
+.afile: $(SOURCE_FILES)
+	$(BGLAFILE) -o .afile $(SOURCE_FILES)
 
-$(JFILE): $(AFILE)
-	@ echo "$(JFILE):"
-	$(JFILE_BIN) -o $(JFILE) $(SOURCE_FILES)
+.jfile: .afile
+	$(BGLJFILE) -o .jfile $(SOURCE_FILES)
 
-$(ETAGS): $(AFILE)
-	@ echo ".etags:"
-	$(BTAGS_BIN) --define-var doc-define -o $(ETAGS) $(SOURCE_FILES)
+.etags: .afile
+	$(BTAGS_BIN) --define-var doc-define -o .etags $(SOURCE_FILES)
 
 #*---------------------------------------------------------------------*/
 #*    qnctags                                                          */
@@ -585,7 +564,7 @@ qnctags:
 dep: Tools/date.scm Tools/license.scm
 	@(num=`grep -n '^#bdepend start' Makefile | awk -F: '{ print $$1}' -`;\
           head -n `expr $$num - 1` Makefile > /tmp/Makefile.aux)
-	$(DEPEND_BIN) -fno-mco $(SOURCE_FILES) >> /tmp/Makefile.aux
+	$(BGLDEPEND) -fno-mco $(SOURCE_FILES) >> /tmp/Makefile.aux
 	mv /tmp/Makefile.aux Makefile
 
 #*---------------------------------------------------------------------*/
@@ -610,8 +589,8 @@ dist-updates:
 .PHONY: boot doboot
 
 boot: 
-	touch $(AFILE)
-	touch $(JFILE)
+	touch .afile
+	touch .jfile
 	if [ "$(SHRD_COMP)" = "yes" -a -f $(BOOTLIBDIR)/lib$(LIBRARYNAME)_s-$(RELEASE).$(SHAREDSUFFIX) ]; then \
 	  $(MAKE) doboot.shared SCMOBJSUFFIX="" COBJSUFFIX=%.o; \
         else \
@@ -694,8 +673,8 @@ uninstall:
 .PHONY: clean cleanall distclean
 
 clean-common:
-	- $(RM) -f $(AFILE)
-	- $(RM) -f $(JFILE)
+	- $(RM) -f .afile
+	- $(RM) -f .jfile
 	- $(RM) -f .etags
 	find . \( -name '*[~%]'                     \
                        -o -name '.??*[~%]'          \

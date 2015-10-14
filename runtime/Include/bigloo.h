@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Sep 19 08:45:13 2015 (serrano)                */
+/*    Last change :  Wed Oct 14 08:13:11 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -3451,7 +3451,8 @@ BGL_RUNTIME_DECL obj_t string_to_bstring( char * );
 BGL_RUNTIME_DECL obj_t string_to_bstring_len( char *, int );
 BGL_RUNTIME_DECL obj_t close_init_string();
 BGL_RUNTIME_DECL obj_t bgl_string_shrink( obj_t, long );
-
+BGL_RUNTIME_DECL bool_t bigloo_strcmp( obj_t, obj_t );
+					
 BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string( obj_t );
 BGL_RUNTIME_DECL obj_t make_ucs2_string( int, ucs2_t );
    

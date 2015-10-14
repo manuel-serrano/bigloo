@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jul 28 15:39:39 2014 (serrano)                */
+#*    Last change :  Wed Oct 14 07:20:29 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdb library.                           */
 #*=====================================================================*/
@@ -28,12 +28,6 @@ HEAPJVM_FILE	= $(LIB)/$(TARGETNAME).jheap
 # Where to store the library class files
 PBASE		= bigloo.bdb
 CLASS_DIR	= objs/class/bigloo/bdb
-# The Bigloo compiler
-BIGLOO		= $(BOOTBINDIR)/bigloo
-AFILE		= $(BOOTBINDIR)/$(AFILE_EXE)
-JFILE		= $(BOOTBINDIR)/$(JFILE_EXE)
-DEPEND		= $(BOOTBINDIR)/$(BDEPEND_EXE)
-BTAGS		= $(BOOTBINDIR)/$(BTAGS_EXE)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(LIB) -heap-library bdb
 BFLAGS		+= -lib-dir $(LIB)
@@ -178,13 +172,13 @@ ude:
 	@ $(MAKE) -f Makefile .afile .etags .jfile
 
 .afile: $(SOURCES)
-	@ $(AFILE) -o .afile $(_BGL_SOURCES) 
+	@ $(BGLAFILE) -o .afile $(_BGL_SOURCES) 
 
 .jfile: $(SOURCES)
-	@ $(JFILE) -o .jfile -pbase $(PBASE) $(SOURCES) 
+	@ $(BGLJFILE) -o .jfile -pbase $(PBASE) $(SOURCES) 
 
 .etags: $(SOURCES)
-	@ $(BTAGS) -o .etags $(_BGL_SOURCES)
+	@ $(BGLBTAGS) -o .etags $(_BGL_SOURCES)
 
 #*---------------------------------------------------------------------*/
 #*    stdclean                                                         */
