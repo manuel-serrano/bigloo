@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 15 08:54:07 2015 (serrano)                */
+#*    Last change :  Thu Oct 15 08:59:26 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4027,7 +4027,7 @@ fi
 
 # Bigloo compilation flags
 echo "" >> $makefile_cfg
-echo "BFLAGS=$bflags -lib-dir $'"(BOOTLIBDIR)" >> $makefile_cfg
+echo "BFLAGS=$bflags -lib-dir "'$'"(BOOTLIBDIR)" >> $makefile_cfg
 echo "BOOTFLAGS=$bootflags" >> $makefile_cfg
 echo "BFEATUREFLAGS=$featureflags" >> $makefile_cfg
 if [ "$csflags " = " " ]; then
