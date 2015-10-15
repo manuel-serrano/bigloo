@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Oct 15 15:15:22 2015 (serrano)                */
+#*    Last change :  Thu Oct 15 15:40:52 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -288,10 +288,10 @@ compile-bee0:
 	$(MAKE) -C bdl
 	$(MAKE) -C cigloo
 	if [ "$(JVMBACKEND) " = "yes " ]; then \
-            $(MAKE) -C higloo \
+            $(MAKE) -C higloo; \
         fi
 	if [ "$(EMACSDIR) " != " " ]; then \
-            $(MAKE) -C bmacs compile-bee \
+            $(MAKE) -C bmacs compile-bee; \
         fi
 
 compile-bee1:
