@@ -1,0 +1,19 @@
+#!@SHELL@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/bglmco.sh.in                */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Oct 13 14:06:43 2015                          */
+#*    Last change :  Wed Oct 14 09:07:57 2015 (serrano)                */
+#*    Copyright   :  2015 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    MCO wrapper                                                      */
+#*=====================================================================*/
+
+LD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH
+
+exec @MCO@ "$@"
