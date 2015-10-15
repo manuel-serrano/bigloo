@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 15 08:59:26 2015 (serrano)                */
+#*    Last change :  Thu Oct 15 09:44:39 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2921,7 +2921,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -3111,7 +3111,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_h` $bigloo_h
 
   # bigloo.sh
-  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh; do
+  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh; do
     mv $p $buildbindir/$p
     chmod u+rx $buildbindir/$p
   done

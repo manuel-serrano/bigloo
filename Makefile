@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Oct 14 07:56:57 2015 (serrano)                */
+#*    Last change :  Thu Oct 15 09:44:21 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -618,7 +618,7 @@ c-test:
             (cd api/$$p/recette && \
              $(MAKE) c && \
 	     test -x ./recette && \
-             ./recette $(RECETTEFLAGS)) || exit 1; \
+             $(BGLBUILDBINDIR)/bglrun.sh ./recette $(RECETTEFLAGS)) || exit 1; \
           fi; \
         done
 
