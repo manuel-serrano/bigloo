@@ -19,4 +19,4 @@ export DYLD_LIBRARY_PATH
 cmd=$1
 shift
 
-exec $1 "$@"
+exec $cmd "$@"

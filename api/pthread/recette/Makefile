@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Thu Oct 15 09:40:43 2015 (serrano)                */
+#*    Last change :  Thu Oct 15 15:23:39 2015 (serrano)                */
 #*    Copyright   :  2002-15 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
@@ -36,7 +36,7 @@ all: c jvm
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
+	$(BIGLOO) -static-all-bigloo $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
 
 jvm: 
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
@@ -80,7 +80,7 @@ test-jvm:
 #*    .scm -> .o/.class/.obj                                           */
 #*---------------------------------------------------------------------*/
 .scm.o: $*.scm
-	$(BIGLOO) -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
+	$(BIGLOO) -static-all-bigloo -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
