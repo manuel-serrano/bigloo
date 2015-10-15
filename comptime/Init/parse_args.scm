@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Nov 15 07:53:40 2014 (serrano)                */
-;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Oct 15 09:19:57 2015 (serrano)                */
+;*    Copyright   :  1992-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -676,12 +676,14 @@
       (("-ld-absolute" (help "Link using absolute path names for libraries"))
        (set! *ld-relative* #f))
       ;; static Bigloo library
-      (("-static-bigloo"
-	(help "Link with the static bigloo library"))
+      (("-static-bigloo" (help "Link with the static bigloo library"))
+       (register-srfi! 'static-bigloo)
        (set! *static-bigloo?* #t))
       ;; static all Bigloo library
       (("-static-all-bigloo"
 	(help "Link with static version of all bigloo libraries"))
+       (register-srfi! 'static-all-bigloo)
+       (register-srfi! 'static-bigloo)
        (set! *static-bigloo?* #t)
        (set! *static-all-bigloo?* #t))
       ;; double libraries inclusions

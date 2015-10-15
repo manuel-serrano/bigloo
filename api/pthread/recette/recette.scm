@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Thu Dec 13 09:14:05 2012 (serrano)                */
-;*    Copyright   :  2002-12 Manuel Serrano                            */
+;*    Last change :  Thu Oct 15 09:20:35 2015 (serrano)                */
+;*    Copyright   :  2002-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of SRFI18.               */
 ;*=====================================================================*/
@@ -616,11 +616,15 @@
 ;*    eval ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-test eval
-   (begin
-      (eval '(library-load 'pthread))
-      (eval '(thread-join!
-	      (thread-start-joinable!
-		 (instantiate::pthread (body (lambda () 23)))))))
+   (cond-expand
+      (static-bigloo
+       23)
+      (else
+       (begin
+	  (eval '(library-load 'pthread))
+	  (eval '(thread-join!
+		  (thread-start-joinable!
+		     (instantiate::pthread (body (lambda () 23)))))))))
    :result 23)
    
 ;*---------------------------------------------------------------------*/
