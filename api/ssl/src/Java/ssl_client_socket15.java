@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul  8 11:11:03 2005                          */
-/*    Last change :  Thu Sep  3 07:54:01 2015 (serrano)                */
+/*    Last change :  Mon Oct 19 08:06:04 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK>=1.5 SSL Java socket                                         */
@@ -27,6 +27,8 @@ public class ssl_client_socket extends client_socket {
    public static final int BGLSSL_SSLV23 = 3;
    public static final int BGLSSL_TLSV1 = 4;
    public static final int BGLSSL_DTLSV1 = 5;
+   public static final int BGLSSL_TLSV1_1 = 6;
+   public static final int BGLSSL_TLSV1_2 = 7;
 
    public ssl_client_socket(final byte[] hostname,
 			    final int port,

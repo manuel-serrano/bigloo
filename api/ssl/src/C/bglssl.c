@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Oct 12 11:36:01 2015 (serrano)                */
+/*    Last change :  Mon Oct 19 08:33:36 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -13,6 +13,7 @@
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
 #include <openssl/pkcs12.h>
+#include <openssl/x509v3.h>
 #include <fcntl.h>
 
 #if defined( _MSC_VER) || defined( _MINGW_VER )
@@ -142,7 +143,7 @@ DEFINE_STATIC_BGL_PROCEDURE( ssl_output_close_hook, _4, output_close_hook, 0L, B
 /*---------------------------------------------------------------------*/
 /*    The global SSL context                                           */
 /*---------------------------------------------------------------------*/
-static SSL_CTX *ctxc[ BGLSSL_DTLSV1 + 1 ], *ctxs[ BGLSSL_DTLSV1 + 1 ];
+static SSL_CTX *ctxc[ BGLSSL_TLSV1_2 + 1 ], *ctxs[ BGLSSL_TLSV1_2 + 1 ];
 
 extern obj_t bgl_make_certificate( X509 *cert );
 extern obj_t bgl_make_private_key( EVP_PKEY* pkey );
@@ -188,6 +189,16 @@ bgl_ssl_init() {
       ctxc[ BGLSSL_SSLV23 ] = SSL_CTX_new( SSLv23_client_method() );
 #endif      
       ctxc[ BGLSSL_TLSV1 ] = SSL_CTX_new( TLSv1_client_method() );
+#if( BGLSSL_HAVE_TLSV1_1 )
+      ctxc[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_1_client_method() );
+#else      
+      ctxc[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_client_method() );
+#endif
+#if( BGLSSL_HAVE_TLSV1_2 )
+      ctxc[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_2_client_method() );
+#else      
+      ctxc[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_client_method() );
+#endif
 #if( BGLSSL_HAVE_DTLS )
       ctxc[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLSv1_client_method() );
 #else      
@@ -202,6 +213,16 @@ bgl_ssl_init() {
       ctxs[ BGLSSL_SSLV23 ] = SSL_CTX_new( SSLv23_server_method() );
 #endif      
       ctxs[ BGLSSL_TLSV1 ] = SSL_CTX_new( TLSv1_server_method() );
+#if( BGLSSL_HAVE_TLSV1_1 )
+      ctxs[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_1_server_method() );
+#else      
+      ctxs[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_server_method() );
+#endif
+#if( BGLSSL_HAVE_TLSV1_2 )
+      ctxs[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_2_server_method() );
+#else      
+      ctxs[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_server_method() );
+#endif
 #if( BGLSSL_HAVE_DTLS )
       ctxs[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLSv1_server_method() );
 #else      

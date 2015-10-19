@@ -10,13 +10,19 @@
 /*=====================================================================*/
 
 #include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
 
-#define BGLSSL_SSLV2  1
-#define BGLSSL_SSLV3  2
-#define BGLSSL_SSLV23 3
-#define BGLSSL_TLSV1  4
-#define BGLSSL_DTLSV1 5
+#define BGLSSL_SSLV2   1
+#define BGLSSL_SSLV3   2
+#define BGLSSL_SSLV23  3
+#define BGLSSL_TLSV1   4
+#define BGLSSL_DTLSV1  5
+#define BGLSSL_TLSV1_1 6
+#define BGLSSL_TLSV1_2 7
 
+#define BGLSSL_HAVE_TLSV1_1 @HAVETLS1_1@
+#define BGLSSL_HAVE_TLSV1_2 @HAVETLS1_2@
 #define BGLSSL_HAVE_DTLS @HAVEDTLS@
 #define BGLSSL_HAVE_SSLV2 @HAVEV2@
 #define BGLSSL_HAVE_SSLV23 @HAVEV23@

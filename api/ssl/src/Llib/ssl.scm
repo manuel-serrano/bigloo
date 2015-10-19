@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu Sep  3 07:56:46 2015 (serrano)                */
+;*    Last change :  Mon Oct 19 08:04:59 2015 (serrano)                */
 ;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -153,6 +153,8 @@
 	   (macro $ssl-client-sslv3::int "BGLSSL_SSLV3")
 	   (macro $ssl-client-sslv23::int "BGLSSL_SSLV23")
 	   (macro $ssl-client-tlsv1::int "BGLSSL_TLSV1")
+	   (macro $ssl-client-tlsv1_1::int "BGLSSL_TLSV1_1")
+	   (macro $ssl-client-tlsv1_2::int "BGLSSL_TLSV1_2")
 	   (macro $ssl-client-dtlsv1::int "BGLSSL_DTLSV1")
 
 	   (macro $DH-GENERATOR-2::int "DH_GENERATOR_2")
@@ -273,6 +275,8 @@
 	 (field static sslv23::int "BGLSSL_SSLV23")
 	 (field static tlsv1::int "BGLSSL_TLSV1")
 	 (field static dtlsv1::int "BGLSSL_DTLSV1")
+	 (field static tlsv1_1::int "BGLSSL_TLSV1_1")
+	 (field static tlsv1_2::int "BGLSSL_TLSV1_2")
 	 "bigloo.ssl.ssl_client_socket")
       
       (class $ssl-server
@@ -635,8 +639,10 @@
       ((sslv3) $ssl-client-sslv3)
       ((ssl sslv23) $ssl-client-sslv23)
       ((tls tlsv1) $ssl-client-tlsv1)
+      ((tlsv1_1) $ssl-client-tlsv1_1)
+      ((tlsv1_2) $ssl-client-tlsv1_2)
       ((dtls dtlsv1) $ssl-client-dtlsv1)
-      (else (error 'ssl "Unknown protocols" protocol))))
+      (else (error "ssl" "Unknown protocols" protocol))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-private-key ...                                             */
