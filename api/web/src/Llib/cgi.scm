@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Thu Jul 16 17:15:43 2015 (serrano)                */
+;*    Last change :  Tue Oct 20 18:27:32 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -118,10 +118,15 @@
       (read/rp g port)))
 
 ;*---------------------------------------------------------------------*/
+;*    cgi-content-disposition ...                                      */
+;*---------------------------------------------------------------------*/
+(define cgi-content-disposition
+   "Content-Disposition: form-data; name=")
+;*---------------------------------------------------------------------*/
 ;*    cgi-parse-content-disposition ...                                */
 ;*---------------------------------------------------------------------*/
 (define (cgi-parse-content-disposition port)
-   (let* ((str "Content-Disposition: form-data; name=")
+   (let* ((str cgi-content-disposition)
 	  (len (string-length str)))
       (let ((buf (read-chars len port)))
 	 (if (string-ci=? str buf)
@@ -239,10 +244,10 @@
 ;*---------------------------------------------------------------------*/
 (define cgi-multipart-data-grammar
    (regular-grammar (boundary lines)
-      ((+ (or (out "\r\n")
-	      (: "\n" (or (out "-\r") (: "-" (out "-")) (: "\r" (out "\n"))))
-	      (: "\r" (or (out "\n") (: "\n" (out "-")) (: "\n-" (out "-"))))
-	      "\n"))
+      ((+ (out "\r\n"))
+       (set! lines (cons (the-string) lines))
+       (ignore))
+      ((or (: (? #\Return) "\n") #\Return)
        (set! lines (cons (the-string) lines))
        (ignore))
       ((: (? #\Return) "\n--")
@@ -292,7 +297,7 @@
 ;*---------------------------------------------------------------------*/
 (define cgi-multipart-boundary-grammar
    (regular-grammar (boundary)
-      ((: "--" (+ (out "\n\r")) #\Newline)
+      ((: "--" (* #\-) (+ (out "-\n\r")) #\Newline)
        (if (string=? (the-substring 2 -1) boundary)
 	   'start
 	   (raise
@@ -300,7 +305,7 @@
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal start boundary character")
 		 (obj (the-string))))))
-      ((: "--" (+ all) #\Return #\Newline)
+      ((: "--" (* #\-) (+ (out "\n\r-")) #\Return #\Newline)
        (if (string=? (the-substring 2 -2) boundary)
 	   'start
 	   (raise
@@ -308,16 +313,16 @@
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal start boundary character")
 		 (obj (the-string))))))
-      ((: "--" (+ (out "\r\n-")) "--" #\Newline)
-       (if (string=? (the-substring 2 3) boundary)
+      ((: "--" (* #\-) (+ (out "\r\n-")) "--" #\Newline)
+       (if (string=? (the-substring 2 -3) boundary)
 	   'end
 	   (raise
 	      (instantiate::&io-parse-error
 		 (proc "cgi-multipart->list")
 		 (msg "Illegal end boundary character")
 		 (obj (the-string))))))
-      ((: "--" (+ (out "\n-")) "--" #\return #\Newline)
-       (if (string=? (the-substring 2 4) boundary)
+      ((: "--" (* #\-) (+ (out "\n-")) "--" #\return #\Newline)
+       (if (string=? (the-substring 2 -4) boundary)
 	   'end
 	   (raise
 	      (instantiate::&io-parse-error
@@ -361,14 +366,26 @@
 ;*    cgi-multipart->list ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (cgi-multipart->list tmp port content-length boundary)
-   (if (read/rp cgi-multipart-boundary-grammar port boundary)
-       (let loop ((res '()))
-	  (multiple-value-bind (last entry)
-	     (cgi-parse-entry port tmp boundary)
-	     (if last
-		 (reverse! (cons entry res))
-		 (loop (cons entry res)))))
-       '()))
+   ;; check for an empty payload
+   (if (or (not (number? content-length))
+	   (< content-length 0)
+	   (> content-length
+	      (+ (* 2 (string-length boundary))
+		 2
+		 (string-length cgi-content-disposition))))
+       (if (read/rp cgi-multipart-boundary-grammar port boundary)
+	   (let loop ((res '()))
+	      (multiple-value-bind (last entry)
+		 (cgi-parse-entry port tmp boundary)
+		 (if last
+		     (reverse! (cons entry res))
+		     (loop (cons entry res)))))
+	   '())
+       (raise
+	  (instantiate::&io-parse-error
+	     (proc "cgi-multipart->list")
+	     (msg "empty body")
+	     (obj port)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cgi-post-arg-field ...                                           */
