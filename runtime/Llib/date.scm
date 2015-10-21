@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Jun 17 18:47:21 2015 (serrano)                */
+;*    Last change :  Wed Oct 21 08:39:52 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -486,7 +486,7 @@
 (define (date->rfc2822-date date)
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~2,0d:~2,0d:~2,0d"
+	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d"
 	     (day-aname (date-wday date))
 	     (date-day date)
 	     (month-aname (date-month date))

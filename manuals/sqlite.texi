@@ -202,7 +202,7 @@ obtained with
 @end smalllisp
 @end deffn
 
-@deffn {Bigloo Sqlite function} sqlite-name-of-columns @var{sqlite} @var{table}
+@deffn {Bigloo Sqlite function} sqlite-table-name-of-columns @var{sqlite} @var{table}
 Returns the name of columns in the table.
 @end deffn
 
