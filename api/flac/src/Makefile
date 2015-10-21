@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct 14 07:04:08 2015 (serrano)                */
+#*    Last change :  Wed Oct 21 16:08:13 2015 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,7 +50,7 @@ ifeq "$(FLACLIBS) " " "
 EXTRALIBS	= 
 else
 ifeq "$(ALSALIBS) " " "
-EXTRALIBS	= $(FLACLIBS)
+EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
 else
 EXTRALIBS	= $(FLACLIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
 endif
