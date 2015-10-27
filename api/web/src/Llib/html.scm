@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Thu Sep 15 10:30:25 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Mon Oct 26 16:59:08 2015 (serrano)                */
+;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
 ;*=====================================================================*/
@@ -31,15 +31,12 @@
 ;*    *html-special-elements* ...                                      */
 ;*---------------------------------------------------------------------*/
 (define *html-special-elements*
-   `((meta)
+   '((meta)
      (link)
-     (br) (hr) (img) (input) (li)
+     (br) (hr) (img) (input)
      (p . (a abbr acronym address big button caption del em
 	     i img kbd label legend 
 	     q s samp small span strike strong sub sup u var))
-;*      (option)                                                       */
-;*      (dd) (dt)                                                      */
-;*      (body) (head) (html) (tbody) (td) (tfoot) (th) (thead) (tr)    */
      (colgroup . (col))
      (script . ,html-parse-script)))
 
