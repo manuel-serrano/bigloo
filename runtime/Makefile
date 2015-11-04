@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Oct 14 07:51:08 2015 (serrano)                */
+#*    Last change :  Wed Oct 28 21:35:07 2015 (serrano)                */
 #*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -104,22 +104,30 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*    Java objects                                                     */
 #*---------------------------------------------------------------------*/
 JDK_LIBS	= JDK
-ifeq ($(JAVA_VERSION), 1.7)
-  JDK_LIBS	+= JDK16
-else
-  ifeq ($(JAVA_VERSION), 1.6)
+ifeq ($(JAVA_VERSION), 1.9)
     JDK_LIBS	+= JDK16
-   else
-    ifeq ($(JAVA_VERSION), 1.5)
-      JDK_LIBS	+= JDK15
+  else
+    ifeq ($(JAVA_VERSION), 1.8)
+      JDK_LIBS	+= JDK16
     else
-     ifeq ($(JAVA_VERSION), 1.4)
-       JDK_LIBS	+= JDK14
-     else
-       JDK_LIBS	+= JDK13
+    ifeq ($(JAVA_VERSION), 1.7)
+      JDK_LIBS	+= JDK16
+    else
+      ifeq ($(JAVA_VERSION), 1.6)
+        JDK_LIBS	+= JDK16
+       else
+        ifeq ($(JAVA_VERSION), 1.5)
+          JDK_LIBS	+= JDK15
+        else
+         ifeq ($(JAVA_VERSION), 1.4)
+           JDK_LIBS	+= JDK14
+         else
+           JDK_LIBS	+= JDK13
+         endif
+       endif
      endif
-   endif
- endif
+    endif
+  endif
 endif
 
 JLIB		= foreign buffer configure stackwriter\

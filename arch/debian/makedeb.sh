@@ -11,7 +11,7 @@
 #*=====================================================================*/
 
 # configuration and variables
-version=4.2b
+version=4.2c
 minor=
 
 bglprefix=/opt/bigloo

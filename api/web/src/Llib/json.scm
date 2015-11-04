@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Wed Sep 30 09:19:16 2015 (serrano)                */
+;*    Last change :  Wed Nov  4 11:49:47 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
@@ -158,6 +158,11 @@
 	     (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    *eot* ...                                                        */
+;*---------------------------------------------------------------------*/
+(define *eot* (cons 1 2))
+
+;*---------------------------------------------------------------------*/
 ;*    json-parse ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (json-parse o::input-port #!key
@@ -210,7 +215,7 @@
    
    (define (parse-array array)
       (let ((val (parse-text 'ANGLE-CLO)))
-	 (if (not val)
+	 (if (eq? val *eot*)
 	     (array-return array 0)
 	     (begin
 		(array-set array 0 val)
@@ -262,7 +267,8 @@
 		(parse-token-error token))
 	       (else
 		(unless (eq? (car token) end)
-		   (parse-token-error token)))))))
+		   (parse-token-error token))
+		*eot*)))))
    
    (check-procedure array-alloc 0 :array-alloc)
    (check-procedure array-set 3 :array-set)
@@ -274,9 +280,9 @@
    (when reviver (check-procedure reviver 3 :reviver))
 
    (let ((val (parse-text #f)))
-      (unless expr
+      (unless (eq? expr *eot*)
 	 (let ((token (parse-text 'EOS)))
-	    (when token
+	    (unless (eq? token *eot*)
 	       (if (pair? token)
 		   (parse-error (format "Illegal JSON trailing ~a token: \"~a\""
 				   (car token) (cadr token))

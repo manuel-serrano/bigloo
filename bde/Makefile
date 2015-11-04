@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Oct 14 08:11:37 2015 (serrano)                */
+#*    Last change :  Wed Nov  4 11:58:58 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -167,6 +167,8 @@ install: all
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
 	  cp $(BOOTBINDIR)/bglafile$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX); \
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX); \
+	  cp $(BOOTBINDIR)/bglafile.sh $(DESTDIR)$(BINDIR)/bglafile.sh; \
+          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglafile.sh; \
 	  cp $(BOOTBINDIR)/bgljfile$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX); \
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/bgldepend$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX); \

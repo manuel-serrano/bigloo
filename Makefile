@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Oct 15 15:40:52 2015 (serrano)                */
+#*    Last change :  Wed Nov  4 12:36:56 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -195,7 +195,7 @@ boot-c: checkgmake
 	@ echo "-------------------------------"
 
 boot-jvm: checkgmake
-	$(MAKE) -C runtime boot-jvm);
+	$(MAKE) -C runtime boot-jvm
 
 boot-bde:
 	$(MAKE) -C bde boot BFLAGS="$(BFLAGS) -lib-dir $(BOOTLIBDIR) $(SHRD_BDE_OPT)"
@@ -267,7 +267,6 @@ dobigboot:
 	  $(MAKE) -C gmp boot; \
         fi
 	@ mkdir -p bin
-	@ mkdir -p lib/$(RELEASE)
 	@ $(MAKE) -C runtime bigboot BBFLAGS="-w"
 	@ $(MAKE) -C comptime -i touchall
 	@ $(MAKE) -C comptime bigboot BBFLAGS="-w -unsafeh"
@@ -288,7 +287,7 @@ compile-bee0:
 	$(MAKE) -C bdl
 	$(MAKE) -C cigloo
 	if [ "$(JVMBACKEND) " = "yes " ]; then \
-            $(MAKE) -C higloo; \
+            $(MAKE) -C jigloo; \
         fi
 	if [ "$(EMACSDIR) " != " " ]; then \
             $(MAKE) -C bmacs compile-bee; \
@@ -398,7 +397,6 @@ c-fullbootstrap:
 #*---------------------------------------------------------------------*/
 newrevision:
 	(cd runtime && $(MAKE) includes)
-	(mkdir lib/$(RELEASE))
 	(cd comptime && $(MAKE))
 	(cd runtime && $(MAKE) touchall && $(MAKE) all)
 	(cd comptime && $(MAKE) touchall && $(MAKE))
@@ -473,7 +471,6 @@ distrib-jvm:
 true-distrib-jvm: $(DISTRIBDIR)/bigloo$(RELEASE).zip
 
 $(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
-	@ mkdir -p lib/$(RELEASE)
 	@ mkdir -p bin
 	@ mkdir -p bigloo$(RELEASE)/lib/$(RELEASE)
 	@ mkdir -p bigloo$(RELEASE)/bin
