@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Sun Apr 19 09:28:32 2015 (serrano)                */
+;*    Last change :  Sat Nov  7 22:21:34 2015 (serrano)                */
 ;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) music player.                                     */
@@ -51,7 +51,7 @@
 	       (%bcondv::condvar read-only (default (make-condition-variable)))
 	       (%bmutex::mutex read-only (default (make-mutex)))
 	       (%inlen::long read-only)
-	       (%inbufp::string read-only)
+	       %inbufp::string
 	       (%head::long (default 0))
 	       (%tail::long (default 0))
 	       (%empty::bool (default #t)))

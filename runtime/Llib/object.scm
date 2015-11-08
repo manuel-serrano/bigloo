@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Jul 17 08:37:24 2015 (serrano)                */
+;*    Last change :  Sat Nov  7 18:39:41 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -210,7 +210,7 @@
 	       (stack (default (get-trace-stack))))
 	    
 	    (class &error::&exception
-	       (proc read-only)
+	       proc
 	       (msg read-only)
 	       (obj read-only))
 	    (class &type-error::&error

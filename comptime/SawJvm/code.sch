@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (3.7b)
-;; Inria -- Sophia Antipolis     Mon Nov 14 19:08:36 CET 2011 
+;; Bigloo (4.2c)
+;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
 ;; (bigloo.new -classgen SawJvm/code.scm)
 ;; ==========================================================
 
@@ -11,7 +11,7 @@
 ;; lreg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-lreg::lreg type1235::type var1236::obj onexpr?1237::obj name1238::obj key1239::obj hardware1240::obj id1241::obj)
+    (inline make-lreg::lreg type1183::type var1184::obj onexpr?1185::obj name1186::obj key1187::obj hardware1188::obj id1189::obj)
     (inline lreg?::bool ::obj)
     (lreg-nil::lreg)
     (inline lreg-id::obj ::lreg)
@@ -29,7 +29,7 @@
 ;; liveblock
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-liveblock::liveblock label1228::int preds1229::pair-nil succs1230::pair-nil first1231::pair in1232::obj out1233::obj)
+    (inline make-liveblock::liveblock label1175::int preds1176::pair-nil succs1177::pair-nil first1178::pair in1179::obj out1180::obj)
     (inline liveblock?::bool ::obj)
     (liveblock-nil::liveblock)
     (inline liveblock-out::obj ::liveblock)
@@ -48,38 +48,38 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; lreg
-(define-inline (make-lreg::lreg type1235::type var1236::obj onexpr?1237::obj name1238::obj key1239::obj hardware1240::obj id1241::obj) (instantiate::lreg (type type1235) (var var1236) (onexpr? onexpr?1237) (name name1238) (key key1239) (hardware hardware1240) (id id1241)))
+(define-inline (make-lreg::lreg type1183::type var1184::obj onexpr?1185::obj name1186::obj key1187::obj hardware1188::obj id1189::obj) (instantiate::lreg (type type1183) (var var1184) (onexpr? onexpr?1185) (name name1186) (key key1187) (hardware hardware1188) (id id1189)))
 (define-inline (lreg?::bool obj::obj) ((@ isa? __object) obj (@ lreg saw_jvm_code)))
 (define (lreg-nil::lreg) (class-nil (@ lreg saw_jvm_code)))
-(define-inline (lreg-id::obj o::lreg) (with-access::lreg o (id) id))
-(define-inline (lreg-id-set! o::lreg v::obj) (with-access::lreg o (id) (set! id v)))
-(define-inline (lreg-hardware::obj o::lreg) (with-access::lreg o (hardware) hardware))
-(define-inline (lreg-hardware-set! o::lreg v::obj) (with-access::lreg o (hardware) (set! hardware v)))
-(define-inline (lreg-key::obj o::lreg) (with-access::lreg o (key) key))
-(define-inline (lreg-key-set! o::lreg v::obj) (with-access::lreg o (key) (set! key v)))
-(define-inline (lreg-name::obj o::lreg) (with-access::lreg o (name) name))
-(define-inline (lreg-name-set! o::lreg v::obj) (with-access::lreg o (name) (set! name v)))
-(define-inline (lreg-onexpr?::obj o::lreg) (with-access::lreg o (onexpr?) onexpr?))
-(define-inline (lreg-onexpr?-set! o::lreg v::obj) (with-access::lreg o (onexpr?) (set! onexpr? v)))
-(define-inline (lreg-var::obj o::lreg) (with-access::lreg o (var) var))
-(define-inline (lreg-var-set! o::lreg v::obj) (with-access::lreg o (var) (set! var v)))
-(define-inline (lreg-type::type o::lreg) (with-access::lreg o (type) type))
-(define-inline (lreg-type-set! o::lreg v::type) (with-access::lreg o (type) (set! type v)))
+(define-inline (lreg-id::obj o::lreg) (-> |#!bigloo_wallow| o id))
+(define-inline (lreg-id-set! o::lreg v::obj) (set! (-> |#!bigloo_wallow| o id) v))
+(define-inline (lreg-hardware::obj o::lreg) (-> |#!bigloo_wallow| o hardware))
+(define-inline (lreg-hardware-set! o::lreg v::obj) (set! (-> |#!bigloo_wallow| o hardware) v))
+(define-inline (lreg-key::obj o::lreg) (-> |#!bigloo_wallow| o key))
+(define-inline (lreg-key-set! o::lreg v::obj) (set! (-> |#!bigloo_wallow| o key) v))
+(define-inline (lreg-name::obj o::lreg) (-> |#!bigloo_wallow| o name))
+(define-inline (lreg-name-set! o::lreg v::obj) (set! (-> |#!bigloo_wallow| o name) v))
+(define-inline (lreg-onexpr?::obj o::lreg) (-> |#!bigloo_wallow| o onexpr?))
+(define-inline (lreg-onexpr?-set! o::lreg v::obj) (set! (-> |#!bigloo_wallow| o onexpr?) v))
+(define-inline (lreg-var::obj o::lreg) (-> |#!bigloo_wallow| o var))
+(define-inline (lreg-var-set! o::lreg v::obj) (set! (-> |#!bigloo_wallow| o var) v))
+(define-inline (lreg-type::type o::lreg) (-> |#!bigloo_wallow| o type))
+(define-inline (lreg-type-set! o::lreg v::type) (set! (-> |#!bigloo_wallow| o type) v))
 
 ;; liveblock
-(define-inline (make-liveblock::liveblock label1228::int preds1229::pair-nil succs1230::pair-nil first1231::pair in1232::obj out1233::obj) (instantiate::liveblock (label label1228) (preds preds1229) (succs succs1230) (first first1231) (in in1232) (out out1233)))
+(define-inline (make-liveblock::liveblock label1175::int preds1176::pair-nil succs1177::pair-nil first1178::pair in1179::obj out1180::obj) (instantiate::liveblock (label label1175) (preds preds1176) (succs succs1177) (first first1178) (in in1179) (out out1180)))
 (define-inline (liveblock?::bool obj::obj) ((@ isa? __object) obj (@ liveblock saw_jvm_code)))
 (define (liveblock-nil::liveblock) (class-nil (@ liveblock saw_jvm_code)))
-(define-inline (liveblock-out::obj o::liveblock) (with-access::liveblock o (out) out))
-(define-inline (liveblock-out-set! o::liveblock v::obj) (with-access::liveblock o (out) (set! out v)))
-(define-inline (liveblock-in::obj o::liveblock) (with-access::liveblock o (in) in))
-(define-inline (liveblock-in-set! o::liveblock v::obj) (with-access::liveblock o (in) (set! in v)))
-(define-inline (liveblock-first::pair o::liveblock) (with-access::liveblock o (first) first))
-(define-inline (liveblock-first-set! o::liveblock v::pair) (with-access::liveblock o (first) (set! first v)))
-(define-inline (liveblock-succs::pair-nil o::liveblock) (with-access::liveblock o (succs) succs))
-(define-inline (liveblock-succs-set! o::liveblock v::pair-nil) (with-access::liveblock o (succs) (set! succs v)))
-(define-inline (liveblock-preds::pair-nil o::liveblock) (with-access::liveblock o (preds) preds))
-(define-inline (liveblock-preds-set! o::liveblock v::pair-nil) (with-access::liveblock o (preds) (set! preds v)))
-(define-inline (liveblock-label::int o::liveblock) (with-access::liveblock o (label) label))
-(define-inline (liveblock-label-set! o::liveblock v::int) (with-access::liveblock o (label) (set! label v)))
+(define-inline (liveblock-out::obj o::liveblock) (-> |#!bigloo_wallow| o out))
+(define-inline (liveblock-out-set! o::liveblock v::obj) (set! (-> |#!bigloo_wallow| o out) v))
+(define-inline (liveblock-in::obj o::liveblock) (-> |#!bigloo_wallow| o in))
+(define-inline (liveblock-in-set! o::liveblock v::obj) (set! (-> |#!bigloo_wallow| o in) v))
+(define-inline (liveblock-first::pair o::liveblock) (-> |#!bigloo_wallow| o first))
+(define-inline (liveblock-first-set! o::liveblock v::pair) (set! (-> |#!bigloo_wallow| o first) v))
+(define-inline (liveblock-succs::pair-nil o::liveblock) (-> |#!bigloo_wallow| o succs))
+(define-inline (liveblock-succs-set! o::liveblock v::pair-nil) (set! (-> |#!bigloo_wallow| o succs) v))
+(define-inline (liveblock-preds::pair-nil o::liveblock) (-> |#!bigloo_wallow| o preds))
+(define-inline (liveblock-preds-set! o::liveblock v::pair-nil) (set! (-> |#!bigloo_wallow| o preds) v))
+(define-inline (liveblock-label::int o::liveblock) (-> |#!bigloo_wallow| o label))
+(define-inline (liveblock-label-set! o::liveblock v::int) (set! (-> |#!bigloo_wallow| o label) v))
 ))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:23:30 2011                          */
-;*    Last change :  Wed Feb  8 16:17:22 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sat Nov  7 10:04:40 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    dot notation for object access                                   */
 ;*=====================================================================*/
@@ -47,7 +47,7 @@
 	    effect_feffect
 	    ast_sexp)
    
-   (export (field-access::pair ::symbol ::symbol)
+   (export (field-access::pair ::symbol ::symbol #!optional write-allow)
 	   (field-ref->node::node ::obj ::pair stack ::obj ::symbol)
 	   (field-set->node::node ::obj ::obj ::pair stack ::obj ::symbol)))
 
@@ -56,18 +56,28 @@
 ;*---------------------------------------------------------------------*/
 (define __bigloo__
    (string->symbol "#!bigloo"))
+(define __bigloo_wallow__
+   (string->symbol "#!bigloo_wallow"))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-access ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (field-access var field)
-   `(-> ,__bigloo__ ,var ,field))
+(define (field-access var field #!optional write-allow)
+   `(-> ,(if write-allow __bigloo_wallow__ __bigloo__) ,var ,field))
+
+;*---------------------------------------------------------------------*/
+;*    source->field ...                                                */
+;*---------------------------------------------------------------------*/
+(define (source->field l)
+   (if (or (eq? (car l) __bigloo__) (eq? (car l) __bigloo_wallow__))
+       (cdr l)
+       l))
 
 ;*---------------------------------------------------------------------*/
 ;*    field-ref->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-ref->node l exp stack loc site)
-   (let* ((l2 (if (eq? (car l) __bigloo__) (cdr l) l))
+   (let* ((l2 (source->field l))
 	  (var (sexp->node (car l2) stack loc site)))
       (cond
 	 ((var? var)
@@ -98,7 +108,7 @@
 ;*    field-set->node ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (field-set->node l val exp stack loc site)
-   (let* ((l2 (if (eq? (car l) __bigloo__) (cdr l) l))
+   (let* ((l2 (source->field l))
 	  (var (sexp->node (car l2) stack loc site))
 	  (val (sexp->node val stack loc site)))
       (cond
@@ -117,10 +127,11 @@
 				 (type-id klass) (car slots))
 			      exp loc))
 			  ((null? (cdr slots))
-			   (if (and (slot-read-only? slot) (eq? l l2))
+			   (if (and (slot-read-only? slot)
+				    (not (eq? (car l) __bigloo_wallow__)))
 			       (error-sexp->node
-				  (format "Field read-only \"~a\"" (car slots))
-				  exp loc)
+				  (format "Field read-only \"~a\"" (cadr l2))
+				  `(set! ,(car l2) ,(cadr l2)) loc)
 			       (make-field-set! slot node val stack loc site)))
 			  (else
 			   (let ((node (make-field-ref slot node stack loc site)))

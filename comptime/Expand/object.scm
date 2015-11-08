@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Tue Nov 19 07:48:16 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Nov  7 09:39:05 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -235,7 +235,6 @@
 	  (new (gensym 'new))
 	  (tnew (make-typed-ident new id))
 	  (args (collect-slot-values slots)))
-
       ;; check that there is enough values
       (for-each (lambda (a s)
 		   (unless (or (car a) (slot-virtual? s))
@@ -253,7 +252,7 @@
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
 				 (localize (cdr val)
-				    `(set! ,(field-access new id) ,v)))))
+				    `(set! ,(field-access new id #t) ,v)))))
 	       slots args)
 	  ;; constructors
 	  ,(when (find-class-constructor class)
@@ -270,7 +269,7 @@
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
 				 (localize (cdr val)
-				    `(set! ,(field-access new id) ,v)))))
+				    `(set! ,(field-access new id #t) ,v)))))
 	       slots args)
 	  ;; return the new instance
 	  ,new)))
@@ -398,7 +397,7 @@
 			;; one from this duplicated object.
 			(vector-set! vargs
 			   i
-			   (cons #t (field-access dupvar (slot-id slot))))))
+			   (cons #t (field-access dupvar (slot-id slot) #t)))))
 		  (loop (+fx i 1) (cdr slots)))))
 	 ;; build the result
 	 (vector->list vargs)))
@@ -420,7 +419,7 @@
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
 				 (localize (cdr val)
-				    `(set! ,(field-access new id) ,v)))))
+				    `(set! ,(field-access new id #t) ,v)))))
 	       slots args)
 	  ;; constructors
 	  ,(when (find-class-constructor class)
@@ -437,7 +436,7 @@
 			      (let ((v (e (cdr val) e))
 				    (id (slot-id slot)))
 				 (localize (cdr val)
-				    `(set! ,(field-access new id) ,v)))))
+				    `(set! ,(field-access new id #t) ,v)))))
 	       slots args)
 	  ,new)))
 

@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (3.7b)
-;; Inria -- Sophia Antipolis     Tue Nov 15 09:56:41 CET 2011 
-;; (/tmp/bgl2 Llib/icalendar.scm -classgen)
+;; Bigloo (4.2c)
+;; Inria -- Sophia Antipolis     Sat Nov 7 19:45:19 CET 2015 
+;; (bigloo Llib/icalendar.scm -classgen)
 ;; ==========================================================
 
 ;; The directives
@@ -11,7 +11,7 @@
 ;; line
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-line::line name1033::symbol params1034::pair-nil val1035::bstring fname1036::obj location1037::obj)
+    (inline make-line::line name1069::symbol params1070::pair-nil val1071::bstring fname1072::obj location1073::obj)
     (inline line?::bool ::obj)
     (line-nil::line)
     (inline line-location::obj ::line)
@@ -25,7 +25,7 @@
 ;; block
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-block::block l01029::line ln1030::line body1031::pair-nil)
+    (inline make-block::block l01065::line ln1066::line body1067::pair-nil)
     (inline block?::bool ::obj)
     (block-nil::block)
     (inline block-body::pair-nil ::block)
@@ -35,28 +35,28 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; line
-(define-inline (make-line::line name1033::symbol params1034::pair-nil val1035::bstring fname1036::obj location1037::obj) (instantiate::line (name name1033) (params params1034) (val val1035) (fname fname1036) (location location1037)))
+(define-inline (make-line::line name1069::symbol params1070::pair-nil val1071::bstring fname1072::obj location1073::obj) (instantiate::line (name name1069) (params params1070) (val val1071) (fname fname1072) (location location1073)))
 (define-inline (line?::bool obj::obj) ((@ isa? __object) obj (@ line __calendar_ical)))
 (define (line-nil::line) (class-nil (@ line __calendar_ical)))
-(define-inline (line-location::obj o::line) (with-access::line o (location) location))
-(define-inline (line-location-set! o::line v::obj) (with-access::line o (location) (set! location v)))
-(define-inline (line-fname::obj o::line) (with-access::line o (fname) fname))
-(define-inline (line-fname-set! o::line v::obj) (with-access::line o (fname) (set! fname v)))
-(define-inline (line-val::bstring o::line) (with-access::line o (val) val))
-(define-inline (line-val-set! o::line v::bstring) (with-access::line o (val) (set! val v)))
-(define-inline (line-params::pair-nil o::line) (with-access::line o (params) params))
-(define-inline (line-params-set! o::line v::pair-nil) (with-access::line o (params) (set! params v)))
-(define-inline (line-name::symbol o::line) (with-access::line o (name) name))
-(define-inline (line-name-set! o::line v::symbol) (with-access::line o (name) (set! name v)))
+(define-inline (line-location::obj o::line) (-> |#!bigloo_wallow| o location))
+(define-inline (line-location-set! o::line v::obj) (set! (-> |#!bigloo_wallow| o location) v))
+(define-inline (line-fname::obj o::line) (-> |#!bigloo_wallow| o fname))
+(define-inline (line-fname-set! o::line v::obj) (set! (-> |#!bigloo_wallow| o fname) v))
+(define-inline (line-val::bstring o::line) (-> |#!bigloo_wallow| o val))
+(define-inline (line-val-set! o::line v::bstring) (set! (-> |#!bigloo_wallow| o val) v))
+(define-inline (line-params::pair-nil o::line) (-> |#!bigloo_wallow| o params))
+(define-inline (line-params-set! o::line v::pair-nil) (set! (-> |#!bigloo_wallow| o params) v))
+(define-inline (line-name::symbol o::line) (-> |#!bigloo_wallow| o name))
+(define-inline (line-name-set! o::line v::symbol) (set! (-> |#!bigloo_wallow| o name) v))
 
 ;; block
-(define-inline (make-block::block l01029::line ln1030::line body1031::pair-nil) (instantiate::block (l0 l01029) (ln ln1030) (body body1031)))
+(define-inline (make-block::block l01065::line ln1066::line body1067::pair-nil) (instantiate::block (l0 l01065) (ln ln1066) (body body1067)))
 (define-inline (block?::bool obj::obj) ((@ isa? __object) obj (@ block __calendar_ical)))
 (define (block-nil::block) (class-nil (@ block __calendar_ical)))
-(define-inline (block-body::pair-nil o::block) (with-access::block o (body) body))
-(define-inline (block-body-set! o::block v::pair-nil) (with-access::block o (body) (set! body v)))
-(define-inline (block-ln::line o::block) (with-access::block o (ln) ln))
-(define-inline (block-ln-set! o::block v::line) (with-access::block o (ln) (set! ln v)))
-(define-inline (block-l0::line o::block) (with-access::block o (l0) l0))
-(define-inline (block-l0-set! o::block v::line) (with-access::block o (l0) (set! l0 v)))
+(define-inline (block-body::pair-nil o::block) (-> |#!bigloo_wallow| o body))
+(define-inline (block-body-set! o::block v::pair-nil) (set! (-> |#!bigloo_wallow| o body) v))
+(define-inline (block-ln::line o::block) (-> |#!bigloo_wallow| o ln))
+(define-inline (block-ln-set! o::block v::line) (set! (-> |#!bigloo_wallow| o ln) v))
+(define-inline (block-l0::line o::block) (-> |#!bigloo_wallow| o l0))
+(define-inline (block-l0-set! o::block v::line) (set! (-> |#!bigloo_wallow| o l0) v))
 ))

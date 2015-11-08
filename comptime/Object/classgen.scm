@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Tue Oct 23 21:16:57 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Sat Nov  7 18:26:52 2015 (serrano)                */
+;*    Copyright   :  2011-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
 ;*=====================================================================*/
@@ -220,7 +220,7 @@
 	  (tnew (make-typed-ident new tid)))
       `(lambda (,tnew)
 	  ,@(map (lambda (s)
-		    `(set! ,(field-access new (slot-id s))
+		    `(set! ,(field-access new (slot-id s) #t)
 			,(type-nil-value (slot-type s) s)))
 	       plain-slots)
 	  ,new)))
@@ -440,7 +440,7 @@
 	     (id (symbol-append tid '- sid))
 	     (gid (make-typed-ident id (type-id (slot-type s)))))
 	 `(define-inline (,gid ,o)
-	     (,(make-typed-ident 'with-access tid) o (,sid) ,sid))))
+	     ,(field-access 'o sid #t))))
    
    (define (set-def s)
       (let* ((tid (type-id c))
@@ -449,7 +449,7 @@
 	     (id (symbol-append tid '- sid '-set!))
 	     (v (make-typed-ident 'v (type-id (slot-type s)))))
 	 `(define-inline (,id ,o ,v)
-	     (,(make-typed-ident 'with-access tid) o (,sid) (set! ,sid v)))))
+	     (set! ,(field-access 'o sid #t) v))))
    
    (values (list (get-proto s) (set-proto s))
       ;; always build a getter and a setter, the former is

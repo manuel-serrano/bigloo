@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 21 10:14:19 2005                          */
-;*    Last change :  Tue Nov 15 10:24:06 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Sat Nov  7 19:50:31 2015 (serrano)                */
+;*    Copyright   :  2005-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    iCalendar parser                                                 */
 ;*=====================================================================*/
@@ -19,7 +19,9 @@
    (export (write-icalendar ::calendar ::output-port #!optional pred)
 	   (port->icalendar::calendar ::input-port #!optional cal))
 
-   (include "icalendar.sch")
+   (cond-expand
+      ((not bigloo-class-generate)
+       (include "icalendar.sch")))
    
    (static (class line
 	      (name::symbol read-only)
