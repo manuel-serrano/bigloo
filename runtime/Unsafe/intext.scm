@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Sep 13 16:02:06 2015 (serrano)                */
+;*    Last change :  Tue Nov 17 14:49:30 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -459,7 +459,7 @@
 	     (klass (object-class obj))
 	     (fields (class-all-fields klass)))
 	 (unless (=fx (-fx sz 1) (vector-length fields))
-	    (error "string->obj" "corrupted class" cname))
+	    (error "string->obj" "corrupted class, wrong fields" cname))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining obj))
 	 ;; skip the class fields
@@ -473,7 +473,7 @@
 	 (let ((hash (read-integer s)))
 	    (if (=fx hash (class-hash klass))
 		obj
-		(error "string->obj" "corrupted class" cname)))))
+		(error "string->obj" "corrupted class, bad signature" cname)))))
    
    ;; read-custom-object
    (define (read-custom-object)

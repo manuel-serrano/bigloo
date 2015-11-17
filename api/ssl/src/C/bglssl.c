@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Oct 19 08:33:36 2015 (serrano)                */
+/*    Last change :  Tue Nov 17 21:01:59 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -267,18 +267,35 @@ free_pkey( void* obj, void* pkey ) {
 static long
 sslread( obj_t port, char *ptr, long len ) {
    long r;
-   SSL *ssl = (SSL*)CAR( PORT( port ).userdata );
+   obj_t drag = PORT( port ).userdata;
+   SSL *ssl;
 
-loop:   
+   BGL_MUTEX_LOCK( ssl_mutex );
+   if( drag != BUNSPEC ) {
+      SET_CAR( CDR( PORT( port ).userdata ), BINT( 1 ) );
+      ssl = (SSL*)CAR( drag );
+   }
+   BGL_MUTEX_UNLOCK( ssl_mutex );
+   
+loop:
    if( (r = SSL_read( ssl, ptr, len )) <= 0 ) {
       if( r == 0 ) {
 	 INPUT_PORT( port ).eof = 1;
       } else {
-	 if( (SSL_get_error( ssl, r ) == SSL_ERROR_SSL) && (errno == EINTR) )
+	 if( (SSL_get_error( ssl, r ) == SSL_ERROR_SSL) && (errno == EINTR) ) {
 	    goto loop;
+	 }
       }
    }
-   
+
+   BGL_MUTEX_LOCK( ssl_mutex );
+   if( CAR( PORT( port ).userdata ) == BUNSPEC ) {
+      SSL_free( ssl );
+   } else {
+      SET_CAR( CDR( PORT( port ).userdata ), BINT( 0 ) );
+   }
+   BGL_MUTEX_UNLOCK( ssl_mutex );
+
    return r;
 }
 
@@ -297,14 +314,20 @@ sslwrite( obj_t port, char *ptr, long len ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 socket_close_hook( obj_t env, obj_t s ) {
-   SSL *ssl = (SSL *)CAR( SOCKET( s ).userdata );
+   obj_t drag = SOCKET( s ).userdata;
+   SSL *ssl = (SSL *)CAR( drag );
  
    BGL_MUTEX_LOCK( ssl_mutex );
    
    SSL_shutdown( ssl );
-   SSL_free( ssl );
-   SOCKET( s ).userdata = BUNSPEC;
+
+   if( CAR( CDR( drag ) ) == BINT( 0 ) ) {
+      /* in read, free must be delayed */
+      SSL_free( ssl );
+   }
    
+   SOCKET( s ).userdata = BUNSPEC;
+
    BGL_MUTEX_UNLOCK( ssl_mutex );
    
    return s;
@@ -550,6 +573,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
    op = SOCKET_OUTPUT( s );
    
    /* drag whatever is necessary for the GC */
+   drag = MAKE_PAIR( BINT( 0 ), drag );
    drag = MAKE_PAIR( (obj_t)ssl, drag );
 
    PORT( ip ).userdata = drag;
