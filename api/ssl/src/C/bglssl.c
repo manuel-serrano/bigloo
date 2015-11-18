@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Nov 17 21:01:59 2015 (serrano)                */
+/*    Last change :  Wed Nov 18 05:25:26 2015 (serrano)                */
 /*    Copyright   :  2005-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -184,7 +184,9 @@ bgl_ssl_init() {
 #if( BGLSSL_HAVE_SSLV2 )
       ctxc[ BGLSSL_SSLV2 ] = SSL_CTX_new( SSLv2_client_method() );
 #endif
+#if( BGLSSL_HAVE_SSLV3 )
       ctxc[ BGLSSL_SSLV3 ] = SSL_CTX_new( SSLv3_client_method() );
+#endif      
 #if( BGLSSL_HAVE_SSLV23 )
       ctxc[ BGLSSL_SSLV23 ] = SSL_CTX_new( SSLv23_client_method() );
 #endif      
@@ -208,7 +210,9 @@ bgl_ssl_init() {
 #if( BGLSSL_HAVE_SSLV2 )
       ctxs[ BGLSSL_SSLV2 ] = SSL_CTX_new( SSLv2_server_method() );
 #endif      
+#if( BGLSSL_HAVE_SSLV3 )
       ctxs[ BGLSSL_SSLV3 ] = SSL_CTX_new( SSLv3_server_method() );
+#endif
 #if( BGLSSL_HAVE_SSLV23 )
       ctxs[ BGLSSL_SSLV23 ] = SSL_CTX_new( SSLv23_server_method() );
 #endif      
@@ -2364,17 +2368,41 @@ bgl_ssl_ctx_init( secure_context sc ) {
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv3_method" ) ) {
+#if( BGLSSL_HAVE_SSLV3 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_method() );
+#else
+      goto unsupported;
+#endif
    } else if( !strcmp( sslmethod, "SSLv3_server_method" ) ) {
+#if( BGLSSL_HAVE_SSLV3 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_server_method() );
+#else
+      goto unsupported;
+#endif
    } else if( !strcmp( sslmethod, "SSLv3_client_method" ) ) {
+#if( BGLSSL_HAVE_SSLV3 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_client_method() );
+#else
+      goto unsupported;
+#endif
    } else if( !strcmp( sslmethod, "SSLv23_method" ) ) {
+#if( BGLSSL_HAVE_SSLV23 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_method() );
+#else
+      goto unsupported;
+#endif
    } else if( !strcmp( sslmethod, "SSLv23_server_method" ) ) {
+#if( BGLSSL_HAVE_SSLV23 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_server_method() );
+#else
+      goto unsupported;
+#endif
    } else if( !strcmp( sslmethod, "SSLv23_client_method" ) ) {
+#if( BGLSSL_HAVE_SSLV23 )
       sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_client_method() );
+#else
+      goto unsupported;
+#endif
    } else if( !strcmp( sslmethod, "TLSv1_method" ) ) {
       sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_method() );
    } else if( !strcmp( sslmethod, "TLSv1_server_method" ) ) {

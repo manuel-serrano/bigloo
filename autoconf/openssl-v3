@@ -1,0 +1,98 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/openssl-v2                  */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Mon May  4 18:01:40 2015 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host openssl library.                              */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+openssllibs=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      openssllibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+if [ "$openssllibs " = " " ]; then
+  case $HOSTOS in
+    mingw)
+      openssllibs="-leay32 -lssleay32";;
+
+    *)
+      openssllibs="-lssl";;
+  esac
+fi
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $openssllibs >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <openssl/ssl.h>
+#include <openssl/bio.h>
+
+static SSL_CTX *ctx;
+
+int main( int argc, char *argv[] ) {
+    BIO *sbio;
+
+    SSL_library_init();
+    SSL_load_error_strings();
+
+    ctx = SSL_CTX_new( SSLv2_server_method() );
+ 
+    sbio = BIO_new_socket( 0, BIO_NOCLOSE );
+    BIO_free( sbio );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "yes"
+else
+   echo "no"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0
