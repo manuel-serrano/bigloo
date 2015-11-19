@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Nov 18 05:23:03 2015 (serrano)                */
+#*    Last change :  Thu Nov 19 08:33:32 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2101,6 +2101,8 @@ if [ "$openssllibs " = " " ]; then
      if [ "$openssllibs " = "no " ]; then
        openssllibs=`$autoconf openssl --lib="-lcrypto -lssl"` || exit 1;
      fi
+   else
+     openssllibs=`$autoconf openssl --lib="$openssllibs"` || exit 1;
    fi
 else
    openssllibs=`$autoconf openssl --lib="$openssllibs"` || exit 1;
