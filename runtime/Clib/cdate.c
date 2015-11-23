@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Nov 23 08:52:53 2015 (serrano)                */
+/*    Last change :  Mon Nov 23 16:39:58 2015 (serrano)                */
 /*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -74,7 +74,7 @@ bgl_timezone() {
    static long timezone = 23;
 
    if( timezone == 23 ) {
-      timezone = bgl_get_timezone( time( 0 ) );
+      timezone = bgl_get_timezone( time( 0L ) );
    }
 
    return timezone;
@@ -118,11 +118,12 @@ tm_to_date( struct tm *tm ) {
 /*    bgl_seconds_to_date ...                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_seconds_to_date( long sec ) {
+bgl_seconds_to_date( long s ) {
    obj_t res;
+   time_t sec = (time_t)s;
 
    BGL_MUTEX_LOCK( date_mutex );
-   res = tm_to_date( localtime( (time_t *)&sec ) );
+   res = tm_to_date( localtime( &sec ) );
    BGL_MUTEX_UNLOCK( date_mutex );
    
    return res;
@@ -249,7 +250,7 @@ bgl_current_microseconds() {
 			BUNSPEC );
    }
 #else
-   return (BGL_LONGLONG_T)(bgl_current_seconds() ) * MICROBASE;
+   return (BGL_LONGLONG_T)(time( 0L ) ) * MICROBASE;
 #endif
 }
 
@@ -272,7 +273,7 @@ bgl_current_nanoseconds() {
 			BUNSPEC );
    }
 #else
-   return (BGL_LONGLONG_T)(bgl_current_seconds() ) * NANOBASE;
+   return (BGL_LONGLONG_T)(time( 0L ) ) * NANOBASE;
 #endif
 }
 
@@ -313,15 +314,16 @@ bgl_seconds_to_string( long sec ) {
 /*    bgl_seconds_format ...                                           */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_seconds_format( long sec, obj_t fmt ) {
+bgl_seconds_format( long s, obj_t fmt ) {
    char *buffer;
    struct tm *p;
    int len = (int)STRING_LENGTH( fmt ) + 256;
+   time_t sec = (time_t)s;
 
    buffer = (char *)GC_MALLOC_ATOMIC( len + 1 );
    
    BGL_MUTEX_LOCK( date_mutex );
-   p = localtime( (time_t *)&sec );
+   p = localtime( &sec );
    BGL_MUTEX_UNLOCK( date_mutex );
    
    len = (int)strftime( buffer, len, BSTRING_TO_STRING( fmt ), p );
