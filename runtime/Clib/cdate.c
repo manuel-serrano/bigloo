@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Wed Oct 21 08:06:57 2015 (serrano)                */
+/*    Last change :  Mon Nov 23 08:07:08 2015 (serrano)                */
 /*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -46,7 +46,7 @@ bgl_init_date() {
 /*    bgl_get_timezone ...                                             */
 /*---------------------------------------------------------------------*/
 static long
-bgl_get_timezone( long s ) {
+bgl_get_timezone( time_t s ) {
    struct tm *tm = localtime( &s );
    long m1, h1, d1;
 

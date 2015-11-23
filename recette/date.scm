@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb  5 10:03:10 2003                          */
-;*    Last change :  Sat Sep 19 08:33:34 2015 (serrano)                */
+;*    Last change :  Wed Nov 18 19:11:52 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Test date features                                               */
@@ -259,7 +259,15 @@
       (let* ((d (make-date :year 2000 :sec 14 :nsec #l23)))
 	 (and (=llong (date-nanosecond d) #l23)
 	      (=fx (date-second d) 14)))
-      #t))
+      #t)
+   (test "nano.4" (date? (nanoseconds->date (current-nanoseconds))) #t)
+   (let* ((s1 (current-nanoseconds))
+	  (d1 (nanoseconds->date s1)))
+      (test "nano.5" (date->nanoseconds d1) s1))
+   (let* ((d1 (current-date))
+	  (s1 (date->nanoseconds d1)))
+      (test "nano.6" (nanoseconds->date s1) d1))
+   )
 
 	    
 	 
