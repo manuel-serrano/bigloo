@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Mon Nov 23 08:07:08 2015 (serrano)                */
+/*    Last change :  Mon Nov 23 08:52:53 2015 (serrano)                */
 /*    Copyright   :  2003-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
@@ -135,10 +135,10 @@ bgl_seconds_to_date( long sec ) {
 BGL_RUNTIME_DEF obj_t
 bgl_nanoseconds_to_date( BGL_LONGLONG_T nsec ) {
    obj_t res;
-   long sec = (long)(nsec / NANOBASE);
+   time_t sec = nsec / NANOBASE;
 
    BGL_MUTEX_LOCK( date_mutex );
-   res = tm_to_date( localtime( (time_t *)&sec ) );
+   res = tm_to_date( localtime( &sec ) );
    BGL_MUTEX_UNLOCK( date_mutex );
 
    BGL_DATE( res ).nsec = (nsec - ((BGL_LONGLONG_T) sec * NANOBASE));
