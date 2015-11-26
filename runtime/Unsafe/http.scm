@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Fri Sep 18 15:58:54 2015 (serrano)                */
+;*    Last change :  Thu Nov 26 12:04:03 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -176,16 +176,6 @@
 		 (substring boundary 2 (string-length boundary)) out)
 	      (display-line out)
 	      (for-each (lambda (o) (display-string o out)) content)))
-;* 	  ((eq? content-type 'multipart/form-data)                     */
-;* 	   (let* ((boundary (generate-http-boundary))                  */
-;* 		  (content (generate-http-post-body boundary args)))   */
-;* 	      (tprint "ctn={" content "}")                             */
-;* 	      (tprint "len=" (string-length content))                  */
-;* 	      (display-line "Content-Length: " (string-length content) out) */
-;* 	      (display-line "Content-Type: multipart/form-data; boundary=" */
-;* 		 (substring boundary 2 (string-length boundary)) out)  */
-;* 	      (display-line out)                                       */
-;* 	      (display content out)))                                  */
 	  (else
 	   (let ((content (x-www-form-urlencode args))
 		 (ct (or content-type "application/x-www-form-urlencoded")))
