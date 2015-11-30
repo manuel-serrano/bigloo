@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 11:21:26 1996                          */
-;*    Last change :  Wed Jan 29 08:22:53 2014 (serrano)                */
+;*    Last change :  Mon Nov 30 09:08:17 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which travers an entire        */
 ;*    unit in order to find the global declared variable and their     */

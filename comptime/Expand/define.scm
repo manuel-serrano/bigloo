@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:56:53 1994                          */
-;*    Last change :  Mon Dec 24 06:29:31 2012 (serrano)                */
-;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 30 09:09:52 2015 (serrano)                */
+;*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define' forms                                               */
 ;*=====================================================================*/
@@ -195,20 +195,28 @@
 ;*    expand-inline ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (expand-inline x e)
+   (if internal-definition?
+       (expand-internal-define x e)
+       (expand-external-define-inline x e)))
+
+;*---------------------------------------------------------------------*/
+;*    expand-external-define-inline ...                                */
+;*---------------------------------------------------------------------*/
+(define (expand-external-define-inline x e)
    (match-case x
       ((?kw ((and ?id (or (and (? symbol?) ?name)
 			  (@ (and (? symbol?) ?name) (? symbol?)))) . ?args)
-	    . (and ?body (not ())))
+	  . (and ?body (not ())))
        (with-lexical
-	(args*->args-list args)
-	'_
-	(find-location x)
-	(lambda ()
-	   (replace! x (do-inline/generic/method kw e id name args body x)))))
+	  (args*->args-list args)
+	  '_
+	  (find-location x)
+	  (lambda ()
+	     (replace! x (do-inline/generic/method kw e id name args body x)))))
       (else
        (error #f
-	      (string-append "Illegal `define-inline' form")
-	      x))))
+	  (string-append "Illegal `define-inline' form")
+	  x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-generic ...                                               */

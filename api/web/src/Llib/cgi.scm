@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Feb 16 11:17:40 2003                          */
-;*    Last change :  Thu Nov 26 07:02:30 2015 (serrano)                */
+;*    Last change :  Fri Nov 27 08:15:54 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    CGI scripts handling                                             */
@@ -385,7 +385,7 @@
        (raise
 	  (instantiate::&io-parse-error
 	     (proc "cgi-multipart->list")
-	     (msg "empty body")
+	     (msg (format "empty body [~a]" boundary))
 	     (obj port)))))
 
 ;*---------------------------------------------------------------------*/
