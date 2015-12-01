@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sun Nov 10 16:17:25 2013 (serrano)                */
-;*    Copyright   :  2002-13 Manuel Serrano                            */
+;*    Last change :  Tue Dec  1 08:13:24 2015 (serrano)                */
+;*    Copyright   :  2002-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -282,16 +282,27 @@
    ;; bind-exit
    (install-eval-expander 'bind-exit
       (lambda (x e)
+	 
+	 (define (find-in-body k body)
+	    (cond
+	       ((eq? body k)
+		#t)
+	       ((pair? body)
+		(unless (eq? (car body) 'quote)
+		   (or (find-in-body k (car body))
+		       (find-in-body k (cdr body)))))
+	       (else #f)))
+	 
 	 (match-case x
 	    ((?- (?exit) . (and ?body (not ())))
 	     (evepairify
-		`(bind-exit (,exit)
-		    ,(e (expand-progn body) e))
+		(if (find-in-body exit body)
+		    `(bind-exit (,exit)
+			,(e (expand-progn body) e))
+		    (e `(begin ,@body) e))
 		x))
 	    (else
-	     (expand-error "bind-exit"
-		"Illegal form"
-		x)))))
+	     (expand-error "bind-exit" "Illegal form" x)))))
    
    ;; unwind-protect
    (install-eval-expander 'unwind-protect

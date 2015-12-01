@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Sun Jan 19 21:50:42 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Dec  1 08:09:09 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -59,25 +59,37 @@
 ;*    expand-bind-exit ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (expand-bind-exit x e)
+
+   (define (find-in-body k body)
+      (cond
+	 ((eq? body k)
+	  #t)
+	 ((pair? body)
+	  (unless (eq? (car body) 'quote)
+	     (or (find-in-body k (car body)) (find-in-body k (cdr body)))))
+	 (else #f)))
+	  
    (match-case x
       ((?- (?exit) . ?body)
-       (let ((an-exit  (mark-symbol-non-user! (gensym 'an_exit)))
-	     (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
-	     (val      (mark-symbol-non-user! (gensym 'val)))
-	     (res      (mark-symbol-non-user! (gensym 'res))))
-	  (let ((new (e `(set-exit (,an-exit)
-			    (let ()
-			       (push-exit! ,an-exit 1)
-			       (let ((,an-exitd ($get-exitd-top)))
-				  (labels ((,exit (,val)
-					      ((@ unwind-until! __bexit)
-					       ,an-exitd
-					       ,val)))
-				     (let ((,res (begin ,@body)))
-					(pop-exit!)
-					,res)))))
-			e)))
-	     (replace! x new))))
+       (if (not (find-in-body exit body))
+	   (replace! x (e `(begin ,@body) e))
+	   (let ((an-exit  (mark-symbol-non-user! (gensym 'an_exit)))
+		 (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
+		 (val      (mark-symbol-non-user! (gensym 'val)))
+		 (res      (mark-symbol-non-user! (gensym 'res))))
+	      (let ((new (e `(set-exit (,an-exit)
+				(let ()
+				   (push-exit! ,an-exit 1)
+				   (let ((,an-exitd ($get-exitd-top)))
+				      (labels ((,exit (,val)
+						  ((@ unwind-until! __bexit)
+						   ,an-exitd
+						   ,val)))
+					 (let ((,res (begin ,@body)))
+					    (pop-exit!)
+					    ,res)))))
+			    e)))
+		 (replace! x new)))))
       (else
        (error #f "Illegal `bind-exit' form" x))))
 
