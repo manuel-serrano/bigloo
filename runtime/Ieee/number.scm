@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Mon Nov 23 18:02:00 2015 (serrano)                */
+;*    Last change :  Wed Dec  2 17:17:55 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -1289,6 +1289,7 @@
 ;*    @deffn string->number@ ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (string->number x #!optional (radix 10))
+   
    (define (integer-string? x r)
       (let ((len (string-length x)))
 	 (let loop ((i (-fx len 1)))
@@ -1318,6 +1319,7 @@
 		       (char=? (string-ref x i) #\+))
 		   (and (=fx i 0) (>fx len 1)))
 		  (else #f)))))
+   
    (define (real-string? x)
       (let ((len (string-length x)))
 	 (let loop ((i 0)
@@ -1353,6 +1355,7 @@
 			      0
 			      d)))
 		  (else #f)))))
+   
    (cond
       ((not (integer? radix))
        (error 'number->string "Illegal radix" radix))

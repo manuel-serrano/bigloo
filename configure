@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov 19 08:33:32 2015 (serrano)                */
+#*    Last change :  Fri Dec  4 16:51:03 2015 (serrano)                */
 #*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2094,26 +2094,26 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for openssl
 if [ "$openssllibs " = " " ]; then
+   if [ "$opensslcflags " = " " ]; then
+     opensslcflags=`$autoconf bgl-pkg-config --cflags openssl`;
+   fi
+  
+   if [ "$opensslcflags " = " " ]; then
+     opensslcflags=-I.
+   fi
+
    openssllibs=`$autoconf bgl-pkg-config --libs openssl`;
     
    if [ "$openssllibs " = " " ]; then
      openssllibs=`$autoconf openssl` || exit 1;
      if [ "$openssllibs " = "no " ]; then
-       openssllibs=`$autoconf openssl --lib="-lcrypto -lssl"` || exit 1;
+       openssllibs=`$autoconf openssl --cflags="$opensslcflags" --lib="-lcrypto -lssl"` || exit 1;
      fi
    else
-     openssllibs=`$autoconf openssl --lib="$openssllibs"` || exit 1;
+     openssllibs=`$autoconf openssl --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
    fi
 else
-   openssllibs=`$autoconf openssl --lib="$openssllibs"` || exit 1;
-fi
-
-if [ "$opensslcflags " = " " ]; then
-   opensslcflags=`$autoconf bgl-pkg-config --cflags openssl`;
-fi
-
-if [ "$opensslcflags " = " " ]; then
-   opensslcflags=-I.
+   openssllibs=`$autoconf openssl --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
 fi
 
 if [ "$openssllibs" != "no" ]; then
