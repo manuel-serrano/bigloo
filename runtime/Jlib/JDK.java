@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Sun May 18 09:38:36 2014 (serrano)                */
-/*    Copyright   :  2008-14 Manuel Serrano                            */
+/*    Last change :  Tue Dec  8 08:02:57 2015 (serrano)                */
+/*    Copyright   :  2008-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
 /*=====================================================================*/

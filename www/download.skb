@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Sat Jun  2 20:00:12 2012 (serrano)                */
-;*    Copyright   :  2001-12 Manuel Serrano                            */
+;*    Last change :  Tue Dec  8 07:56:32 2015 (serrano)                */
+;*    Copyright   :  2001-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
 ;*=====================================================================*/
@@ -106,8 +106,8 @@ emerge bigloo::lisp # Install bigloo from lisp overlay")])
 	(,[,(bold "Ubuntu") package]
 	 ,[To access the Ubuntu Bigloo packages, add the following the ,(tt "/etc/apt/sources.list") file:
 ,(pre "deb ftp://ftp-sop.inria.fr/indes/fp/Hop/ubuntu precise hop")])
-	(,[,(bold "MacOS X") bundle]
-	 ,*bigloo.macosx*)
+;* 	(,[,(bold "MacOS X") bundle]                                   */
+;* 	 ,*bigloo.macosx*)                                             */
 	(,[,(bold "MinGW") installer version (full back-ends support)]
 	 ,*bigloo.mingw*)
 	(,[,(bold "Win32") installer version (full back-ends support)]

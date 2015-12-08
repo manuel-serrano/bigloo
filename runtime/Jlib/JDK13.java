@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:52 2008                          */
-/*    Last change :  Mon Jul 21 10:21:41 2014 (serrano)                */
-/*    Copyright   :  2008-14 Manuel Serrano                            */
+/*    Last change :  Tue Dec  8 08:04:20 2015 (serrano)                */
+/*    Copyright   :  2008-15 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.3 specifics                                                */
 /*=====================================================================*/
@@ -55,7 +55,7 @@ public class JDK13 extends JDK {
       return sock.accept();
    }
 
-   public boolean truncate(FileOutputStream file, long size) {
+   public boolean truncateImpl(FileOutputStream file, long size) {
       return false;
    }
 }
