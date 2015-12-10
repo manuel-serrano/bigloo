@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Feb  6 12:17:17 2015 (serrano)                */
+;*    Last change :  Thu Dec 10 18:37:01 2015 (serrano)                */
 ;*    Copyright   :  2014-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV os                                                         */
@@ -90,7 +90,7 @@
 ;*    uv-get-process-title ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (uv-get-process-title)
-   (let ((buf (make-string 80 #\-)))
+   (let ((buf (make-string 512 #\-)))
       (let ((i ($uv-get-process-title buf 512)))
 	 (if (=fx i 0)
 	     (let ((j (string-index buf #a000)))
