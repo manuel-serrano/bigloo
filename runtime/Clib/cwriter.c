@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Fri Sep  4 09:16:54 2015 (serrano)                */
+/*    Last change :  Sat Dec 12 10:52:00 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -90,24 +90,34 @@ static unsigned char *char_name[] = {
 #  define *_new = alloca( s )
 #endif
 
-#define PRINTF1( op, sz, fmt, arg0 )			        \
-   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) {	                \
-      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 );      \
-      OUTPUT_PORT( op ).ptr += n;			        \
-   } else {						        \
-      char _new( __buf, sz  );				        \
-      int n = sprintf( __buf, fmt, arg0 );		        \
-      bgl_output_flush( op, __buf, n );			        \
+#define PRINTF1( op, sz, fmt, arg0 ) \
+   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) { \
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0 ); \
+      OUTPUT_PORT( op ).ptr += n; \
+   } else { \
+      char _new( __buf, sz  ); \
+      int n = sprintf( __buf, fmt, arg0 ); \
+      bgl_output_flush( op, __buf, n ); \
    }
 
-#define PRINTF2( op, sz, fmt, arg0, arg1 )			\
-   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) {                       \
-      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1 );\
-      OUTPUT_PORT( op ).ptr += n;				\
-   } else {							\
-      char _new( __buf, sz );					\
-      int n = sprintf( __buf, fmt, arg0, arg1 );                \
-      bgl_output_flush( op, __buf, n );				\
+#define PRINTF2( op, sz, fmt, arg0, arg1 ) \
+   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) { \
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1 ); \
+      OUTPUT_PORT( op ).ptr += n; \
+   } else { \
+      char _new( __buf, sz ); \
+      int n = sprintf( __buf, fmt, arg0, arg1 ); \
+      bgl_output_flush( op, __buf, n ); \
+   }
+
+#define PRINTF3( op, sz, fmt, arg0, arg1, arg2 ) \
+   if( BGL_OUTPUT_PORT_CNT( op ) > sz ) { \
+      int n = sprintf( OUTPUT_PORT( op ).ptr, fmt, arg0, arg1, arg2 ); \
+      OUTPUT_PORT( op ).ptr += n; \
+   } else { \
+      char _new( __buf, sz ); \
+      int n = sprintf( __buf, fmt, arg0, arg1, arg2 ); \
+      bgl_output_flush( op, __buf, n ); \
    }
 
 /*---------------------------------------------------------------------*/
@@ -598,15 +608,16 @@ bgl_write_socket( obj_t o, obj_t op ) {
 	       BSTRING_TO_STRING( SOCKET( o ).hostname ) :
 	       "localhost" );
    } else {
-      PRINTF2( op,
-	       40 + (STRINGP( SOCKET( o ).hostname ) ?
+      PRINTF3( op,
+	       48 + (STRINGP( SOCKET( o ).hostname ) ?
 		     STRING_LENGTH( SOCKET( o ).hostname ) :
 		     sizeof( "localhost" )),
-	       "#<socket:%s.%d>",
+	       "#<socket:%s.%d.%x>",
 	       STRINGP( SOCKET( o ).hostname ) ?
 	       BSTRING_TO_STRING( SOCKET( o ).hostname ) :
 	       "localhost",
-	       SOCKET( o ).portnum );
+	       SOCKET( o ).portnum,
+	       (long)o );
    }
 
    BGL_MUTEX_UNLOCK( mutex );

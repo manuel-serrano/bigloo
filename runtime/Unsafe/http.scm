@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Thu Nov 26 12:04:03 2015 (serrano)                */
+;*    Last change :  Sat Dec 12 13:27:21 2015 (serrano)                */
 ;*    Copyright   :  2007-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
@@ -347,11 +347,11 @@
 	     (if (eof-object? c)
 		 (instantiate::&io-parse-error
 		    (obj (the-port))
-		    (proc 'http-parse-status-line)
+		    (proc "http-parse-status-line")
 		    (msg "Illegal status line, premature end of input"))
 		 (instantiate::&io-parse-error
 		    (obj (http-parse-error-msg c (the-port)))
-		    (proc 'http-parse-status-line)
+		    (proc "http-parse-status-line")
 		    (msg "Illegal status line"))))))))
 
 ;*---------------------------------------------------------------------*/

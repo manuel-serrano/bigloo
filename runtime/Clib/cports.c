@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Fri Sep 18 20:06:46 2015 (serrano)                */
+/*    Last change :  Sat Dec 12 13:02:59 2015 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1266,7 +1266,7 @@ bgl_close_output_port( obj_t port ) {
 	 }
       }
 
-      OUTPUT_PORT( port ).buf = BFALSE;
+      // OUTPUT_PORT( port ).buf = BFALSE;
 
       return res;
    }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Wed Oct 21 08:39:52 2015 (serrano)                */
+;*    Last change :  Sat Dec 19 06:57:36 2015 (serrano)                */
 ;*    Copyright   :  2003-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
@@ -567,7 +567,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0
-		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss )
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss :nsec sss)
 	      (parse-error "iso8601-parse-date" "Illegal time"
 		 (the-failure) (the-port))))))
    
@@ -583,7 +583,7 @@
 	 (else
 	  (if (eof-object? (the-failure))
 	      (make-date :timezone 0
-		 :year YYYY :month MM :day DD :hour HH :min mm)
+		 :year YYYY :month MM :day DD :hour HH :min mm :sec ss)
 	      (begin
 		 (unread-char! (the-failure) (the-port))
 		 (read/rp iso8601-Z-grammar (the-port)
@@ -620,7 +620,8 @@
    
    (define iso8601-HH-grammar
       (regular-grammar (YYYY MM DD)
-	 ((: "T" (= 2 digit))
+	 ((: (in "T ") (= 2 digit))
+	  ;; as an extension, Bigloo supports white spaces in ISO dates
 	  (let ((b1 (the-digit 1))
 		(b2 (the-digit 2)))
 	     (read/rp iso8601-mm-grammar (the-port)
