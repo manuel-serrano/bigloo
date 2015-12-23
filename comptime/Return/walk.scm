@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Dec 23 10:20:05 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 11:49:46 2015 (serrano)                */
 ;*    Copyright   :  2010-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this passe  */
@@ -93,8 +93,8 @@
 ;*    This checks if NODE is a function set-exit body function. That   */
 ;*    is a node of the form:                                           */
 ;*                                                                     */
-;*    (set-exit an_exit1012                           ;; step1         */
-;*       (let ()                                                       */
+;*    (set-exit an_exit1012                           ;; step0         */
+;*       (let ()                                      ;; step1         */
 ;*          (begin                                    ;; step2         */
 ;*    	       (push-exit! an_exit1012 1)             ;; step3         */
 ;*    	       (let ((EXITVAR ($get-exitd-top)))      ;; step4         */
@@ -170,17 +170,17 @@
 		     (when exitnode
 			(cons exitvar exitnode))))))))
    
-   (define (step1 node::node)
-      (when (isa? node set-ex-it)
-	 (with-access::set-ex-it node (body var)
-	    (when (isa? body let-var)
-	       (with-access::let-var body (bindings body)
-		  (when (and (null? bindings) (isa? body sequence))
-		     (with-access::sequence body (nodes)
-			(with-access::var var (variable)
-			   (step2 nodes variable)))))))))
+   (define (step1 body::node var::var)
+      (when (isa? body let-var)
+	 (with-access::let-var body (bindings body)
+	    (when (and (null? bindings) (isa? body sequence))
+	       (with-access::sequence body (nodes)
+		  (with-access::var var (variable)
+		     (step2 nodes variable)))))))
    
-   (step1 node))
+   (when (isa? node set-ex-it)
+      (with-access::set-ex-it node (body var)
+	 (step1 body var))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-exit-return? ...                                              */

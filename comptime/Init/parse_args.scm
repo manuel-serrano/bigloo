@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Dec 22 16:24:56 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 11:47:31 2015 (serrano)                */
 ;*    Copyright   :  1992-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1172,8 +1172,8 @@
       (set! *optim-cfa-flonum-arithmetic?* #t)
       (set! *optim-dataflow-types?* #t)
       (set! *optim-initflow?* #t)
-      ;;(set! *optim-narrow?* #t)
-      (set! *optim-return?* #t)
+      ;; (set! *optim-narrow?* #t)
+      ;; (set! *optim-return?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)
       (set! *optim-cfa-funcall-tracking?* #t)
       (set! *optim-cfa-unbox-closure-args* #t))

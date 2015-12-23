@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed Dec 23 09:21:30 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 11:45:43 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -241,9 +241,14 @@
 	      ;; the value
 	      value::node)
 
+	   ;;  return retblock
+	   (final-class retblock::node
+	      body::node)
+	   
 	   ;; return node
 	   (final-class return::node
 	      ;; the expression of the return node
+	      block::retblock
 	      value::node)
 
 	   ;; the make-box construction
