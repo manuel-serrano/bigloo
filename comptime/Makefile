@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Nov  4 11:57:53 2015 (serrano)                */
+#*    Last change :  Wed Dec 23 08:53:29 2015 (serrano)                */
 #*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -300,6 +300,11 @@ ABOUND_FILE	= walk
 
 ABOUND_OBJ	= $(ABOUND_FILE:%=Abound/%.o)
 
+#*--- return ----------------------------------------------------------*/
+RETURN_FILE	= walk
+
+RETURN_OBJ	= $(RETURN_FILE:%=Return/%.o)
+
 #*--- user ------------------------------------------------------------*/
 USER_FILE	= user
 
@@ -324,7 +329,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(NARROW_OBJ) \
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(NARROW_OBJ) $(RETURN_OBJ) \
                   Tools/date.o
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
@@ -548,7 +553,7 @@ ude: Tools/date.scm Tools/license.scm .afile .jfile .etags
 	$(BGLJFILE) -o .jfile $(SOURCE_FILES)
 
 .etags: .afile
-	$(BTAGS_BIN) --define-var doc-define -o .etags $(SOURCE_FILES)
+	$(BGLTAGS) --define-var doc-define -o .etags $(SOURCE_FILES)
 
 #*---------------------------------------------------------------------*/
 #*    qnctags                                                          */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  6 17:48:38 2013                          */
-;*    Last change :  Wed Nov 13 06:25:45 2013 (serrano)                */
-;*    Copyright   :  2013 Manuel Serrano                               */
+;*    Last change :  Wed Dec 23 09:28:05 2015 (serrano)                */
+;*    Copyright   :  2013-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Ast walkers                                                      */
 ;*=====================================================================*/
@@ -303,6 +303,7 @@
 (gen-walks fail proc msg obj)
 (gen-walks set-ex-it body)
 (gen-walks jump-ex-it exit value)
+(gen-walks return value)
 (gen-walks make-box value)
 (gen-walks box-ref var)
 (gen-walks box-set! var value)

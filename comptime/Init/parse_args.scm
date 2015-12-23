@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Oct 15 09:38:53 2015 (serrano)                */
+;*    Last change :  Tue Dec 22 16:24:56 2015 (serrano)                */
 ;*    Copyright   :  1992-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -475,6 +475,11 @@
        (set! *global-tail-call?* #t))
       (("-fno-global-tailc" (help "Disable global tail-call optimization"))
        (set! *global-tail-call?* #f))
+      ;; return
+      (("-freturn" (help "Enable set-exit replacement with return"))
+       (set! *optim-return?* #t))
+      (("-fno-return" (help "Disable set-exit replacement"))
+       (set! *optim-return?* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -878,6 +883,8 @@
        (set! *pass* 'integrate))
       (("-tailc" (help "Stop after the tailc stage"))
        (set! *pass* 'tailc))
+      (("-return" (help "Stop after the return stage"))
+       (set! *pass* 'return))
       (("-init" (help "Stop after the initialization construction stage"))
        (set! *pass* 'init))
       (("-classgen" (help "Produce an include file for class accessors"))
@@ -1166,6 +1173,7 @@
       (set! *optim-dataflow-types?* #t)
       (set! *optim-initflow?* #t)
       ;;(set! *optim-narrow?* #t)
+      (set! *optim-return?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)
       (set! *optim-cfa-funcall-tracking?* #t)
       (set! *optim-cfa-unbox-closure-args* #t))

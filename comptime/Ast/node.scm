@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Sun Nov 24 08:09:21 2013 (serrano)                */
+;*    Last change :  Wed Dec 23 09:21:30 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -239,6 +239,11 @@
 	      ;; the variable of the jump-exit
 	      exit::node
 	      ;; the value
+	      value::node)
+
+	   ;; return node
+	   (final-class return::node
+	      ;; the expression of the return node
 	      value::node)
 
 	   ;; the make-box construction

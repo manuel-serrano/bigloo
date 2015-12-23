@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Aug 24 05:41:02 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Dec 22 16:25:29 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -85,6 +85,7 @@
 	    *optim-jvm-branch*
 	    *optim-jvm-fasteq*
 	    *optim-symbol-case*
+	    *optim-return?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -921,6 +922,9 @@
 (param-define *inlining-reduce-kfactor*
    "Inlinine growth factor reductor"
    (lambda (kfactor) (/fx kfactor 2)))
+(param-define *optim-return?*
+   "Optimize set-exit used as return"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *extend-entry* ...                                               */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:27:11 1998                          */
-;*    Last change :  Wed Mar 11 11:32:03 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 08:14:04 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee indent (this file is adapted from the Scheme mode by     */
 ;*    Bill Rozas).                                                     */
@@ -155,14 +155,13 @@ of the start of the containing expression."
 ;*    returns f.                                                       */
 ;*---------------------------------------------------------------------*/
 (defun bee-calculate-forced-indent ()
-  (if (= (count-lines 1 (point)) 1)
-      0
-      (save-excursion
-	(previous-line 1)
-	(beginning-of-line)
-	(skip-chars-forward " \t")
-	(let ((s (current-column)))
-	  (and (looking-at bee-forced-indent-regexp) s)))))
+  (when (> (count-lines 1 (point)) 1)
+    (save-excursion
+      (previous-line 1)
+      (beginning-of-line)
+      (skip-chars-forward " \t")
+      (let ((s (current-column)))
+	(and (looking-at bee-forced-indent-regexp) s)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-calculate-unforced-indent ...                                */
@@ -213,7 +212,7 @@ of the start of the containing expression."
 			;; on line, indent beneath that.
 			(progn (forward-sexp 1)
 			       (parse-partial-sexp (point) last-sexp 0 t))))
-		      (backward-prefix-chars))
+		  (backward-prefix-chars))
                  (t
                   ;; Indent beneath first sexp on same line as last-sexp.
                   ;; Again, it's almost certainly a function call.
@@ -273,7 +272,8 @@ of the start of the containing expression."
 ;*    in-condp ...                                                     */
 ;*---------------------------------------------------------------------*/
 (defun in-condp (state)
-  (and (>= (car state) 2)
+  (and (consp state)
+       (>= (car state) 2)
        (let* ((conts (nth 9 state))
 	      (pos (nth (- (length conts) 2) conts)))
 	 (save-excursion

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Sat Nov 23 10:48:28 2013 (serrano)                */
+;*    Last change :  Wed Dec 23 09:23:16 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -361,6 +361,14 @@
    `(,(shape-typed-node 'jump-exit (node-type node))
      ,(node->sexp (jump-ex-it-exit node))
      ,(node->sexp (jump-ex-it-value node))))
+
+;*---------------------------------------------------------------------*/
+;*    node->sexp ::return ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node->sexp node::return)
+   (node->sexp-hook node)
+   `(,(shape-typed-node 'return (node-type node))
+     ,(node->sexp (return-value node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::make-box ...                                        */

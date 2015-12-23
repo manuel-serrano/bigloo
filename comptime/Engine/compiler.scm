@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat Jul 26 08:35:26 2014 (serrano)                */
-;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 10:20:45 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -78,7 +78,7 @@
 	    bdb_spread-obj
 	    bdb_walk
 	    prof_walk
-	    narrow_walk
+	    return_walk
 	    cc_cc
 	    cc_ld
 	    backend_backend
@@ -382,6 +382,14 @@
 	    (check-sharing "integrate" ast)
 	    (check-type "integrate" ast #t #f)
 
+	    ;; the set-exit=>return transformation pass
+	    (when (and *optim-return?*
+		       (backend-pragma-support (the-backend)))
+	       (set! ast (profile return (return-walk! ast))))
+	    (stop-on-pass 'return (lambda () (write-ast ast)))
+	    (check-sharing "return" ast)
+	    (check-type "return" ast #t #f)
+	    
 	    ;; the tail-call pass
 	    (when (or *global-tail-call?*
 		      (backend-require-tailc (the-backend)))
@@ -456,7 +464,7 @@
 	    (stop-on-pass 'inline+ (lambda () (write-ast ast)))
 	    (check-sharing "inline+" ast)
 	    (check-type "inline+" ast #t #t)
-	    
+
 	    ;; the code production
 	    (let ((ast2 (append-ast (ast-initializers) ast)))
 	       (stop-on-pass 'init (lambda () (write-ast ast2)))
