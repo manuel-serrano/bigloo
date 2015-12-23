@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Mon Nov 11 09:41:12 2013 (serrano)                */
+;*    Last change :  Wed Dec 23 14:54:03 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -22,6 +22,8 @@
 	    ast_local
 	    ast_apply
 	    ast_app)
+   (static  (wide-class retblock/alpha::retblock
+	       alpha::retblock))
    (export  (alphatize::node what* by* loc ::node)
 	    (alphatize-sans-closure::node what* by* loc ::node ::variable)))
 
@@ -499,3 +501,26 @@
       (exit (do-alphatize (jump-ex-it-exit node) loc))
       (value (do-alphatize (jump-ex-it-value node) loc))))
 
+;*---------------------------------------------------------------------*/
+;*    do-alphatize ::retblock ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (do-alphatize node::retblock loc)
+   (with-access::retblock node (body)
+      (let ((res (duplicate::retblock node)))
+	 (widen!::retblock/alpha node
+	    (alpha res))
+	 (let ((nbody (do-alphatize body loc)))
+	    (shrink! node)
+	    (with-access::retblock res (body)
+	       (set! body nbody))
+	    res))))
+
+;*---------------------------------------------------------------------*/
+;*    do-alphatize ::return ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (do-alphatize node::return loc)
+   (with-access::return node (value block)
+      (with-access::retblock/alpha block (alpha)
+	 (duplicate::return node
+	    (block alpha)
+	    (value (do-alphatize value loc))))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Mon Nov 11 10:29:45 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 14:17:25 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -225,6 +225,20 @@
    (+fx 1
 	(+fx (node-size (jump-ex-it-exit node))
 	     (node-size (jump-ex-it-value node)))))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::retblock ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::retblock)
+   (with-access::retblock node (body)
+      (node-size body)))
+
+;*---------------------------------------------------------------------*/
+;*    node-size ::return ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-size node::return)
+   (with-access::return node (value)
+      (node-size value)))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-size ::make-box ...                                         */

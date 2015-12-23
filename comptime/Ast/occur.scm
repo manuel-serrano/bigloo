@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Mon Nov 11 17:17:35 2013 (serrano)                */
+;*    Last change :  Wed Dec 23 15:09:49 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -227,6 +227,20 @@
 (define-method (occur-node! node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
       (occur-node! exit)
+      (occur-node! value)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::retblock ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::retblock)
+   (with-access::retblock node (body)
+      (occur-node! body)))
+
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::return ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::return)
+   (with-access::return node (value)
       (occur-node! value)))
 
 ;*---------------------------------------------------------------------*/

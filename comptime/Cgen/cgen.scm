@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Mon Dec 10 00:21:44 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 16:11:48 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -13,8 +13,10 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module cgen_cgen
+   
    (include "Tools/trace.sch"
 	    "Tools/location.sch")
+   
    (import  tools_error
 	    tools_shape
 	    engine_param
@@ -39,6 +41,11 @@
 	    backend_c_prototype
 	    backend_backend
 	    backend_cplib)
+
+   (static  (wide-class retblock/goto::retblock
+	       local
+	       label))
+   
    (export  (cgen-function ::global)
 	    (node-setq::setq variable::variable value::node)
 	    (generic node->cop::cop ::node ::procedure ::bool)
@@ -221,7 +228,7 @@
 			     (else
 			      cop)))
 		   (loc loc))))))
-			  
+
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
 ;*---------------------------------------------------------------------*/
@@ -685,6 +692,54 @@
 					(variable eaux)))
 			       (value (instantiate::varc
 					 (variable vaux)))))))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node->cop ::retblock ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::retblock kont inpushexit)
+   (with-access::retblock node (body loc)
+      (if (eq? kont *return-kont*)
+	  (node->cop body kont inpushexit)
+	  (let* ((local (make-local-svar (gensym '__retval) (node-type node)))
+		 (label (instantiate::clabel
+			   (loc loc)
+			   (used? #t)
+			   (name (symbol->string (gensym '__return)))
+			   (body (kont (instantiate::varc
+					  (loc loc)
+					  (variable local))))))
+		 (retkont (make-setq-kont local loc (lambda (c) c))))
+	     (widen!::retblock/goto node
+		(local local)
+		(label label))
+	     (instantiate::cblock
+		(loc loc)
+		(body (instantiate::csequence
+			 (loc loc)
+			 (cops (list
+				  (instantiate::local-var
+				     (loc loc)
+				     (vars (list local)))
+				  (node->cop body retkont inpushexit)
+				  label)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node->cop ::return ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::return kont inpushexit)
+   (with-access::return node (block loc value)
+      (let ((kont (if (isa? block retblock/goto)
+		      (with-access::retblock/goto block (label local)
+			 (make-setq-kont local loc 
+			    (lambda (c)
+			       (instantiate::csequence
+				  (loc loc)
+				  (cops (list c
+					   (instantiate::cgoto
+					      (loc loc)
+					      (label label))))))))
+		      kont)))
+	 (node->cop value kont inpushexit))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::make-box ...                                         */

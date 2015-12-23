@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Nov 11 10:09:04 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 12:32:28 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -276,6 +276,22 @@
 (define-method (node-cond! node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
       (set! exit (node-cond! exit))
+      (set! value (node-cond! value))
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-cond! ::retblock ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node-cond! node::retblock)
+   (with-access::retblock node (body)
+      (set! body (node-cond! body))
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-cond! ::return ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-cond! node::return)
+   (with-access::return node (value)
       (set! value (node-cond! value))
       node))
 

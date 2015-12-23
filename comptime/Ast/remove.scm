@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Mon Nov 11 17:16:24 2013 (serrano)                */
+;*    Last change :  Wed Dec 23 15:09:03 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
@@ -328,6 +328,20 @@
 (define-method (node-remove! node::jump-ex-it)
    (jump-ex-it-exit-set! node (node-remove! (jump-ex-it-exit node)))
    (jump-ex-it-value-set! node (node-remove! (jump-ex-it-value node)))
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    node-remove! ::retblock ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (node-remove! node::retblock)
+   (retblock-body-set! node (node-remove! (retblock-body node)))
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    node-remove! ::return ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node-remove! node::return)
+   (return-value-set! node (node-remove! (return-value node)))
    node)
 
 ;*---------------------------------------------------------------------*/

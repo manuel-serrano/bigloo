@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Feb 15 14:02:38 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 12:33:33 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -371,6 +371,26 @@
 	       (node-1occ! value 1-exp*')
 	       (set! value nvalue)
 	       (values (or reset reset') node))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-1occ! ::retblock ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node-1occ! node::retblock 1-exp*)
+   (with-access::retblock node (body)
+      (multiple-value-bind (reset nbody)
+	 (node-1occ! body 1-exp*)
+	 (set! body nbody)
+	 (values reset node))))
+
+;*---------------------------------------------------------------------*/
+;*    node-1occ! ::return ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-1occ! node::return 1-exp*)
+   (with-access::return node (value)
+      (multiple-value-bind (reset nvalue)
+	 (node-1occ! value 1-exp*)
+	 (set! value nvalue)
+	 (values reset node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::make-box ...                                        */

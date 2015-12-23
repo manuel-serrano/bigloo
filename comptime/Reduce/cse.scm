@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Mon Nov 11 10:09:36 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 12:31:01 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -246,6 +246,26 @@
 	       (node-cse! value stack')
 	       (set! value nvalue)
 	       (values (or reset reset') node))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-cse! ::retblock ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-cse! node::retblock stack)
+   (with-access::retblock node (body)
+      (multiple-value-bind (reset nbody)
+	 (node-cse! body stack)
+	 (set! body nbody)
+	 (values reset node))))
+
+;*---------------------------------------------------------------------*/
+;*    node-cse! ::return ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node-cse! node::return stack)
+   (with-access::return node (value)
+      (multiple-value-bind (reset nvalue)
+	 (node-cse! value stack)
+	 (set! value nvalue)
+	 (values reset node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-cse! ::make-box ...                                         */

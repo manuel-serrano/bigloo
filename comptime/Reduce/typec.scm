@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Tue Feb  4 10:29:52 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 12:31:56 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -234,6 +234,22 @@
 (define-method (node-typec! node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
       (set! exit (node-typec! exit))
+      (set! value (node-typec! value))
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-typec! ::retblock ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (node-typec! node::retblock)
+   (with-access::retblock node (body)
+      (set! body (node-typec! body))
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    node-typec! ::return ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (node-typec! node::return)
+   (with-access::return node (value)
       (set! value (node-typec! value))
       node))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Dec 23 09:23:16 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 13:57:48 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -339,10 +339,10 @@
    (node->sexp-hook node)
    (let ((sym (shape-typed-node 'let (node-type node))))
       (location-shape (node-loc node)
-		      `(,sym ,(map (lambda (b)
-				      `(,(shape (car b)) ,(node->sexp (cdr b))))
-				   (let-var-bindings node))
-			     ,(node->sexp (let-var-body node))))))
+	 `(,sym ,(map (lambda (b)
+			 `(,(shape (car b)) ,(node->sexp (cdr b))))
+		    (let-var-bindings node))
+	     ,(node->sexp (let-var-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::set-ex-it ...                                       */
@@ -361,6 +361,14 @@
    `(,(shape-typed-node 'jump-exit (node-type node))
      ,(node->sexp (jump-ex-it-exit node))
      ,(node->sexp (jump-ex-it-value node))))
+
+;*---------------------------------------------------------------------*/
+;*    node->sexp ::retblock ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (node->sexp node::retblock)
+   (node->sexp-hook node)
+   `(,(shape-typed-node 'retblock (node-type node))
+     ,(node->sexp (retblock-body node))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::return ...                                          */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:53:24 1996                          */
-;*    Last change :  Mon Oct 15 08:12:43 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 13:45:44 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The intermediate structure to emit c code.                       */
 ;*=====================================================================*/

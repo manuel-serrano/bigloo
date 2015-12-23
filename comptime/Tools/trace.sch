@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 31 08:56:22 1993                          */
-;*    Last change :  Thu Dec 20 18:15:06 2012 (serrano)                */
-;*    Copyright   :  1993-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 14:23:03 2015 (serrano)                */
+;*    Copyright   :  1993-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The tracing macro.                                               */
 ;*=====================================================================*/
@@ -42,7 +42,7 @@
 		 (let* ((ksam (reverse mask))
 			(level (car ksam))
 			(rest (cdr ksam)))
-		    (if (every? (lambda (s) (memq s *pass-names*))  rest)
+		    (if (any (lambda (s) (memq s *pass-names*))  rest)
 			`(if (or ,@(map (lambda (p)
 					  `(trace-satisfy? ',p ,level))
 				       rest))
@@ -78,7 +78,7 @@
 		 (let* ((ksam (reverse mask))
 			(level (car ksam))
 			(rest (cdr ksam)))
-		    (if (every? (lambda (s) (memq s *pass-names*))  rest)
+		    (if (any (lambda (s) (memq s *pass-names*))  rest)
 			`(if (or ,@(map (lambda (p)
 					  `(trace-satisfy? ',p ,level))
 				       rest))

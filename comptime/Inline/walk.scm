@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Mon Mar 28 09:40:40 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 15:08:46 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
 ;*=====================================================================*/
@@ -41,6 +41,7 @@
 (define (inline-walk! globals what)
    (assert (what) (memq what '(all reducer predicate)))
    (pass-prelude "Inlining" reset-stat!)
+   (trace (inline inline+ 0) " ================ INLINING ================\n")
    ;; we setup the inlining
    (inline-setup! what)
    ;; count the number of occurences of each variable
@@ -59,12 +60,12 @@
 		   (leave-function)))
 	     globals)
    ;; and we just return the reachable variables
-   (let loop ((globals     globals)
+   (let loop ((globals globals)
 	      (new-globals '()))
       (cond
 	 ((null? globals)
-	  (pass-postlude (remove-var 'inline (reverse! new-globals))
-			 show-stat!))
+	  (pass-postlude
+	     (remove-var 'inline (reverse! new-globals)) show-stat!))
 	 ((eq? (global-module (car globals)) *module*)
 	  (loop (cdr globals) (cons (car globals) new-globals)))
 	 (else

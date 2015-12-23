@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Mon Nov 11 09:42:58 2013 (serrano)                */
+;*    Last change :  Wed Dec 23 12:27:13 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -211,6 +211,20 @@
 (define-method (lvtype-node! node::jump-ex-it)
    (with-access::jump-ex-it node (exit value)
       (lvtype-node! exit) 
+      (lvtype-node! value)))
+
+;*---------------------------------------------------------------------*/
+;*    lvtype-node! ::retblock ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (lvtype-node! node::retblock)
+   (with-access::retblock node (body)
+      (lvtype-node! body)))
+
+;*---------------------------------------------------------------------*/
+;*    lvtype-node! ::return ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (lvtype-node! node::return)
+   (with-access::return node (value)
       (lvtype-node! value)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Sat Feb 23 14:33:16 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 14:59:16 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -41,8 +41,7 @@
 ;*    build a let construction. We just make an alpha-conversion.      */
 ;*---------------------------------------------------------------------*/
 (define (inline-app-simple node kfactor stack msg)
-   (trace (inline 2) "inline-app-simple: " (shape node) #\Newline)
-   (trace (inline+ 2) "inline-app-simple: " (shape node) #\Newline)
+   (trace (inline inline+ 2) "inline-app-simple: " (shape node) #\Newline)
    (let* ((callee (var-variable (app-fun node)))
 	  (sfun (variable-value callee))
 	  (formals (sfun-args sfun))
@@ -88,17 +87,15 @@
 	  (new-kfactor (*inlining-reduce-kfactor* kfactor))
 	  (loc (node-loc node))
 	  (type (variable-type callee)))
+      (with-access::variable callee (occurrence)
+	 (set! occurrence (-fx occurrence 1)))
       ;; some verbing small ...
-      (if (not (memq (sfun-class sfun) '(sifun sgfun)))
-	  (verbose 3 "         "
-	     (shape callee) " --> " (current-function)
-	     " (" msg #\)
-	     #\Newline))
+      (unless (memq (sfun-class sfun) '(sifun sgfun))
+	 (verbose 3 "         "
+	    (shape callee) " --> " (current-function) " (" msg #\) #\Newline))
       ;; we compute the new body
-      (trace (inline 3) "J'alphatize: " (shape formals) " " (shape reductors)
-	 #\Newline
-	 "        sur le body: " (shape body) #\Newline)
-      (trace (inline+ 3) "J'alphatize: " (shape formals) " " (shape reductors)
+      (trace (inline inline+ 3) "J'alphatize: "
+	 (shape formals) " " (shape reductors)
 	 #\Newline
 	 "        sur le body: " (shape body) #\Newline)
       (let* ((alpha-body (alphatize formals reductors loc body)))
@@ -136,5 +133,4 @@
 			       (loc loc)
 			       (type type)
 			       (variable var))))))))))
-
 

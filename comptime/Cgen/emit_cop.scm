@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Jan  2 13:57:08 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 13:45:39 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/

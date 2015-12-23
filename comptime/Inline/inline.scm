@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Mon Nov 11 10:00:30 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec 23 16:19:58 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -33,26 +33,32 @@
 ;*    inline-sfun! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (inline-sfun! variable kfactor stack)
-   (trace inline
-	  "--- SCANNING: " (shape variable) " ---- kactor: " kfactor #\Newline)
-   (let* ((sfun     (variable-value variable))
-	  (isfun    (if (isfun? sfun?)
-			sfun
-			(widen!::isfun sfun (original-body (sfun-body sfun)))))
-	  (o-body   (isfun-original-body isfun))
+   (trace (inline inline+ 0)
+      "--- SCANNING: " (shape variable) " ---- kactor: " kfactor
+      " occurrence=" (variable-occurrence variable) #\Newline)
+   (let* ((sfun (variable-value variable))
+	  (isfun (if (isfun? sfun?)
+		     sfun
+		     (widen!::isfun sfun (original-body (sfun-body sfun)))))
+	  (o-body (isfun-original-body isfun))
 	  (inl-body (if (inline-app? variable *kfactor*
 			   (+fx 1 (length (sfun-args sfun))) '())
 			;; if at least one call to `variable' can be
 			;; inlined, we duplicate its body.
 			(begin
 			   (trace inline "DUPLICATING " (shape variable)
-				  "'s body" #\Newline)
+			      "'s body" #\Newline)
 			   (alphatize '() '() #f o-body))
 			o-body)))
       (sfun-body-set! sfun
-	 (inline-node inl-body kfactor (cons variable stack)))
-      (trace inline
-	     "--- END SCANNING: " (shape variable) " ----" #\Newline)))
+	 (if (or #t
+		 (>fx (variable-occurrence variable) 0)
+		 (and (global? variable)
+		      (not (eq? (global-import variable) 'static))))
+	     (inline-node inl-body kfactor (cons variable stack))
+	     inl-body)))
+   (trace inline
+      "--- END SCANNING: " (shape variable) " ----" #\Newline))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-node ...                                                  */
@@ -222,6 +228,20 @@
       (set! exit (inline-node exit kfactor stack)) 
       (set! value (inline-node value kfactor stack))
       node))
+
+;*---------------------------------------------------------------------*/
+;*    inline-node ::retblock ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (inline-node node::retblock kfactor stack)
+   (retblock-body-set! node (inline-node (retblock-body node) kfactor stack))
+   node)
+
+;*---------------------------------------------------------------------*/
+;*    inline-node ::return ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (inline-node node::return kfactor stack)
+   (return-value-set! node (inline-node (return-value node) kfactor stack))
+   node)
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-node ::make-box ...                                       */

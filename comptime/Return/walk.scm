@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Dec 23 11:49:46 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 14:16:25 2015 (serrano)                */
 ;*    Copyright   :  2010-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this passe  */
@@ -56,7 +56,7 @@
 ;*---------------------------------------------------------------------*/
 (define (init-cache!)
    (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
-   (set! *unwind-until!* (find-global 'unwind-until! 'foreign))
+   (set! *unwind-until!* (find-global 'unwind-until! '__bexit))
    (set! *pop-exit!* (find-global 'pop-exit! 'foreign))
    (set! *push-exit!* (find-global 'push-exit! 'foreign))
    #unspecified)
@@ -81,9 +81,15 @@
       (when (pair? exit)
 	 (let ((exitvar (car exit))
 	       (exitnode (cdr exit)))
-	    (tprint "exit=" (shape exitvar) " " (shape exitnode))
 	    (when (is-exit-return? exitnode exitvar)
-	       (tprint "YES..." (variable-id var)))))
+	       (let ((rblock (instantiate::retblock
+				(loc (node-loc body))
+				(type (node-type exitnode))
+				(body body))))
+		  (with-access::retblock rblock (body)
+		     (set! body (return! exitnode exitvar rblock)))
+		  (sfun-class-set! fun 'sfun)
+		  (sfun-body-set! fun rblock)))))
       (leave-function)
       var))
 
@@ -101,16 +107,24 @@
 ;*    	          (let ((res1015 EXITNODE))           ;; step5         */
 ;*    	             (begin                           ;; step6         */
 ;*                      (pop-exit!)                   ;; step7         */
-;*                      res1015))))))                 ;; step8         */
+;*                      (f res1015)))))))             ;; step8         */
 ;*                                                                     */
-;*    It returns <EXITVAR x EXITNODE> or #f                            */
+;*    It returns <EXITVAR x STEP5'> or #f                              */
 ;*---------------------------------------------------------------------*/
 (define (function-exit-node node::node)
    
    (define (step8 node::node res::local)
-      (when (isa? node var)
-	 (with-access::var node (variable)
-	    (eq? variable res))))
+      (cond
+	 ((isa? node var)
+	  (with-access::var node (variable)
+	     (when (eq? variable res)
+		node)))
+	 ((isa? node app)
+	  (with-access::app node (args)
+	     (when (any (lambda (n) (step8 n res)) args)
+		node)))
+	 (else
+	  #f)))
    
    (define (step7 node::node)
       (when (isa? node app)
@@ -123,15 +137,18 @@
       (when (isa? node sequence)
 	 (with-access::sequence node (nodes)
 	    (when (=fx (length nodes) 2)
-	       (and (step7 (car nodes)) (step8 (cadr nodes) var))))))
+	       (when (step7 (car nodes))
+		  (step8 (cadr nodes) var))))))
    
    (define (step5 node::node var::local)
       (when (isa? node let-var)
 	 (with-access::let-var node (bindings body)
 	    (when (and (pair? bindings) (null? (cdr bindings)))
-	       (let ((binding (car bindings)))
-		  (when (step6 body (car binding))
-		     (cdr binding)))))))
+	       (let* ((binding (car bindings))
+		      (nbody (step6 body (car binding))))
+		  (when nbody
+		     (duplicate::let-var node
+			(body nbody))))))))
    
    (define (step4 node::node)
       (when (isa? node let-var)
@@ -161,14 +178,14 @@
 			   ;; step 3e
 			   (eq? variable exitvar)))))))))
    
-   (define (step2 nodes::pair-nil exitvar::local)
-      (when (and (=fx (length nodes) 2) (step3 (car nodes) exitvar))
+   (define (step2 nodes::pair-nil var::local)
+      (when (and (=fx (length nodes) 2) (step3 (car nodes) var))
 	 (let ((binding (step4 (cadr nodes))))
 	    (when binding
 	       (with-access::let-var (cadr nodes) (body)
 		  (let ((exitnode (step5 body (car binding))))
 		     (when exitnode
-			(cons exitvar exitnode))))))))
+			(cons (car binding) exitnode))))))))
    
    (define (step1 body::node var::var)
       (when (isa? body let-var)
@@ -198,7 +215,7 @@
 ;*    Is the exit binding only used as a mere return?                  */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::node exitvar::local abort)
-   #t)
+   (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-exit-return? ::var ...                                        */
@@ -213,19 +230,39 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::app exitvar abort)
    (with-access::app node (fun args)
-      (if (and (pair? args) (null? (cdr args)))
-	  (with-access::var fun (variable)
-	     (if (eq? variable *unwind-until!*)
-		 (if (isa? (car args) var)
-		     (with-access::var (car args) (variable)
-			(or (eq? variable exitvar)
-			    (is-return? (car args) exitvar abort)))
-		     (call-default-walker))
-		 (call-default-walker)))
-	  (call-default-walker))))
+      (with-access::var fun (variable)
+	 (if (eq? variable *unwind-until!*)
+	     (if (isa? (car args) var)
+		 (with-access::var (car args) (variable)
+		    (or (eq? variable exitvar)
+			(is-return? (car args) exitvar abort)))
+		 (call-default-walker))
+	     (call-default-walker)))))
 
 ;*---------------------------------------------------------------------*/
-;*    return-node ...                                                  */
+;*    return! ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define-generic (return-node::node node::node exit)
-   node)
+(define-walk-method (return! node::node exitvar::local rblock::retblock)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    return! ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-walk-method (return! node::app exitvar::local rblock::retblock)
+   (with-access::app node (fun args loc)
+      (with-access::var fun (variable)
+	 (if (eq? variable *unwind-until!*)
+	     (begin
+		(if (isa? (car args) var)
+		    (with-access::var (car args) (variable)
+		       (if (eq? variable exitvar)
+			   (instantiate::return
+			      (loc loc)
+			      (type (node-type rblock))
+			      (block rblock)
+			      (value (cadr args)))
+			   (call-default-walker)))
+		    (call-default-walker)))
+	     (call-default-walker)))))
+
+
