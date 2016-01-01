@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Tue Oct 29 10:23:04 2013 (serrano)                */
-;*    Copyright   :  2004-13 Manuel Serrano                            */
+;*    Last change :  Wed Dec 30 16:44:48 2015 (serrano)                */
+;*    Copyright   :  2004-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -200,6 +200,10 @@
 ;*    expand-eval-letrec* ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (expand-eval-letrec* x e)
+   
+   (define (lambda? b)
+      (and (pair? (cadr b)) (eq? (car (cadr b)) 'lambda)))
+   
    (let* ((e (eval-begin-expander e))
 	  (res (match-case x
 		  ((?- () . (and ?body (not ())))
@@ -212,10 +216,7 @@
 					     (pair? (cdr b)))
 				   (expand-error "letrec*" "Illegal form" x)))
 		      bindings)
-		   (if (every (lambda (b)
-				 (and (pair? (cadr b))
-				      (eq? (car (cadr b)) 'lambda)))
-			  bindings)
+		   (if (every lambda? bindings)
 		       ;; all bindings bind lambda form, we
 		       ;; can omit intermediate variables
 		       (e (evepairify

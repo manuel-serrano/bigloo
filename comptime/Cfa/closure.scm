@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Wed Oct 23 07:25:43 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec 31 18:04:15 2015 (serrano)                */
+;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -158,7 +158,7 @@
 		       (trace (cfa 3) #"ok.\n")
 		       'ok)
 		      (else
-		       ;; several function can be applied, the
+		       ;; several functions can be applied, the
 		       ;; closure does not satisfy X.
 		       (for-each-approx-alloc
 			(lambda (alloc)

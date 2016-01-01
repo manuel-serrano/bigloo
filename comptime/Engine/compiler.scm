@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Dec 23 16:11:25 2015 (serrano)                */
+;*    Last change :  Wed Dec 23 19:36:33 2015 (serrano)                */
 ;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -450,13 +450,13 @@
 	    (check-type "cnst" ast #t #t)
 	    
 	    ;; the set-exit=>return transformation pass
-;* 	    (when (and *optim-return?*                                 */
-;* 		       (backend-pragma-support (the-backend)))         */
-;* 	       (set! ast (profile return (return-walk! ast)))          */
-;* 	       (set! ast (lvtype-ast! ast)))                           */
-;* 	    (stop-on-pass 'return (lambda () (write-ast ast)))         */
-;* 	    (check-sharing "return" ast)                               */
-;* 	    (check-type "return" ast #t #f)                            */
+	    (when (and *optim-return?*
+		       (backend-pragma-support (the-backend)))
+	       (set! ast (profile return (return-walk! ast)))
+	       (set! ast (lvtype-ast! ast)))
+	    (stop-on-pass 'return (lambda () (write-ast ast)))
+	    (check-sharing "return" ast)
+	    (check-type "return" ast #t #f)
 	    
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Sat Sep 19 09:15:11 2015 (serrano)                */
+;*    Last change :  Thu Dec 31 18:30:06 2015 (serrano)                */
 ;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -387,9 +387,13 @@
 		(if (eq? typ *_*)
 		    ;; the function is actually never called,
 		    ;; the funcall node is removed
-		    (instantiate::atom
-		       (value #unspecified)
-		       (type (get-type-atom #unspecified)))
+		    (begin
+		       ;; MS CARE: 31 Dec 2015
+;* 		       (instantiate::atom                              */
+;* 			  (value #unspecified)                         */
+;* 			  (type (get-type-atom #unspecified)))         */
+		       (set! type *obj*)
+		       node)
 		    (begin
 		       (set! type typ)
 		       node))))

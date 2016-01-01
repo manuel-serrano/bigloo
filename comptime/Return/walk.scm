@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Dec 23 14:16:25 2015 (serrano)                */
+;*    Last change :  Fri Dec 25 06:22:31 2015 (serrano)                */
 ;*    Copyright   :  2010-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this passe  */
@@ -86,6 +86,7 @@
 				(loc (node-loc body))
 				(type (node-type exitnode))
 				(body body))))
+		  (tprint "RETURN-FILE " (variable-id var))
 		  (with-access::retblock rblock (body)
 		     (set! body (return! exitnode exitvar rblock)))
 		  (sfun-class-set! fun 'sfun)

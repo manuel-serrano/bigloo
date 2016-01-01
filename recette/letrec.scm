@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Thu Jul  3 08:25:26 2014 (serrano)                */
+;*    Last change :  Thu Dec 31 17:16:19 2015 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -233,6 +233,32 @@
 (define v 45)
 
 ;*---------------------------------------------------------------------*/
+;*    test-letrec*14 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*14 a)
+   (letrec* ((u 1)
+	     (foo (begin
+		     (set! a 5)
+		     4))
+	     (bar (begin
+		     (set! a 10)
+		     (lambda (x) a)))
+	     (z 4))
+      a))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec*15 ...                                               */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*15)
+   (let ((g (regular-grammar ()
+	       ((+ #\a) 1)
+	       ((+ #\b) (ignore))
+	       (else 2))))
+      (call-with-input-string "bbbaaa"
+	 (lambda (ip)
+	    (read/rp g ip)))))
+
+;*---------------------------------------------------------------------*/
 ;*    test-narrow ...                                                  */
 ;*    -------------------------------------------------------------    */
 ;*    This definition corresponds to the expansion of a letrec*        */
@@ -270,4 +296,6 @@
    (test "letrec*.11" (test-letrec*11 3) 22)
    (test "letrec*.12" (test-letrec*12) 10)
    (test "letrec*.13" (test-letrec*13) 1)
+   (test "letrec*.14" (test-letrec*14 4) 10)
+   (test "letrec*.15" (test-letrec*15) 1)
    (test "narrow" (test-narrow) 5))

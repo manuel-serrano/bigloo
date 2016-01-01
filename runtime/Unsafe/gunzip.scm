@@ -3,12 +3,12 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  5 07:43:02 2006                          */
-;*    Last change :  Thu Dec 20 18:27:12 2012 (serrano)                */
-;*    Copyright   :  2006-12 Manuel Serrano                            */
+;*    Last change :  Sun Dec 27 17:31:33 2015 (serrano)                */
+;*    Copyright   :  2006-15 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Traduction of gzip's inflate.c inspired from Mzscheme's port.    */
 ;*    -------------------------------------------------------------    */
-;*    The big difference between Biglooand MzScheme/Gzip is that       */
+;*    The big difference between Bigloo and MzScheme/Gzip is that      */
 ;*    the Bigloo version is incremental (and thread-safe). This        */
 ;*    impacts the performance but this enables PORT->GZIP-PORT!        */
 ;*    -------------------------------------------------------------    */

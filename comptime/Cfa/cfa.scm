@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Mon Nov 11 09:53:22 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Dec 31 18:01:48 2015 (serrano)                */
+;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -341,6 +341,8 @@
 (define-method (cfa! node::box-set!/Cinfo)
    (with-access::box-set!/Cinfo node (approx var value)
       (cfa! var)
+      (let ((val-approx (cfa! value)))
+	 (union-approx! approx val-approx))
       (loose! (cfa! value) 'all)
       approx))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Thu Jul  3 09:07:16 2014 (serrano)                */
+;*    Last change :  Thu Dec 31 19:07:35 2015 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -538,7 +538,7 @@
 ;*    	body))                                                         */
 ;*---------------------------------------------------------------------*/
 (define (letrec*->node sexp stack loc site)
-
+   
    (define (free-vars sexp v vars)
       ;; compute an over approximation of all the
       ;; free vars appearing in sexp
@@ -556,7 +556,7 @@
 	     res)
 	    (else
 	     (loop (car sexp) (loop (cdr sexp) res))))))
-
+   
    (define (split-function-bindings ebindings)
       ;; extract the head bindings that do not bind functions
       (let loop ((l ebindings)
@@ -568,10 +568,10 @@
 	     (values (reverse nonfunctions) l))
 	    (else
 	     (loop (cdr l) (cons (car l) nonfunctions))))))
-
+   
    (define (used? var ebindings)
       (any (lambda (eb) (memq var (caddr eb))) ebindings))
-
+   
    (define (op? val)
       (memq val '(+ - *
 		  +fx -fx *fx
@@ -587,7 +587,7 @@
 		  +u64 -u64 *u64
 		  +f32 -f32 *f32
 		  +f64 -f64 *f64
-
+		  
 		  > >= < <= =
 		  >fx >=fx <fx <=fx =fx
 		  >elong >=elong <elong <=elong =elong
@@ -602,7 +602,7 @@
 		  >u64 >=u64 <u64 <=u64 =u64
 		  >f32 >=f32 <f32 <=f32 =f32
 		  >f64 >=f64 <f64 <=f64 =f64
-
+		  
 		  eq? equal?
 		  
 		  bit-lsh bit-rsh bit-ursh bit-not bit-xor
@@ -646,7 +646,7 @@
 			      (any side-effect-ebinding? rest))
 			  (loop rest (cons e rec*-bindings) post-bindings)
 			  (loop rest rec*-bindings (cons e post-bindings)))))))))
-
+   
    (define (split-pre-bindings ebindings)
       (with-trace 2 "split-pre-bindings"
 	 (let loop ((ebindings ebindings)
@@ -672,7 +672,7 @@
 		(trace-item "optim free: " (shape (caar ebindings)))
 		(values (reverse! (cons (car ebindings) pre-bindings))
 		   (cdr ebindings)))))))
-
+   
    (define (stage2 ebindings body stack loc site)
       ;; stage 2, try to put as many variables as possible on head positions
       (with-trace 2 "letrec*, stage2"
@@ -715,49 +715,133 @@
 				 ,body))
 			  loc)
 		       stack loc site))))))))
-
+   
+   (define (letstar bindings body)
+      (if (null? bindings)
+	  body
+	  (let ((binding (car bindings)))
+	     (if (or #t (memq (cadr binding) (caddr binding)))
+		 `(letrec (,(car binding))
+		     ,(letstar (cdr bindings) body))
+		 `(let (,(caar bindings))
+		     ,(letstar (cdr bindings) body))))))
+   
+   (define (split-let*-bindings ebindings)
+      (with-trace 3 "split-let*-bindings"
+	 (let loop ((ebindings ebindings)
+		    (let*-bindings '()))
+	    (cond
+	       ((null? ebindings)
+		(values (reverse! let*-bindings) '()))
+	       ((any (lambda (eb)
+			(memq (cadr eb) (caddr (car ebindings))))
+		   (cdr ebindings))
+		;; one of the variables introduced in the next bindings
+		;; appears free in the value of the current binding
+		(values (reverse! let*-bindings) ebindings))
+	       (else
+		(loop (cdr ebindings) (cons (car ebindings) let*-bindings)))))))
+   
+   (define (split-tail-let*-bindings ebindings)
+      (with-trace 3 "split-tail-let*-bindings"
+	 (let loop ((ebindings ebindings)
+		    (let*-bindings '()))
+	    (cond
+	       ((null? ebindings)
+		(values (reverse! let*-bindings) '()))
+	       ((any (lambda (eb)
+			(memq (cadar ebindings) (caddr eb)))
+		   (cdr ebindings))
+		;; one of the variables introduced in the next bindings
+		;; appears free in the value of the current binding
+		(values (reverse! let*-bindings) ebindings))
+	       (else
+		(loop (cdr ebindings) (cons (car ebindings) let*-bindings)))))))
+   
    (define (stage1 ebindings body)
       ;; stage 1, try to put as many variables as possible on tail positions
-      (with-trace 2 "letrec*, stage1"
+      (with-trace 3 "letrec*, stage1"
 	 (trace-item "ebindings=" (map (lambda (b) (shape (caar b))) ebindings))
 	 (cond
 	    ((null? ebindings)
 	     (sexp->node body stack loc site))
 	    (else
-	     (multiple-value-bind (letrec*-bindings post-bindings)
-		(split-post-bindings ebindings)
-		(trace-item "rec*="
+	     (multiple-value-bind (let*-bindings letrec*-bindings)
+		;; split head
+		(split-let*-bindings ebindings)
+		(trace-item "head let*="
+		   (map (lambda (x) (shape (caar x))) let*-bindings))
+		(trace-item "head letrec*="
 		   (map (lambda (x) (shape (caar x))) letrec*-bindings))
-		(trace-item "post="
-		   (map (lambda (x) (shape (caar x))) post-bindings))
-		(if (null? post-bindings)
-		    ;; stage 2, try to put on head positions,
-		    ;; as many variables as possible
-		    (stage2 letrec*-bindings body stack loc site)
-		    (stage1 letrec*-bindings
-		       (epairify-propagate-loc
-			  (letrecstar (map car post-bindings) body)
-			  loc))))))))
-      
+		(if (pair? let*-bindings)
+		    (sexp->node
+		       (letstar let*-bindings
+			  `(letrec* ,(map car letrec*-bindings)
+			      ,body))
+		       stack loc site)
+		    (multiple-value-bind (let*-bindings letrec*-bindings)
+		       ;; split tail
+		       (split-tail-let*-bindings (reverse ebindings))
+		       (trace-item "tail let*="
+			  (reverse 
+			     (map (lambda (x) (shape (caar x))) let*-bindings)))
+		       (trace-item "tail letrec*="
+			  (reverse
+			     (map (lambda (x) (shape (caar x))) letrec*-bindings)))
+		       (if (pair? let*-bindings)
+			   (sexp->node
+			      `(letrec* ,(map car (reverse letrec*-bindings))
+				  ,(letstar (reverse let*-bindings)
+				      body))
+			      stack loc site)
+			   ;; true letrec*
+			   (sexp->node
+			      `(let ,(map (lambda (b)
+					     (list (caar b) #unspecified))
+					ebindings)
+				  ,@(map (lambda (b)
+					    `(set! ,(caar b) ,(cadr (car b))))
+				       ebindings)
+				  ,body)
+			      stack loc site)))))))))
+   
    (define (decompose-letrec* bindings body)
-      ;; for each bindings, extra the variable name and the set
+      ;; for each bindings, extract the variable name and the set
       ;; of scope free variables used in the expression
-      (let* ((vars (map (lambda (b) (fast-id-of-id (car b) loc))
-		      bindings))
+      (let* ((vars (map (lambda (b) (fast-id-of-id (car b) loc)) bindings))
 	     (ebindings (map (lambda (b v)
 				(list b v (free-vars (cadr b) v vars)))
 			   bindings vars)))
 	 (stage1 ebindings (epairify-propagate-loc `(begin ,@body) loc))))
-
-   (match-case sexp
-      ((letrec* () . ?body)
-       ;; not a real letrec*
-       (sexp->node (epairify-propagate-loc `(begin ,@body) loc) stack loc site))
-      ((letrec* (and (? list?) ?bindings) . ?body)
-       (decompose-letrec* bindings body))
-      (else
-       (error-sexp->node (string-append "Illegal 'letrec*' form")
-	  exp (find-location/loc exp loc)))))
+   
+   (define (letrec*->letrec sexp stack loc site)
+      (set-car! sexp 'letrec)
+      (sexp->node sexp stack loc site))
+   
+   (define (lambda? exp)
+      (match-case exp
+	 ((?- (lambda ?- . ?-))
+	  #t)
+	 ((?- ((and ?sym (? symbol?)) ?- . ?-))
+	  (eq? (fast-id-of-id sym #f) 'lambda))
+	 (else
+	  #f)))
+   
+   (with-trace 3 "letrec*"
+      (match-case sexp
+	 ((letrec* () . ?body)
+	  ;; not a real letrec*
+	  (sexp->node
+	     (epairify-propagate-loc `(begin ,@body) loc) stack loc site))
+	 ((letrec* (and (? list?) ?bindings) . ?body)
+	  (if (every lambda? bindings)
+	      ;; a plain letrec
+	      (letrec*->letrec sexp stack loc site)
+	      ;; a true letrec*
+	      (decompose-letrec* bindings body)))
+	 (else
+	  (error-sexp->node (string-append "Illegal 'letrec*' form")
+	     exp (find-location/loc exp loc))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    letstar ...                                                      */

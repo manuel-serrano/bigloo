@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Wed Dec 23 16:19:58 2015 (serrano)                */
+;*    Last change :  Thu Dec 24 07:01:34 2015 (serrano)                */
 ;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -51,12 +51,12 @@
 			   (alphatize '() '() #f o-body))
 			o-body)))
       (sfun-body-set! sfun
-	 (if (or #t
+         (if (or (eq? *inline-mode* 'all)
 		 (>fx (variable-occurrence variable) 0)
-		 (and (global? variable)
-		      (not (eq? (global-import variable) 'static))))
-	     (inline-node inl-body kfactor (cons variable stack))
-	     inl-body)))
+                 (and (global? variable)
+                      (not (eq? (global-import variable) 'static))))
+             (inline-node inl-body kfactor (cons variable stack))
+             inl-body)))
    (trace inline
       "--- END SCANNING: " (shape variable) " ----" #\Newline))
 
@@ -84,7 +84,7 @@
 		   (and (eq? (global-init variable) #t)
 			(= (global-occurrencew variable) 1)))
 	       (or (atom? (global-src variable))
-		   (kwote? (global-src variable))))
+		   (and (kwote? (global-src variable)) (eq? *inline-mode* 'all))))
 	  (begin
 	     (trace inline "*** inlining global variable: " (shape variable)
 		    #\Newline)
