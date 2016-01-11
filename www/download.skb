@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  5 05:04:50 2001                          */
-;*    Last change :  Tue Dec  8 07:56:32 2015 (serrano)                */
-;*    Copyright   :  2001-15 Manuel Serrano                            */
+;*    Last change :  Mon Jan  4 09:10:53 2016 (serrano)                */
+;*    Copyright   :  2001-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Downloading Bigloo                                               */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@ The current version has been compiled and tested on:
 ;* 		       ("x86-FreeBSD" . "4.0")                         */
 		       ("x86-NetBSD" . "1.6")
 		       ("x86-MinGW" "")
+		       ("MinGW64" "")
 		       ("powerpc G4" . "MacOS X xnu-201.5, 10.2, 10.3, 10.4")
 		       ("powerpc G3" . "Gentoo Linux")
 		       ("sparc" . "Solaris 2.6 and 2.8, Sun JDK 1.3, Linux (Debian)")
@@ -110,6 +111,8 @@ emerge bigloo::lisp # Install bigloo from lisp overlay")])
 ;* 	 ,*bigloo.macosx*)                                             */
 	(,[,(bold "MinGW") installer version (full back-ends support)]
 	 ,*bigloo.mingw*)
+	(,[,(bold "MinGW64") instructions (full back-ends support)]
+	 ,*bigloo.mingw64*)
 	(,[,(bold "Win32") installer version (full back-ends support)]
 	 ,*bigloo.win32b* ,*bigloo.win32*)
 	(,[,(bold "Arm(el)") package]
