@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Mon Aug 10 16:53:05 2015 (serrano)                */
-;*    Copyright   :  2005-15 Manuel Serrano                            */
+;*    Last change :  Mon Jan 11 18:13:49 2016 (serrano)                */
+;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -164,7 +164,8 @@
 			    (input-port-name (the-port))
 			    (input-port-position (the-port)))
 	   (the-string)))
-      ((+ (out " \t\n\r<>(){}[]@!\"'"))
+      ((+ (out " \t\n\r<>(){}[]@!\"'/"))
+       (tprint "attr value [" (the-string) "]")
        (if strict
 	   (xml-parse-error (format "Illegal `~a' attribute character" tag)
 			    (the-string)
@@ -205,6 +206,7 @@
 	      (val (read/rp attribute-value-grammar (the-port) strict tag)))
 	  (cons (string->symbol (decoder key)) (decoder val))))
       ((: id (+ blank) "=")
+       (tprint "attr=" (the-string))
        (let* ((key (the-substring 0 (-fx (the-length) 2)))
 	      (val (read/rp attribute-value-grammar (the-port) strict tag)))
 	  (let loop ((i (-fx (string-length key) 1)))

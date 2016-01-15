@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Thu Mar 19 08:21:34 2015 (serrano)                */
-/*    Copyright   :  2011-15 Manuel Serrano                            */
+/*    Last change :  Fri Jan 15 07:59:56 2016 (serrano)                */
+/*    Copyright   :  2011-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/
@@ -180,6 +180,22 @@ bgl_pcre_options( obj_t args ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_regcomp_finalize ...                                         */
+/*---------------------------------------------------------------------*/
+static void
+bgl_regcomp_finalize( obj_t re, obj_t _ ) {
+   pcre *pcre = BGL_REGEXP_PREG( re );
+   
+   if( !pcre_refcount( pcre, -1 ) ) {
+      if( BGL_REGEXP( ( re ) ).study ) {
+	 pcre_free_study( BGL_REGEXP( ( re ) ).study );
+      }
+      pcre_free( pcre );
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
@@ -189,17 +205,27 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
    const char *error;
    int erroffset;
    int options = bgl_pcre_options( optargs );
+   static int init = 1000;
+
+   if( !init-- ) { 
+      init = 1000;
+      /* force finalizers to free unused regexp */
+      GC_invoke_finalizers();
+   }
    
    if( BGL_REGEXP_PREG( re ) =
        pcre_compile( BSTRING_TO_STRING( pat ), options,
 		     &error, &erroffset, NULL ) ) {
+      pcre_refcount( BGL_REGEXP_PREG( re ), 1 );
       BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PREG( re ), 0, &error );
 
       pcre_fullinfo( BGL_REGEXP_PREG( re ),
 		     BGL_REGEXP( re ).study,
 		     PCRE_INFO_CAPTURECOUNT,
 		     &(BGL_REGEXP( re ).capturecount) );
-      
+
+      GC_register_finalizer( re, (GC_finalization_proc)&bgl_regcomp_finalize,
+			     0, 0L, 0L );
       return BREF( re );
    } else {
       char *buf = alloca( 50 + strlen( error ) );
