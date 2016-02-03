@@ -1,0 +1,97 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/bglld.sh.in                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Sat Jan 23 22:33:14 2016                          */
+#*    Last change :  Sun Jan 24 01:13:39 2016 (serrano)                */
+#*    Copyright   :  2016 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    Script to build dynamic libraries platform independently         */
+#*=====================================================================*/
+
+dest=
+soname=
+rpath=
+objs=
+safe=u
+
+RELEASE=@BGL_RELEASE_NUMBER@
+
+LD=@LD@
+LDFLAGS=@LDFLAGS@
+RPATH=@RPATH@
+SHAREDSUFFIX=@SHAREDSUFFIX@
+SONAME=@SONAME@
+
+EXTRALIBS="@EXTRALIBS@"
+
+LIBDIR=@LIBDIR@
+FILDIR=@FILDIR@
+
+soopt=
+ropt=
+libs=
+
+if [ "$RPATH " != " " ]; then
+  ropt="$RPATH$LIBDIR/$FILDIR"
+fi
+
+# arguments parsing
+while : ; do
+  case $1 in
+    "")
+      break;;
+    
+    -o)
+      shift;
+      dest=$1;;
+      
+    -soname=*)
+      soname="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    -rpath=*)
+      rpath="`echo $1 | sed 's/^[^=]*=//'`";
+      if [ "$RPATH " != " " ]; then
+        ropt="$ropt $RPATH$rpath"
+      fi;;
+
+    -L*)
+      libs="$libs $1";;
+
+    -s)
+      safe=s;;
+      
+    -u)
+      safe=u;;
+      
+    -*)
+      echo "bgllink.sh [options] object1.o object2.o ..." >&2;
+      echo "   -o dest" >&2;
+      echo "   -rpath=path" >&2;
+      echo "   -soname=name" >&2;
+      echo "   --cc=comp" >&2;
+      echo "   -s" >&2;
+      echo "   -u" >&2;
+      exit 1;;
+
+    *)
+      objs="$objs $1";;
+      
+  esac
+  shift
+done
+      
+if [ "$dest " = " " ]; then
+  echo "destination missing"
+  exit 1;
+fi
+
+if [ "$SONAME " != " " ]; then
+  soopt="$soopt $SONAME$dest.$SHAREDSUFFIX"
+  if [ "$soname " != " " ]; then
+    soopt=$SONAME$soname
+  fi
+fi  
+
+$LD $LDFLAGS -o $dest.$SHAREDSUFFIX -L$LIBDIR/$FILDIR $soopt $ropt -lbigloo_$safe-$RELEASE $EXTRALIBS $BGLLIBS $libs $objs -lbigloogc-$RELEASE

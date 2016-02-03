@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Mon Mar 10 18:03:23 2014 (serrano)                */
-;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jan 24 03:09:38 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -184,34 +184,34 @@
 ;*    emit-prototype ::cfun ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-prototype value::cfun variable)
-   (if (not (cfun-macro? value))
-       (with-access::global variable (id type name library)
-	  (let* ((arity (cfun-arity value))
-		 (targs (cfun-args-type value)))
-	     (fprint *c-port*
-		     (if library "BGL_IMPORT " "extern ")
-		     (make-typed-declaration
-		      type
-		      (string-append
-		       name
-		       "("
-		       (cond
-			  ((null? targs) ")")
-			  ((<=fx arity -1)
-			   (string-append (type-name-sans-$ (car targs))
-					  ", ...)"))
-			  (else
-			   (let loop ((targs targs))
-			      (if (null? (cdr targs))
-				  (if (<fx arity 0)
-				      "...)"
-				      (string-append
+   (unless (cfun-macro? value)
+      (with-access::global variable (id type name library)
+	 (let* ((arity (cfun-arity value))
+		(targs (cfun-args-type value)))
+	    (fprint *c-port*
+	       (if library "BGL_IMPORT " "extern ")
+	       (make-typed-declaration
+		  type
+		  (string-append
+		     name
+		     "("
+		     (cond
+			((null? targs) ")")
+			((<=fx arity -1)
+			 (string-append (type-name-sans-$ (car targs))
+			    ", ...)"))
+			(else
+			 (let loop ((targs targs))
+			    (if (null? (cdr targs))
+				(if (<fx arity 0)
+				    "...)"
+				    (string-append
 				       (type-name-sans-$ (car targs))
 				       ")"))
-				  (string-append
+				(string-append
 				   (type-name-sans-$ (car targs)) ", "
 				   (loop (cdr targs)))))))))
-		     ";")))))
+	       ";")))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-prototype ::cvar ...                                        */

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:12:02 2003                          */
-;*    Last change :  Mon Feb 28 17:04:56 2005 (serrano)                */
-;*    Copyright   :  2003-05 Manuel Serrano                            */
+;*    Last change :  Sat Jan 30 03:45:06 2016 (serrano)                */
+;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Drivers for code generator and linker                            */
 ;*=====================================================================*/

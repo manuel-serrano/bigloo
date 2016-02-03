@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Oct 14 07:02:13 2015 (serrano)                */
-#*    Copyright   :  2002-15 Manuel Serrano                            */
+#*    Last change :  Thu Jan 28 01:43:21 2016 (serrano)                */
+#*    Copyright   :  2002-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Wav examples                           */
 #*=====================================================================*/
@@ -22,7 +22,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = musicplay
+SOURCES = musicplay paplay
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -35,6 +35,9 @@ POPULATION = $(SOURCES:%=%.scm) Makefile
 all: $(SOURCES)
 
 musicplay: musicplay.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+paplay: paplay.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:

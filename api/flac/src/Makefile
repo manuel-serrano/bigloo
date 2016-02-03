@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct 21 16:08:13 2015 (serrano)                */
+#*    Last change :  Wed Jan 27 18:05:52 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -59,7 +59,7 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= flac flac_alsadec
+_BGL_OBJECTS	= flac flac_decoder flac_alsadec flac_padec
 
 ifeq "$(FLACLIBS) " " "
 _C_OBJECTS	= 

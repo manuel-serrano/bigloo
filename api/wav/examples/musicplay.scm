@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Sat Feb 23 19:42:57 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Thu Jan 28 15:34:28 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of MPG123 and ALSA.       */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module musicplay
-   (library multimedia pthread alsa wav)
+   (library multimedia pthread alsa pulseaudio wav)
    (main main))
 
 (define debug 0)
@@ -59,6 +59,10 @@
 	  (set! volume (string->integer vol)))
 	 ((("-d" "--device") ?dev (help "Select device"))
 	  (set! device dev))
+	 (("-g" (help "Debug"))
+	  (if (=fx (bigloo-debug) 0)
+	      (bigloo-debug-set! 2)
+	      (bigloo-debug-set! (+fx (bigloo-debug) 1))))
 	 (else
 	  (set! files (append (directory->files else) files))))
 
@@ -83,7 +87,7 @@
 			   (onerror onerror)
 			   (onvolume onvolume)
 			   (onevent onevent)
-			   (inbuf (make-string (* 16 1024)))
+			   (inbuf (make-string (* 8 1024)))
 			   (decoders (list decoder))
 			   (pcm pcm))))
 	    (music-volume-set! player volume)

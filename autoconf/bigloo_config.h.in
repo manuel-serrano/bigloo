@@ -265,8 +265,14 @@
 #undef C_COMPILER
 #define C_COMPILER "@C_COMPILER@"
 
+#undef C_LD
+#define C_LD "@C_LD@"
+
 #undef C_FLAGS
 #define C_FLAGS "@C_FLAGS@"
+
+#undef C_PICFLAGS
+#define C_PICFLAGS "@C_PICFLAGS@"
 
 #undef C_COMPILER_O_OPTION
 #define C_COMPILER_O_OPTION "@C_COMPILER_O_OPTION@"
@@ -297,6 +303,12 @@
 
 #undef C_LINKER_OPTIM_FLAGS
 #define C_LINKER_OPTIM_FLAGS "@C_LINKER_OPTIM_FLAGS@"
+
+#undef C_LINKER_SONAME_OPTION
+#define C_LINKER_SONAME_OPTION "@C_LINKER_SONAME_OPTION@"
+
+#undef C_LINKER_SHARED_OPTION
+#define C_LINKER_SHARED_OPTION "@C_LINKER_SHARED_OPTION@"
 
 #undef C_PROFILE_FLAGS
 #define C_PROFILE_FLAGS "@C_PROFILE_FLAGS@"
@@ -429,6 +441,7 @@
 
 #define BGL_REGEXP_TYPE BGL_REGEXP_@BGL_REGEXP_FAMILY@
 #define BGL_REGEXP_FAMILY "@BGL_REGEXP_FAMILY@"
+#define BGL_REGEXP_HAS_FREE_STUDY @BGL_REGEXP_HAS_FREE_STUDY@
 
 /*---------------------------------------------------------------------*/
 /*    DNS caching                                                      */

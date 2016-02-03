@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Mon Jul 28 08:09:49 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb  3 09:46:20 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
 ;*=====================================================================*/
@@ -76,6 +76,9 @@
 		     (format "~( )" *cc-options*)
 		     " "
 		     *cflags*
+		     " "
+		     (if (eq? *pass* 'so) (bigloo-config 'c-pic-flag) "")
+		     " "
 		     " -c "
 		     (if need-o *cc-o-option* "")
 		     " "

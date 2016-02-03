@@ -1,0 +1,163 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/pcrefreestudy               */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Dec 27 06:26:38 2007                          */
+#*    Last change :  Sat Jan 23 12:48:24 2016 (serrano)                */
+#*    Copyright   :  2007-16 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Check if PCRE is available.                                      */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+pcrelib=-lpcre
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --pcrelib=*)
+      pcrelib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $pcrelib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+#include <pcre.h>
+#define OVECCOUNT 30    /* should be a multiple of 3 */
+
+int main(int argc, char **argv)
+{
+pcre *re;
+const char *error;
+char *pattern;
+char *subject;
+unsigned char *name_table;
+unsigned int option_bits;
+int erroffset;
+int find_all;
+int crlf_is_newline;
+int namecount;
+int name_entry_size;
+int ovector[OVECCOUNT];
+int subject_length;
+int rc, i;
+int utf8;
+void *study;
+
+find_all = 0;
+for (i = 1; i < argc; i++)
+  {
+  if (strcmp(argv[i], "-g") == 0) find_all = 1;
+    else break;
+  }
+
+if (argc - i != 2)
+  {
+  printf("Two arguments required: a regex and a subject string\n");
+  return 1;
+  }
+
+pattern = argv[i];
+subject = argv[i+1];
+subject_length = (int)strlen(subject);
+
+
+re = pcre_compile(
+  pattern,              /* the pattern */
+  0,                    /* default options */
+  &error,               /* for error message */
+  &erroffset,           /* for error offset */
+  NULL);                /* use default character tables */
+
+if (re == NULL)
+  {
+  printf("PCRE compilation failed at offset %d: %s\n", erroffset, error);
+  return 1;
+  }
+
+
+study = pcre_study( re, 0, &error );
+rc = pcre_exec(
+  re,                   /* the compiled pattern */
+  NULL,                 /* no extra data - we didnt study the pattern */
+  subject,              /* the subject string */
+  subject_length,       /* the length of the subject */
+  0,                    /* start at offset 0 in the subject */
+  0,                    /* default options */
+  ovector,              /* output vector for substring information */
+  OVECCOUNT);           /* number of elements in the output vector */
+
+pcre_free_study( study );
+
+/* Matching failed: handle error cases */
+
+if (rc < 0)
+  {
+  switch(rc)
+    {
+    case PCRE_ERROR_NOMATCH: printf("No match\n"); break;
+    /*
+    Handle other special cases if you like
+    */
+    default: printf("Matching error %d\n", rc); break;
+    }
+  pcre_free(re);     /* Release memory used for the compiled pattern */
+  return 1;
+  }
+
+/* Match succeded */
+
+printf("\nMatch succeeded at offset %d\n", ovector[0]);
+
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "yes"
+else
+   echo "no"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0

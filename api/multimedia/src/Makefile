@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct 14 07:01:59 2015 (serrano)                */
+#*    Last change :  Tue Jan 26 03:33:00 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -45,7 +45,7 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= exif id3 mp3 m3u \
                   music mpd mpc musicproc mplayer mpg123 \
-                  mixer soundcard color
+                  mixer soundcard color musicbuf
 
 _UNIX_OBJECTS	= bglmixer
 

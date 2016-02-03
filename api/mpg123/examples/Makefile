@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Oct 14 07:02:18 2015 (serrano)                */
-#*    Copyright   :  2002-15 Manuel Serrano                            */
+#*    Last change :  Tue Jan 26 15:25:54 2016 (serrano)                */
+#*    Copyright   :  2002-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Mpg123 examples                        */
 #*=====================================================================*/
@@ -22,7 +22,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = bgl123 musicplay
+SOURCES = bgl123 musicplay paplay
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -38,6 +38,9 @@ bgl123: bgl123.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 musicplay: musicplay.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+paplay: paplay.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:

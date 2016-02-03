@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Fri Jan 15 07:59:56 2016 (serrano)                */
+/*    Last change :  Sat Jan 23 22:27:29 2016 (serrano)                */
 /*    Copyright   :  2011-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
@@ -180,19 +180,36 @@ bgl_pcre_options( obj_t args ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_regfree ...                                                  */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_regfree( obj_t re ) {
+   pcre *pcre = BGL_REGEXP_PREG( re );
+
+   if( pcre ) {
+      if( !pcre_refcount( pcre, -1 ) ) {
+
+#if( BGL_REGEXP_HAS_FREE_STUDY )      
+	 if( BGL_REGEXP( ( re ) ).study ) {
+	    pcre_free_study( BGL_REGEXP( ( re ) ).study );
+	 }
+#endif      
+	 pcre_free( pcre );
+      }
+      BGL_REGEXP_PREG( re ) = 0L;
+   }
+   
+   return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    bgl_regcomp_finalize ...                                         */
+/*    bgl_pcre_regcomp_finalize ...                                    */
 /*---------------------------------------------------------------------*/
 static void
-bgl_regcomp_finalize( obj_t re, obj_t _ ) {
-   pcre *pcre = BGL_REGEXP_PREG( re );
-   
-   if( !pcre_refcount( pcre, -1 ) ) {
-      if( BGL_REGEXP( ( re ) ).study ) {
-	 pcre_free_study( BGL_REGEXP( ( re ) ).study );
-      }
-      pcre_free( pcre );
-   }
+bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
+   bgl_regfree( re );
 }
 
 /*---------------------------------------------------------------------*/
@@ -224,7 +241,7 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
 		     PCRE_INFO_CAPTURECOUNT,
 		     &(BGL_REGEXP( re ).capturecount) );
 
-      GC_register_finalizer( re, (GC_finalization_proc)&bgl_regcomp_finalize,
+      GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
 			     0, 0L, 0L );
       return BREF( re );
    } else {
@@ -235,17 +252,6 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
 
       C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
    }
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_regfree ...                                                  */
-/*---------------------------------------------------------------------*/
-obj_t
-bgl_regfree( obj_t o ) {
-   pcre_free( BGL_REGEXP_PREG( o ) );
-   
-   return BUNSPEC;
 }
 
 /*---------------------------------------------------------------------*/

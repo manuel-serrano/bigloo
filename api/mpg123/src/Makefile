@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct 14 07:03:39 2015 (serrano)                */
+#*    Last change :  Tue Jan 26 14:55:18 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,16 +50,19 @@ ifeq "$(MPG123LIBS) " " "
 EXTRALIBS	= 
 else
 ifeq "$(ALSALIBS) " " "
-EXTRALIBS	= $(MPG123LIBS)
 else
-EXTRALIBS	= $(MPG123LIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(MPG123LIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+endif
+ifeq "$(PULSEAUDIOLIBS) " " "
+else
+EXTRALIBS	+= $(MPG123LIBS) $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
 endif
 endif
 
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= mpg123 mpg123_alsadec
+_BGL_OBJECTS	= mpg123 mpg123_decoder mpg123_alsadec mpg123_padec
 
 ifeq "$(MPG123LIBS) " " "
 _C_OBJECTS	= 

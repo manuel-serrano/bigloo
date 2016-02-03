@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jun 26 07:30:16 2011                          */
-;*    Last change :  Sat Mar 14 14:24:51 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Wed Jan 27 15:11:50 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A multimedia MUSIC player built on top of FLAC and ALSA.         */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module musicplay
-   (library multimedia pthread alsa flac)
+   (library multimedia pthread alsa pulseaudio flac)
    (main main))
 
 ;*---------------------------------------------------------------------*/

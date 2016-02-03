@@ -1,0 +1,37 @@
+;; -*- mode: bee -*-
+;*=====================================================================*/
+;*    .../bigloo/api/pulseaudio/src/Misc/pulseaudio.init.in            */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Mon Jan 25 15:26:00 2016 (serrano)                */
+;*    Copyright   :  2001-16 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The PULSEAUDIO init file.                                        */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'pulseaudio
+   :srfi '(pulseaudio)
+   :basename "bigloopulseaudio"
+   :module-init '__pulseaudio_pulseaudio
+   :module-eval '__pulseaudio_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; pulseaudio includes
+    (set! *additional-include-foreign*
+       (cons "pulse/simple.h" *additional-include-foreign*))
+    ;; required multimedia
+    (set! *additional-bigloo-libraries*
+       (cons* 'bigloomultimedia *additional-bigloo-libraries*))
+    ;; pulseaudio C compilation options
+    (set! *cc-options* (cons "@PULSEAUDIOCFLAGS@" *cc-options*))
+    ;; pulseaudio libraries
+    (set! *ld-post-options* (cons "@PULSEAUDIOLIBS@" *ld-post-options*))))
+

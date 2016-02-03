@@ -3,14 +3,15 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 21 08:20:23 2011                          */
-/*    Last change :  Sat May 12 16:18:32 2012 (serrano)                */
-/*    Copyright   :  2011-12 Manuel Serrano                            */
+/*    Last change :  Tue Jan 26 13:44:06 2016 (serrano)                */
+/*    Copyright   :  2011-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 C prototypes                                              */
 /*=====================================================================*/
 #ifndef BGL_LIBMPG123
 #define BGL_LIBMPG123
 
+extern obj_t bgl_mpg123_error();
 extern obj_t bgl_mpg123_decoders();
 extern int bgl_mpg123_decode( obj_t, char *, long, long, char *, long );
 extern mpg123_handle *bgl_mpg123_new( const char * );

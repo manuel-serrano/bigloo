@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Wed Jan 25 13:44:24 2012 (serrano)                */
-;*    Copyright   :  2001-12 Manuel Serrano                            */
+;*    Last change :  Tue Jan 26 13:24:36 2016 (serrano)                */
+;*    Copyright   :  2001-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
 	   __multimedia-mpd
 	   __multimedia-music
 	   __multimedia-musicproc
+	   __multimedia-musicbuf
 	   __multimedia-mpc
 	   __multimedia-mpg123
 	   __multimedia-mplayer
@@ -40,6 +41,11 @@
 	   (class musicstatus)
 	   (class mpc)
 	   (class musicproc)
+	   (class musicbuf)
+	   (class musicbuffer)
+	   (class musicportbuffer)
+	   (class musicmmapbuffer)
+	   (class musicdecoder)
 	   (class mpg123)
 	   (class mplayer)
 	   (class soundcard)

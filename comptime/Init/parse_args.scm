@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Dec 23 11:47:31 2015 (serrano)                */
-;*    Copyright   :  1992-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jan 24 03:30:30 2016 (serrano)                */
+;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -226,6 +226,9 @@
       ;; stop after .o production
       (("-c" (help "Suppress linking and produce a .o file"))
        (set! *pass* 'cc))
+      ;; generates a shared library
+      (("-y" (help "Generate a shared library"))
+       (set! *pass* 'so))
       ;; suffixes
       (("-suffix" ?suffix (help "Recognize suffix as Scheme source"))
        (set! *src-suffix* (cons suffix *src-suffix*)))

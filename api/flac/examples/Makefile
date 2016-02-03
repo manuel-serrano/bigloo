@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Oct 14 07:04:33 2015 (serrano)                */
-#*    Copyright   :  2002-15 Manuel Serrano                            */
+#*    Last change :  Wed Jan 27 16:36:53 2016 (serrano)                */
+#*    Copyright   :  2002-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the flac examples                          */
 #*=====================================================================*/
@@ -22,7 +22,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = bgl123 musicplay
+SOURCES = bgl123 musicplay paplay
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -38,6 +38,9 @@ bgl123: bgl123.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 musicplay: musicplay.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+
+paplay: paplay.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
 pop:

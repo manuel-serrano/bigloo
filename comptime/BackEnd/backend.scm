@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:08:50 2003                          */
-;*    Last change :  Tue Dec 10 11:00:01 2013 (serrano)                */
-;*    Copyright   :  2003-13 Manuel Serrano                            */
+;*    Last change :  Sat Jan 30 03:45:00 2016 (serrano)                */
+;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The declaration of the backend structure.                        */
 ;*=====================================================================*/

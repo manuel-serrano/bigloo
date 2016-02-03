@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Mon Mar 10 14:28:06 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jan 30 03:46:04 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -54,6 +54,8 @@
 		     ((and (pair? *src-files*) (string? (car *src-files*)))
 		      (prefix (car *src-files*)))
 		     ((and (string? *dest*) (eq? *pass* 'ld))
+		      (prefix *dest*))
+		     ((and (string? *dest*) (eq? *pass* 'so))
 		      (prefix *dest*))
 		     (else
 		      #f))))

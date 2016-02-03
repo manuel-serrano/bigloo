@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Tue Dec 10 16:10:26 2013 (serrano)                */
-;*    Copyright   :  2003-13 Manuel Serrano                            */
+;*    Last change :  Sat Jan 30 14:58:59 2016 (serrano)                */
+;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -248,19 +248,21 @@
 ;*---------------------------------------------------------------------*/
 (define-method (backend-link-objects me::cvm sources)
    (when (>fx *bdb-debug* 0) (bdb-setting!))
-   (if (null? sources)
+   (cond
+      ((null? sources)
        (let ((first (prefix (car *o-files*))))
 	  (warning "link" "No source file found" " -- " *o-files*)
 	  (load-library-init)
 	  (set! *o-files* (cdr *o-files*))
-	  (ld first #f))
+	  (ld first #f)))
+      (else
        (let loop ((sources sources)
 		  (clauses '())
 		  (main #f)
 		  (fmain "")
 		  (libraries '()))
 	  (if (null? sources)
-	      (if (or main (not *auto-link-main*))
+	      (if (or main (not *auto-link-main*) (eq? *pass* 'so))
 		  (let ((first (prefix (car *o-files*))))
 		     ;; if libraries are used by some module we add them
 		     ;; to the link
@@ -330,10 +332,10 @@
 				  (append libs libraries))))
 			   (else
 			    (loop (cdr sources)
-				  clauses
-				  main
-				  fmain
-				  libraries))))))))))
+			       clauses
+			       main
+			       fmain
+			       libraries)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    backend-subtype? ::cvm ...                                       */

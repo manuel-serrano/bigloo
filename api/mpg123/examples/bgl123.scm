@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Mon Oct 24 15:31:33 2011 (serrano)                */
-;*    Copyright   :  2011 Manuel Serrano                               */
+;*    Last change :  Tue Jan 26 15:12:55 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both MPG123 *and* ALSA libs.    */
 ;*=====================================================================*/
@@ -13,7 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module bgl123
-   (library alsa mpg123 pthread)
+   (library alsa pulseaudio mpg123 pthread)
    (main main))
 
 ;*---------------------------------------------------------------------*/

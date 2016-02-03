@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 22 15:23:08 2015 (serrano)                */
-#*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Feb  3 09:41:42 2016 (serrano)                */
+#*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -40,7 +40,7 @@ lispdir=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv"
-apis="$importantapis gstreamer phidget alsa wav flac mpg123 phone avahi srfi27 packrat"
+apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -191,6 +191,11 @@ alsa=
 alsalibs=
 alsacflags=
 
+#*--- pulseaudio (left blank for autoconfiguration) --------------------*/
+pulseaudio=
+pulseaudiolibs=
+pulseaudiocflags=
+
 #*--- mpg123 (left blank for autoconfiguration) -----------------------*/
 mpg123=
 mpg123libs=
@@ -224,6 +229,7 @@ phidgetversion=21
 
 #*--- regexp ----------------------------------------------------------*/
 regexp=
+regexphasfreestudy=0
 
 #*--- gc source directory (left blank for default configuration) ------*/
 customgc=yes
@@ -1085,7 +1091,7 @@ while : ; do
       echo "   --no-summary" >&2;
       echo "   --bootconfig" >&2;
       echo "   --bootdir=dir" >&2;
-      echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
+a      echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
       echo "   --configureinfo=yes|no [default no]" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -2214,6 +2220,25 @@ if [ "$alsa " != "no " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    pulseaudio                                                       */
+#*---------------------------------------------------------------------*/
+# find out the C library for pulseaudio
+if [ "$pulseaudio " = " " ]; then
+   pulseaudio=`$autoconf pulseaudio --cflags="$cflags"` || exit 1;
+fi
+
+if [ "$pulseaudio " != "no " ]; then
+  pulseaudiocflags=`$autoconf bgl-pkg-config --cflags libpulse-simple`
+  pulseaudiolibs="`$autoconf bgl-pkg-config --libs libpulse-simple`"
+
+  if [ "pulseaudiocflags " = " " -o "pulseaudiolibs " = " " ]; then
+    echo "*** ERROR: Cannot configure pulseaudio, cflags are empty";
+    echo "Running the command \"pkg-config --cflags libpulse-simple\" might help understanding what's wrong"
+    exit 1;
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
 #*    mpg123                                                           */
 #*---------------------------------------------------------------------*/
 # find out the C library for mpg123
@@ -2254,6 +2279,10 @@ if [ "$regexp " = " " ]; then
     featureflags="-srfi enable-pcre $featureflags";
     extralibs="-lpcre $extralibs"
     regexp=pcre
+
+    if [ `$autoconf pcrefreestudy --cflags="$cflags"` = "yes" ]; then
+      regexphasfreestudy=1
+    fi
   else
     regexp=pregexp
   fi
@@ -2734,6 +2763,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     ldsoname=""
   else
     ldsoname=`$autoconf ldsoname $libdir --ld="$ld" --soname="$ldsoname"` || exit 1
+    ldsonameopt="$ldsoname=~a"
   fi
 
   # The shared libraries
@@ -2928,7 +2958,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -3035,7 +3065,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@SHELL_RM@|$bgl_shell_rm|" \
               -e "s|@C_COMPILER_STYLE@|$ccstyle|" \
               -e "s|@C_COMPILER@|$cc|" \
+              -e "s|@C_LD@|$ld|" \
               -e "s|@C_FLAGS@|$cflags|" \
+              -e "s|@C_PICFLAGS@|$cpicflags|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
               -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
@@ -3100,6 +3132,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HEAP_DEBUG_COPT@||" \
               -e "s|@BGL_HAVE_MIXER@|$havemixer|" \
               -e "s|@BGL_REGEXP_FAMILY@|$regexp|" \
+              -e "s|@BGL_REGEXP_HAS_FREE_STUDY@|$regexphasfreestudy|" \
 	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
 	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
@@ -3110,6 +3143,20 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BTAGS@|$buildbindir/$btags|" \
 	      -e "s|@BDEPEND@|$buildbindir/$bdepend|" \
 	      -e "s|@MCO@|$buildbindir/$mco|" \
+          | sed \
+	      -e "s|@LD@|$ld|" \
+	      -e "s|@LDOPT@|$ldopt|" \
+	      -e "s|@RPATH@|$ldrpath|" \
+	      -e "s|@RPATHBGL@|$libdir/$fildir|" \
+	      -e "s|@LIBDIR@|$libdir|" \
+	      -e "s|@FILDIR@|$fildir|" \
+	      -e "s|@EXTRALIBS@|$extralibs $extragclibs|" \
+	      -e "s|@GCLIBS@|$sharedlibrarygcclosed|" \
+	      -e "s|@GCLIB@|$gclib|" \
+	      -e "s|@SHAREDSUFFIX@|$sharedsuffix|" \
+	      -e "s|@SONAME@|$ldsoname|" \
+	      -e "s|@C_LINKER_SONAME_OPTION@|$ldsonameopt|" \
+	      -e "s|@C_LINKER_SHARED_OPTION@|$ldopt|" \
         > $p
     fi
   done
@@ -3118,7 +3165,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_h` $bigloo_h
 
   # bigloo.sh
-  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh; do
+  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
     mv $p $buildbindir/$p
     chmod u+rx $buildbindir/$p
   done
@@ -3700,6 +3747,35 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "ALSA=" >> $makefile_cfg
     echo "ALSALIBS=" >> $makefile_cfg
     echo "ALSAFLAGS=" >> $makefile_cfg
+  fi
+
+  # PULSEAUDIO
+  if [ "$pulseaudio " != "no " ]; then
+    echo "PULSEAUDIO=$pulseaudio" >> $makefile_cfg
+    echo "PULSEAUDIOLIBS=$pulseaudiolibs" >> $makefile_cfg
+    echo "PULSEAUDIOCFLAGS=$pulseaudiocflags" >> $makefile_cfg
+
+    # Patch the code of the PULSEAUDIO init file
+    echo ";; automatically generated. Don't edit" > api/pulseaudio/src/Misc/pulseaudio.init
+    cat api/pulseaudio/src/Misc/pulseaudio.init.in \
+      | sed -e "s|@PULSEAUDIOLIBS@|$pulseaudiolibs|g" \
+            -e "s|@PULSEAUDIOCFLAGS@|$pulseaudiocflags|g" \
+      >>  api/pulseaudio/src/Misc/pulseaudio.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "pulseaudio" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "PULSEAUDIO=" >> $makefile_cfg
+    echo "PULSEAUDIOLIBS=" >> $makefile_cfg
+    echo "PULSEAUDIOFLAGS=" >> $makefile_cfg
   fi
 
   # MPG123

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Fri Aug  2 08:38:44 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jan 24 03:20:08 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -214,15 +214,25 @@
 (define (library_e lib)
    (let ((info (get-library-info lib)))
       (if (and (libinfo? info) (libinfo-module_e info))
-	  (let ((init (module-initialization-id (libinfo-module_e info))))
+	  (let* ((init (module-initialization-id (libinfo-module_e info)))
+		 (glo (declare-global-cfun! init
+			 init
+			 (libinfo-module_e info)
+			 (bigloo-module-mangle
+			    (symbol->string init)
+			    (symbol->string (libinfo-module_e info)))
+			 'obj '(int string) #f #f #f #f)))
 	     (if (backend-pragma-support (the-backend))
 		 `(begin
 		     ((@ library-load-init __library) ',lib (bigloo-library-path))
-		     (pragma ,(format "~a( 0, ~s )"
-				      (bigloo-module-mangle
-				       (symbol->string init)
-				       (symbol->string (libinfo-module_e info)))
-				      (symbol->string *module*)))
+		     ;; MS: 24 Jan 2016, use a global variable instead of
+		     ;; a pragma
+		     (,glo 0 (pragma::string ,(format "~s" (symbol->string *module*))))
+;* 		     (pragma ,(format "~a( 0, ~s )"                    */
+;* 				      (bigloo-module-mangle            */
+;* 				       (symbol->string init)           */
+;* 				       (symbol->string (libinfo-module_e info))) */
+;* 				      (symbol->string *module*)))      */
 		     ((@ library-mark-loaded! __library) ',lib))
 		 `((@ library-load __library) ',lib)))
 	  (warning lib "cannot initialize library for eval"))))

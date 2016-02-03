@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Nov 30 09:08:20 2015 (serrano)                */
+;*    Last change :  Sat Jan 30 15:35:06 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -42,6 +42,7 @@
 	    ast_apply
 	    ast_private
 	    ast_object
+	    ast_dump
 	    effect_feffect)
    
    (export  (if-sym)
@@ -71,7 +72,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    *sites* ...                                                      */
 ;*---------------------------------------------------------------------*/
-(define *sites* '(value apply app set!))
+(define *sites* '(value apply app set! test))
 
 ;*---------------------------------------------------------------------*/
 ;*    *if* ...                                                         */
@@ -226,6 +227,9 @@
 	     (type *_*)
 	     (nodes nodes))))
 ;*--- if --------------------------------------------------------------*/
+      ((and ((or if (? if-sym?)) ?test #t #f)
+	    (? (lambda (x) (eq? site 'test))))
+       (sexp->node test stack loc site))
       (((or if (? if-sym?)) . ?-)
        (match-case exp
           ((?- ?si ?alors ?sinon)
@@ -236,28 +240,37 @@
 	       (set-car! (cdddr exp) alors)
 	       (sexp->node exp stack loc site))
               (else
-	       (if (or (symbol? si) (atom? si))
-		   (let* ((loc (find-location/loc exp loc))
-			  (cdloc (find-location/loc (cdr exp) loc))
-			  (cddloc (find-location/loc (cddr exp) loc))
-			  (cdddloc (find-location/loc (cdddr exp) loc))
-			  (l-si (find-location/loc si cdloc))
-			  (l-alors (find-location/loc alors cddloc))
-			  (l-sinon (find-location/loc sinon cdddloc))
-			  (si (sexp->node si stack l-si 'value))
-			  (alors (sexp->node alors stack l-alors 'value))
-			  (sinon (sexp->node sinon stack l-sinon 'value)))
-		      (instantiate::conditional
-			 (loc loc)
-			 (type *_*)
-			 (test si)
-			 (true alors)
-			 (false sinon)))
-		   (let* ((v (mark-symbol-non-user! (gensym 'test)))
-			  (var (make-typed-ident v 'bool))
-			  (nexp (epairify-rec `(if ,v ,alors ,sinon) exp)))
-		      (replace! exp `(,(let-sym) ((,var ,si)) ,nexp))
-		      (sexp->node exp stack loc site))))))
+	       (let* ((loc (find-location/loc exp loc))
+		      (cdloc (find-location/loc (cdr exp) loc))
+		      (cddloc (find-location/loc (cddr exp) loc))
+		      (cdddloc (find-location/loc (cdddr exp) loc))
+		      (l-si (find-location/loc si cdloc))
+		      (l-alors (find-location/loc alors cddloc))
+		      (l-sinon (find-location/loc sinon cdddloc))
+		      (test (sexp->node si stack loc 'test)))
+		  (cond
+		     ((atom? test)
+		      (with-access::atom test (value)
+			 (if (not value)
+			     (sexp->node sinon stack l-sinon 'value)
+			     (sexp->node alors stack l-alors 'value))))
+		     ((kwote? test)
+		      (sexp->node alors stack l-alors 'value))
+		     ((var? test)
+		      (let ((alors (sexp->node alors stack l-alors 'value))
+			    (sinon (sexp->node sinon stack l-sinon 'value)))
+			 (instantiate::conditional
+			    (loc loc)
+			    (type *_*)
+			    (test test)
+			    (true alors)
+			    (false sinon))))
+		     (else
+		      (let* ((v (mark-symbol-non-user! (gensym 'test)))
+			     (var (make-typed-ident v 'bool))
+			     (nexp (epairify-rec `(if ,v ,alors ,sinon) exp)))
+			 (replace! exp `(,(let-sym) ((,var ,si)) ,nexp))
+			 (sexp->node exp stack loc site))))))))
           ((?- ?si ?alors)
            (set-cdr! (cddr exp) (list #unspecified))
            (sexp->node exp stack loc site))

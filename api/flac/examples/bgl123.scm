@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:20:46 2011                          */
-;*    Last change :  Sat Mar 14 16:33:43 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Wed Jan 27 15:40:41 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A simple music player. Requires  both FLAC *and* ALSA libs.      */
 ;*=====================================================================*/
@@ -13,8 +13,7 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module bgl123
-   (library alsa flac pthread)
-   (extern (macro $memcpy::void (::string ::string ::long) "memcpy"))
+   (library alsa pulseaudio flac pthread)
    (static (class flac-alsa::flac-decoder
 	      (port (default #f))
 	      (pcm::alsa-snd-pcm read-only)

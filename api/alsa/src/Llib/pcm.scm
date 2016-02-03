@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 18:08:52 2011                          */
-;*    Last change :  Thu Jun 25 09:02:43 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Thu Jan 28 15:43:01 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    PCM interface                                                    */
 ;*=====================================================================*/
@@ -37,7 +37,7 @@
 	   (alsa-snd-pcm-avail-update::long ::alsa-snd-pcm)
 	   (alsa-snd-pcm-set-params! ::alsa-snd-pcm
 	      #!key format access channels rate soft-resample latency)
-	   (alsa-snd-pcm-writei ::alsa-snd-pcm ::string ::long)
+	   (alsa-snd-pcm-writei::long ::alsa-snd-pcm ::string ::long)
 	   (alsa-snd-pcm-pause ::alsa-snd-pcm ::bool)
 	   (alsa-snd-pcm-wait ::alsa-snd-pcm ::int)
 	   (alsa-snd-pcm-reset ::alsa-snd-pcm)
@@ -281,7 +281,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-pcm-writei ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (alsa-snd-pcm-writei pcm::alsa-snd-pcm buffer::string sz::long)
+(define (alsa-snd-pcm-writei::long pcm::alsa-snd-pcm buffer::string sz::long)
    (with-access::alsa-snd-pcm pcm ($builtin)
       (let ((err ($snd-pcm-writei $builtin buffer sz)))
 	 (if (<fx err 0)

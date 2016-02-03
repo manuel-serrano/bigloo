@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Sep  8 20:46:29 2015 (serrano)                */
-;*    Copyright   :  2000-15 Manuel Serrano                            */
+;*    Last change :  Wed Feb  3 09:42:40 2016 (serrano)                */
+;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -53,11 +53,13 @@
 	   (macro $configure-shell-rm::string "BGL_SHELL_RM")
            (macro $configure-c-compiler-style::string "C_COMPILER_STYLE")
 	   (macro $configure-c-compiler::string "C_COMPILER")
+	   (macro $configure-c-ld::string "C_LD")
 	   (macro $configure-c-compiler-o-option::string "C_COMPILER_O_OPTION")
            (macro $configure-c-compiler-debug-option::string "C_COMPILER_DEBUG_OPTION")
 	   (macro $configure-c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	   (macro $configure-c-compiler-rpath::string "C_COMPILER_RPATH")
 	   (macro $configure-c-flag::string "C_FLAGS")
+	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -66,6 +68,8 @@
 	   (macro $configure-c-linker-o-option::string "C_LINKER_O_OPTION")
            (macro $configure-c-linker-debug-option::string "C_LINKER_DEBUG_OPTION")
 	   (macro $configure-c-linker-optim-flags::string "C_LINKER_OPTIM_FLAGS")
+	   (macro $configure-c-linker-soname-option::string "C_LINKER_SONAME_OPTION")
+	   (macro $configure-c-linker-shared-option::string "C_LINKER_SHARED_OPTION")
 	   (macro $configure-ld-library-dir::string "BGL_LD_LIBRARY_DIR")
 	   (macro $configure-library-directory::string "LIBRARY_DIRECTORY")
 	   (macro $configure-non-custom-gc-directory::string "BGL_NON_CUSTOM_GC_DIR")
@@ -79,6 +83,7 @@
  	   (macro $configure-have-shared-library::bool "HAVE_SHARED_LIBRARY")
 	   (macro $configure-shared-link-option::string "ADDITIONAL_SHARED_LINK_OPTION")
 	   (macro $configure-static-link-option::string "ADDITIONAL_STATIC_LINK_OPTION")
+	   (macro $configure-shared-lib-suffix::string "SHARED_LIB_SUFFIX")
 	   (macro $configure-auto-finalizer::bool "BGL_AUTO_FINALIZER")
 	   (macro $configure-have-dlopen::bool "HAVE_DLOPEN")
 	   (macro $configure-dlopen-lib::string "DLOPEN_LD_OPT")
@@ -108,11 +113,13 @@
 	      (field static shell-rm::string "BGL_SHELL_RM")
 	      (field static c-compiler-style::string "C_COMPILER_STYLE")
               (field static c-compiler::string "C_COMPILER")
+              (field static c-ld::string "C_LD")
 	      (field static c-compiler-o-option::string "C_COMPILER_O_OPTION")
               (field static c-compiler-debug-option::string "C_COMPILER_DEBUG_OPTION")
 	      (field static c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	      (field static c-compiler-rpath::string "C_COMPILER_RPATH")
 	      (field static c-flag::string "C_FLAGS")
+	      (field static c-pic-flag::string "C_PICFLAGS")
 	      (field static c-strip-flag::string "C_STRIP_FLAGS")
 	      (field static c-prof-flag::string "C_PROFILE_FLAGS")
               (field static c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -121,6 +128,8 @@
 	      (field static c-linker-o-option::string "C_LINKER_O_OPTION")
               (field static c-linker-debug-option::string "C_LINKER_DEBUG_OPTION")
               (field static c-linker-optim-flags::string "C_LINKER_OPTIM_FLAGS")
+	      (field static c-linker-soname-option::string "C_LINKER_SONAME_OPTION")
+	      (field static c-linker-shared-option::string "C_LINKER_SHARED_OPTION")
 	      (field static ld-library-dir::string "LD_LIBRARY_DIR")
 	      (field static library-directory::string "LIBRARY_DIRECTORY")
 	      (field static non-custom-gc-directory::string "BGL_NON_CUSTOM_GC_DIR")
@@ -134,6 +143,7 @@
 	      (field static have-shared-library::bool "HAVE_SHARED_LIBRARY")
 	      (field static shared-link-option::string "ADDITIONAL_SHARED_LINK_OPTION")
 	      (field static static-link-option::string "ADDITIONAL_STATIC_LINK_OPTION")
+	      (field static shared-lib-suffix::string "SHARED_LIB_SUFFIX")
 	      (field static auto-finalizer::bool "BGL_AUTO_FINALIZER")
 	      (field static have-dlopen::bool "HAVE_DLOPEN")
 	      (field static dlopen-lib::string "DLOPEN_LD_OPT")
@@ -180,11 +190,13 @@
      (shell . ,$configure-shell)
      (c-compiler-style . ,$configure-c-compiler-style)
      (c-compiler . ,$configure-c-compiler)
+     (c-ld . ,$configure-c-ld)
      (c-compiler-o-option . ,$configure-c-compiler-o-option)
      (c-compiler-debug-option . ,$configure-c-compiler-debug-option)
      (c-compiler-optim-flag . ,$configure-c-compiler-optim-flag)
      (c-compiler-rpath . ,$configure-c-compiler-rpath)
      (c-flag . ,$configure-c-flag)
+     (c-pic-flag . ,$configure-c-pic-flag)
      (c-strip-flag . ,$configure-c-strip-flag)
      (c-prof-flag . ,$configure-c-prof-flag)
      (c-object-file-extension . ,$configure-c-object-file-extension)
@@ -193,6 +205,8 @@
      (c-linker-o-option . ,$configure-c-linker-o-option)
      (c-linker-debug-option . ,$configure-c-linker-debug-option)
      (c-linker-optim-flags . ,$configure-c-linker-optim-flags)
+     (c-linker-soname-option . ,$configure-c-linker-soname-option)
+     (c-linker-shared-option . ,$configure-c-linker-shared-option)
      (ld-library-dir . ,$configure-ld-library-dir)
      (library-directory . ,$configure-library-directory)
      (non-custom-gc-directory . ,$configure-non-custom-gc-directory)
@@ -206,6 +220,7 @@
      (have-shared-library . ,$configure-have-shared-library)
      (shared-link-option . ,$configure-shared-link-option)
      (static-link-option . ,$configure-static-link-option)
+     (shared-lib-suffix . ,$configure-shared-lib-suffix)
      (auto-finalizer . ,$configure-auto-finalizer)
      (have-dlopen . ,$configure-have-dlopen)
      (dlopen-lib . ,$configure-dlopen-lib)

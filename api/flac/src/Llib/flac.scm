@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Sat Apr 18 07:35:13 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Wed Jan 27 17:21:22 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
 ;*=====================================================================*/
@@ -17,6 +17,8 @@
    (option (set! *dlopen-init-gc* #t))
 
    (include "flac.sch")
+
+   (library multimedia)
    
    (extern (export flac-error "bgl_flac_error")
 	   (export flac-decoder-read "bgl_flac_decoder_read")
@@ -26,7 +28,7 @@
 	   (export flac-decoder-seek "bgl_flac_decoder_seek")
 	   (export flac-decoder-length "bgl_flac_decoder_length"))
    
-   (export (class flac-decoder
+   (export (abstract-class flac-decoder
 	      (flac-decoder-init)
 	      ($builtin::$flac-decoder read-only (default (%$flac-decoder-new)))
 	      (%flacbuf::custom (default (%$flac-make-custom)))
@@ -141,8 +143,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-read ::flac-decoder ...                             */
 ;*---------------------------------------------------------------------*/
-(define-generic (flac-decoder-read o::flac-decoder
-		   size::long))
+(define-generic (flac-decoder-read o::flac-decoder size::long))
 
 ;*---------------------------------------------------------------------*/
 ;*    flac-decoder-write ::flac-decoder ...                            */

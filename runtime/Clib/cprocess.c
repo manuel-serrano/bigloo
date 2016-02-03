@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Fri Sep  4 09:22:38 2015 (serrano)                */
+/*    Last change :  Sun Jan 31 11:41:08 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -1086,24 +1086,20 @@ c_process_xstatus( obj_t proc )
 {
    int info;
 
-   if( PROCESS(proc).exited )
-     info = PROCESS(proc).exit_status;
-   else
-     {
-       if( waitpid( PROCESS_PID( proc ), &info, WNOHANG ) == 0 )
-         {
-           /* process is still running */
-           return BFALSE;
-         }
-       else
-         {
-           /* process is now terminated */
-           PROCESS( proc ).exited = 1;
-           if( PROCESS(proc).index != -1 )
-             c_unregister_process( proc );
-           PROCESS( proc ).exit_status = info;
-         }
-     }
+   if( PROCESS( proc ).exited ) {
+      info = PROCESS( proc ).exit_status;
+   } else {
+      if( waitpid( PROCESS_PID( proc ), &info, WNOHANG ) == 0 ) {
+	 /* process is still running */
+	 return BFALSE;
+      } else {
+	 /* process is now terminated */
+	 PROCESS( proc ).exited = 1;
+	 if( PROCESS(proc).index != -1 )
+	    c_unregister_process( proc );
+	 PROCESS( proc ).exit_status = info;
+      }
+   }
    
    return BINT( WEXITSTATUS( info ) );
 }

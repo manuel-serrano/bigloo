@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Wed Nov 18 05:21:49 2015 (serrano)                */
-#*    Copyright   :  1997-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jan 25 15:19:06 2016 (serrano)                */
+#*    Copyright   :  1997-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -19,7 +19,8 @@ include ../Makefile.misc
 #*    Flags                                                            */
 #*---------------------------------------------------------------------*/
 POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
-		  bgljfile.sh.in bgltags.sh.in bgldepend.sh.in bglrun.sh.in \
+		  bgljfile.sh.in bgltags.sh.in bgldepend.sh.in \
+                  bglrun.sh.in bglld.sh.in \
                   bigloo_config.h.in bigloo_gc.h.in \
                   configure.java.in \
                   bigloo_config.sch.in \
@@ -53,7 +54,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
                   gstreamer gstreameraudio \
-                  alsa mpg123 flac pcre avahi \
+                  alsa pulseaudio mpg123 flac pcre pcrefreestudy avahi \
                   dbus gmp resolv unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   gcconfigureopt ccfortify environ setenv symlink \

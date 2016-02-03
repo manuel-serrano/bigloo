@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct 14 07:01:09 2015 (serrano)                */
+#*    Last change :  Thu Jan 28 14:56:01 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,7 @@ DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-BAPISAFE	= -unsafe -safee
+BAPISAFE	= -safee #-unsafe
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
                   -srfi $(API) -copt "$(WAVCFLAGS)"
 CAPIFLAGS       = $(WAVCFLAGS) $(CGCTHREADFLAGS)
@@ -54,7 +54,7 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= wav wav_alsadec
+_BGL_OBJECTS	= wav wav_decoder wav_alsadec wav_padec
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)

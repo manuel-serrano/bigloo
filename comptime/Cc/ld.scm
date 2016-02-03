@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Mon Jul 28 09:20:44 2014 (serrano)                */
-;*    Copyright   :  1992-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jan 30 22:36:38 2016 (serrano)                */
+;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
 ;*=====================================================================*/
@@ -128,8 +128,22 @@
 		(map (lambda (path)
 			(format rpathfmt path))
 		   (delete-duplicates *cflags-rpath*))))))
-   
-   (verbose 1 "   . ld (" *cc* ")" #\Newline)
+
+   (define (default-soname files)
+      (let ((name (if (pair? files) (car files) "out")))
+	 (string-append (prefix
+			   (if (string? (car files))
+			       (car files)
+			       (symbol->string (car files))))
+	    "."
+	    (bigloo-config 'shared-lib-suffix))))
+
+   (define comp
+      (if (eq? *pass* 'so)
+	  (string-append (bigloo-config 'c-ld))
+	  *cc*))
+
+   (verbose 1 "   . ld (" comp ")" #\Newline)
    ;; we add additional, machine specific, link options.
    (let ((staticp (or (not (bigloo-config 'have-shared-library))
 		      (string-case *ld-options*
@@ -137,14 +151,25 @@
 			  #t)
 			 (else
 			  #f)))))
+
       (if staticp
 	  (set! *ld-options* (string-append (bigloo-config 'static-link-option)
 				" " *ld-options*))
 	  (set! *ld-options* (string-append (bigloo-config 'shared-link-option)
 				" " *ld-options*)))
-      (let* ((dest (if (string? *dest*)
-		       *dest*
-		       (default-executable-name)))
+
+      (when (eq? *pass* 'so)
+	 (set! comp 
+	    (string-append comp " " (bigloo-config 'c-linker-shared-option)))
+	 (let ((sonameopt (bigloo-config 'c-linker-soname-option)))
+	    (set! *ld-options*
+	       (string-append (format sonameopt (default-soname *src-files*))
+		  " " *ld-options*))))
+      
+      (let* ((dest (cond
+		      ((string? *dest*) *dest*)
+		      ((eq? *pass* 'so) (default-soname *src-files*))
+		      (else (default-executable-name))))
 	     ;; the standard bigloo library
 	     (bigloo-lib (library->os-file *bigloo-lib*
 			    (library-suffixes)
@@ -216,7 +241,7 @@
 			     (string-append " " *ld-debug-option*)
 			     "")
 			 ;; optional executable stripping
-			 (if *strip*
+			 (if (and *strip* (not (eq? *pass* 'so)))
 			     (string-append " " (bigloo-config 'c-strip-flag))
 			     "")
 			 ;; user ld options
@@ -254,7 +279,7 @@
 			 " " (if *double-ld-libs?* add-libs "")
 			 ;; post user ld options
 			 " " (format "~( )" *ld-post-options*)))
-	     (cmd         (string-append *cc* " " ld-args)))
+	     (cmd         (string-append comp " " ld-args)))
 	 (verbose 2 "      ["  cmd #\] #\Newline)
 	 (exec cmd need-to-return "ld"))))
 

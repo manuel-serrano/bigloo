@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Oct 29 10:22:41 2013 (serrano)                */
-;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jan 30 05:19:17 2016 (serrano)                */
+;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -225,7 +225,7 @@
 	  (else
 	   (error #f "Illegal `cons' form" x)))))
    
-   ;; map
+v   ;; map
    (install-O-comptime-expander 'map expand-map)
    (install-G-comptime-expander 'map
 				(lambda (x::obj e::procedure)
@@ -253,7 +253,7 @@
    (install-G-comptime-expander 'filter
 				(lambda (x::obj e::procedure)
 				   (map-check x e '())))
-   (install-G-comptime-expander 'filter!
+v   (install-G-comptime-expander 'filter!
 				(lambda (x::obj e::procedure)
 				   (map-check x e #unspecified)))
    
@@ -272,6 +272,17 @@
 
    ;; find 
    (install-O-comptime-expander 'find expand-find)
+
+   ;; if
+   (install-O-comptime-expander 'if
+      (lambda (x::obj e::procedure)
+	 (let ((res (map (lambda (x) (e x e)) x)))
+	    (tprint "if rest=" res)
+	    (match-case res
+	       ((?- ?test #t #f)
+		test)
+	       (else
+		res)))))
    
    ;; equal?
    (install-O-comptime-expander
@@ -332,9 +343,24 @@
 		 ,(e a2 e))))
 	  (else
 	   (error #f "Illegal `eqv?' form" x)))))
-   
+
+   ;; number testing
+   (install-O-comptime-expander 'fixnum?
+      (lambda (x e)
+	 (match-case x
+	    ((?- (? fixnum?))
+	     #t)
+	    (else
+	     (map (lambda (x) (e x e)) x)))))
+   (install-O-comptime-expander 'flonum?
+      (lambda (x e)
+	 (match-case x
+	    ((?- (? flonum?))
+	     #t)
+	    (else
+	     (map (lambda (x) (e x e)) x)))))
+
    ;; arithmetic procedures
-   ;; +
    (install-O-comptime-expander '+
       (lambda (x e)
 	 (if *arithmetic-genericity* (expand-g+ x e) (expand-i+ x e))))
