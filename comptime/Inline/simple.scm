@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Wed Dec 23 14:59:16 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb  7 06:22:29 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
 ;*=====================================================================*/
@@ -47,7 +47,8 @@
 	  (formals (sfun-args sfun))
 	  (actuals (app-args node))
 	  (reductors (map (lambda (f a)
-			     (if (and (closure? a)
+			     (cond
+				((and (closure? a)
 				      (eq? (local-access f) 'read)
 				      (or (eq? (local-type f) *procedure*)
 					  (eq? (local-type f) *_*)
@@ -56,10 +57,23 @@
 				 ;; the formal binding is only read.
 				 ;; Hence we do not use intermediate
 				 ;; variable
-				 (closure-variable a)
+				 (closure-variable a))
+				((and (eq? (local-access f) 'read)
+				      (or (eq? (local-type f) *obj*)
+					  (eq? (local-type f) *_*))
+				      (atom? a))
+				 a)
+				((and (eq? (local-access f) 'read)
+				      (or (eq? (local-type f) *obj*)
+					  (eq? (local-type f) *_*))
+				      (var? a)
+				      (eq? (variable-access (var-variable a))
+					 'read))
+				 (var-variable a))
+				(else
 				 (clone-local
 				    f
-				    (duplicate::svar (local-value f)))))
+				    (duplicate::svar (local-value f))))))
 			formals
 			actuals))
 	  (bindings (let loop ((reductors reductors)
@@ -71,6 +85,15 @@
 			  ((and (closure? (car actuals))
 				(eq? (car reductors)
 				   (closure-variable (car actuals))))
+			   (loop (cdr reductors)
+			      (cdr actuals)
+			      res))
+			  ((eq? (car reductors) (car actuals))
+			   (loop (cdr reductors)
+			      (cdr actuals)
+			      res))
+			  ((and (var? (car actuals))
+				(eq? (car reductors) (var-variable (car actuals))))
 			   (loop (cdr reductors)
 			      (cdr actuals)
 			      res))

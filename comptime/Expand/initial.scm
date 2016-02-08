@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat Jan 30 05:19:17 2016 (serrano)                */
+;*    Last change :  Wed Feb  3 18:04:43 2016 (serrano)                */
 ;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -350,6 +350,8 @@ v   (install-G-comptime-expander 'filter!
 	 (match-case x
 	    ((?- (? fixnum?))
 	     #t)
+	    ((?- (? number?))
+	     #f)
 	    (else
 	     (map (lambda (x) (e x e)) x)))))
    (install-O-comptime-expander 'flonum?
@@ -357,6 +359,8 @@ v   (install-G-comptime-expander 'filter!
 	 (match-case x
 	    ((?- (? flonum?))
 	     #t)
+	    ((?- (? number?))
+	     #f)
 	    (else
 	     (map (lambda (x) (e x e)) x)))))
 

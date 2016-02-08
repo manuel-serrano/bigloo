@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov  6 10:40:50 1992                          */
-;*    Last change :  Wed Mar 16 12:27:13 2011 (serrano)                */
+;*    Last change :  Sat Feb  6 07:41:14 2016 (serrano)                */
 ;*                                                                     */
 ;*    Des petits tests qui verifie que l'inlining se fait              */
 ;*    convenablement.                                                  */

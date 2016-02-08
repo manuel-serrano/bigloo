@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Dec 23 12:33:33 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb  7 06:40:41 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -27,7 +27,8 @@
 	    ast_var
 	    ast_node
 	    ast_lvtype
-	    ast_occur)
+	    ast_occur
+	    ast_dump)
    (export  (reduce-1occ! globals)))
 
 ;*---------------------------------------------------------------------*/
@@ -42,7 +43,7 @@
    (set! *variable-removed* 0)
    (for-each (lambda (global)
 		(let* ((fun  (global-value global))
-		       (node (sfun-body fun))) 
+		       (node (sfun-body fun)))
 		   (sfun-body-set! fun (multiple-value-bind (_ node)
 					  (node-1occ! node '())
 					  node))
@@ -251,7 +252,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-1occ! node::let-var 1-exp*)
    (with-access::let-var node (body bindings loc type removable?)
-      ;; we first the very special case
+      ;; we first treat the very special case
       ;;    (let ((var expr)) (if var ... ...))
       ;; this special case is important in order to get good
       ;; compile-type error messages
@@ -277,8 +278,8 @@
 (define (node-1occ-let-var! node::let-var 1-exp*)
    (with-access::let-var node (body bindings loc type removable?)
       (let loop ((obindings bindings)
-		 (reset     #f)
-		 (extend    '()))
+		 (reset #f)
+		 (extend '()))
 	 (if (null? obindings)
 	     (if (or reset (side-effect? body))
 		 (multiple-value-bind (reset' nbody)
@@ -297,10 +298,9 @@
 			     ((null? obindings)
 			      (if (and removable? (null? nbindings))
 				  (begin
-				     (trace (reduce 3)
-					    "***1occ: removing bindings: "
-					    (shape body)
-					    #\Newline)
+				     (trace (reduce 3) "***1occ: remove bindings: "
+					(shape body)
+					#\Newline)
 				     (values reset' body))
 				  (begin
 				     (set! bindings (reverse! nbindings))
@@ -309,14 +309,13 @@
 				    (val (cdr (car obindings))))
 				 (and (=fx (local-occurrence var) 0)
 				      (not (side-effect? val))))
-			      (trace (reduce 3)
-				     "***1occ: removing: "
-				     (shape (car obindings))
-				     #\Newline)
+			      (trace (reduce 3) "***1occ: remove: "
+				 (shape (car obindings))
+				 #\Newline)
 			      (loop (cdr obindings) nbindings))
 			     (else
 			      (loop (cdr obindings)
-				    (cons (car obindings) nbindings))))))))
+				 (cons (car obindings) nbindings))))))))
 	     (let ((binding (car obindings)))
 		(let ((var (car binding))
 		      (val (cdr binding)))
@@ -326,27 +325,26 @@
 		      (cond
 			 ((or reset reset')
 			  (loop (cdr obindings)
-				#t
-				'()))
+			     #t
+			     '()))
 			 ((not (eq? (local-access var) 'read))
 			  (loop (cdr obindings)
-				#f
-				extend))
+			     #f
+			     extend))
 			 ((and (=fx (local-occurrence var) 1)
 			       (eq? (local-access var) 'read)
 			       (not (side-effect? val))
 			       (type-less-specific? (local-type var)
-						    (get-type val)))
-			  (trace (reduce 3)
-				 "***1occ: applying: "
-				 (shape var) " " (shape val) #\Newline)
+				  (get-type val)))
+			  (trace (reduce 3) "***1occ: apply: "
+			     (shape var) " " (shape val) #\Newline)
 			  (loop (cdr obindings)
-				#f
-				(cons binding extend)))
+			     #f
+			     (cons binding extend)))
 			 (else
 			  (loop (cdr obindings)
-				#f
-				extend))))))))))
+			     #f
+			     extend))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::set-ex-it ...                                       */

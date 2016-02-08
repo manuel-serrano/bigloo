@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Tue Feb  4 09:18:05 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb  7 06:08:23 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -32,6 +32,7 @@
 	    ast_node
 	    ast_ident
 	    ast_lvtype
+	    ast_dump
 	    object_class
 	    coerce_coerce
 	    effect_spread)
@@ -148,13 +149,88 @@
 ;*---------------------------------------------------------------------*/
 (define (convert-error from to loc node)
    (trace coerce "convert-error: " (shape from) " " (shape to) " " (shape node)
-	  #\Newline)
-   (if (and (not (eq? to *obj*)) (sub-type? to *obj*))
+      #\Newline)
+   (cond
+      ((and (not (eq? to *obj*)) (sub-type? to *obj*))
        (let ((node (runtime-type-error loc (type-id to) node)))
 	  (type-warning/location loc (current-function) from to)
 	  (lvtype-node! node)
-	  (coerce! node #unspecified from #f))
-       (type-error/location loc (current-function) from to)))
+	  (coerce! node #unspecified from #f)))
+      ((tclass? to)
+       (let ((node (runtime-type-error loc (type-id to) node)))
+	  (type-warning/location loc (current-function) from to)
+	  (lvtype-node! node)
+	  (coerce! node #unspecified from #f)))
+      ((not *warning-type-error*)
+       (cond
+	  ((or (eq? to *int*) (eq? to *long*)
+	       (eq? to *elong*)
+	       (eq? to *llong*)
+	       (eq? to *int8*)
+	       (eq? to *uint8*)
+	       (eq? to *int16*)
+	       (eq? to *uint16*)
+	       (eq? to *int32*)
+	       (eq? to *uint32*)
+	       (eq? to *int64*)
+	       (eq? to *uint64*))
+	   (let ((node (runtime-type-error loc (type-id to) node)))
+	      (type-warning/location loc (current-function) from to)
+	      (lvtype-node! node)
+	      (instantiate::sequence
+		 (type to)
+		 (nodes (list
+			   (coerce! node #unspecified from #f)
+			   (instantiate::atom (type to) (value 0)))))))
+	  ((eq? to *bool*)
+	   (let ((node (runtime-type-error loc (type-id to) node)))
+	      (type-warning/location loc (current-function) from to)
+	      (lvtype-node! node)
+	      (instantiate::sequence
+		 (type to)
+		 (nodes (list
+			   (coerce! node #unspecified from #f)
+			   (instantiate::atom (type to) (value 0)))))))
+	  ((eq? to *real*)
+	   (let ((node (runtime-type-error loc (type-id to) node)))
+	      (type-warning/location loc (current-function) from to)
+	      (lvtype-node! node)
+	      (instantiate::sequence
+		 (type to)
+		 (nodes (list
+			   (coerce! node #unspecified from #f)
+			   (instantiate::atom (type to) (value 0.0)))))))
+	  ((eq? to *char*)
+	   (let ((node (runtime-type-error loc (type-id to) node)))
+	      (type-warning/location loc (current-function) from to)
+	      (lvtype-node! node)
+	      (instantiate::sequence
+		 (type to)
+		 (nodes (list
+			   (coerce! node #unspecified from #f)
+			   (instantiate::atom (type to) (value #a000)))))))
+	  ((eq? to *schar*)
+	   (let ((node (runtime-type-error loc (type-id to) node)))
+	      (type-warning/location loc (current-function) from to)
+	      (lvtype-node! node)
+	      (instantiate::sequence
+		 (type *char*)
+		 (nodes (list
+			   (coerce! node #unspecified from #f)
+			   (instantiate::atom (type *char*) (value #a000)))))))
+	  ((eq? to *string*)
+	   (let ((node (runtime-type-error loc (type-id to) node)))
+	      (type-warning/location loc (current-function) from to)
+	      (lvtype-node! node)
+	      (instantiate::sequence
+		 (type to)
+		 (nodes (list
+			   (coerce! node #unspecified from #f)
+			   (instantiate::atom (type to) (value "")))))))
+	  (else
+	   (type-error/location loc (current-function) from to))))
+      (else
+       (type-error/location loc (current-function) from to))))
 
 ;*---------------------------------------------------------------------*/
 ;*    convert! ...                                                     */

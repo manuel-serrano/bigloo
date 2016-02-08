@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Dec 23 12:31:56 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb  7 09:41:19 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -21,12 +21,14 @@
 	    type_cache
 	    type_typeof
 	    type_misc
+	    type_coercion
 	    coerce_coerce
 	    effect_effect
 	    ast_var
 	    ast_node
 	    ast_lvtype
 	    ast_env
+	    ast_dump
 	    object_class)
    (export  (reduce-type-check! globals::pair-nil)))
 
@@ -298,6 +300,26 @@
 ;*    @ref ../../runtime/Llib/type.scm:pair-nil subtyping@             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-typec! node::app)
+
+   (define (type-check-disjoint? typec typea)
+      (cond
+	 ((eq? typec typea)
+	  #f)
+	 ((eq? typea *_*)
+	  #f)
+	 ((and (bigloo-type? typec) (not (bigloo-type? typea)))
+	  (not (find-coercer typea typec)))
+	 ((or (type-less-specific? typec typea)
+	      (type-less-specific? typea typec))
+	  #f)
+	 ((or (find-coercer typec typea) (find-coercer typea typec))
+	  #f)
+	 ((and (foreign-type? typec) (foreign-type? typea))
+	  #f)
+	 ((and (eq? typec *foreign*) (or (jclass? typea) (foreign-type? typea)))
+	  #f)
+	 (else
+	  #t)))
    
    (define (check-type node typec typea)
       (with-access::app node (loc)
@@ -315,11 +337,12 @@
 			       type
 			       #f)))
 		   node))
-	       ((type-disjoint? typec typea)
+	       ((type-check-disjoint? typec typea)
 		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
 		(trace (reduce 3) "typec: reducing: "
-		   (shape node) " => #f ("
-		   (shape typec) " " (shape typea) ")"
+		   (shape node) " => #f (typec="
+		   (shape typec) " " (foreign-type? typec)
+		   " typea=" (shape typea) " " (jclass? typea) ")"
 		   #\Newline)
 		(let ((node (coerce! (instantiate::atom
 					(loc loc)

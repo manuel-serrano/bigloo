@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Dec 22 16:25:29 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb  6 09:15:53 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
 ;*=====================================================================*/
@@ -51,6 +51,7 @@
 	    *warning-overriden-slots*
 	    *warning-overriden-variables*
 	    *warning-types*
+	    *warning-type-error*
 	    *profile-library*
 	    *trace-name*
 	    *trace-write-length*
@@ -770,6 +771,9 @@
    #f)
 (param-define *warning-types*
    "Set to #t to warn about type checks"
+   #f)
+(param-define *warning-type-error*
+   "Set to #t to treat type warnigns as error"
    #f)
 (param-define *profile-library*
    "Use the profiled library version"

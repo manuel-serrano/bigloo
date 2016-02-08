@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sun Jan 24 03:30:30 2016 (serrano)                */
+;*    Last change :  Sat Feb  6 09:13:41 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -630,6 +630,8 @@
        (set! *warning-overriden-variables* #t)
        #;(set! *warning-types* #t)
        (bigloo-warning-set! 2))
+      (("-Werror=type" (help "Treat type warnings as error"))
+       (set! *warning-type-error* #t))
       
 ;*--- Compilation modes -----------------------------------------------*/
       (section "Compilation modes")

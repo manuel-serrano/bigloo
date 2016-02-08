@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan 18 11:28:43 1995                          */
-;*    Last change :  Tue Jun 17 13:53:10 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb  6 09:44:17 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A small type cache to avoid to many lookup in Tenv.              */
 ;*=====================================================================*/
@@ -50,6 +50,7 @@
 	   *breal*
 	   *bignum*
 	   *char*
+	   *schar*
 	   *bchar*
 	   *bnil*
 	   *pair*
@@ -117,6 +118,7 @@
    (set! *breal*         (use-type! 'real #f))
    (set! *bignum*        (use-type! 'bignum #f))
    (set! *char*          (use-type! 'uchar #f))
+   (set! *schar*         (use-type! 'char #f))
    (set! *bchar*         (use-type! 'bchar #f))
    (set! *pair*          (use-type! 'pair #f))
    (set! *epair*         (use-type! 'epair #f))
@@ -193,6 +195,7 @@
 (define *breal*         'no-type-yet)
 (define *bignum*        'no-type-yet)
 (define *char*          'no-type-yet)
+(define *schar*         'no-type-yet)
 (define *bchar*         'no-type-yet)
 (define *string*        'no-type-yet)
 (define *bstring*       'no-type-yet)
