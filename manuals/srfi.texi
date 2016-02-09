@@ -209,13 +209,19 @@ values of a particular setting can be obtained with:
 @end smalllisp
 @end deffn
 
-@deffn {bigloo procedure} register-eval-srfi! srfi-name
+@deffn {bigloo procedure} register-srfi! srfi-name
+@deffnx {bigloo procedure} unregister-srfi! srfi-name
+@deffnx {bigloo procedure} unregister-eval-srfi! srfi-name
+@deffnx {bigloo procedure} register-compile-srfi! srfi-name
+@deffnx {bigloo procedure} unregister-compile-srfi! srfi-name
 This argument @var{srfi-name} is a symbol. It registers @var{srfi-name}
 in the Bigloo interpreter SRFI register. This function must only be
 used when implementing a library. The code of that library must contain
 one unique call to @code{register-eval-srfi!}. Let's suppose, for instance,
 a @code{format} library. The implementation for that library must contain
 an expression like:
+
+The functions @code{unregister-XXX-srfi!} unregisters a srfi.
 
 @smalllisp
 (register-eval-srfi! 'format)

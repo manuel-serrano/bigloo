@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Mon May  4 15:44:23 2015 (serrano)                */
+;*    Last change :  Tue Feb  9 15:02:09 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -28,6 +28,7 @@
 	    __r4_ports_6_10_1
 	    __r4_numbers_6_5_flonum_dtoa
    	    __bigloo
+	    __srfi4
 	    __param)
    
    (use     __type
@@ -48,7 +49,6 @@
 	    __custom
 	    __object
 	    __bigloo
-	    __srfi4
 	    __binary
 	    __bignum
 	    __regexp

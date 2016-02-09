@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Fri Apr  4 21:39:38 2014 (serrano)                */
-;*    Copyright   :  2001-14 Manuel Serrano                            */
+;*    Last change :  Tue Feb  9 15:05:45 2016 (serrano)                */
+;*    Copyright   :  2001-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -59,10 +59,13 @@
 	    (expand-compile-cond-expand ::pair-nil ::procedure)
 	    (expand-cond-expand ::pair-nil ::procedure ::pair-nil)
 	    (register-eval-srfi! ::symbol)
+	    (unregister-eval-srfi! ::symbol)
 	    (register-compile-srfi! ::symbol)
+	    (unregister-compile-srfi! ::symbol)
 	    (eval-srfi?::bool ::symbol)
 	    (compile-srfi?::bool ::symbol)
-	    (register-srfi! ::symbol)))
+	    (register-srfi! ::symbol)
+	    (unregister-srfi! ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-major-version ...                                         */
@@ -171,6 +174,13 @@
       (set! *srfi-eval-list* (cons srfi *srfi-eval-list*))))
 
 ;*---------------------------------------------------------------------*/
+;*    unregister-eval-srfi! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (unregister-eval-srfi! srfi::symbol)
+   (synchronize *srfi-mutex*
+      (set! *srfi-eval-list* (remq! srfi *srfi-eval-list*))))
+
+;*---------------------------------------------------------------------*/
 ;*    register-compile-srfi! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (register-compile-srfi! srfi::symbol)
@@ -178,11 +188,25 @@
       (set! *srfi-compile-list* (cons srfi *srfi-compile-list*))))
 
 ;*---------------------------------------------------------------------*/
+;*    unregister-compile-srfi! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (unregister-compile-srfi! srfi::symbol)
+   (synchronize *srfi-mutex*
+      (set! *srfi-compile-list* (remq! srfi *srfi-compile-list*))))
+
+;*---------------------------------------------------------------------*/
 ;*    register-srfi! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (register-srfi! srfi::symbol)
    (register-eval-srfi! srfi)
    (register-compile-srfi! srfi))
+
+;*---------------------------------------------------------------------*/
+;*    unregister-srfi! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (unregister-srfi! srfi::symbol)
+   (unregister-eval-srfi! srfi)
+   (unregister-compile-srfi! srfi))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-eval-cond-expand ...                                      */
