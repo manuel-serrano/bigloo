@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jun 23 10:51:40 2015 (serrano)                */
+;*    Last change :  Mon Feb  8 16:37:30 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -173,6 +173,7 @@
 	    (utf8-string-index->string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-string-append*::bstring . strings)
+	    (utf8-string-append-fill!::long ::bstring ::long ::bstring)
 	    (utf8-substring::bstring str::bstring ::long #!optional (end::long (utf8-string-length str)))
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
@@ -1111,77 +1112,6 @@
    (and (>=fx len (+fx index 4))
 	(=fx (char->integer (string-ref-ur str index)) #xfc)))
    
-;*---------------------------------------------------------------------*/
-;*    utf8-string-append ...                                           */
-;*    -------------------------------------------------------------    */
-;*    This function handles cases where the last char of the           */
-;*    concatanated char is a UNICODE remplacement char.                */
-;*---------------------------------------------------------------------*/
-(define (utf8-string-append-old left right)
-
-   (define (string-append-utf8-left left right)
-      ;; append two strings, the left one being UTF8
-      (let ((s (string-append left right)))
-	 (string-ascii-sentinel-set! s (string-ascii-sentinel left))
-	 s))
-
-   (let ((lenf (string-length left)))
-      (cond
-	 ((and (>=fx lenf 4)
-	       (=fx (char->integer (string-ref-ur left (-fx lenf 4))) #xf8))
-	  ;; the left string is an UTF8 string with potentially a
-	  ;; replace char at its last index
-	  (let ((lenr (string-length right)))
-	     (if (>=fx lenr 4)
-		 (let ((cr1 (char->integer (string-ref-ur right 0))))
-		    (if (=fx cr1 #xfc)
-			(let* ((tmp ($make-string/wo-fill (+fx (-fx lenf 4) lenr)))
-			       (cl1 (char->integer (string-ref-ur left (-fx lenf 4))))
-			       (cl2 (char->integer (string-ref-ur left (-fx lenf 3))))
-			       (cl3 (char->integer (string-ref-ur left (-fx lenf 2))))
-			       (cl4 (char->integer (string-ref-ur left (-fx lenf 1))))
-			       (cr2 (char->integer (string-ref-ur right 1)))
-			       (cr3 (char->integer (string-ref-ur right 2)))
-			       (cr4 (char->integer (string-ref-ur right 3)))
-			       (zzzzzz (bit-and #b111111 cr4))
-			       (yyyy (bit-and #b1111 cr3))
-			       (xx (bit-and (bit-rsh cl3 4) #b11))
-			       (wwww (bit-and cl3 #b1111))
-			       (uuuuu (bit-or
-					 (bit-lsh (bit-and cl4 #b111) 2)
-					 (bit-and (bit-rsh cl2 4) #b11))))
-			   (blit-string! left 0 tmp 0 (-fx lenf 4))
-			   (blit-string! right 2 tmp (-fx lenf 2) (-fx lenr 2))
-			   ;; byte 1
-			   (string-set! tmp (-fx lenf 4)
-			      (integer->char
-				 (bit-or
-				    (bit-and cl1 #b11110000)
-				    (bit-rsh uuuuu 2))))
-			   ;; byte 2
-			   (string-set! tmp (-fx lenf 3)
-			      (integer->char cl2))
-			   ;; byte 3
-			   (string-set! tmp (-fx lenf 2)
-			      (integer->char
-				 (bit-or #x80
-				    (bit-or (bit-lsh xx 4) yyyy))))
-			   ;; byte 4
-			   (string-set! tmp (-fx lenf 1)
-			      (integer->char cr4))
-			   tmp)
-			(string-append-utf8-left left right)))
-		 (string-append-utf8-left left right))))
-	 ((not (ascii-string? left))
-	  (string-append-utf8-left left right))
-	 ((not (ascii-string? right))
-	  (let ((s (string-append left right)))
-	     (string-ascii-sentinel-set! s
-		(+fx (string-length left) (string-ascii-sentinel right)))
-	     s))
-	 (else
-	  (string-append left right)))))
-
 ;*---------------------------------------------------------------------*/
 ;*    utf8-collapse! ...                                               */
 ;*---------------------------------------------------------------------*/

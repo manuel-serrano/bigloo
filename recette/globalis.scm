@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 11:30:18 1992                          */
-;*    Last change :  Sat Nov 26 07:16:20 2011 (serrano)                */
+;*    Last change :  Tue Feb  9 07:28:30 2016 (serrano)                */
 ;*                                                                     */
 ;*    Des tests qui globalisent des fonctions locales par la passe Glo */
 ;*---------------------------------------------------------------------*/

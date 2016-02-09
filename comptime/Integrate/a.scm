@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Mon Nov 11 10:05:52 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  9 07:34:18 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.
 ;*    -------------------------------------------------------------    */
@@ -110,9 +110,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    tail-coercion ...                                                */
 ;*    -------------------------------------------------------------    */
-;*    This function checks the contexts of tail call. It particular,   */
+;*    This function checks the contexts of tail calls. It particular,  */
 ;*    it detects local functions that are always called in tail        */
-;*    position but from different type contexts. These peculiar        */
+;*    positions but from different type contexts. These peculiar       */
 ;*    local functions are globalized.                                  */
 ;*---------------------------------------------------------------------*/
 (define (tail-coercion A global)

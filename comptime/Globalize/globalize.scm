@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:45:58 1995                          */
-;*    Last change :  Wed Jan 29 09:44:28 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  9 09:29:02 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `globalization' process                                      */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
 	    type_type
 	    ast_var
 	    ast_node
+	    ast_dump
 	    globalize_ginfo
 	    globalize_node
 	    globalize_free
@@ -48,11 +49,11 @@
 ;*---------------------------------------------------------------------*/
 (define (globalize! global)
    (trace globalize
-	  "========================================" #\newline
-	  (shape global) " "
-	  (if (global/Ginfo-escape? global) "[escaping]" "[non escaping]")
-	  #\Newline
-	  "----------------------------------------" #\newline)
+      "========================================" #\newline
+      (shape global) " "
+      (if (global/Ginfo-escape? global) "[escaping]" "[non escaping]")
+      #\Newline
+      "----------------------------------------" #\newline)
    (verbose 3 "        " (shape global) ": " #\Newline)
    (let ((fun (global-value global)))
       (set! *E*  '())
@@ -60,12 +61,12 @@
       (set! *G1* '())
       (Gn! (sfun-args fun) (sfun-body fun) global '())
       (trace globalize
-	     "   E  : " (shape *E*)
-	     #\Newline
-	     "   G0 : " (shape *G0*)
-	     #\Newline
-	     "   G1 : " (shape *G1*)
-	     #\Newline)
+	 "   E  : " (shape *E*)
+	 #\Newline
+	 "   G0 : " (shape *G0*)
+	 #\Newline
+	 "   G1 : " (shape *G1*)
+	 #\Newline)
       ;; we compute the integration property
       (set-integration! global *E* *G0* *G1*)
       ;; we computed the really globalised functions.
@@ -87,7 +88,7 @@
 	 ;; kaptured variables.
 	 (set-kaptured! G)
 	 ;; then, we compute new global definitions
-	 (let loop ((G     G)
+	 (let loop ((G G)
 		    (new-G (if (global/Ginfo-escape? global)
 			       (let ((clo (global-closure global
 					     (node-loc (sfun-body fun)))))
@@ -106,8 +107,7 @@
 		   (sfun-body-set! fun body)
 		   (trace globalize #a012 #\Newline)
 		   new-G)
-		(loop (cdr G)
-		      (cons (local->global (car G)) new-G)))))))
+		(loop (cdr G) (cons (local->global (car G)) new-G)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    verb-globalization ...                                           */

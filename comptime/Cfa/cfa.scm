@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Thu Dec 31 18:01:48 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  9 09:05:21 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
 ;*=====================================================================*/
@@ -273,7 +273,7 @@
    (with-access::let-var node (body bindings)
       (trace (cfa 4) (shape (cfa-current)) ": let-var, " (shape node) #\Newline)
       (for-each (lambda (binding)
-		   (let* ((var        (car binding))
+		   (let* ((var (car binding))
 			  (var-approx (svar/Cinfo-approx (variable-value var)))
 			  (val-approx (cfa! (cdr binding))))
 		      (let ((vtype (variable-type var))

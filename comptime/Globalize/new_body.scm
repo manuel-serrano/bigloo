@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 30 09:25:08 1995                          */
-;*    Last change :  Mon Nov 11 09:59:49 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  9 09:29:23 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    For each globalized function, we set its new body.               */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
 	    ast_var
 	    ast_node
 	    ast_sexp
+	    ast_dump
 	    globalize_ginfo
 	    globalize_node)
    (export  (set-globalized-new-bodies! ::global local*)))
@@ -29,11 +30,13 @@
 ;*    set-globalized-new-bodies! ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (set-globalized-new-bodies! global locals)
+   (trace (globalize 2) #\Newline "set-globalized-new-bodies!: " (shape global)
+      #\Newline)
    (set! *round* (+fx *round* 1))
-   ;; we remove globalized or integrated functions from global
+   ;; remove globalized or integrated functions from global
    (let ((fun (global-value global)))
       (sfun-body-set! fun (rem! (sfun-body fun) global global)))
-   ;; then we compute the globalized functions bodies
+   ;; then compute the globalized functions bodies
    (for-each set-globalized-new-body! locals))
 
 ;*---------------------------------------------------------------------*/
@@ -288,15 +291,14 @@
 		 (liip (cdr obindings)
 		       nbindings)))
 	    ((is-in? (car obindings) owner)
-	     (trace (globalize 2) " ### is-in?: "
+	     (trace (globalize 2) " ### is-in: "
 		    (shape (car obindings))
 		    "  [current: " (shape current) "]"
 		    #\Newline)
-	     ;; we mark that the function is definied
+	     ;; we mark that the function is defined
 	     (sfun/Ginfo-bmark-set! (local-value (car obindings)) *round*)
 	     ;; we plug the function
-	     (sfun/Ginfo-plugged-in-set! (local-value (car obindings))
-					current)
+	     (sfun/Ginfo-plugged-in-set! (local-value (car obindings)) current)
 	     (let* ((fun (local-value (car obindings)))
 		    (bod (sfun-body fun)))
 		(sfun-body-set! fun (rem! bod owner (car obindings)))

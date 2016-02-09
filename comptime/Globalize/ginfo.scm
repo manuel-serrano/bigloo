@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:03:24 1996                          */
-;*    Last change :  Wed Jan 22 07:44:22 2014 (serrano)                */
-;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  9 07:20:18 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The definition of the info structures for the globalization      */
 ;*=====================================================================*/
@@ -33,7 +33,7 @@
 	       ;; a place to be integrated
 	       (integrator (default #unspecified))
 	       ;; a place to be integrated (see globalize_integration)
-	       (imark (default #unspecified))
+	       (imark (default '()))
 	       ;; the function this function belongs to
 	       (owner (default #f))
 	       ;; a list a integrated functions
