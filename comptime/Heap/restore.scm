@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Mon Jul 28 10:07:44 2014 (serrano)                */
-;*    Copyright   :  1994-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb 13 10:33:55 2016 (serrano)                */
+;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -197,8 +197,8 @@
 			  ;; @label heap class handling@
 			  ;; The function add-Tenv! manages the import
 			  ;; of class definitions. That is, if the additional
-			  ;; heap contains class definition, add-Tenv! will
-			  ;; create the accessors for that classes. Note
+			  ;; heap contains class definitions, add-Tenv!
+			  ;; creates the accessors for that classes. Note
 			  ;; that set-Tenv! *doesn't* do the same job, it
 			  ;; supposes that the env doesn't contain classes
 			  (assert (Tenv) (hashtable? Tenv))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Mon Oct 14 14:23:48 2013 (serrano)                */
-;*    Copyright   :  2007-13 Manuel Serrano                            */
+;*    Last change :  Sun Feb 14 07:40:11 2016 (serrano)                */
+;*    Copyright   :  2007-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
 ;*=====================================================================*/
@@ -56,7 +56,7 @@
 		    (let* ((Envs (input-obj port))
 			   (_ (if (not (and (vector Envs)
 					    (or (=fx (vector-length Envs) 5)
-						(=fx (vector-length Envs) 6))))
+						(=fx (vector-length Envs) 7))))
 				  (error 'dump-heap "Corrupted heap" heap)))
 			   (target (vector-ref Envs 0))
 			   (version (vector-ref Envs 1))

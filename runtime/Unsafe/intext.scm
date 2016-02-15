@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Wed Jan 13 17:05:48 2016 (serrano)                */
+;*    Last change :  Sun Feb 14 07:09:12 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -652,7 +652,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    size-of-word ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (size-of-word m)
+(define (size-of-word m::long)
    (let loop ((size 0)
 	      (m m))
       (if (=fx m 0)

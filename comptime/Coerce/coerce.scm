@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sun Nov 24 17:48:49 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Feb 13 10:32:29 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    object_class
 	    ast_var
 	    ast_node
+	    ast_dump
 	    coerce_pproto
 	    coerce_convert
 	    coerce_app
@@ -411,6 +412,9 @@
       (let ((clauses clauses)
 	    (test-type (select-item-type node))
 	    (test-node-type (get-type test)))
+	 (unless (coercer-exists? test-node-type test-type)
+	    (tprint "select test-type=" (shape test-type)
+	       " test-node-type=" (shape test-node-type)))
 	 ;; select constructions are normalized: the test should have
 	 ;; been placed in a variable. That's why this test below should
 	 ;; work. This test may fail (in strange cases that I'm currently
@@ -437,9 +441,6 @@
       (inc-ppmarge!)
       (for-each (lambda (f) (coerce-function! f (not *unsafe-type*))) locals)
       (set! body (coerce! body caller to safe))
-      (unless (eq? (node-type body) (get-type body))
-	 (tprint "let-fun to=" (shape to) " ntype=" (shape (node-type body))
-		 " gtype=" (shape (get-type body))))
       (set! type (strict-node-type (node-type body) type))
       (dec-ppmarge!)
       node))

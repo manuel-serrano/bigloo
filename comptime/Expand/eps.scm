@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 14:56:58 1994                          */
-;*    Last change :  Sun Nov 18 09:17:22 2012 (serrano)                */
-;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb 14 07:33:51 2016 (serrano)                */
+;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expanser inspired by:                                  */
 ;*    Expansion-Passing Style: Beyond Conventional Macro,              */
@@ -103,7 +103,7 @@
    ;; We set all macros definitions seen in include files.
    (for-each (lambda (x)
 		(compile-expand (comptime-expand x)))
-	     (reverse! *macro*))
+      (reverse! *macro*))
    ;; imported inlined functions which are not coming from library
    ;; have to be expanded. It is not obliged to perform macro-expansion
    ;; on library functions because they have alredy been expanded.
@@ -149,7 +149,7 @@
 						   (lambda ()
 						      (comptime-expand obody))))))
 				  (loop (cdr src) (cons nbody res)))))))))
-	     units)
+      units)
    ;; in a second time, we apply compile (i.e., optim/debug macros).
    (when (or *optim-O-macro?*
 	     (and (number? *compiler-debug*) (>= *compiler-debug* 1)))
@@ -173,7 +173,7 @@
 						  (lambda ()
 						     (compile-expand obody))))))
 				 (loop (cdr src) (cons nbody res)))))))
-		units))
+	 units))
    ;; we are done
    (pass-postlude units check-to-be-macros))
       

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Mon Nov 11 09:42:45 2013 (serrano)                */
+;*    Last change :  Sat Feb 13 10:43:50 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -22,7 +22,8 @@
 	    module_module
 	    ast_var
 	    ast_env
-	    ast_node)
+	    ast_node
+	    ast_dump)
    (export  (generic hrtype-node! ::node)))
 
 ;*---------------------------------------------------------------------*/
@@ -273,7 +274,8 @@
 ;*    hrtype-node! ::select ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (hrtype-node! node::select)
-   (with-access::select node (clauses test)
+   (with-access::select node (clauses test item-type)
+      (set! item-type (find-type (type-id item-type)))
       (hrtype-node! test)
       (for-each (lambda (clause)
 		   (hrtype-node! (cdr clause)))

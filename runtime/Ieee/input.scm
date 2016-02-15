@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Sat Nov 15 08:10:13 2014 (serrano)                */
+;*    Last change :  Wed Feb 10 11:28:44 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -570,13 +570,15 @@
 ;*    Returns a list of lines start/stop positions.                    */
 ;*---------------------------------------------------------------------*/
 (define (file-lines file)
+   
    (define gram
-      (regular-grammar (start)
+      (regular-grammar (start acc)
 	 (#\Newline
 	  (let* ((stop (input-port-position (the-port)))
 		 (desc (cons start stop)))
 	     (set! start (+fx 1 stop))
-	     (cons desc (ignore))))
+	     (set! acc (cons desc acc))
+	     (ignore)))
 	 ((+ all)
 	  (ignore))
 	 (else
@@ -584,14 +586,15 @@
 	     (if (eof-object? c)
 		 (let ((stop (input-port-position (the-port))))
 		    (if (>fx stop start)
-			(list (cons start stop))
-			'()))
+			(reverse! (cons (cons start stop) acc))
+			(reverse! acc)))
 		 (error 'file-lines "Illegal files" file))))))
+   
    (if (not (file-exists? file))
        #f
        (with-input-from-file file
 	  (lambda ()
-	     (read/rp gram (current-input-port) 0)))))
+	     (read/rp gram (current-input-port) 0 '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    file-position->line ...                                          */

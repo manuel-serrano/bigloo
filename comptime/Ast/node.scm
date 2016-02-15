@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed Dec 23 11:45:43 2015 (serrano)                */
+;*    Last change :  Sat Feb 13 10:44:05 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -209,7 +209,7 @@
 	      ;; the clauses
 	      (clauses::obj read-only)
 	      ;; item types
-	      (item-type::type read-only))
+	      item-type::type)
 
 	   ;; the labels constructions
 	   (final-class let-fun::node/effect

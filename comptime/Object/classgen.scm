@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Sat Nov  7 18:26:52 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Sat Feb 13 07:19:18 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
 ;*=====================================================================*/
@@ -262,6 +262,11 @@
 	   ,(string-append "((" tname
 	       ")BREF( GC_MALLOC( sizeof(" sizeof ") )))"))))
 
+   (define (init-widening new)
+      (if (final-class? c)
+	  `((object-widening-set! ,new #f))
+	  '()))
+   
    (define (pragma-allocate id tid g)
       (let ((new (mark-symbol-non-user! (gensym 'new))))
 	 `(define-inline (,id)
@@ -279,13 +284,13 @@
 				 (object-class-num-set! ,new
 				    ((@ class-num __object)
 				     (@ ,(global-id g) ,(global-module g))))
-				 (object-widening-set! ,new #f)
+				 ,@(init-widening new)
 				 ,new))))
 		    `(let ((,(make-typed-ident new tid) ,(c-malloc tid)))
 			(object-class-num-set! ,new
 			   ((@ class-num __object)
 			    (@ ,(global-id g) ,(global-module g))))
-			(object-widening-set! ,new #f)
+			,@(init-widening new)
 			,new))))))
    
    (define (nopragma-allocate id tid g)
@@ -296,7 +301,7 @@
 		     (object-class-num-set! ,new
 			((@ class-num __object)
 			 (@ ,(global-id g) ,(global-module g))))
-		     (object-widening-set! ,new #f)
+		     ,@(init-widening new)
 		     ,new)))))
 
    [assert (c) (not (wide-class? c))]

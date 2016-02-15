@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Wed May  7 08:42:50 2014 (serrano)                */
+;*    Last change :  Sat Feb 13 18:39:58 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -21,6 +21,7 @@
 	    ast_var
 	    ast_node
 	    ast_hrtype
+	    ast_dump
 	    read_jvm
 	    module_module
 	    tools_location
