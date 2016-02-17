@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 14:01:30 1996                          */
-;*    Last change :  Sat Feb 13 09:41:01 2016 (serrano)                */
+;*    Last change :  Wed Feb 17 09:13:06 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of simple functions (non recursive functions).      */
@@ -70,6 +70,12 @@
 				      (eq? (variable-access (var-variable a))
 					 'read))
 				 (var-variable a))
+				((and (eq? (local-access f) 'read)
+				      (and (or (eq? (local-type f) *int*)
+					       (eq? (local-type f) *long*))
+					   (atom? a)
+					   (fixnum? (atom-value a))))
+				 a)
 				(else
 				 (clone-local
 				    f

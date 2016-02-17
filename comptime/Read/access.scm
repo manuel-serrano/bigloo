@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 17 11:33:41 1993                          */
-;*    Last change :  Thu Mar 26 07:22:24 2009 (serrano)                */
-;*    Copyright   :  1993-2009 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Feb 17 09:07:38 2016 (serrano)                */
+;*    Copyright   :  1993-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    The module which handle access tables `module/name'              */
+;*    The module that handles access tables `module/name'              */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
