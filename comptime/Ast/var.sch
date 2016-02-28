@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen Ast/var.scm)
+;; Bigloo (4.3a)
+;; Inria -- Sophia Antipolis     Thu Feb 18 08:23:09 CET 2016 
+;; (bigloo -classgen Ast/var.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -90,7 +90,7 @@
 ;; local
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-local::local id1234::symbol name1235::obj type1236::type value1237::value access1238::obj fast-alpha1239::obj removable1240::obj occurrence1241::long occurrencew1242::long user?1243::bool key1244::long)
+    (inline make-local::local id1233::symbol name1234::obj type1235::type value1236::value access1237::obj fast-alpha1238::obj removable1239::obj occurrence1240::long occurrencew1241::long user?1242::bool key1243::long)
     (inline local?::bool ::obj)
     (local-nil::local)
     (inline local-key::long ::local)
@@ -117,7 +117,7 @@
 ;; fun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-fun::fun arity1225::long side-effect1226::obj predicate-of1227::obj stack-allocator1228::obj top?1229::bool the-closure1230::obj effect1231::obj failsafe1232::obj)
+    (inline make-fun::fun arity1224::long side-effect1225::obj predicate-of1226::obj stack-allocator1227::obj top?1228::bool the-closure1229::obj effect1230::obj failsafe1231::obj)
     (inline fun?::bool ::obj)
     (fun-nil::fun)
     (inline fun-failsafe::obj ::fun)
@@ -139,7 +139,7 @@
 ;; sfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-sfun::sfun arity1205::long side-effect1206::obj predicate-of1207::obj stack-allocator1208::obj top?1209::bool the-closure1210::obj effect1211::obj failsafe1212::obj property1213::obj args1214::obj args-name1215::obj body1216::obj class1217::obj dsssl-keywords1218::obj loc1219::obj optionals1220::obj keys1221::obj the-closure-global1222::obj strength1223::symbol)
+    (inline make-sfun::sfun arity1204::long side-effect1205::obj predicate-of1206::obj stack-allocator1207::obj top?1208::bool the-closure1209::obj effect1210::obj failsafe1211::obj property1212::obj args1213::obj args-name1214::obj body1215::obj class1216::obj dsssl-keywords1217::obj loc1218::obj optionals1219::obj keys1220::obj the-closure-global1221::obj strength1222::symbol)
     (inline sfun?::bool ::obj)
     (sfun-nil::sfun)
     (inline sfun-strength::symbol ::sfun)
@@ -180,7 +180,7 @@
 ;; cfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-cfun::cfun arity1191::long side-effect1192::obj predicate-of1193::obj stack-allocator1194::obj top?1195::bool the-closure1196::obj effect1197::obj failsafe1198::obj args-type1199::obj macro?1200::bool infix?1201::bool method1203::pair-nil)
+    (inline make-cfun::cfun arity1191::long side-effect1192::obj predicate-of1193::obj stack-allocator1194::obj top?1195::bool the-closure1196::obj effect1197::obj failsafe1198::obj args-type1199::obj macro?1200::bool infix?1201::bool method1202::pair-nil)
     (inline cfun?::bool ::obj)
     (cfun-nil::cfun)
     (inline cfun-method::pair-nil ::cfun)
@@ -334,7 +334,7 @@
 (define-inline (global-id-set! o::global v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; local
-(define-inline (make-local::local id1234::symbol name1235::obj type1236::type value1237::value access1238::obj fast-alpha1239::obj removable1240::obj occurrence1241::long occurrencew1242::long user?1243::bool key1244::long) (instantiate::local (id id1234) (name name1235) (type type1236) (value value1237) (access access1238) (fast-alpha fast-alpha1239) (removable removable1240) (occurrence occurrence1241) (occurrencew occurrencew1242) (user? user?1243) (key key1244)))
+(define-inline (make-local::local id1233::symbol name1234::obj type1235::type value1236::value access1237::obj fast-alpha1238::obj removable1239::obj occurrence1240::long occurrencew1241::long user?1242::bool key1243::long) (instantiate::local (id id1233) (name name1234) (type type1235) (value value1236) (access access1237) (fast-alpha fast-alpha1238) (removable removable1239) (occurrence occurrence1240) (occurrencew occurrencew1241) (user? user?1242) (key key1243)))
 (define-inline (local?::bool obj::obj) ((@ isa? __object) obj (@ local ast_var)))
 (define (local-nil::local) (class-nil (@ local ast_var)))
 (define-inline (local-key::long o::local) (-> |#!bigloo_wallow| o key))
@@ -361,7 +361,7 @@
 (define-inline (local-id-set! o::local v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; fun
-(define-inline (make-fun::fun arity1225::long side-effect1226::obj predicate-of1227::obj stack-allocator1228::obj top?1229::bool the-closure1230::obj effect1231::obj failsafe1232::obj) (instantiate::fun (arity arity1225) (side-effect side-effect1226) (predicate-of predicate-of1227) (stack-allocator stack-allocator1228) (top? top?1229) (the-closure the-closure1230) (effect effect1231) (failsafe failsafe1232)))
+(define-inline (make-fun::fun arity1224::long side-effect1225::obj predicate-of1226::obj stack-allocator1227::obj top?1228::bool the-closure1229::obj effect1230::obj failsafe1231::obj) (instantiate::fun (arity arity1224) (side-effect side-effect1225) (predicate-of predicate-of1226) (stack-allocator stack-allocator1227) (top? top?1228) (the-closure the-closure1229) (effect effect1230) (failsafe failsafe1231)))
 (define-inline (fun?::bool obj::obj) ((@ isa? __object) obj (@ fun ast_var)))
 (define (fun-nil::fun) (class-nil (@ fun ast_var)))
 (define-inline (fun-failsafe::obj o::fun) (-> |#!bigloo_wallow| o failsafe))
@@ -382,7 +382,7 @@
 (define-inline (fun-arity-set! o::fun v::long) (set! (-> |#!bigloo_wallow| o arity) v))
 
 ;; sfun
-(define-inline (make-sfun::sfun arity1205::long side-effect1206::obj predicate-of1207::obj stack-allocator1208::obj top?1209::bool the-closure1210::obj effect1211::obj failsafe1212::obj property1213::obj args1214::obj args-name1215::obj body1216::obj class1217::obj dsssl-keywords1218::obj loc1219::obj optionals1220::obj keys1221::obj the-closure-global1222::obj strength1223::symbol) (instantiate::sfun (arity arity1205) (side-effect side-effect1206) (predicate-of predicate-of1207) (stack-allocator stack-allocator1208) (top? top?1209) (the-closure the-closure1210) (effect effect1211) (failsafe failsafe1212) (property property1213) (args args1214) (args-name args-name1215) (body body1216) (class class1217) (dsssl-keywords dsssl-keywords1218) (loc loc1219) (optionals optionals1220) (keys keys1221) (the-closure-global the-closure-global1222) (strength strength1223)))
+(define-inline (make-sfun::sfun arity1204::long side-effect1205::obj predicate-of1206::obj stack-allocator1207::obj top?1208::bool the-closure1209::obj effect1210::obj failsafe1211::obj property1212::obj args1213::obj args-name1214::obj body1215::obj class1216::obj dsssl-keywords1217::obj loc1218::obj optionals1219::obj keys1220::obj the-closure-global1221::obj strength1222::symbol) (instantiate::sfun (arity arity1204) (side-effect side-effect1205) (predicate-of predicate-of1206) (stack-allocator stack-allocator1207) (top? top?1208) (the-closure the-closure1209) (effect effect1210) (failsafe failsafe1211) (property property1212) (args args1213) (args-name args-name1214) (body body1215) (class class1216) (dsssl-keywords dsssl-keywords1217) (loc loc1218) (optionals optionals1219) (keys keys1220) (the-closure-global the-closure-global1221) (strength strength1222)))
 (define-inline (sfun?::bool obj::obj) ((@ isa? __object) obj (@ sfun ast_var)))
 (define (sfun-nil::sfun) (class-nil (@ sfun ast_var)))
 (define-inline (sfun-strength::symbol o::sfun) (-> |#!bigloo_wallow| o strength))
@@ -425,7 +425,7 @@
 (define-inline (sfun-arity-set! o::sfun v::long) (set! (-> |#!bigloo_wallow| o arity) v))
 
 ;; cfun
-(define-inline (make-cfun::cfun arity1191::long side-effect1192::obj predicate-of1193::obj stack-allocator1194::obj top?1195::bool the-closure1196::obj effect1197::obj failsafe1198::obj args-type1199::obj macro?1200::bool infix?1201::bool method1203::pair-nil) (instantiate::cfun (arity arity1191) (side-effect side-effect1192) (predicate-of predicate-of1193) (stack-allocator stack-allocator1194) (top? top?1195) (the-closure the-closure1196) (effect effect1197) (failsafe failsafe1198) (args-type args-type1199) (macro? macro?1200) (infix? infix?1201) (method method1203)))
+(define-inline (make-cfun::cfun arity1191::long side-effect1192::obj predicate-of1193::obj stack-allocator1194::obj top?1195::bool the-closure1196::obj effect1197::obj failsafe1198::obj args-type1199::obj macro?1200::bool infix?1201::bool method1202::pair-nil) (instantiate::cfun (arity arity1191) (side-effect side-effect1192) (predicate-of predicate-of1193) (stack-allocator stack-allocator1194) (top? top?1195) (the-closure the-closure1196) (effect effect1197) (failsafe failsafe1198) (args-type args-type1199) (macro? macro?1200) (infix? infix?1201) (method method1202)))
 (define-inline (cfun?::bool obj::obj) ((@ isa? __object) obj (@ cfun ast_var)))
 (define (cfun-nil::cfun) (class-nil (@ cfun ast_var)))
 (define-inline (cfun-method::pair-nil o::cfun) (-> |#!bigloo_wallow| o method))

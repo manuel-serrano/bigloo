@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Oct 14 08:13:11 2015 (serrano)                */
+/*    Last change :  Fri Feb 26 07:46:28 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1237,6 +1237,8 @@ typedef struct BgL_objectz00_bgl {
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER, len, str }; \
          static obj_t name = BSTRING( &(aux.length) )
+#   define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
+      DEFINE_STRING( name, aux, str, len )
 #   define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN long length; \
                       char string[ len + 1 ]; } \
@@ -1252,6 +1254,12 @@ typedef struct BgL_objectz00_bgl {
                       long length; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, 0 ), len, str }; \
+         static obj_t name = BSTRING( &(aux.header) )
+#   define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
+      static struct { __CNST_ALIGN header_t header; \
+                      long length; \
+                      char string[ len + 1 ]; } \
+         aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, sen ), len, str }; \
          static obj_t name = BSTRING( &(aux.header) )
 #   define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN header_t header; \

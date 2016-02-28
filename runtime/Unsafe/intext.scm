@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Feb 14 07:09:12 2016 (serrano)                */
+;*    Last change :  Thu Feb 25 18:42:47 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -558,6 +558,7 @@
 	    ((#\.) '())
 	    ((#\<) (read-cnst))
 	    ((#\") (read-string s))
+	    ((#\`) (string-ascii-sentinel-mark! (read-string s)))
 	    ((#\%) (url-decode (read-string s)))
 	    ((#\U) (utf8-string->ucs2-string (read-string s)))
 	    ((#\[) (read-vector))
@@ -1003,7 +1004,8 @@
 	  (!print-markup #\:)
 	  (print-item (keyword->string item)))
 	 ((string? item)
-	  (print-composite item (lambda (item mark) (print-string #\" item))))
+	  (let ((tg (if (>fx (string-ascii-sentinel item) 0) #\` #\")))
+	     (print-composite item (lambda (item mark) (print-string tg item)))))
 	 ((object? item)
 	  (print-composite item print-object))
 	 ((class? item)

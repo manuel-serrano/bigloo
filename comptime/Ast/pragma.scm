@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Sun Nov 18 10:47:12 2012 (serrano)                */
+;*    Last change :  Thu Feb 18 08:38:00 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -18,7 +18,26 @@
 	    backend_backend
  	    ast_sexp
 	    engine_param)
-   (export (pragma/type->node::node ::bool ::obj ::type e s ::obj ::symbol)))
+   (export (pragma/type->node::node ::bool ::obj ::type e s ::obj ::symbol)
+	   (get-static-pragmas::pair-nil)
+	   (add-static-pragma! ::node)))
+
+;*---------------------------------------------------------------------*/
+;*    *static-pragma-list* ...                                         */
+;*---------------------------------------------------------------------*/
+(define *static-pragma-list* '())
+
+;*---------------------------------------------------------------------*/
+;*    get-static-pragmas ...                                           */
+;*---------------------------------------------------------------------*/
+(define (get-static-pragmas)
+   (reverse! *static-pragma-list*))
+
+;*---------------------------------------------------------------------*/
+;*    add-static-pragma! ...                                           */
+;*---------------------------------------------------------------------*/
+(define (add-static-pragma! p)
+   (set! *static-pragma-list* (cons p *static-pragma-list*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pragma/type->node ...                                            */

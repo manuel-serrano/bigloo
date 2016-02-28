@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Sun Jan 24 03:09:38 2016 (serrano)                */
+;*    Last change :  Fri Feb 26 19:08:57 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -29,6 +29,7 @@
 	    ast_node
 	    ast_env
 	    ast_ident
+	    ast_pragma
 	    tvector_tvector
 	    tvector_cnst
 	    cnst_alloc
@@ -72,6 +73,16 @@
    ;; it has a strange name).
    (let ((cnst-init (get-cnst-table)))
       (emit-prototype (global-value cnst-init) cnst-init))
+   ;; emit the static pragmas
+   (let ((pragmas (get-static-pragmas)))
+      (when (pair? pragmas)
+	 (for-each (lambda (p::pragma)
+		      (emit-cop (instantiate::cpragma
+				   (format (pragma-format p))
+				   (args (pragma-expr* p))
+				   (loc (pragma-loc p)))))
+	    pragmas)
+	 (newline *c-port*)))
    ;; emit the type declarations for the typed vectors
    (emit-tvector-types *c-port*)
    ;; we are done now for prototypes.
@@ -261,6 +272,17 @@
 			  (shape node))))))
 
 ;*---------------------------------------------------------------------*/
+;*    ascii-sentinel ...                                               */
+;*---------------------------------------------------------------------*/
+(define (ascii-sentinel str)
+   (let ((len (string-length str)))
+      (let loop ((i 0))
+	 (cond
+	    ((=fx i len) len)
+	    ((>fx (char->integer (string-ref str i)) 127) i)
+	    (else (loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
 ;*    emit-cnst-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-string ostr global)
@@ -295,7 +317,7 @@
        (let ((str (string-for-read ostr)))
 	  ;; regular C compilers
 	  (fprin *c-port*
-		 "DEFINE_STRING( "
+		 "DEFINE_STRING_ASCII_SENTINEL( "
 		 (global-name global)
 		 ", "
 		 (id->name (gensym (global-name global)))
@@ -306,7 +328,8 @@
 		((<=fx rlen *max-c-token-length*)
 		 (display (untrigraph (substring str read (+fx read rlen)))
 			  *c-port*)
-		 (fprint *c-port* "\", " (string-length ostr) " );"))
+		 (fprint *c-port* "\", " (string-length ostr)
+		    ", " (ascii-sentinel ostr) " );"))
 		(else
 		 (let laap ((offset (+fx read *max-c-token-length*)))
 		    (cond

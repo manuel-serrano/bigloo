@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Mon Nov 11 09:58:23 2013 (serrano)                */
-;*    Copyright   :  2003-13 Manuel Serrano                            */
+;*    Last change :  Thu Feb 18 08:29:58 2016 (serrano)                */
+;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
 ;*    does it set a vector or a global variable, ...).                 */

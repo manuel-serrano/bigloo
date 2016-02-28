@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Dec 23 16:11:48 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 18 08:29:36 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -352,7 +352,7 @@
    (trace (cgen 3)
 	  "(node->cop node::pragma kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::pragma node (format)
+   (with-access::pragma node (format effect)
       (extern->cop format #f node kont inpushexit)))
 
 ;*---------------------------------------------------------------------*/

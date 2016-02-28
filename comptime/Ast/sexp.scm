@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Sat Jan 30 15:35:06 2016 (serrano)                */
+;*    Last change :  Thu Feb 18 08:48:04 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -157,7 +157,7 @@
 		       (let ((g (find-global x)))
 			  (when g
 			     (not (eq? (global-module g)
-				       '__r4_control_features_6_9))))))))
+				     '__r4_control_features_6_9))))))))
 	. ?rest)
        ;; apply is a special case. unless overriden it must be handled
        ;; as a special form by the compiler.
@@ -305,7 +305,7 @@
 			"illegal `set!' expression" exp loc)))))
           (else
 	   (error-sexp->node
-	    "Illegal `set!' form" exp (find-location/loc exp loc)))))
+	      "Illegal `set!' form" exp (find-location/loc exp loc)))))
 ;*--- define ----------------------------------------------------------*/
       ((define . ?-)
        ;; define is very close to `set!' excepted that is it not
@@ -327,10 +327,10 @@
 			   (var ast)
 			   (value val)))
 		     (error-sexp->node
-		      "illegal `define' expression" exp loc)))))
+			"illegal `define' expression" exp loc)))))
           (else
 	   (error-sexp->node
-	    "Illegal `define' form" exp (find-location/loc exp loc)))))
+	      "Illegal `define' form" exp (find-location/loc exp loc)))))
 ;*--- a pattern to improve pattern-matching compilation ---------------*/
       ((((or let (? let-sym?) letrec labels (? labels-sym?)) ?- ?body) . ?args)
        (let* ((let-part (car exp))
@@ -359,58 +359,58 @@
 					(if (null? args)
 					    '()
 					    (user-error/location
-					     loc
-					     (shape (current-function))
-					     "wrong number of argument"
-					     exp)))
+					       loc
+					       (shape (current-function))
+					       "wrong number of argument"
+					       exp)))
 				       ((not (pair? vars))
 					(list
-					 (list
-					  vars
-					  (let liip ((args args))
-					     (if (null? args)
-						 ''()
-						 `(cons ,(car args)
-							,(liip (cdr args))))))))
+					   (list
+					      vars
+					      (let liip ((args args))
+						 (if (null? args)
+						     ''()
+						     `(cons ,(car args)
+							 ,(liip (cdr args))))))))
 				       ((dsssl-named-constant? (car vars))
 					(let ((arg (dsssl-find-first-formal
-						    (cdr vars))))
+						      (cdr vars))))
 					   (if arg
 					       (loop arg args)
 					       (loop '() args))))
 				       ((not (symbol? (car vars)))
 					(user-error/location
-					 loc
-					 (shape (current-function))
-					 "Illegal formal argument"
-					 exp))
+					   loc
+					   (shape (current-function))
+					   "Illegal formal argument"
+					   exp))
 				       ((null? args)
 					(user-error/location
-					 loc
-					 (shape (current-function))
-					 "wrong number of argument"
-					 exp))
+					   loc
+					   (shape (current-function))
+					   "wrong number of argument"
+					   exp))
 				       (else
 					(cons (list (car vars) (car args))
-					      (loop (cdr vars) (cdr args))))))
+					   (loop (cdr vars) (cdr args))))))
 				,(make-dsssl-function-prelude
-				  (shape (current-function))
-				  vars
-				  (normalize-progn body)
-				  (lambda (obj proc msg)
-				     (user-error/location loc obj proc msg))))))
+				    (shape (current-function))
+				    vars
+				    (normalize-progn body)
+				    (lambda (obj proc msg)
+				       (user-error/location loc obj proc msg))))))
 	  (let->node nexp stack loc site)))
 ;*--- the direct if applications --------------------------------------*/
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)
 	    (and (? proc-or-lambda?) ?proc2))
-	   . (and (? (lambda (l) (every (lambda (l) (not (pair? l))) l))) ?args))
+	. (and (? (lambda (l) (every (lambda (l) (not (pair? l))) l))) ?args))
        (let ((nexp `(if ,test (,proc1 ,@args) (,proc2 ,@args))))
 	  (sexp->node nexp stack (find-location/loc exp loc) site)))
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)
 	    (and (? proc-or-lambda?) ?proc2))
-	   . (and (? list?) ?args))
+	. (and (? list?) ?args))
        (let* ((tmps (map (lambda (_) (gensym)) args))
 	      (loc (find-location/loc exp loc))
 	      (nexp `(,(let-sym) ,(map list tmps args)
@@ -424,29 +424,37 @@
            (let ((loc (find-location/loc exp loc))
 		 (fun (make-anonymous-name loc)))
               (sexp->node `(,(labels-sym) ((,fun ,args ,(normalize-progn body))) ,fun)
-			  stack
-			  loc
-			  site)))
+		 stack
+		 loc
+		 site)))
           (else
 	   (error-sexp->node "Illegal `lambda' form"
-			     exp
-			     (find-location/loc exp loc)))))
+	      exp
+	      (find-location/loc exp loc)))))
 ;*--- pragma ----------------------------------------------------------*/
       ((pragma . ?-)
        (pragma/type->node #f #f *unspec* exp stack loc site))
 ;*--- pragma/effect ---------------------------------------------------*/
       ((pragma/effect ?effect . ?rest)
        (pragma/type->node #f
-			  (parse-effect effect)
-			  *unspec* `(pragma ,@rest) stack loc site))
+	  (parse-effect effect)
+	  *unspec* `(pragma ,@rest) stack loc site))
 ;*--- free-pragma -----------------------------------------------------*/
       ((free-pragma . ?-)
        (pragma/type->node #t #f *unspec* exp stack loc site))
+;*--- static-pragma ---------------------------------------------------*/
+      ((static-pragma . ?-)
+       (if (not (and (null? stack) (eq? site 'value)))
+	   (error-sexp->node "Illegal `static-pragma' expression" exp loc)
+	   (begin
+	      (add-static-pragma!
+		 (pragma/type->node #t #f *unspec* exp stack loc site))
+	      (sexp->node #unspecified stack loc site))))
 ;*--- pragma/effect ---------------------------------------------------*/
       ((free-pragma/effect ?effect . ?rest)
        (pragma/type->node #t
-			  (parse-effect effect)
-			  *unspec* `(pragma ,@rest) stack loc site))
+	  (parse-effect effect)
+	  *unspec* `(pragma ,@rest) stack loc site))
 ;*--- failure ---------------------------------------------------------*/
       ((failure . ?-)
        (match-case exp
@@ -469,7 +477,7 @@
 		 (obj obj))))
           (else
 	   (error-sexp->node
-	    "Illegal `failure' form" exp (find-location/loc exp loc)))))
+	      "Illegal `failure' form" exp (find-location/loc exp loc)))))
 ;*--- case ------------------------------------------------------------*/
       ((case . ?-)
        ;; former versions of the compiler used to make side effect
@@ -484,9 +492,9 @@
 		  (cdloc (find-location/loc (cdr exp) loc))
 		  (cddloc (find-location/loc (cdr exp) loc))
                   (test (sexp->node test
-				    stack
-				    (find-location/loc test cdloc)
-				    'value)))
+			   stack
+			   (find-location/loc test cdloc)
+			   'value)))
 	      (let loop ((cls clauses)
 			 (nclauses '()))
 		 (if (null? cls)
@@ -498,21 +506,21 @@
 			(clauses (reverse! nclauses)))
 		     (let* ((clause (car cls))
 			    (body   (sexp->node (normalize-progn (cdr clause))
-						stack
-						(find-location/loc clause cddloc)
-						'value))
+				       stack
+				       (find-location/loc clause cddloc)
+				       'value))
 			    (nclause (cons (car clause) body)))
 			;; we check that it is not an illegal `else' clause
 			(if (and (eq? (car clause) 'else)
 				 (not (null? (cdr cls))))
 			    (error-sexp->node
-			     "Illegal `case' form" exp (find-location/loc exp loc))
+			       "Illegal `case' form" exp (find-location/loc exp loc))
 			    (loop (cdr cls)
-				  (cons (epairify nclause clause)
-					nclauses))))))))
+			       (cons (epairify nclause clause)
+				  nclauses))))))))
           (else
 	   (error-sexp->node
-	    "Illegal `case' form" exp (find-location/loc exp loc)))))
+	      "Illegal `case' form" exp (find-location/loc exp loc)))))
 ;*--- set-exit --------------------------------------------------------*/
       ((set-exit . ?-)
        (set-exit->node exp stack loc site))
@@ -530,7 +538,7 @@
 ;*--- private ---------------------------------------------------------*/
       ((#unspecified)
        (error-sexp->node
-	"Illegal `application' form" exp (find-location/loc exp loc)))
+	  "Illegal `application' form" exp (find-location/loc exp loc)))
       ((? private-sexp?)
        (private-node exp stack loc site))
 ;*--- app -------------------------------------------------------------*/
@@ -553,7 +561,7 @@
 		(not (backend-foreign-closure (the-backend)))
 		(not (eq? site 'apply)))
 	   (error-sexp->node
-	    (format "Backend (~a) does not support external first class function" (backend-name (the-backend))) exp loc)
+	      (format "Backend (~a) does not support external first class function" (backend-name (the-backend))) exp loc)
 	   (instantiate::closure
 	      (loc loc)
 	      (type (strict-node-type *procedure* (variable-type v)))
