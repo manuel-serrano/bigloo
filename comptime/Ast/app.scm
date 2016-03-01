@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Tue Jun 17 16:09:20 2014 (serrano)                */
+;*    Last change :  Tue Mar  1 17:26:07 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -18,6 +18,7 @@
 	    tools_location
 	    tools_shape
 	    type_cache
+	    tvector_tvector
  	    ast_sexp
 	    ast_ident
 	    ast_local
@@ -550,12 +551,17 @@
 	     (fun  var)
 	     (args args)))
 	 (($vector-length)
-	  (instantiate::vlength
-	     (loc loc)
-	     (type (global-type variable))
-	     (c-format (string-append gname "($1)"))
-	     (expr* args)
-	     (vtype (car (cfun-args-type (global-value variable))))))
+	  (let* ((vtype (car (cfun-args-type (global-value variable))))
+		 (ftype (if (tvec? vtype)
+			    (tvec-item-type vtype)
+			    *_*)))
+	     (instantiate::vlength
+		(loc loc)
+		(type (global-type variable))
+		(c-format (string-append gname "($1)"))
+		(expr* args)
+		(ftype ftype)
+		(vtype vtype))))
 	 (($vector-ref $vector-ref-ur)
 	  (instantiate::vref
 	     (loc loc)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Sat Nov 23 19:46:07 2013 (serrano)                */
-;*    Copyright   :  2000-13 Manuel Serrano                            */
+;*    Last change :  Tue Mar  1 13:26:17 2016 (serrano)                */
+;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -106,13 +106,14 @@
 ;*    check-node-type ::var ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (check-node-type node::var)
-   (with-access::var node (type variable)
-      (with-access::variable variable ((vtype type))
+   (with-access::var node (type variable loc)
+      (with-access::variable variable ((vtype type) id)
 	 (unless (sfun? (variable-value variable))
 	    (unless (or (subtype? type vtype)
+			(and (eq? type *obj*) (bigloo-type? vtype))
 			(and (tclass? vtype) (subtype? vtype type)))
-	       (tprint "ERR: " (shape node)
-		  " type1=" (shape type) " type2=" (shape vtype)
+	       (tprint "ERR: " (shape node) " loc=" loc
+		  " type=" (shape type) " vtype=" (shape vtype)
 		  " eq=" (eq? type vtype) " sub=" (subtype? type vtype)
 		  " check-full=" *check-full*)
 	       (err node type vtype))

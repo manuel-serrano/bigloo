@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Wed Mar  7 18:20:44 2012 (serrano)                */
-;*    Copyright   :  2000-12 Manuel Serrano                            */
+;*    Last change :  Tue Mar  1 14:46:00 2016 (serrano)                */
+;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -160,6 +160,7 @@
 	     (loc loc)
 	     (type otype)
 	     (vtype vtype)
+	     (ftype ftype)
 	     (c-format c-fmt)
 	     (expr* (list (sexp->node exp stack loc 'value)))
 	     (effect (instantiate::feffect)))))

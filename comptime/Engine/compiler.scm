@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Feb 10 11:18:39 2016 (serrano)                */
+;*    Last change :  Tue Mar  1 13:23:55 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -462,9 +462,9 @@
 	    ;; in order to inline all type checkers.
 	    (set! ast (profile inline (inline-walk! ast 'reducer)))
 	    (set! ast (lvtype-ast! ast))
-	    (stop-on-pass 'inline+ (lambda () (write-ast ast)))
 	    (check-sharing "inline+" ast)
 	    (check-type "inline+" ast #t #t)
+	    (stop-on-pass 'inline+ (lambda () (write-ast ast)))
 
 	    ;; the code production
 	    (let ((ast2 (append-ast (ast-initializers) ast)))

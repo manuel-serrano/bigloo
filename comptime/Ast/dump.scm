@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Sat Feb  6 07:00:44 2016 (serrano)                */
+;*    Last change :  Tue Mar  1 17:28:52 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -203,9 +203,11 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->sexp node::vlength)
    (node->sexp-hook node)
-   (with-access::vlength node (type expr*)
+   (with-access::vlength node (type expr* ftype)
       (location-shape (node-loc node)
-	 `(,(shape-typed-node 'vlength type) ,(node->sexp (car expr*))))))
+	 `(,(shape-typed-node 'vlength type)
+	   ("ftype:" ,(shape ftype))
+	   ,(node->sexp (car expr*))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::vref ...                                            */

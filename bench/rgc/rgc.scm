@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 30 13:36:49 1998                          */
-;*    Last change :  Sun Sep  7 10:02:18 2014 (serrano)                */
+;*    Last change :  Tue Mar  1 11:50:20 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A benchmark to test the reader performances.                     */
 ;*=====================================================================*/
@@ -117,8 +117,8 @@
 	      (error/location "read"
 			      "Illegal character"
 			      string
-			      (input-port-name    input-port)
-			      (input-port-position input-port))))))
+			      (input-port-name    (the-port))
+			      (input-port-position (the-port)))))))
 
       ;; string
       ((: #\" (* (or (out #\\ #\") (: #\\ all))) #\")
@@ -144,8 +144,8 @@
        (error/location "read"
 		       "Illegal pair"
 		       (the-string)
-		       (input-port-name    input-port)
-		       (input-port-position input-port)))
+		       (input-port-name    (the-port))
+		       (input-port-position (the-port))))
 
       ;; doted pairs
       ((context pair #\.)
@@ -154,8 +154,8 @@
        (error/location "read"
 		       "Illegal token"
 		       #\.
-		       (input-port-name    input-port)
-		       (input-port-position input-port)))
+		       (input-port-name    (the-port))
+		       (input-port-position (the-port))))
 
       ;; unspecified and eof-object
       ((: #\# (or #\u #\e) (+ lettre))
@@ -171,8 +171,8 @@
 	      (error/location "read"
 			      "Illegal identifier"
 			      symbol
-			      (input-port-name    input-port)
-			      (input-port-position input-port))))))
+			      (input-port-name    (the-port))
+			      (input-port-position (the-port)))))))
 
       ;; booleans
       ((: #\# (in #\t #\T))
@@ -198,12 +198,12 @@
       ;; lists
       ((in #\( #\[)
        (let ((open-key *par-open*)
-	     (pos      (input-port-position input-port))
+	     (pos      (input-port-position (the-port)))
 	     (line     *line-number*))
 	  ;; if possible, we store the opening parenthesis.
 	  (if (and (vector? *list-errors*)
 		   (<fx open-key (vector-length *list-errors*)))
-	      (c-vector-set! *list-errors* open-key pos))
+	      (vector-set-ur! *list-errors* open-key pos))
 	  ;; and then, we compute the result list...
 	  (set! *par-open* (+fx 1 *par-open*))
 	  (rgc-context 'pair)
@@ -223,21 +223,21 @@
 			(error/location "read"
 					"Illegal pair"
 					cdr
-					(input-port-name input-port)
-					(input-port-position input-port)))))
+					(input-port-name (the-port))
+					(input-port-position (the-port))))))
 		((=fx open-key *par-open*)
 		 (if (=fx open-key 0)
 		     (rgc-context))
 		 '())
 		(else
-		 (let ((new-pos  (input-port-position input-port))
+		 (let ((new-pos  (input-port-position (the-port)))
 		       (new-line *line-number*))
 		    (if *position?*
 			;; we put position only on pairs.
 			(econs walk
 			       (loop-pair (ignore) new-pos new-line)
 			       (list 'at
-				     (input-port-name input-port)
+				     (input-port-name (the-port))
 				     pos
 				     line))
 			(cons walk
@@ -256,8 +256,8 @@
 	  ;; if possible, we store the opening parenthesis.
 	  (if (and (vector? *vector-errors*)
 		   (<fx open-key (vector-length *vector-errors*)))
-	      (let ((pos (input-port-position input-port)))
-		 (c-vector-set! *vector-errors* open-key pos)))
+	      (let ((pos (input-port-position (the-port))))
+		 (vector-set-ur! *vector-errors* open-key pos)))
 	  ;; and then, we compute the result list...
 	  (set! *par-open* (+fx 1 *par-open*))
 	  (let loop-vector ((walk  (ignore))
@@ -265,7 +265,7 @@
 			    (len   0))
 	     (cond
 		((=fx open-key *par-open*)
-		 (let ((vect (c-create-vector len)))
+		 (let ((vect ($create-vector len)))
 		    (let loop-vector-inner ((i (-fx len 1))
 					    (l res))
 		       (if (=fx i -1)
@@ -287,12 +287,12 @@
 		  (let ((open-key (-fx *par-open* 1)))
 		     (reader-reset!)
 		     (if (and (<fx open-key (vector-length *list-errors*))
-			      (fixnum? (c-vector-ref *list-errors* open-key)))
+			      (fixnum? (vector-ref-ur *list-errors* open-key)))
 			 (error/location "read"
 					 "Unclosed list"
 					 char
-					 (input-port-name input-port)
-					 (c-vector-ref *list-errors* open-key))
+					 (input-port-name (the-port))
+					 (vector-ref-ur *list-errors* open-key))
 			 (error "read"
 				"Unexpected end-of-file"
 				"Unclosed list"))))
@@ -300,13 +300,13 @@
 		  (let ((open-key (-fx *bra-open* 1)))
 		     (reader-reset!)
 		     (if (and (<fx open-key (vector-length *vector-errors*))
-			      (fixnum? (c-vector-ref *vector-errors*
+			      (fixnum? (vector-ref-ur *vector-errors*
 						     open-key)))
 			 (error/location "read"
 					 "Unclosed vector or structure"
 					 char
-					 (input-port-name input-port)
-					 (c-vector-ref *vector-errors*
+					 (input-port-name (the-port))
+					 (vector-ref-ur *vector-errors*
 						       open-key))
 			 (error "read"
 				"Unexpected end-of-file"
@@ -317,8 +317,8 @@
 	      (error/location "read"
 			      "Illegal char"
 			      (illegal-char-rep char)
-			      (input-port-name    input-port)
-			      (input-port-position input-port)))))))
+			      (input-port-name    (the-port))
+			      (input-port-position (the-port))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    test ...                                                         */

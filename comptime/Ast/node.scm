@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Sat Feb 13 10:44:05 2016 (serrano)                */
+;*    Last change :  Tue Mar  1 14:40:07 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -164,8 +164,10 @@
 
 	   ;; vector length
 	   (final-class vlength::private
+	      ;; the type of the vector
+	      vtype::type
 	      ;; the vector fields type
-	      vtype::type)
+	      (ftype read-only))
 	   
 	   ;; extern predicate
 	   (final-class instanceof::private
