@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Wed Jun  3 17:33:35 2015 (serrano)                */
-;*    Copyright   :  2014-15 Manuel Serrano                            */
+;*    Last change :  Tue Mar  1 17:50:22 2016 (serrano)                */
+;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
 ;*=====================================================================*/
@@ -130,7 +130,7 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-fs-truncate path offset #!key callback (loop (uv-default-loop)))
    (if (procedure? callback)
-       (uv-fs-open path "a"
+       (uv-fs-open path 'a
 	  :callback
 	  (lambda (fd)
 	     (if (isa? fd UvFile)
@@ -143,7 +143,7 @@
 		    :loop loop)
 		 (callback fd)))
 	  :loop loop)
-       (let ((fd (uv-fs-open path "a")))
+       (let ((fd (uv-fs-open path 'a)))
 	  (if (isa? fd UvFile)
 	      (let ((res (uv-fs-ftruncate fd offset)))
 		(uv-fs-close fd)
@@ -247,9 +247,14 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-fs-open path flags #!key (mode #o666) callback (loop (uv-default-loop)))
    (cond
-      ((integer? flags) ($uv-fs-open path flags mode callback loop))
-      ((symbol? flags) ($uv-fs-open path (uv-fs-flags flags) mode callback loop))
-      (else (error "uv-fs-open" "Wrong flags" flags))))
+      ((integer? flags)
+       ($uv-fs-open path flags mode callback loop))
+      ((symbol? flags)
+       ($uv-fs-open path (uv-fs-flags flags) mode callback loop))
+      ((string? flags)
+       ($uv-fs-open path (uv-fs-flags (string->symbol flags)) mode callback loop))
+      (else
+       (error "uv-fs-open" "Wrong flags" flags))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-close ...                                                  */

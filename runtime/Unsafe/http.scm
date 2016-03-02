@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Aug  9 15:02:05 2007                          */
-;*    Last change :  Sat Dec 12 13:27:21 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Wed Mar  2 11:49:36 2016 (serrano)                */
+;*    Copyright   :  2007-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dealing with HTTP requests                                       */
 ;*=====================================================================*/
@@ -162,9 +162,9 @@
    (when (string? connection)
       (display-line "Connection: " connection out))
    (cond
-      ((and (eq? method 'post)
+      ((and (or (eq? method 'post) (eq? method 'POST))
 	    (or (eq? content-type 'multipart/form-data)
-		(not (null? args))))
+		(pair? args)))
        ;; post method
        (cond
 	  ((eq? content-type 'multipart/form-data)
