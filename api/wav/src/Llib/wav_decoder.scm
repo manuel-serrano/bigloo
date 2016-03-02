@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 21 08:15:23 2013                          */
-;*    Last change :  Thu Jan 28 16:39:26 2016 (serrano)                */
+;*    Last change :  Wed Mar  2 15:28:50 2016 (serrano)                */
 ;*    Copyright   :  2013-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    WAV music decoder                                                */
@@ -18,14 +18,12 @@
    
    (import __wav_wav)
 
-   (cond-expand
-      ((library alsa)
-       (export (class wavmusicdecoder::musicdecoder
-		  (outbuf::bstring read-only (default (make-string (*fx 2 1024))))
-		  (%header::obj (default #f))
-		  (%cursor::int (default 0))
-		  (%size::int (default 0))
-		  (%position::int (default 0)))))))
+   (export (class wavmusicdecoder::musicdecoder
+	      (outbuf::bstring read-only (default (make-string (*fx 2 1024))))
+	      (%header::obj (default #f))
+	      (%cursor::int (default 0))
+	      (%size::int (default 0))
+	      (%position::int (default 0)))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    $compiler-debug ...                                              */
