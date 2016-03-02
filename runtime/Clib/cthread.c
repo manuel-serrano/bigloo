@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Thu Mar  5 08:24:26 2015 (serrano)                */
-/*    Copyright   :  2004-15 Manuel Serrano                            */
+/*    Last change :  Wed Mar  2 15:05:59 2016 (serrano)                */
+/*    Copyright   :  2004-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -285,6 +285,8 @@ make_dynamic_env() {
    env->dynamic_env_t.module = BUNSPEC;
    env->dynamic_env_t.abase = BUNSPEC;
 
+   env->dynamic_env_t.saw_sp = 0L;
+   
    env->dynamic_env_t.parameters = BNIL;
    
    for( i = 0; i < 32; i++ ) {
@@ -322,7 +324,7 @@ bgl_dup_dynamic_env( obj_t o ) {
    
    env->dynamic_env_t.module = o->dynamic_env_t.module;
    env->dynamic_env_t.abase = o->dynamic_env_t.abase;
-   
+
    for( i = 0; i < 32; i++ ) {
       env->dynamic_env_t.sig_handlers[ i ] = o->dynamic_env_t.sig_handlers[ i ];
    }

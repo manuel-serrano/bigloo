@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Feb 26 07:46:28 2016 (serrano)                */
+/*    Last change :  Wed Mar  2 15:05:05 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -340,6 +340,12 @@ struct bgl_dframe {
    struct bgl_dframe *link;
 };
 
+/* saw frame headers */
+struct bgl_saw_frame_header {
+   long size;
+   struct bgl_saw_frame_header *link;
+};
+      
 /* bigloo polymorphic type */
 typedef union scmobj {
    /* integer */
@@ -960,6 +966,8 @@ typedef union scmobj {
       union scmobj *sig_handlers[ 32 ];
       /* thread backend */
       union scmobj *thread_backend;
+      /* saw stack pointer */
+      struct bgl_saw_frame_header *saw_sp;
       /* user per thread data */
       union scmobj *user_data;
    } dynamic_env_t;
@@ -2838,6 +2846,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (BGL_DYNAMIC_ENV( env ).abase)
 #define BGL_ENV_ABASE_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).abase = (_1), BUNSPEC)
+
+#define BGL_ENV_SAW_SP( env ) \
+   (BGL_DYNAMIC_ENV( env ).saw_sp)
+#define BGL_ENV_SAW_SP_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).saw_sp = (_1))
 
 /*--- old interface ---------------------------------------------------*/
 #define BGL_PARAMETERS() \
