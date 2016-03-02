@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Mar  2 15:05:05 2016 (serrano)                */
+/*    Last change :  Wed Mar  2 16:01:01 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -966,8 +966,9 @@ typedef union scmobj {
       union scmobj *sig_handlers[ 32 ];
       /* thread backend */
       union scmobj *thread_backend;
-      /* saw stack pointer */
+      /* saw specific */
       struct bgl_saw_frame_header *saw_sp;
+      void *saw_nursery;
       /* user per thread data */
       union scmobj *user_data;
    } dynamic_env_t;
@@ -2851,6 +2852,11 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
    (BGL_DYNAMIC_ENV( env ).saw_sp)
 #define BGL_ENV_SAW_SP_SET( env, _1 ) \
    (BGL_DYNAMIC_ENV( env ).saw_sp = (_1))
+
+#define BGL_ENV_SAW_NURSERY( env ) \
+   (BGL_DYNAMIC_ENV( env ).saw_nursery)
+#define BGL_ENV_SAW_NURSERY_SET( env, _1 ) \
+   (BGL_DYNAMIC_ENV( env ).saw_nursery = (_1))
 
 /*--- old interface ---------------------------------------------------*/
 #define BGL_PARAMETERS() \
