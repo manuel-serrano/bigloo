@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Mon Jan 11 10:19:06 2016 (serrano)                */
+;*    Last change :  Thu Mar  3 14:10:30 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -209,10 +209,10 @@
 	    (infix macro $remainderu32::uint32 (::uint32 ::int32) "%")
 	    (infix macro $remainders64::int64 (::int64 ::int64) "%")
 	    (infix macro $remainderu64::uint64 (::uint64 ::int64) "%")
-	    (macro strtol::long (::string ::long ::long) "strtol")
-	    (macro $strtoul::long (::string ::long ::long) "strtoul")
-	    (macro strtoel::elong (::string ::long ::long) "strtol")
-	    (macro $strtoeul::elong (::string ::long ::long) "strtoul")
+	    (macro strtol::long (::string ::long ::long) "BGL_STRTOL")
+	    (macro $strtoul::long (::string ::long ::long) "BGL_STRTOUL")
+	    (macro strtoel::elong (::string ::long ::long) "BGL_STRTOL")
+	    (macro $strtoeul::elong (::string ::long ::long) "BGL_STRTOUL")
 	    (macro strtoll::llong (::string ::long ::long) "BGL_STRTOLL")
 	    (macro $strtoull::llong (::string ::long ::long) "BGL_STRTOULL")
 	    (c-fixnum->string::bstring  (::long ::long) "integer_to_string")

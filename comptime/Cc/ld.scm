@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Sat Jan 30 22:36:38 2016 (serrano)                */
+;*    Last change :  Thu Mar  3 17:22:32 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
@@ -43,8 +43,9 @@
 ;*---------------------------------------------------------------------*/
 (define (library-suffixes)
    (cond
-      (*profile-library* '("_p" "_s"))
-      (*unsafe-library* '("_u" "_s"))
+      (*profile-library* (if *saw* '("_saw_p" "_saw_s") '("_p" "_s")))
+      (*unsafe-library* (if *saw* '("_saw_u" "_saw_s") '("_u" "_s")))
+      (*saw* '("_saw_s"))
       (else '("_s"))))
 
 ;*---------------------------------------------------------------------*/

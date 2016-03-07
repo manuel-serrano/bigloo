@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Sat Jan 30 03:46:04 2016 (serrano)                */
+;*    Last change :  Thu Mar  3 14:36:02 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -136,8 +136,11 @@
    (emit-comment "" #\=)
    (display "/* COMPILATION: " *c-port*)
    (display (command-line) *c-port*)
-   (display "*/" *c-port*)
-   (newline *c-port*))
+   (display " */" *c-port*)
+   (newline *c-port*)
+   (when *saw*
+      (display "\n/* SAW compilation */\n#define BGL_SAW 1\n" *c-port*)
+      (display "#define BGL_GC BGL_SAW_GC\n\n" *c-port*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-garbage-collector-selection ...                             */

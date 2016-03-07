@@ -140,10 +140,12 @@
 #define BGL_HAVE_LLABS @BGL_HAVE_LLABS@
 #define BGL_HAVE_LONGLONG @BGL_HAVE_LONGLONG@
 #define BGL_LLABS @BGL_LLABS@
+#define BGL_STRTOL(_1,_2,_3) (strtol(_1,(char **)_2,_3))
+#define BGL_STRTOUL(_1,_2,_3) (strtoul(_1,(char **)_2,_3))
 #define BGL_HAVE_STRTOLL @BGL_HAVE_STRTOLL@
-#define BGL_STRTOLL(_1,_2,_3) (@BGL_STRTOLL@(_1,_2,_3))
+#define BGL_STRTOLL(_1,_2,_3) (@BGL_STRTOLL@(_1,(char **)_2,_3))
 #define BGL_HAVE_STRTOULL @BGL_HAVE_STRTOULL@
-#define BGL_STRTOULL(_1,_2,_3) (@BGL_STRTOULL@(_1,_2,_3))
+#define BGL_STRTOULL(_1,_2,_3) (@BGL_STRTOULL@(_1,(char **)_2,_3))
 
 #undef BGL_HAVE_GMP
 #define BGL_HAVE_GMP @BGL_HAVE_GMP@
@@ -411,9 +413,11 @@
 
 #define BGL_NO_GC 1
 #define BGL_BOEHM_GC 2
+#define BGL_SAW_GC 3
 
-#undef BGL_GC
-#define BGL_GC BGL_BOEHM_GC
+#ifndef BGL_GC
+#  define BGL_GC BGL_BOEHM_GC
+#endif
 
 #define BGL_GC_HAVE_BLOCKING @GC_HAVE_BLOCKING@
 #define BGL_GC_HAVE_DO_BLOCKING @GC_HAVE_DO_BLOCKING@
@@ -535,7 +539,7 @@ BGL_RUNTIME_DECL int bgl_sigsetmask( int );
 #  endif
 #endif
 
-#if( !defined( __GNUC__ ) || (BGL_GC != BGL_BOEHM_GC) )
+#if( !defined( __GNUC__ ) || (BGL_GC != BGL_BOEHM_GC && BGL_GC != BGL_SAW_GC) )
 extern union scmobj * an_object;
 #  define AN_OBJECT union scmobj *an_object;
 #else

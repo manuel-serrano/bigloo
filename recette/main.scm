@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Tue Jan 29 15:27:04 2013 (serrano)                */
+;*    Last change :  Mon Mar  7 09:20:38 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -85,7 +85,6 @@
            weakptr
 	   crypto
 	   crc)
-   
    (export (do-test name thunk good?)
 	   (test-module name file)
 	   *recette-port*

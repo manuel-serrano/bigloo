@@ -3,12 +3,12 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Sep  4 12:27:41 2015 (serrano)                */
-/*    Copyright   :  2003-15 Manuel Serrano                            */
+/*    Last change :  Thu Mar  3 14:55:19 2016 (serrano)                */
+/*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
-#define BGL_GC NO_GC
+#define BGL_GC BGL_NO_GC
 #include <bigloo.h>
 #include <bmem.h>
 #include <esymbol.h>

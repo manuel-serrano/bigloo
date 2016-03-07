@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:38:02 2012                          */
-;*    Last change :  Mon Nov 11 17:20:58 2013 (serrano)                */
-;*    Copyright   :  2012-13 Manuel Serrano                            */
+;*    Last change :  Thu Mar  3 14:16:58 2016 (serrano)                */
+;*    Copyright   :  2012-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SYNC2NODE, this expands a SYNC node into a plain node using      */
 ;*    explicitly lock/unlock and push/pop operations. Used by the      */
@@ -65,7 +65,7 @@
       (set! mlockprelock (sexp->node '$mutex-lock-prelock '() loc 'app))
       (set! mulock (sexp->node '$mutex-unlock '() loc 'app))
       (case (backend-language (the-backend))
-	 ((c)
+	 ((c c-saw)
 	  (when *sync-profiling*
 	     (set! exitd-mutex-profile
 		(sexp->node '$exitd-mutex-profile '() loc 'app))

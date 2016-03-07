@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Tue Sep  2 10:57:39 2014 (serrano)                */
-#*    Copyright   :  2002-14 Manuel Serrano                            */
+#*    Last change :  Thu Mar  3 12:28:10 2016 (serrano)                */
+#*    Copyright   :  2002-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
 #*=====================================================================*/
@@ -22,15 +22,6 @@ INSTALL	= cp
 #*---------------------------------------------------------------------*/
 #*    Producing shared libraries                                       */
 #*---------------------------------------------------------------------*/
-#* shared-link-lib:                                                    */
-#* 	if [ "$(SHAREDLIBRARYCLOSED)" = "yes" ]; then \                */
-#* 	  $(MAKE) shared-lib; \                                        */
-#* 	else \                                                         */
-#* 	  cd `dirname $(LIBDEST)` && \                                 */
-#* 	  $(RM) -f `basename $(LIBDEST)` && \                          */
-#*           $(LN_S) `basename $(LIBSRC)` `basename $(LIBDEST)`; \     */
-#* 	fi                                                             */
-#*                                                                     */
 shared-lib:
 	@ if [ "$(SHAREDLIBRARYSUPPORT)" = "yes" ]; then \
             if [ "$(LD)" = "true" ]; then \
@@ -183,30 +174,6 @@ install-link-lib:
         else \
           $(MAKE) install-shared-ln-lib; \
         fi
-
-#* install-shared-ln-lib:                                              */
-#* 	if [ "$(LIBDIR)" != "$(LIBDIR)/$(FILDIR)" ]; then \            */
-#* 	  (cd $(LIBDIR)/$(FILDIR) && \                                 */
-#*            if [ -f $(SUBDIR)$(LN).$(SHAREDSUFFIX) ]; then \         */
-#*              $(RM) -f $(LIB).$(SHAREDSUFFIX) && \                   */
-#*              $(LN_S) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \               */
-#*                    $(LIB).$(SHAREDSUFFIX) \                         */
-#*              || \                                                   */
-#*              $(INSTALL) $(SUBDIR)$(LN).$(SHAREDSUFFIX) \            */
-#*                 $(LIB).$(SHAREDSUFFIX) \                            */
-#*              || exit 1; \                                           */
-#*            fi); \                                                   */
-#* 	  (cd $(LIBDIR) && \                                           */
-#*            if [ -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) ]; then \ */
-#*              $(RM) -f $(LIB).$(SHAREDSUFFIX) && \                   */
-#*              $(LN_S) $(FILDIR)/$(SUBDIR)$(LIB).$(SHAREDSUFFIX) \    */
-#*                    $(LIB).$(SHAREDSUFFIX) \                         */
-#*              || \                                                   */
-#*              $(INSTALL) $(FILDIR)/$(SUBDIR)$(LN).$(SHAREDSUFFIX) \  */
-#*                 $(LIB).$(SHAREDSUFFIX) \                            */
-#*              || exit 1; \                                           */
-#*            fi) \                                                    */
-#*         fi                                                          */
 
 uninstall-lib:
 	$(RM) -f $(LIBDIR)/$(FILDIR)/$(SUBDIR)$(LIB).a

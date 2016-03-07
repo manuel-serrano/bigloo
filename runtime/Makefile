@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Oct 28 21:35:07 2015 (serrano)                */
-#*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Mar  6 09:06:51 2016 (serrano)                */
+#*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -20,6 +20,8 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 # The Bigloo used to bootstrap the library and to produce the heap file
 EFLAGS		=
+SAWFLAGS	= -saw
+CSAWFLAGS	= -DBGL_SAW=1 -DBGL_GC=BGL_SAW_GC
 # the shell to be used
 SHELL           = /bin/sh
 # configure
@@ -96,7 +98,7 @@ CLIB		= cinit_obj cmain cerror cports cstring csymbol cvector \
                   ctrace callcc cbinary cforeign cdsssl \
                   cucs2 cunicode cprocess csocket crgc ccustom cdlopen \
                   cdate csleep cthread cmmap csrfi4 cweakptr cbignum cregexp \
-                  cobject ci18n cresolv
+                  cobject ci18n cresolv csaw
 
 C_CLIB		= $(CLIB:%=Clib/%.c)
 
@@ -282,7 +284,9 @@ SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_REGEXP_SRC) \
 #*---------------------------------------------------------------------*/
 #*    Include files                                                    */
 #*---------------------------------------------------------------------*/
-INCLUDE_FILE	= Include/bigloo.h
+INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
+                  Include/bigloo_pair.h Include/bigloo_real.h \
+                  Include/bigloo_vector.h
 
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
@@ -401,14 +405,19 @@ heap-jvm: .afile .jfile includes
 #*---------------------------------------------------------------------*/
 #*    Bigloo C libraries compilation                                   */
 #*---------------------------------------------------------------------*/
-.PHONY: lib lib_s lib_u lib_p lib-c lib-c_u lib-c_p libs libs-c
+.PHONY: lib lib_s lib_u lib_p lib-c lib-c_u lib-c_p libs libs-c libs-saw
 
 libs:
 	@ $(MAKE) lib_u
 	@ $(MAKE) lib_s
+
 libs-c:
 	@ $(MAKE) lib-c_u
 	@ $(MAKE) lib-c_s
+
+libs-saw:
+	@ $(MAKE) lib-saw_u
+	@ $(MAKE) lib-saw_s
 
 lib: lib_s
 lib_s: lib-c_s
@@ -424,6 +433,14 @@ lib-c_s: includes
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u \
                 LIBQ=_s
 
+lib-saw: lib-saw_s
+lib-saw_s: includes
+	$(MAKE) one-lib-c \
+                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
+                BFLAGS_USR="$(BSAFEFLAGS)" \
+                OBJDIR_USR=saw_s OBJDIR_SYS=saw_u \
+                LIBQ=_saw_s
+
 lib_u: lib-c_u
 lib-c_u: includes
 	$(MAKE) one-lib-c \
@@ -431,6 +448,13 @@ lib-c_u: includes
                 BFLAGS_USR="$(BUNSAFEFLAGS)" \
                 OBJDIR_USR=obj_u OBJDIR_SYS=obj_u \
                 LIBQ=_u
+
+lib-saw_u: includes
+	$(MAKE) one-lib-c \
+                BFLAGS_SYS="$(BUNSAFEFLAGS)" \
+                BFLAGS_USR="$(BUNSAFEFLAGS)" \
+                OBJDIR_USR=saw_u OBJDIR_SYS=saw_u \
+                LIBQ=_saw_u
 
 lib_p: lib-c_p
 lib-c_p: includes
@@ -614,12 +638,10 @@ install:
 
 install-c:
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	   cp $(BOOTLIBDIR)/bigloo.h $(LIBDIR)/$(FILDIR)/bigloo.h && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.h && \
-	   cp $(BOOTLIBDIR)/bigloo_gc.h $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
-	   cp $(BOOTLIBDIR)/bigloo_config.h $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
+           for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
+	      cp $(BOOTLIBDIR)/$$i $(LIBDIR)/$(FILDIR)/$$i && \
+              chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$$i; \
+           done; \
 	   cp $(BOOTLIBDIR)/bigloo.heap $(LIBDIR)/$(FILDIR)/bigloo.heap && \
            chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
 	fi
@@ -641,9 +663,9 @@ install-bee:
 
 uninstall: uninstall-bee uninstall-jvm
 	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-          $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.h && \
-          $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo_gc.h && \
-          $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo_config.h && \
+          for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
+             $(RM) -f $(LIBDIR)/$(FILDIR)/$$i; \
+          done; \
           $(RM) -f $(LIBDIR)/$(FILDIR)/bigloo.heap && \
 	  $(MAKE) uninstall-lib LIB=libbigloo_s-$(RELEASE) && \
 	  $(MAKE) uninstall-lib LIB=libbigloo_u-$(RELEASE) && \
@@ -718,6 +740,12 @@ objs/obj_s/$(SCMOBJSUFFIX): %.scm
 objs/obj_p/$(SCMOBJSUFFIX): %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(EFLAGS) -c $< -o $@
 
+objs/saw_u/$(SCMOBJSUFFIX): %.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
+
+objs/saw_s/$(SCMOBJSUFFIX): %.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -o $@
+
 #*---------------------------------------------------------------------*/
 #*     .c --> .o                                                       */
 #*---------------------------------------------------------------------*/
@@ -727,6 +755,14 @@ objs/obj_u/$(COBJSUFFIX): objs/obj_u/%.c
 
 objs/obj_s/$(COBJSUFFIX): objs/obj_s/%.c
 	$(CC) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
+        mv $(*D)-$(@F) $@
+
+objs/saw_u/$(COBJSUFFIX): objs/saw_u/%.c
+	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
+        mv $(*D)-$(@F) $@
+
+objs/saw_s/$(COBJSUFFIX): objs/saw_s/%.c
+	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c -o $(*D)-$(@F) $< && \
         mv $(*D)-$(@F) $@
 
 #*---------------------------------------------------------------------*/
@@ -741,6 +777,13 @@ objs/obj_s/Clib/%.o: Clib/%.c
 
 objs/obj_p/Clib/%.o: Clib/%.c
 	$(CC) $(CEFLAGS) $(CUNSAFEPFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
+        mv Clib-$(@F) $@
+
+objs/saw_u/Clib/%.o: Clib/%.c
+	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CUNSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
+        mv Clib-$(@F) $@
+objs/saw_s/Clib/%.o: Clib/%.c
+	$(CC) $(CSAWFLAGS) $(CEFLAGS) $(CSAFEFLAGS) $(GCINCLUDE) -c Clib/$*.c -o Clib-$(@F) && \
         mv Clib-$(@F) $@
 
 #*---------------------------------------------------------------------*/
@@ -760,6 +803,21 @@ objs/obj_u/Eval/evprimop.c: Eval/evprimop.scm
 
 objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
 	$(CC) -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
+
+objs/saw_u/%.c: %.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -c $< -indent -o $@
+
+objs/saw_s/%.c: %.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -indent -o $@
+
+objs/saw_u/Unsafe/bignumber.c: Unsafe/bignumber.scm
+	$(BIGLOO) $(BFLAGS_USR) $(SAWFLAGS) $(EFLAGS) -c $< -indent -o $@
+
+objs/saw_u/Eval/evprimop.c: Eval/evprimop.scm
+	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(SAWFLAGS) $(EFLAGS) -cgen $< -o $@
+
+objs/saw_u/Eval/evprimop.o: objs/saw_u/Eval/evprimop.c
+	$(CC) -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    mach_dep.o                                                       */
@@ -802,7 +860,7 @@ objs-sans-dirs: Jlib/configure.java
 	mkdir -p objs/obj_s/Llib
 	mkdir -p objs/obj_s/R5rs
 	(dirs="Clib Ieee Llib Mlib Ilib R5rs Rgc Eval Lalr Match Pp Read Unsafe"; \
-         objs="obj_u obj_p"; \
+         objs="obj_u obj_p saw_u saw_s"; \
          for o in $$objs; do \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \
@@ -828,7 +886,7 @@ dirs:
            done; \
          done; \
          dirs="Clib Ilib Ieee Llib Mlib R5rs Rgc Eval Lalr Match Pp Read Unsafe"; \
-         for o in obj_u; do \
+         for o in obj_u saw_s saw_u; do \
            echo objs/$$o; \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \
@@ -837,7 +895,7 @@ dirs:
            done; \
          done; \
          dirs="Clib Ieee Llib R5rs"; \
-         for o in obj_s obj_p; do \
+         for o in obj_s obj_p saw_s saw_u; do \
            echo objs/$$o; \
            mkdir -p objs/$$o; \
            for d in $$dirs; do \
@@ -887,14 +945,14 @@ Jlib/configure.java: $(BOOTDIR)/configure $(BOOTDIR)/Makefile
 ude: .afile .jfile
 
 #*---------------------------------------------------------------------*/
-#*    .afile                                                         */
+#*    .afile                                                           */
 #*---------------------------------------------------------------------*/
 afile: .afile
 .afile:
 	$(BGLAFILE) -o .afile $(SCM_USR_SRC) $(SCM_SYS_SRC) Unsafe/regexp.scm
 
 #*---------------------------------------------------------------------*/
-#*    .jfile                                                         */
+#*    .jfile                                                           */
 #*---------------------------------------------------------------------*/
 jfile: .jfile
 .jfile:
@@ -909,3 +967,9 @@ objs/obj_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/obj_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/obj_s/Llib/evobject.o: Llib/object.sch
 objs/obj_u/Llib/evobject.o: Llib/object.sch
+objs/saw_s/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
+objs/saw_u/Llib/bconfigure.o: $(BOOTLIBDIR)/bigloo_config.h
+objs/saw_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
+objs/saw_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
+objs/saw_s/Llib/evobject.o: Llib/object.sch
+objs/saw_u/Llib/evobject.o: Llib/object.sch

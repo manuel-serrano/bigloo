@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Nov  7 11:58:06 2006                          */
-/*    Last change :  Wed Jul  4 08:47:36 2012 (serrano)                */
-/*    Copyright   :  2006-12 Manuel Serrano                            */
+/*    Last change :  Thu Mar  3 14:58:50 2016 (serrano)                */
+/*    Copyright   :  2006-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C SRFI4 side                                                     */
 /*=====================================================================*/
@@ -17,6 +17,7 @@
 BGL_RUNTIME_DEF obj_t
 alloc_hvector( int len, int isize, int type ) {
    int byte_size = HVECTOR_SIZE + ( len * isize );
+   
 #if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
    obj_t vector = GC_THREAD_MALLOC_ATOMIC( byte_size );
 #else

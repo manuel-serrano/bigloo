@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Fri Nov 14 18:14:06 2014 (serrano)                */
-/*    Copyright   :  2002-14 Manuel Serrano                            */
+/*    Last change :  Mon Mar  7 09:28:46 2016 (serrano)                */
+/*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -51,6 +51,9 @@ extern void bgl_init_trace();
 extern void bgl_init_process_table();
 extern void bgl_init_dload();
 extern void bgl_init_bignum();
+#if( BGL_SAW == 1 )    
+extern void bgl_saw_init();
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    init_objects ...                                                 */
@@ -67,6 +70,9 @@ void bgl_init_objects() {
    bgl_init_socket();
    bgl_init_date();
    bgl_init_bignum();
+#if( BGL_SAW == 1 )    
+   bgl_saw_init();
+#endif   
 
    bigloo_mutex = bgl_make_spinlock( bigloo_mutex_name );
    bigloo_generic_mutex = bgl_make_spinlock( bigloo_mutex_name );
@@ -224,3 +230,26 @@ bgl_infinity() {
    return 1.0 / bgl_zero;
 }
 
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    __debug ...                                                      */
+/*---------------------------------------------------------------------*/
+obj_t
+__debug( char *lbl, obj_t o ) {
+   fprintf( stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o );
+   if( BGL_HVECTORP( o ) ) {
+      fprintf( stderr, "   hvector=%d\n",BGL_HVECTOR_LENGTH( o ) );
+   } else if( POINTERP( o ) ) {
+      fprintf( stderr, "   PTRP=%d TYPE=%d\n", POINTERP( o ), TYPE( o ) );
+   } else if( PAIRP( o ) ) {
+      fprintf( stderr, "   pair\n" );
+   } else if( SYMBOLP( o ) ) {
+      fprintf( stderr, "   symbol=%s\n",
+	       BSTRING_TO_STRING( SYMBOL_TO_STRING( o ) ) );
+   } else if( INTEGERP( o ) ) {
+      fprintf( stderr, "   int=%ld\n",CINT( o ) );
+   } else if( REALP( o ) ) {
+      fprintf( stderr, "   real=%f\n",REAL_TO_DOUBLE( o ) );
+   }
+   return o;
+}

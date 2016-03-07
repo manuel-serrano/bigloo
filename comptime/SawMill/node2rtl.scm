@@ -423,8 +423,8 @@
 
 ;;
 (define-method (node->rtl::area e::vlength) ; ()
-   (with-access::vlength e (expr* vtype)
-      (call* e (instantiate::rtl_vlength (type vtype)) expr*) ))
+   (with-access::vlength e (expr* ftype vtype)
+      (call* e (instantiate::rtl_vlength (type ftype) (vtype vtype)) expr*) ))
 
 ;;
 (define-method (node->rtl::area e::instanceof) ; ()
@@ -517,3 +517,4 @@
 	  (predicate body l) )
 	 (else
 	  (fork (call e (instantiate::rtl_if) e) l) ))))
+

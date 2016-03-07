@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Thu Oct 15 08:41:52 2015 (serrano)                */
-#*    Copyright   :  1992-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Mar  3 14:36:40 2016 (serrano)                */
+#*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -119,6 +119,8 @@ recette-bin: $(C_OBJECTS:%=objs_c/%) $(OBJECT_C_FOREIGN:%=objs_c/%)
 	@ echo "Recette (C) Done..."
 	@ echo "-------------------------------"
 
+saw:
+	$(MAKE) EFLAGS=-saw
 new: 
 	$(MAKE) BIGLOO=bigloo.new
 

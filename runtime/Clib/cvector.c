@@ -3,35 +3,54 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Fri Sep 26 09:21:57 2014 (serrano)                */
+/*    Last change :  Sun Mar  6 09:26:56 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
 #include <bigloo.h>
 
 /*---------------------------------------------------------------------*/
-/*    void                                                             */
+/*    obj_t                                                            */
 /*    bgl_fill_vector ...                                              */
 /*---------------------------------------------------------------------*/
-obj_t
+BGL_RUNTIME_DEF obj_t
 bgl_fill_vector( obj_t bvector, long start, long end, obj_t init ) {
    obj_t *walker = (obj_t *)(&VECTOR_REF( bvector, start ));
    obj_t *stop = (obj_t *)(&VECTOR_REF( bvector, end ));
 
-   while( walker < stop )
+   while( walker < stop ) {
       *walker++ = init;
+   }
 
    return BUNSPEC;
 }
 
 /*---------------------------------------------------------------------*/
-/*    void                                                             */
+/*    obj_t                                                            */
 /*    bgl_fill_vector ...                                              */
 /*---------------------------------------------------------------------*/
-obj_t
+BGL_RUNTIME_DEF obj_t
 fill_vector( obj_t bvector, long len, obj_t init ) {
    return bgl_fill_vector( bvector, 0, len, init );
 }
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_saw_vector_copy ...                                          */
+/*---------------------------------------------------------------------*/
+#if( BGL_GC == BGL_SAW_GC )    
+BGL_RUNTIME_DEF obj_t
+bgl_saw_vector_copy( obj_t old ) {
+   long i = VECTOR_LENGTH( old ) - 1;
+   obj_t new = create_vector( i );
+
+   while( i-- >= 0 ) {
+      VECTOR_REF( new, i ) = bgl_saw_gc_copy( VECTOR_REF( old, i ) );
+   }
+
+   return new;
+}
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    create_vector ...                                                */
@@ -39,8 +58,7 @@ fill_vector( obj_t bvector, long len, obj_t init ) {
 /*    Any change to this function must be reflected in                 */
 /*    ccontrol.c:opt_generic_entry                                     */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
-obj_t
+BGL_RUNTIME_DEF obj_t
 create_vector( int len ) {
    obj_t vector;
 
@@ -68,8 +86,7 @@ create_vector( int len ) {
 /*    -------------------------------------------------------------    */
 /*    same as create_vector but the allocated vector is uncollectable  */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
-obj_t
+BGL_RUNTIME_DEF obj_t
 create_vector_uncollectable( int len ) {
    obj_t vector;
    
@@ -97,8 +114,7 @@ create_vector_uncollectable( int len ) {
 /*    -------------------------------------------------------------    */
 /*    same as create_vector but the allocated vector is uncollectable  */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
-obj_t
+BGL_RUNTIME_DEF obj_t
 make_vector_uncollectable( int len, obj_t init ) {
    obj_t vector;
 
@@ -111,8 +127,7 @@ make_vector_uncollectable( int len, obj_t init ) {
 /*---------------------------------------------------------------------*/
 /*    make_vector_uncollectable ...                                    */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF
-obj_t
+BGL_RUNTIME_DEF obj_t
 make_vector( int len, obj_t init ) {
    obj_t vector;
 

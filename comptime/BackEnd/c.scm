@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sat Jan 30 14:58:59 2016 (serrano)                */
+;*    Last change :  Thu Mar  3 13:11:04 2016 (serrano)                */
 ;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -344,6 +344,7 @@
    ;; CARE Agree manuel ? Something better ?
    (or (eq? t1 t2)
        (eq? (type-id t1) (type-id t2))
+       (eq? t2 *_*)
        (string=? (type-name t1) (type-name t2)) ))
 
 ;*---------------------------------------------------------------------*/

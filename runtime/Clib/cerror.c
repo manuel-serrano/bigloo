@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Thu Jan 22 07:27:09 2015 (serrano)                */
-/*    Copyright   :  2002-15 Manuel Serrano                            */
+/*    Last change :  Thu Mar  3 14:30:41 2016 (serrano)                */
+/*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -75,7 +75,7 @@ bgl_debug_header( obj_t obj ) {
       case TAG_STRUCT: fprintf( stderr, "(TAG_STRUCT)\n" ); break;
       case TAG_INT: fprintf( stderr, "(TAG_INT)\n" ); break;
       case TAG_CNST: fprintf( stderr, "(TAG_CNST)\n" ); break;
-#if( !defined( KEEP_BACK_PTRS ) && !defined( GC_DEBUG ) )
+#  if defined( TAG_PAIR) && !defined( KEEP_BACK_PTRS ) && !defined( GC_DEBUG )
       case TAG_PAIR: fprintf( stderr, "(TAG_PAIR)\n" ); break;
 #endif	 
 #if( (PTR_ALIGNMENT >= 3) && \

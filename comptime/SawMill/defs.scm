@@ -42,7 +42,7 @@
       (class rtl_getfield::rtl_pure name::bstring objtype::type type::type)
       (class rtl_valloc::rtl_pure type::type vtype::type)
       (class rtl_vref::rtl_pure type::type vtype::type)
-      (class rtl_vlength::rtl_pure type::type)
+      (class rtl_vlength::rtl_pure type::type vtype::type)
       (class rtl_instanceof::rtl_pure type::type)
       (class rtl_makebox::rtl_pure)
       (class rtl_boxref::rtl_pure)
@@ -371,3 +371,4 @@
 		     r))
 	       p)
       (dump-args args p)))
+

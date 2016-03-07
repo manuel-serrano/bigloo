@@ -36,6 +36,9 @@
 (define *haspushbefore* #f)
 (define *pushtraceemmited* 0)
 
+(define *pointer-in-a-frame* #t)
+(define *hasframe* #f)
+
 ;;
 (define (saw-cheader) ;()
    (with-output-to-port *c-port*
@@ -67,6 +70,7 @@
 
 (define (saw-cgen b::cvm v::global) ;()
    (let ( (l (global->blocks b v)) )
+      (set! *hasframe* #f)
       (set! *hasprotect* #f)
       (set! *haspushexit* #f)
       (set! *haspushbefore* #f)
@@ -97,6 +101,7 @@
 	       (if *haspushexit* (display " struct exitd exitd;\n"))
 	       (if *haspushbefore* (display " struct befored befored;\n"))
 	       (declare-regs locals)
+	       (declare-frame params locals)
 	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) ))))
    (genbody l)
    (display (make-string *pushtraceemmited* #\}))
@@ -130,7 +135,14 @@
       (for-each expr->ireg params)
       (set! regs '())
       (for-each visit l)
+      (check-need-frame params regs)
       regs ))
+
+(define (check-need-frame params locals)
+   (define (ptr? r) (not (basic-type? (rtl_reg-type r))))
+   (set! *hasframe*
+	 (and *pointer-in-a-frame*
+	      (or *hasprotect* (any ptr? params) (any ptr? locals)) )))
 
 (define (gen-type-regs l) ;()
    (display "(")
@@ -141,23 +153,52 @@
 		    (cdr l) )))
    (display ")") )
 
-(define (gen-type-reg reg) ;()
-   (display (make-typed-declaration (rtl_reg-type reg) (reg_name reg))) )
-
-(define (reg_name reg) ;()
+(define (reg_standard_name reg)
    (string-append (if (SawCIreg-var reg) "V" "R")
 		  (integer->string (SawCIreg-index reg)) ))
 
+(define (gen-type-reg reg) ;()
+   (display (make-typed-declaration (rtl_reg-type reg) (reg_standard_name reg))) )
+
 (define (declare-regs l) ;()
    (for-each (lambda (r)
-		(display " ")
-		(gen-type-reg r)
-		(if *comment*
- 		    (let ( (type (rtl_reg-type r)) )
-		       (with-access::type type (id name)
-			  (display* "; /* " id "=" name " */\n") ))
-		    (display ";\n") ))
+		(when (or (not *pointer-in-a-frame*)
+			  (basic-type? (rtl_reg-type r)) )
+		   (display "\t")
+		   (gen-type-reg r)
+		   (display ";")
+		   (when *comment*
+		      (let ( (type (rtl_reg-type r)) )
+			 (with-access::type type (id name)
+			    (display* " /* " id "=" name " */") )))
+		   (display "\n") ))
 	     l ))
+
+(define (declare-frame params locals)
+   (when *hasframe*
+      (let ( (count 0) )
+	 (define (gen-frame-field r)
+	    (when (not (basic-type? (rtl_reg-type r)))
+	       (set! count (+fx count 1))
+	       (display "\t\t")
+	       (gen-type-reg r)
+	       (display ";\n") ))
+	 (define (gen-move-to-frame r)
+	    (when (not (basic-type? (rtl_reg-type r)))
+	       (display "\t")
+	       (gen-reg-frame r)
+	       (display " = ")
+	       (gen-reg-standard r)
+	       (display ";\n") ))
+	 (print "\tstruct {")
+	 (print "\t\t bgl_saw_frame_header_t header;")
+	 (for-each gen-frame-field params)
+	 (for-each gen-frame-field locals)
+	 (print "\t} lpf;")
+	 (print "\tlpf.header.size = " count ";")
+	 (print "\tlpf.header.link = BGL_ENV_SAW_SP(BGL_CURRENT_DYNAMIC_ENV());")
+	 (print "\tBGL_ENV_SAW_SP_SET(BGL_CURRENT_DYNAMIC_ENV(), &lpf.header);")
+	 (for-each gen-move-to-frame params) )))
 
 (define (genbody l) ;(list block)
    (for-each (lambda (b)
@@ -230,8 +271,18 @@
        (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg)) ))
 
 (define (gen-reg/dest reg) ;()
+   (if (or (not *pointer-in-a-frame*) (basic-type? (rtl_reg-type reg)))
+       (gen-reg-standard reg)
+       (gen-reg-frame reg) ))
+
+(define (gen-reg-frame reg) ;()
+   (display "lpf.")
+   (gen-reg-standard reg) )
+
+(define (gen-reg-standard reg) ;()
    (display (if (SawCIreg-var reg) "V" "R"))
    (display (SawCIreg-index reg)) )
+
 
 ;;
 ;; Special cases of gen-expr
@@ -283,6 +334,7 @@
    (display "(obj_t) jmpbuf;\n\t")
    (display "{BGL_STORE_TRACE();")
    (display "if(SETJMP(jmpbuf)) {BGL_RESTORE_TRACE(); return(BGL_EXIT_VALUE());}}\n")
+   (display "BGL_ENV_SAW_SP_SET(BGL_CURRENT_DYNAMIC_ENV(), &lpf.header);\n")
    (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)
    (display "  bgl_restore_signal_handlers();\n" *c-port*)
    (display "#endif\n" *c-port*) )
@@ -359,6 +411,8 @@
 (define-method (gen-fun-name fun::rtl_loadg) (no-name fun));()
 
 (define-method (gen-fun-name fun::rtl_return);
+   (when *hasframe*
+      (display "BGL_ENV_SAW_SP_SET(BGL_CURRENT_DYNAMIC_ENV(), lpf.header.link);\n\t") )
    (if *inline-simple-macros* (display "return") (gen-upcase fun)) )
 
 ;;
@@ -459,6 +513,7 @@
       ((string=? s " ^ ") "BGL_RTL_XOR")
       ((string=? s " >> ") "BGL_RTL_RSH")
       ((string=? s " << ") "BGL_RTL_LSH")
+      ((string=? s "0L") "BGL_RTL_0L")
       ((string=? s "PUSH_EXIT") "BGL_RTL_PUSH_EXIT")
       ((string=? s "PUSH_BEFORE") "BGL_RTL_PUSH_BEFORE")
       ((string=? s "PUSH_TRACE")
@@ -478,7 +533,9 @@
 ;;
 (define-method (accept-folding? b::cvm ins tree)
    (or (deep-mov? tree)
-       (not (multiple-evaluation ins tree)) ))
+       (and (not (multiple-evaluation ins tree))
+	    (or (not *pointer-in-a-frame*)
+		(accept_folding_with_frame? ins tree) ))))
 
 (define (deep-mov? ins)
    (or (rtl_reg? ins)
@@ -509,6 +566,36 @@
 (define (multiple-evaluation2 var)
    (not (global-args-safe? var)) )
 
+;; Special case for not loosing a root .
+(define (accept_folding_with_frame? ins tree)
+   (or (basic-type? (rtl_reg-type (rtl_ins-dest tree)))
+       ;; Will be obsolete with no-allocation-in
+       (rtl_loadi? (rtl_ins-fun tree))
+       (no-allocation-in tree)
+       (first-expr-arg? ins)
+       #f ))
+
+(define (no-allocation-in tree)
+   ;; return #t when the evaluation of tree doesn't allocate
+   #f )
+
+(define-generic (no-allocation-fun fun::rtl_fun) #f)
+(define-method (no-allocation-fun fun::rtl_loadg) #t)
+(define-method (no-allocation-fun fun::rtl_storeg) #t)
+(define-method (no-allocation-fun fun::rtl_vref) #t)
+(define-method (no-allocation-fun fun::rtl_vset) #t)
+(define-method (no-allocation-fun fun::rtl_boxref) #t)
+(define-method (no-allocation-fun fun::rtl_boxset) #t)
+(define-method (no-allocation-fun fun::rtl_getfield) #t)
+(define-method (no-allocation-fun fun::rtl_setfield) #t)
+
+(define (first-expr-arg? ins)
+   ;; return #t when all arguments of ins doesn't allocate
+   #f )
+
+;; X=cons(); return(X);
+;; X can be removed from the frame, but not totally removed.
+
 ;;
 ;; Taken from ../Cgen/emit-cop with slice modifs
 ;;
@@ -535,3 +622,4 @@
 			  (the-failure)))))
 	  (read/rp parser sport)
 	  #t)))
+

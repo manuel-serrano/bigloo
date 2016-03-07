@@ -143,7 +143,7 @@
    (cons (rtl_vset-vtype fun) '()) )
 
 (define-method (type-args fun::rtl_vlength);
-   (cons (rtl_vlength-type fun) '()) )
+   (cons (rtl_vlength-vtype fun) '()) )
 
 (define-method (type-args fun::rtl_storeg);
    (cons (global-type (rtl_storeg-var fun)) '()) )
@@ -175,3 +175,4 @@
 
 (define-method (type-args fun::rtl_boxset);
    (cons (find-type 'cell) '()) )
+

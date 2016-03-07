@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------*/
 /*    Allocation procedures                                            */
 /*---------------------------------------------------------------------*/
-#if( BGL_GC == BGL_BOEHM_GC )
+#if( BGL_GC == BGL_BOEHM_GC || BGL_GC == BGL_SAW_GC )
 #  if( !defined( GC_PRIVATE_H ) )
      BGL_RUNTIME_DECL obj_t GC_malloc( size_t );
      BGL_RUNTIME_DECL obj_t GC_realloc( obj_t, size_t );

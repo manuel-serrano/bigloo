@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Wed Mar  2 16:36:33 2016 (serrano)                */
+/*    Last change :  Sun Mar  6 09:15:35 2016 (serrano)                */
 /*    Copyright   :  2004-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -285,8 +285,9 @@ make_dynamic_env() {
    env->dynamic_env_t.module = BUNSPEC;
    env->dynamic_env_t.abase = BUNSPEC;
 
+#if( BGL_SAW == 1 ) 
    env->dynamic_env_t.saw_sp = 0L;
-   env->dynamic_env_t.saw_nursery = 0L;
+#endif
    
    env->dynamic_env_t.parameters = BNIL;
    

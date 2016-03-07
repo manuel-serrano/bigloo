@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Wed Nov  6 11:46:02 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Mon Mar  7 09:18:57 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
 ;*=====================================================================*/
@@ -369,8 +369,8 @@
 			 m- m+ even?)
    ;; div must be >= the real divider.
    (define (set-digit! n)
-      (string-set! buffer pos (integer->char (+fx (char->integer #\0)
-						  (llong->fixnum n))))
+      (string-set! buffer pos
+	 (integer->char (+fx (char->integer #\0) (llong->fixnum n))))
       (+fx pos 1))
 
    ;; multiply  r by 10 and generate next digit.

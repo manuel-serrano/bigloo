@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Tue Sep  9 14:43:56 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar  3 12:57:45 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
 ;*=====================================================================*/
@@ -150,26 +150,28 @@
 ;*    intern-full-cnst-initialize! ...                                 */
 ;*---------------------------------------------------------------------*/
 (define (intern-full-cnst-initialize!)
-   (global-name-set! (get-cnst-table)
-		     (backend-cnst-table-name (the-backend) (get-cnst-offset)))
+
    (define (intern-full-cnst-initialize/small-string cnst-string)
       (let* ((var-string  (cnst-alloc-string cnst-string #f))
 	     (sexp `(let ((cnst-tmp::vector
-				     ((@ string->obj __intext)
-				      ,(global-id
-					(var-variable var-string)))))
+			     ((@ string->obj __intext)
+			      ,(global-id
+				  (var-variable var-string)))))
 		       (labels ((loop (i::int)
-				      (if (c-=fx i -1)
-					  #unspecified
-					  (begin
-					     (cnst-table-set! i
-							      ($vector-ref-ur
-							       cnst-tmp
-							       i))
-					     (let ((aux::int (c--fx i 1)))
-						(loop aux))))))
+				   (if (c-=fx i -1)
+				       #unspecified
+				       (begin
+					  (cnst-table-set!
+					     i
+					     ($vector-ref-ur cnst-tmp i))
+					  (let ((aux::int (c--fx i 1)))
+					     (loop aux))))))
 			  (loop ,(-fx (get-cnst-offset) 1))))))
 	 (cons sexp (get-cnst-sexp))))
+   
+   (global-name-set! (get-cnst-table)
+      (backend-cnst-table-name (the-backend) (get-cnst-offset)))
+   
    (let* ((cnst-string (obj->string (list->vector (reverse! (get-cnst-set))))))
       (intern-full-cnst-initialize/small-string cnst-string)))
 

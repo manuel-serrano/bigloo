@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Sun Oct 28 19:09:51 2012 (serrano)                */
-/*    Copyright   :  2012 Manuel Serrano                               */
+/*    Last change :  Mon Mar  7 08:44:37 2016 (serrano)                */
+/*    Copyright   :  2012-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
 /*=====================================================================*/
