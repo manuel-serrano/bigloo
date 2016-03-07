@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar  6 07:39:14 2016 (serrano)                */
+/*    Last change :  Mon Mar  7 18:29:49 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -28,6 +28,7 @@ BGL_RUNTIME_DECL obj_t make_pair( obj_t , obj_t  );
 BGL_RUNTIME_DECL obj_t make_extended_pair( obj_t , obj_t , obj_t  );
 
 #if( BGL_SAW == 1 ) 
+BGL_RUNTIME_DECL obj_t csaw_make_pair( obj_t , obj_t  );
 BGL_RUNTIME_DECL obj_t bgl_saw_make_pair( obj_t , obj_t  );
 BGL_RUNTIME_DECL obj_t bgl_saw_make_extended_pair( obj_t , obj_t , obj_t  );
 #endif
@@ -134,23 +135,30 @@ struct bgl_extended_pair {
 #  endif
 #endif
 
+
 #if( BGL_GC == BGL_SAW_GC )
+extern obj_t bps_make_pair(obj_t a, obj_t d);
+extern obj_t bps_make_epair(obj_t a, obj_t d, obj_t e);
 #  if defined( __GNUC__ )
 #     define MAKE_PAIR( a, d ) \
-       ({ obj_t an_object; \
-	  if( !BGL_SAW_CAN_ALLOC( an_object, PAIR_SIZE ) ) bgl_saw_gc(); \
-          BGL_SAW_ALLOC( PAIR_SIZE ); \
-          an_object->pair_t.car = a; \
-          an_object->pair_t.cdr = d; \
-          BYOUNG( an_object ); })
+   bps_make_pair(a, d )
+/*       ({ obj_t an_object; \                                         */
+/* 	  if( !BGL_SAW_CAN_ALLOC( an_object, PAIR_SIZE ) ) bgl_saw_gc(); \ */
+/*           BGL_SAW_ALLOC( PAIR_SIZE ); \                             */
+/*           IF_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ) ); \ */
+/*           an_object->pair_t.car = a; \                              */
+/*           an_object->pair_t.cdr = d; \                              */
+/*           BYOUNG( an_object ); })                                   */
 #     define MAKE_EXTENDED_PAIR( a, d, e ) \
-       ({ obj_t an_object; \
-	  if( !BGL_SAW_CAN_ALLOC( an_object, EXTENDED_PAIR_SIZE ) ) bgl_saw_gc(); \
-          BGL_SAW_ALLOC( EXTENDED_PAIR_SIZE ); \
-          an_object->pair_t.car = a; \
-          an_object->pair_t.cdr = d; \
-          an_object->extended_pair_t.cer = e; \
-          BYOUNG( an_object ); })
+   bls_make_epair( a, d, e )
+/*        ({ obj_t an_object; \                                        */
+/* 	  if( !BGL_SAW_CAN_ALLOC( an_object, EXTENDED_PAIR_SIZE ) ) bgl_saw_gc(); \ */
+/*           BGL_SAW_ALLOC( EXTENDED_PAIR_SIZE ); \                    */
+/*           IF_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 3 ) ); \ */
+/*           an_object->pair_t.car = a; \                              */
+/*           an_object->pair_t.cdr = d; \                              */
+/*           an_object->extended_pair_t.cer = e; \                     */
+/*           BYOUNG( an_object ); })                                   */
 #  else
 #     define MAKE_PAIR( a, d ) bgl_saw_make_pair( a, d );
 #     define MAKE_EXTENDED_PAIR( a, d, e ) bgl_saw_make_extended_pair( a, d, e );

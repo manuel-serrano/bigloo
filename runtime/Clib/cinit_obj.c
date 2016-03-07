@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Mon Mar  7 09:28:46 2016 (serrano)                */
+/*    Last change :  Mon Mar  7 18:21:00 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -59,6 +59,9 @@ extern void bgl_saw_init();
 /*    init_objects ...                                                 */
 /*---------------------------------------------------------------------*/
 void bgl_init_objects() {
+#if( BGL_SAW == 1 )    
+   bgl_saw_init();
+#endif   
    bgl_init_dynamic_env();
    bgl_init_trace();
    bgl_init_symbol_table();
@@ -70,9 +73,6 @@ void bgl_init_objects() {
    bgl_init_socket();
    bgl_init_date();
    bgl_init_bignum();
-#if( BGL_SAW == 1 )    
-   bgl_saw_init();
-#endif   
 
    bigloo_mutex = bgl_make_spinlock( bigloo_mutex_name );
    bigloo_generic_mutex = bgl_make_spinlock( bigloo_mutex_name );

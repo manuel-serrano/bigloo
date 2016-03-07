@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Mar  6 09:15:10 2016 (serrano)                */
+/*    Last change :  Mon Mar  7 18:31:49 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -205,10 +205,14 @@ error "Unknown garbage collector type"
 #   define TAG_SYMBOL 7        /*  Strings tagging          ...111     */
 #endif
 
-#if( TAG_STRUCT != 0 )
-#   define POINTERP( o ) ((((long)o) & TAG_MASK) == TAG_STRUCT)
+#if( TAG_YOUNG )
+#   define POINTERP( o ) (((((long)o) & 1) == 0) && o)
 #else
-#   define POINTERP( o ) (((((long)o) & TAG_MASK) == TAG_STRUCT) && o)
+#   if( TAG_STRUCT != 0 )
+#      define POINTERP( o ) ((((long)o) & TAG_MASK) == TAG_STRUCT)
+#   else
+#      define POINTERP( o ) (((((long)o) & TAG_MASK) == TAG_STRUCT) && o)
+#   endif
 #endif
 
 #if( TAG_CNST != 0 )
@@ -246,15 +250,16 @@ error "Unknown garbage collector type"
 #define OBJ_SIZE ((long)(sizeof( obj_t )))
 
 #define BREF( r ) ((obj_t)((long)r + TAG_STRUCT))
-#define CREF( r ) ((obj_t)((long)r - TAG_STRUCT))
+#define CREF( r ) ((obj_t)((unsigned long)r & ~(TAG_MASK)))
 
 #define BYOUNG( r ) ((obj_t)((long)r + TAG_YOUNG))
 
 #define BYOUNGP( r ) ((((long)r) & TAG_MASK) == TAG_YOUNG)
 #define BOLDP( r ) ((((long)r) & TAG_MASK) == TAG_STRUCT)
 
-#if( BGL_GC == BGL_SAW_GC )    
-#  define BASSIGN( old, young, field ) BGL_SAW_OLDYOUNG( old, young, field )
+#if( BGL_GC == BGL_SAW_GC )
+/* #  define BASSIGN( field, value, obj ) BGL_SAW_OLDYOUNG( obj, value, &(field) ) */
+#  define BASSIGN( field, value, obj ) bps_bassign( &(field), value, obj)
 #else
 #  define BASSIGN( field, value, obj ) ((field) = (value))
 #endif
@@ -3629,6 +3634,7 @@ BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
 
 BGL_RUNTIME_DECL void bgl_restore_signal_handlers();
+extern obj_t bps_bassign(obj_t *field, obj_t value, obj_t obj);
 
 #if( BGL_HAVE_UNISTRING )
 BGL_RUNTIME_DECL int bgl_strcoll( obj_t, obj_t );

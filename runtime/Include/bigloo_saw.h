@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar  6 09:26:28 2016 (serrano)                */
+/*    Last change :  Mon Mar  7 18:35:50 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SAW                                                       */
@@ -34,7 +34,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 typedef struct {
    long size;
-   struct bgl_saw_frame_header *link;
+   bgl_saw_frame_header_t *link;
 } bgl_saw_frame_header_t;
 
 /*---------------------------------------------------------------------*/
@@ -112,7 +112,8 @@ extern void bgl_saw_gc();
 #define BGL_RTL_LOADI(v) (v)
 #define BGL_RTL_LOADG(g) (g)
 #define BGL_RTL_LOADFUN(g) ((obj_t) g)
-#define BGL_RTL_STOREG(g,v) ASSIGN(g,v,g)
+#define BGL_RTL_STOREG(g,v) BASSIGN(g,v,g)
+#define BGL_RTL_TSTOREG(g,v) ((g)=(v))
 #define BGL_RTL_GLOBALREF(g) __EVMEANING_ADDRESS(g)
 #define BGL_RTL_GO(l) goto l
 #define BGL_RTL_IFEQ(l,r) if(!r) goto l

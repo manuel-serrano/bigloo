@@ -27,7 +27,7 @@
    (static (wide-class SawCIreg::rtl_reg index)) )
 
 (define *comment* #f)
-(define *trace* #f)
+(define *trace* #t)
 (define *count* #f)
 (define *inline-simple-macros* #t)
 (define *counter* 0)
@@ -401,6 +401,9 @@
 
 (define-method (gen-fun-name fun::rtl_vlength) ;()
    (vfun-name "VLENGTH" (rtl_vlength-type fun)) )
+
+(define-method (gen-fun-name fun::rtl_storeg) ;()
+   (vfun-name "STOREG" (variable-type (rtl_storeg-var fun))) )
 
 ; To add some readability on generated code
 (define (no-name fun::rtl_fun);()
