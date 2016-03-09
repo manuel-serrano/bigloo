@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Mon Mar  7 18:21:00 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 16:56:44 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -241,6 +241,8 @@ __debug( char *lbl, obj_t o ) {
       fprintf( stderr, "   hvector=%d\n",BGL_HVECTOR_LENGTH( o ) );
    } else if( POINTERP( o ) ) {
       fprintf( stderr, "   PTRP=%d TYPE=%d\n", POINTERP( o ), TYPE( o ) );
+   } else if( REALP( o ) ) {
+      fprintf( stderr, "   real\n" );
    } else if( PAIRP( o ) ) {
       fprintf( stderr, "   pair\n" );
    } else if( SYMBOLP( o ) ) {

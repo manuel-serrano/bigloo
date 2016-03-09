@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Mar  6 07:21:20 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 16:50:18 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -68,6 +68,9 @@ struct bgl_real {
 #   define REALP( c ) (POINTERP( c ) && (TYPE( c ) == REAL_TYPE))
 #endif
 
+/*---------------------------------------------------------------------*/
+/*    alloc                                                            */
+/*---------------------------------------------------------------------*/
 #if( BGL_GC != BGL_SAW_GC )
 #  define DOUBLE_TO_REAL( d ) (make_real( d ))
 #else					
@@ -78,6 +81,18 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 
 #define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
 #define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))
+
+#if( !defined( TAG_REAL ) )
+#  define IFN_REAL_TAG( expr ) expr;
+#else
+#  define IFN_REAL_TAG( expr ) 
+#endif   
+
+#define BGL_MAKE_INLINE_REAL( d ) \
+   an_object = GC_MALLOC_ATOMIC( REAL_SIZE ); \
+   IFN_REAL_TAG( an_object->real_t.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ) \
+   an_object->real_t.real = d; \
+   BREAL( an_object )
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

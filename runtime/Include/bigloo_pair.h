@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar  9 16:04:06 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 16:50:37 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -95,28 +95,28 @@ struct bgl_extended_pair {
 /*---------------------------------------------------------------------*/
 /*    alloc ...                                                        */
 /*---------------------------------------------------------------------*/
-#if( defined( TAG_PAIR ) )
-#  define IF_PAIR_TAG( expr ) expr;
+#if( !defined( TAG_PAIR ) )
+#  define IFN_PAIR_TAG( expr ) expr;
 #else
-#  define IF_PAIR_TAG( expr ) 
+#  define IFN_PAIR_TAG( expr )
 #endif   
 
 #if( defined( TAG_PAIR ) && ( BGL_GC == BGL_BOEHM_GC) )
 #  define IF_EPAIR_TAG( expr ) expr;
 #else
-#  define IF_EPAIR_TAG( expr ) 
+#  define IF_EPAIR_TAG( expr )
 #endif   
 
 #define BGL_MAKE_INLINE_PAIR( a, d ) \
    an_object = GC_MALLOC( PAIR_SIZE ); \
-   IF_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ) ) \
+   IFN_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ) ) \
    an_object->pair_t.car = a; \
    an_object->pair_t.cdr = d; \
    BPAIR( an_object )
 
 #define BGL_MAKE_INLINE_EPAIR( a, d, e ) \
    an_object = GC_MALLOC( PAIR_SIZE ); \
-   IF_PAIR_TAG( an_object->extended_pair_t.header=MAKE_HEADER(PAIR_TYPE, 3) ) \
+   IFN_PAIR_TAG( an_object->extended_pair_t.header=MAKE_HEADER(PAIR_TYPE, 3) ) \
    an_object->pair_t.car = a; \
    an_object->pair_t.cdr = d; \
    an_object->extended_pair_t.cer = e; \

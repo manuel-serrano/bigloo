@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Wed Mar  9 16:04:26 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 16:58:26 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -269,14 +269,13 @@ bgl_saw_pair_copy( obj_t pair ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_saw_make_real( double d ) {
-#if !defined( __GNUC__ )
-#  define __GNUC__   
    obj_t an_object;
-#endif
 
    //   fprintf(stderr, "NEVER make_real\n");
    //   bgl_saw_gc();
-   return DOUBLE_TO_REAL( d );
+   BGL_MAKE_INLINE_REAL( d );
+
+   return BREAL( an_object );
 }
 
 /*---------------------------------------------------------------------*/
