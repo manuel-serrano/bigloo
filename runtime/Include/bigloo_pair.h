@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Mar  7 18:29:49 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 16:04:06 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -138,7 +138,7 @@ struct bgl_extended_pair {
 
 #if( BGL_GC == BGL_SAW_GC )
 extern obj_t bps_make_pair(obj_t a, obj_t d);
-extern obj_t bps_make_epair(obj_t a, obj_t d, obj_t e);
+extern obj_t bps_make_extended_pair(obj_t a, obj_t d, obj_t e);
 #  if defined( __GNUC__ )
 #     define MAKE_PAIR( a, d ) \
    bps_make_pair(a, d )
@@ -150,7 +150,7 @@ extern obj_t bps_make_epair(obj_t a, obj_t d, obj_t e);
 /*           an_object->pair_t.cdr = d; \                              */
 /*           BYOUNG( an_object ); })                                   */
 #     define MAKE_EXTENDED_PAIR( a, d, e ) \
-   bls_make_epair( a, d, e )
+   bps_make_extended_pair( a, d, e )
 /*        ({ obj_t an_object; \                                        */
 /* 	  if( !BGL_SAW_CAN_ALLOC( an_object, EXTENDED_PAIR_SIZE ) ) bgl_saw_gc(); \ */
 /*           BGL_SAW_ALLOC( EXTENDED_PAIR_SIZE ); \                    */

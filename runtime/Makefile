@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Mar  6 09:06:51 2016 (serrano)                */
+#*    Last change :  Wed Mar  9 15:52:29 2016 (serrano)                */
 #*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -53,7 +53,8 @@ LIBQ		=
 BHEAPFLAGS	= $(BOOTFLAGS) $(BFEATUREFLAGS) \
                   -unsafe -q -mkheap -mklib -s -no-hello
 #*--- Bigloo, common --------------------------------------------------*/
-BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
+#BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) +rm -lib-dir $(BOOTLIBDIR)
+BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) -rm -copt -w -lib-dir $(BOOTLIBDIR)
 #*--- Bigloo, safe ----------------------------------------------------*/
 BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
@@ -433,13 +434,33 @@ lib-c_s: includes
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u \
                 LIBQ=_s
 
+bps_cp_avant:
+	if [ $(HOME) != /home/serrano ]; then \
+	  cp Include/bigloo_saw.h ../lib/bigloo/4.3a; \
+	  sudo cp Include/bigloo.h /usr/local/lib/bigloo/4.3a; \
+	  sudo cp Include/bigloo_saw.h /usr/local/lib/bigloo/4.3a; \
+	  sudo cp Include/bigloo_pair.h /usr/local/lib/bigloo/4.3a; \
+	  sudo cp Include/bigloo_real.h /usr/local/lib/bigloo/4.3a; \
+	  sudo cp Include/bigloo_vector.h /usr/local/lib/bigloo/4.3a; \
+	  cp Include/bigloo_pair.h ../lib/bigloo/4.3a; \
+	  cp Include/bigloo_real.h ../lib/bigloo/4.3a; \
+	  cp Include/bigloo_vector.h ../lib/bigloo/4.3a; \
+        fi
+
+bps_cp_apres:
+	if [ $(HOME) != /home/serrano ]; then \
+	  sudo cp ../lib/bigloo/4.3a/libbigloo_saw_s-4.3a.* /usr/local/lib/bigloo/4.3a/; \
+        fi
+
 lib-saw: lib-saw_s
 lib-saw_s: includes
+	$(MAKE) bps_cp_avant
 	$(MAKE) one-lib-c \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
                 OBJDIR_USR=saw_s OBJDIR_SYS=saw_u \
                 LIBQ=_saw_s
+	$(MAKE) bps_cp_apres
 
 lib_u: lib-c_u
 lib-c_u: includes

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Mar  7 18:35:50 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 15:54:12 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SAW                                                       */
@@ -32,9 +32,10 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    saw_fram_header_t ...                                            */
 /*---------------------------------------------------------------------*/
-typedef struct {
-   long size;
-   bgl_saw_frame_header_t *link;
+typedef struct bgl_saw_frame_header {
+  long size;
+  char *name;
+  struct bgl_saw_frame_header *link;
 } bgl_saw_frame_header_t;
 
 /*---------------------------------------------------------------------*/

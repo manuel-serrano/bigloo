@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Mon Mar  7 18:31:25 2016 (serrano)                */
+/*    Last change :  Wed Mar  9 16:04:26 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------*/
 /*    constants                                                        */
 /*---------------------------------------------------------------------*/
-#define BGL_SAW_NURSERY_SIZE (1024 * 1024 * 8 * OBJ_SIZE)
+#define BGL_SAW_NURSERY_SIZE (1024 * 64 * OBJ_SIZE)
 
 /*---------------------------------------------------------------------*/
 /*    nursery                                                          */
@@ -25,7 +25,7 @@ long bgl_saw_nursery_size = BGL_SAW_NURSERY_SIZE;
 
 void dump_nursery(char *msg) {
   bgl_saw_nursery_t *o = &bgl_saw_nursery;
-  fprintf(stderr, "%s in %X %X %X %X\n", msg,
+  fprintf(stderr, "%s in %p %p %p %p\n", msg,
 	  o->heap, o->alloc, o->backptr, o->backpool);
 }
 
@@ -87,27 +87,102 @@ bgl_saw_gc_add_copier( long type, bgl_saw_copier_t copier ) {
 /*    void                                                             */
 /*    bgl_saw_gc ...                                                   */
 /*---------------------------------------------------------------------*/
+int nb_alloc = 0;
+int nb_assign = 0;
+int nb_copy = 0;
+
+typedef struct real_frame_struct {
+  bgl_saw_frame_header_t header;
+  obj_t values[];
+} *real_frame_def_t;
+
+obj_t trace_obj(obj_t o) {
+  //fprintf(stderr, "trace obj %p\n", o);
+  if(BYOUNGP(o)) {
+    obj_t oo = CREF(o);
+    if(!((oo >= (obj_t) bgl_saw_nursery.heap) &&
+	 (oo <= (obj_t) bgl_saw_nursery.backpool))) {
+      fprintf(stderr, "YOUNG not in heap %p\n", o);
+      exit(-1);
+    }
+    header_t type = oo->header;
+    if(!(type & 1)) {
+      //fprintf(stderr, "\ttrace obj %p %X\n", oo, type);
+      type = type | 1;
+      oo->header = type;
+      return(bgl_saw_copiers[ HEADER_TYPE( type ) ]( oo ));
+    } else {
+      //fprintf(stderr, "\ttraced obj %p %X %p\n", oo, type, oo->pair_t.car);
+      return(oo->pair_t.car);
+    }
+  } else {
+    return(o);
+  }
+}
+
+void trace(obj_t *p) {
+  obj_t o = *p;
+  //fprintf(stderr, "trace obj %p\n", o);
+  if(BYOUNGP(o)) {
+    obj_t oo = CREF(o);
+    if(!((oo >= (obj_t) bgl_saw_nursery.heap) &&
+	 (oo <= (obj_t) bgl_saw_nursery.backpool))) {
+      fprintf(stderr, "YOUNG not in heap %p\n", o);
+      exit(-1);
+    }
+    header_t type = oo->header;
+    if(!(type & 1)) {
+      //fprintf(stderr, "\ttrace %p %X\n", oo, type);
+      type = type | 1;
+      oo->header = type;
+      *p = bgl_saw_copiers[ HEADER_TYPE( type ) ]( oo );
+    } else {
+      //fprintf(stderr, "\ttraced obj %p %X %p\n", oo, type, oo->pair_t.car);
+      *p = oo->pair_t.car;
+    }
+  }
+}
+
+void trace_frames(real_frame_def_t lpf) {
+  while(lpf) {
+    int n = lpf->header.size;
+    //fprintf(stderr, "***** trace frame of size %d\n", n);
+    for(int i=0; i<n; i++) {
+      //fprintf(stderr, "** frame[%x] = %p\n", i, lpf->values[i]);
+      trace(&(lpf->values[i]));
+    }
+    lpf = (real_frame_def_t) lpf->header.link;
+  }
+}
+
 void
 bgl_saw_gc() {
    obj_t **ptr = bgl_saw_nursery.backpool;
 
-   fprintf( stderr, "bgl_saw_gc\n" );
+   dump_nursery("gc");
+   trace_frames((real_frame_def_t) BGL_ENV_SAW_SP(BGL_CURRENT_DYNAMIC_ENV()));
    while( ptr > bgl_saw_nursery.backptr ) {
-      obj_t *field = *ptr;
-      if( BYOUNGP( *field ) ) *field = bgl_saw_gc_copy( *field );
-      ptr--;
+     trace(*ptr);
+     ptr--;
    }
 
    bgl_saw_nursery.backptr = bgl_saw_nursery.backpool;
    bgl_saw_nursery.alloc = bgl_saw_nursery.heap;
+   fprintf(stderr, "gc alloc %d, back %d, copied %d\n",
+	   nb_alloc, nb_assign, nb_copy);
+   nb_alloc = nb_assign = nb_copy = 0;
 }
 
+  
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_saw_gc_copy ...                                              */
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_saw_gc_copy( obj_t obj ) {
+   fprintf(stderr, "NEVER saw_gc_copy\n");
+        exit(-1);
+	/*
    if( TYPE( obj ) != NO_TYPE ) {
       obj_t new = bgl_saw_copiers[ TYPE( obj ) ]( obj );
       TYPE( obj ) == NO_TYPE;
@@ -115,6 +190,44 @@ bgl_saw_gc_copy( obj_t obj ) {
    }
 
    return CAR( obj );
+	*/
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_saw_make_pair ...                                            */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_saw_make_pair( obj_t a, obj_t d ) {
+#if !defined( __GNUC__ )
+#  define __GNUC__   
+   obj_t an_object;
+#endif
+   fprintf(stderr, "NEVER make_pair\n");
+   exit(-1);
+   /*
+   bgl_saw_gc();
+   return MAKE_PAIR( a, d );
+   */
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_saw_make_extended_pair ...                                   */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_saw_make_extended_pair( obj_t a, obj_t d, obj_t e ) {
+#if !defined( __GNUC__ )
+#  define __GNUC__   
+   obj_t an_object;
+#endif
+   
+   fprintf(stderr, "NEVER make_epair\n");
+     exit(-1);
+     /*   
+   bgl_saw_gc();
+   return MAKE_EXTENDED_PAIR( a, d, e );
+     */
 }
 
 /*---------------------------------------------------------------------*/
@@ -124,12 +237,29 @@ bgl_saw_gc_copy( obj_t obj ) {
 static obj_t
 bgl_saw_pair_copy( obj_t pair ) {
    if( EXTENDED_PAIRP( pair ) ) {
-      return BGL_MAKE_INLINE_EPAIR( bgl_saw_gc_copy( CAR( pair ) ),
-				    bgl_saw_gc_copy( CDR( pair ) ),
-				    bgl_saw_gc_copy( CER( pair ) ) );
+     fprintf(stderr, "copying epair not yet\n");
+     exit(-1);
+     /*
+  obj_t an_object = GC_MALLOC( EXTENDED_PAIR_SIZE );
+  an_object->header=MAKE_HEADER(PAIR_TYPE, 3);
+  an_object->pair_t.car = CAR( pair );
+  an_object->pair_t.cdr = CDR( pair );
+  an_object->extended_pair_t.cer = CER( pair );
+  return BREF( an_object );
+     */
    } else {
-      return BGL_MAKE_INLINE_PAIR( bgl_saw_gc_copy( CAR( pair ) ),
-				   bgl_saw_gc_copy( CDR( pair ) ) );
+     //fprintf(stderr, "\t\tcopy pair %p=(%p %p) -> ",
+     //	     pair, pair->pair_t.car, pair->pair_t.cdr);
+     obj_t an_object = GC_MALLOC( PAIR_SIZE );
+     nb_copy++;
+     //fprintf(stderr, "%p\n", an_object);
+     an_object->header=MAKE_HEADER(PAIR_TYPE, 0);
+     obj_t save = pair->pair_t.car;
+     pair->pair_t.car = an_object;
+     an_object->pair_t.car = trace_obj(save);
+     an_object->pair_t.cdr = trace_obj(pair->pair_t.cdr);
+
+     return BREF( an_object );
    }
 }
 
@@ -144,36 +274,9 @@ bgl_saw_make_real( double d ) {
    obj_t an_object;
 #endif
 
-   bgl_saw_gc();
+   //   fprintf(stderr, "NEVER make_real\n");
+   //   bgl_saw_gc();
    return DOUBLE_TO_REAL( d );
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_saw_make_pair ...                                            */
-/*---------------------------------------------------------------------*/
-obj_t
-bgl_saw_make_pair( obj_t a, obj_t d ) {
-#if !defined( __GNUC__ )
-#  define __GNUC__   
-   obj_t an_object;
-#endif
-   
-   return MAKE_PAIR( a, d );
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_saw_make_extended_pair ...                                   */
-/*---------------------------------------------------------------------*/
-obj_t
-bgl_saw_make_extended_pair( obj_t a, obj_t d, obj_t e ) {
-#if !defined( __GNUC__ )
-#  define __GNUC__   
-   obj_t an_object;
-#endif
-   
-   return MAKE_EXTENDED_PAIR( a, d, e );
 }
 
 /*---------------------------------------------------------------------*/
@@ -182,53 +285,84 @@ bgl_saw_make_extended_pair( obj_t a, obj_t d, obj_t e ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 bgl_saw_real_copy( obj_t real ) {
-   return make_real( REAL_TO_DOUBLE( real ) );
+     fprintf(stderr, "copying real not yet\n");
+     exit(-1);
+     //   return make_real( REAL_TO_DOUBLE( real ) );
 }
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    bgl_saw_vector_copy ...                                          */
+/*---------------------------------------------------------------------*/
+#if( BGL_GC == BGL_SAW_GC )    
+BGL_RUNTIME_DEF obj_t
+bgl_saw_vector_copy( obj_t old ) {
+     fprintf(stderr, "copying vector not yet\n");
+     exit(-1);
+     /*
+   long i = VECTOR_LENGTH( old ) - 1;
+   obj_t new = create_vector( i );
+
+   while( i-- >= 0 ) {
+      VECTOR_REF( new, i ) = bgl_saw_gc_copy( VECTOR_REF( old, i ) );
+   }
+
+   return new;
+     */
+}
+#endif
 
 /*
  * Not yet macros for debug purpose
  */
-#define CPYREF CAR
 obj_t bps_bassign(obj_t *field, obj_t value, obj_t obj) {
   if(BOLDP( obj ) && BYOUNGP( value )) {
-    fprintf(stderr, "bassign %X[%X]=%X\n", obj, field, value);
     if((char *)(bgl_saw_nursery.backptr) <= bgl_saw_nursery.alloc) {
       bgl_saw_gc();
-      value = CPYREF(obj);
+      *field = trace_obj(value);
+    } else {
+      nb_assign++;
+      *(bgl_saw_nursery.backptr) = field;
+      bgl_saw_nursery.backptr -= 1;
+      *field = value;
     }
-    *(bgl_saw_nursery.backptr) = field;
-    bgl_saw_nursery.backptr -= 1;
-    fprintf(stderr, "bassign DONE %X[%X]=%X\n", obj, field, value);
+  } else {
+    *field = value;
   }
-  *field = value;
-  return(BUNSPEC);
+  return(BNIL);
 }
 
 obj_t bps_make_pair(obj_t a, obj_t d) {
-  obj_t an_object;
-  if( !BGL_SAW_CAN_ALLOC( an_object, PAIR_SIZE ) ) bgl_saw_gc();
-  BGL_SAW_ALLOC( PAIR_SIZE );
-  an_object->header = MAKE_HEADER( PAIR_TYPE, 0 );
+  char *res = bgl_saw_nursery.alloc;
+  char *nalloc = res + MEMROUND(PAIR_SIZE);
+  if(nalloc >= (char *) bgl_saw_nursery.backptr) {
+    bgl_saw_gc();
+    res = bgl_saw_nursery.alloc;
+    nalloc = res + MEMROUND(PAIR_SIZE);
+    if(nalloc >= (char *) bgl_saw_nursery.backptr) {
+      fprintf(stderr, "fatal error not enough space in nursery\n");
+      exit(-1);
+    }
+    a = trace_obj(a);
+    d = trace_obj(d);
+  }
+  bgl_saw_nursery.alloc = nalloc;
+  nb_alloc++;
+  obj_t an_object = (obj_t) res;
+  an_object->header=MAKE_HEADER(PAIR_TYPE, 0);
   an_object->pair_t.car = a;
   an_object->pair_t.cdr = d;
-  an_object = BYOUNG( an_object );
-  fprintf(stderr, "%p ", an_object); dump_nursery("cons");
-  __debug( "make_pair", an_object );
-  return(an_object);
+  return(BYOUNG(an_object));
 }
 
-obj_t bps_make_epair(obj_t a, obj_t d) {
-  obj_t an_object;
-  if( !BGL_SAW_CAN_ALLOC( an_object, EXTENDED_PAIR_SIZE ) ) bgl_saw_gc();
-  BGL_SAW_ALLOC( PAIR_SIZE );
-  an_object->header = MAKE_HEADER( PAIR_TYPE, 3 );
+obj_t bps_make_extended_pair( obj_t a, obj_t d, obj_t e ) {
+  obj_t an_object = GC_MALLOC( EXTENDED_PAIR_SIZE );
+  an_object->header=MAKE_HEADER(PAIR_TYPE, 3);
   an_object->pair_t.car = a;
   an_object->pair_t.cdr = d;
-  an_object = BYOUNG( an_object );
-  fprintf(stderr, "%p ", an_object); dump_nursery("cons");
-  __debug( "make_pair", an_object );
-  return(an_object);
+  an_object->extended_pair_t.cer = e;
+  
+  return BREF( an_object );
 }
-
 
 #endif
