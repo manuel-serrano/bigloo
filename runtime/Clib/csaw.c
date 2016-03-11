@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Wed Mar  9 16:58:26 2016 (serrano)                */
+/*    Last change :  Fri Mar 11 16:19:46 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -314,21 +314,32 @@ bgl_saw_vector_copy( obj_t old ) {
 /*
  * Not yet macros for debug purpose
  */
-obj_t bps_bassign(obj_t *field, obj_t value, obj_t obj) {
-  if(BOLDP( obj ) && BYOUNGP( value )) {
-    if((char *)(bgl_saw_nursery.backptr) <= bgl_saw_nursery.alloc) {
-      bgl_saw_gc();
-      *field = trace_obj(value);
-    } else {
-      nb_assign++;
-      *(bgl_saw_nursery.backptr) = field;
-      bgl_saw_nursery.backptr -= 1;
-      *field = value;
-    }
+void bps_dobackptr(obj_t *field, obj_t value) {
+  if((char *)(bgl_saw_nursery.backptr) <= bgl_saw_nursery.alloc) {
+    bgl_saw_gc();
+    *field = trace_obj(value);
+  } else {
+    nb_assign++;
+    *(bgl_saw_nursery.backptr) = field;
+    bgl_saw_nursery.backptr -= 1;
+    *field = value;
+  }
+}
+
+void bps_bmassign(obj_t *field, obj_t value) {
+  if(BYOUNGP( value )) {
+    bps_dobackptr(field, value);
   } else {
     *field = value;
   }
-  return(BNIL);
+}
+
+void bps_bassign(obj_t *field, obj_t value, obj_t obj) {
+  if(BOLDP( obj ) && BYOUNGP( value )) {
+    bps_dobackptr(field, value);
+  } else {
+    *field = value;
+  }
 }
 
 obj_t bps_make_pair(obj_t a, obj_t d) {

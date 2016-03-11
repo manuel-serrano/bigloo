@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar  9 16:50:37 2016 (serrano)                */
+/*    Last change :  Fri Mar 11 16:22:30 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -174,9 +174,9 @@ extern obj_t bps_make_extended_pair(obj_t a, obj_t d, obj_t e);
 #define CDR( c ) (PAIR( c ).cdr)
 #define CER( c ) (EPAIR( c ).cer)
 
-#define SET_CAR( c, v ) (BASSIGN( CAR( c ), v, c ))
-#define SET_CDR( c, v ) (BASSIGN( CDR( c ), v, c ))
-#define SET_CER( c, v ) (BASSIGN( CER( c ), v, c ))
+#define SET_CAR( c, v ) (BASSIGN( CAR( c ), v, c ), BUNSPEC)
+#define SET_CDR( c, v ) (BASSIGN( CDR( c ), v, c ), BUNSPEC)
+#define SET_CER( c, v ) (BASSIGN( CER( c ), v, c ), BUNSPEC)
 
 /*---------------------------------------------------------------------*/
 /*    C++                                                              */

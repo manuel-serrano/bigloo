@@ -35,6 +35,8 @@
 (define *haspushexit* #f)
 (define *haspushbefore* #f)
 (define *pushtraceemmited* 0)
+(define *trace_used* #f)
+(define *trace_nb_frames* #f)
 
 (define *pointer-in-a-frame* #t)
 (define *hasframe* #f)
@@ -45,6 +47,12 @@
       (lambda () (header)) ))
 
 (define (header) ;()
+   (when *trace_used*
+      (display "extern long bps_time;\n")
+      (display "extern int bps_used();\n") )
+   (when *trace_nb_frames*
+      (display "extern long bps_time;\n")
+      (display "extern int bps_nbFrames()\n") )
    (if *count*
        (begin (display "extern int bbcount[];\n")
 	      (display "extern char *bbname[];\n")
@@ -217,6 +225,12 @@
 
 (define (out-label label)
    (display* "L" label ":")
+   (when *trace_used*
+      (print "\tif(bps_time++ % 10000 == 0)\n")
+      (print "\t\tfprintf(stderr, \"%ld %d\\n\", bps_time++, bps_used());") )
+   (when *trace_nb_frames*
+      (print "\tif(bps_time++ % 10000 == 0)\n")
+      (print "\t\tfprintf(stderr, \"%ld %d\\n\", bps_time++, bps_used());") )
    (if *count*
        (begin (display* "\tbbcount[" *counter* "]++;")
 	      (set! *counter* (+ 1 *counter*)) ))
@@ -565,39 +579,40 @@
 	  (and (rtl_call? fun)
 	       (multiple-evaluation2 (rtl_call-var fun)) ))))
 
-(define *bad-macros*
-   '(
-     ;; I select only those which disturb the mbrot bench...
-     "WRITE_CHAR"
-     ;; And all I cant figure which one disturb beval
-     "BOOLEANP" "INTEGERP" "NULLP" "PAIRP" "SYMBOLP" "VECTORP"
-     ))
-
 (define (multiple-evaluation2 var)
    (not (global-args-safe? var)) )
 
+;;
 ;; Special case for not loosing a root .
+;;
 (define (accept_folding_with_frame? ins tree)
    (or (basic-type? (rtl_reg-type (rtl_ins-dest tree)))
-       ;; Will be obsolete with no-allocation-in
-       (rtl_loadi? (rtl_ins-fun tree))
        (no-allocation-in tree)
        (first-expr-arg? ins)
        #f ))
 
 (define (no-allocation-in tree)
    ;; return #t when the evaluation of tree doesn't allocate
-   #f )
+   (and (no-allocation-fun (rtl_ins-fun tree))
+	(every no-allocation-arg (rtl_ins-args tree)) ))
 
-(define-generic (no-allocation-fun fun::rtl_fun) #f)
-(define-method (no-allocation-fun fun::rtl_loadg) #t)
-(define-method (no-allocation-fun fun::rtl_storeg) #t)
-(define-method (no-allocation-fun fun::rtl_vref) #t)
-(define-method (no-allocation-fun fun::rtl_vset) #t)
-(define-method (no-allocation-fun fun::rtl_boxref) #t)
-(define-method (no-allocation-fun fun::rtl_boxset) #t)
-(define-method (no-allocation-fun fun::rtl_getfield) #t)
-(define-method (no-allocation-fun fun::rtl_setfield) #t)
+(define (no-allocation-arg a)
+   (if (rtl_ins? a)
+       (no-allocation-in a)
+       #t ))
+
+(define-generic (no-allocation-fun fun::rtl_fun) #t)
+(define-method (no-allocation-fun fun::rtl_return) #f) ; this one is special
+(define-method (no-allocation-fun fun::rtl_makebox) #f)
+(define-method (no-allocation-fun fun::rtl_new) #f)
+(define-method (no-allocation-fun fun::rtl_apply) #f)
+(define-method (no-allocation-fun fun::rtl_lightfuncall) #f)
+(define-method (no-allocation-fun fun::rtl_funcall) #f)
+(define-method (no-allocation-fun fun::rtl_call)
+   (memq 'no-alloc (global-pragma (rtl_call-var fun))) )
+
+;; CARE MANU...
+(define-method (no-allocation-fun fun::rtl_pragma) #t)
 
 (define (first-expr-arg? ins)
    ;; return #t when all arguments of ins doesn't allocate
@@ -632,4 +647,5 @@
 			  (the-failure)))))
 	  (read/rp parser sport)
 	  #t)))
+
 

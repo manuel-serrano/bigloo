@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Mar  7 18:31:49 2016 (serrano)                */
+/*    Last change :  Fri Mar 11 16:48:07 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -112,8 +112,10 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    See comptile/Cnst/read-alloc.scm                                 */
 /*---------------------------------------------------------------------*/
-#define CNST_TABLE_SET( offset, value ) \
-   ( __cnst[ offset ] = value, BUNSPEC )
+//#define CNST_TABLE_SET( offset, value )	\
+//   ( __cnst[ offset ] = value, BUNSPEC )
+#define CNST_TABLE_SET( offset, value )	\
+  ( BMASSIGN(__cnst[ offset ], value), BUNSPEC )
 
 #define CNST_TABLE_REF( offset ) __cnst[ offset ]
 
@@ -260,8 +262,10 @@ error "Unknown garbage collector type"
 #if( BGL_GC == BGL_SAW_GC )
 /* #  define BASSIGN( field, value, obj ) BGL_SAW_OLDYOUNG( obj, value, &(field) ) */
 #  define BASSIGN( field, value, obj ) bps_bassign( &(field), value, obj)
+#  define BMASSIGN( field, value ) bps_bmassign( &(field), value)
 #else
 #  define BASSIGN( field, value, obj ) ((field) = (value))
+#  define BMASSIGN( field, value ) ((field) = (value))
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -1258,7 +1262,7 @@ typedef struct BgL_objectz00_bgl {
 #endif		 
 
 #define CELL_REF( c ) ((CCELL( c )->cell_t).val)
-#define CELL_SET( c, v ) (CELL_REF( c ) = v, BUNSPEC)
+#define CELL_SET( c, v ) (BASSIGN(CELL_REF( c ), v, c), BUNSPEC)
 
 /*---------------------------------------------------------------------*/
 /*    Strings                                                          */
@@ -1417,7 +1421,7 @@ typedef struct BgL_objectz00_bgl {
 #define PROCEDURE_ENV( p ) (&(PROCEDURE( p ).obj0))
 
 #define PROCEDURE_REF( p, i )    (PROCEDURE_ENV( p ))[ i ]
-#define PROCEDURE_SET( p, i, o ) (PROCEDURE_REF( p, i ) = o, BUNSPEC)
+#define PROCEDURE_SET( p, i, o ) (BASSIGN(PROCEDURE_REF( p, i ), o, p), BUNSPEC)
 
 #define MAKE_FX_PROCEDURE( entry, arity, size ) \
    make_fx_procedure( (function_t)entry, arity, size )
@@ -1445,8 +1449,8 @@ typedef struct BgL_objectz00_bgl {
 
 #define PROCEDURE_L_ENV( fun ) (&(PROCEDURE_L( fun ).obj0))
 
-#define PROCEDURE_L_REF( p, _i )    PROCEDURE_L_ENV( p )[ _i ] 
-#define PROCEDURE_L_SET( p, _i, o ) (PROCEDURE_L_REF( p, _i ) = o, BUNSPEC)
+#define PROCEDURE_L_REF( p, _i )    (PROCEDURE_L_ENV( p )[ _i ])
+#define PROCEDURE_L_SET( p, _i, o ) (BASSIGN( PROCEDURE_L_REF( p, _i ),o, p), BUNSPEC)
 
 #if( defined( __GNUC__ ) )
 #   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
@@ -1470,8 +1474,8 @@ typedef struct BgL_objectz00_bgl {
 #define MAKE_EL_PROCEDURE( size ) \
    (( !size ) ? BUNSPEC : GC_MALLOC( size * OBJ_SIZE ))
 
-#define PROCEDURE_EL_REF( p, i ) ((obj_t *)p)[ i ]
-#define PROCEDURE_EL_SET( p, i, o ) (PROCEDURE_EL_REF( p, i ) = o, BUNSPEC)
+#define PROCEDURE_EL_REF( p, i ) (((obj_t *)p)[ i ])
+#define PROCEDURE_EL_SET( p, i, o ) (BASSIGN(PROCEDURE_EL_REF( p, i ),o,p), BUNSPEC)
 
 /*---------------------------------------------------------------------*/
 /*    Generic functions                                                */
@@ -3634,7 +3638,8 @@ BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
 
 BGL_RUNTIME_DECL void bgl_restore_signal_handlers();
-extern obj_t bps_bassign(obj_t *field, obj_t value, obj_t obj);
+extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);
+extern void bps_bmassign(obj_t *field, obj_t value);
 
 #if( BGL_HAVE_UNISTRING )
 BGL_RUNTIME_DECL int bgl_strcoll( obj_t, obj_t );
