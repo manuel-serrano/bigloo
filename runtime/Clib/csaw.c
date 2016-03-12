@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Fri Mar 11 16:19:46 2016 (serrano)                */
+/*    Last change :  Sat Mar 12 15:33:32 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -199,65 +199,121 @@ bgl_saw_gc_copy( obj_t obj ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_saw_make_pair( obj_t a, obj_t d ) {
-#if !defined( __GNUC__ )
-#  define __GNUC__   
-   obj_t an_object;
-#endif
-   fprintf(stderr, "NEVER make_pair\n");
-   exit(-1);
-   /*
-   bgl_saw_gc();
-   return MAKE_PAIR( a, d );
-   */
-}
+   char *res = bgl_saw_nursery.alloc;
+   char *nalloc = res + MEMROUND( PAIR_SIZE );
+   
+   if( nalloc >= (char *) bgl_saw_nursery.backptr ) {
+      bgl_saw_gc();
+      res = bgl_saw_nursery.alloc;
+      nalloc = res + MEMROUND( PAIR_SIZE );
+      if(nalloc >= (char *)bgl_saw_nursery.backptr) {
+	 fprintf( stderr, "fatal error not enough space in nursery\n" );
+	 exit( -1 );
+      }
+      a = trace_obj( a );
+      d = trace_obj( d );
+   }
+   
+   bgl_saw_nursery.alloc = nalloc;
+   nb_alloc++;
+   obj_t an_object = (obj_t)res;
+
+   BGL_INIT_PAIR( (obj_t)res, a, d );
+
+   return BYOUNG( (obj_t)res );
+}   
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_saw_make_extended_pair ...                                   */
+/*    bgl_saw_make_old_pair ...                                        */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_saw_make_extended_pair( obj_t a, obj_t d, obj_t e ) {
-#if !defined( __GNUC__ )
-#  define __GNUC__   
-   obj_t an_object;
-#endif
-   
-   fprintf(stderr, "NEVER make_epair\n");
-     exit(-1);
-     /*   
-   bgl_saw_gc();
-   return MAKE_EXTENDED_PAIR( a, d, e );
-     */
-}
+bgl_saw_make_old_pair( obj_t a, obj_t d ) {
+   obj_t obj = make_pair( a, d );
 
+   BMASSIGN( CAR( obj ), a );
+   BMASSIGN( CDR( obj ), d );
+
+   return obj;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_saw_make_epair ...                                           */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_saw_make_epair( obj_t a, obj_t d, obj_t e ) {
+   char *res = bgl_saw_nursery.alloc;
+   char *nalloc = res + MEMROUND( EPAIR_SIZE );
+   
+   if( nalloc >= (char *) bgl_saw_nursery.backptr ) {
+      bgl_saw_gc();
+      res = bgl_saw_nursery.alloc;
+      nalloc = res + MEMROUND( PAIR_SIZE );
+      if(nalloc >= (char *)bgl_saw_nursery.backptr) {
+	 fprintf( stderr, "fatal error not enough space in nursery\n" );
+	 exit( -1 );
+      }
+      a = trace_obj( a );
+      d = trace_obj( d );
+      e = trace_obj( e );
+   }
+   
+   bgl_saw_nursery.alloc = nalloc;
+   nb_alloc++;
+   obj_t an_object = (obj_t)res;
+
+   BGL_INIT_EPAIR( (obj_t)res, a, d, e );
+
+   return BYOUNG( (obj_t)res );
+}   
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_saw_make_old_epair ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_saw_make_old_epair( obj_t a, obj_t d, obj_t e ) {
+   obj_t obj = make_epair( a, d, e );
+
+   BMASSIGN( CAR( obj ), a );
+   BMASSIGN( CDR( obj ), d );
+   BMASSIGN( CER( obj ), e );
+
+   return obj;
+}
+   
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    bgl_saw_pair_copy ...                                            */
 /*---------------------------------------------------------------------*/
 static obj_t
 bgl_saw_pair_copy( obj_t pair ) {
-   if( EXTENDED_PAIRP( pair ) ) {
-     fprintf(stderr, "copying epair not yet\n");
-     exit(-1);
-     /*
-  obj_t an_object = GC_MALLOC( EXTENDED_PAIR_SIZE );
-  an_object->header=MAKE_HEADER(PAIR_TYPE, 3);
-  an_object->pair_t.car = CAR( pair );
-  an_object->pair_t.cdr = CDR( pair );
-  an_object->extended_pair_t.cer = CER( pair );
-  return BREF( an_object );
-     */
+   if( EPAIRP( pair ) ) {
+      obj_t an_object = GC_MALLOC( EPAIR_SIZE );
+      obj_t save = pair->pair_t.car;
+      pair->pair_t.car = an_object;
+      nb_copy++;
+      //fprintf(stderr, "%p\n", an_object);
+      
+      BGL_INIT_EPAIR( an_object,
+		      trace_obj( save ),
+		      trace_obj( pair->pair_t.cdr ),
+		      trace_obj( pair->epair_t.cer ) );
+
+      return BREF( an_object );
    } else {
      //fprintf(stderr, "\t\tcopy pair %p=(%p %p) -> ",
      //	     pair, pair->pair_t.car, pair->pair_t.cdr);
      obj_t an_object = GC_MALLOC( PAIR_SIZE );
-     nb_copy++;
-     //fprintf(stderr, "%p\n", an_object);
-     an_object->header=MAKE_HEADER(PAIR_TYPE, 0);
      obj_t save = pair->pair_t.car;
      pair->pair_t.car = an_object;
-     an_object->pair_t.car = trace_obj(save);
-     an_object->pair_t.cdr = trace_obj(pair->pair_t.cdr);
+     nb_copy++;
+     //fprintf(stderr, "%p\n", an_object);
+     
+     BGL_INIT_PAIR( an_object,
+		    trace_obj( save ),
+		    trace_obj( pair->pair_t.cdr ) );
 
      return BREF( an_object );
    }
@@ -340,39 +396,6 @@ void bps_bassign(obj_t *field, obj_t value, obj_t obj) {
   } else {
     *field = value;
   }
-}
-
-obj_t bps_make_pair(obj_t a, obj_t d) {
-  char *res = bgl_saw_nursery.alloc;
-  char *nalloc = res + MEMROUND(PAIR_SIZE);
-  if(nalloc >= (char *) bgl_saw_nursery.backptr) {
-    bgl_saw_gc();
-    res = bgl_saw_nursery.alloc;
-    nalloc = res + MEMROUND(PAIR_SIZE);
-    if(nalloc >= (char *) bgl_saw_nursery.backptr) {
-      fprintf(stderr, "fatal error not enough space in nursery\n");
-      exit(-1);
-    }
-    a = trace_obj(a);
-    d = trace_obj(d);
-  }
-  bgl_saw_nursery.alloc = nalloc;
-  nb_alloc++;
-  obj_t an_object = (obj_t) res;
-  an_object->header=MAKE_HEADER(PAIR_TYPE, 0);
-  an_object->pair_t.car = a;
-  an_object->pair_t.cdr = d;
-  return(BYOUNG(an_object));
-}
-
-obj_t bps_make_extended_pair( obj_t a, obj_t d, obj_t e ) {
-  obj_t an_object = GC_MALLOC( EXTENDED_PAIR_SIZE );
-  an_object->header=MAKE_HEADER(PAIR_TYPE, 3);
-  an_object->pair_t.car = a;
-  an_object->pair_t.cdr = d;
-  an_object->extended_pair_t.cer = e;
-  
-  return BREF( an_object );
 }
 
 #endif

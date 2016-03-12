@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Mar 11 16:48:07 2016 (serrano)                */
+/*    Last change :  Sat Mar 12 14:45:22 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -301,7 +301,7 @@ error "Unknown garbage collector type"
 #define FOREIGN_TYPE 19
 #define OUTPUT_STRING_PORT_TYPE 20
 #define BINARY_PORT_TYPE 21
-#define EXTENDED_PAIR_TYPE 22
+#define EPAIR_TYPE 22
 #define TVECTOR_TYPE 23
 #define TSTRUCT_TYPE 24
 #define PROCEDURE_LIGHT_TYPE 25
@@ -382,7 +382,7 @@ union scmobj {
    
    /* pairs */
    struct bgl_pair pair_t;
-   struct bgl_extended_pair extended_pair_t;
+   struct bgl_epair epair_t;
    
 /*    struct pair {                                                    */
 /* #if( !(defined( TAG_PAIR )) )                                       */
@@ -394,7 +394,7 @@ union scmobj {
 /*    } pair_t;                                                        */
 
 /*    {* extended pairs *}                                             */
-/*    struct extended_pair {                                           */
+/*    struct epair {                                           */
 /* #if( !(defined( TAG_PAIR )) )                                       */
 /*       header_t header;                                              */
 /* #endif                                                              */
@@ -404,7 +404,7 @@ union scmobj {
 /*       union scmobj *eheader;                                        */
 /*       {* extended slot *}                                           */
 /*       union scmobj *cer;                                            */
-/*    } extended_pair_t;                                               */
+/*    } epair_t;                                               */
 
    /* strings */
    struct string {
@@ -1142,14 +1142,14 @@ typedef struct BgL_objectz00_bgl {
 /* #endif                                                              */
 /*                                                                     */
 /* #define PAIR( o ) (CPAIR( o )->pair_t)                              */
-/* #define EPAIR( o ) (CPAIR( o )->extended_pair_t)                    */
+/* #define EPAIR( o ) (CPAIR( o )->epair_t)                    */
 /*                                                                     */
 /* #define PAIR_SIZE (sizeof( struct pair ))                           */
-/* #define EXTENDED_PAIR_SIZE (sizeof( struct extended_pair ))         */
+/* #define EPAIR_SIZE (sizeof( struct epair ))         */
 /*                                                                     */
 /* #if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM )                    */
 /* #   define MAKE_PAIR( a, d ) make_pair( a, d )                      */
-/* #   define MAKE_EXTENDED_PAIR( a, d, e ) make_extended_pair( a, d, e ) */
+/* #   define MAKE_EPAIR( a, d, e ) make_epair( a, d, e ) */
 /* #else                                                               */
 /* #   if( defined( TAG_PAIR ) )                                       */
 /* #     if( defined( __GNUC__ ) )                                     */
@@ -1159,17 +1159,17 @@ typedef struct BgL_objectz00_bgl {
 /* 	   an_object->pair_t.car = a; \                                */
 /* 	   an_object->pair_t.cdr = d; \                                */
 /*            ( BPAIR( an_object ) ); })                               */
-/* #      define MAKE_EXTENDED_PAIR( a, d, e ) \                       */
+/* #      define MAKE_EPAIR( a, d, e ) \                       */
 /*         ( { obj_t an_object; \                                      */
-/* 	    an_object = GC_MALLOC( EXTENDED_PAIR_SIZE ); \             */
-/*    	    an_object->extended_pair_t.car = a; \                      */
-/* 	    an_object->extended_pair_t.cdr = d; \                      */
-/* 	    an_object->extended_pair_t.cer = e; \                      */
-/* 	    an_object->extended_pair_t.eheader = BINT( EXTENDED_PAIR_TYPE ); \ */
+/* 	    an_object = GC_MALLOC( EPAIR_SIZE ); \             */
+/*    	    an_object->epair_t.car = a; \                      */
+/* 	    an_object->epair_t.cdr = d; \                      */
+/* 	    an_object->epair_t.cer = e; \                      */
+/* 	    an_object->epair_t.eheader = BINT( EPAIR_TYPE ); \ */
 /* 	    ( BPAIR( an_object ) ); } )                                */
 /* #     else                                                          */
 /* #      define MAKE_PAIR( a, d ) make_pair( a, d )                   */
-/* #      define MAKE_EXTENDED_PAIR( a, d, e ) make_extended_pair( a, d ,e ) */
+/* #      define MAKE_EPAIR( a, d, e ) make_epair( a, d ,e ) */
 /* #     endif                                                         */
 /* #   else                                                            */
 /* #     if( defined( __GNUC__ ) )                                     */
@@ -1180,30 +1180,30 @@ typedef struct BgL_objectz00_bgl {
 /* 	   an_object->pair_t.car = a; \                                */
 /* 	   an_object->pair_t.cdr = d; \                                */
 /*            ( BPAIR( an_object ) ); })                               */
-/* #      define MAKE_EXTENDED_PAIR( a, d, e ) \                       */
+/* #      define MAKE_EPAIR( a, d, e ) \                       */
 /*         ( { obj_t an_object; \                                      */
-/* 	    an_object = GC_MALLOC( EXTENDED_PAIR_SIZE ); \             */
-/* 	    an_object->extended_pair_t.header  = MAKE_HEADER( PAIR_TYPE,0 ); \ */
-/* 	    an_object->extended_pair_t.car = a; \                      */
-/* 	    an_object->extended_pair_t.cdr = d; \                      */
-/*   	    an_object->extended_pair_t.cer = e; \                      */
-/* 	    an_object->extended_pair_t.eheader = BINT( EXTENDED_PAIR_TYPE ); \ */
+/* 	    an_object = GC_MALLOC( EPAIR_SIZE ); \             */
+/* 	    an_object->epair_t.header  = MAKE_HEADER( PAIR_TYPE,0 ); \ */
+/* 	    an_object->epair_t.car = a; \                      */
+/* 	    an_object->epair_t.cdr = d; \                      */
+/*   	    an_object->epair_t.cer = e; \                      */
+/* 	    an_object->epair_t.eheader = BINT( EPAIR_TYPE ); \ */
 /* 	    ( BPAIR( an_object ) ); } )                                */
 /* #     else                                                          */
 /* #      define MAKE_PAIR( a, d ) make_pair( a, d )                   */
-/* #      define MAKE_EXTENDED_PAIR( a, d, e ) make_extended_pair( a, d ,e ) */
+/* #      define MAKE_EPAIR( a, d, e ) make_epair( a, d ,e ) */
 /* #     endif                                                         */
 /* #   endif                                                           */
 /* #endif                                                              */
 /*                                                                     */
 /* #if( BGL_GC == BGL_BOEHM_GC )                                       */
-/* #   define EXTENDED_PAIRP( c ) \                                    */
+/* #   define EPAIRP( c ) \                                    */
 /*       ( PAIRP( c ) && \                                             */
-/*         (((long)GC_size( BPAIR( c ) )) >= EXTENDED_PAIR_SIZE) && \  */
-/*         (EPAIR( c ).eheader == BINT( EXTENDED_PAIR_TYPE ) ) )       */
+/*         (((long)GC_size( BPAIR( c ) )) >= EPAIR_SIZE) && \  */
+/*         (EPAIR( c ).eheader == BINT( EPAIR_TYPE ) ) )       */
 /* #else                                                               */
-/* #   define EXTENDED_PAIRP( c ) \                                    */
-/*       ( PAIRP( c ) && (EPAIR( c ).eheader == BINT( EXTENDED_PAIR_TYPE ) ) ) */
+/* #   define EPAIRP( c ) \                                    */
+/*       ( PAIRP( c ) && (EPAIR( c ).eheader == BINT( EPAIR_TYPE ) ) ) */
 /* #endif                                                              */
 /*                                                                     */
 /* #define NULLP( c ) ((long)(c) == (long)BNIL)                        */
@@ -3482,7 +3482,7 @@ BGL_RUNTIME_DECL obj_t bgl_procedure_entry_to_string( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_string_to_procedure_entry( obj_t );
 
 BGL_RUNTIME_DECL obj_t make_pair( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t make_extended_pair( obj_t a, obj_t d, obj_t e );
+BGL_RUNTIME_DECL obj_t make_epair( obj_t a, obj_t d, obj_t e );
 BGL_RUNTIME_DECL obj_t make_cell( obj_t );
 BGL_RUNTIME_DECL obj_t make_real( double );
 BGL_RUNTIME_DECL obj_t make_belong( long );

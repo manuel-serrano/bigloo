@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 21 10:09:50 1992                          */
-;*    Last change :  Mon Mar  3 09:52:43 2014 (serrano)                */
+;*    Last change :  Fri Mar 11 17:38:53 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.6 Characters (page 24, r4)                                     */
 ;*=====================================================================*/
@@ -90,8 +90,8 @@
 	    (inline char-and::uchar         ::uchar ::uchar)
 	    (inline char-not::uchar         ::uchar))
    
-   (pragma  (c-char? (predicate-of bchar) no-cfa-top nesting)
-	    (char? side-effect-free no-cfa-top nesting)
+   (pragma  (c-char? no-alloc (predicate-of bchar) no-cfa-top nesting)
+	    (char? no-alloc side-effect-free no-cfa-top nesting)
 	    (c-char-upcase side-effect-free nesting args-safe)
 	    (c-char-downcase side-effect-free nesting args-safe)
 	    (c-char=? side-effect-free nesting args-safe)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:58:09 1995                          */
-;*    Last change :  Fri Mar 11 17:18:10 2016 (serrano)                */
+;*    Last change :  Sat Mar 12 14:58:45 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.3. Pairs and Lists (page 15, r4)                               */
 ;*    -------------------------------------------------------------    */
@@ -38,10 +38,10 @@
 	    __evenv)
    
    (extern  (macro $pair?::bool (::obj) "PAIRP")
-	    (macro $epair?::bool (::obj) "EXTENDED_PAIRP")
-	    (macro $cons::pair (::obj ::obj) "MAKE_PAIR")
+	    (macro $epair?::bool (::obj) "EPAIRP")
+	    (macro $cons::pair (::obj ::obj) "MAKE_YOUNG_PAIR")
 	    (macro $s-cons::pair (::obj ::obj) "MAKE_S_PAIR")
-	    (macro $econs::epair (::obj ::obj ::obj) "MAKE_EXTENDED_PAIR")
+	    (macro $econs::epair (::obj ::obj ::obj) "MAKE_YOUNG_EPAIR")
 	    (macro $car::obj (::pair) "CAR")
 	    (macro $cdr::obj (::pair) "CDR")
 	    (macro $cer::obj (::epair) "CER")
@@ -62,13 +62,13 @@
 	       (method static $pair?::bool (::obj)
 		       "PAIRP")
 	       (method static $epair?::bool (::obj)
-		       "EXTENDED_PAIRP")
+		       "EPAIRP")
 	       (method static $cons::pair (::obj ::obj)
 		       "MAKE_PAIR")
 	       (method static $s-cons::pair (::obj ::obj)
 		       "MAKE_S_PAIR")
 	       (method static $econs::epair (::obj ::obj ::obj)
-		       "MAKE_EXTENDED_PAIR")
+		       "MAKE_EPAIR")
 	       (method static $car::obj (::pair)
 		       "CAR")
 	       (method static $cdr::obj (::pair)
@@ -169,24 +169,24 @@
 	    (delete-duplicates!::pair-nil ::pair-nil #!optional (eq equal?)))
    
    (pragma  ($cons args-safe fail-safe)
-	    ($null? (predicate-of nil) no-cfa-top nesting args-safe fail-safe (effect))
-	    (null? (predicate-of nil) no-cfa-top nesting fail-safe)
-	    (pair-or-null? (predicate-of pair-nil) no-cfa-top nesting (effect) fail-safe)
-	    ($pair? (predicate-of pair) no-cfa-top nesting fail-safe (effect))
-	    (pair? (predicate-of pair) no-cfa-top nesting fail-safe)
-	    ($car side-effect-free no-cfa-top nesting args-safe fail-safe
+	    ($null? no-alloc (predicate-of nil) no-cfa-top nesting args-safe fail-safe (effect))
+	    (null? no-alloc (predicate-of nil) no-cfa-top nesting fail-safe)
+	    (pair-or-null? no-alloc (predicate-of pair-nil) no-cfa-top nesting (effect) fail-safe)
+	    ($pair? no-alloc (predicate-of pair) no-cfa-top nesting fail-safe (effect))
+	    (pair? no-alloc (predicate-of pair) no-cfa-top nesting fail-safe)
+	    ($car no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (car))))
-	    ($set-car! fail-safe (effect (write (car))))
-	    (car side-effect-free no-cfa-top nesting)
-	    ($cdr side-effect-free no-cfa-top nesting args-safe fail-safe
+	    ($set-car! no-alloc fail-safe (effect (write (car))))
+	    (car no-alloc side-effect-free no-cfa-top nesting)
+	    ($cdr no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (cdr))))
-	    ($set-cdr! fail-safe (effect (write (cdr))))
-	    (cdr side-effect-free no-cfa-top nesting)
-	    ($cer side-effect-free no-cfa-top nesting args-safe fail-safe
+	    ($set-cdr! no-alloc fail-safe (effect (write (cdr))))
+	    (cdr no-alloc side-effect-free no-cfa-top nesting)
+	    ($cer no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe
 		   (effect (read (cer))))
-	    ($set-cer! fail-safe (effect (write (cer))))
-	    (cer side-effect-free no-cfa-top nesting fail-safe)
-	    (length side-effect-free no-cfa-top nesting
+	    ($set-cer! no-alloc fail-safe (effect (write (cer))))
+	    (cer no-alloc side-effect-free no-cfa-top nesting fail-safe)
+	    (length no-alloc side-effect-free no-cfa-top nesting
 		    (effect (read (car cdr))))
 	    (append-2 side-effect-free nesting fail-safe)
 	    (eappend-2 side-effect-free nesting fail-safe)

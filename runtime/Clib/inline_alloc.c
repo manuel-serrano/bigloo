@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Thu Mar  6 13:41:42 2014 (serrano)                */
+/*    Last change :  Sat Mar 12 15:14:37 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -38,6 +38,8 @@ gcollect_verbose( unsigned long heapsz, unsigned long use ) {
 GC_API void
 bgl_gc_verbose_set( bool_t verbose ) {
 #if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM )
+   extern GC_add_gc_hook();
+   
    if( verbose ) {
       fprintf( stderr, "bgl_gc_verbose on...\n" );
       gcnum = 1;
@@ -120,11 +122,7 @@ alloc_make_pair( obj_t car, obj_t cdr ) {
    
    pair = (obj_t)GC_MALLOC( PAIR_SIZE );
 
-#if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
-#endif
-   pair->pair_t.car = car;
-   pair->pair_t.cdr = cdr;
+   BGL_INIT_PAIR( pair, car, cdr );
    
    return BPAIR( pair );
 }   
@@ -138,53 +136,37 @@ make_pair( obj_t car, obj_t cdr ) {
    
    GC_INLINE_ALLOC( pair, PAIR_SIZE, alloc_make_pair( car, cdr ) );
 
-#if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
-#endif
-   pair->pair_t.car = car;
-   pair->pair_t.cdr = cdr;
+   BGL_INIT_PAIR( pair, car, cdr );
    
    return BPAIR( pair );
 }
 
 /*---------------------------------------------------------------------*/
-/*    alloc_make_extended_pair ...                                     */
+/*    alloc_make_epair ...                                             */
 /*---------------------------------------------------------------------*/
 static obj_t 
-alloc_make_extended_pair( obj_t car, obj_t cdr, obj_t cer ) {
+alloc_make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    obj_t pair;
 
-   pair = (obj_t)GC_MALLOC( EXTENDED_PAIR_SIZE );
+   pair = (obj_t)GC_MALLOC( EPAIR_SIZE );
 
-#if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
-#endif
-   pair->extended_pair_t.car = car;
-   pair->extended_pair_t.cdr = cdr;
-   pair->extended_pair_t.cer = cer;
-   pair->extended_pair_t.eheader = BINT( EXTENDED_PAIR_TYPE );
+   BGL_INIT_EPAIR( pair, car, cdr, cer );
    
    return BPAIR( pair );
 }   
 
 /*---------------------------------------------------------------------*/
-/*    make_extended_pair ...                                           */
+/*    make_epair ...                                                   */
 /*---------------------------------------------------------------------*/
 GC_API obj_t 
-make_extended_pair( obj_t car, obj_t cdr, obj_t cer ) {
+make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    obj_t pair;
    
    GC_INLINE_ALLOC( pair,
-		    EXTENDED_PAIR_SIZE,
-		    alloc_make_extended_pair( car, cdr, cer ) );
+		    EPAIR_SIZE,
+		    alloc_make_epair( car, cdr, cer ) );
 
-#if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, EXTENDED_PAIR_SIZE );
-#endif
-   pair->extended_pair_t.car = car;
-   pair->extended_pair_t.cdr = cdr;
-   pair->extended_pair_t.cer = cer;
-   pair->extended_pair_t.eheader = BINT( EXTENDED_PAIR_TYPE );
+   BGL_INIT_EPAIR( pair, car, cdr, cer );
    
    return BPAIR( pair );
 }
@@ -464,35 +446,26 @@ make_pair( obj_t car, obj_t cdr ) {
    pair = GC_THREAD_MALLOC( PAIR_SIZE );
 #else      
    pair = GC_MALLOC( PAIR_SIZE );
-#endif      
-#if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
 #endif
-   pair->pair_t.car = car;
-   pair->pair_t.cdr = cdr;
+   BGL_INIT_PAIR( pair, car, cdr );
    
    return BPAIR( pair );
 }
 
 /*---------------------------------------------------------------------*/
-/*    make_extended_pair ...                                           */
+/*    make_epair ...                                                   */
 /*---------------------------------------------------------------------*/
 GC_API obj_t
-make_extended_pair( obj_t car, obj_t cdr, obj_t cer ) {
+make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    obj_t pair;
 
 #if( defined( GC_THREADS ) && defined( THREAD_LOCAL_ALLOC ) )
-   pair = GC_THREAD_MALLOC( EXTENDED_PAIR_SIZE );
+   pair = GC_THREAD_MALLOC( EPAIR_SIZE );
 #else      
-   pair = GC_MALLOC( EXTENDED_PAIR_SIZE );
+   pair = GC_MALLOC( EPAIR_SIZE );
 #endif      
-#if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, EXTENEDED_PAIR_SIZE );
-#endif
-   pair->extended_pair_t.car = car;
-   pair->extended_pair_t.cdr = cdr;
-   pair->extended_pair_t.cer = cer;
-   pair->extended_pair_t.eheader = BINT( EXTENDED_PAIR_TYPE );
+
+   BGL_INIT_EPAIR( pair, car, cdr, cer );
    
    return BPAIR( pair );
 }

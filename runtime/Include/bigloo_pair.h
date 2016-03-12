@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Mar 11 16:22:30 2016 (serrano)                */
+/*    Last change :  Sat Mar 12 15:31:11 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -25,12 +25,13 @@ extern "C" {
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t make_pair( obj_t , obj_t  );
-BGL_RUNTIME_DECL obj_t make_extended_pair( obj_t , obj_t , obj_t  );
+BGL_RUNTIME_DECL obj_t make_epair( obj_t , obj_t , obj_t  );
 
 #if( BGL_SAW == 1 ) 
-BGL_RUNTIME_DECL obj_t csaw_make_pair( obj_t , obj_t  );
 BGL_RUNTIME_DECL obj_t bgl_saw_make_pair( obj_t , obj_t  );
-BGL_RUNTIME_DECL obj_t bgl_saw_make_extended_pair( obj_t , obj_t , obj_t  );
+BGL_RUNTIME_DECL obj_t bgl_saw_make_old_pair( obj_t , obj_t  );
+BGL_RUNTIME_DECL obj_t bgl_saw_make_epair( obj_t , obj_t , obj_t  );
+BGL_RUNTIME_DECL obj_t bgl_saw_make_old_epair( obj_t , obj_t, obj_t  );
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -45,7 +46,7 @@ struct bgl_pair {
    obj_t cdr;
 };
 
-struct bgl_extended_pair {
+struct bgl_epair {
 #if( !(defined( TAG_PAIR )) )
    header_t header; 
 #endif 
@@ -60,10 +61,10 @@ struct bgl_extended_pair {
 };                    
 
 #define PAIR( o ) (CPAIR( o )->pair_t)
-#define EPAIR( o ) (CPAIR( o )->extended_pair_t)
+#define EPAIR( o ) (CPAIR( o )->epair_t)
 
 #define PAIR_SIZE (sizeof( struct bgl_pair ))
-#define EXTENDED_PAIR_SIZE (sizeof( struct bgl_extended_pair ))
+#define EPAIR_SIZE (sizeof( struct bgl_epair ))
 
 /*---------------------------------------------------------------------*/
 /*    tagging ...                                                      */
@@ -83,12 +84,12 @@ struct bgl_extended_pair {
 #endif
 
 #if( BGL_GC == BGL_BOEHM_GC && defined( TAG_PAIR ) )
-#   define EXTENDED_PAIRP( c ) \
+#   define EPAIRP( c ) \
       (PAIRP( c ) && \
-       (((long)GC_size( BPAIR( c ) )) >= EXTENDED_PAIR_SIZE) && \
-       (EPAIR( c ).eheader == BINT( EXTENDED_PAIR_TYPE )))
+       (((long)GC_size( BPAIR( c ) )) >= EPAIR_SIZE) && \
+       (EPAIR( c ).eheader == BINT( EPAIR_TYPE )))
 #else
-#   define EXTENDED_PAIRP( c ) \
+#   define EPAIRP( c ) \
        (PAIRP( c ) && (HEADER_SIZE( CREF( c  )->header) == 3))
 #endif
 
@@ -107,62 +108,48 @@ struct bgl_extended_pair {
 #  define IF_EPAIR_TAG( expr )
 #endif   
 
-#define BGL_MAKE_INLINE_PAIR( a, d ) \
-   an_object = GC_MALLOC( PAIR_SIZE ); \
-   IFN_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ) ) \
-   an_object->pair_t.car = a; \
-   an_object->pair_t.cdr = d; \
-   BPAIR( an_object )
+#define BGL_INIT_PAIR( an_object, a, d ) \
+   IFN_PAIR_TAG( (an_object)->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ) \
+   (an_object)->pair_t.car = a; \
+   (an_object)->pair_t.cdr = d; \
 
-#define BGL_MAKE_INLINE_EPAIR( a, d, e ) \
-   an_object = GC_MALLOC( PAIR_SIZE ); \
-   IFN_PAIR_TAG( an_object->extended_pair_t.header=MAKE_HEADER(PAIR_TYPE, 3) ) \
-   an_object->pair_t.car = a; \
-   an_object->pair_t.cdr = d; \
-   an_object->extended_pair_t.cer = e; \
-   IF_EPAIR_TAG( an_object->extended_pair_t.eheader=BINT(EXTENDED_PAIR_TYPE) ) \
-   BPAIR( an_object )
+#define BGL_INIT_EPAIR( an_object, a, d, e ) \
+   IFN_PAIR_TAG( (an_object)->pair_t.header = MAKE_HEADER( PAIR_TYPE, EPAIR_SIZE ) ) \
+   (an_object)->pair_t.car = a; \
+   (an_object)->pair_t.cdr = d;	\
+   (an_object)->epair_t.cer = e; \
+   IF_EPAIR_TAG( an_object->epair_t.eheader = BINT( EPAIR_TYPE ) ) \
 
+/* boehm allocation */
 #if( BGL_GC == BGL_BOEHM_GC )
-#  if( BGL_GC_CUSTOM || defined( __GNUC__ ) )
-#     define MAKE_PAIR( a, d ) make_pair( a, d )
-#     define MAKE_EXTENDED_PAIR( a, d, e ) make_extended_pair( a, d, e )
+#  if( BGL_GC_CUSTOM || !defined( __GNUC__ ) )
+#     define MAKE_OLD_PAIR( a, d ) make_pair( a, d )
+#     define MAKE_OLD_EPAIR( a, d, e ) make_epair( a, d, e )
 #  else
-#     define MAKE_PAIR( a, d ) \
-         ({ obj_t an_object; BGL_MAKE_INLINE_PAIR( a, d ); })
-#     define MAKE_EXTENDED_PAIR( a, d, e ) \
-         ({ obj_t an_object; BGL_MAKE_INLINE_PAIR( a, d ); })
+#     define MAKE_OLD_PAIR( a, d ) \
+         ({ obj_t an_object = GC_MALLOC( PAIR_SIZE ); \
+	    BGL_INIT_PAIR( an_object, a, d );
+	    BPAIR( an_object ); })
+#     define MAKE_OLD_EPAIR( a, d, e ) \
+         ({ obj_t an_object = GC_MALLOC( EPAIR_SIZE ); \
+	    BGL_INIT_EPAIR( a, d, e ); \
+	    BPAIR( an_object ); })
 #  endif
+
+#  define MAKE_YOUNG_PAIR( a, d ) MAKE_OLD_PAIR( a, d )
+#  define MAKE_YOUNG_EPAIR( a, d, e ) MAKE_OLD_EPAIR( a, d, e )
+#  define MAKE_PAIR( a ,d ) MAKE_OLD_PAIR( a, d )
+#  define MAKE_EPAIR( a, d, e ) MAKE_OLD_EPAIR( a, d, e )
 #endif
 
-
+/* saw allocation */
 #if( BGL_GC == BGL_SAW_GC )
-extern obj_t bps_make_pair(obj_t a, obj_t d);
-extern obj_t bps_make_extended_pair(obj_t a, obj_t d, obj_t e);
-#  if defined( __GNUC__ )
-#     define MAKE_PAIR( a, d ) \
-   bps_make_pair(a, d )
-/*       ({ obj_t an_object; \                                         */
-/* 	  if( !BGL_SAW_CAN_ALLOC( an_object, PAIR_SIZE ) ) bgl_saw_gc(); \ */
-/*           BGL_SAW_ALLOC( PAIR_SIZE ); \                             */
-/*           IF_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ) ); \ */
-/*           an_object->pair_t.car = a; \                              */
-/*           an_object->pair_t.cdr = d; \                              */
-/*           BYOUNG( an_object ); })                                   */
-#     define MAKE_EXTENDED_PAIR( a, d, e ) \
-   bps_make_extended_pair( a, d, e )
-/*        ({ obj_t an_object; \                                        */
-/* 	  if( !BGL_SAW_CAN_ALLOC( an_object, EXTENDED_PAIR_SIZE ) ) bgl_saw_gc(); \ */
-/*           BGL_SAW_ALLOC( EXTENDED_PAIR_SIZE ); \                    */
-/*           IF_PAIR_TAG( an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 3 ) ); \ */
-/*           an_object->pair_t.car = a; \                              */
-/*           an_object->pair_t.cdr = d; \                              */
-/*           an_object->extended_pair_t.cer = e; \                     */
-/*           BYOUNG( an_object ); })                                   */
-#  else
-#     define MAKE_PAIR( a, d ) bgl_saw_make_pair( a, d );
-#     define MAKE_EXTENDED_PAIR( a, d, e ) bgl_saw_make_extended_pair( a, d, e );
-#  endif
+#  define MAKE_YOUNG_PAIR( a, d ) bgl_saw_make_pair( a, d )
+#  define MAKE_YOUNG_EPAIR( a, d, e ) bgl_saw_make_epair( a, d, e )
+#  define MAKE_OLD_PAIR( a, d ) make_pair( a, d )
+#  define MAKE_OLD_EPAIR( a, d ) make_pair( a, d )
+#  define MAKE_PAIR( a, d ) bgl_saw_make_old_pair( a, d )
+#  define MAKE_EPAIR( a, d, e ) bgl_saw_make_old_epair( a, d, e )
 #endif
 
 /*---------------------------------------------------------------------*/

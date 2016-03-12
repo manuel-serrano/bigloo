@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Fri Aug 21 17:38:06 2015 (serrano)                */
+;*    Last change :  Fri Mar 11 17:40:00 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -276,7 +276,7 @@
 	    (time::obj ::procedure)
 	    (bigloo-gc-verbose-set! ::bool))
 
-   (pragma  (cnst-table-ref fail-safe)
+   (pragma  (cnst-table-ref no-alloc fail-safe)
 	    (c-procedure-light? nesting fail-safe)
 	    (va-procedure? nesting fail-safe)
 	    (procedure-arity nesting args-safe fail-safe)

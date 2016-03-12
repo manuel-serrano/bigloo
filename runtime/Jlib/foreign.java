@@ -3756,13 +3756,12 @@ public final class foreign
    //////
    // EXTENDED_PAIR
    //////
-   public static boolean EXTENDED_PAIRP(Object o)
+   public static boolean EPAIRP(Object o)
       {
 	 return (o instanceof extended_pair);
       }
 
-   public static extended_pair MAKE_EXTENDED_PAIR(Object car,
-						  Object cdr, Object cer)
+   public static extended_pair MAKE_EPAIR(Object car, Object cdr, Object cer)
       {
 	 return new extended_pair(car, cdr, cer);
       }
