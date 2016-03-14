@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr 10 13:43:22 2006                          */
-;*    Last change :  Sun May 30 07:57:30 2010 (serrano)                */
-;*    Copyright   :  2006-10 Manuel Serrano                            */
+;*    Last change :  Sun Mar 13 08:59:18 2016 (serrano)                */
+;*    Copyright   :  2006-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    "Knuth, Morris, and Pratt" search algorithm implementation.      */
 ;*=====================================================================*/
@@ -77,11 +77,11 @@
 (define (kmp-mmap tp mm m)
    (cond
       ((not (vector? (car tp)))
-       (bigloo-type-error 'kmp-mmap 'vector (car tp)))
+       (bigloo-type-error "kmp-mmap" 'vector (car tp)))
       ((not (string? (cdr tp)))
-       (bigloo-type-error 'kmp-mmap 'string (cdr tp)))
+       (bigloo-type-error "kmp-mmap" 'string (cdr tp)))
       ((not (=fx (vector-length (car tp)) (+fx 2 (string-length (cdr tp)))))
-       (error 'kmp-mmap "Illegal kmp-table" tp))
+       (error "kmp-mmap" "Illegal kmp-table" tp))
       (else
        (let* ((t (car tp))
 	      (p (cdr tp))
@@ -109,11 +109,11 @@
 (define (kmp-string tp str m)
    (cond
       ((not (vector? (car tp)))
-       (bigloo-type-error 'kmp-mmap 'vector (car tp)))
+       (bigloo-type-error "kmp-string" 'vector (car tp)))
       ((not (string? (cdr tp)))
-       (bigloo-type-error 'kmp-mmap 'string (cdr tp)))
+       (bigloo-type-error "kmp-string" 'string (cdr tp)))
       ((not (=fx (vector-length (car tp)) (+fx 2 (string-length (cdr tp)))))
-       (error 'kmp-mmap "Illegal kmp-table" tp))
+       (error "kmp-string" "Illegal kmp-table" tp))
       (else
        (let* ((t (car tp))
 	      (p (cdr tp))

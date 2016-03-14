@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Sat Mar 12 15:33:32 2016 (serrano)                */
+/*    Last change :  Mon Mar 14 08:26:35 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -229,12 +229,14 @@ bgl_saw_make_pair( obj_t a, obj_t d ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_saw_make_old_pair( obj_t a, obj_t d ) {
-   obj_t obj = make_pair( a, d );
+   obj_t res = GC_MALLOC( PAIR_SIZE );
 
-   BMASSIGN( CAR( obj ), a );
-   BMASSIGN( CDR( obj ), d );
+   BGL_INIT_PAIR( res, a, d );
 
-   return obj;
+   BMASSIGN( CAR( BPAIR( res ) ), a );
+   BMASSIGN( CDR( BPAIR( res ) ), d );
+
+   return BPAIR( res );
 }
    
 /*---------------------------------------------------------------------*/
@@ -274,13 +276,15 @@ bgl_saw_make_epair( obj_t a, obj_t d, obj_t e ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_saw_make_old_epair( obj_t a, obj_t d, obj_t e ) {
-   obj_t obj = make_epair( a, d, e );
+   obj_t res = GC_MALLOC( EPAIR_SIZE );
 
-   BMASSIGN( CAR( obj ), a );
-   BMASSIGN( CDR( obj ), d );
-   BMASSIGN( CER( obj ), e );
+   BGL_INIT_EPAIR( res, a, d, e );
 
-   return obj;
+   BMASSIGN( CAR( BPAIR( res ) ), a );
+   BMASSIGN( CDR( BPAIR( res ) ), d );
+   BMASSIGN( CER( BPAIR( res ) ), e );
+
+   return BPAIR( res );
 }
    
 /*---------------------------------------------------------------------*/
@@ -301,7 +305,7 @@ bgl_saw_pair_copy( obj_t pair ) {
 		      trace_obj( pair->pair_t.cdr ),
 		      trace_obj( pair->epair_t.cer ) );
 
-      return BREF( an_object );
+      return BPAIR( an_object );
    } else {
      //fprintf(stderr, "\t\tcopy pair %p=(%p %p) -> ",
      //	     pair, pair->pair_t.car, pair->pair_t.cdr);
@@ -315,7 +319,7 @@ bgl_saw_pair_copy( obj_t pair ) {
 		    trace_obj( save ),
 		    trace_obj( pair->pair_t.cdr ) );
 
-     return BREF( an_object );
+     return BPAIR( an_object );
    }
 }
 
