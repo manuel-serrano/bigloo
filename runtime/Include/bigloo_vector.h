@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Mar  7 09:33:05 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 08:54:30 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -94,7 +94,7 @@ struct bgl_hvector {
 /*    vector api                                                       */
 /*---------------------------------------------------------------------*/
 #define VECTOR_REF( v, i ) ((&(VECTOR( v ).obj0))[ i ])
-#define VECTOR_SET( v, i, o ) (BASSIGN( VECTOR_REF( v, i ), o, v))
+#define VECTOR_SET( v, i, o ) BASSIGN( VECTOR_REF( v, i ), o, v)
 
 /*---------------------------------------------------------------------*/
 /*    Typed vectors                                                    */

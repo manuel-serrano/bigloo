@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Wed Mar  9 16:56:44 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 12:00:15 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -239,8 +239,6 @@ __debug( char *lbl, obj_t o ) {
    fprintf( stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o );
    if( BGL_HVECTORP( o ) ) {
       fprintf( stderr, "   hvector=%d\n",BGL_HVECTOR_LENGTH( o ) );
-   } else if( POINTERP( o ) ) {
-      fprintf( stderr, "   PTRP=%d TYPE=%d\n", POINTERP( o ), TYPE( o ) );
    } else if( REALP( o ) ) {
       fprintf( stderr, "   real\n" );
    } else if( PAIRP( o ) ) {
@@ -252,6 +250,8 @@ __debug( char *lbl, obj_t o ) {
       fprintf( stderr, "   int=%ld\n",CINT( o ) );
    } else if( REALP( o ) ) {
       fprintf( stderr, "   real=%f\n",REAL_TO_DOUBLE( o ) );
+   } else if( POINTERP( o ) ) {
+      fprintf( stderr, "   PTRP=%d TYPE=%d\n", POINTERP( o ), TYPE( o ) );
    }
    return o;
 }

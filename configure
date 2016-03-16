@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Mar  6 09:03:28 2016 (serrano)                */
+#*    Last change :  Wed Mar 16 08:51:06 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1129,6 +1129,9 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
+  bigloo_string_h=lib/bigloo/$release/bigloo_string.h
+  bigloo_struct_h=lib/bigloo/$release/bigloo_struct.h
+  bigloo_cell_h=lib/bigloo/$release/bigloo_cell.h
 fi
 
 # The bigloo_gc.h file
@@ -3171,6 +3174,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h
+  cp runtime/Include/`basename $bigloo_string_h` $bigloo_string_h
+  cp runtime/Include/`basename $bigloo_struct_h` $bigloo_struct_h
+  cp runtime/Include/`basename $bigloo_cell_h` $bigloo_cell_h
 
   # bigloo.sh
   for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do

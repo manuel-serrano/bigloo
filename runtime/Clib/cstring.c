@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Mon Jan  5 18:47:40 2015 (serrano)                */
+/*    Last change :  Tue Mar 15 20:26:46 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -30,6 +30,7 @@ string_to_bstring_len( char *c_string, int len ) {
    string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
    string->string_t.length = len;
+   string->string_t.sentinel = 0;
 
    dst = BSTRING_TO_STRING( BSTRING( string ) );
 
@@ -80,6 +81,7 @@ make_string( int len, unsigned char c ) {
       string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
       string->string_t.length = len;
+      string->string_t.sentinel = c > 127 ? 0 : len;
 
       memset( &(string->string_t.char0), c, len );
       STRING_SET( BSTRING( string ), len, '\0' );
@@ -103,6 +105,7 @@ make_string_sans_fill( int len ) {
    string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
    string->string_t.length = len;
+   string->string_t.sentinel = len;
 
    STRING_SET( BSTRING( string ), len, '\0' );
    return BSTRING( string );
@@ -131,6 +134,8 @@ string_append( obj_t s1, obj_t s2 ) {
    string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
    string->string_t.length = l12;
+   string->string_t.sentinel = STRING_ASCII_SENTINEL( s1 ) == l1 ?
+      l1 + STRING_ASCII_SENTINEL( s2 ) : STRING_ASCII_SENTINEL( s1 );
 
    memcpy( &(string->string_t.char0), &STRING_REF( s1, 0 ), l1 );
    memcpy( &((char *)(&(string->string_t.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
@@ -155,6 +160,16 @@ string_append_3( obj_t s1, obj_t s2, obj_t s3 ) {
    string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
    string->string_t.length = l123;
+   if( STRING_ASCII_SENTINEL( s1 ) == l1 ) { 
+      if( STRING_ASCII_SENTINEL( s2 ) == l2 ) {
+	 string->string_t.sentinel =
+	    l1 + l2 + STRING_ASCII_SENTINEL( s3 );
+      } else {
+	 string->string_t.sentinel = l1 + STRING_ASCII_SENTINEL( s2 );
+      }
+   } else {
+      string->string_t.sentinel = STRING_ASCII_SENTINEL( s1 );
+   }
 
    memcpy( &(string->string_t.char0), &STRING_REF( s1, 0 ), l1 );
    memcpy( &((char *)(&(string->string_t.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
@@ -177,6 +192,8 @@ c_substring( obj_t src_string, int min, int max ) {
    dst_string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
    dst_string->string_t.length = len;
+   dst_string->string_t.sentinel =
+      STRING_ASCII_SENTINEL( src_string ) > max ? max : 0;
 
    memcpy( &(dst_string->string_t.char0),
 	   &STRING_REF( src_string, min ),
@@ -1044,6 +1061,7 @@ bgl_escape_C_string( unsigned char *src, long start, long end ) {
    *dst = '\0';
    
    string->string_t.length = len;
+   string->string_t.sentinel = 0;
 
    return BSTRING( string );
 }
@@ -1083,6 +1101,7 @@ bgl_escape_scheme_string( unsigned char *src, long start, long end ) {
    *dst = '\0';
    
    string->string_t.length = len;
+   string->string_t.sentinel = 0;
 
    return BSTRING( string );
 }

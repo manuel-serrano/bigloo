@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Jun 23 12:39:47 2015 (serrano)                */
+;*    Last change :  Wed Mar 16 16:04:31 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -48,6 +48,10 @@
 		   "STRING_ASCII_SENTINEL")
 	    (macro $string-ascii-sentinel-set!::bstring (::bstring ::long)
 		   "STRING_ASCII_SENTINEL_SET")
+
+	    (macro $memchr::string (::string ::int ::long ::long) "BGL_MEMCHR")
+	    (infix macro $__string-0L?::bool (::string) " == 0L")
+	    (infix macro $__string-diff::long (::string ::string) "-")
 	    
 	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
 	    ($substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
@@ -219,6 +223,7 @@
 	    (string-split::pair-nil ::bstring . opt)
 	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
+	    (string-char-index::obj ::bstring ::char #!optional (start 0))
 	    (string-index-right::obj s::bstring ::obj
 	       #!optional (start (string-length s)))
 	    (string-skip::obj ::bstring ::obj #!optional (start 0))
@@ -932,26 +937,39 @@
 		    (loop (+fx e 1) nr)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    string-char-index ...                                            */
+;*---------------------------------------------------------------------*/
+(define (string-char-index string char #!optional (start 0))
+   (let ((len (string-length string)))
+      (cond-expand
+	 (bigloo-c
+	  (when (>fx len start)
+	     (let* ((s0::string string)
+		    (s1::string ($memchr s0 (char->integer char)
+				   (-fx len start) start)))
+		(unless ($__string-0L? s1)
+		   ($__string-diff s1 s0)))))
+	 (else
+	  (let loop ((i start))
+	     (cond
+		((>=fx i len)
+		 #f)
+		((char=? (string-ref-ur string i) char)
+		 i)
+		(else
+		 (loop (+fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
 ;*    string-index ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (string-index string rs #!optional (start 0))
-   (define (string-char-index s c)
-      (let ((len (string-length s)))
-	 (let loop ((i start))
-	    (cond
-	       ((>=fx i len)
-		#f)
-	       ((char=? (string-ref-ur s i) c)
-		i)
-	       (else
-		(loop (+fx i 1)))))))
    (cond
       ((char? rs)
-       (string-char-index string rs))
+       (string-char-index string rs start))
       ((not (string? rs))
        (error "string-index" "Illegal regset" rs))
       ((=fx (string-length rs) 1)
-       (string-char-index string (string-ref rs 0)))
+       (string-char-index string (string-ref rs 0) start))
       ((<=fx (string-length rs) 10)
        (let ((len (string-length string))
 	     (lenj (string-length rs)))
@@ -975,8 +993,8 @@
 		       ((>=fx i len)
 			#f)
 		       ((char=? (string-ref
-				 t (char->integer (string-ref-ur string i)))
-				#\y)
+				   t (char->integer (string-ref-ur string i)))
+			   #\y)
 			i)
 		       (else
 			(liip (+fx i 1)))))

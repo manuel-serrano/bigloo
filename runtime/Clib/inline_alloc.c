@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Sat Mar 12 15:14:37 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 09:54:49 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -180,10 +180,7 @@ alloc_make_cell( obj_t val ) {
 
    cell = (obj_t)GC_MALLOC( CELL_SIZE );
 
-#if( !defined( TAG_CELL ) )
-   cell->cell_t.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE );
-#endif
-   cell->cell_t.val = val;
+   BGL_INIT_CELL( cell, val );
    
    return BCELL( cell );
 }   
@@ -197,10 +194,7 @@ make_cell( obj_t val ) {
    
    GC_INLINE_ALLOC( cell, CELL_SIZE, alloc_make_cell( val ) );
 
-#if( !defined( TAG_CELL ) )
-   cell->cell_t.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE );
-#endif
-   cell->cell_t.val = val;
+   BGL_INIT_CELL( cell, val );
    
    return BCELL( cell );
 }

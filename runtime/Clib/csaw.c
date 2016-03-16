@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Mon Mar 14 08:26:35 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 12:56:05 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------*/
 /*    constants                                                        */
 /*---------------------------------------------------------------------*/
-#define BGL_SAW_NURSERY_SIZE (1024 * 64 * OBJ_SIZE)
+#define BGL_SAW_NURSERY_SIZE (1024 * 4 * OBJ_SIZE)
 
 /*---------------------------------------------------------------------*/
 /*    nursery                                                          */
@@ -37,6 +37,7 @@ static bgl_saw_copier_t *bgl_saw_copiers;
 
 static obj_t bgl_saw_pair_copy( obj_t );
 static obj_t bgl_saw_real_copy( obj_t );
+static obj_t bgl_saw_cell_copy( obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -61,6 +62,7 @@ bgl_saw_init() {
    bgl_saw_gc_add_copier( PAIR_TYPE, bgl_saw_pair_copy );
    bgl_saw_gc_add_copier( REAL_TYPE, bgl_saw_real_copy );
    bgl_saw_gc_add_copier( VECTOR_TYPE, bgl_saw_vector_copy );
+   bgl_saw_gc_add_copier( CELL_TYPE, bgl_saw_cell_copy );
 }
 
 /*---------------------------------------------------------------------*/
@@ -108,8 +110,7 @@ obj_t trace_obj(obj_t o) {
     header_t type = oo->header;
     if(!(type & 1)) {
       //fprintf(stderr, "\ttrace obj %p %X\n", oo, type);
-      type = type | 1;
-      oo->header = type;
+      oo->header |= 1;
       return(bgl_saw_copiers[ HEADER_TYPE( type ) ]( oo ));
     } else {
       //fprintf(stderr, "\ttraced obj %p %X %p\n", oo, type, oo->pair_t.car);
@@ -133,8 +134,7 @@ void trace(obj_t *p) {
     header_t type = oo->header;
     if(!(type & 1)) {
       //fprintf(stderr, "\ttrace %p %X\n", oo, type);
-      type = type | 1;
-      oo->header = type;
+      oo->header |= 1;
       *p = bgl_saw_copiers[ HEADER_TYPE( type ) ]( oo );
     } else {
       //fprintf(stderr, "\ttraced obj %p %X %p\n", oo, type, oo->pair_t.car);
@@ -233,8 +233,8 @@ bgl_saw_make_old_pair( obj_t a, obj_t d ) {
 
    BGL_INIT_PAIR( res, a, d );
 
-   BMASSIGN( CAR( BPAIR( res ) ), a );
-   BMASSIGN( CDR( BPAIR( res ) ), d );
+   BBACKPTR( CAR( BPAIR( res ) ), a );
+   BBACKPTR( CDR( BPAIR( res ) ), d );
 
    return BPAIR( res );
 }
@@ -251,7 +251,7 @@ bgl_saw_make_epair( obj_t a, obj_t d, obj_t e ) {
    if( nalloc >= (char *) bgl_saw_nursery.backptr ) {
       bgl_saw_gc();
       res = bgl_saw_nursery.alloc;
-      nalloc = res + MEMROUND( PAIR_SIZE );
+      nalloc = res + MEMROUND( EPAIR_SIZE );
       if(nalloc >= (char *)bgl_saw_nursery.backptr) {
 	 fprintf( stderr, "fatal error not enough space in nursery\n" );
 	 exit( -1 );
@@ -280,9 +280,9 @@ bgl_saw_make_old_epair( obj_t a, obj_t d, obj_t e ) {
 
    BGL_INIT_EPAIR( res, a, d, e );
 
-   BMASSIGN( CAR( BPAIR( res ) ), a );
-   BMASSIGN( CDR( BPAIR( res ) ), d );
-   BMASSIGN( CER( BPAIR( res ) ), e );
+   BBACKPTR( CAR( BPAIR( res ) ), a );
+   BBACKPTR( CDR( BPAIR( res ) ), d );
+   BBACKPTR( CER( BPAIR( res ) ), e );
 
    return BPAIR( res );
 }
@@ -296,7 +296,7 @@ bgl_saw_pair_copy( obj_t pair ) {
    if( EPAIRP( pair ) ) {
       obj_t an_object = GC_MALLOC( EPAIR_SIZE );
       obj_t save = pair->pair_t.car;
-      pair->pair_t.car = an_object;
+      pair->pair_t.car = BPAIR( an_object );
       nb_copy++;
       //fprintf(stderr, "%p\n", an_object);
       
@@ -311,7 +311,7 @@ bgl_saw_pair_copy( obj_t pair ) {
      //	     pair, pair->pair_t.car, pair->pair_t.cdr);
      obj_t an_object = GC_MALLOC( PAIR_SIZE );
      obj_t save = pair->pair_t.car;
-     pair->pair_t.car = an_object;
+     pair->pair_t.car = BPAIR( an_object );
      nb_copy++;
      //fprintf(stderr, "%p\n", an_object);
      
@@ -400,6 +400,66 @@ void bps_bassign(obj_t *field, obj_t value, obj_t obj) {
   } else {
     *field = value;
   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_saw_make_cell ...                                            */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_saw_make_cell( obj_t v ) {
+   char *res = bgl_saw_nursery.alloc;
+   char *nalloc = res + MEMROUND( CELL_SIZE );
+   
+   if( nalloc >= (char *) bgl_saw_nursery.backptr ) {
+      bgl_saw_gc();
+      res = bgl_saw_nursery.alloc;
+      nalloc = res + MEMROUND( CELL_SIZE );
+      if(nalloc >= (char *)bgl_saw_nursery.backptr) {
+	 fprintf( stderr, "fatal error not enough space in nursery\n" );
+	 exit( -1 );
+      }
+      v = trace_obj( v );
+   }
+   
+   bgl_saw_nursery.alloc = nalloc;
+   nb_alloc++;
+   obj_t an_object = (obj_t)res;
+
+   BGL_INIT_CELL( (obj_t)res, v );
+
+   return BYOUNG( (obj_t)res );
+}   
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_saw_make_old_cell ...                                        */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_saw_make_old_cell( obj_t v ) {
+   obj_t res = GC_MALLOC( CELL_SIZE );
+
+   BGL_INIT_CELL( res, v );
+
+   BBACKPTR( res->cell_t.val, v );
+
+   return BCELL( res );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    bgl_saw_cell_copy ...                                            */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_saw_cell_copy( obj_t cell ) {
+   obj_t an_object = GC_MALLOC( CELL_SIZE );
+   obj_t save = cell->cell_t.val;
+   cell->cell_t.val = BCELL( an_object );
+   nb_copy++;
+
+   BGL_INIT_CELL( an_object, trace_obj( save ) );
+
+   return BCELL( an_object );
 }
 
 #endif

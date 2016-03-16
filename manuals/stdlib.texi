@@ -1157,6 +1157,7 @@ in the string @code{string1}. It returns @code{#f} otherwise.
 @end deffn
 
 @deffn {bigloo procedure} string-index string charset [start 0]
+@deffnx {bigloo procedure} string-char-index string char [start 0]
 @deffnx {bigloo procedure} string-index-right string charset [start len-1]
 @cindex SRFI-13
 

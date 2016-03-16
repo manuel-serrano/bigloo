@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar  9 15:54:12 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 12:48:13 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SAW                                                       */
@@ -23,6 +23,12 @@ extern "C" {
 
 #include <bigloo_config.h>
 #if( BGL_SAW == 1 ) 
+
+/*---------------------------------------------------------------------*/
+/*    extern                                                           */
+/*---------------------------------------------------------------------*/
+extern void bps_dobackptr( obj_t *field, obj_t value );
+extern void bps_bmassign( obj_t *field, obj_t value );
 
 /*---------------------------------------------------------------------*/
 /*    MEMROUND                                                         */
@@ -113,7 +119,7 @@ extern void bgl_saw_gc();
 #define BGL_RTL_LOADI(v) (v)
 #define BGL_RTL_LOADG(g) (g)
 #define BGL_RTL_LOADFUN(g) ((obj_t) g)
-#define BGL_RTL_STOREG(g,v) BASSIGN(g,v,g)
+#define BGL_RTL_STOREG(g,v) BMASSIGN(g,v)
 #define BGL_RTL_TSTOREG(g,v) ((g)=(v))
 #define BGL_RTL_GLOBALREF(g) __EVMEANING_ADDRESS(g)
 #define BGL_RTL_GO(l) goto l
@@ -133,9 +139,9 @@ extern void bgl_saw_gc();
 #define BGL_RTL_JUMPEXIT(x,v) JUMP_EXIT(x,v)
 #define BGL_RTL_FAIL(p,m,o) FAILURE(p,m,o)
 #define BGL_RTL_PROTECTED(x) (x)
-#define BGL_RTL_MAKEBOX(v) MAKE_CELL(v)
+#define BGL_RTL_MAKEBOX(v) MAKE_YOUNG_CELL(v)
 #define BGL_RTL_BOXREF(r) CELL_REF(r)
-#define BGL_RTL_BOXSET(r,v) CELL_REF(r)=v
+#define BGL_RTL_BOXSET(r,v) CELL_SET(r,v)
 
 #define BGL_RTL_PUSH_ENV_EXIT( env, _xit, _ser ) \
    exitd.exit  = _xit; \

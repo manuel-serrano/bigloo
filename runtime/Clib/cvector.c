@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Wed Mar  9 15:58:03 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 10:29:37 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -18,9 +18,18 @@ bgl_fill_vector( obj_t bvector, long start, long end, obj_t init ) {
    obj_t *walker = (obj_t *)(&VECTOR_REF( bvector, start ));
    obj_t *stop = (obj_t *)(&VECTOR_REF( bvector, end ));
 
-   while( walker < stop ) {
-      *walker++ = init;
-   }
+#if( BGL_GC == BGL_SAW_GC )
+   if( BYOUNGP( init ) && !BYOUNGP( bvector ) ) {
+      while( walker < stop ) {
+	 *walker = init;
+	 bps_dobackptr( walker, init );
+	 walker++;
+      }
+   } else
+#endif  
+      while( walker < stop ) {
+	 *walker++ = init;
+      }
 
    return BUNSPEC;
 }

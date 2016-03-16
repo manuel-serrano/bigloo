@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Feb  8 16:37:30 2016 (serrano)                */
+;*    Last change :  Tue Mar 15 21:06:39 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -171,6 +171,7 @@
 	    (utf8-string-length::long ::bstring)
 	    (utf8-string-ref::bstring ::bstring ::long)
 	    (utf8-string-index->string-index::long ::bstring ::long)
+	    (string-index->utf8-string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-string-append*::bstring . strings)
 	    (utf8-string-append-fill!::long ::bstring ::long ::bstring)
@@ -1091,6 +1092,29 @@
 		    (loop (+fx r (utf8-char-size c)) (-fx i 1))))
 		(else
 		 -1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-index->utf8-string-index ...                              */
+;*---------------------------------------------------------------------*/
+(define (string-index->utf8-string-index str i)
+   (cond
+      ((<fx i 0)
+       -1)
+      ((<fx i (string-ascii-sentinel str))
+       i)
+      (else
+       (let ((len (string-length str)))
+	  (let loop ((m 0)
+		     (i i))
+	     (cond
+		((<=fx i 0)
+		 m)
+		((>=fx m len)
+		 -1)
+		(else
+		 (let* ((c (string-ref str m))
+			(s (utf8-char-size c)))
+		    (loop (+fx m 1) (-fx i s))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-left-replacement? ...                                */

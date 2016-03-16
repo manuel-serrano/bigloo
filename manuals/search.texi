@@ -21,13 +21,14 @@ This chapters details the Bigloo's API for fast string search algorithms.
 
 @menu
 * Knuth - Morris - Pratt::
+* Boyer - Moore::
 @end menu
 
 
 @c ------------------------------------------------------------------- @c
 @c    Class declaration                                                @c
 @c ------------------------------------------------------------------- @c
-@node Knuth - Morris - Pratt, , , Fast search
+@node Knuth - Morris - Pratt, Boyer - Moore, , Fast search
 @comment  node-name,  next,  previous,  up@section Class declaration
 @section Knuth, Morris, and Pratt
 @cindex Knuth, Morris, and Pratt
@@ -90,6 +91,71 @@ the Usenix command @code{grep}:
 @end smalllisp
 @end deffn
 
+@c ------------------------------------------------------------------- @c
+@c    Class declaration                                                @c
+@c ------------------------------------------------------------------- @c
+@node Boyer - Moore, , Knuth - Morris - Pratt, Fast search
+@comment  node-name,  next,  previous,  up@section Class declaration
+@section Boyer - Moore
+@cindex Boyer, Moore
+
+Bigloo supports an implementation of the @emph{Boyer, Moore}
+algorithm on strings and memory mapped area, @xref{Memory mapped area}.
+
+@deffn {bigloo procedure} bm-table pattern
+This function creates a @emph{bm}-table used for fast search.
+@end deffn
+
+@deffn {bigloo procedure} bm-mmap bm-table mmap offset
+@deffnx {bigloo procedure} bm-string bm-table string offset
+This function searches the @var{pattern} described by @var{bm-table}
+in the memory mapped area @var{mmap} (respec. in the @var{string}). 
+The search starts at @var{offset}. If an occurrence
+is found, its position in the @var{mmap} is returned. Otherwise
+@code{-1} is returned.
+
+For the sake of the example, here is a prototypal implementation of
+the Usenix command @code{grep}:
+
+@smalllisp
+(define (main args)
+   (cond
+      ((null? (cdr args))
+       (fprintf (current-error-port) "Usage: grep STRING [FILE]...")
+       (exit 0))
+      (else
+       (let ((t (bm-table (cadr args))))
+	  (for-each (lambda (f) (grep-file t f)) (cddr args))))))
+
+(define (grep-file t file)
+   (let* ((mm (open-mmap file read: #t write: #f))
+	  (ls (mmap-length mm)))
+      (let loop ((o 0))
+	 (unless (>=fx o ls)
+	    (let ((n (bm-mmap t mm o)))
+	       (when (>fx n 0)
+		  (print file ":" (mmap-line mm ls n))
+		  (loop (+fx n 1))))))
+      (close-mmap mm)))
+
+(define (mmap-line mm ls n)
+   (let ((b 0)
+	 (e (elong->fixnum ls)))
+      ;; beginning
+      (let loop ((i n))
+	 (when (>fx i 0)
+	    (if (char=? (mmap-ref mm i) #\Newline)
+		(set! b (+fx i 1))
+		(loop (-fx i 1)))))
+      ;; end
+      (let loop ((i n))
+	 (when (<fx i ls)
+	    (if (char=? (mmap-ref mm i) #\Newline)
+		(set! e i)
+		(loop (+fx i 1)))))
+      (mmap-substring mm b (- e b))))
+@end smalllisp
+@end deffn
 
 
 

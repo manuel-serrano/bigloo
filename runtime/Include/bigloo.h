@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Mar 12 14:45:22 2016 (serrano)                */
+/*    Last change :  Wed Mar 16 11:47:45 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -112,12 +112,8 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    See comptile/Cnst/read-alloc.scm                                 */
 /*---------------------------------------------------------------------*/
-//#define CNST_TABLE_SET( offset, value )	\
-//   ( __cnst[ offset ] = value, BUNSPEC )
-#define CNST_TABLE_SET( offset, value )	\
-  ( BMASSIGN(__cnst[ offset ], value), BUNSPEC )
-
 #define CNST_TABLE_REF( offset ) __cnst[ offset ]
+#define CNST_TABLE_SET( offset, value ) BMASSIGN( __cnst[ offset ], value)
 
 /*---------------------------------------------------------------------*/
 /*    32 bit tagging:                                                  */
@@ -261,11 +257,13 @@ error "Unknown garbage collector type"
 
 #if( BGL_GC == BGL_SAW_GC )
 /* #  define BASSIGN( field, value, obj ) BGL_SAW_OLDYOUNG( obj, value, &(field) ) */
-#  define BASSIGN( field, value, obj ) bps_bassign( &(field), value, obj)
+#  define BASSIGN( field, value, obj ) (bps_bassign( &(field), value, obj), BUNSPEC)
 #  define BMASSIGN( field, value ) bps_bmassign( &(field), value)
+#  define BBACKPTR( field, value ) BYOUNGP( value ) ? bps_dobackptr( &(field), value ) : 0
 #else
-#  define BASSIGN( field, value, obj ) ((field) = (value))
+#  define BASSIGN( field, value, obj ) (((field) = (value)), BUNSPEC)
 #  define BMASSIGN( field, value ) ((field) = (value))
+#  define BBACKPTR( field, value )
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -353,6 +351,9 @@ typedef union scmobj *obj_t;
 #include <bigloo_pair.h>
 #include <bigloo_real.h>
 #include <bigloo_vector.h>
+#include <bigloo_string.h>
+#include <bigloo_struct.h>
+#include <bigloo_cell.h>
 
 /* stream (input and output) */
 typedef union bgl_stream {                    
@@ -384,70 +385,16 @@ union scmobj {
    struct bgl_pair pair_t;
    struct bgl_epair epair_t;
    
-/*    struct pair {                                                    */
-/* #if( !(defined( TAG_PAIR )) )                                       */
-/*       {* the header, unless pairs are tagged *}                     */
-/*       header_t header;                                              */
-/* #endif                                                              */
-/*       union scmobj *car;                                            */
-/*       union scmobj *cdr;                                            */
-/*    } pair_t;                                                        */
-
-/*    {* extended pairs *}                                             */
-/*    struct epair {                                           */
-/* #if( !(defined( TAG_PAIR )) )                                       */
-/*       header_t header;                                              */
-/* #endif                                                              */
-/*       union scmobj *car;                                            */
-/*       union scmobj *cdr;                                            */
-/*       {* extended header type *}                                    */
-/*       union scmobj *eheader;                                        */
-/*       {* extended slot *}                                           */
-/*       union scmobj *cer;                                            */
-/*    } epair_t;                                               */
-
    /* strings */
-   struct string {
-#if( !defined( TAG_STRING ) )
-      header_t header;
-#endif		
-      long length;
-      unsigned char char0[ 1 ];
-   } string_t;
+   struct bgl_string string_t;
 
    /* ucs2/utf16 strings */
-   struct ucs2_string {
-      header_t header;
-      long length;
-      ucs2_t char0;
-   } ucs2_string_t; 
+   struct bgl_ucs2_string ucs2_string_t; 
 
    /* vectors */
    struct bgl_vector vector_t;
    struct bgl_tvector tvector_t;
    struct bgl_hvector hvector_t;
-
-/*    struct vector {                                                  */
-/* #if( !defined( TAG_VECTOR ) )                                       */
-/*       header_t header;                                              */
-/* #endif                                                              */
-/*       {* 24 bit long length (see VECTOR_LENGTH) *}                  */
-/*       long length;                                                  */
-/*       union scmobj *obj0;                                           */
-/*    } vector_t;                                                      */
-
-   /* typed vectors */
-/*    struct tvector {                                                 */
-/*       header_t header;                                              */
-/*       long length;                                                  */
-/*       union scmobj *descr;                                          */
-/*    } tvector_t;                                                     */
-
-   /* srfi4 homovectors */
-/*    struct bgl_hvector {                                             */
-/*       header_t header;                                              */
-/*       unsigned int length;                                          */
-/*    } hvector_t;                                                     */
 
    /* procedure (closures) */
    struct procedure {
@@ -599,35 +546,13 @@ union scmobj {
    } binary_port_t;
    
    /* cells (compiler and user values) */	
-   struct cell {
-#if( !defined( TAG_CELL ) )
-      header_t header;
-#endif
-      /* the value pointed to by the cell */
-      union scmobj *val;        
-   } cell_t;
+   struct bgl_cell cell_t;
 
    /* structures */
-   struct structure {
-#if( !defined( TAG_STRUCTURE ) )
-      header_t header;
-#endif
-      /* the key (i.e., the name) of the structure */
-      union scmobj *key;
-      /* the length (i.e., the slot number) */
-      long length;
-      /* the packed slots */
-      union scmobj *obj0;
-   } struct_t;
+   struct bgl_struct struct_t;
 
    /* floating point numbers */
    struct bgl_real real_t;
-/*    struct real {                                                    */
-/* #if( !defined( TAG_REAL ) )                                         */
-/*       header_t header;                                              */
-/* #endif		                                               */
-/*       double real;                                                  */
-/*    } real_t;                                                        */
 
    /* call/cc stack */
    struct stack {
@@ -1125,245 +1050,6 @@ typedef struct BgL_objectz00_bgl {
 #define EVENP_FX( i ) (!ODDP_FX( i ))
 
 /*---------------------------------------------------------------------*/
-/*    Pairs                                                            */
-/*---------------------------------------------------------------------*/
-/* #if( defined( TAG_PAIR ) )                                          */
-/* #   define BPAIR( p ) ((obj_t)((long)p + TAG_PAIR))                 */
-/* #   define CPAIR( p ) ((obj_t)((long)p - TAG_PAIR))                 */
-/* #   if( TAG_PAIR == 0 )                                             */
-/* #      define PAIRP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_PAIR))) */
-/* #   else                                                            */
-/* #      define PAIRP( c ) ((((long)c) & TAG_MASK) == TAG_PAIR)       */
-/* #   endif                                                           */
-/* #else                                                               */
-/* #   define BPAIR( p ) BREF( p )                                     */
-/* #   define CPAIR( p ) CREF( p )                                     */
-/* #   define PAIRP( c ) (POINTERP( c ) && (TYPE( c ) == PAIR_TYPE))   */
-/* #endif                                                              */
-/*                                                                     */
-/* #define PAIR( o ) (CPAIR( o )->pair_t)                              */
-/* #define EPAIR( o ) (CPAIR( o )->epair_t)                    */
-/*                                                                     */
-/* #define PAIR_SIZE (sizeof( struct pair ))                           */
-/* #define EPAIR_SIZE (sizeof( struct epair ))         */
-/*                                                                     */
-/* #if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM )                    */
-/* #   define MAKE_PAIR( a, d ) make_pair( a, d )                      */
-/* #   define MAKE_EPAIR( a, d, e ) make_epair( a, d, e ) */
-/* #else                                                               */
-/* #   if( defined( TAG_PAIR ) )                                       */
-/* #     if( defined( __GNUC__ ) )                                     */
-/* #      define MAKE_PAIR( a, d ) \                                   */
-/*         ({ obj_t an_object; \                                       */
-/*            an_object = GC_MALLOC( PAIR_SIZE ); \                    */
-/* 	   an_object->pair_t.car = a; \                                */
-/* 	   an_object->pair_t.cdr = d; \                                */
-/*            ( BPAIR( an_object ) ); })                               */
-/* #      define MAKE_EPAIR( a, d, e ) \                       */
-/*         ( { obj_t an_object; \                                      */
-/* 	    an_object = GC_MALLOC( EPAIR_SIZE ); \             */
-/*    	    an_object->epair_t.car = a; \                      */
-/* 	    an_object->epair_t.cdr = d; \                      */
-/* 	    an_object->epair_t.cer = e; \                      */
-/* 	    an_object->epair_t.eheader = BINT( EPAIR_TYPE ); \ */
-/* 	    ( BPAIR( an_object ) ); } )                                */
-/* #     else                                                          */
-/* #      define MAKE_PAIR( a, d ) make_pair( a, d )                   */
-/* #      define MAKE_EPAIR( a, d, e ) make_epair( a, d ,e ) */
-/* #     endif                                                         */
-/* #   else                                                            */
-/* #     if( defined( __GNUC__ ) )                                     */
-/* #      define MAKE_PAIR( a, d ) \                                   */
-/*         ({ obj_t an_object; \                                       */
-/*            an_object = GC_MALLOC( PAIR_SIZE ); \                    */
-/*    	   an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ); \   */
-/* 	   an_object->pair_t.car = a; \                                */
-/* 	   an_object->pair_t.cdr = d; \                                */
-/*            ( BPAIR( an_object ) ); })                               */
-/* #      define MAKE_EPAIR( a, d, e ) \                       */
-/*         ( { obj_t an_object; \                                      */
-/* 	    an_object = GC_MALLOC( EPAIR_SIZE ); \             */
-/* 	    an_object->epair_t.header  = MAKE_HEADER( PAIR_TYPE,0 ); \ */
-/* 	    an_object->epair_t.car = a; \                      */
-/* 	    an_object->epair_t.cdr = d; \                      */
-/*   	    an_object->epair_t.cer = e; \                      */
-/* 	    an_object->epair_t.eheader = BINT( EPAIR_TYPE ); \ */
-/* 	    ( BPAIR( an_object ) ); } )                                */
-/* #     else                                                          */
-/* #      define MAKE_PAIR( a, d ) make_pair( a, d )                   */
-/* #      define MAKE_EPAIR( a, d, e ) make_epair( a, d ,e ) */
-/* #     endif                                                         */
-/* #   endif                                                           */
-/* #endif                                                              */
-/*                                                                     */
-/* #if( BGL_GC == BGL_BOEHM_GC )                                       */
-/* #   define EPAIRP( c ) \                                    */
-/*       ( PAIRP( c ) && \                                             */
-/*         (((long)GC_size( BPAIR( c ) )) >= EPAIR_SIZE) && \  */
-/*         (EPAIR( c ).eheader == BINT( EPAIR_TYPE ) ) )       */
-/* #else                                                               */
-/* #   define EPAIRP( c ) \                                    */
-/*       ( PAIRP( c ) && (EPAIR( c ).eheader == BINT( EPAIR_TYPE ) ) ) */
-/* #endif                                                              */
-/*                                                                     */
-/* #define NULLP( c ) ((long)(c) == (long)BNIL)                        */
-/*                                                                     */
-/* #define CAR( c ) (PAIR( c ).car)                                    */
-/* #define CDR( c ) (PAIR( c ).cdr)                                    */
-/* #define CER( c ) (EPAIR( c ).cer)                                   */
-/*                                                                     */
-/* #define SET_CAR( c, v ) ((CAR(c) = v), BUNSPEC)                     */
-/* #define SET_CDR( c, v ) ((CDR(c) = v), BUNSPEC)                     */
-/* #define SET_CER( c, v ) ((CER(c) = v), BUNSPEC)                     */
-
-/*---------------------------------------------------------------------*/
-/*    Cells                                                            */
-/*---------------------------------------------------------------------*/
-#if( defined( TAG_CELL ) )
-#   define BCELL( p ) ((obj_t)((long)p + TAG_CELL))
-#   define CCELL( p ) ((obj_t)((long)p - TAG_CELL))
-#   define CELLP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_CELL)))
-#else
-#   define BCELL( p ) BREF( p )
-#   define CCELL( p ) CREF( p )
-#   define CELLP( c ) (POINTERP( c ) && (TYPE( c ) == CELL_TYPE))
-#endif
-
-#define CELL( o ) CCELL( o )->cell_t
-
-#define CELL_SIZE (sizeof( struct cell ))
-
-#if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM )
-#   define MAKE_CELL( v ) make_cell( v )
-#else
-#  if( defined( TAG_CELL ) )
-#     if( defined( __GNUC__ ) )
-#        define MAKE_CELL( _val_ ) \
-         ( { obj_t an_object; \
-	     an_object = GC_MALLOC( CELL_SIZE ); \
-  	     an_object->cell_t.val = (_val_); \
-	     ( BCELL( an_object ) ); } )
-#     else
-#        define MAKE_CELL( _val_ ) make_cell( _val_ )
-#     endif
-
-#  else
-#     if( defined( __GNUC__ ) )
-#        define MAKE_CELL( _val_ ) \
-         ( { obj_t an_object; \
-	     an_object = GC_MALLOC( CELL_SIZE ); \
-	     an_object->cell_t.header = MAKE_HEADER( CELL_TYPE, 0 ); \
-  	     an_object->cell_t.val = (_val_); \
-	     ( BCELL( an_object ) ); } )
-#     else
-#        define MAKE_CELL( _val_ ) make_cell( _val_ )
-#     endif
-#  endif
-#endif		 
-
-#define CELL_REF( c ) ((CCELL( c )->cell_t).val)
-#define CELL_SET( c, v ) (BASSIGN(CELL_REF( c ), v, c), BUNSPEC)
-
-/*---------------------------------------------------------------------*/
-/*    Strings                                                          */
-/*---------------------------------------------------------------------*/
-/* When producing C code for a compiler that is unable to    */
-/* accept large splitted string, Bigloo emits a declaration  */
-/* of a C characters array. This requires 2 macros, one for  */
-/* starting the declaration and one for ending it. The       */
-/* array itself, is inserted in between the two macros by    */
-/* bigloo such as:                                           */
-/*        DEFINE_STRING_START( f, a, 2 ),                    */
-/*          {45,46,0},                                       */
-/*        DEFINE_STRING_STOP( f, a, 2 );                     */
-#if( defined( TAG_STRING ) )
-#   define BSTRING( p ) ((obj_t)((long)p + TAG_STRING))
-#   define CSTRING( p ) ((obj_t)((long)p - TAG_STRING))
-#   define DEFINE_STRING( name, aux, str, len ) \
-      static struct { __CNST_ALIGN long length; \
-                      char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER, len, str }; \
-         static obj_t name = BSTRING( &(aux.length) )
-#   define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
-      DEFINE_STRING( name, aux, str, len )
-#   define DEFINE_STRING_START( name, aux, len ) \
-      static struct { __CNST_ALIGN long length; \
-                      char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER, len
-#   define DEFINE_STRING_STOP( name, aux ) \
-        }; static obj_t name = BSTRING( &(aux.length) 
-#   define STRINGP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_STRING)))
-#else
-#   define BSTRING( p ) BREF( p )
-#   define CSTRING( p ) CREF( p )
-#   define DEFINE_STRING( name, aux, str, len ) \
-      static struct { __CNST_ALIGN header_t header; \
-                      long length; \
-                      char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, 0 ), len, str }; \
-         static obj_t name = BSTRING( &(aux.header) )
-#   define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
-      static struct { __CNST_ALIGN header_t header; \
-                      long length; \
-                      char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, sen ), len, str }; \
-         static obj_t name = BSTRING( &(aux.header) )
-#   define DEFINE_STRING_START( name, aux, len ) \
-      static struct { __CNST_ALIGN header_t header; \
-                      long length; \
-                      char string[ len + 1]; } \
-         aux = { __CNST_FILLER, MAKE_HEADER( STRING_TYPE, 0 ), len 
-#   define DEFINE_STRING_STOP( name, aux ) \
-        }; static obj_t name = BSTRING( &(aux.header) )
-#   define STRINGP( c ) (POINTERP( c ) && (TYPE( c ) == STRING_TYPE))
-#endif
-
-#define STRING( o ) (CSTRING( o )->string_t)
-
-#define STRING_SIZE (sizeof( struct string ))
-
-#define STRING_LENGTH( s ) STRING( s ).length
-#define INVERSE_STRING_LENGTH( s ) \
-   ((STRING_LENGTH( s ) = (-STRING_LENGTH( s ))), BUNSPEC)
-   
-#define BSTRING_TO_STRING( s ) ((char *)(&(STRING( s ).char0)))
-
-#define STRING_REF( v, i ) (((unsigned char *)BSTRING_TO_STRING( v ))[ i ])
-#define STRING_SET( s, i, c ) (STRING_REF( s, i ) = c, BUNSPEC)
-#define STRING_PTR_NULL( _p ) (_p == 0)
-
-#if( defined( TAG_STRING ) )
-#  define STRING_ASCII_SENTINEL( s ) 0
-#  define STRING_ASCII_SENTINEL_SET( s, i ) s
-#else
-#  define STRING_ASCII_SENTINEL( s ) \
-     HEADER_SIZE( CREF( s )->header )
-#  define STRING_ASCII_SENTINEL_SET( s, i ) \
-   (CREF( s )->header = MAKE_HEADER( STRING_TYPE, i ), s)
-#endif   
-   
-/*---------------------------------------------------------------------*/
-/*    UCS2/UTF16 Strings                                               */
-/*---------------------------------------------------------------------*/
-#define BUCS2STRING( p ) BREF( p )
-#define CUCS2STRING( p ) CREF( p )
-
-#define UCS2_STRINGP( c ) (POINTERP( c ) && (TYPE( c ) == UCS2_STRING_TYPE))
-
-#define UCS2_STRING( o )  (CUCS2STRING( o )->ucs2_string_t)
-
-#define UCS2_STRING_SIZE (sizeof( struct ucs2_string ))
-
-#define UCS2_STRING_LENGTH( s ) UCS2_STRING( s ).length
-#define INVERSE_UCS2_STRING_LENGTH( s ) \
-   ((UCS2_STRING_LENGTH( s ) = (-UCS2_STRING_LENGTH( s ))), BUNSPEC)
-
-#define BUCS2_STRING_TO_UCS2_STRING( s ) (&(UCS2_STRING( s ).char0))
-
-#define UCS2_STRING_REF( v, i ) (BUCS2_STRING_TO_UCS2_STRING( v )[ i ])
-#define UCS2_STRING_SET( s, i, c ) (UCS2_STRING_REF( s, i ) = c, BUNSPEC)
-
-/*---------------------------------------------------------------------*/
 /*    Regular procedures                                               */
 /*---------------------------------------------------------------------*/
 #define DEFINE_EXPORT_BGL_PROCEDURE( n, na, p, vp, at, nb_args ) \
@@ -1406,7 +1092,7 @@ typedef struct BgL_objectz00_bgl {
 #define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( CREF( fun )->header ))
    
 #define PROCEDURE_ATTR( fun ) (PROCEDURE( fun ).attr)
-#define PROCEDURE_ATTR_SET( fun, _v ) (PROCEDURE( fun ).attr = (_v), (_v))
+#define PROCEDURE_ATTR_SET( fun, _v ) (BASSIGN( PROCEDURE( fun ).attr, (_v), fun ), (_v))
 
 #define VA_PROCEDUREP( fun ) \
    ( PROCEDURE_ARITY( fun ) < 0 )
@@ -1421,7 +1107,7 @@ typedef struct BgL_objectz00_bgl {
 #define PROCEDURE_ENV( p ) (&(PROCEDURE( p ).obj0))
 
 #define PROCEDURE_REF( p, i )    (PROCEDURE_ENV( p ))[ i ]
-#define PROCEDURE_SET( p, i, o ) (BASSIGN(PROCEDURE_REF( p, i ), o, p), BUNSPEC)
+#define PROCEDURE_SET( p, i, o ) BASSIGN( PROCEDURE_REF( p, i ), o, p )
 
 #define MAKE_FX_PROCEDURE( entry, arity, size ) \
    make_fx_procedure( (function_t)entry, arity, size )
@@ -1450,7 +1136,7 @@ typedef struct BgL_objectz00_bgl {
 #define PROCEDURE_L_ENV( fun ) (&(PROCEDURE_L( fun ).obj0))
 
 #define PROCEDURE_L_REF( p, _i )    (PROCEDURE_L_ENV( p )[ _i ])
-#define PROCEDURE_L_SET( p, _i, o ) (BASSIGN( PROCEDURE_L_REF( p, _i ),o, p), BUNSPEC)
+#define PROCEDURE_L_SET( p, _i, o ) BASSIGN( PROCEDURE_L_REF( p, _i ), o, p )
 
 #if( defined( __GNUC__ ) )
 #   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
@@ -1475,7 +1161,7 @@ typedef struct BgL_objectz00_bgl {
    (( !size ) ? BUNSPEC : GC_MALLOC( size * OBJ_SIZE ))
 
 #define PROCEDURE_EL_REF( p, i ) (((obj_t *)p)[ i ])
-#define PROCEDURE_EL_SET( p, i, o ) (BASSIGN(PROCEDURE_EL_REF( p, i ),o,p), BUNSPEC)
+#define PROCEDURE_EL_SET( p, i, o ) BASSIGN( PROCEDURE_EL_REF( p, i ), o, p )
 
 /*---------------------------------------------------------------------*/
 /*    Generic functions                                                */
@@ -1519,156 +1205,6 @@ typedef struct BgL_objectz00_bgl {
       static const obj_t n = BREF( &(na.header) )
 
 /*---------------------------------------------------------------------*/
-/*    Vectors                                                          */
-/*---------------------------------------------------------------------*/
-/* #if( defined( TAG_VECTOR ) )                                        */
-/* #   define BVECTOR( p ) ((obj_t)((long)p + TAG_VECTOR))             */
-/* #   define CVECTOR( p ) ((obj_t)((long)p - TAG_VECTOR))             */
-/* #   define VECTORP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_VECTOR))) */
-/* #else                                                               */
-/* #   define BVECTOR( p ) BREF( p )                                   */
-/* #   define CVECTOR( p ) CREF( p )                                   */
-/* #   define VECTORP( c ) (POINTERP( c ) && (TYPE( c ) == VECTOR_TYPE)) */
-/* #endif                                                              */
-/*                                                                     */
-/* #define VECTOR( o ) CVECTOR( o )->vector_t                          */
-/*                                                                     */
-/* #define VECTOR_SIZE (sizeof( struct vector ))                       */
-/*                                                                     */
-/* #define VECTOR_TAG_NB_BIT 8                                         */
-/* #define VECTOR_TAG_SIZE ((unsigned int)(1<<VECTOR_TAG_NB_BIT))      */
-/*                                                                     */
-/* #define VECTOR_LENGTH_SHIFT ((sizeof( int ) << 3) - VECTOR_TAG_NB_BIT) */
-/*                                                                     */
-/* #define VECTOR_LENGTH_MASK \                                        */
-/*    (~(unsigned int)((VECTOR_TAG_SIZE -1) << VECTOR_LENGTH_SHIFT))   */
-/*                                                                     */
-/* #define FREE_VECTOR_UNCOLLECTABLE( v ) GC_FREE( CVECTOR( v ) )      */
-/*                                                                     */
-/* #define VECTOR_REF( v, i ) (&(VECTOR( v ).obj0))[ i ]               */
-/* #define VECTOR_SET( v, i, o ) (VECTOR_REF( v, i ) = o, BUNSPEC)     */
-/*                                                                     */
-/* {*---------------------------------------------------------------------*} */
-/* {*    Typed vectors                                                    *} */
-/* {*---------------------------------------------------------------------*} */
-/* #define DEFINE_TVECTOR_START( aux, len, itype ) \                   */
-/*    static struct { __CNST_ALIGN header_t header; \                  */
-/* 		   int length; \                                       */
-/* 		   obj_t descr; \                                      */
-/* 		   itype items[ len ]; } \                             */
-/*       aux = { __CNST_FILLER, MAKE_HEADER( TVECTOR_TYPE, 0 ), len, 0L, */
-/* 	                                                               */
-/* #define DEFINE_TVECTOR_STOP( name, aux ) \                          */
-/* 	   }; static obj_t name = BREF( &(aux.header) )                */
-/*                                                                     */
-/* #ifdef __GNUC__                                                     */
-/* # define ALLOCATE_TVECTOR_MALLOC( MALLOC, _item_name, _item_type, _len, _descr )   \ */
-/*     ({obj_t an_object;                                                 \ */
-/*       an_object = MALLOC(sizeof(struct bgl_tvector_of_##_item_name)    \ */
-/*                          +                                             \ */
-/*                          ((_len-1) * sizeof(_item_type))),             \ */
-/*      (an_object->tvector_t).header = MAKE_HEADER( TVECTOR_TYPE, 0 ),   \ */
-/*      (an_object->tvector_t).length = _len,                             \ */
-/*      (an_object->tvector_t).descr = _descr,                            \ */
-/*        ( BREF( an_object ) ); })                                    */
-/* #else                                                               */
-/* # define ALLOCATE_TVECTOR_MALLOC( MALLOC, _item_name, _item_type, _len, _descr )   \ */
-/*     (an_object = MALLOC(sizeof(struct bgl_tvector_of_##_item_name)     \ */
-/*                         +                                              \ */
-/*                         ((_len-1) * sizeof(_item_type))),              \ */
-/*     (an_object->tvector_t).header = MAKE_HEADER( TVECTOR_TYPE, 0 ),    \ */
-/*     (an_object->tvector_t).length = _len,                              \ */
-/*     (an_object->tvector_t).descr = _descr,                             \ */
-/*        ( BREF( an_object ) ) )                                      */
-/* #endif                                                              */
-/*                                                                     */
-/* #define ALLOCATE_TVECTOR( _item_name, _item_type, _len, _descr )   \ */
-/*    ALLOCATE_TVECTOR_MALLOC( GC_MALLOC, _item_name, _item_type, _len, _descr ) */
-/* #define ALLOCATE_ATOMIC_TVECTOR( _item_name, _item_type, _len, _descr )   \ */
-/*    ALLOCATE_TVECTOR_MALLOC( GC_MALLOC_ATOMIC, _item_name, _item_type, _len, _descr ) */
-/*                                                                     */
-/* #define TVECTORP( o ) (POINTERP( o ) && (TYPE( o ) == TVECTOR_TYPE)) */
-/*                                                                     */
-/* #define TVECTOR( tv ) CREF( tv )->tvector_t                         */
-/*                                                                     */
-/* #define TVECTOR_SIZE (sizeof( struct tvector ))                     */
-/*                                                                     */
-/* #define TVECTOR_ID( tv ) TVECTOR( tv ).id                           */
-/* #define TVECTOR_ID_SET( tv, _id_ ) (TVECTOR_ID( tv ) = _id_, BUNSPEC) */
-/*                                                                     */
-/* #define TVECTOR_LENGTH( tv ) TVECTOR( tv ).length                   */
-/* #define TVECTOR_DESCR( tv ) TVECTOR( tv ).descr                     */
-/* #define TVECTOR_DESCR_SET( tv, _d_ ) (TVECTOR_DESCR( tv ) = _d_, BUNSPEC) */
-/*                                                                     */
-/* #define TVECTOR_REF( it, tv, o ) \                                  */
-/*       (&(((struct bgl_tvector_of_##it *) \                          */
-/*        CREF( tv ))->el0))[ o ]                                      */
-/*                                                                     */
-/* #define TVECTOR_SET( it, tv, o, v ) \                               */
-/*      (TVECTOR_REF( it, tv, o ) = (v), BUNSPEC)                      */
-/*                                                                     */
-/* #define VECTOR_LENGTH( v ) \                                        */
-/*    ((unsigned int)VECTOR( v ).length & VECTOR_LENGTH_MASK)          */
-/*                                                                     */
-/* #define VECTOR_TAG_SET( v, tag ) \                                  */
-/*     ( VECTOR( v ).length = \                                        */
-/*      ((unsigned int)VECTOR_LENGTH( v ) | \                          */
-/*        (((unsigned int) tag) << VECTOR_LENGTH_SHIFT)), \            */
-/*        BUNSPEC )                                                    */
-/*                                                                     */
-/* #define VECTOR_TAG( v ) \                                           */
-/*    ( ((unsigned int)(VECTOR( v ).length) & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT ) */
-
-/*---------------------------------------------------------------------*/
-/*    Structures                                                       */
-/*---------------------------------------------------------------------*/
-#if( defined( TAG_STRUCTURE ) )
-#   define BSTRUCTURE( r ) ((obj_t)((long)p + TAG_STRUCTURE))
-#   define CSTRUCTURE( p ) ((obj_t)((long)p - TAG_STRUCTURE))
-#   define STRUCTP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_STRUCTURE)))
-#else
-#   define BSTRUCTURE( p ) BREF( p )
-#   define CSTRUCTURE( p ) CREF( p )
-#   define STRUCTP( c ) (POINTERP( c ) && (TYPE( c ) == STRUCT_TYPE))
-#endif
-
-#define STRUCT( o ) CSTRUCTURE( o )->struct_t
-
-#define STRUCT_SIZE (sizeof( struct structure ))
-
-#define STRUCT_KEY( c ) STRUCT( c ).key
-#define STRUCT_KEY_SET( c, k ) (STRUCT_KEY( c ) = k, BUNSPEC)
-
-#define STRUCT_LENGTH( c ) STRUCT( c ).length
-   
-#define STRUCT_REF( c, i ) (&(STRUCT(c).obj0))[ i ]
-#define STRUCT_SET( c, i, o ) (STRUCT_REF( c, i ) = o, BUNSPEC)
-
-/*---------------------------------------------------------------------*/
-/*    Typed structures                                                 */
-/*---------------------------------------------------------------------*/
-#define TSTRUCTP( o ) (POINTERP( o ) && (TYPE( o ) == TSTRUCT_TYPE))
-
-#define TSTRUCT( tv ) CREF( tv )->tstruct_t
-
-#define TSTRUCT_SIZE (sizeof( struct tstructure ))
-
-#define TSTRUCT_ID( c ) TSTRUCT( c ).id
-#define TSTRUCT_TO_VECTOR( c ) \
-   (PROCEDURE_ENTRY( TSTRUCT( c ).to_vector ) \
-    ( TSTRUCT( c ).to_vector, c, BEOA ))
-
-#define TSTRUCT_REF( _u_struct, _st, _u_slot ) \
-      (((struct { header_t header; \
-		  obj_t id; \
-		  obj_t to_v; \
-		  _u_struct dummy;} *)CREF( _st ))->dummy._u_slot)
-
-#define TSTRUCT_SET( _u_struct, _st, _u_slot, _v ) \
-      (TSTRUCT_REF( _u_struct, _st, _u_slot ) = _v, \
-       BUNSPEC )
-
-/*---------------------------------------------------------------------*/
 /*    Symbols                                                          */
 /*---------------------------------------------------------------------*/
 #if( defined( TAG_SYMBOL ) )
@@ -1690,7 +1226,7 @@ typedef struct BgL_objectz00_bgl {
 
 #define GET_SYMBOL_PLIST( o ) (SYMBOL( o ).cval)
 
-#define SET_SYMBOL_PLIST( o, v ) (GET_SYMBOL_PLIST( o ) = v, BUNSPEC)
+#define SET_SYMBOL_PLIST( o, v ) BASSIGN( GET_SYMBOL_PLIST( o ), v, o )
 
 /*---------------------------------------------------------------------*/
 /*    Keywords                                                         */
@@ -1705,120 +1241,7 @@ typedef struct BgL_objectz00_bgl {
 
 #define GET_KEYWORD_PLIST( o ) (KEYWORD( o ).cval)
 
-#define SET_KEYWORD_PLIST( o, v ) (GET_KEYWORD_PLIST( o ) = v, BUNSPEC)
-
-/*---------------------------------------------------------------------*/
-/*    Reals                                                            */
-/*---------------------------------------------------------------------*/
-/* #if( defined( TAG_REAL ) )                                          */
-/* #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))                 */
-/* #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))                 */
-/* #   define DEFINE_REAL( name, aux, flonum ) \                       */
-/*       static struct { double real; } \                              */
-/*          const aux = { flonum }; \                                  */
-/*          const obj_t name = BREAL( &aux )                           */
-/* #   define REALP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))   */
-/* #else                                                               */
-/* #   define BREAL( p ) BREF( p )                                     */
-/* #   define CREAL( p ) CREF( p )                                     */
-/* #   define DEFINE_REAL( name, aux, flonum ) \                       */
-/*       static struct { __CNST_ALIGN header_t header; \               */
-/* 		      double real; } \                                 */
-/*          const aux = { __CNST_FILLER, MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \ */
-/*          const obj_t name = BREAL( &(aux.header) )                  */
-/* #   define REALP( c ) (POINTERP( c ) && (TYPE( c ) == REAL_TYPE))   */
-/* #endif                                                              */
-/*                                                                     */
-/* #define REAL( o ) (CREAL( o )->real_t)                              */
-/*                                                                     */
-/* #define REAL_SIZE  (sizeof( struct real ))                          */
-/*                                                                     */
-/* #define NEG( x ) (- (x))                                            */
-/*                                                                     */
-/* #if( BGL_GC != BGL_SAW_GC )                                         */
-/* #  define DOUBLE_TO_REAL( d ) (make_real( d ))                      */
-/* #else					                       */
-/* BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );                 */
-/* #  define DOUBLE_TO_REAL( d ) (bgl_saw_make_real( d ))              */
-/* #endif					                       */
-/* #define REAL_TO_DOUBLE( r ) (REAL( r ).real)                        */
-/*                                                                     */
-/* #define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))          */
-/* #define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))                */
-/*                                                                     */
-/* #define __DOUBLE_TO_LLONG_BITS( dd ) \                              */
-/*   double ddd = dd; \                                                */
-/*   BGL_LONGLONG_T result; \                                          */
-/*   memcpy( &result, &ddd, sizeof( result ) ); \                      */
-/*   result;                                                           */
-/*                                                                     */
-/* #define __LLONG_BITS_TO_DOUBLE( ll ) \                              */
-/*   BGL_LONGLONG_T lll = ll; \                                        */
-/*   double result; \                                                  */
-/*   memcpy( &result, &lll, sizeof( result ) ); \                      */
-/*   result;                                                           */
-/*                                                                     */
-/* {* If ints are bigger than floats (which can happen on 64bit machines) *} */
-/* {* then * we only want to set the least significant bytes of the int.  *} */
-/* #define __FLOAT_TO_INT_BITS( ff ) \                                 */
-/*   float fff = ff; \                                                 */
-/*   int result = 0; \                                                 */
-/*   int offset = sizeof( int ) - sizeof( float ); \                   */
-/*   memcpy( ((char*)&result) + offset, &fff, sizeof( float ) ); \     */
-/*   result;                                                           */
-/*                                                                     */
-/* {* If ints are bigger than floats (which can happen on 64bit machines) *} */
-/* {* then we only want to set the least significant bytes of the int.    *} */
-/* #define __INT_BITS_TO_FLOAT( ii ) \                                 */
-/*   int iii = ii; \                                                   */
-/*   float result; \                                                   */
-/*   int offset = sizeof( int ) - sizeof( float ); \                   */
-/*   memcpy( &result, ((char*)&iii) + offset, sizeof( float ) ); \     */
-/*   result;                                                           */
-/*                                                                     */
-/* #if( defined( __GNUC__ ) )                                          */
-/* #  define DOUBLE_TO_LLONG_BITS( dd ) ( { __DOUBLE_TO_LLONG_BITS( dd ) } ) */
-/* #  define LLONG_BITS_TO_DOUBLE( ll ) ( { __LLONG_BITS_TO_DOUBLE( ll ) } ) */
-/* #  define FLOAT_TO_INT_BITS( ff ) ( { __FLOAT_TO_INT_BITS( ff ) } ) */
-/* #  define INT_BITS_TO_FLOAT( ii ) ( { __INT_BITS_TO_FLOAT( ii ) } ) */
-/* #else                                                               */
-/* BGL_RUNTIME_DECL BGL_LONGLONG_T DOUBLE_TO_LLONG_BITS( double );     */
-/* BGL_RUNTIME_DECL double LLONG_BITS_TO_DOUBLE( BGL_LONGLONG_T );     */
-/* BGL_RUNTIME_DECL int FLOAT_TO_INT_BITS( float );                    */
-/* BGL_RUNTIME_DECL float INT_BITS_TO_FLOAT( int );                    */
-/* #endif                                                              */
-/*                                                                     */
-/* #define RANDOMFL() ((double)rand()/RAND_MAX)                        */
-/*                                                                     */
-/* #if BGL_ISOC99 || defined( __USE_ISOC99 )                           */
-/* #  define BGL_SIGNBIT( a ) signbit( a )                             */
-/* #  define BGL_NAN ((double) NAN)                                    */
-/* #  define BGL_INFINITY ((double) INFINITY)                          */
-/* #  define BGL_IS_FINITE isfinite                                    */
-/* #  define BGL_IS_INF isinf                                          */
-/* #  define BGL_IS_NAN isnan                                          */
-/* #  define BGL_FL_MAX2( a, b ) fmax( a, b )                          */
-/* #  define BGL_FL_MIN2( a, b ) fmin( a, b )                          */
-/* #  define BGL_FL_ROUND( a ) round( a )                              */
-/* #else                                                               */
-/* #  if BGL_CCDIV0                                                    */
-/* #    define BGL_NAN (0.0 / 0.0)                                     */
-/* #    define BGL_INFINITY (1.0 / 0.0)                                */
-/* #  else                                                             */
-/* BGL_RUNTIME_DECL double bgl_nan();                                  */
-/* BGL_RUNTIME_DECL double bgl_infinity();                             */
-/* #    define BGL_NAN bgl_nan()                                       */
-/* #    define BGL_INFINITY bgl_infinity()                             */
-/* #  endif                                                            */
-/* #  define BGL_SIGNBIT( r ) ((r<0.0)?1:(((1.0/r)<0.0)?1:0))          */
-/* #  define BGL_IS_FINITE( r ) (!(BGL_IS_INF( r ) || BGL_IS_NAN( r ))) */
-/* #  define BGL_IS_INF( r ) (r==BGL_INFINITY || r==-BGL_INFINITY)     */
-/* #  define BGL_IS_NAN( r ) ((r) != (r))                              */
-/* {* min and max have to look at -0.0 and +0.0, too *}                */
-/* #  define BGL_FL_MAX2( a, b ) (a<b?b:(a==0.0&&b==0.0&&1.0/a<0.0)?b:a) */
-/* #  define BGL_FL_MIN2( a, b ) (a>b?b:(a==0.0&&b==0.0&&1.0/a>0.0)?b:a) */
-/* #  define BGL_FL_ROUND( a ) (BGL_SIGNBIT(a)?-(floor(-a+0.5)):floor(a+0.5)) */
-/* #endif                                                              */
+#define SET_KEYWORD_PLIST( o, v ) BASSIGN( GET_KEYWORD_PLIST( o ), v, o )
 
 /*---------------------------------------------------------------------*/
 /*    Long long                                                        */
@@ -2039,151 +1462,13 @@ extern bool_t BXNEGATIVE( obj_t );
 #   define BOUND_CHECK( o, v ) (((long)o >= 0) && ((long)o < (long)v))
 #endif
 
-/* {*---------------------------------------------------------------------*} */
-/* {*    HVECTOR                                                          *} */
-/* {*---------------------------------------------------------------------*} */
-/* #define HVECTOR_SIZE (sizeof( struct bgl_hvector ))                 */
-/*                                                                     */
-/* #define HVECTOR( o ) CREF( o )->hvector_t                           */
-/*                                                                     */
-/* #define STVECTOR( o, type ) \                                       */
-/*    ((struct { header_t header; int length; type obj0; } *)(CREF( o ))) */
-/*                                                                     */
-/* #define BGL_HVECTOR_LENGTH( v ) (HVECTOR( v ).length)               */
-/*                                                                     */
-/* #define BGL_HVECTOR_IDENT( v ) (TYPE( v ) - S8VECTOR_TYPE)          */
-/*                                                                     */
-/* #define BGL_HVECTORP( v ) \                                         */
-/*     (POINTERP( v ) \                                                */
-/*      && (TYPE( v ) >= S8VECTOR_TYPE) \                              */
-/*      && (TYPE( v ) <= F64VECTOR_TYPE))                              */
-/*                                                                     */
-/* #define BGL_S8VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == S8VECTOR_TYPE)) */
-/* #define BGL_U8VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == U8VECTOR_TYPE)) */
-/* #define BGL_S16VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == S16VECTOR_TYPE)) */
-/* #define BGL_U16VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == U16VECTOR_TYPE)) */
-/* #define BGL_S32VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == S32VECTOR_TYPE)) */
-/* #define BGL_U32VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == U32VECTOR_TYPE)) */
-/* #define BGL_S64VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == S64VECTOR_TYPE)) */
-/* #define BGL_U64VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == U64VECTOR_TYPE)) */
-/* #define BGL_F32VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == F32VECTOR_TYPE)) */
-/* #define BGL_F64VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == F64VECTOR_TYPE)) */
-/*                                                                     */
-/* #define BGL_S8VREF( v, i ) (&(STVECTOR( v, int8_t )->obj0))[ i ]    */
-/* #define BGL_S8VSET( v, i, o ) (BGL_S8VREF( v, i ) = o, BUNSPEC)     */
-/* #define BGL_U8VREF( v, i ) (&(STVECTOR( v, uint8_t )->obj0))[ i ]   */
-/* #define BGL_U8VSET( v, i, o ) (BGL_S8VREF( v, i ) = o, BUNSPEC)     */
-/*                                                                     */
-/* #define BGL_S16VREF( v, i ) (&(STVECTOR( v, int16_t )->obj0))[ i ]  */
-/* #define BGL_S16VSET( v, i, o ) (BGL_S16VREF( v, i ) = o, BUNSPEC)   */
-/* #define BGL_U16VREF( v, i ) (&(STVECTOR( v, uint16_t )->obj0))[ i ] */
-/* #define BGL_U16VSET( v, i, o ) (BGL_S16VREF( v, i ) = o, BUNSPEC)   */
-/*                                                                     */
-/* #define BGL_S32VREF( v, i ) (&(STVECTOR( v, int32_t )->obj0))[ i ]  */
-/* #define BGL_S32VSET( v, i, o ) (BGL_S32VREF( v, i ) = o, BUNSPEC)   */
-/* #define BGL_U32VREF( v, i ) (&(STVECTOR( v, uint32_t )->obj0))[ i ] */
-/* #define BGL_U32VSET( v, i, o ) (BGL_U32VREF( v, i ) = o, BUNSPEC)   */
-/*                                                                     */
-/* #define BGL_S64VREF( v, i ) (&(STVECTOR( v, BGL_LONGLONG_T )->obj0))[ i ] */
-/* #define BGL_S64VSET( v, i, o ) (BGL_S64VREF( v, i ) = o, BUNSPEC)   */
-/* #define BGL_U64VREF( v, i ) (&(STVECTOR( v, unsigned BGL_LONGLONG_T )->obj0))[i] */
-/* #define BGL_U64VSET( v, i, o ) (BGL_U64VREF( v, i ) = o, BUNSPEC)   */
-/*                                                                     */
-/* #define BGL_F32VREF( v, i ) (&(STVECTOR( v, float )->obj0))[ i ]    */
-/* #define BGL_F32VSET( v, i, o ) (BGL_F32VREF( v, i ) = o, BUNSPEC)   */
-/*                                                                     */
-/* #define BGL_F64VREF( v, i ) (&(STVECTOR( v, double )->obj0))[ i ]   */
-/* #define BGL_F64VSET( v, i, o ) (BGL_F64VREF( v, i ) = o, BUNSPEC)   */
-/*                                                                     */
-/* #define BGL_XXX_U8VREF( v, i, type ) \                              */
-/*    (*((type *)(&BGL_S8VREF( v, i ))))                               */
-/* #define BGL_XXX_U8VSET( v, i, o, type ) \                           */
-/*    (*((type *)(&BGL_S8VREF( v, i ))) = (o), BUNSPEC)                */
-/*                                                                     */
-/* #define BGL_S16_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, int16_t )      */
-/* #define BGL_S16_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, int16_t ) */
-/* #define BGL_U16_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, uint16_t )     */
-/* #define BGL_U16_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, uint16_t ) */
-/*                                                                     */
-/* #define BGL_S32_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, int32_t )      */
-/* #define BGL_S32_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, int32_t ) */
-/* #define BGL_U32_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, uint32_t )     */
-/* #define BGL_U32_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, uint32_t ) */
-/*                                                                     */
-/* #define BGL_S64_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, int64_t )      */
-/* #define BGL_S64_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, int64_t ) */
-/* #define BGL_U64_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, uint64_t )     */
-/* #define BGL_U64_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, uint64_t ) */
-/*                                                                     */
-/* #define BGL_F32_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, float )        */
-/* #define BGL_F32_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, float )  */
-/*                                                                     */
-/* #define BGL_F64_U8VREF( v, i ) BGL_XXX_U8VREF( v, i, double )       */
-/* #define BGL_F64_U8VSET( v, i, o ) BGL_XXX_U8VSET( v, i, o, double ) */
-/*                                                                     */
-/* BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );              */
-/*                                                                     */
-/* #define BGL_ALLOC_S8VECTOR( len ) \                                 */
-/*    alloc_hvector( len, sizeof( int8_t ), S8VECTOR_TYPE )            */
-/*                                                                     */
-/* #define BGL_ALLOC_U8VECTOR( len ) \                                 */
-/*    alloc_hvector( len, sizeof( uint8_t ), U8VECTOR_TYPE )           */
-/*                                                                     */
-/* #define BGL_ALLOC_S16VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( int16_t ), S16VECTOR_TYPE )          */
-/*                                                                     */
-/* #define BGL_ALLOC_U16VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( uint16_t ), U16VECTOR_TYPE )         */
-/*                                                                     */
-/* #define BGL_ALLOC_S32VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( int32_t ), S32VECTOR_TYPE )          */
-/*                                                                     */
-/* #define BGL_ALLOC_U32VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( uint32_t ), U32VECTOR_TYPE )         */
-/*                                                                     */
-/* #define BGL_ALLOC_S64VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( BGL_LONGLONG_T ), S64VECTOR_TYPE )   */
-/*                                                                     */
-/* #define BGL_ALLOC_U64VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( unsigned BGL_LONGLONG_T ), U64VECTOR_TYPE ) */
-/*                                                                     */
-/* #define BGL_ALLOC_F32VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( float ), F32VECTOR_TYPE )            */
-/*                                                                     */
-/* #define BGL_ALLOC_F64VECTOR( len ) \                                */
-/*    alloc_hvector( len, sizeof( double ), F64VECTOR_TYPE )           */
-/*                                                                     */
-/* #define BGL_SU8VECTOR_COPY( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_S8VREF( target, tstart ), (void *)&BGL_S8VREF( source, sstart ), \ */
-/* 	   (ssend - sstart) )                                          */
-/*                                                                     */
-/* #define BGL_SU16VECTOR_COPY( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_S16VREF( target, tstart ), (void *)&BGL_S16VREF( source, sstart ), \ */
-/*       (ssend - sstart) * 2 )                                        */
-/*                                                                     */
-/* #define BGL_SU32VECTOR_COPY( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_S32VREF( target, tstart ), (void *)&BGL_S32VREF( source, sstart ), \ */
-/*       (ssend - sstart) * 4 )                                        */
-/*                                                                     */
-/* #define BGL_SU64VECTOR_COPY( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_S64VREF( target, tstart ), (void *)&BGL_S64VREF( source, sstart ), \ */
-/*       (ssend - sstart) * 8 )                                        */
-/*                                                                     */
-/* #define BGL_F32VECTOR_COPY( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_F32VREF( target, tstart ), (void *)&BGL_F32VREF( source, sstart ), \ */
-/*       (ssend - sstart) * 4 )                                        */
-/*                                                                     */
-/* #define BGL_F64VECTOR_COPY( target, tstart, source, sstart, ssend ) \ */
-/*    memcpy( (void *)&BGL_F64VREF( target, tstart ), (void *)&BGL_F64VREF( source, sstart ), \ */
-/*       (ssend - sstart) * 8 )                                        */
-   
 /*---------------------------------------------------------------------*/
 /*    Ports                                                            */
 /*---------------------------------------------------------------------*/
 #define PORT( o ) CREF( o )->port_t
    
 #define PORT_CHOOK( o ) (PORT( o ).chook)
-#define PORT_CHOOK_SET( o, v ) ((PORT( o ).chook) = (v))
+#define PORT_CHOOK_SET( o, v ) BASSIGN( PORT( o ).chook, (v), o )
    
 #define PORT_FILE( o ) (PORT( o ).stream.file)
 #define PORT_FD( o ) (PORT( o ).stream.fd)
@@ -2224,10 +1509,10 @@ extern bool_t BXNEGATIVE( obj_t );
    (bgl_output_port_seek( _p, _i ))
 
 #define BGL_OUTPUT_PORT_FHOOK( o ) (OUTPUT_PORT( o ).fhook)
-#define BGL_OUTPUT_PORT_FHOOK_SET( o, v ) ((OUTPUT_PORT( o ).fhook) = (v))
+#define BGL_OUTPUT_PORT_FHOOK_SET( o, v ) BASSIGN( OUTPUT_PORT( o ).fhook, v, o )
    
 #define BGL_OUTPUT_PORT_FLUSHBUF( o ) (OUTPUT_PORT( o ).flushbuf)
-#define BGL_OUTPUT_PORT_FLUSHBUF_SET( o, v ) ((OUTPUT_PORT( o ).flushbuf) = (v))
+#define BGL_OUTPUT_PORT_FLUSHBUF_SET( o, v ) BASSIGN( OUTPUT_PORT( o ).flushbuf, v, o )
    
 #define BGL_OUTPUT_PORT_BUFFER( o ) \
    (OUTPUT_PORT( o ).buf)
@@ -2350,7 +1635,7 @@ extern bool_t BXNEGATIVE( obj_t );
    INPUT_PORT( o ).userseek
    
 #define BGL_INPUT_PORT_USEEK_SET( o, p ) \
-   INPUT_PORT( o ).userseek = p
+   BASSIGN( INPUT_PORT( o ).userseek, p, o )
    
 /*---------------------------------------------------------------------*/
 /*    Binary ports                                                     */
@@ -2432,8 +1717,8 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_OBJECT_WIDENING( _obj ) \
    (((object_bglt)(CREF(_obj)))->widening)
 
-#define BGL_OBJECT_WIDENING_SET( _obj, _str ) \
-   (((((object_bglt)(CREF(_obj)))->widening) = _str), BUNSPEC)
+#define BGL_OBJECT_WIDENING_SET( _obj, _wdn ) \
+   BASSIGN( BGL_OBJECT_WIDENING( _obj ), _wdn, (obj_t)_obj )
 
 /*---------------------------------------------------------------------*/
 /*    Classes                                                          */
@@ -2454,13 +1739,13 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_CLASS_ANCESTORS_REF( f, i ) (&(BGL_CLASS( f ).ancestor0))[ i ]
    
 #define BGL_CLASS_SUBCLASSES( f ) (BGL_CLASS( f ).subclasses)
-#define BGL_CLASS_SUBCLASSES_SET( f, v ) (BGL_CLASS_SUBCLASSES( f ) = v)
+#define BGL_CLASS_SUBCLASSES_SET( f, v ) BASSIGN( BGL_CLASS_SUBCLASSES( f ), v, f )
    
 #define BGL_CLASS_DIRECT_FIELDS( f ) (BGL_CLASS( f ).direct_fields)
-#define BGL_CLASS_DIRECT_FIELDS_SET( f, v ) (BGL_CLASS_DIRECT_FIELDS( f ) = v)
+#define BGL_CLASS_DIRECT_FIELDS_SET( f, v ) BASSIGN( BGL_CLASS_DIRECT_FIELDS( f ), v, f )
    
 #define BGL_CLASS_ALL_FIELDS( f ) (BGL_CLASS( f ).all_fields)
-#define BGL_CLASS_ALL_FIELDS_SET( f, v ) (BGL_CLASS_ALL_FIELDS( f ) = v)
+#define BGL_CLASS_ALL_FIELDS_SET( f, v ) BASSIGN( BGL_CLASS_ALL_FIELDS( f ), v, f )
    
 #define BGL_CLASS_VIRTUAL_FIELDS( f ) (BGL_CLASS( f ).virtual_fields)
    
@@ -2475,7 +1760,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_CLASS_NIL_FUN( f ) (BGL_CLASS( f ).nil_fun)
    
 #define BGL_CLASS_NIL( f ) (BGL_CLASS( f ).nil)
-#define BGL_CLASS_NIL_SET( f, v ) (BGL_CLASS_NIL( f ) = v)
+#define BGL_CLASS_NIL_SET( f, v ) BASSIGN( BGL_CLASS_NIL( f ), v, f )
    
 #define BGL_CLASS_CONSTRUCTOR( f ) (BGL_CLASS( f ).constructor)
    
@@ -3298,27 +2583,6 @@ struct exitd {
 #define BGL_EXITD_PROTECTN_SET( extd, p ) \
    (BGL_EXITD_PROTECTN( extd ) = (p))
 
-#if( HAVE_ALLOCA && defined( __GNUC__ ) )
-#  if( defined( TAG_PAIR ) )
-#    define MAKE_STACK_PAIR( a, d ) \
-        ({ obj_t an_object; \
-           an_object = alloca( PAIR_SIZE ); \
-	   an_object->pair_t.car = a; \
-	   an_object->pair_t.cdr = d; \
-           ( BPAIR( an_object ) ); })
-#  else   
-#    define MAKE_STACK_PAIR( a, d ) \
-        ({ obj_t an_object; \
-           an_object = alloca( PAIR_SIZE ); \
-   	   an_object->pair_t.header = MAKE_HEADER( PAIR_TYPE, 0 ); \
-	   an_object->pair_t.car = a; \
-	   an_object->pair_t.cdr = d; \
-           ( BPAIR( an_object ) ); })
-#  endif     
-#else
-#  define MAKE_STACK_PAIR( a, d ) MAKE_PAIR( a, d )   
-#endif
-   
 #define BGL_EXITD_PUSH_PROTECT( extd, p ) \
    BGL_EXITD_PROTECT0( extd ) == BFALSE ? BGL_EXITD_PROTECT0_SET( extd, p ) : \
    BGL_EXITD_PROTECT1( extd ) == BFALSE ? BGL_EXITD_PROTECT1_SET( extd, p ) : \
@@ -3386,75 +2650,6 @@ struct befored {
 /*---------------------------------------------------------------------*/
 #define BGL_DYNAMIC_LOAD_INIT "bigloo_dlopen_init"
 
-/* {*---------------------------------------------------------------------*} */
-/* {*    Saw C macros                                                     *} */
-/* {*---------------------------------------------------------------------*} */
-/* #define BGL_RTL_STRING_REF(v,i) ((unsigned char) STRING_REF(v,i))   */
-/* #define BGL_RTL_EQ(x,y) (x == y)                                    */
-/* #define BGL_RTL_GE(x,y) (x >= y)                                    */
-/* #define BGL_RTL_LE(x,y) (x <= y)                                    */
-/* #define BGL_RTL_GT(x,y) (x > y)                                     */
-/* #define BGL_RTL_LT(x,y) (x < y)                                     */
-/* #define BGL_RTL_OR(x,y) (x | y)                                     */
-/* #define BGL_RTL_AND(x,y) (x & y)                                    */
-/* #define BGL_RTL_ADD(x,y) (x + y)                                    */
-/* #define BGL_RTL_SUB(x,y) (x - y)                                    */
-/* #define BGL_RTL_MUL(x,y) (x * y)                                    */
-/* #define BGL_RTL_DIV(x,y) (x / y)                                    */
-/* #define BGL_RTL_REM(x,y) (x % y)                                    */
-/* #define BGL_RTL_XOR(x,y) (x ^ y)                                    */
-/* #define BGL_RTL_RSH(x,y) (x >> y)                                   */
-/* #define BGL_RTL_LSH(x,y) (x << y)                                   */
-/* #define BGL_RTL_0L() (0L)					       */
-/*                                                                     */
-/* #define BGL_RTL_PUSH_ENV_EXIT( env, _xit, _ser ) \                  */
-/*    exitd.exit  = _xit; \                                            */
-/*    exitd.userp = _ser; \                                            */
-/*    exitd.protect0 = BFALSE; \                                       */
-/*    exitd.protect1 = BFALSE; \                                       */
-/*    exitd.protectn = BNIL; \                                         */
-/*    exitd.top_of_frame = BGL_ENV_GET_TOP_OF_FRAME( env ); \          */
-/*    exitd.prev  = BGL_ENV_EXITD_TOP( env ); \                        */
-/*    exitd.stamp = BGL_ENV_EXITD_STAMP( env ); \                      */
-/*    BGL_ENV_EXITD_TOP_SET( env, (&exitd) );                          */
-/*                                                                     */
-/* #define BGL_RTL_PUSH_EXIT( _xit, _ser ) \                           */
-/*    BGL_RTL_PUSH_ENV_EXIT( BGL_CURRENT_DYNAMIC_ENV(), _xit, _ser )   */
-/*                                                                     */
-/* #define BGL_RTL_PUSH_BEFORE( _bfr ) \                               */
-/*    befored.before = _bfr; \                                         */
-/*    befored.prev = BGL_BEFORED_TOP(); \                              */
-/*    BGL_BEFORED_TOP_SET( &befored );                                 */
-/*                                                                     */
-/* #define BGL_RTL_NOP() (BUNSPEC)                                     */
-/* #define BGL_RTL_MOV(r) (r)                                          */
-/* #define BGL_RTL_RETURN(r) return(r)                                 */
-/* #define BGL_RTL_LOADI(v) (v)                                        */
-/* #define BGL_RTL_LOADG(g) (g)                                        */
-/* #define BGL_RTL_LOADFUN(g) ((obj_t) g)                              */
-/* #define BGL_RTL_STOREG(g,v) g=v                                     */
-/* #define BGL_RTL_GLOBALREF(g) __EVMEANING_ADDRESS(g)                 */
-/* #define BGL_RTL_GO(l) goto l                                        */
-/* #define BGL_RTL_IFEQ(l,r) if(!r) goto l                             */
-/* #define BGL_RTL_IFNE(l,r) if(r) goto l                              */
-/* #define BGL_RTL_APPLY(f,r) apply(f,r)                               */
-/* #define BGL_RTL_VALLOC(n) create_vector(n)                          */
-/* #define BGL_RTL_VREF(v,i) VECTOR_REF(v,i)                           */
-/* #define BGL_RTL_VSET(v,i,r) VECTOR_REF(v,i)=r                       */
-/* #define BGL_RTL_VLENGTH(v) VECTOR_LENGTH(v)                         */
-/* #define BGL_RTL_TVALLOC(m,t,n,d) ALLOCATE_TVECTOR(m,t,n,d)          */
-/* #define BGL_RTL_TVREF(m,t,v,i) TVECTOR_REF(m,v,i)                   */
-/* #define BGL_RTL_TVSET(m,t,v,i,r) TVECTOR_REF(m,v,i)=r               */
-/* #define BGL_RTL_TVLENGTH(m,t,v) TVECTOR_LENGTH(v)                   */
-/* #define BGL_RTL_CAST(t,e) ((t) e)                                   */
-/* #define BGL_RTL_CAST_NULL(t) ((t) 0)                                */
-/* #define BGL_RTL_JUMPEXIT(x,v) JUMP_EXIT(x,v)                        */
-/* #define BGL_RTL_FAIL(p,m,o) FAILURE(p,m,o)                          */
-/* #define BGL_RTL_PROTECTED(x) (x)                                    */
-/* #define BGL_RTL_MAKEBOX(v) MAKE_CELL(v)                             */
-/* #define BGL_RTL_BOXREF(r) CELL_REF(r)                               */
-/* #define BGL_RTL_BOXSET(r,v) CELL_REF(r)=v                           */
-
 /*---------------------------------------------------------------------*/
 /*    The external declarations                                        */
 /*---------------------------------------------------------------------*/
@@ -3481,9 +2676,6 @@ BGL_RUNTIME_DECL obj_t bgl_time( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_procedure_entry_to_string( obj_t ); 
 BGL_RUNTIME_DECL obj_t bgl_string_to_procedure_entry( obj_t );
 
-BGL_RUNTIME_DECL obj_t make_pair( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t make_epair( obj_t a, obj_t d, obj_t e );
-BGL_RUNTIME_DECL obj_t make_cell( obj_t );
 BGL_RUNTIME_DECL obj_t make_real( double );
 BGL_RUNTIME_DECL obj_t make_belong( long );
 BGL_RUNTIME_DECL obj_t make_bllong( BGL_LONGLONG_T );
@@ -3519,15 +2711,6 @@ BGL_RUNTIME_DECL obj_t bgl_reset_output_string_port( obj_t );
 BGL_RUNTIME_DECL bool_t bgl_output_port_truncate( obj_t, long );
 BGL_RUNTIME_DECL bool_t bgl_port_isatty( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_reset_output_port_error( obj_t );
-					
-BGL_RUNTIME_DECL obj_t create_vector( int );
-
-BGL_RUNTIME_DECL obj_t make_string_sans_fill();
-BGL_RUNTIME_DECL obj_t string_to_bstring( char * );
-BGL_RUNTIME_DECL obj_t string_to_bstring_len( char *, int );
-BGL_RUNTIME_DECL obj_t close_init_string();
-BGL_RUNTIME_DECL obj_t bgl_string_shrink( obj_t, long );
-BGL_RUNTIME_DECL bool_t bigloo_strcmp( obj_t, obj_t );
 					
 BGL_RUNTIME_DECL obj_t ucs2_string_to_utf8_string( obj_t );
 BGL_RUNTIME_DECL obj_t make_ucs2_string( int, ucs2_t );
@@ -3641,9 +2824,6 @@ BGL_RUNTIME_DECL void bgl_restore_signal_handlers();
 extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);
 extern void bps_bmassign(obj_t *field, obj_t value);
 
-#if( BGL_HAVE_UNISTRING )
-BGL_RUNTIME_DECL int bgl_strcoll( obj_t, obj_t );
-#endif					
 
 #ifdef __cplusplus
 }

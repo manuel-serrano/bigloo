@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Fri Mar 11 17:40:00 2016 (serrano)                */
+;*    Last change :  Wed Mar 16 10:00:11 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -95,7 +95,7 @@
 		   "PROCEDURE_EL_REF")
 	    
 	    (macro make-cell::obj (::obj)
-		   "MAKE_CELL")
+		   "MAKE_YOUNG_CELL")
 	    (macro cell-set!::obj (::obj ::obj)
 		   "CELL_SET")
 	    (macro cell-ref::obj (::obj)

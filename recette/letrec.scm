@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Thu Dec 31 17:16:19 2015 (serrano)                */
+;*    Last change :  Tue Mar 15 22:17:58 2016 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -159,7 +159,7 @@
       (define (print) (begin 1 2 3 4 #t))
       (letrec* ((x 1)
                 (y x))
-         (set! r y))	    
+         (set! r y))
       (print)
       r))
 
@@ -171,7 +171,7 @@
 	   (define (print) (begin 1 2 3 4 #t))
 	   (letrec* ((x 1)
 		     (y x))
-	      (set! r y))	    
+	      (set! r y))
 	   (print)
 	   r)))
 
