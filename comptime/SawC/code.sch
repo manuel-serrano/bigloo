@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen SawC/code.scm)
+;; Bigloo (4.3a)
+;; Inria -- Sophia Antipolis     Thu Mar 17 08:15:11 CET 2016 
+;; (bigloo -classgen SawC/code.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,9 +11,11 @@
 ;; SawCIreg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-SawCIreg::SawCIreg type1159::type var1160::obj onexpr?1161::obj name1162::obj key1163::obj hardware1164::obj index1165::obj)
+    (inline make-SawCIreg::SawCIreg type1162::type var1163::obj onexpr?1164::obj name1165::obj key1166::obj hardware1167::obj index1168::obj framed1169::obj)
     (inline SawCIreg?::bool ::obj)
     (SawCIreg-nil::SawCIreg)
+    (inline SawCIreg-framed::obj ::SawCIreg)
+    (inline SawCIreg-framed-set! ::SawCIreg ::obj)
     (inline SawCIreg-index::obj ::SawCIreg)
     (inline SawCIreg-index-set! ::SawCIreg ::obj)
     (inline SawCIreg-hardware::obj ::SawCIreg)
@@ -29,9 +31,11 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; SawCIreg
-(define-inline (make-SawCIreg::SawCIreg type1159::type var1160::obj onexpr?1161::obj name1162::obj key1163::obj hardware1164::obj index1165::obj) (instantiate::SawCIreg (type type1159) (var var1160) (onexpr? onexpr?1161) (name name1162) (key key1163) (hardware hardware1164) (index index1165)))
+(define-inline (make-SawCIreg::SawCIreg type1162::type var1163::obj onexpr?1164::obj name1165::obj key1166::obj hardware1167::obj index1168::obj framed1169::obj) (instantiate::SawCIreg (type type1162) (var var1163) (onexpr? onexpr?1164) (name name1165) (key key1166) (hardware hardware1167) (index index1168) (framed framed1169)))
 (define-inline (SawCIreg?::bool obj::obj) ((@ isa? __object) obj (@ SawCIreg saw_c_code)))
 (define (SawCIreg-nil::SawCIreg) (class-nil (@ SawCIreg saw_c_code)))
+(define-inline (SawCIreg-framed::obj o::SawCIreg) (-> |#!bigloo_wallow| o framed))
+(define-inline (SawCIreg-framed-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o framed) v))
 (define-inline (SawCIreg-index::obj o::SawCIreg) (-> |#!bigloo_wallow| o index))
 (define-inline (SawCIreg-index-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o index) v))
 (define-inline (SawCIreg-hardware::obj o::SawCIreg) (-> |#!bigloo_wallow| o hardware))

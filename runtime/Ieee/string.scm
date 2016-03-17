@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Wed Mar 16 16:04:31 2016 (serrano)                */
+;*    Last change :  Thu Mar 17 08:57:47 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -50,8 +50,8 @@
 		   "STRING_ASCII_SENTINEL_SET")
 
 	    (macro $memchr::string (::string ::int ::long ::long) "BGL_MEMCHR")
-	    (infix macro $__string-0L?::bool (::string) " == 0L")
-	    (infix macro $__string-diff::long (::string ::string) "-")
+	    (macro $memchr-zero?::bool (::string) "BGL_MEMCHR_ZERO")
+	    (macro $memchr-diff::long (::string ::string) "BGL_MEMCHR_DIFF")
 	    
 	    ($string=?::bool (::bstring ::bstring) "bigloo_strcmp")
 	    ($substring=?::bool (::bstring ::bstring ::long) "bigloo_strncmp")
@@ -291,7 +291,10 @@
 	    (string-prefix? fail-safe side-effect-free nesting)
 	    (string-suffix? fail-safe side-effect-free nesting)
 	    (string-prefix-ci? fail-safe side-effect-free nesting)
-	    (string-suffix-ci? fail-safe side-effect-free nesting)))
+	    (string-suffix-ci? fail-safe side-effect-free nesting)
+	    ($memchr no-alloc fail-safe side-effect-free)
+	    ($memchr-zerof? no-alloc fail-safe side-effect-free)
+	    ($memchr-diff no-alloc fail-safe side-effect-free)))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string?@ ...                                              */
@@ -947,8 +950,8 @@
 	     (let* ((s0::string string)
 		    (s1::string ($memchr s0 (char->integer char)
 				   (-fx len start) start)))
-		(unless ($__string-0L? s1)
-		   ($__string-diff s1 s0)))))
+		(unless ($memchr-zero? s1)
+		   ($memchr-diff s1 s0)))))
 	 (else
 	  (let loop ((i start))
 	     (cond

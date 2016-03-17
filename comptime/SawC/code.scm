@@ -24,7 +24,7 @@
 	   (saw-cgen b::cvm v::global)
 	   (saw-cepilogue))
    (cond-expand ((not bigloo-class-generate) (include "SawC/code.sch")))
-   (static (wide-class SawCIreg::rtl_reg index)) )
+   (static (wide-class SawCIreg::rtl_reg index framed)) )
 
 (define *comment* #f)
 (define *trace* #f)
@@ -52,7 +52,7 @@
       (display "extern int bps_used();\n") )
    (when *trace_nb_frames*
       (display "extern long bps_time;\n")
-      (display "extern int bps_nbFrames()\n") )
+      (display "extern int bps_nbFrames();\n") )
    (if *count*
        (begin (display "extern int bbcount[];\n")
 	      (display "extern char *bbname[];\n")
@@ -110,10 +110,10 @@
 	       (if *haspushbefore* (display " struct befored befored;\n"))
 	       (declare-regs locals)
 	       (declare-frame name params locals)
-	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) ))))
-   (genbody l)
-   (display (make-string *pushtraceemmited* #\}))
-   (display "}\n") )
+	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) )))
+      (genbody name l)
+      (display (make-string *pushtraceemmited* #\}))
+      (display "}\n") ))
 
 (define (get-locals params l) ;()
    ;; update all reg to ireg and  return all regs not in params.
@@ -127,9 +127,12 @@
       (define (expr->ireg e)
 	 (cond
 	    ((isa? e SawCIreg))
-	    ((rtl_reg? e) (widen!::SawCIreg e (index n))
-			  (set! n (+fx n 1))
-			  (set! regs (cons e regs)) )
+	    ((rtl_reg? e)
+	     (widen!::SawCIreg e
+		(index n)
+		(framed (not (basic-type? (rtl_reg-type e)))) )
+	     (set! n (+fx n 1))
+	     (set! regs (cons e regs)) )
 	    (else (check_fun (rtl_ins-fun e))
 		  (map expr->ireg (rtl_ins-args e)) )))
       (define (visit b::block)
@@ -215,26 +218,26 @@
 	 (for-each gen-init-frame locals)
 	 (for-each gen-move-to-frame params) )))
 
-(define (genbody l) ;(list block)
+(define (genbody name l) ;(list block)
    (for-each (lambda (b)
-		(out-label (block-label b))
+		(out-label name (block-label b))
 		(let ( (l (block-first b)) )
 		   (if (location? (find-location (car l))) (print ""))
 		   (for-each gen-ins l) ))
 	     l ))
 
-(define (out-label label)
+(define (out-label name label)
    (display* "L" label ":")
    (when *trace_used*
       (print "\tif(bps_time++ % 10000 == 0)\n")
       (print "\t\tfprintf(stderr, \"%ld %d\\n\", bps_time++, bps_used());") )
    (when *trace_nb_frames*
       (print "\tif(bps_time++ % 10000 == 0)\n")
-      (print "\t\tfprintf(stderr, \"%ld %d\\n\", bps_time++, bps_used());") )
+      (print "\t\tfprintf(stderr, \"%ld %d\\n\", bps_time++, bps_nbFrames());") )
    (if *count*
        (begin (display* "\tbbcount[" *counter* "]++;")
 	      (set! *counter* (+ 1 *counter*)) ))
-   (if *trace* (display* "\tprintf(\"" label "\\n\"); ")) )
+   (if *trace* (display* "\tprintf(\"" name "@" label "\\n\"); ")) )
 
 (define (print-location? loc)
    (if (location? loc)
@@ -586,11 +589,13 @@
 ;; Special case for not loosing a root .
 ;;
 (define (accept_folding_with_frame? ins tree)
-   (or (basic-type? (rtl_reg-type (rtl_ins-dest tree)))
-       (no-allocation-in tree)
-       (first-expr-arg? ins)
-       #f ))
+   (or (no-allocation-in tree)  ; x=(cadr y) in (f .. x ..)
+       (unless (rtl_return? (rtl_ins-fun ins))
+	  (or (basic-type? (rtl_reg-type (rtl_ins-dest tree)))
+	      (first-expr-arg? ins)   ; x=E in (f (cadr y) z x t)
+	      #f ))))
 
+;;;; Any expression that cannot provoque a GC can move
 (define (no-allocation-in tree)
    ;; return #t when the evaluation of tree doesn't allocate
    (and (no-allocation-fun (rtl_ins-fun tree))
@@ -610,16 +615,19 @@
 (define-method (no-allocation-fun fun::rtl_funcall) #f)
 (define-method (no-allocation-fun fun::rtl_call)
    (memq 'no-alloc (global-pragma (rtl_call-var fun))) )
-
 ;; CARE MANU...
 (define-method (no-allocation-fun fun::rtl_pragma) #t)
 
+;;;; We can accept at most one argument that can provoque a GC
+;;;; To compare to the assumption that parameters cannot be isolated roots
 (define (first-expr-arg? ins)
    ;; return #t when all arguments of ins doesn't allocate
-   #f )
+   (every no-allocation-arg (rtl_ins-args ins)) )
 
-;; X=cons(); return(X);
-;; X can be removed from the frame, but not totally removed.
+;; X=ANY; return(X);
+;; X can be removed from the frame
+
+;; Vx=Y No other def of Vx and no def of Y -> Subst Vx Y
 
 ;;
 ;; Taken from ../Cgen/emit-cop with slice modifs
@@ -647,5 +655,6 @@
 			  (the-failure)))))
 	  (read/rp parser sport)
 	  #t)))
+
 
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar 16 13:42:18 2016 (serrano)                */
+/*    Last change :  Thu Mar 17 08:56:02 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -152,7 +152,10 @@ struct bgl_ucs2_string {
 #define STRING_ASCII_SENTINEL_SET( s, i ) \
     (STRING_ASCII_SENTINEL( s ) = (i), s)
 
-#define BGL_MEMCHR( s, c, n, i ) memchr( &s[ i ], c, n ) 	    
+#define BGL_MEMCHR( s, c, n, i ) memchr( &s[ i ], c, n )
+#define BGL_MEMCHR_ZERO( s ) ((s) == 0L)
+#define BGL_MEMCHR_DIFF( s1, s2 ) ((s1) - (s2))
+	 
 #define UCS2_STRING_LENGTH( s ) UCS2_STRING( s ).length
 #define INVERSE_UCS2_STRING_LENGTH( s ) \
    ((UCS2_STRING_LENGTH( s ) = (-UCS2_STRING_LENGTH( s ))), BUNSPEC)
