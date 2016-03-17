@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Mar 17 08:57:47 2016 (serrano)                */
+;*    Last change :  Thu Mar 17 09:11:39 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -291,10 +291,13 @@
 	    (string-prefix? fail-safe side-effect-free nesting)
 	    (string-suffix? fail-safe side-effect-free nesting)
 	    (string-prefix-ci? fail-safe side-effect-free nesting)
-	    (string-suffix-ci? fail-safe side-effect-free nesting)
-	    ($memchr no-alloc fail-safe side-effect-free)
-	    ($memchr-zerof? no-alloc fail-safe side-effect-free)
-	    ($memchr-diff no-alloc fail-safe side-effect-free)))
+	    (string-suffix-ci? fail-safe side-effect-free nesting))
+   (cond-expand
+      (bigloo-c
+       (pragma
+	  ($memchr no-alloc fail-safe side-effect-free)
+	  ($memchr-zero? no-alloc fail-safe side-effect-free)
+	  ($memchr-diff no-alloc fail-safe side-effect-free)))))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string?@ ...                                              */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Sat Jun  6 16:45:10 2015 (serrano)                */
+;*    Last change :  Thu Mar 17 09:12:40 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -258,14 +258,18 @@
    (pragma  (c-socket? nesting fail-safe)
 	    (c-socket-hostname nesting fail-safe)
 	    (c-socket-hostip nesting fail-safe)
-	    ($socket-host-addr nesting fail-safe)
-	    ($socket-host-addr=? nesting fail-safe)
-	    ($socket-local-addr nesting fail-safe)
-	    ($socket-local? nesting fail-safe)
 	    (c-socket-down? nesting fail-safe)
 	    (c-socket-port-number nesting fail-safe)
 	    (c-socket-input nesting fail-safe)
-	    (c-socket-output nesting fail-safe)))
+	    (c-socket-output nesting fail-safe))
+   
+   (cond-expand
+      (bigloo-c
+       (pragma
+	  ($socket-host-addr nesting fail-safe)
+	  ($socket-host-addr=? nesting fail-safe)
+	  ($socket-local-addr nesting fail-safe)
+	  ($socket-local? nesting fail-safe)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *socket-initialized* ...                                         */
