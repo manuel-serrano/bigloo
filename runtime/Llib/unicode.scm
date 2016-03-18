@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Mar 15 21:06:39 2016 (serrano)                */
+;*    Last change :  Fri Mar 18 07:55:53 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -760,6 +760,8 @@
       (string-set! s (+fx j 1) #a191)
       (string-set! s (+fx j 2) #a189))
 
+   (tprint "utf8-normalize-utf16..." (ascii-string? str)
+      " " (string-ascii-sentinel str) " " (string-length str))
    (cond
       ((or (>fx end (string-length str))
 	   (<fx start 0)
@@ -778,6 +780,7 @@
 		 (string-ascii-sentinel-mark! (string-shrink! res w))
 		 (let* ((c (string-ref str r))
 			(n (char->integer c)))
+		    (tprint "UTF16 normalize n=" n)
 		    (cond
 		       ((<=fx n #x7f)
 			;; 1 byte
@@ -844,6 +847,7 @@
 				   (ucs2 (+fx (bit-lsh (bit-and n #xf) 12)
 					    (+fx (bit-lsh (bit-and n1 #x3f) 6)
 					       (bit-and n2 #x3f)))))
+			       (tprint "ucs2=" ucs2)
 			       (cond
 				  ((>fx ucs2 #xdfff)
 				   (string-unicode-fix! res w)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Mar 17 09:11:39 2016 (serrano)                */
+;*    Last change :  Fri Mar 18 08:17:13 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -263,8 +263,8 @@
 	    (string-length fail-safe side-effect-free no-cfa-top nesting)
 	    ($string-ascii-sentinel fail-safe side-effect-free no-cfa-top nesting args-safe)
 	    (string-ascii-sentinel fail-safe side-effect-free no-cfa-top nesting)
-	    (string-ascii-sentinel-set! fail-safe side-effect-free no-cfa-top nesting)
-	    ($string-ascii-sentinel-set! fail-safe side-effect-free no-cfa-top nesting)
+	    (string-ascii-sentinel-set! fail-safe no-cfa-top nesting)
+	    ($string-ascii-sentinel-set! fail-safe no-cfa-top nesting)
 	    ($string-bound-check? fail-safe side-effect-free no-cfa-top nesting)
 	    ($string=? fail-safe side-effect-free nesting)
 	    ($substring=? fail-safe side-effect-free nesting)
