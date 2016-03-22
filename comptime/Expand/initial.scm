@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Wed Feb  3 18:04:43 2016 (serrano)                */
+;*    Last change :  Tue Mar 22 16:04:56 2016 (serrano)                */
 ;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -530,7 +530,7 @@ v   (install-G-comptime-expander 'filter!
 			      (args args)
 			      (res  '()))
 		      (if (null? args)
-			  res
+			  (reverse! res)
 			  (loop (+fx i 1)
 				(cdr args)
 				(cons
