@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat Feb  6 09:15:53 2016 (serrano)                */
+;*    Last change :  Tue Mar 29 14:01:57 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -222,6 +222,7 @@
 	    *saw-register-allocation-max-size*
 	    *saw-register-allocation-functions*
 	    *saw-no-register-allocation-functions*
+	    *saw-spill*
 	    *global-tail-call?*
 	    *builtin-allocators*
 	    *eval-options*
@@ -1079,6 +1080,13 @@
 (param-define *saw-no-register-allocation-functions*
    "The list of functions disabling register allocation"
    '())
+
+;*---------------------------------------------------------------------*/
+;*    *saw-spill* ...                                                  */
+;*---------------------------------------------------------------------*/
+(param-define *saw-spill*
+   "Enable saw spill optimization"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *global-tail-call?* ...                                          */

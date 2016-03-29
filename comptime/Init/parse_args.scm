@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat Feb  6 09:13:41 2016 (serrano)                */
+;*    Last change :  Tue Mar 29 14:02:19 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -505,6 +505,8 @@
        (set! *saw-register-allocation-onexpression?* #t))
       (("-fno-saw-regalloc-onexpr" (help "Don't allocate registers on expressions"))
        (set! *saw-register-allocation-onexpression?* #f))
+      (("-fsaw-spill" (help "Enable saw spill optimization"))
+       (set! *saw-spill* #t))
       
 ;*--- Safety ----------------------------------------------------------*/
       (section "Safety")

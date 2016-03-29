@@ -41,11 +41,11 @@
 (define *trace_nb_frames* #f)
 
 (define *hasframe* #f)
-(define *pointer-in-a-frame* #t)
-(define *ms-spil* #f)
+(define *pointer-in-a-frame* (not *saw-spill*))
 
 ;;
 (define (saw-cheader) ;()
+   (set! *pointer-in-a-frame* (not *saw-spill*))
    (with-output-to-port *c-port*
       (lambda () (header)) ))
 
@@ -111,7 +111,7 @@
 	       (if *hasprotect* (display " jmp_buf_t jmpbuf;\n"))
 	       (if *haspushexit* (display " struct exitd exitd;\n"))
 	       (if *haspushbefore* (display " struct befored befored;\n"))
-	       (when *ms-spil* (ms_spil_init l))
+	       (when *saw-spill* (ms_spil_init l))
 	       (declare-variables name params locals)
 	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) )))
       (genbody name l)
@@ -203,12 +203,12 @@
 (define (check-need-frame params locals)
    (define (f? r) (SawCIreg-framed r))
    (set! *hasframe*
-	 (and (or *pointer-in-a-frame* *ms-spil*)
+	 (and (or *pointer-in-a-frame* *saw-spill*)
 	      (or *hasprotect* (any f? params) (any f? locals)) )))
 
 (define (declare-regs l) ;()
    (for-each (lambda (r)
-		(unless (and (SawCIreg-framed r) (not *ms-spil*))
+		(unless (and (SawCIreg-framed r) (not *saw-spill*))
 		   (display "\t")
 		   (gen-type-reg r)
 		   (display ";")
@@ -260,7 +260,7 @@
 		(out-label name (block-label b))
 		(let ( (l (block-first b)) )
 		   (if (location? (find-location (car l))) (print ""))
-		   (if *ms-spil*
+		   (if *saw-spill*
 		       (gen-bb b)
 		       (for-each gen-ins l) )))
 	     l ))
@@ -403,7 +403,7 @@
        (gen-expr (rtl_ins-fun reg) (rtl_ins-args reg)) ))
 
 (define (gen-reg/dest reg) ;()
-   (if (and (SawCIreg-framed reg) (not *ms-spil*))
+   (if (and (SawCIreg-framed reg) (not *saw-spill*))
        (gen-reg-frame reg)
        (gen-reg-standard reg) ))
 
@@ -506,7 +506,7 @@
 				    (emit-atom-value n)
 				    (display ":") )
 				 pat ))
-		   (when *ms-spil* (unify *ugly_onf* *ugly_onr* lab))
+		   (when *saw-spill* (unify *ugly_onf* *ugly_onr* lab))
 		   (display* " goto L" (block-label lab) ";") )
 		pats
 		(rtl_switch-labels fun) )
@@ -721,7 +721,7 @@
    (cond (*pointer-in-a-frame*
 	  (and (not (rtl_return? (rtl_ins-fun ins)))
 	       (fold_in_frame ins tree) ))
-	 (*ms-spil*
+	 (*saw-spill*
 	  (and (not (rtl_return? (rtl_ins-fun ins)))
 	       (fold_with_spil ins tree) ))
 	 (else #t) ))
