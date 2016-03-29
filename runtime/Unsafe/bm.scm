@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 15 11:05:03 2016                          */
-;*    Last change :  Tue Mar 15 19:09:17 2016 (serrano)                */
+;*    Last change :  Wed Mar 23 12:12:46 2016 (serrano)                */
 ;*    Copyright   :  2016 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    "Boyer Moore" search algorithm.                                  */
@@ -127,8 +127,9 @@
       (let loop ((i 0))
 	 (if (char=? (string-ref word (-fx pos i))
 		  (string-ref word (-fx wordlen-1 i)))
-	     (when (<fx i pos)
-		(loop (+fx i 1)))
+	     (if (<fx i pos)
+		 (loop (+fx i 1))
+		 i)
 	     i))))
 
 ;*---------------------------------------------------------------------*/
@@ -176,7 +177,9 @@
       ;; first loop
       (rof p patlen-1 0
 	 (when (is-prefix? pat (+fx p 1))
-	    (set! last-prefix-index (+fx p 1))))
+	    (set! last-prefix-index (+fx p 1)))
+	 (u32vector-set! delta2 p
+	    (+fx last-prefix-index (-fx patlen-1 p))))
       ;; second loop
       (for p 0 patlen-1
 	 (let ((slen (suffix-length pat p)))
