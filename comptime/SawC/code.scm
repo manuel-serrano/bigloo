@@ -30,9 +30,17 @@
 
 (define *comment* #f)
 (define *trace* #f)
+
 (define *count* #f)
-(define *inline-simple-macros* #t)
 (define *counter* 0)
+
+(define *count-memory-access* #f)
+(define *read-register* 0)
+(define *write-register* 0)
+(define *read-frame* 0)
+(define *write-frame* 0)
+
+(define *inline-simple-macros* #t)
 (define *hasprotect* #f)
 (define *haspushexit* #f)
 (define *haspushbefore* #f)
@@ -40,7 +48,7 @@
 (define *trace_used* #f)
 (define *trace_nb_frames* #f)
 
-(define *hasframe* #f)
+(define *hasframe* #t)
 (define *pointer-in-a-frame* (not *saw-spill*))
 
 ;;
@@ -56,11 +64,16 @@
    (when *trace_nb_frames*
       (display "extern long bps_time;\n")
       (display "extern int bps_nbFrames();\n") )
-   (if *count*
-       (begin (display "extern int bbcount[];\n")
-	      (display "extern char *bbname[];\n")
-	      (display "extern obj_t PRINT_TRACE(obj_t);\n\n") ))
-
+  (when (or *count* *count-memory-access*)
+     (when *count*
+	(display "extern int bbcount[];\n")
+	(display "extern char *bbname[];\n") )
+     (when *count-memory-access*
+	(display "long __read_register__ = 0;\n")
+	(display "long __read_frame__ = 0;\n")
+	(display "long __write_register__ = 0;\n")
+	(display "long __write_frame__ = 0;\n") )
+     (display "extern obj_t PRINT_TRACE(obj_t);\n\n") )
    (display "\n") )
 
 (define (saw-cepilogue) ;()
@@ -69,15 +82,19 @@
 
 (define (cepilogue)
    (display "\n")
-   (if *count*
-       (begin (display* "int bbcount[" *counter* "];\n")
-	      (display* "char *bbname[" *counter* "];\n")
-	      (display "obj_t PRINT_TRACE(obj_t r) {\n")
-	      (display "\tint i;\n")
-	      (display* "\tfor(i=0;i<" *counter* ";i++)\n")
-	      (display "\t\tprintf(\"%d\t%d\\n\",bbcount[i],i);\n")
-	      (display "\treturn(BIGLOO_EXIT(r));\n")
-	      (display "}\n") )))
+   (when (or *count* *count-memory-access*)
+      (when *count*
+	 (display* "int bbcount[" *counter* "];\n")
+	 (display* "char *bbname[" *counter* "];\n") )
+      (display "obj_t PRINT_TRACE(obj_t r) {\n")
+      (when *count*
+	 (display "\tint i;\n")
+	 (display* "\tfor(i=0;i<" *counter* ";i++)\n")
+	 (display "\t\tprintf(\"%d\t%d\\n\",bbcount[i],i);\n") )
+      (when *count-memory-access*
+	 (display "\tprintf(\" read: reg=%ld frame=%ld, write: reg %ld frame %ld\\n\", __read_register__, __read_frame__, __write_register__, __write_frame__);\n") )
+      (display "\treturn(BIGLOO_EXIT(r));\n")
+      (display "}\n") ))
 
 (define (saw-cgen b::cvm v::global) ;()
    (let ( (l (global->blocks b v)) )
@@ -248,7 +265,7 @@
 	 (print "\tlpf.header.size = " count ";")
 	 (print "\tlpf.header.link = BGL_ENV_SAW_SP(BGL_CURRENT_DYNAMIC_ENV());")
 	 (print "\tBGL_ENV_SAW_SP_SET(BGL_CURRENT_DYNAMIC_ENV(), &(lpf.header));")
-	 (print "\tlpf.header.name = \"" name "\";")
+	 ;(print "\tlpf.header.name = \"" name "\";")
 	 (for-each gen-init-frame locals)
 	 (for-each gen-move-to-frame params) )))
 
@@ -318,13 +335,20 @@
 	     (print "\t\tgoto L" (block-label then))
 	     (print ";\t}")
 	     (unify f r (car (set_sub succs (cons then '())))) ))
+	 ((rtl_go? fun)
+	  ;; Got a strange goto with 2 successors, probabely generated
+	  ;; by optimizing (ifeq 0 L1 L2)
+	  (unify f r (rtl_go-to fun))
+	  (gen-ins inst) )
 	 ((rtl_switch? fun)
 	  ;; hacked directly in the specific gen-expr
 	  (set! *ugly_onf* f)
 	  (set! *ugly_onr* r)
 	  (gen-ins inst) )
-	 (else (error 'explicit_spit "can manage this node"
-		      (symbol->string (class-name (object-class fun))) ))))
+	 (else
+	  (error 'explicit_spit "can manage this node"
+		 (cons (symbol->string (class-name (object-class fun)))
+		       (length succs) )))))
    (gen-ins-postlude inst f r) )
 
 (define (gen-ins-postlude ins onf onr)
@@ -342,9 +366,9 @@
    (when *trace_nb_frames*
       (print "\tif(bps_time++ % 10000 == 0)\n")
       (print "\t\tfprintf(stderr, \"%ld %d\\n\", bps_time++, bps_nbFrames());") )
-   (if *count*
-       (begin (display* "\tbbcount[" *counter* "]++;")
-	      (set! *counter* (+ 1 *counter*)) ))
+   (when *count*
+      (display* "\tbbcount[" *counter* "]++;")
+      (set! *counter* (+ 1 *counter*)) )
    (if *trace* (display* "\tprintf(\"" name "@" label "\\n\"); ")) )
 
 (define (print-location? loc)
@@ -680,7 +704,7 @@
        (set! *pushtraceemmited* (+fx 1 *pushtraceemmited*))
        "{BGL_ENV_PUSH_TRACE" )
       ((string=? s "BIGLOO_EXIT")
-       (if *count* "PRINT_TRACE" s) )
+       (if (or *count* *count-memory-access*) "PRINT_TRACE" s) )
       ;; MANU
       ((string=? s "STRING_REF") "BGL_RTL_STRING_REF")
       (else s) ))
