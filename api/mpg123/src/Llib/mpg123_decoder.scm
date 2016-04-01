@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Sep 17 07:53:28 2011                          */
-;*    Last change :  Wed Jan 27 19:28:03 2016 (serrano)                */
+;*    Last change :  Fri Apr  1 08:28:19 2016 (serrano)                */
 ;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MPG123 decoder                                                   */
@@ -246,6 +246,7 @@
 			 (cond
 			    ((>fx %!dseek 0)
 			     (let ((offset (mp3-index (musicbuffer-stream buffer) %!dseek)))
+				(tprint "offset=" offset)
 				(musicbuffer-seek buffer offset)
 				(mpg123-handle-reset! %mpg123)
 				(with-access::musicstatus %status (songpos)

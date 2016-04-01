@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Jan 28 03:26:01 2016 (serrano)                */
+;*    Last change :  Thu Mar 31 14:59:22 2016 (serrano)                */
 ;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
@@ -191,7 +191,7 @@
 	     (begin
 		(unless (integer? (car song))
 		   (bigloo-type-error '|music-seek ::musicbuf| 'int (car song)))
-		(music-play o song))
+		(music-play o (car song)))
 	     (when (isa? %decoder musicdecoder)
 		(musicdecoder-seek %decoder pos))))))
 

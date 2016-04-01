@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Feb 25 18:42:47 2016 (serrano)                */
+;*    Last change :  Thu Mar 31 18:21:48 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -1509,7 +1509,8 @@
 ;*    find-class-unserializer ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (find-class-unserializer hash)
-   (let ((cell (assv hash *class-serialization*)))
+   (let* ((h (if (=fx hash 0) (class-hash object) hash))
+	  (cell (assv h *class-serialization*)))
       (if (pair? cell)
 	  (caddr cell)
 	  (error "string->obj" "Cannot find class unserializer" hash))))

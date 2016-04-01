@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 25 08:37:41 2007                          */
-;*    Last change :  Mon Jul 21 12:02:50 2014 (serrano)                */
-;*    Copyright   :  2007-14 Manuel Serrano                            */
+;*    Last change :  Fri Apr  1 08:26:08 2016 (serrano)                */
+;*    Copyright   :  2007-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 info extractor                                               */
 ;*    -------------------------------------------------------------    */
@@ -90,7 +90,7 @@
 	  (pding (byte-bits b2 1 1))
 	  (bitchannels (byte-bits b3 6 7)))
       (unless (or (=fx bitlayer 00) (=fx bitsrate 3) (=fx bitver 1))
-	 (let* ((layer (vector-ref '#(0 3 2 1) bitlayer) )
+	 (let* ((layer (vector-ref '#(0 3 2 1) bitlayer))
 		(version (vector-ref '#(2.5 0. 2. 1.) bitver))
 		(brate (bitrate bitbrate bitver bitlayer))
 		(srate (vector-ref
@@ -212,9 +212,10 @@
 	       (if (<=fl pos 0.)
 		   offset
 		   (begin
-		      (read-mp3-frame obj i f)
-		      (loop (-fl pos duration) (+ i length))))))))
-   
+		      (if (read-mp3-frame obj i f)
+			  (loop (-fl pos duration) (+ i length))
+			  (loop pos (+ i 1)))))))))
+
    (cond
       ((mmap? obj)
        (mp3-index->offset obj))
