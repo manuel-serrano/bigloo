@@ -21,19 +21,24 @@ Description: Bigloo core Libraries
 @IFALSA@ Depends: libasound2, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SSLDEPEND@, @EXTRADEPEND@
 @IFALSA@ Description: Bigloo bindings for the ALSA library
 
+@IFPULSEAUDIO@ Package: libpulseaudio-bigloo
+@IFPULSEAUDIO@ Architecture: any
+@IFPULSEAUDIO@ Depends: bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SSLDEPEND@, @EXTRADEPEND@
+@IFPULSEAUDIO@ Description: Bigloo bindings for the Pulseaudio library
+
 @IFFLAC@ Package: libflac-bigloo
 @IFFLAC@ Architecture: any
-@IFFLAC@ Depends: libflac8, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
+@IFFLAC@ Depends: libflac8, libalsa-bigloo, libpulseaudio-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @FLACDEPEND@, @EXTRADEPEND@
 @IFFLAC@ Description: Bigloo bindings for the FLAC library
 
 @IFWAV@ Package: libwav-bigloo
 @IFWAV@ Architecture: any
-@IFWAV@ Depends: libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @WAVDEPEND@, @EXTRADEPEND@
+@IFWAV@ Depends: libalsa-bigloo, libpulseaudio-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @WAVDEPEND@, @EXTRADEPEND@
 @IFWAV@ Description: Bigloo bindings handling WAV resources
 
 @IFMPG123@ Package: libmpg123-bigloo
 @IFMPG123@ Architecture: any
-@IFMPG123@ Depends: libmpg123-0, libalsa-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
+@IFMPG123@ Depends: libmpg123-0, libalsa-bigloo, libpulseaudio-bigloo, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @MPG123DEPEND@, @EXTRADEPEND@
 @IFMPG123@ Description: Bigloo bindings for the MPG123 library
 
 @IFAVAHI@ Package: libavahi-bigloo
