@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Wed Dec 26 09:36:03 2012 (serrano)                */
+;*    Last change :  Mon Apr  4 18:01:55 2016 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -159,7 +159,27 @@
 	    (sha256sum (current-input-port)) sum)))
    (test (string-append "sha256-mmap." (integer->string n))
       (sha256sum (string->mmap str)) sum))
-   
+
+;*---------------------------------------------------------------------*/
+;*    test-sha256-2 ...                                                */
+;*---------------------------------------------------------------------*/
+(define (test-sha256-2)
+   (let ((res #t))
+      (for-each (lambda (s1 res)
+		   (set! res (and res (string=? (sha256sum-string s1) res))))
+	 '("VzqZI-2-d2WCGxDu*W.RFiJ9*bz=&F,V45a?WFKCkk5uk,OeKBVSJ8Eg9H3M;R.wc.+ZsDefqMzAA-E."
+	   "++tNXb3ZBCx0yC0K+kIxeKWVCI6UUXeMPacq1ISfNSIP$,cP&K:3%pCdXlA$9hJe7ouMA;R:k3ihukX="
+	   "C=,*E;ykDMzd3Ah:Ita.,uz-I8nbWTjbQ$VXM=7SmjWSm3ly&m,NGnhRZuTy-2zkCX7+xRKmD9HsPSQr"
+	   "9F.NHL.KnKX-7+8z01K+EvHMBu8g;*WYAJ+K%2X,pb20?rcw#p-cnzPOTAUI$=.aF2KgH,*z;AcIu45p"
+	   "g8RrL.%8eFtS7&Noar+9BMxoD-&Naonga4aLvZ&c7sUus,I#fe5Gt5yWWxnAMAjp8kDgMCiwV2QQt1Lz"
+	   "O*VK=SE8.85fLVTdMG?VDtjRTsvmHq$Ylvlh:QT1BeJ:Z5To-q.$JWOfR.r1d-D-nOZd7vH;zTF1ebT#")
+	 '("a97416f9cd9f7e346fe83c6cfd6e88220cdefe27dbf7fa2871915a186c90ceef"
+	   "0c84722afd1093107afcad9ff599e7cb185ffc3acfe41ad5c0b63d7501563c3a"
+	   "6df88b73faa26d5477efb32e4159c80db2fa700941bfe15a5cb395df07878015"
+	   "e787d2bb5e7c672defd325bb2721a51bbd35d85af285af6bf8bde248929da5e6"
+	   "9484011558493272f29bd108bd64479ee75d6e5d3238675bf9e58b9322d64a9a"
+	   "48c29cef0652248f937af257d78d351bb049c035f94f0d6724cf62c625636522"))))
+
 ;*---------------------------------------------------------------------*/
 ;*    test-string ...                                                  */
 ;*---------------------------------------------------------------------*/
@@ -481,6 +501,7 @@
    (test-sha256 10
       (make-string 56 #\a)
       "b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a")
+   (test-sha256-2)
    (test "string-prefix-length.1"
       (string-prefix-length "abcde" "abcdef") 5)
    (test "string-prefix-length.2"

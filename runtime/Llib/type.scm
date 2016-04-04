@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Fri Mar 11 17:28:44 2016 (serrano)                */
+;*    Last change :  Mon Apr  4 18:07:12 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -1092,6 +1092,7 @@
        (method static $byte->uint::uint (::byte) "BYTE_TO_UINT")
        (method static $byte->long::long (::byte) "BYTE_TO_LONG")
        (method static $byte->ulong::ulong (::byte) "BYTE_TO_ULONG")
+       (method static $byte->uint32::uint32 (::byte) "BYTE_TO_INT")
 
        (method static $ubyte->short::short (::ubyte) "UBYTE_TO_SHORT")
        (method static $ubyte->ushort::ushort (::ubyte) "UBYTE_TO_USHORT")
