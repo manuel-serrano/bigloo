@@ -1416,7 +1416,6 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
       if( errno == EINPROGRESS ) {
 	 fd_set writefds;
 	 struct timeval timeout;
-	 int _errno;
 
 	 FD_ZERO( &writefds );
 	 FD_SET( s, &writefds );
@@ -1431,7 +1430,6 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	    close( s );
 	    socket_timeout_error( hostname, port );
 	 } else {
-	    _errno = errno;
 	    if( err < 0 ) {
 	       /* we have experienced a failure so we */
 	       /* invalidate the host name entry */
@@ -1443,11 +1441,20 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 	       int len = sizeof( int );
 	       int r = getsockopt( s, SOL_SOCKET, SO_ERROR, (void *)&err, (socklen_t *)&len );
 
-	       if( (r < 0) || (err != 0) ) {
+	       if( r < 0 ) {
 		  /* we have experienced a failure so we */
 		  /* invalidate the host name entry */
+                  invalidate_hostbyname( hostname );
+
 		  close( s );
-		  tcp_client_socket_error( hostname, port, "getsockopt", _errno );
+		  tcp_client_socket_error( hostname, port, "getsockopt failed", errno );
+	       } else if( err != 0 ) {
+		  /* we have experienced a failure so we */
+		  /* invalidate the host name entry */
+                  invalidate_hostbyname( hostname );
+
+		  close( s );
+		  tcp_client_socket_error( hostname, port, "connect failed", err );
 	       }
 	    }
 	 }
