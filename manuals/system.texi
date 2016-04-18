@@ -448,6 +448,7 @@ whose dirname is @var{string}.
 @end deffn
 
 @deffn {bigloo procedure} file-modification-time string
+@deffnx {bigloo procedure} file-change-time string
 @deffnx {bigloo procedure} file-access-time string
 @deffnx {bigloo procedure} file-times-set! string atime mtime
 The date (in second) of the last modification (respec. access) for

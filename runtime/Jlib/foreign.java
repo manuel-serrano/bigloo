@@ -5373,6 +5373,15 @@ public final class foreign
 	 }
       }
 
+   public static long bgl_last_change_time(byte[]file)
+      {
+	 if( is_resourcep( file ) ) {
+	    return (long) 0;
+	 } else {
+	    return (long) 0;
+	 }
+      }
+
    public static long bgl_last_access_time(byte[]file)
       {
 	 return 0;

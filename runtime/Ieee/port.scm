@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Wed Mar 16 10:18:30 2016 (serrano)                */
+;*    Last change :  Sun Apr 17 16:16:17 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -191,6 +191,7 @@
 	    ($directory->path-list::obj (::string ::int ::char)
 					"bgl_directory_to_path_list")
 	    ($modification-time::elong (::string) "bgl_last_modification_time")
+	    ($change-time::elong (::string) "bgl_last_change_time")
 	    ($access-time::elong (::string) "bgl_last_access_time")
 	    ($utime::int (::string ::elong ::elong) "bgl_utime")
 	    
@@ -370,6 +371,8 @@
 		       "bgl_directory_to_list")
 	       (method static $modification-time::elong (::string)
 		       "bgl_last_modification_time")
+	       (method static $change-time::elong (::string)
+		       "bgl_last_change_time")
 	       (method static $access-time::elong (::string)
 		       "bgl_last_access_time")
 	       (method static $utime::int (::string ::elong ::elong)
@@ -491,6 +494,7 @@
 	    (inline directory->list ::string)
 	    (directory->path-list ::bstring)
 	    (inline file-modification-time::elong ::string)
+	    (inline file-change-time::elong ::string)
 	    (inline file-access-time::elong ::string)
 	    (inline file-times-set!::int ::string ::elong ::elong)
 	    (inline file-size::elong ::string)
@@ -1537,6 +1541,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (file-modification-time file)
    ($modification-time file))
+
+;*---------------------------------------------------------------------*/
+;*    @deffn file-change-time@ ...                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (file-change-time file)
+   ($change-time file))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn file-access-time@ ...                                     */

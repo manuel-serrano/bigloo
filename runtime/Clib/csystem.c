@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Tue Sep  1 17:19:27 2015 (serrano)                */
-/*    Copyright   :  2002-15 Manuel Serrano                            */
+/*    Last change :  Sun Apr 17 16:04:27 2016 (serrano)                */
+/*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
 /*=====================================================================*/
@@ -221,6 +221,20 @@ bgl_last_modification_time( char *file ) {
       return -1;
    else
       return (long)(_stati.st_mtime);
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_last_change_time ...                                         */
+/*---------------------------------------------------------------------*/
+long
+bgl_last_change_time( char *file ) {
+   struct stat _stati;
+
+   if( lstat( file, &_stati ) )
+      return -1;
+   else
+      return (long)(_stati.st_ctime);
 }
 
 /*---------------------------------------------------------------------*/
