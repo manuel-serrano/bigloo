@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec 25 06:22:31 2015 (serrano)                */
-;*    Copyright   :  2010-15 Manuel Serrano                            */
+;*    Last change :  Tue Apr 19 09:57:56 2016 (serrano)                */
+;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this passe  */
 ;*    is only executed when generating plain C code.                   */
@@ -34,9 +34,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    return-walk! ...                                                 */
-;*    -------------------------------------------------------------    */
-;*    When the compiler is running in unsafe-range mode, this function */
-;*    is not even called.                                              */
 ;*---------------------------------------------------------------------*/
 (define (return-walk! globals)
    (pass-prelude "Return" init-cache!) 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Thu Dec 24 07:01:34 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 19 10:29:49 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
