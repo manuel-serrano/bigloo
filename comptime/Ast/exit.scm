@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 14:19:17 1995                          */
-;*    Last change :  Wed Mar 30 15:50:38 2011 (serrano)                */
+;*    Last change :  Wed Apr 20 08:18:50 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `set-exit' and `jmp-exit' management.                        */
 ;*=====================================================================*/
@@ -31,22 +31,22 @@
 ;*    This function is called the `handling' function.                 */
 ;*---------------------------------------------------------------------*/
 (define (set-exit->node exp stack loc site)
+   
    (define (make-local-exit exit handler)
       (make-local-sexit exit *exit* (instantiate::sexit (handler handler))))
+   
    (let ((loc (find-location/loc exp loc)))
       (match-case exp
          ((?- (?exit) . ?body)
           (let* ((hdlg-name  (mark-symbol-non-user!
-			      (make-anonymous-name loc "exit")))
+				(make-anonymous-name loc "exit")))
                  (hdlg-sexp `(labels ((,hdlg-name () #unspecified))
                                 (,hdlg-name)))
                  (hdlg-node  (sexp->node hdlg-sexp stack loc site))
                  (hdlg-fun   (car (let-fun-locals hdlg-node)))
                  (exit       (make-local-exit exit hdlg-fun))
                  (body       (sexp->node (normalize-progn body)
-					 (cons exit stack)
-					 loc
-					 'value))
+				(cons exit stack) loc 'value))
                  (exit-body  (instantiate::set-ex-it
 				(loc loc)
 				(type (strict-node-type *obj* *_*))
@@ -75,7 +75,7 @@
       (match-case exp
          ((?- ?exit . ?value)
           (let ((value (sexp->node (normalize-progn value) stack loc 'value))
-                (exit  (sexp->node exit stack loc 'value)))
+                (exit (sexp->node exit stack loc 'value)))
 	     (instantiate::jump-ex-it
 		(loc loc)
 		(type (strict-node-type *unspec* *_*))

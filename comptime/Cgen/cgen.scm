@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Thu Feb 18 08:29:36 2016 (serrano)                */
+;*    Last change :  Tue Apr 19 14:03:21 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -304,12 +304,11 @@
 			  (instantiate::csequence
 			     (loc  (cop-loc cop))
 			     (cops (reverse! (cons cop new)))))
-		       (begin
-			  (if (not (side-effect? (car exp)))
-			      (loop (cdr exp) new)
-			      (loop (cdr exp)
-				 (cons (node->cop (car exp) *stop-kont* inpushexit)
-				    new))))))))))))
+		       (if (not (side-effect? (car exp)))
+			   (loop (cdr exp) new)
+			   (loop (cdr exp)
+			      (cons (node->cop (car exp) *stop-kont* inpushexit)
+				 new)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-push-exit? ...                                                */
@@ -461,34 +460,33 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::select kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::select kont): " (shape node) #\Newline
-	  "  kont: " kont #\Newline)
+      "(node->cop node::select kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
    (with-access::select node (clauses test item-type loc)
       (for-each (lambda (clause)
 		   (set-cdr! clause (node->cop (cdr clause) kont inpushexit)))
-		clauses)
-      (let ((aux  (make-local-svar/name 'aux item-type)))
-	 (let ((cop (node->cop (node-setq aux test) *id-kont* inpushexit)))
-	    (if (and (csetq? cop)
-		     (eq? (varc-variable (csetq-var cop)) aux))
-		(instantiate::cswitch
-		   (loc  loc)
-		   (test (csetq-value cop))
-		   (clauses clauses))
-		(instantiate::cblock
-		   (loc loc)
-		   (body (instantiate::csequence
-			    (loc loc)
-			    (cops (list (instantiate::local-var
-					   (loc  loc)
-					   (vars (list aux)))
-					cop
-					(instantiate::cswitch
-					   (loc  loc)
-					   (test (instantiate::varc
-						    (loc loc)
-						    (variable aux)))
-					   (clauses clauses))))))))))))
+	 clauses)
+      (let* ((aux  (make-local-svar/name 'aux item-type))
+	     (cop (node->cop (node-setq aux test) *id-kont* inpushexit)))
+	 (if (and (csetq? cop) (eq? (varc-variable (csetq-var cop)) aux))
+	     (instantiate::cswitch
+		(loc  loc)
+		(test (csetq-value cop))
+		(clauses clauses))
+	     (instantiate::cblock
+		(loc loc)
+		(body (instantiate::csequence
+			 (loc loc)
+			 (cops (list (instantiate::local-var
+					(loc  loc)
+					(vars (list aux)))
+				  cop
+				  (instantiate::cswitch
+				     (loc  loc)
+				     (test (instantiate::varc
+					      (loc loc)
+					      (variable aux)))
+				     (clauses clauses)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::let-fun ...                                          */
@@ -698,7 +696,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::retblock kont inpushexit)
    (with-access::retblock node (body loc)
-      (if (eq? kont *return-kont*)
+      (if (and #f (eq? kont *return-kont*))
 	  (node->cop body kont inpushexit)
 	  (let* ((local (make-local-svar (gensym '__retval) (node-type node)))
 		 (label (instantiate::clabel

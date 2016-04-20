@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Apr 19 10:48:23 2016 (serrano)                */
+;*    Last change :  Wed Apr 20 10:30:33 2016 (serrano)                */
 ;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this passe  */
@@ -228,13 +228,17 @@
 (define-walk-method (is-return? node::app exitvar abort)
    (with-access::app node (fun args)
       (with-access::var fun (variable)
-	 (if (eq? variable *unwind-until!*)
+	 (cond
+	    ((eq? variable *unwind-until!*)
 	     (if (isa? (car args) var)
 		 (with-access::var (car args) (variable)
 		    (or (eq? variable exitvar)
 			(is-return? (car args) exitvar abort)))
-		 (call-default-walker))
-	     (call-default-walker)))))
+		 (call-default-walker)))
+	    ((eq? variable *get-exitd-top*)
+	     (abort #f))
+	    (else
+	     (call-default-walker))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    return! ...                                                      */

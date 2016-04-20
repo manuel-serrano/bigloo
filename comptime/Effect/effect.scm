@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 13:46:44 1995                          */
-;*    Last change :  Sun Nov 18 07:58:34 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 19 12:48:11 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The effect property                                              */
 ;*    -------------------------------------------------------------    */
@@ -101,6 +101,15 @@
 (define-method (side-effect? node::sync)
    #t)
 
+;*---------------------------------------------------------------------*/
+;*    side-effect? ::retblock ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (side-effect? node::retblock)
+   (with-access::retblock node (body)
+      (side-effect? body)))
 
-
-	    
+;*---------------------------------------------------------------------*/
+;*    side-effect? ::return ...                                        */
+;*---------------------------------------------------------------------*/
+(define-method (side-effect? node::return)
+   #t)

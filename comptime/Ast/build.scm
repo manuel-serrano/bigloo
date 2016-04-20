@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 14:00:21 1996                          */
-;*    Last change :  Tue Sep  7 15:23:18 2010 (serrano)                */
+;*    Last change :  Tue Apr 19 14:18:41 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    From the code definition, we build the Ast                       */
 ;*=====================================================================*/
@@ -76,10 +76,7 @@
 	     (sfun-body-exp (sfun-body sfun))
 	     (def-loc (find-location (global-src def)))
 	     (loc (find-location/loc sfun-body-exp def-loc))
-	     (body (sexp->node sfun-body-exp
-			       sfun-args
-			       loc
-			       'value)))
+	     (body (sexp->node sfun-body-exp sfun-args loc 'value)))
 	 (sfun-body-set! sfun body))
       (leave-function))
    def)

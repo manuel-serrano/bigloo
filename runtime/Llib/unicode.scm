@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Mar 21 19:52:40 2016 (serrano)                */
+;*    Last change :  Tue Apr 19 16:08:43 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -798,26 +798,6 @@
 			    (begin
 			       (string-unicode-fix! res w)
 			       (loop (+fx r 1) (+fx w 3)))))
-;* 		       ((and (>=fx n #xd8) (<=fx n #xdb))              */
-;* 			;; utf16 escape                                */
-;* 			(if (and (<fx r (-fx end 3)))                  */
-;* {* 				 (in-range? (string-ref str (+fx r 1)) #xdc #xdf) *} */
-;* {* 				 (in-range? (string-ref str (+fx r 2)) #xdc #xdf) *} */
-;* {* 				 (in-range? (string-ref str (+fx r 3)) #xdc #xdf)) *} */
-;* 			    (begin                                     */
-;* 			       (tprint "d8 in range")                  */
-;* 			      (string-set! res w c)                    */
-;* 			      (string-set! res (+fx w 1) (string-ref str (+fx r 1))) */
-;* 			      (string-set! res (+fx w 2) (string-ref str (+fx r 2))) */
-;* 			      (string-set! res (+fx w 3) (string-ref str (+fx r 3))) */
-;* 			      (loop (+fx r 4) (+fx w 4)))              */
-;* 			   (begin                                      */
-;* 			      (tprint "d8 pas in range r=" r " end=" end */
-;* 				 " " (integer->string (char->integer (string-ref str (+fx r 1))) 16) */
-;* 				 " " (integer->string (char->integer (string-ref str (+fx r 2))) 16) */
-;* 				 " " (integer->string (char->integer (string-ref str (+fx r 3))) 16)) */
-;* 			      (string-unicode-fix! res w)              */
-;* 			      (loop (+fx r 1) (+fx w 3)))))            */
 		       ((<=fx n #xdf)
 			(if (and (<fx (+fx 1 r) end)
 				 (in-range? (string-ref str (+fx r 1)) #x80 #xbf))

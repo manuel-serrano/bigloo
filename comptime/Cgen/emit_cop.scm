@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Wed Dec 23 13:45:39 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Apr 19 14:09:08 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -509,9 +509,11 @@
       (emit-cop test)
       (display ") { " *c-port*)
       (trace cgen (display "/* cop-cswitch */" *c-port*))
-      (let loop ((clauses clauses))
+      (let loop ((clauses clauses)
+		 (seen '()))
 	 (let ((clause (car clauses)))
-	    (if (eq? (car clause) 'else)
+	    (cond
+	       ((eq? (car clause) 'else)
 		(let ((loc (cop-loc (cdr clause))))
 		   (emit-bdb-loc loc)
 		   (display "default: " *c-port*)
@@ -519,24 +521,27 @@
 		       (begin
 			  (display "; " *c-port*)
 			  (trace cgen
-				 (display "/* cswitch default */" *c-port*))))
+			     (display "/* cswitch default */" *c-port*))))
 		   (display "} " *c-port*)
 		   (trace cgen (display "/* cswitch */" *c-port*))
-		   #f)
-		(begin
-		   (for-each (lambda (t)
+		   #f))
+	       ((every (lambda (n) (memq n seen)) (car clause))
+		(loop (cdr clauses) seen))
+	       (else
+		(for-each (lambda (t)
+			     (unless (memq t seen)
 				(display "case " *c-port*)
 				(emit-atom-value t)
 				(display " : " *c-port*)
-				(newline *c-port*))
-			     (car clause))
-		   (if (emit-cop (cdr clause))
-		       (begin
-			  (display "; " *c-port*)
-			  (trace cgen
-				 (display "/* cswitch clause */" *c-port*))))
-		   (display "break;" *c-port*)
-		   (loop (cdr clauses))))))))
+				(newline *c-port*)))
+		   (car clause))
+		(if (emit-cop (cdr clause))
+		    (begin
+		       (display "; " *c-port*)
+		       (trace cgen
+			  (display "/* cswitch clause */" *c-port*))))
+		(display "break;" *c-port*)
+		(loop (cdr clauses) (append (car clause) seen))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    emit-cop ::cmake-box ...                                         */

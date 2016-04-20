@@ -3,13 +3,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Tue Feb  9 07:34:18 2016 (serrano)                */
+;*    Last change :  Wed Apr 20 09:57:39 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    The computation of the A relation.
+;*    The computation of the A relation.                               */
 ;*    -------------------------------------------------------------    */
-;*    We don't have problem with `celled' because such variables       */
-;*    are now set as only readed (which is a great idea :-).           */
+;*    Celled variables are considered as only read and are treated     */
+;*    accordingly.                                                     */
 ;*=====================================================================*/
  
 ;*---------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
    (import  tools_shape
 	    tools_error
 	    type_type
+	    engine_param
 	    ast_var
 	    ast_node
 	    integrate_info
@@ -82,22 +83,22 @@
 	       (lambda ()
 		  (for-each (lambda (a) 
 			       (print "A( " (shape (car a)) ", "
-				      (shape (cadr a)) ", "
-				      (shape (caddr a)) " )"))
-			    A)))))
+				  (shape (cadr a)) ", "
+				  (shape (caddr a)) " )"))
+		     A)))))
       (trace (integrate 2)
-	     "- - - - - - - - - - - - - - - - " msg
-	     #\Newline
-	     "PHI: " (shape *phi*) #\newline
-	     p
-      	     "- - - - - - - - - - - - - - - - "
-	     #\Newline)))
+	 "- - - - - - - - - - - - - - - - " msg
+	 #\Newline
+	 "PHI: " (shape *phi*) #\newline
+	 p
+	 "- - - - - - - - - - - - - - - - "
+	 #\Newline)))
 
 ;*---------------------------------------------------------------------*/
 ;*    tail-type-compatible? ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    Are two types compatible with respect to the tail recursion      */
-;*    property.                                                        */
+;*    property?                                                        */
 ;*---------------------------------------------------------------------*/
 (define (tail-type-compatible? t1 t2)
    (or (eq? t1 t2)
@@ -110,7 +111,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    tail-coercion ...                                                */
 ;*    -------------------------------------------------------------    */
-;*    This function checks the contexts of tail calls. It particular,  */
+;*    This function checks the tail calls contexts. In particular,     */
 ;*    it detects local functions that are always called in tail        */
 ;*    positions but from different type contexts. These peculiar       */
 ;*    local functions are globalized.                                  */
@@ -141,13 +142,13 @@
 			     ((not (tail-type-compatible? tail-coercion type))
 			      (if (local? callee)
 				  (user-warning/location
-				   (node-loc body)
-				   (shape callee)
-				   "Globalized because used in two different type contexts"
-
-				   (format "~a/~a" (shape tail-coercion) (shape type))))
+				     (node-loc body)
+				     (shape callee)
+				     "Globalized because used in two different type contexts"
+				     
+				     (format "~a/~a" (shape tail-coercion) (shape type))))
 			      (set! tail-coercion #f))))))))
-	     A)
+      A)
    ;; cleanup the A set according to the first traversal
    (map (lambda (a)
 	   (match-case a
@@ -155,13 +156,13 @@
 	       (let ((fun (variable-value callee)))
 		  (with-access::sfun/Iinfo fun (tail-coercion)
 		     (list caller
-			   callee
-			   (if (not tail-coercion) (get-new-kont) 'tail)))))
+			callee
+			(if (not tail-coercion) (get-new-kont) 'tail)))))
 	      ((?caller ?callee (?kont . ?type))
 	       (list caller callee kont))
 	      (else
 	       a)))
-	A))
+      A))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ...                                                       */
@@ -204,10 +205,10 @@
 	     (if (null? (cdr nds))
 		 (node-A (car nds) host k A)
 		 (liip (cdr nds)
-		       (node-A (car nds)
-			       host
-			       (cons (get-new-kont) (get-type (car nds)))
-			       A)))))))
+		    (node-A (car nds)
+		       host
+		       (cons (get-new-kont) (get-type (car nds)))
+		       A)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::sync ...                                                */
@@ -234,10 +235,10 @@
 		   (else
 		    A))
 		(liip (cdr args)
-		      (node-A (car args)
-			      host
-			      (cons (get-new-kont) (get-type (car args)))
-			      A)))))))
+		   (node-A (car args)
+		      host
+		      (cons (get-new-kont) (get-type (car args)))
+		      A)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::app-ly ...                                              */
@@ -245,9 +246,9 @@
 (define-method (node-A node::app-ly host k A)
    (with-access::app-ly node (fun arg)
       (node-A fun
-	      host
-	      (cons (get-new-kont) (get-type fun))
-	      (node-A arg host (cons (get-new-kont) (get-type arg)) A))))
+	 host
+	 (cons (get-new-kont) (get-type fun))
+	 (node-A arg host (cons (get-new-kont) (get-type arg)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::funcall ...                                             */
@@ -255,17 +256,15 @@
 (define-method (node-A node::funcall host k A)
    (with-access::funcall node (fun args)
       (node-A fun
-	      host
-	      (cons (get-new-kont) (get-type fun))
-	      (let liip ((args args)
-			 (A A))
-		 (if (null? args)
-		     A
-		     (liip (cdr args)
-			   (node-A (car args)
-				   host
-				   (cons (get-new-kont) (get-type (car args)))
-				   A)))))))
+	 host
+	 (cons (get-new-kont) (get-type fun))
+	 (let liip ((args args)
+		    (A A))
+	    (if (null? args)
+		A
+		(liip (cdr args)
+		   (node-A (car args)
+		      host (cons (get-new-kont) (get-type (car args))) A)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::extern ...                                              */
@@ -273,14 +272,12 @@
 (define-method (node-A node::extern host k A)
    (with-access::extern node (expr*)
       (let liip ((asts expr*)
-		 (A    A))
+		 (A A))
 	 (if (null? asts)
 	     A
 	     (liip (cdr asts)
-		   (node-A (car asts)
-			   host
-			   (cons (get-new-kont) (get-type (car asts)))
-			   A))))))
+		(node-A (car asts)
+		   host (cons (get-new-kont) (get-type (car asts))) A))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::cast ...                                                */
@@ -310,15 +307,13 @@
 (define-method (node-A node::fail host k A)
    (with-access::fail node (proc msg obj)
       (node-A proc
-	      host
-	      (cons (get-new-kont) proc)
-	      (node-A msg
-		      host
-		      (cons (get-new-kont) (get-type msg))
-		      (node-A obj
-			      host
-			      (cons (get-new-kont) (get-type obj))
-			      A)))))
+	 host
+	 (cons (get-new-kont) proc)
+	 (node-A msg
+	    host
+	    (cons (get-new-kont) (get-type msg))
+	    (node-A obj
+	       host (cons (get-new-kont) (get-type obj)) A)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::select ...                                              */
@@ -326,35 +321,45 @@
 (define-method (node-A node::select host k A)
    (with-access::select node (test item-type)
       (let liip ((clauses (select-clauses node))
-		 (A       (node-A test
-				  host
-				  (cons (get-new-kont) item-type)
-				  A)))
+		 (A (node-A test
+		       host (cons (get-new-kont) item-type) A)))
 	 (if (null? clauses)
 	     A
 	     (liip (cdr clauses)
-		   (node-A (cdr (car clauses)) host k A))))))
+		(node-A (cdr (car clauses)) host k A))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::let-fun ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::let-fun host k A)
+   
+;*    (define (wrapper? node)                                          */
+;*       (with-access::let-fun node (body locals)                      */
+;* 	 (when (=fx (length locals) 1)                                 */
+;* 	    (with-access::variable (car locals) (occurrence value)     */
+;* 	       (when (=fx occurrence 1)                                */
+;* 		  (when (null? (sfun-args value))                      */
+;* 		     (when (isa? body app)                             */
+;* 			(with-access::app body (fun)                   */
+;* 			   (with-access::var fun (variable)            */
+;* 			      (eq? variable (car locals)))))))))))     */
+   
    (with-access::let-fun node (body)
       ;; we initialize all the local definitions
       (for-each (lambda (f)
 		   (initialize-fun! f host)
 		   (set! *phi* (cons f *phi*)))
-		(let-fun-locals node))
+	 (let-fun-locals node))
       ;; now, we scan the locals definitions and the body
       (let liip ((locals (let-fun-locals node))
-		 (A      A))
+		 (A A))
 	 (if (null? locals)
 	     (node-A body host k A)
 	     (liip (cdr locals)
-		   (node-A (sfun-body (local-value (car locals)))
-			   (car locals)
-			   (cons 'tail (local-type (car locals)))
-			   A))))))
+		(node-A (sfun-body (local-value (car locals)))
+		   (car locals)
+		   (cons 'tail (local-type (car locals)))
+		   A))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::let-var ...                                             */
@@ -362,7 +367,7 @@
 (define-method (node-A node::let-var host k A)
    (with-access::let-var node (body)
       (let liip ((bindings (let-var-bindings node))
-		 (A        A))
+		 (A A))
 	 (if (null? bindings)
 	     (node-A body host k A)
 	     (let* ((binding (car bindings))
@@ -370,10 +375,8 @@
 		    (val (cdr binding)))
 		(widen!::svar/Iinfo (local-value var))
 		(liip (cdr bindings)
-		      (node-A val
-			      host
-			      (cons (get-new-kont) (local-type var))
-			      A)))))))
+		   (node-A val
+		      host (cons (get-new-kont) (local-type var)) A)))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::set-ex-it ...                                           */
@@ -381,29 +384,21 @@
 (define-method (node-A node::set-ex-it host k A)
    (with-access::set-ex-it node (var body)
       ;; `set-ex-it' handler must alway be globalized
-;*       ;; in order to be sure that `set-ex-it' handler               */
-;*       ;; are always globalized we simulate to two-non tail          */
-;*       ;; calls to them if the handler is not detached               */
-;*       ;; (see globalize pass)                                       */
+      ;; in order to be sure that `set-ex-it' handler
+      ;; are always globalized we simulate to two-non tail
+      ;; calls to them if the handler is not detached
+      ;; (see globalize pass)
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
 	 (if (not (sexit-detached? (local-value exit)))
-;* 	     (let ((call1 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node)))) */
-;* 		   (call2 `(,hdlg ,hdlg ,(cons (get-new-kont) (get-type node))))) */
-;* 		(node-A body                                           */
-;* 			host                                           */
-;* 			(cons (get-new-kont) (get-type body))          */
-;* 			(cons* call1 call2 A)))                        */
 	     ;; CARE, MS 28mar2011: used to be a trick with two fake
-	     ;; continuations(see integrate_ctn).
+	     ;; continuations (see integrate_ctn).
 	     (begin
 		(with-access::sfun/Iinfo (local-value hdlg) (forceG?)
 		   (set! forceG? #t))
 		(node-A body
-			host
-			(cons (get-new-kont) (get-type body))
-			A))
+		   host (cons (get-new-kont) (get-type body)) A))
 	     A))))
 
 ;*---------------------------------------------------------------------*/
@@ -412,9 +407,9 @@
 (define-method (node-A node::jump-ex-it host k A)
    (with-access::jump-ex-it node (exit value)
       (node-A exit
-	      host
-	      (cons (get-new-kont) (get-type exit))
-	      (node-A value host (cons (get-new-kont) (get-type value)) A))))
+	 host
+	 (cons (get-new-kont) (get-type exit))
+	 (node-A value host (cons (get-new-kont) (get-type value)) A))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::make-box ...                                            */
