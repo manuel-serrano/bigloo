@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Thu Dec 31 18:30:06 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 21 08:31:28 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -125,8 +125,11 @@
 ;*---------------------------------------------------------------------*/
 (define-generic (type-variable! value::value variable::variable)
    (let ((type (variable-type variable)))
-      (unless (type? type)
-	 (set-variable-type! variable (get-default-type)))))
+      (cond
+	 ((not (type? type))
+	  (set-variable-type! variable (get-default-type)))
+	 ((and (eq? type *_*) (not *optim-cfa?*))
+	  (set-variable-type! variable (get-default-type))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    type-variable! ::svar ...                                        */
@@ -361,9 +364,20 @@
 	 (unless (eq? atype *_*)
 	    (set! type atype)))
       node))
-   
+
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::app-ly ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (type-node! node::app-ly)
+   (when *optim-cfa?* (error "type-node!" "unexpected node" (shape node)))
+   (with-access::app-ly/Cinfo node (fun arg type)
+      (set! fun (type-node! fun))
+      (set! arg (type-node! arg))
+      (set! type *obj*)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::app-ly/Cinfo ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (type-node! node::app-ly/Cinfo)
    (with-access::app-ly/Cinfo node (fun arg type approx)
@@ -377,6 +391,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    type-node! ::funcall ...                                         */
 ;*---------------------------------------------------------------------*/
+(define-method (type-node! node::funcall)
+   (when *optim-cfa?* (error "type-node!" "unexpected node" (shape node)))
+   (with-access::funcall node (fun args type)
+      (set! fun (type-node! fun))
+      (type-node*! args)
+      (set! type *obj*)
+      node))
+
+;*---------------------------------------------------------------------*/
+;*    type-node! ::funcall/Cinfo ...                                   */
+;*---------------------------------------------------------------------*/
 (define-method (type-node! node::funcall/Cinfo)
    (with-access::funcall/Cinfo node (fun args type approx)
       (set! fun (type-node! fun))
@@ -388,10 +413,6 @@
 		    ;; the function is actually never called,
 		    ;; the funcall node is removed
 		    (begin
-		       ;; MS CARE: 31 Dec 2015
-;* 		       (instantiate::atom                              */
-;* 			  (value #unspecified)                         */
-;* 			  (type (get-type-atom #unspecified)))         */
 		       (set! type *obj*)
 		       node)
 		    (begin

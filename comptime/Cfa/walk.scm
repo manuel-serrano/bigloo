@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Thu Dec 31 18:08:15 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Apr 21 08:37:21 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
 ;*                                                                     */
@@ -75,7 +75,7 @@
       (show-cfa-nb-iterations)
       ;; dead code removal
       (let ((globals (remove-var '(cfa inline) globals)))
-	 ;; we show the result of the approximation (after dead-code-removal!)
+	 ;; show approximation results (after dead-code-removal!)
 	 (show-cfa-results globals)
 	 ;; tvector optimization
 	 (let ((additional (profile tvect (vector->tvector! globals))))
@@ -87,6 +87,6 @@
 	    (specialize! globals)
 	    ;; and we are done
 	    (pass-postlude (shrinkify! (append additional globals))
-			   stop-closure-cache
-			   unpatch-vector-set!
-			   unpatch-pair-set!)))))
+	       stop-closure-cache
+	       unpatch-vector-set!
+	       unpatch-pair-set!)))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Mar 29 14:01:57 2016 (serrano)                */
+;*    Last change :  Thu Apr 21 07:38:04 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -65,6 +65,7 @@
 	    *optim-loop-inlining?*
 	    *optim-atom-inlining?*
 	    *optim-O-macro?*
+	    *optim-cfa?*
 	    *optim-cfa-fixnum-arithmetic?*
 	    *optim-cfa-flonum-arithmetic?*
 	    *optim-cfa-free-var-tracking?*
@@ -870,6 +871,9 @@
 (param-define *optim-jvm*
    "Enable optimization by inlining jvm code"
    0)
+(param-define *optim-cfa?*
+   "Enable CFA"
+   #t)
 (param-define *optim-cfa-fixnum-arithmetic?*
    "Enable refined fixnum arithmetic specialization"
    #f)
