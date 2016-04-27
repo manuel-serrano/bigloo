@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Thu Mar  3 14:55:19 2016 (serrano)                */
+/*    Last change :  Fri Apr 22 15:29:48 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -42,8 +42,8 @@ static int types_number = 0;
 void
 set_alloc_type( int t, int o ) {
    if( bmem_thread ) {
-      ____pthread_setspecific( bmem_key, (void *)t );
-      ____pthread_setspecific( bmem_key2, (void *)o );
+      ____pthread_setspecific( bmem_key, (void *)(long)t );
+      ____pthread_setspecific( bmem_key2, (void *)(long)o );
    } else {
       alloc_type = t;
       alloc_type_offset = o;
@@ -57,7 +57,7 @@ set_alloc_type( int t, int o ) {
 static int
 get_alloc_type() {
    if( bmem_thread ) {
-      return (int)____pthread_getspecific( bmem_key );
+      return (int)(long)____pthread_getspecific( bmem_key );
    } else {
       return alloc_type;
    }
@@ -70,7 +70,7 @@ get_alloc_type() {
 static int
 get_alloc_type_offset() {
    if( bmem_thread ) {
-      return (int)____pthread_getspecific( bmem_key2 );
+      return (int)(long)____pthread_getspecific( bmem_key2 );
    } else {
       return alloc_type_offset;
    }
@@ -222,7 +222,7 @@ make_type_alloc_info() {
 void
 mark_type( fun_alloc_info_t *i, int dtype, long dsize, int itype, long isize ) {
    if( dtype >=  0 ) {
-      pa_pair_t *cell = pa_assq( (void *)dtype, (pa_pair_t *)(i->dtypes) );
+      pa_pair_t *cell = pa_assq( (void *)(long)dtype, (pa_pair_t *)(i->dtypes) );
 
       if( cell ) {
 	 type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR( cell );
@@ -232,13 +232,13 @@ mark_type( fun_alloc_info_t *i, int dtype, long dsize, int itype, long isize ) {
 	 type_alloc_info_t *new = make_type_alloc_info();
 	 new->num = 1;
 	 new->size = dsize;
-	 i->dtypes = pa_cons( pa_cons( (void *)dtype, (void *)new ),
+	 i->dtypes = pa_cons( pa_cons( (void *)(long)dtype, (void *)new ),
 			      (pa_pair_t *)(i->dtypes) );
       }
    }
 
    if( itype >=  0 ) {
-      pa_pair_t *cell = pa_assq( (void *)itype, (pa_pair_t *)(i->itypes) );
+      pa_pair_t *cell = pa_assq( (void *)(long)itype, (pa_pair_t *)(i->itypes) );
 
       if( cell ) {
 	 type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR( cell );
@@ -248,7 +248,7 @@ mark_type( fun_alloc_info_t *i, int dtype, long dsize, int itype, long isize ) {
 	 type_alloc_info_t *new = make_type_alloc_info();
 	 new->num = 1;
 	 new->size = isize;
-	 i->itypes = pa_cons( pa_cons( (void *)itype, (void *)new ),
+	 i->itypes = pa_cons( pa_cons( (void *)(long)itype, (void *)new ),
 			      (pa_pair_t *)(i->itypes) );
       }
    }

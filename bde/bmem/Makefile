@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Wed Oct 14 07:16:52 2015 (serrano)                */
-#*    Copyright   :  2003-15 Manuel Serrano                            */
+#*    Last change :  Fri Apr 22 16:59:09 2016 (serrano)                */
+#*    Copyright   :  2003-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/
@@ -13,6 +13,7 @@
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
 include ../../Makefile.config
+include ../../Makefile.misc
 
 #*---------------------------------------------------------------------*/
 #*    Objects                                                          */
@@ -71,19 +72,28 @@ $(BOOTBINDIR)/$(BMEM_EXE): $(OBJECT)
 	$(BIGLOO) $(BMEMFLAGS) -o $@ $^
 
 #*--- lib -------------------------------------------------------------*/
-lib: $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX)
+lib: $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX) \
+  $(BOOTLIBDIR)/bmem/bmem_fth.$(SHAREDSUFFIX)
+
 $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
-	(if [ "$(GCCUSTOM)" = "yes" ]; then \
-            libbigloogc=$(LIBDIR)/libbigloogc-$(RELEASE).$(SHAREDSUFFIX); \
-          else \
-            libbigloogc=-l$(GCLIB); \
-          fi; \
-         $(LD) $(LIBOBJECT) \
-               -L$(BOOTLIBDIR) \
-               $$libbigloo_gc \
-               $(EXTRALIBS) \
-               $(LDFLAGS) \
-               -o $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX))
+	$(MAKE) shared-lib \
+	   OBJECTS="$(LIBOBJECT)" \
+           FORCELD=true \
+           LIBDEST=$(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX) \
+	   LIBPATH=$(BOOTLIBDIR) \
+           SONAME=bmem.$(SHAREDSUFFIX) \
+           CLOSELIBS="-lbigloo_u-$(RELEASE)"
+
+
+$(BOOTLIBDIR)/bmem/bmem_fth.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
+	$(MAKE) shared-lib \
+	   OBJECTS="$(LIBOBJECT)" \
+           FORCELD=true \
+           LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth.$(SHAREDSUFFIX) \
+	   LIBPATH=$(BOOTLIBDIR) \
+           SONAME=bmem_fth.$(SHAREDSUFFIX) \
+           GCCLOSELIB="-lbigloogc_fth-$(RELEASE)" \
+           CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 #*--- lib/bmem --------------------------------------------------------*/
 $(BOOTLIBDIR)/bmem:
@@ -114,6 +124,9 @@ install:
 	  cp $(BOOTLIBDIR)/bmem/bmem.$(SHAREDSUFFIX) \
              $(LIBDIR)/$(FILDIR)/bmem/bmem.$(SHAREDSUFFIX) || exit 1; \
           chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem.$(SHAREDSUFFIX); \
+	  cp $(BOOTLIBDIR)/bmem/bmem_fth.$(SHAREDSUFFIX) \
+             $(LIBDIR)/$(FILDIR)/bmem/bmem_fth.$(SHAREDSUFFIX) || exit 1; \
+          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/bmem/bmem_fth.$(SHAREDSUFFIX); \
         fi
 	cp etc/bmem.css $(LIBDIR)/$(FILDIR)/bmem/bmem.css
 	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/bmem.css

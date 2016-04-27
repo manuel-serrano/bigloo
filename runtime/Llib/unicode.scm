@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue Apr 19 16:08:43 2016 (serrano)                */
+;*    Last change :  Sun Apr 24 13:14:10 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -767,7 +767,9 @@
        (error "utf8-normalize-utf16" "Illegal indexes" (cons start end)))
       ((ascii-string? str)
        ;; no need to replace anything, its an ascii string
-       (substring str start end))
+       (let ((s (substring str start end)))
+	  (string-ascii-sentinel-set! s (-fx end start))
+	  s))
       (else
        (let* ((len (-fx end start))
 	      (res (make-string (*fx 3 len))))
@@ -1246,7 +1248,9 @@
 	 ((=fx start end)
 	  "")
 	 ((ascii-string? str)
-	  (substring str start end))
+	  (let ((s (substring str start end)))
+	     (string-ascii-sentinel-set! s (-fx end start))
+	     s))
 	 (else
 	  (let loop ((r 0)
 		     (n 0)

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Sep  4 12:26:42 2015 (serrano)                */
-/*    Copyright   :  2003-15 Manuel Serrano                            */
+/*    Last change :  Fri Apr 22 17:01:12 2016 (serrano)                */
+/*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -309,7 +309,7 @@ bmem_init_inner() {
    void *hdl;
    char bigloo_lib[ 1000 ];
    char gc_lib[ 1000 ];
-   char *bglsafe = "_s";
+   char *bglsafe = "_u";
 
    /* Hello world */
    fprintf( stderr, "Bmem initialization...\n" );
