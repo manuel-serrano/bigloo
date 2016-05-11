@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Mar 16 08:51:06 2016 (serrano)                */
+#*    Last change :  Tue May  3 07:50:32 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1373,7 +1373,6 @@ if [ "$enable_bglpkg " = "force " ]; then
     enable_bglpkg="yes"
 fi
 
-
 #*---------------------------------------------------------------------*/
 #*    User hostos specific configuration                               */
 #*---------------------------------------------------------------------*/
@@ -1539,7 +1538,6 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
 #*---------------------------------------------------------------------*/
 #*    Cross Compilation                                                */
 #*---------------------------------------------------------------------*/
-#
 # Grab the buildos info
 if [ "$buildos " = " " ]; then
   buildos=`$autoconfdir/os --sh=""` || exit 1
@@ -1783,6 +1781,20 @@ if [ $action = "all" -o $action = "bigloo_config_el" ]; then
   strip=`$autoconf strip --strip=$strip` || exit 1
 fi
 
+# checking patch
+patch=$PATCH
+
+if [ "$patch " = " " ]; then
+  patch=patch
+fi
+
+$patch --help 2> /dev/null > /dev/null
+
+if [ $? != 0 ]; then
+  echo "*** ERROR: patch ($patch) command not found. Aborting..." >&2;
+  exit 1;
+fi
+  
 #*---------------------------------------------------------------------*/
 #*    Executable names                                                 */
 #*---------------------------------------------------------------------*/

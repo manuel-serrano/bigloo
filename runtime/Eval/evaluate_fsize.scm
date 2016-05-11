@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  8 16:42:27 2011                          */
-;*    Last change :  Fri Nov 30 09:32:13 2012 (serrano)                */
-;*    Copyright   :  2011-12 Manuel Serrano                            */
+;*    Last change :  Wed May 11 18:31:40 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the size of stack needed for an abstraction              */
 ;*    of the space for free variables is not included.                 */
@@ -374,13 +374,22 @@
       (subst_goto* args vars lbls)
       e ))
 
+;* (define-method (subst_goto e::ev_app vars lbls);                    */
+;*    (with-access::ev_app e (fun args loc)                            */
+;*       (subst_goto* args vars lbls)                                  */
+;*       (if (memq fun vars)                                           */
+;* 	  (instantiate::ev_goto (label fun) (args args) (labels lbls) (loc loc)) */
+;* 	  (begin (set! fun (subst_goto fun vars lbls))                 */
+;* 		 e ))))                                                */
 (define-method (subst_goto e::ev_app vars lbls);
+   ;; BPS: bug fix 11 may 2016
    (with-access::ev_app e (fun args loc)
       (subst_goto* args vars lbls)
       (if (memq fun vars)
-	  (instantiate::ev_goto (label fun) (args args) (labels lbls) (loc loc))
-	  (begin (set! fun (subst_goto fun vars lbls))
-		 e ))))
+      (instantiate::ev_goto (label fun) (args args) (labels lbls) (loc loc))
+      (begin (set! fun (subst_goto fun vars lbls))
+         (with-access::ev_app e (tail?) (set! tail? #f))
+         e ))))
 
 (define-method (subst_goto e::ev_abs vars lbls);
    (with-access::ev_abs e (arity body)
