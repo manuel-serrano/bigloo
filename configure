@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May  3 07:50:32 2016 (serrano)                */
+#*    Last change :  Mon May 16 14:35:05 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -311,6 +311,7 @@ droidroot=$DROID_ROOT
 droidsdkroot=$DROID_SDK_ROOT
 droidtarget=generic
 droidtmp=
+droidadb=adb
 
 #*---------------------------------------------------------------------*/
 #*    Hacker variables                                                 */
@@ -687,6 +688,9 @@ while : ; do
 
     --android-tmp=*)
       droidtmp="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --android-adb=*)
+      droidadb="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --cygwin-dos-path=*)
       cygwindospath="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -1382,7 +1386,7 @@ dirsep="/"
 
 case $hostos in
   android)
-    if [ "$droidsdkroot " = " " ]; then
+    if [ "$droidsdkroot " = " " -a "$droidadb " = " " ]; then
       echo "" >&2
       echo "*** ERROR: Bad Android configuration: DROID_SDK_ROOT missing." >&2
       echo "You must either use the --android-sdk-root=path option "
@@ -1390,15 +1394,18 @@ case $hostos in
       echo "" >&2
       echo "The DROID_SDK_ROOT must refer to a directory that contains the" >&2
       echo "official Android SDK. It must at least contain the file \"platform-tools/adb\"." >&2
+      echo "Alternative adb path may be specified with \"--android-adb\"." >&2
       exit 1
     fi
   
     # check if we can connect to a device (physical or emulated)
-    adb=$droidsdkroot/platform-tools/adb
+    if [ "$droidadb " = " " ]; then
+      droidadb=$droidsdkroot/platform-tools/adb
+    fi
+    
+    echo -n "executing $droidadb shell ls -> " >&2
   
-    echo -n "executing $adb shell ls -> " >&2
-  
-    $adb shell ls 2> /dev/null > /dev/null
+    $droidadb shell ls 2> /dev/null > /dev/null
   
     if [ $? = 0 ]; then
       echo "ok" >&2
@@ -1414,7 +1421,7 @@ case $hostos in
     # Find a proper tmp on the phone
     if [ "$droidtmp " = " " ]; then
       for dir in /tmp /sdcard/tmp /mnt/sdcard/tmp /data/local/tmp; do
-        if $autoconfdir/androidmkdir $adb $dir >&2; then
+        if $autoconfdir/androidmkdir $droidadb $dir >&2; then
           droidtmp=$dir
           break
         fi
@@ -1434,7 +1441,7 @@ case $hostos in
     cat $hostsh.in \
       | sed -e "s|@DROID_SDK_ROOT@|$droidsdkroot|" \
             -e "s|@DROID_TMP@|$droidtmp|" \
-            -e "s|@DROID_ADB@|$adb|" \
+            -e "s|@DROID_ADB@|$droidadb|" \
       > $hostsh && chmod u+x $hostsh || exit 1
 
     doit=$pwd/arch/android/doit;
@@ -1451,7 +1458,7 @@ case $hostos in
               -e "s|@DROID_ROOT@|$droidroot|" \
               -e "s|@DROID_TARGET@|$droidtarget|" \
               -e "s|@DROID_TMP@|$droidtmp|" \
-              -e "s|@DROID_ADB@|$adb|" \
+              -e "s|@DROID_ADB@|$droidadb|" \
         > $cc && chmod u+x $cc || exit 1
     fi
   
@@ -1843,7 +1850,7 @@ elif [ $hostos = "mingw" ]; then
 else
   # Does the system support threads
   if [ "$gcthread " = " "  ]; then
-     gcthread=`$autoconf thread --cflags="$cgcfinalflags"` || exit 1;
+     gcthread=`$autoconf thread --cflags="$cgcfinalflags $cflags"` || exit 1;
   fi
 
   # find out the C library for posix threads
@@ -1883,7 +1890,7 @@ else
 
   # get the number of processors of the machine
   if [ "$gcparallelmark " = " " ]; then
-    nbprocs=`$autoconf nbprocs --cflags="$cflags"` || exit 1
+    nbprocs=`$autoconf nbprocs` || exit 1
 
     if [ "$nbprocs " = "0 " -o "$nbprocs " = "1 " ]; then
       gcparallelmark=no;
@@ -1921,7 +1928,7 @@ echo >> $configurelog
 if [ "$action" != "bigloo_config_el" ]; then
   echo "+ GC configuration ($customgc)..." >> $configurelog
   
-  cgcflags=`$autoconf gcflags --cflags="$cflags"` || exit 1
+  cgcflags=`$autoconf gcflags` || exit 1
   
   # We check the standard GC if we have to use one
   if [ "$customgc " = "no " ]; then
@@ -1987,7 +1994,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   
   # Check the version of the collector
   if [ "$gcversion " = " " ]; then
-    gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags"` || exit 1
+    gcversion=`$autoconf gcversion --gcincdir="$gcincdir" --cflags="$lflags $cflags"` || exit 1
   
     if [ "$gcversion" -le "000" ]; then
       doblocking=`$autoconf gchavedoblocking --gclib="$stdgclib" --gcincdir="$gcincdir" --gclibdir="$gclibdir" --cflags="$lflags" --tmp=$buildtmp` || exit 1
@@ -2157,7 +2164,7 @@ fi
 # find out the C library for sqlite
 if [ "$sqlite_is_enabled " = "yes " ]; then
   if [ "$sqlitelibs " = " " ]; then
-    sqlitelibs=`$autoconf sqlite --cflags="$cflags"` || exit 1;
+    sqlitelibs=`$autoconf sqlite` || exit 1;
   fi
 fi
 
@@ -2167,7 +2174,7 @@ fi
 # find out the C library for dbus
 if [ "$dubs_is_enabled " = "yes " ]; then
   if [ "$dbuslibs " = " " ]; then
-     dbuslibs=`$autoconf dbus --cflags="$cflags"` || exit 1;
+     dbuslibs=`$autoconf dbus` || exit 1;
   fi
 
   if [ "$dbuslibs " != " " ]; then
@@ -2189,7 +2196,7 @@ fi
 pkg="gstreamer-@VERSION@ gstreamer-base-@VERSION@ gstreamer-plugins-base-@VERSION@"
 
 if [ "$gstreamer " = " " ]; then
-   gstreamer=`$autoconf gstreamer --cflags="$cflags" --pkg="$pkg"` || exit 1;
+   gstreamer=`$autoconf gstreamer --pkg="$pkg"` || exit 1;
 fi
 
 if [ "$gstreamer " != " " ]; then
@@ -2224,7 +2231,7 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for alsa
 if [ "$alsa " = " " ]; then
-   alsa=`$autoconf alsa --cflags="$cflags"` || exit 1;
+   alsa=`$autoconf alsa` || exit 1;
 fi
 
 if [ "$alsa " != "no " ]; then
@@ -2243,7 +2250,7 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for pulseaudio
 if [ "$pulseaudio " = " " ]; then
-   pulseaudio=`$autoconf pulseaudio --cflags="$cflags"` || exit 1;
+   pulseaudio=`$autoconf pulseaudio` || exit 1;
 fi
 
 if [ "$pulseaudio " != "no " ]; then
@@ -2275,7 +2282,7 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for flac
 if [ "$flac " = " " ]; then
-   flaclibs=`$autoconf flac --cflags="$cflags"` || exit 1;
+   flaclibs=`$autoconf flac` || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/
@@ -2289,7 +2296,7 @@ havemixer=`$autoconf mixer` || exit 1
 if [ "$regexp " = " " ]; then
   # find out the C library for pcre
   if [ "$enable_configure_pcre " = "yes " ]; then
-    pcrelibs=`$autoconf pcre --cflags="$cflags"` || exit 1;
+    pcrelibs=`$autoconf pcre` || exit 1;
   else
     pcrelibs=no
   fi
@@ -2299,7 +2306,7 @@ if [ "$regexp " = " " ]; then
     extralibs="-lpcre $extralibs"
     regexp=pcre
 
-    if [ `$autoconf pcrefreestudy --cflags="$cflags"` = "yes" ]; then
+    if [ `$autoconf pcrefreestudy` = "yes" ]; then
       regexphasfreestudy=1
     fi
   else
@@ -2375,7 +2382,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
 
   # The C compiler options
-  cflags=`$autoconf ccbracket --cflags="$cflags"` || exit 1
+  cflags=`$autoconf ccbracket` || exit 1
 
   # The pointer alignment
   alignment=`$autoconf alignment` || exit 1
@@ -2840,13 +2847,13 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   `$shell -c "ls -l > /dev/null"` || exit 1
 
   # the C beautifier
-  id=`$autoconf indent --cflags="$cflags" --indent="$indent"` || exit 1
+  id=`$autoconf indent --indent="$indent"` || exit 1
   if [ "$id " != "1 " ]; then
     indent=
   fi
 
   # the dirname command
-  dirname=`$autoconf dirname --cflags="$cflags" --dirname="$dirname"` || exit 1
+  dirname=`$autoconf dirname --dirname="$dirname"` || exit 1
 
   # double precision
   prec=`$autoconf doubleprec` || exit 1

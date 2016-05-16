@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jun  6 11:04:39 2015                          */
-/*    Last change :  Tue Jun 23 17:50:46 2015 (serrano)                */
-/*    Copyright   :  2015 Manuel Serrano                               */
+/*    Last change :  Mon May 16 15:14:17 2016 (serrano)                */
+/*    Copyright   :  2015-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Resolv library binding (optional)                                */
 /*=====================================================================*/
@@ -20,14 +20,15 @@
 #  include <regex.h>
 
 #  define N 4096
-#endif
 
-typedef obj_t (*fmt_t)( ns_msg*, int );
+typedef obj_t (*fmt_t)( ns_msg *, int );
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static int                                                       */
 /*    nstype ...                                                       */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static int
 nstype( obj_t name ) {
    char *n = BSTRING_TO_STRING( name );
@@ -86,11 +87,13 @@ nstype( obj_t name ) {
    
    C_SYSTEM_FAILURE( BGL_ERROR, "resolv", "bad query type", name );
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_mx ...                                                 */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static obj_t
 rr_format_mx( ns_msg *msg, int i ) {
    ns_rr rr;
@@ -114,11 +117,13 @@ rr_format_mx( ns_msg *msg, int i ) {
       return BUNSPEC;
    }
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_srv ...                                                */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static obj_t
 rr_format_srv( ns_msg *msg, int i ) {
    ns_rr rr;
@@ -163,11 +168,13 @@ rr_format_srv( ns_msg *msg, int i ) {
       return BUNSPEC;
    }
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_naptr ...                                              */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static obj_t
 rr_format_naptr( ns_msg *msg, int i ) {
    ns_rr rr;
@@ -211,11 +218,13 @@ rr_format_naptr( ns_msg *msg, int i ) {
       return BUNSPEC;
    }
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_cname ...                                              */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static obj_t
 rr_format_cname( ns_msg *msg, int i ) {
    ns_rr rr;
@@ -234,11 +243,13 @@ rr_format_cname( ns_msg *msg, int i ) {
       return BUNSPEC;
    }
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_txt ...                                                */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static obj_t
 rr_format_txt( ns_msg *msg, int i ) {
    ns_rr rr;
@@ -261,11 +272,13 @@ rr_format_txt( ns_msg *msg, int i ) {
       return BUNSPEC;
    }
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    static obj_t                                                     */
 /*    rr_format_default ...                                            */
 /*---------------------------------------------------------------------*/
+#if( BGL_HAVE_RESOLV )
 static obj_t
 rr_format_default( ns_msg *msg, int i ) {
    ns_rr rr;
@@ -276,13 +289,15 @@ rr_format_default( ns_msg *msg, int i ) {
 
    return string_to_bstring( ns_rr_name( rr ) );
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    fmt_t                                                            */
 /*    get_rr_format ...                                                */
 /*---------------------------------------------------------------------*/
-fmt_t
-static get_rr_format( int nstyp ) {
+#if( BGL_HAVE_RESOLV )
+static fmt_t
+get_rr_format( int nstyp ) {
    switch( nstyp ) {
       case ns_t_mx: return &rr_format_mx;
       case ns_t_srv: return &rr_format_srv;
@@ -292,6 +307,7 @@ static get_rr_format( int nstyp ) {
       default: return &rr_format_default;
    }
 }
+#endif
    
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

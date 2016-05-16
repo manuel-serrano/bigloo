@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Dec 12 13:02:59 2015 (serrano)                */
+/*    Last change :  Mon May 16 15:08:58 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -82,7 +82,7 @@
 #  define _FD int
 #  define _LSEEK lseek
 #  define _CLOSE close
-#  define _FILENO fileno
+#  define _FILENO (int)fileno
 #  define _PORT_FD( p ) PORT_FD( p )
 #  define _CREAT( name, mod ) open( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mod )
 #  define _OPEN( name, flag, mod ) open( name, flag, mod )

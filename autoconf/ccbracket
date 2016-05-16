@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Thu Nov 21 13:43:13 2013 (serrano)                */
+#*    Last change :  Mon May 16 14:40:39 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking the C compiler bracket nesting capacity                 */
 #*=====================================================================*/
@@ -75,7 +75,7 @@ echo "}" >> $file.c
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout"
+compile="$CC $CFLAGS $cflags $file.c -o $aout"
 
 if eval "$BUILDSH $compile"; then
    eval "$HOSTSH $aout"; res=$?

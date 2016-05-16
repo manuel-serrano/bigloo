@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Fri Dec 14 19:15:13 2012 (serrano)                */
+#*    Last change :  Mon May 16 14:45:00 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if pthread_cond_timedwait posix compliance.                */
 #*=====================================================================*/
@@ -42,7 +42,7 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+compile="$CC $CFLAGS $cflags $file.c -o $aout $pthreadlibs >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */

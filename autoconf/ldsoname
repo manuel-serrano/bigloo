@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Fri Sep 11 11:14:17 2009 (serrano)                */
+#*    Last change :  Mon May 16 14:45:24 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -81,7 +81,7 @@ int main ()
 }
 EOF
 
-if eval "$BUILDSH $CC $cflags -o $aout $file-guess.c" >/dev/null
+if eval "$BUILDSH $CC $CFLAGS $cflags -o $aout $file-guess.c" >/dev/null
 then
    true
 else
@@ -115,7 +115,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval "$BUILDSH $CC $cflags -c $file-lib.c -o $obj-lib.o" >/dev/null
+if eval "$BUILDSH $CC $CFLAGS $cflags -c $file-lib.c -o $obj-lib.o" >/dev/null
 then
    true
 else
@@ -155,7 +155,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
-if eval "$BUILDSH $CC $cflags -o $aout $file.c $file.so" >/dev/null
+if eval "$BUILDSH $CC $CFLAGS $cflags -o $aout $file.c $file.so" >/dev/null
 then
    true
 else

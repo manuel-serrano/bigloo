@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    /misc/virtual/android/BGL/bigloo3.3b/autoconf/ldshare            */
+#*    serrano/prgm/project/bigloo/autoconf/ldshare                     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Wed Feb  3 15:41:00 2010 (serrano)                */
+#*    Last change :  Mon May 16 14:47:41 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -93,7 +93,7 @@ int main ()
 }
 EOF
 
-  if eval "$BUILDSH $CC $cflags -o $aout $file-guess.c" >/dev/null
+  if eval "$BUILDSH $CC $CFLAGS $cflags -o $aout $file-guess.c" >/dev/null
   then
     true
   else
@@ -127,7 +127,7 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval "$BUILDSH $CC $cflags -c $file-lib.c -o $obj-lib.o" >/dev/null
+if eval "$BUILDSH $CC $CFLAGS $cflags -c $file-lib.c -o $obj-lib.o" >/dev/null
 then
   true
 else
@@ -150,7 +150,7 @@ fi
 #*---------------------------------------------------------------------*/
 #*    linking test                                                     */
 #*---------------------------------------------------------------------*/
-if eval "$BUILDSH $CC $cflags -o $aout $file.c $file.$sharedsuffix" >/dev/null
+if eval "$BUILDSH $CC $CFLAGS $cflags -o $aout $file.c $file.$sharedsuffix" >/dev/null
 then
    true
 else

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Sun Jan 31 11:41:08 2016 (serrano)                */
+/*    Last change :  Mon May 16 15:09:49 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -637,7 +637,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 		  if( i == 0 )
 		     PROCESS( proc ).stream[ i ] =
 			bgl_make_output_port( name,
-					      (bgl_stream_t)fileno( f ),
+					      (bgl_stream_t)(int)fileno( f ),
 					      BGL_STREAM_TYPE_FD,
 					      KINDOF_PROCPIPE,
 					      make_string_sans_fill( 80 ),
@@ -951,7 +951,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 
         PROCESS( proc ).stream[ i ] =
 	   (( i == 0 )
-	    ? bgl_make_output_port( name, (bgl_stream_t)fileno( f ),
+	    ? bgl_make_output_port( name, (bgl_stream_t)(int)fileno( f ),
 				    BGL_STREAM_TYPE_FD,
 				    KINDOF_PROCPIPE,
 	                            make_string_sans_fill( 80 ),
