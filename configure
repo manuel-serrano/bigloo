@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 16 16:19:12 2016 (serrano)                */
+#*    Last change :  Mon May 16 17:18:27 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3198,12 +3198,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_cell_h` $bigloo_cell_h
 
   # bigloo.sh
-  if [  "$buildbindir" = "$bootdir/bin" ]; then
-    for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
-      mv $p $buildbindir/$p
-      chmod u+rx $buildbindir/$p
-    done
-  fi
+  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
+    mv $p $bootdir/bin/$p
+    chmod u+rx $bootdir/bin/$p
+  done
 fi
 
 #*---------------------------------------------------------------------*/
