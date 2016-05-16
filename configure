@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 16 17:18:27 2016 (serrano)                */
+#*    Last change :  Mon May 16 17:55:43 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -792,7 +792,7 @@ while : ; do
 
     --debug2)
       cstrip="";
-      cflags="-g";
+      cflags="$cflags -g";
       bflags="-cg -q";;
 
     --cpicflags=*)
@@ -1471,6 +1471,7 @@ case $hostos in
     ;;
 esac
 echo >> $configurelog
+
 
 #*---------------------------------------------------------------------*/
 #*    Configure bootstrap                                              */
@@ -2382,7 +2383,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_sch:"
 
   # The C compiler options
-  cflags=`$autoconf ccbracket` || exit 1
+  cbraflags=`$autoconf ccbracket` || exit 1
+  cflags="$cflags $cbraflags"
 
   # The pointer alignment
   alignment=`$autoconf alignment` || exit 1
@@ -2993,7 +2995,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       if [ $customgc != "yes" ]; then
         gciscustom=0
       fi
-      
+
       cat autoconf/`basename $p`.in \
         | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit), `date`|" \
               -e "s|@BGL_RELEASE@|BGL_$rel|" \
