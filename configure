@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 16 17:55:43 2016 (serrano)                */
+#*    Last change :  Thu May 19 07:30:49 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -173,6 +173,7 @@ opensslcflags=
 
 #*--- sqlite library (left blank for autoconfiguration) ---------------*/
 sqlitelibs=
+sqltinyforce=no
 
 #*--- dbus library (left blank for autoconfiguration) -----------------*/
 dbuslibs=
@@ -922,6 +923,9 @@ while : ; do
     --no-pcre|--disable-pcre)
       enable_configure_pcre="no";;
 
+    --sqltiny)
+      sqltinyforce="yes";;
+
     --enable-srfi27)
       srfi27force="yes";;
 
@@ -1082,6 +1086,7 @@ while : ; do
       echo "   --customunistring=yes|no [default yes]" >&2;
       echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
       echo "   --customlibuv=yes|no [default yes]" >&2;
+      echo "   --sqltiny=yes|no [default no]" >&2;
       echo "" >&2;
       echo "Configuration settings:"  >&2;
       echo "   --bigloo.h[=file]" >&2;
@@ -1095,7 +1100,7 @@ while : ; do
       echo "   --no-summary" >&2;
       echo "   --bootconfig" >&2;
       echo "   --bootdir=dir" >&2;
-a      echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
+      echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
       echo "   --configureinfo=yes|no [default no]" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -2164,7 +2169,9 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for sqlite
 if [ "$sqlite_is_enabled " = "yes " ]; then
-  if [ "$sqlitelibs " = " " ]; then
+  if [ "$sqltinyforce " = "yes " ]; then
+    sqlitelibs=""
+  elif [ "$sqlitelibs " = " " ]; then
     sqlitelibs=`$autoconf sqlite` || exit 1;
   fi
 fi
