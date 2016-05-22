@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep 24 08:16:31 2010                          */
-#*    Last change :  Wed Jan  7 09:16:09 2015 (serrano)                */
-#*    Copyright   :  2010-15 Manuel Serrano                            */
+#*    Last change :  Sun May 22 08:47:00 2016 (serrano)                */
+#*    Copyright   :  2010-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Android specific patch for the collector                         */
 #*=====================================================================*/
@@ -15,5 +15,7 @@ echo "Adapting the collector to Android"
 if [ "$threadsupport " != "no " ]; then
   (cd "$gccustom"_fth && \
    mv Makefile Makefile.orig && \
-   cat Makefile.orig | sed -e "s|-lpthread||" > Makefile) || exit 1
+   cat Makefile.orig | \
+     sed -e 's|-lpthread||' \
+	 -e 's|ATOMICOBJ_FTH=|ATOMICOBJ_FTH=$(CUSTOMGC)_fth/libatomic_ops/src/atomic_ops.o|'> Makefile) || exit 1
 fi
