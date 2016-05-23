@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Mar 18 08:17:13 2016 (serrano)                */
+;*    Last change :  Mon May 23 19:33:33 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -600,13 +600,19 @@
 ;*---------------------------------------------------------------------*/
 (define (list->string list)
    (let* ((len    (length list))
-	  (string ($make-string/wo-fill len)))
+	  (string ($make-string/wo-fill len))
+	  (sentinel #f))
       (let loop ((i 0)
 		 (l list))
 	 (if (=fx i len)
-	     string
+	     (if sentinel
+		 (string-ascii-sentinel-set! string sentinel)
+		 string)
 	     (begin
 		(string-set-ur! string i (car l))
+		(unless sentinel
+		   (when (char>? (car l) #a127)
+		      (set! sentinel i)))
 		(loop (+fx i 1) (cdr l)))))))
 
 ;*---------------------------------------------------------------------*/
