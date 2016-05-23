@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon May 23 19:33:33 2016 (serrano)                */
+;*    Last change :  Mon May 23 19:41:34 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -583,17 +583,24 @@
 		      (if (null? list)
 			  res
 			  (string-append (cdr list)
-					 (+fx res
-					      (string-length (car list)))))))
+			     (+fx res
+				(string-length (car list)))))))
 	      (res ($make-string/wo-fill len)))
 	  (let string-append ((list list)
-			      (w    0))
+			      (w 0)
+			      (sentinel #f))
 	     (if (null? list)
-		 res
+		 (if sentinel
+		     (string-ascii-sentinel-set! res sentinel)
+		     res)
 		 (let* ((s (car list))
-			(l (string-length s)))
+			(l (string-length s))
+			(nsentinel (or sentinel
+				       (let ((sent (string-ascii-sentinel s)))
+					  (unless (=fx sent l)
+					     (+fx w sent))))))
 		    (blit-string-ur! s 0 res w l)
-		    (string-append (cdr list) (+fx w l))))))))
+		    (string-append (cdr list) (+fx w l) nsentinel)))))))
  
 ;*---------------------------------------------------------------------*/
 ;*    @deffn list->string@ ...                                         */
@@ -635,7 +642,7 @@
 	  (new ($make-string/wo-fill len)))
       (let loop ((i (-fx len 1)))
 	 (if (=fx i -1)
-	     new
+	     (string-ascii-sentinel-set! new (string-ascii-sentinel string))
 	     (begin
 		(string-set-ur! new i (string-ref-ur string i))
 		(loop (-fx i 1)))))))
@@ -660,7 +667,7 @@
 	  (res ($make-string/wo-fill len)))
       (let loop ((i 0))
 	 (if (=fx i len)
-	     res
+	     (string-ascii-sentinel-set! res (string-ascii-sentinel string))
 	     (begin
 		(string-set-ur! res i (char-upcase (string-ref-ur string i)))
 		(loop (+fx i 1)))))))
@@ -673,7 +680,7 @@
 	  (res ($make-string/wo-fill len)))
       (let loop ((i 0))
 	 (if (=fx i len)
-	     res
+	     (string-ascii-sentinel-set! res (string-ascii-sentinel string))
 	     (begin
 		(string-set-ur! res i (char-downcase (string-ref-ur string i)))
 		(loop (+fx i 1)))))))
