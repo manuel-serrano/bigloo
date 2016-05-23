@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Tue Feb  9 15:05:45 2016 (serrano)                */
+;*    Last change :  Mon May 23 16:18:16 2016 (serrano)                */
 ;*    Copyright   :  2001-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -72,19 +72,19 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (bigloo-major-version)
    `',(string->symbol
-       (string-append "bigloo"
-		      (substring *bigloo-version*
-				 0
-				 (-fx (string-length *bigloo-version*) 1)))))
+	 (string-append "bigloo"
+	    (substring *bigloo-version*
+	       0
+	       (-fx (string-length *bigloo-version*) 1)))))
 					     
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-branch-version ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-macro (bigloo-branch-version)
    `',(string->symbol
-       (string-append "bigloo"
-		      (substring *bigloo-version* 0
-				 (string-index *bigloo-version* #\.)))))
+	 (string-append "bigloo"
+	    (substring *bigloo-version* 0
+	       (string-index *bigloo-version* #\.)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-version ...                                               */
@@ -133,7 +133,7 @@
 ;*    When a library is used for compiling the name of that library    */
 ;*    is added to the supported srfis.                                 */
 ;*---------------------------------------------------------------------*/
-(define *srfi-common-list*
+(define (srfi-common-list)
    (let ((l (cons* (bigloo-version)
 		   (bigloo-major-version)
 		   (bigloo-branch-version)
@@ -157,42 +157,52 @@
 ;*---------------------------------------------------------------------*/
 ;*    *srfi-eval-list* ...                                             */
 ;*---------------------------------------------------------------------*/
-(define *srfi-eval-list*
-   (cons 'bigloo-eval *srfi-common-list*))
+(define *srfi-eval-list* #f)
+(define *srfi-compile-list* #f)
 
 ;*---------------------------------------------------------------------*/
-;*    *srfi-compile-list* ...                                          */
+;*    srfi-compile-list ...                                            */
 ;*---------------------------------------------------------------------*/
-(define *srfi-compile-list*
-   *srfi-common-list*)
+(define (srfi-compile-list)
+   (unless *srfi-compile-list*
+      (set! *srfi-compile-list* (srfi-common-list)))
+   *srfi-compile-list*)
+
+;*---------------------------------------------------------------------*/
+;*    srfi-eval-list ...                                               */
+;*---------------------------------------------------------------------*/
+(define (srfi-eval-list)
+   (unless *srfi-eval-list*
+      (set! *srfi-eval-list* (cons 'bigloo-eval (srfi-common-list))))
+   *srfi-eval-list*)
 
 ;*---------------------------------------------------------------------*/
 ;*    register-eval-srfi! ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (register-eval-srfi! srfi::symbol)
    (synchronize *srfi-mutex*
-      (set! *srfi-eval-list* (cons srfi *srfi-eval-list*))))
+      (set! *srfi-eval-list* (cons srfi (srfi-eval-list)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unregister-eval-srfi! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (unregister-eval-srfi! srfi::symbol)
    (synchronize *srfi-mutex*
-      (set! *srfi-eval-list* (remq! srfi *srfi-eval-list*))))
+      (set! *srfi-eval-list* (remq! srfi (srfi-eval-list)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-compile-srfi! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (register-compile-srfi! srfi::symbol)
    (synchronize *srfi-mutex*
-      (set! *srfi-compile-list* (cons srfi *srfi-compile-list*))))
+      (set! *srfi-compile-list* (cons srfi (srfi-compile-list)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    unregister-compile-srfi! ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (unregister-compile-srfi! srfi::symbol)
    (synchronize *srfi-mutex*
-      (set! *srfi-compile-list* (remq! srfi *srfi-compile-list*))))
+      (set! *srfi-compile-list* (remq! srfi (srfi-compile-list)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    register-srfi! ...                                               */
@@ -212,27 +222,27 @@
 ;*    expand-eval-cond-expand ...                                      */
 ;*---------------------------------------------------------------------*/
 (define (expand-eval-cond-expand x e)
-   (expand-cond-expand x e *srfi-eval-list*))
+   (expand-cond-expand x e (srfi-eval-list)))
 
 ;*---------------------------------------------------------------------*/
 ;*    expand-compile-cond-expand ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (expand-compile-cond-expand x e)
-   (expand-cond-expand x e *srfi-compile-list*))
+   (expand-cond-expand x e (srfi-compile-list)))
 
 ;*---------------------------------------------------------------------*/
 ;*    compile-srfi? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (compile-srfi? srfi)
    (synchronize *srfi-mutex*
-      (memq srfi *srfi-compile-list*)))
+      (memq srfi (srfi-compile-list))))
    
 ;*---------------------------------------------------------------------*/
 ;*    eval-srfi? ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (eval-srfi? srfi)
    (synchronize *srfi-mutex*
-      (memq srfi *srfi-eval-list*)))
+      (memq srfi (srfi-eval-list))))
    
 ;*---------------------------------------------------------------------*/
 ;*    expand-cond-exapnd ...                                           */
