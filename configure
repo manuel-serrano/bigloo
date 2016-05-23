@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu May 19 07:30:49 2016 (serrano)                */
+#*    Last change :  Mon May 23 10:34:02 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1086,7 +1086,7 @@ while : ; do
       echo "   --customunistring=yes|no [default yes]" >&2;
       echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
       echo "   --customlibuv=yes|no [default yes]" >&2;
-      echo "   --sqltiny=yes|no [default no]" >&2;
+      echo "   --sqltiny [force sqltiny backend]" >&2;
       echo "" >&2;
       echo "Configuration settings:"  >&2;
       echo "   --bigloo.h[=file]" >&2;
