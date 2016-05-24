@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Tue May 24 13:34:26 2016 (serrano)                */
+#*    Last change :  Tue May 24 14:16:45 2016 (serrano)                */
 #*    Copyright   :  2009-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.4.2 specific entries                                        */
@@ -20,7 +20,7 @@ boot-gc:
 boot-gc_fth:
 	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
           $(MAKE) LIBQ=_fth CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" \
-             ATOMICOBJ=libatomic_ops/src/atomic_ops.o \
+             ATOMICOBJ=$(CUSTOMGC)$(LIBQ)/libatomic_ops/src/atomic_ops.o \
              do-boot-gc; \
 	fi
 
