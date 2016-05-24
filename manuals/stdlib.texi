@@ -1503,7 +1503,7 @@ The library functions for Unicode string processing are:
 @deffnx {bigloo procedure} ucs2-string-ci>=? s-ucs2a s-ucs2b
 @end deffn
 
-@deffn {bigloo procedure} subucs2-string s-ucs2 start end
+@deffn {bigloo procedure} ucs2-substring s-ucs2 start end
 @deffnx {bigloo procedure} ucs2-string-append s-ucs2 @dots{}
 @deffnx {bigloo procedure} ucs2-string->list s-ucs2
 @deffnx {bigloo procedure} list->ucs2-string chars

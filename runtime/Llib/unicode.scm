@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Apr 24 13:14:10 2016 (serrano)                */
+;*    Last change :  Tue May 24 12:58:10 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -76,7 +76,7 @@
 	   
 	   (c-ucs2-string-copy::ucs2string (::ucs2string)
 					   "c_ucs2_string_copy")
-	   (c-subucs2-string::ucs2string (::ucs2string ::int ::int)
+	   ($subucs2-string::ucs2string (::ucs2string ::int ::int)
 					 "c_subucs2_string")
 	   (c-ucs2-string-append::ucs2string (::ucs2string ::ucs2string)
 					     "ucs2_string_append")
@@ -121,7 +121,7 @@
 	      
 	      (method static c-ucs2-string-copy::ucs2string (::ucs2string)
 		      "c_ucs2_string_copy")
-	      (method static c-subucs2-string::ucs2string (::ucs2string ::int ::int)
+	      (method static $subucs2-string::ucs2string (::ucs2string ::int ::int)
 		      "c_subucs2_string")
 	      (method static c-ucs2-string-append::ucs2string (::ucs2string ::ucs2string)
 		      "c_ucs2_string_append")
@@ -152,6 +152,8 @@
 	    (inline ucs2-string-ci>=?::bool ::ucs2string ::ucs2string)
 	    (inline subucs2-string::ucs2string ::ucs2string ::int ::int)
 	    (inline subucs2-string-ur::ucs2string ::ucs2string ::int ::int)
+	    (inline ucs2-substring::ucs2string ::ucs2string ::int ::int)
+	    (inline ucs2-substring-ur::ucs2string ::ucs2string ::int ::int)
 	    (ucs2-string-append::ucs2string . ucs2-strings)
 	    (ucs2-string->list ::ucs2string)
 	    (list->ucs2-string::ucs2string ::obj)
@@ -344,14 +346,35 @@
 		  (+fx (ucs2-string-length ucs2-string) 1))
 	       #f)
 	   #f)
-       (c-subucs2-string ucs2-string start end)
+       ($subucs2-string ucs2-string start end)
        (error "subucs2-string" "Illegal index" (cons start end))))
 
 ;*---------------------------------------------------------------------*/
-;*    suucs2-string-ur ...                                             */
+;*    subucs2-string-ur ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (subucs2-string-ur ucs2-string start end)
-   (c-subucs2-string ucs2-string start end))
+   ($subucs2-string ucs2-string start end))
+
+;*---------------------------------------------------------------------*/
+;*    ucs2-substring ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (ucs2-substring ucs2-string start end)
+   ;; no macro on inline so we don't use `and'
+   (if (if (>=fx end start)
+	   (if ($string-bound-check? start
+		  (+fx (ucs2-string-length ucs2-string) 1))
+	       ($string-bound-check? end
+		  (+fx (ucs2-string-length ucs2-string) 1))
+	       #f)
+	   #f)
+       ($subucs2-string ucs2-string start end)
+       (error "subucs2-string" "Illegal index" (cons start end))))
+
+;*---------------------------------------------------------------------*/
+;*    ucs2-substring-ur ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (ucs2-substring-ur ucs2-string start end)
+   ($subucs2-string ucs2-string start end))
 
 ;*---------------------------------------------------------------------*/
 ;*    ucs2-string-append ...                                           */
