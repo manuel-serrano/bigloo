@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed Mar 16 10:00:11 2016 (serrano)                */
+;*    Last change :  Wed May 25 11:46:38 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -268,6 +268,7 @@
 	    (bigloo-demangle ::bstring)
 	    (bigloo-class-demangle::bstring ::bstring)
 	    (register-exit-function! ::procedure)
+	    (unregister-exit-function! ::procedure)
 	    (bigloo-exit-apply::obj ::obj)
  	    (bigloo-exit-mutex::obj)
 
@@ -608,6 +609,13 @@
 	     "Wrong procedure arity"
 	     fun)
 	  (set! *bigloo-exit-functions* (cons fun *bigloo-exit-functions*)))))
+
+;*---------------------------------------------------------------------*/
+;*    unregister-exit-function! ...                                    */
+;*---------------------------------------------------------------------*/
+(define (unregister-exit-function! fun)
+   (synchronize (bigloo-exit-mutex)
+      (set! *bigloo-exit-functions* (remq! fun *bigloo-exit-functions*))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-exit-apply ...                                            */

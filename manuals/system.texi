@@ -48,6 +48,7 @@ Examples:
 @end deffn
 
 @deffn {bigloo procedure} register-exit-function! proc
+@deffnx {bigloo procedure} unregister-exit-function! proc
 Register @var{proc} as an exit functions. @var{Proc} is a procedure
 accepting of one argument. This argument is the numerical value which
 is the status of the exit call. The registered functions are called when the 
