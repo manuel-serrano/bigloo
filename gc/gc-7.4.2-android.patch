@@ -6,7 +6,7 @@ diff -Naur gc-7.4.2.bgl/pthread_stop_world.c gc-7.4.2/pthread_stop_world.c
  
  #ifdef PLATFORM_ANDROID
 -  extern int tkill(pid_t tid, int sig); /* from sys/linux-unistd.h */
-+extern int tgkill(int, tgid pid_t tid, int sig); /* from sys/linux-unistd.h */
++extern int tgkill(int tgid, pid_t tid, int sig); /* from sys/linux-unistd.h */
  
    static int android_thread_kill(pid_t tid, int sig)
    {
