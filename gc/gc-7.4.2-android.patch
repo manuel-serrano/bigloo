@@ -1,0 +1,20 @@
+diff -Naur gc-7.4.2.bgl/pthread_stop_world.c gc-7.4.2/pthread_stop_world.c
+--- gc-7.4.2.bgl/pthread_stop_world.c	2014-06-03 08:08:02.000000000 +0200
++++ gc-7.4.2/pthread_stop_world.c	2016-05-26 16:58:08.093727354 +0200
+@@ -442,14 +442,14 @@
+ #endif
+ 
+ #ifdef PLATFORM_ANDROID
+-  extern int tkill(pid_t tid, int sig); /* from sys/linux-unistd.h */
++extern int tgkill(int, tgid pid_t tid, int sig); /* from sys/linux-unistd.h */
+ 
+   static int android_thread_kill(pid_t tid, int sig)
+   {
+     int ret;
+     int old_errno = errno;
+ 
+-    ret = tkill(tid, sig);
++    ret = tgkill(-1,tid, sig);
+     if (ret < 0) {
+         ret = errno;
+         errno = old_errno;

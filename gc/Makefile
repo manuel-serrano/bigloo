@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Wed Jan  7 09:17:48 2015 (serrano)                */
-#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu May 26 17:06:06 2016 (serrano)                */
+#*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -134,9 +134,11 @@ POP740 = install-gc-7.4.0 \
   libatomic_ops-7.4.0.tar.gz
 
 POP742 = install-gc-7.4.2 \
+  install-gc-7.4.2-android \
   configure-gc-7.4.2 \
   configure-gc-7.4.2-android \
   gc-7.4.2.patch \
+  gc-7.4.2-android.patch \
   Makefile-gc-7.4.2
 
 #*---------------------------------------------------------------------*/
