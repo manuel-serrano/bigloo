@@ -40,12 +40,6 @@ if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
 (cd ../gc/$gc && $patch -p1 < ../$gc.patch > /dev/null)
 if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
 
-#* # 29may2016 patch                                                   */
-#* (cd "../gc/$gc"_fth && $patch -p1 < ../$gc-29may2016.patch > /dev/null) */
-#* if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi       */
-#* (cd ../gc/$gc && $patch -p1 < ../$gc-29may2016.patch > /dev/null)   */
-#* if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi       */
-
 # install libatomic
 (cd "../gc/$gc"_fth && tar xfz ../$libatomic && \
   mv libatomic_ops-7.4.0 libatomic_ops)
@@ -77,6 +71,6 @@ cp ../runtime/Clib/gc_intf.c $gc
 cp ../runtime/Clib/gc_intf.c "$gc"_fth
 
 # hostos Bigloo specific patch
-if [ "$hostos " != " " -a -x gc/install-$gccustom-$hostos ]; then
-  ./install-$gccustom-$hostos || exit 1
+if [ "$HOSTOS " != " " -a -x ./install-$gccustom-$HOSTOS ]; then
+  ./install-$gccustom-$HOSTOS || exit 1
 fi

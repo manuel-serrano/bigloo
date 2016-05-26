@@ -28,6 +28,4 @@ fi
 
 # general Bigloo patch
 (cd "../gc/$gc"_fth && $patch -p1 < ../$gc-android.patch > /dev/null)
-if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
-(cd ../gc/$gc && $patch -p1 < ../$gc-android.patch > /dev/null)
-if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
+if [ $? != "0" ]; then echo "android patch failed"; exit 1; fi
