@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Wed Mar 16 09:54:49 2016 (serrano)                */
+/*    Last change :  Fri May 27 09:54:12 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -38,7 +38,7 @@ gcollect_verbose( unsigned long heapsz, unsigned long use ) {
 GC_API void
 bgl_gc_verbose_set( bool_t verbose ) {
 #if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM )
-   extern GC_add_gc_hook();
+   extern void GC_add_gc_hook();
    
    if( verbose ) {
       fprintf( stderr, "bgl_gc_verbose on...\n" );
@@ -111,6 +111,10 @@ bgl_gc_verbose_set( bool_t verbose ) {
 #  define GC_INLINE_ALLOC GC_INLINE_ALLOC_6xx
 #else
 #  define GC_INLINE_ALLOC GC_INLINE_ALLOC_7xx
+#endif
+
+#if( BGL_GC_VERSION >= 750 )
+#  define GC_objfreelist GC_freelists
 #endif
 
 /*---------------------------------------------------------------------*/

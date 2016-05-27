@@ -1,0 +1,19 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    .../project/bigloo/gc/configure-gc-7.5.0-27may2016-android       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Sep 24 08:16:31 2010                          */
+#*    Last change :  Fri May 27 09:33:31 2016 (serrano)                */
+#*    Copyright   :  2010-16 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Android specific patch for the collector                         */
+#*=====================================================================*/
+
+echo "Adapting the collector to Android"
+
+if [ "$threadsupport " != "no " ]; then
+  (cd "$gccustom"_fth && \
+   mv Makefile Makefile.orig && \
+   cat Makefile.orig | sed -e "s|-lpthread||" > Makefile) || exit 1
+fi
