@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Fri May 27 10:03:04 2016 (serrano)                */
+#*    Last change :  Fri May 27 10:42:25 2016 (serrano)                */
 #*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
@@ -143,9 +143,11 @@ POP742 = install-gc-7.4.2 \
   Makefile-gc-7.4.2
 
 POP75027MAY2016 = install-gc-7.5.0-27may2016 \
+  install-gc-7.5.0-27may2016-android \
   configure-gc-7.5.0-27may2016 \
   configure-gc-7.5.0-27may2016-android \
   gc-7.5.0-27may2016.patch \
+  gc-7.5.0-27may2016-android.patch \
   Makefile-gc-7.5.0-27may2016
 
 #*---------------------------------------------------------------------*/
