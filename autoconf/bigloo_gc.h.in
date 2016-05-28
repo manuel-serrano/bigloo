@@ -52,6 +52,7 @@
      extern void GC_register_finalizer( void *obj, 
                                         GC_finalization_proc fn, void *d,
                                         GC_finalization_proc *ofn, void **od );
+     extern void GC_add_roots( void *, void * );
 #    if( defined( PROFILE ) )
        extern void GC_profile_start();
 #    endif

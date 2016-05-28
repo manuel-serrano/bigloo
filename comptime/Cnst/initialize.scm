@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 15:50:19 1995                          */
-;*    Last change :  Thu Mar  3 12:57:45 2016 (serrano)                */
+;*    Last change :  Sat May 28 10:28:47 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The initialize function definition.                              */
@@ -66,6 +66,7 @@
 ;*---------------------------------------------------------------------*/
 (define (lib-initialize!)
    (global-name-set! (get-cnst-table) (backend-cnst-table-name (the-backend) 0))
+   (global-user?-set! (get-cnst-table) #f)
    (get-cnst-sexp))
 
 ;*---------------------------------------------------------------------*/
@@ -81,6 +82,7 @@
 ;*---------------------------------------------------------------------*/
 (define (read-empty-cnst-initialize!)
    (global-name-set! (get-cnst-table) (backend-cnst-table-name (the-backend) 0))
+   (global-user?-set! (get-cnst-table) #f)
    (get-cnst-sexp))
 
 ;*---------------------------------------------------------------------*/
@@ -106,7 +108,8 @@
 	 (cons sexp (get-cnst-sexp))))
    
    (global-name-set! (get-cnst-table)
-		     (backend-cnst-table-name (the-backend) (get-cnst-offset)))
+      (backend-cnst-table-name (the-backend) (get-cnst-offset)))
+   (global-user?-set! (get-cnst-table) #f)
    
    (let ((cnst-string (cnst-set->cnst-string (get-cnst-set))))
       (read-full-cnst-initialize/small-string cnst-string)))

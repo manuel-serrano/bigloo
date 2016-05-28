@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Thu Mar  3 13:11:04 2016 (serrano)                */
+;*    Last change :  Sat May 28 09:54:44 2016 (serrano)                */
 ;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -50,6 +50,7 @@
 	    cc_indent
 	    cc_cc
 	    cc_ld
+	    cc_roots
 	    init_setrc
 	    read_reader
 	    ast_env
@@ -111,7 +112,7 @@
 ;*---------------------------------------------------------------------*/
 (define (c-walk me::cvm)
    (pass-prelude (if (sawc? me) "C generation (saw)" "C generation (cgen)")
-		 (lambda () (start-emission! ".c")))
+      (lambda () (start-emission! ".c")))
    
    ;; a very little comment 
    (emit-header)
@@ -122,10 +123,10 @@
    ;; if we are in debugging mode, we generate a macro
    (if (or (>fx *compiler-debug* 0) *c-debug*)
        (emit-debug-activation))
-
+   
    ;; the include (both Bigloo's and user's ones)
    (emit-include)
-
+   
    ;; emit the C user header
    (when (pair? *c-user-header*)
       (fprint *c-port* "/* User header */")
@@ -135,30 +136,30 @@
    (fprint *c-port* "#ifdef __cplusplus")
    (fprint *c-port* "extern \"C\" {")
    (fprint *c-port* "#endif")
-
+   
    ;; we emit the generated type for the used classes
    (for-each-type!
-    (lambda (t) (type-occurrence-set! t 0)))
+      (lambda (t) (type-occurrence-set! t 0)))
    (for-each-global!
-    (lambda (global)
-       (cond
-	  ((and (eq? (global-module global) *module*)
-		(>fx (global-occurrence global) 0))
-	   (type-increment-global! global))
-	  ((require-prototype? global)
-	   (type-increment-global! global)
-	   (type-occurrence-increment! (global-type global))
-	   (when (sfun? (global-value global))
-	       (for-each (lambda (a)
-			    (cond
-			       ((type? a)
-				(type-occurrence-increment! a))
-			       ((local? a)
-				(type-occurrence-increment! (local-type a)))))
-			 (sfun-args (global-value global))))))))
+      (lambda (global)
+	 (cond
+	    ((and (eq? (global-module global) *module*)
+		  (>fx (global-occurrence global) 0))
+	     (type-increment-global! global))
+	    ((require-prototype? global)
+	     (type-increment-global! global)
+	     (type-occurrence-increment! (global-type global))
+	     (when (sfun? (global-value global))
+		(for-each (lambda (a)
+			     (cond
+				((type? a)
+				 (type-occurrence-increment! a))
+				((local? a)
+				 (type-occurrence-increment! (local-type a)))))
+		   (sfun-args (global-value global))))))))
    (let ((classes (filter (lambda (t)
 			     (>fx (type-occurrence t) 0))
-			  (get-class-list))))
+		     (get-class-list))))
       (emit-class-types classes *c-port*))
    
    ;; we declare prototypes, first, we print the prototype of variables
@@ -166,6 +167,10 @@
    
    ;; then we emit the constants values
    (emit-cnsts)
+   
+   ;; emit the GC roots, when demanded
+   (when *gc-force-register-roots?*
+      (gc-roots-emit *c-port*))
    
    (let ((globals (cvm-functions me)))
       
@@ -198,7 +203,7 @@
 		 #unspecified))))
       ;; we now emit the code for all the Scheme functions
       (backend-compile-functions me)
-
+      
       ;; C++ guard end
       (fprint *c-port* "#ifdef __cplusplus")
       (fprint *c-port* "}")
@@ -206,7 +211,7 @@
       
       ;; emit the C user foot
       (for-each (lambda (h) (fprint *c-port* h)) *c-user-foot*)
-   
+      
       (stop-emission!)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Apr 21 07:38:48 2016 (serrano)                */
+;*    Last change :  Sat May 28 09:19:50 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -389,6 +389,7 @@
       ;; type refefinition
       (("-fallow-type-redefinition" (help "allow type redifinition"))
        (set! *allow-type-redefinition* #t))
+      
 ;*--- Optimization ----------------------------------------------------*/
       (section "Optimization")
       ;; benchmarking
@@ -718,6 +719,8 @@
        (set! *auto-link-main* #t))
       (("-no-auto-link-main" (help "Disable main generation"))
        (set! *auto-link-main* #f))
+      (("--force-gc-roots" (help "Register global variables as GC roots"))
+       (set! *gc-force-register-roots?* #t))
       
 ;*--- Jvm specific options --------------------------------------------*/
       (section "Jvm specific options")

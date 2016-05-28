@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed Apr  6 10:20:34 2016 (serrano)                */
+;*    Last change :  Sat May 28 09:38:16 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -81,6 +81,7 @@
 	    return_walk
 	    cc_cc
 	    cc_ld
+	    cc_roots
 	    backend_backend
 	    backend_walk)
 
@@ -253,6 +254,10 @@
 	 
 	 ;; check if inlined code correspond to library functions
 	 (backend-check-inlines (the-backend))
+
+	 ;; explicit GC roots registration
+	 (when *gc-force-register-roots?*
+	    (set! units (cons (make-gc-roots-unit) units)))
 
 	 ;; ok, now we build the ast
 	 (let ((ast (profile ast (build-ast units))))

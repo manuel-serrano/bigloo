@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Dec 23 08:53:29 2015 (serrano)                */
-#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat May 28 09:38:24 2016 (serrano)                */
+#*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -124,7 +124,7 @@ BETA_FILE	= walk
 BETA_OBJ	= $(BETA_FILE:%=Beta/%.o)
 
 #*--- cc --------------------------------------------------------------*/
-CC_FILE		= exec indent cc ld
+CC_FILE		= exec indent cc ld roots
 
 CC_OBJ		= $(CC_FILE:%=Cc/%.o)
 

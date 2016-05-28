@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Apr 21 07:38:04 2016 (serrano)                */
+;*    Last change :  Sat May 28 09:16:36 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -152,6 +152,7 @@
 	    *gc-lib*
 	    *gc-custom?*
 	    *multi-threaded-gc?*
+	    *gc-force-register-roots?*
 	    *bigloo-abort?*
 	    *static-bigloo?*
 	    *static-all-bigloo?*
@@ -483,6 +484,10 @@
 ;; are we using a multi-threaded GC?
 (param-define *multi-threaded-gc?*
    "Are we using a multi-threaded GC?"
+   #f)
+;; force root registration (when GC support not complete)
+(param-define *gc-force-register-roots?*
+   "Force GC roots registration for global variables (for experts only)"
    #f)
 ;; do we have bigloo-abort?
 (param-define *bigloo-abort?*
