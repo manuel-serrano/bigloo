@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sat May 28 09:16:36 2016 (serrano)                */
+;*    Last change :  Mon May 30 08:07:46 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -488,7 +488,7 @@
 ;; force root registration (when GC support not complete)
 (param-define *gc-force-register-roots?*
    "Force GC roots registration for global variables (for experts only)"
-   #f)
+   #t)
 ;; do we have bigloo-abort?
 (param-define *bigloo-abort?*
    "Do we have the bigloo-abort function in executables?"
