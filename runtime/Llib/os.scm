@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Jun  1 13:23:22 2016 (serrano)                */
+;*    Last change :  Wed Jun  1 16:37:38 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1121,20 +1121,23 @@
 ;*    request->uint64 ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (request->uint64::uint64 req)
-   (cond
-      ((uint64? req)
-       req)
-      ((fixnum? req)
-       (fixnum->uint64 req))
-      ((real? req)
-       (flonum->uint64 req))
-      ((string? req)
-       (let ((cell (assoc req ioctl-requests-table)))
-	  (if (pair? cell)
-	      (cdr cell)
-	      (error "ioctl" "unknown command" req))))
-      (else
-       (bigloo-type-error "ioctl" "number of string" req))))
+   (let loop ((obj req))
+      (cond
+	 ((uint64? obj)
+	  obj)
+	 ((fixnum? obj)
+	  (fixnum->uint64 obj))
+	 ((real? obj)
+	  (flonum->uint64 obj))
+	 ((string? obj)
+	  (let ((cell (assoc obj ioctl-requests-table)))
+	     (if (pair? cell)
+		 (cdr cell)
+		 (loop (string->number obj)))))
+	 ((bignum? obj)
+	  (llong->uint64 (bignum->llong obj)))
+	 (else
+	  (bigloo-type-error "ioctl" "number of string" req)))))
        
 ;*---------------------------------------------------------------------*/
 ;*    ioctl ...                                                        */
