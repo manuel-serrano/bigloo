@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Tue Apr 19 10:29:49 2016 (serrano)                */
+;*    Last change :  Wed Jun  1 18:00:44 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -25,7 +25,8 @@
    (export  (inline-sfun! ::variable ::long ::obj)
 	    (wide-class isfun::sfun
 	       (original-body::node read-only)
-	       (recursive-calls (default #unspecified)))
+	       (recursive-calls (default #unspecified))
+	       (tailrec::bool (default #t)))
 	    (generic inline-node::node ::node ::long ::obj)
 	    (inline-node*! node* kfactor stack)))
 

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 17:29:48 1995                          */
-;*    Last change :  Tue Oct 19 17:44:16 2010 (serrano)                */
-;*    Copyright   :  1995-2010 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun  1 17:45:25 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We translate a local function definition into a global one.      */
 ;*=====================================================================*/
@@ -71,11 +71,12 @@
 ;*    Generates a new global name for the globalized local function.   */
 ;*---------------------------------------------------------------------*/
 (define (local-id->global-id local)
-   (let ((id (local-id local)))
-      (let loop ((id (local-id local)))
-	 (if (global? (find-global/module id *module*))
-	     (loop (symbol-append id symbol-quote))
-	     id))))
+   (let ((p (string-append (symbol->string (local-id local)) "~")))
+      (let loop ((count 0))
+	 (let ((id (string->symbol (string-append p (integer->string count)))))
+	    (if (global? (find-global/module id *module*))
+		(loop (+fx count 1))
+		id)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    the-global ...                                                   */

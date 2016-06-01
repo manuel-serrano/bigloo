@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen Inline/inline.scm)
+;; Bigloo (4.3a)
+;; Inria -- Sophia Antipolis     Wed Jun 1 13:31:23 CEST 2016 
+;; (bigloo -classgen Inline/inline.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,9 +11,11 @@
 ;; isfun
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-isfun::isfun arity1124::long side-effect1125::obj predicate-of1126::obj stack-allocator1127::obj top?1128::bool the-closure1129::obj effect1130::obj failsafe1131::obj property1132::obj args1133::obj args-name1134::obj body1135::obj class1136::obj dsssl-keywords1137::obj loc1138::obj optionals1139::obj keys1140::obj the-closure-global1141::obj strength1142::symbol original-body1143::node recursive-calls1144::obj)
+    (inline make-isfun::isfun arity1127::long side-effect1128::obj predicate-of1129::obj stack-allocator1130::obj top?1131::bool the-closure1132::obj effect1133::obj failsafe1134::obj property1135::obj args1136::obj args-name1137::obj body1138::obj class1139::obj dsssl-keywords1140::obj loc1141::obj optionals1142::obj keys1143::obj the-closure-global1144::obj strength1145::symbol original-body1146::node recursive-calls1147::obj tailrec1148::bool)
     (inline isfun?::bool ::obj)
     (isfun-nil::isfun)
+    (inline isfun-tailrec::bool ::isfun)
+    (inline isfun-tailrec-set! ::isfun ::bool)
     (inline isfun-recursive-calls::obj ::isfun)
     (inline isfun-recursive-calls-set! ::isfun ::obj)
     (inline isfun-original-body::node ::isfun)
@@ -55,9 +57,11 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; isfun
-(define-inline (make-isfun::isfun arity1124::long side-effect1125::obj predicate-of1126::obj stack-allocator1127::obj top?1128::bool the-closure1129::obj effect1130::obj failsafe1131::obj property1132::obj args1133::obj args-name1134::obj body1135::obj class1136::obj dsssl-keywords1137::obj loc1138::obj optionals1139::obj keys1140::obj the-closure-global1141::obj strength1142::symbol original-body1143::node recursive-calls1144::obj) (instantiate::isfun (arity arity1124) (side-effect side-effect1125) (predicate-of predicate-of1126) (stack-allocator stack-allocator1127) (top? top?1128) (the-closure the-closure1129) (effect effect1130) (failsafe failsafe1131) (property property1132) (args args1133) (args-name args-name1134) (body body1135) (class class1136) (dsssl-keywords dsssl-keywords1137) (loc loc1138) (optionals optionals1139) (keys keys1140) (the-closure-global the-closure-global1141) (strength strength1142) (original-body original-body1143) (recursive-calls recursive-calls1144)))
+(define-inline (make-isfun::isfun arity1127::long side-effect1128::obj predicate-of1129::obj stack-allocator1130::obj top?1131::bool the-closure1132::obj effect1133::obj failsafe1134::obj property1135::obj args1136::obj args-name1137::obj body1138::obj class1139::obj dsssl-keywords1140::obj loc1141::obj optionals1142::obj keys1143::obj the-closure-global1144::obj strength1145::symbol original-body1146::node recursive-calls1147::obj tailrec1148::bool) (instantiate::isfun (arity arity1127) (side-effect side-effect1128) (predicate-of predicate-of1129) (stack-allocator stack-allocator1130) (top? top?1131) (the-closure the-closure1132) (effect effect1133) (failsafe failsafe1134) (property property1135) (args args1136) (args-name args-name1137) (body body1138) (class class1139) (dsssl-keywords dsssl-keywords1140) (loc loc1141) (optionals optionals1142) (keys keys1143) (the-closure-global the-closure-global1144) (strength strength1145) (original-body original-body1146) (recursive-calls recursive-calls1147) (tailrec tailrec1148)))
 (define-inline (isfun?::bool obj::obj) ((@ isa? __object) obj (@ isfun inline_inline)))
 (define (isfun-nil::isfun) (class-nil (@ isfun inline_inline)))
+(define-inline (isfun-tailrec::bool o::isfun) (-> |#!bigloo_wallow| o tailrec))
+(define-inline (isfun-tailrec-set! o::isfun v::bool) (set! (-> |#!bigloo_wallow| o tailrec) v))
 (define-inline (isfun-recursive-calls::obj o::isfun) (-> |#!bigloo_wallow| o recursive-calls))
 (define-inline (isfun-recursive-calls-set! o::isfun v::obj) (set! (-> |#!bigloo_wallow| o recursive-calls) v))
 (define-inline (isfun-original-body::node o::isfun) (-> |#!bigloo_wallow| o original-body))

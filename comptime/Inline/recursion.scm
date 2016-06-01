@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Mon Nov 11 10:01:00 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun  1 18:12:43 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -39,18 +39,29 @@
 ;*    inline-app-recursive ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (inline-app-recursive node kfactor stack)
-   (let ((fun    (app-fun node))
-	 (callee (var-variable (app-fun node))))
-      (if (memq callee stack)
+   (let* ((fun (app-fun node))
+	  (callee (var-variable fun)))
+      (cond
+	 ((not (tailrec? callee))
+	  node)
+	 ((memq callee stack)
 	  ;; when we are in the definition of the function, we don't
 	  ;; do anything otherwise, we could possibly not be able
 	  ;; to inline call to this function (because its body should
 	  ;; have growth...)
-	  (inline-app-simple node kfactor stack "simple")
+	  (inline-app-simple node kfactor stack "simple"))
+	 (else
 	  ;; ok, we do a smart inlining.
-	  (begin
-	     (trace (inline 2) "inline-app-recursive: " (shape node) #\Newline)
-	     (inline-app-labels node kfactor stack)))))
+	  (trace (inline 2) "inline-app-recursive: " (shape node) #\Newline)
+	  (inline-app-labels node kfactor stack)))))
+
+;*---------------------------------------------------------------------*/
+;*    tailrec? ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (tailrec? var::variable)
+   (when (isfun? (variable-value var))
+      (with-access::isfun (variable-value var) (tailrec)
+	 tailrec)))
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-app-labels ...                                            */
@@ -212,8 +223,10 @@
    (trace (inline 2) "is-recursive?: " (shape var) "..." #\Newline)
    (let ((sfun (variable-value var)))
       (if (not (isfun? sfun))
-	  (let ((calls (find-recursive-calls (sfun-body sfun) var)))
+	  (let* ((trec (make-cell #t))
+		 (calls (find-recursive-calls (sfun-body sfun) var #t trec)))
 	     (widen!::isfun sfun
+		(tailrec (cell-ref trec))
 		(original-body (sfun-body sfun))
 		(recursive-calls calls))
 	     (pair? calls))
@@ -223,30 +236,32 @@
 	     ((null? (isfun-recursive-calls sfun))
 	      #f)
 	     (else
-	      (let ((calls (find-recursive-calls (isfun-original-body sfun)
-						 var)))
+	      (let* ((trec (make-cell #t))
+		     (calls (find-recursive-calls
+			       (isfun-original-body sfun) var #t trec)))
+		 (isfun-tailrec-set! sfun (cell-ref trec))
 		 (isfun-recursive-calls-set! sfun calls)
 		 (pair? calls)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-generic (find-recursive-calls node::node var::variable)
+(define-generic (find-recursive-calls node::node var::variable tail tres)
    '())
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::sequence ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::sequence var)
-   (find-recursive-calls* (sequence-nodes node) var))
+(define-method (find-recursive-calls node::sequence var tail tres)
+   (find-recursive-calls* (sequence-nodes node) var tail tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::sync ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::sync var)
-   (append (find-recursive-calls (sync-mutex node) var)
-      (find-recursive-calls (sync-prelock node) var)
-      (find-recursive-calls (sync-body node) var)))
+(define-method (find-recursive-calls node::sync var tail tres)
+   (append (find-recursive-calls (sync-mutex node) var #f tres)
+      (find-recursive-calls (sync-prelock node) var #f tres)
+      (find-recursive-calls (sync-body node) var #f tres)))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::app ...                                   */
@@ -254,143 +269,152 @@
 ;*    There is no need to inlining the arguments because all the       */
 ;*    arguments are variables.                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::app var)
+(define-method (find-recursive-calls node::app var tail tres)
    (with-access::app node (fun args)
-      (let ((args-calls (find-recursive-calls* args var)))
+      (let ((args-calls (find-recursive-calls* args var tail tres)))
 	 (if (and (var? fun) (eq? (var-variable fun) var))
-	     (cons node args-calls)
+	     (begin
+		(unless tail (cell-set! tres #f))
+		(cons node args-calls))
 	     args-calls))))
  
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::app-ly ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::app-ly var)
+(define-method (find-recursive-calls node::app-ly var tail tres)
    (with-access::app-ly node (fun arg)
-      (append (find-recursive-calls fun var) (find-recursive-calls arg var))))
+      (append (find-recursive-calls fun var #f tres)
+	 (find-recursive-calls arg var #f tres))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::funcall ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::funcall var)
+(define-method (find-recursive-calls node::funcall var tail tres)
    (with-access::funcall node (fun args)
-      (append (find-recursive-calls fun var)
-	      (find-recursive-calls* args var))))
+      (append (find-recursive-calls fun var #f tres)
+	      (find-recursive-calls* args var #f tres))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::extern ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::extern var)
-   (find-recursive-calls* (extern-expr* node) var))
+(define-method (find-recursive-calls node::extern var tail tres)
+   (find-recursive-calls* (extern-expr* node) var #f tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::cast ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::cast var)
-   (find-recursive-calls (cast-arg node) var))
+(define-method (find-recursive-calls node::cast var tail tres)
+   (find-recursive-calls (cast-arg node) var #f tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::setq ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::setq var)
-   (find-recursive-calls (setq-value node) var))
+(define-method (find-recursive-calls node::setq var tail tres)
+   (find-recursive-calls (setq-value node) var #f tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::conditional ...                           */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::conditional var)
+(define-method (find-recursive-calls node::conditional var tail tres)
    (with-access::conditional node (test true false)
-       (append (find-recursive-calls test var)
-	       (find-recursive-calls true var)
-	       (find-recursive-calls false var))))
+       (append (find-recursive-calls test var #f tres)
+	       (find-recursive-calls true var tail tres)
+	       (find-recursive-calls false var tail tres))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::fail ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::fail var)
+(define-method (find-recursive-calls node::fail var tail tres)
    (with-access::fail node (proc msg obj)
-      (append (find-recursive-calls proc var)
-	      (find-recursive-calls msg var)
-	      (find-recursive-calls obj var))))
+      (append (find-recursive-calls proc var #f tres)
+	      (find-recursive-calls msg var #f tres)
+	      (find-recursive-calls obj var #f tres))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::select ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::select var)
+(define-method (find-recursive-calls node::select var tail tres)
    (let loop ((clauses (select-clauses node))
-	      (calls   (find-recursive-calls (select-test node) var)))
+	      (calls (find-recursive-calls (select-test node) var #f tres)))
       (if (null? clauses)
 	  calls
 	  (loop (cdr clauses)
-		(append (find-recursive-calls (cdr (car clauses)) var)
-			calls)))))
+	     (append (find-recursive-calls (cdr (car clauses)) var tail tres)
+		calls)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::let-fun ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::let-fun var)
+(define-method (find-recursive-calls node::let-fun var tail tres)
    (let loop ((locals (let-fun-locals node))
-	      (calls  (find-recursive-calls (let-fun-body node) var)))
+	      (calls (find-recursive-calls (let-fun-body node) var tail tres)))
       (if (null? locals)
 	  calls
 	  (loop (cdr locals)
-		(append calls
-			(find-recursive-calls
-			 (sfun-body (local-value (car locals)))
-			 var))))))
+	     (append calls
+		(find-recursive-calls
+		   (sfun-body (local-value (car locals)))
+		   var #t tres))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::let-var ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::let-var var)
+(define-method (find-recursive-calls node::let-var var tail tres)
    (let loop ((bindings (let-var-bindings node))
-	      (calls    (find-recursive-calls (let-var-body node) var)))
+	      (calls (find-recursive-calls (let-var-body node) var tail tres)))
       (if (null? bindings)
 	  calls
 	  (loop (cdr bindings)
-		(append calls
-			(find-recursive-calls (cdr (car bindings)) var))))))
+	     (append calls
+		(find-recursive-calls (cdr (car bindings)) var #f tres))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::set-ex-it ...                             */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::set-ex-it var)
-   (find-recursive-calls (set-ex-it-body node) var))
+(define-method (find-recursive-calls node::set-ex-it var tail tres)
+   (find-recursive-calls (set-ex-it-body node) var #f tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::jump-ex-it ...                            */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::jump-ex-it v)
+(define-method (find-recursive-calls node::jump-ex-it v tail tres)
    (with-access::jump-ex-it node (exit value)
-      (append (find-recursive-calls exit v) (find-recursive-calls value v))))
+      (append (find-recursive-calls exit v #f tres)
+	 (find-recursive-calls value v #f tres))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::make-box ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::make-box var)
-   (find-recursive-calls (make-box-value node) var))
+(define-method (find-recursive-calls node::make-box var tail tres)
+   (find-recursive-calls (make-box-value node) var #f tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::box-ref ...                               */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::box-ref var)
-   (find-recursive-calls (box-ref-var node) var))
+(define-method (find-recursive-calls node::box-ref var tail tres)
+   (find-recursive-calls (box-ref-var node) var #f tres))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls ::box-set! ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::box-set! v)
+(define-method (find-recursive-calls node::box-set! v tail tres)
    (with-access::box-set! node (var value)
-      (append (find-recursive-calls var v) (find-recursive-calls value v))))
+      (append (find-recursive-calls var v #f tres)
+	 (find-recursive-calls value v #f tres))))
 
 ;*---------------------------------------------------------------------*/
 ;*    find-recursive-calls* ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (find-recursive-calls* node* var)
+(define (find-recursive-calls* node* var tail tres)
    (let loop ((node* node*)
 	      (calls '()))
-      (if (null? node*)
-	  calls
+      (cond
+	 ((null? node*)
+	  calls)
+	 ((null? (cdr node*))
+	  (append (find-recursive-calls (car node*) var tail tres) calls))
+	 (else
 	  (loop (cdr node*)
-		(append (find-recursive-calls (car node*) var) calls)))))
+	     (append (find-recursive-calls (car node*) var #f tres) calls))))))
    
 
