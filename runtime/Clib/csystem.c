@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Sun Apr 17 16:04:27 2016 (serrano)                */
+/*    Last change :  Wed Jun  1 13:17:10 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -42,6 +42,10 @@
 #else
 #define uid_t int
 #define gid_t int
+#endif
+
+#if BGL_HAVE_IOCTL
+#   include <sys/ioctl.h>
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -667,7 +671,51 @@ bgl_getgroups() {
       return create_vector( 0 );
 #endif
 }
-   
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    dev2fd ...                                                       */
+/*---------------------------------------------------------------------*/
+#if BGL_HAVE_IOCTL
+static int
+dev2fd( obj_t port ) {
+   if( INTEGERP( port ) ) {
+      return CINT( port );
+   }
+   if( INPUT_PORTP( port ) && PORT( port ).kindof == KINDOF_FILE ) {
+#if POSIX_FILE_OPS
+      return PORT_FD( port );
+#else
+      return fileno( PORT_FILE( p ) );
+#endif
+   }
+
+   C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ioctl", "port or integer expected", port );
+   return -1;
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_ioctl ...                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_ioctl( obj_t dev, uint64_t request, char *buffer ) {
+#if BGL_HAVE_IOCTL
+   int res = ioctl( dev2fd( dev ), (unsigned long)request, buffer );
+
+   if( !res ) {
+      return 1;
+   } else {
+      C_SYSTEM_FAILURE( BGL_IO_ERROR, "ioctl", strerror( errno ), dev );
+      return 0;
+   }
+#else
+   C_SYSTEM_FAILURE( BGL_ERROR, "ioctl", "ioctl not supported by architecture", dev );
+   return 0;
+#endif   
+}
+
 /*---------------------------------------------------------------------*/
 /*    bits conversions (see bigloo.h for GCC versions).                */
 /*---------------------------------------------------------------------*/

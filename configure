@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri May 27 09:34:39 2016 (serrano)                */
+#*    Last change :  Wed Jun  1 11:44:00 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2246,10 +2246,8 @@ if [ "$alsa " != "no " ]; then
   alsacflags=`$autoconf bgl-pkg-config --cflags alsa`
   alsalibs="`$autoconf bgl-pkg-config --libs alsa`"
 
-  if [ "alsacflags " = " " -o "alsalibs " = " " ]; then
-    echo "*** ERROR: Cannot configure alsa, cflags are empty";
-    echo "Running the command \"pkg-config --cflags alsa\" might help understanding what's wrong"
-    exit 1;
+  if [ "$alsacflags " = " " -o "$alsalibs " = " " ]; then
+    alsa="no"
   fi
 fi
 
@@ -2265,10 +2263,8 @@ if [ "$pulseaudio " != "no " ]; then
   pulseaudiocflags=`$autoconf bgl-pkg-config --cflags libpulse-simple`
   pulseaudiolibs="`$autoconf bgl-pkg-config --libs libpulse-simple`"
 
-  if [ "pulseaudiocflags " = " " -o "pulseaudiolibs " = " " ]; then
-    echo "*** ERROR: Cannot configure pulseaudio, cflags are empty";
-    echo "Running the command \"pkg-config --cflags libpulse-simple\" might help understanding what's wrong"
-    exit 1;
+  if [ "$pulseaudiocflags " = " " -o "$pulseaudiolibs " = " " ]; then
+    pulseaudio=no;
   fi
 fi
 
@@ -2497,6 +2493,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Does the system have getgroups?
   getgroups=`$autoconf getgroups` || exit 1
+
+  # Does the system have ioctl?
+  ioctl=`$autoconf ioctl` || exit 1
 
   # Does the system have sigsetmask?
   sigsetmask=`$autoconf sigsetmask` || exit 1
@@ -3036,6 +3035,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@NB_WINDOW_REGISTER@|$window|" \
               -e "s|@HAVE_SIGPIPE@|$sigpipe|" \
               -e "s|@BGL_HAVE_GETGROUPS@|$getgroups|" \
+              -e "s|@BGL_HAVE_IOCTL@|$ioctl|" \
               -e "s|@HAVE_SIGSETMASK@|$sigsetmask|" \
               -e "s|@HAVE_SIGPROCMASK@|$sigprocmask|" \
               -e "s|@HAVE_ALLOCA@|$alloca|" \

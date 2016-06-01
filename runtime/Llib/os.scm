@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Feb  9 10:19:03 2016 (serrano)                */
+;*    Last change :  Wed Jun  1 13:23:22 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -32,6 +32,7 @@
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
 	    __r4_numbers_6_5_flonum_dtoa
+	    __r4_numbers_6_5
 	    __r4_booleans_6_1
 	    __r4_symbols_6_4
 	    __r4_vectors_6_8
@@ -90,7 +91,8 @@
 	    (macro $umask::long (::long) "umask")
 	    (macro $getpid::int () "getpid")
 	    (macro $getppid::int () "getppid")
-	    ($getgroups::vector () "bgl_getgroups"))
+	    ($getgroups::vector () "bgl_getgroups")
+	    ($ioctl::bool (::obj ::uint64 ::string) "bgl_ioctl"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -223,6 +225,8 @@
 	    (inline getpid::int)
 	    (inline getppid::int)
 	    (inline getgroups::vector)
+	    (ioctl-register-request! ::bstring ::uint64)
+	    (ioctl::bool ::obj ::obj ::bstring)
 	    (umask::int #!optional mask)))
 
 ;*---------------------------------------------------------------------*/
@@ -1100,6 +1104,45 @@
    (cond-expand
       (bigloo-c ($getgroups))
       (else '#())))
+
+;*---------------------------------------------------------------------*/
+;*    ioctl-requests-table ...                                         */
+;*---------------------------------------------------------------------*/
+(define ioctl-requests-table
+   '())
+
+;*---------------------------------------------------------------------*/
+;*    ioctl-register-request! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (ioctl-register-request! name::bstring val::uint64)
+   (set! ioctl-requests-table (cons (cons name val) ioctl-requests-table)))
+
+;*---------------------------------------------------------------------*/
+;*    request->uint64 ...                                              */
+;*---------------------------------------------------------------------*/
+(define (request->uint64::uint64 req)
+   (cond
+      ((uint64? req)
+       req)
+      ((fixnum? req)
+       (fixnum->uint64 req))
+      ((real? req)
+       (flonum->uint64 req))
+      ((string? req)
+       (let ((cell (assoc req ioctl-requests-table)))
+	  (if (pair? cell)
+	      (cdr cell)
+	      (error "ioctl" "unknown command" req))))
+      (else
+       (bigloo-type-error "ioctl" "number of string" req))))
+       
+;*---------------------------------------------------------------------*/
+;*    ioctl ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (ioctl dev request buffer)
+   (cond-expand
+      (bigloo-c ($ioctl dev (request->uint64 request) buffer))
+      (else (error "ioctl" "not supported by backend" dev))))
 
 ;*---------------------------------------------------------------------*/
 ;*    umask ...                                                        */

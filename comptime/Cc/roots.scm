@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat May 28 09:37:13 2016                          */
-;*    Last change :  Mon May 30 08:00:58 2016 (serrano)                */
+;*    Last change :  Wed Jun  1 11:51:37 2016 (serrano)                */
 ;*    Copyright   :  2016 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Explicit GC roots registration                                   */
@@ -33,7 +33,7 @@
    (unit 'gc-roots
       -1
       (if (backend-pragma-support (the-backend))
-	  '(begin (pragma "bgl_gc_roots_register()"))
+	  '(begin (pragma::obj "bgl_gc_roots_register()"))
 	  `(begin #unspecified))
       #t
       #f)) 
