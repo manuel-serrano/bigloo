@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Wed Jun  1 13:17:10 2016 (serrano)                */
+/*    Last change :  Thu Jun  2 09:10:31 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -700,10 +700,42 @@ dev2fd( obj_t port ) {
 /*    bgl_ioctl ...                                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-bgl_ioctl( obj_t dev, uint64_t request, char *buffer ) {
+bgl_ioctl( obj_t dev, long request, obj_t vals ) {
 #if BGL_HAVE_IOCTL
-   int res = ioctl( dev2fd( dev ), (unsigned long)request, buffer );
+   int res;
+   unsigned long req = (unsigned long)request;
 
+#define BULONG( n ) ((unsigned long)(BELONG_TO_LONG( n ) ))
+   switch( bgl_list_length( vals ) ) {
+      case 0:
+	 res = ioctl( dev2fd( dev ), req );
+	 break;
+      case 1:
+	 res = ioctl( dev2fd( dev ), req,
+		      BULONG( CAR( vals ) ) );
+	 break;
+      case 2:
+	 res = ioctl( dev2fd( dev ), req,
+		      BULONG( CAR( vals ) ),
+		      BULONG( CAR( CDR( vals ) ) ) );
+	 break;
+      case 3:
+	 res = ioctl( dev2fd( dev ), req,
+		      BULONG( CAR( vals ) ),
+		      BULONG( CAR( CDR( vals ) ) ),
+		      BULONG( CAR( CDR( CDR( vals ) ) ) ) );
+	 break;
+      case 4:
+	 res = ioctl( dev2fd( dev ), req,
+		      BULONG( CAR( vals ) ),
+		      BULONG( CAR( CDR( vals ) ) ),
+		      BULONG( CAR( CDR( CDR( vals ) ) ) ),
+		      BULONG( CAR( CDR( CDR( CDR( vals ) ) ) ) ) );
+	 break;
+      default:
+	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "ioctl", "too many arguments", vals );
+   }
+	 
    if( !res ) {
       return 1;
    } else {

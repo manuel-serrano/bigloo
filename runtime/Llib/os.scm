@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Jun  1 16:37:38 2016 (serrano)                */
+;*    Last change :  Thu Jun  2 09:10:04 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -92,7 +92,7 @@
 	    (macro $getpid::int () "getpid")
 	    (macro $getppid::int () "getppid")
 	    ($getgroups::vector () "bgl_getgroups")
-	    ($ioctl::bool (::obj ::uint64 ::string) "bgl_ioctl"))
+	    ($ioctl::bool (::obj ::elong ::pair-nil) "bgl_ioctl"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -226,7 +226,7 @@
 	    (inline getppid::int)
 	    (inline getgroups::vector)
 	    (ioctl-register-request! ::bstring ::uint64)
-	    (ioctl::bool ::obj ::obj ::bstring)
+	    (ioctl::bool ::obj ::obj . ::obj)
 	    (umask::int #!optional mask)))
 
 ;*---------------------------------------------------------------------*/
@@ -1118,33 +1118,35 @@
    (set! ioctl-requests-table (cons (cons name val) ioctl-requests-table)))
 
 ;*---------------------------------------------------------------------*/
-;*    request->uint64 ...                                              */
+;*    request->elong ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (request->uint64::uint64 req)
+(define (request->elong::elong req)
    (let loop ((obj req))
       (cond
-	 ((uint64? obj)
+	 ((elong? obj)
 	  obj)
 	 ((fixnum? obj)
-	  (fixnum->uint64 obj))
+	  (fixnum->elong obj))
 	 ((real? obj)
-	  (flonum->uint64 obj))
+	  (flonum->elong obj))
 	 ((string? obj)
 	  (let ((cell (assoc obj ioctl-requests-table)))
 	     (if (pair? cell)
 		 (cdr cell)
 		 (loop (string->number obj)))))
 	 ((bignum? obj)
-	  (llong->uint64 (bignum->llong obj)))
+	  (bignum->elong obj))
 	 (else
 	  (bigloo-type-error "ioctl" "number of string" req)))))
        
 ;*---------------------------------------------------------------------*/
 ;*    ioctl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (ioctl dev request buffer)
+(define (ioctl dev request . vals)
+   (unless (every elong? vals)
+      (bigloo-type-error "ioctl" "elong pair" vals))
    (cond-expand
-      (bigloo-c ($ioctl dev (request->uint64 request) buffer))
+      (bigloo-c ($ioctl dev (request->elong request) vals))
       (else (error "ioctl" "not supported by backend" dev))))
 
 ;*---------------------------------------------------------------------*/
