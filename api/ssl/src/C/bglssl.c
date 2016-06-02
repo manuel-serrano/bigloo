@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Wed Nov 18 05:25:26 2015 (serrano)                */
-/*    Copyright   :  2005-15 Manuel Serrano                            */
+/*    Last change :  Thu Jun  2 15:42:41 2016 (serrano)                */
+/*    Copyright   :  2005-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -666,8 +666,8 @@ socket_server_enable_ssl( obj_t serv, obj_t s ) {
 BGL_RUNTIME_DEF obj_t
 bgl_make_ssl_server_socket( obj_t hostname, int port, int protocol, 
                             obj_t cert, obj_t pkey, obj_t ca_list,
-                            obj_t accepted_certs, int backlog ) {
-   obj_t serv = bgl_make_server_socket( hostname, port, backlog );
+                            obj_t accepted_certs, int backlog, bool_t ipv6 ) {
+   obj_t serv = bgl_make_server_socket( hostname, port, backlog, ipv6 );
    obj_t data = BNIL;
    /* data is (proto cert pkey ca_list acceptedcerts) */
    data = MAKE_PAIR( accepted_certs, data );

@@ -13,7 +13,8 @@ public class ssl_server_socket extends server_socket {
                              final Object pkey,
                              Object caList,
                              Object acceptedCerts,
-			     int backlog ) {
+			     int backlog,
+			     boolean ipv6 ) {
       super();
    }
    

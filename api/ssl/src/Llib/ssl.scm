@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Mon Oct 19 08:04:59 2015 (serrano)                */
-;*    Copyright   :  2005-15 Manuel Serrano                            */
+;*    Last change :  Thu Jun  2 16:44:16 2016 (serrano)                */
+;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -81,7 +81,7 @@
 						   ::pair-nil ::obj)
 	      "bgl_client_socket_use_ssl")
 	   ($ssl-server-make-socket::obj (::obj ::int ::int ::obj ::obj
-					    ::pair-nil ::obj ::int)
+					    ::pair-nil ::obj ::int ::bool)
 	      "bgl_make_ssl_server_socket")
 
 	   ($bgl-secure-context-init!::obj (::secure-context)
@@ -281,7 +281,7 @@
       
       (class $ssl-server
 	 (constructor make-socket (::obj ::int ::int ::obj ::obj
-				     ::pair-nil ::obj ::int))
+				     ::pair-nil ::obj ::int ::bool))
 	 (method static socket?::bool (::obj)
 	    "bgl_ssl_server_socketp")
 	 "bigloo.ssl.ssl_server_socket"))
@@ -328,7 +328,7 @@
 	      (name #f) (protocol 'sslv23)
 	      (cert #f) (pkey #f)
 	      (CAs '()) (accepted-certs #f)
-	      (backlog 5))
+	      (backlog 5) (ipv6 #f))
 	   
 	   (%make-certificate::obj ::$certificate)
 	   (%make-private-key::obj ::$private-key)
@@ -623,12 +623,13 @@
 	   (protocol 'sslv23)
 	   (cert #f) (pkey #f)
 	   (CAs '()) (accepted-certs #f)
-	   (backlog 5))
+	   (backlog 5)
+	   (ipv6 #f))
    (sanity-args-checks 'make-ssl-server-socket cert pkey CAs accepted-certs)
    (%socket-init!)
    ($ssl-server-make-socket name port (ssl-protocols->integer protocol)
       cert pkey
-      CAs accepted-certs backlog))
+      CAs accepted-certs backlog ipv6))
 
 ;*---------------------------------------------------------------------*/
 ;*    ssl-protocols->integer ...                                       */

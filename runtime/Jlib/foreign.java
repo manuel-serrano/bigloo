@@ -5763,7 +5763,8 @@ public final class foreign
 
    public static socket bgl_make_server_socket(Object name,
 					       int port,
-					       int backlog)
+					       int backlog,
+					       boolean ipv6)
       {
 	 return new server_socket(name, port);
       }

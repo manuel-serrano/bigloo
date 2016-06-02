@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Thu Mar 17 09:12:40 2016 (serrano)                */
+;*    Last change :  Thu Jun  2 15:21:38 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
 					 "bgl_make_client_socket")
 	    ($make-unix-socket::socket (::bstring ::int ::bstring ::bstring)
 					 "bgl_make_unix_socket")
-	    ($make-server-socket::socket (::obj ::int ::int)
+	    ($make-server-socket::socket (::obj ::int ::int ::bool)
 					 "bgl_make_server_socket")
 	    ($socket-accept::obj (::socket ::bool ::bstring ::bstring)
 				 "bgl_socket_accept")
@@ -119,7 +119,7 @@
 		  "SOCKETP")
 	       (method static $make-client-socket::socket (::bstring ::int ::int ::bstring ::bstring)
 		  "bgl_make_client_socket")
-	       (method static $make-server-socket::socket (::obj ::int ::int)
+	       (method static $make-server-socket::socket (::obj ::int ::int ::bool)
 		  "bgl_make_server_socket")
 	       
 	       (method static c-socket-hostname::obj (::socket)
@@ -223,7 +223,7 @@
 					(inbuf #t) (outbuf #t)
 					(timeout 0))
 	    (make-server-socket::socket #!optional (port 0)
-					#!key (name #f) (backlog 5))
+					#!key (name #f) (backlog 5) (ipv6 #f))
 	    (socket-accept::obj ::socket #!key (inbuf #t) (outbuf #t) (errp #t))
 	    (socket-accept-many::obj ::socket ::vector
 				     #!key (inbufs #t) (outbufs #t) (errp #t))
@@ -386,16 +386,16 @@
 	 ((unix local)
 	  (cond-expand
 	     (bigloo-c ($make-unix-socket host timeout inbuf outbuf))
-	     (else (error 'make-client-socket "Unsupported domain" domain))))
+	     (else (error "make-client-socket" "Unsupported domain" domain))))
 	 (else
-	  (error 'make-client-socket "Unknown socket domain" domain)))))
+	  (error "make-client-socket" "Unknown socket domain" domain)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-server-socket ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (make-server-socket::socket #!optional (port 0) #!key (name #f) (backlog 5))
+(define (make-server-socket::socket #!optional (port 0) #!key (name #f) (backlog 5) (ipv6 #f))
    (%socket-init!)
-   ($make-server-socket name port backlog))
+   ($make-server-socket name port backlog ipv6))
 
 ;*---------------------------------------------------------------------*/
 ;*    socket-accept ...                                                */

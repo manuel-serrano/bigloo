@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Apr 22 15:29:48 2016 (serrano)                */
+/*    Last change :  Thu Jun  2 15:34:15 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -800,7 +800,7 @@ WRAPPER( make_struct, STRUCT_TYPE_NUM, (obj_t k, int l, obj_t i), (k, l, i) )
 
 /* socket */
 WRAPPER( bgl_make_client_socket, SOCKET_TYPE_NUM, (obj_t h, int p, int s, obj_t ib, obj_t ob ), (h, p, s, ib, ob) )
-WRAPPER( bgl_make_server_socket, SOCKET_TYPE_NUM, (obj_t h, int p, int b), (h, p, b) )
+WRAPPER( bgl_make_server_socket, SOCKET_TYPE_NUM, (obj_t h, int p, int b, bool_t f), (h, p, b, f) )
 WRAPPER_PUSH( bgl_socket_accept, SOCKET_TYPE_NUM, obj_t, (obj_t s, int e, obj_t ib, obj_t ob), (s, e, ib, ob) )
 WRAPPER_PUSH( bgl_socket_accept_many, SOCKET_TYPE_NUM, long, (obj_t s, bool_t e, obj_t ib, obj_t ob, obj_t vec), (s, e, ib, ob, vec) )
 WRAPPER( bgl_host, HOSTENT_TYPE_NUM, (obj_t s), (s) )

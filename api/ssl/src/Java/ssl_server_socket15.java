@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Thu Sep  3 08:05:27 2015 (serrano)                */
-/*    Copyright   :  2000-15 Manuel Serrano                            */
+/*    Last change :  Thu Jun  2 16:45:12 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -29,7 +29,8 @@ public class ssl_server_socket extends server_socket {
                              final Object pkey,
                              Object caList,
                              Object acceptedCerts,
-			     int backlog ) {
+			     int backlog,
+			     boolean ipv6 ) {
       super();
       try {
         SSLServer server = new SSLServer();

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Fri Apr 22 17:01:12 2016 (serrano)                */
+/*    Last change :  Thu Jun  2 15:35:26 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -129,7 +129,7 @@ void *(*____make_struct)( void *, int, void * );
 
 /* socket */
 void *(*____bgl_make_client_socket)( void *, int, int, void *, void * );
-void *(*____bgl_make_server_socket)( void *, int, int );
+void *(*____bgl_make_server_socket)( void *, int, int, bool_t );
 void *(*____bgl_socket_accept)( void *, int, void *, void * );
 long (*____bgl_socket_accept_many)( void *, int, void *, void *, void * );
 void *(*____bgl_host)( void * );
@@ -412,7 +412,7 @@ bmem_init_inner() {
    ____make_struct = (void *(*)( void *, int, void * ))get_function( hdl, "make_struct" );
    /* socket */
    ____bgl_make_client_socket = (void *(*)( void *, int, int, void *, void * ))get_function( hdl, "bgl_make_client_socket" );
-   ____bgl_make_server_socket = (void *(*)( void *, int, int ))get_function( hdl, "bgl_make_server_socket" );
+   ____bgl_make_server_socket = (void *(*)( void *, int, int, bool_t ))get_function( hdl, "bgl_make_server_socket" );
    ____bgl_socket_accept = (void *(*)( void *, int, void *, void * ))get_function( hdl, "bgl_socket_accept" );
    ____bgl_socket_accept_many = (long (*)( void *, int, void *, void *, void * ))get_function( hdl, "bgl_socket_accept_many" );
    ____bgl_host = (void *(*)( void * ))get_function( hdl, "bgl_host" );

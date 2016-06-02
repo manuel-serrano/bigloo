@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Tue Nov 18 11:55:39 2014 (serrano)                */
-/*    Copyright   :  2003-14 Manuel Serrano                            */
+/*    Last change :  Thu Jun  2 15:34:45 2016 (serrano)                */
+/*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -146,7 +146,7 @@ extern void *(*____create_struct )( void *, int );
 extern void *(*____make_struct )( void *, int, void * );
 
 extern void *(*____bgl_make_client_socket )( void *, int, int, void *, void * );
-extern void *(*____bgl_make_server_socket )( void *, int, int );
+extern void *(*____bgl_make_server_socket )( void *, int, int, bool_t );
 extern void *(*____bgl_socket_accept )( void *, int, void *, void * );
 extern long (*____bgl_socket_accept_many )( void *, int, void *, void *, void * );
 extern void *(*____bgl_host )( void * );

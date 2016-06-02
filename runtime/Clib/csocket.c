@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Fri Sep 18 17:37:55 2015 (serrano)                */
+/*    Last change :  Thu Jun  2 15:22:13 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1563,7 +1563,7 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
 /*    bgl_make_server_socket ...                                       */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_make_server_socket( obj_t hostname, int portnum, int backlog ) {
+bgl_make_server_socket( obj_t hostname, int portnum, int backlog, bool_t ipv6 ) {
    char msg[] = "make-server-socket";
    struct sockaddr_in sin;
    struct hostent *hp;
