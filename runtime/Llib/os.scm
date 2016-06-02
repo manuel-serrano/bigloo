@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Jun  2 09:10:04 2016 (serrano)                */
+;*    Last change :  Thu Jun  2 17:07:43 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -1143,10 +1143,18 @@
 ;*    ioctl ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (ioctl dev request . vals)
-   (unless (every elong? vals)
-      (bigloo-type-error "ioctl" "elong pair" vals))
+   
+   (define (->elong n)
+      (cond
+	 ((elong? n) n)
+	 ((fixnum? n) (fixnum->elong n))
+	 ((bignum? n) (bignum->elong n))
+	 ((string? n) (string->elong n))
+	 ((real? n) (->elong (flonum->fixnum n)))
+	 (else (bigloo-type-error "ioctl" "elong pair" n))))
+   
    (cond-expand
-      (bigloo-c ($ioctl dev (request->elong request) vals))
+      (bigloo-c ($ioctl dev (request->elong request) (map ->elong vals)))
       (else (error "ioctl" "not supported by backend" dev))))
 
 ;*---------------------------------------------------------------------*/
