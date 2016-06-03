@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jan 20 08:45:23 1993                          */
-/*    Last change :  Thu Jun  2 09:10:31 2016 (serrano)                */
+/*    Last change :  Fri Jun  3 07:06:58 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    System interface                                                 */
@@ -700,41 +700,10 @@ dev2fd( obj_t port ) {
 /*    bgl_ioctl ...                                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-bgl_ioctl( obj_t dev, long request, obj_t vals ) {
+bgl_ioctl( obj_t dev, long request, long val ) {
 #if BGL_HAVE_IOCTL
-   int res;
    unsigned long req = (unsigned long)request;
-
-#define BULONG( n ) ((unsigned long)(BELONG_TO_LONG( n ) ))
-   switch( bgl_list_length( vals ) ) {
-      case 0:
-	 res = ioctl( dev2fd( dev ), req );
-	 break;
-      case 1:
-	 res = ioctl( dev2fd( dev ), req,
-		      BULONG( CAR( vals ) ) );
-	 break;
-      case 2:
-	 res = ioctl( dev2fd( dev ), req,
-		      BULONG( CAR( vals ) ),
-		      BULONG( CAR( CDR( vals ) ) ) );
-	 break;
-      case 3:
-	 res = ioctl( dev2fd( dev ), req,
-		      BULONG( CAR( vals ) ),
-		      BULONG( CAR( CDR( vals ) ) ),
-		      BULONG( CAR( CDR( CDR( vals ) ) ) ) );
-	 break;
-      case 4:
-	 res = ioctl( dev2fd( dev ), req,
-		      BULONG( CAR( vals ) ),
-		      BULONG( CAR( CDR( vals ) ) ),
-		      BULONG( CAR( CDR( CDR( vals ) ) ) ),
-		      BULONG( CAR( CDR( CDR( CDR( vals ) ) ) ) ) );
-	 break;
-      default:
-	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "ioctl", "too many arguments", vals );
-   }
+   int res = ioctl( dev2fd( dev ), req, (unsigned long)val );
 	 
    if( !res ) {
       return 1;

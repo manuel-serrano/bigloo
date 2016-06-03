@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Jun  2 17:07:43 2016 (serrano)                */
+;*    Last change :  Fri Jun  3 07:07:34 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -92,7 +92,7 @@
 	    (macro $getpid::int () "getpid")
 	    (macro $getppid::int () "getppid")
 	    ($getgroups::vector () "bgl_getgroups")
-	    ($ioctl::bool (::obj ::elong ::pair-nil) "bgl_ioctl"))
+	    ($ioctl::bool (::obj ::elong ::elong) "bgl_ioctl"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -226,7 +226,7 @@
 	    (inline getppid::int)
 	    (inline getgroups::vector)
 	    (ioctl-register-request! ::bstring ::uint64)
-	    (ioctl::bool ::obj ::obj . ::obj)
+	    (ioctl::bool ::obj ::obj ::obj)
 	    (umask::int #!optional mask)))
 
 ;*---------------------------------------------------------------------*/
@@ -1142,9 +1142,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    ioctl ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (ioctl dev request . vals)
+(define (ioctl dev request val)
    
-   (define (->elong n)
+   (define (->elong::elong n)
       (cond
 	 ((elong? n) n)
 	 ((fixnum? n) (fixnum->elong n))
@@ -1154,7 +1154,7 @@
 	 (else (bigloo-type-error "ioctl" "elong pair" n))))
    
    (cond-expand
-      (bigloo-c ($ioctl dev (request->elong request) (map ->elong vals)))
+      (bigloo-c ($ioctl dev (request->elong request) (->elong val)))
       (else (error "ioctl" "not supported by backend" dev))))
 
 ;*---------------------------------------------------------------------*/
