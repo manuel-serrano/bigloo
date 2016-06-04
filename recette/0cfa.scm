@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  7 11:13:48 1993                          */
-;*    Last change :  Fri Mar 18 12:13:23 2011 (serrano)                */
+;*    Last change :  Sat Jun  4 07:22:11 2016 (serrano)                */
 ;*                                                                     */
 ;*    Quelques tests sur la 0cfa                                       */
 ;*=====================================================================*/
@@ -182,6 +182,28 @@
    (f x (vector 1 2 3)))
 
 ;*---------------------------------------------------------------------*/
+;*    test-l-procedure-types2                                          */
+;*---------------------------------------------------------------------*/
+(define (test-l-procedure-type2-caller1 d::uchar p)
+   (let ((l (list "juste" "to" 'be 'sure 'that "there" 'is 'no
+	       'inlining 'in 'this 'function)))
+      (p d)))
+
+(define (test-l-procedure-type2-caller2 d::bchar p)
+   (let ((l (list "juste" "to" 'be 'sure 'that "there" 'is 'no
+	       'inlining 'in 'this 'function)))
+      (p d)))
+
+(define (test-l-procedure-type2 d0)
+   (let ((prac (lambda (d) (char=? d0 d)))
+	 (proc (lambda (d) (char=? d0 d)))
+	 (pric (lambda (d) (char=? d0 d))))
+      (when (test-l-procedure-type2-caller2 d0 prac)
+	 (when (test-l-procedure-type2-caller2 d0 pric)
+	    (when (test-l-procedure-type2-caller1 d0 pric)
+	       (test-l-procedure-type2-caller1 d0 proc))))))
+
+;*---------------------------------------------------------------------*/
 ;*    test-0cfa ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (test-0cfa)
@@ -198,4 +220,5 @@
    (test "dataflow-test" (dataflow-test 10) 1)
    (test "light-typed.1" (test-l-procedure-type 1) .1)
    (test "light-typed.2" (test-l-procedure-type 2) 2)
-   (test "light-typed.3" (test-l-procedure-type 3) '(3)))
+   (test "light-typed.3" (test-l-procedure-type 3) '(3))
+   (test "light-typed.4" (test-l-procedure-type2 #\a) #t))

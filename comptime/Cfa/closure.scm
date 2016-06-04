@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Thu Dec 31 18:04:15 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun  4 07:22:36 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
 ;*                                                                     */
@@ -173,7 +173,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    T-fix-point! ...                                                 */
 ;*    -------------------------------------------------------------    */
-;*    The computation of T require a fix point under all the funcall.  */
+;*    The computation of T require a fix point under all the funcalls. */
 ;*    -------------------------------------------------------------    */
 ;*    If type checks are omitted, a funcall which can apply            */
 ;*    procedure or other types, do not prevent optimization of         */
@@ -186,43 +186,42 @@
 	  #unspecified
 	  (let ((continue? #f))
 	     (for-each
-	      (lambda (app)
-		 (trace (cfa 3) "funcall: " (shape app) #\Newline)
-		 (let* ((fun     (funcall-fun app))
-			(approx  (cfa! fun))
-			(alloc   (set->list (approx-allocs approx)))
-			(type    (approx-type approx))
-			(T-init? (or (approx-top? approx)
-				     (not (or (eq? type *procedure*)
-					      *unsafe-type*)))))
-		    (let loop ((one-non-T? T-init?)
-			       (allocs     alloc))
-		       (trace (cfa 3)
-			      "      one-non-T?: " one-non-T? #\newline
-			      "          allocs: " (shape allocs) #\Newline)
-		       (cond
-			  ((null? allocs)
-			   'done)
-			  (one-non-T?
-			   (for-each
-			    (lambda (alloc)
-			       (if (make-procedure-app? alloc)
-				   (with-access::make-procedure-app alloc (T)
-				      (if T
-					  (begin
-					     (set! T #f)
-					     (set! continue? #t))))))
-			    alloc))
-			  ((make-procedure-app? (car allocs))
-			   (with-access::make-procedure-app (car allocs) (T)
-			      (if T
-				  (loop one-non-T? (cdr allocs))
-				  (loop #t allocs))))
-			  (else
-			   (if *unsafe-type*
-			       (loop one-non-T? (cdr allocs))
-			       (loop #t allocs)))))))
-	      funcall-list)
+		(lambda (app)
+		   (trace (cfa 3) "funcall: " (shape app) #\Newline)
+		   (let* ((fun     (funcall-fun app))
+			  (approx  (cfa! fun))
+			  (alloc   (set->list (approx-allocs approx)))
+			  (type    (approx-type approx))
+			  (T-init? (or (approx-top? approx)
+				       (not (or (eq? type *procedure*)
+						*unsafe-type*)))))
+		      (let loop ((one-non-T? T-init?)
+				 (allocs     alloc))
+			 (trace (cfa 3)
+			    "      one-non-T?: " one-non-T? #\newline
+			    "          allocs: " (shape allocs) #\Newline)
+			 (cond
+			    ((null? allocs)
+			     'done)
+			    (one-non-T?
+			     (for-each
+				(lambda (alloc)
+				   (when (make-procedure-app? alloc)
+				      (with-access::make-procedure-app alloc (T)
+					 (when T
+					    (set! T #f)
+					    (set! continue? #t)))))
+				alloc))
+			    ((make-procedure-app? (car allocs))
+			     (with-access::make-procedure-app (car allocs) (T)
+				(if T
+				    (loop one-non-T? (cdr allocs))
+				    (loop #t allocs))))
+			    (else
+			     (if *unsafe-type*
+				 (loop one-non-T? (cdr allocs))
+				 (loop #t allocs)))))))
+		funcall-list)
 	     (loop continue?)))))
 
 ;*---------------------------------------------------------------------*/
@@ -262,7 +261,7 @@
 			 (global? (sfun-the-closure sfun))
 			 (scnst?  (global-value (sfun-the-closure sfun))))
 		    (scnst-class-set! (global-value (sfun-the-closure sfun))
-				      'selfun))
+		       'selfun))
 		(var-variable-set! fun *make-el-procedure*)
 		(var-type-set! fun *procedure-el*)
 		(set! type *procedure-el*))
@@ -282,7 +281,7 @@
 		     (global? (sfun-the-closure sfun))
 		     (scnst? (global-value (sfun-the-closure sfun))))
 		(scnst-class-set! (global-value (sfun-the-closure sfun))
-				  'slfun))
+		   'slfun))
 	    (var-variable-set! fun *make-l-procedure*)
 	    ;; l-procedures are typed as regular procedures
 	    (var-type-set! fun *procedure*)
@@ -296,7 +295,7 @@
 		   (cond
 		      (X (make-elight-procedure-app app))
 		      (T (make-light-procedure-app app)))))
-	     *make-procedure-list*))
+      *make-procedure-list*))
 
 ;*---------------------------------------------------------------------*/
 ;*    light-funcall! ...                                               */
@@ -351,8 +350,7 @@
 				   (approx (cfa! fun))
 				   (apps (set->list (approx-allocs approx))))
 			       (when (and (pair? apps) (pair? (cdr apps)))
-				  (set! cont
-				     (or (merge-app-types! apps) cont)))))
+				  (set! cont (or (merge-app-types! apps) cont)))))
 		  funcall-l)
 	       (when cont
 		  (loop)))))))
@@ -383,41 +381,43 @@
 ;* 			  (tprint "a1=" (map shape a1))                */
 			  ;; The merge is not complete because this procedures
 			  ;; does not enforce type equality. It only enforces
-			  ;; boxing equalifty. That is, the merge of the
+			  ;; boxing equality. That is, the merge of the
 			  ;; two following prototypes:
 			  ;;   p0=(::obj ::int ::input-port)
 			  ;;   p1=(::obj ::double ::bstring)
 			  ;; produces:
 			  ;;   p0=(::obj ::bint ::input-port)
-			  ;;   p1=(::obj ::read ::bstring)
+			  ;;   p1=(::obj ::real ::bstring)
 			  ;; This is not a problem for the C backend because
 			  ;; bint, input-port, bstring are all represented
 			  ;; by the same C type but this makes the JVM
 			  ;; more complex (see the procedure
 			  ;;   funcall-light@saw_jvm_funcall
-			  ;; (in file SawJvm/funcall.scm)
+			  ;;   in file SawJvm/funcall.scm)
 			  (let ((bt0 (get-bigloo-type t0))
 				(bt1 (get-bigloo-type t1))
 				(cont #f))
 			     (unless (eq? (variable-type (car a0)) bt0)
+;* 				(tprint ">>> ### set.1 " (shape a0))   */
 				(variable-type-set! (car a0) bt0)
+				(approx-type-set! p0 bt0)
+;* 				(tprint "<<< ### set.1 " (shape a0) " -> " (shape bt0)) */
 				(set! cont #t))
 			     (unless (eq? (variable-type (car a1)) bt1)
+;* 				(tprint ">>> ### set.2 " (shape a1))   */
 				(variable-type-set! (car a1) bt1)
+				(approx-type-set! p1 bt1)
+;* 				(tprint "<<< ### set.2 " (shape a1) " -> " (shape bt1)) */
 				(set! cont #t))
 ;* 			  (tprint "-> a0=" (map shape a0))             */
 ;* 			  (tprint "-> a1=" (map shape a1))             */
 			     (loop (cdr a0) (cdr a1) cont)))))
 		cont))))
 
-;*    (tprint ">>> merge: " (map shape apps0))                         */
-   
    (let loop ((apps (cdr apps0))
 	      (cont #f))
       (if (null? apps)
-	  (begin
-;* 	     (tprint "<<< merge cont=" cont)                           */
-	     cont)
+	  cont
 	  (loop (cdr apps) (or (merge2! (car apps0) (car apps)) cont)))))
 
 ;*---------------------------------------------------------------------*/
@@ -427,6 +427,13 @@
    
    (define (set-type! app::make-procedure-app)
       (with-access::make-procedure-app app (X T args)
+;* 	 (tprint "TYPE CLOSURE: " (shape app) " X=" X " T=" T)         */
+;* 	 (let* ((var (var-variable (car args)))                        */
+;* 		(sfun (variable-value var)))                           */
+;* 	    (tprint "sfun=" (shape var))                               */
+;* 	    (for-each (lambda (a)                                      */
+;* 			 (tprint "  a=" (shape a)))                    */
+;* 	       (cdr (sfun-args sfun))))                                */
 	 (unless (or X T)
 	    ;; a non optimized procedure
 	    (let* ((var (var-variable (car args)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 17:36:29 1996                          */
-;*    Last change :  Thu May  5 14:42:07 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun  4 06:51:29 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa on `app' node                                            */
 ;*=====================================================================*/
@@ -56,12 +56,20 @@
 	 (cfa-current)
 	 ": >>> app(intern-sfun/Cinfo)!" " polymorphic?=" polymorphic?
 	 #\Newline)
+      (trace (cfa 3) (cfa-current) ": ~~~   app, formals="
+	 (map shape args) #\Newline)
+      (trace (cfa 3) (cfa-current) ": ~~~   app, approx="
+	 (map shape args-approx) #\Newline)
       ;; we set the new formals approximation
       (for-each (lambda (formal approx)
 		   (union-approx! (svar/Cinfo-approx (local-value formal))
 		      approx))
 	 args
 	 args-approx)
+      (trace (cfa 3)
+	 (cfa-current)
+	 ": --- app(intern-sfun/Cinfo)!" " polymorphic?=" polymorphic?
+	 #\Newline)
       (trace (cfa 3) (cfa-current) ": ~~~   app, formals="
 	 (map shape args) #\Newline)
       ;; and we jump to the function body
