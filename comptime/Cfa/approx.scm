@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 12:32:06 1996                          */
-;*    Last change :  Sat Jun  4 08:08:28 2016 (serrano)                */
+;*    Last change :  Sat Jun  4 09:23:08 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The approximation manipulations.                                 */
@@ -242,10 +242,10 @@
 	 ((and (bigloo-type? dtype) (eq? dtype (get-bigloo-type type)))
 	  ;; C / bigloo mapping
 	  #t)
-;* 	 ((or (and (bigloo-type? dtype) (eq? dtype (get-bigloo-type type))) */
-;* 	      (and (bigloo-type? type) (eq? type (get-bigloo-type dtype)))) */
-;* 	  ;; C / bigloo mapping                                        */
-;* 	  #t)                                                          */
+	 ((or (and (bigloo-type? dtype) (eq? dtype (get-bigloo-type type)))
+	      (and (bigloo-type? type) (eq? type (get-bigloo-type dtype))))
+	  ;; C / bigloo mapping
+	  #t)
 	 ((and (or (eq? dtype *bnil*) (eq? dtype *pair*) (eq? dtype *epair*))
 	       (or (eq? type *bnil*)
 		   (eq? type *pair*) (eq? type *epair*)

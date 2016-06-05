@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sat Dec  8 15:34:44 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Jun  4 18:41:30 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
 ;*=====================================================================*/
@@ -100,7 +100,7 @@
 				      (when (make-procedure-app? a)
 					 (set-procedure-approx-polymorphic! a)))
 				   fapprox))
-	 (trace (cfa 2) "<<<  funcall: " (shape node) " approx=" (shape approx)
+	 (trace (cfa 2) "<<<  funcall: " (shape node) "-> approx=" (shape approx)
 	     #\Newline)
 	 approx)))
 

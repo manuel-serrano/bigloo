@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sat Jun  4 07:22:36 2016 (serrano)                */
+;*    Last change :  Sat Jun  4 19:26:18 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -301,6 +301,9 @@
 ;*    light-funcall! ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (light-funcall!)
+   (trace cfa
+      " ----- light funcall! -------------------------------------------"
+      #\Newline)
    (for-each (lambda (app::funcall)
 		(trace (cfa 2) "light-funcall!: " (shape app) " ... ")
 		(let* ((fun (funcall-fun app))
@@ -338,6 +341,9 @@
 				 'nothing-to-do)))))))
       *funcall-list*)
    (when *optim-cfa-unbox-closure-args*
+   (trace (cfa 2)
+      " ----- light funcall! (optim cfa unbox) --------------------------"
+      #\Newline)
       ;; fix point over all the T procedures to merge all the types
       ;; on funcall sites
       (let ((funcall-l (filter (lambda (app::funcall)
@@ -349,11 +355,27 @@
 			    (let* ((fun (funcall-fun app))
 				   (approx (cfa! fun))
 				   (apps (set->list (approx-allocs approx))))
-			       (when (and (pair? apps) (pair? (cdr apps)))
-				  (set! cont (or (merge-app-types! apps) cont)))))
+			       (when (pair? apps)
+				  (when (pair? (cdr apps))
+				     (set! cont
+					(or (merge-app-types! apps) cont)))
+				  (merge-app-return-types! apps (cfa! app)))))
 		  funcall-l)
 	       (when cont
 		  (loop)))))))
+
+;*---------------------------------------------------------------------*/
+;*    merge-app-return-types! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (merge-app-return-types! apps approx)
+   (let* ((app0 (car apps))
+	  (f0 (var-variable (car (make-procedure-app-args app0))))
+	  (r0 (intern-sfun/Cinfo-approx (variable-value f0)))
+	  (rt0 (approx-type r0))
+	  (brt0 (get-bigloo-type rt0))
+	  (at (approx-type approx)))
+      (unless (or (eq? rt0 at) (and (bigloo-type? rt0) (bigloo-type? at)))
+	 (approx-type-set! approx (approx-type r0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    merge-app-types! ...                                             */
@@ -363,6 +385,19 @@
    (define (merge2! app0::make-procedure-app app1::make-procedure-app)
       (let* ((f0 (var-variable (car (make-procedure-app-args app0))))
 	     (f1 (var-variable (car (make-procedure-app-args app1)))))
+	 ;; merge the return values
+	 (let* ((r0 (intern-sfun/Cinfo-approx (variable-value f0)))
+		(r1 (intern-sfun/Cinfo-approx (variable-value f1)))
+		(rt0 (approx-type r0))
+		(rt1 (approx-type r1))
+		(brt0 (get-bigloo-type rt0))
+		(brt1 (get-bigloo-type rt1)))
+	    (unless (or (eq? rt0 rt1)
+			(and (bigloo-type? rt0) (bigloo-type? rt1)))
+	       (unless (eq? rt0 brt0)
+		  (approx-type-set! r0 brt0))
+	       (unless (eq? rt1 brt1)
+		  (approx-type-set! r1 brt1))))
 	 (let loop ((a0 (cdr (sfun-args (variable-value f0))))
 		    (a1 (cdr (sfun-args (variable-value f1))))
 		    (cont #f))
