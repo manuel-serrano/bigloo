@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Jun  5 16:10:08 2016 (serrano)                */
+#*    Last change :  Sun Jun  5 21:06:48 2016 (serrano)                */
 #*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -678,7 +678,7 @@ install-apis: install-dirs
 
 install-api: install-dirs
 	for p in $(APIS); do \
-	  if [ "$p " = "$(API) " ]; then \
+	  if [ "$$p " = "$(API) " ]; then \
              $(MAKE) -C api install APIS=$(API); \
           fi \
 	done
