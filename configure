@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Jun  5 09:05:24 2016 (serrano)                */
+#*    Last change :  Sun Jun  5 10:05:58 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4229,7 +4229,8 @@ echo "#* Automatically generated file (don't edit) */" >> $deb
 cat $deb.in \
    | sed -e "s|#!/bin/sh||" \
          -e "s|@VERSION@|$release|" \
-   > $deb  
+         -e "s|@APIS@|$apis|" \
+   >> $deb  
 chmod a+rx $deb
 
 #*---------------------------------------------------------------------*/
