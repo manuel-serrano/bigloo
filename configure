@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun  1 11:44:00 2016 (serrano)                */
+#*    Last change :  Sun Jun  5 09:05:24 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1894,6 +1894,12 @@ else
     pthreadlocalstorage=`$autoconf pthreadlocalstorage --lib="$pthreadlibs"` || exit 1;
   fi
 
+  # pthread kill
+  if [ "$pthreadlibs" != "no" ]; then
+    pthreadkill=`$autoconf pthreadkill --lib="$pthreadlibs"` || exit 1;
+    cgcflags="$gcflags -DBGL_$pthreadkill"
+  fi
+  
   # get the number of processors of the machine
   if [ "$gcparallelmark " = " " ]; then
     nbprocs=`$autoconf nbprocs` || exit 1

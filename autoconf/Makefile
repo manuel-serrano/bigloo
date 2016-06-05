@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Wed Jun  1 11:29:22 2016 (serrano)                */
+#*    Last change :  Sun Jun  5 08:53:34 2016 (serrano)                */
 #*    Copyright   :  1997-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -59,7 +59,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   gcconfigureopt ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
-                  gmtoff libuv getgroups ioctl
+                  gmtoff libuv getgroups ioctl pthreadkill
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

@@ -1,22 +1,48 @@
 diff -Naur gc-7.5.0-27may2016.bgl/pthread_stop_world.c gc-7.5.0-27may2016/pthread_stop_world.c
 --- gc-7.5.0-27may2016.bgl/pthread_stop_world.c	2016-05-27 09:11:49.000000000 +0200
-+++ gc-7.5.0-27may2016/pthread_stop_world.c	2016-05-27 10:40:39.328891314 +0200
-@@ -450,14 +450,16 @@
++++ gc-7.5.0-27may2016/pthread_stop_world.c	2016-06-05 09:10:34.673629203 +0200
+@@ -450,14 +450,26 @@
  #endif
  
  #ifdef USE_TKILL_ON_ANDROID
--  extern int tkill(pid_t tid, int sig); /* from sys/linux-unistd.h */
-+  // extern int tkill(pid_t tid, int sig); /* from sys/linux-unistd.h */
++#ifdef BGL_KILL
+   extern int tkill(pid_t tid, int sig); /* from sys/linux-unistd.h */
++#endif
++#ifdef BGL_TGKILL
 +  extern int tgkill(int tgid, pid_t tid, int sig); /* from sys/linux-unistd.h */
++#endif
  
    static int android_thread_kill(pid_t tid, int sig)
    {
      int ret;
      int old_errno = errno;
  
--    ret = tkill(tid, sig);
-+    // ret = tkill(tid, sig);
++#ifdef BGL_KILL
+     ret = tkill(tid, sig);
++#endif
++#ifdef BGL_TGKILL
 +    ret = tgkill(-1,tid, sig);
++#else
++    ret = -1;
++#endif
      if (ret < 0) {
          ret = errno;
          errno = old_errno;
+@@ -516,7 +528,7 @@
+                                      (void *)p->id);
+               }
+ #           else
+-#             ifndef USE_TKILL_ON_ANDROID
++#             if( !defined( USE_TKILL_ON_ANDROID ) || defined( BGL_PTHREAD_KILL ) )
+                 thread_id = p -> id;
+                 result = pthread_kill(thread_id, GC_sig_suspend);
+ #             else
+@@ -880,7 +892,7 @@
+             if (GC_on_thread_event)
+               GC_on_thread_event(GC_EVENT_THREAD_UNSUSPENDED, (void *)p->id);
+ #         else
+-#           ifndef USE_TKILL_ON_ANDROID
++#           if( !defined( USE_TKILL_ON_ANDROID ) || defined( BGL_PTHREAD_KILL ) )
+               thread_id = p -> id;
+               result = pthread_kill(thread_id, GC_sig_thr_restart);
+ #           else

@@ -1,0 +1,99 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/pthreadkill                 */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Sun Jun  5 09:42:35 2016 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host pthread kill library (Android only).          */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+pthreadlibs="-lpthread"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    tkill                                                            */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <pthread.h>
+#include <stdio.h>
+
+extern int tkill(int tid, int sig);
+
+int main( int argc, char *argv[] ) {
+   fprintf( stderr, "%p", &tkill );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "TKILL"
+fi
+
+#*---------------------------------------------------------------------*/
+#*    tgkill                                                           */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <pthread.h>
+#include <stdio.h>
+
+extern int tgkill(int tgid, int tid, int sig);
+
+int main( int argc, char *argv[] ) {
+   fprintf( stderr, "%p", &tgkill );
+}
+EOF
+
+if eval "$BUILDSH $compile"; then
+   echo "TGKILL"
+else
+   echo "PTHREAD_KILL"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0
