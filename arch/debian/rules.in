@@ -66,17 +66,17 @@ install: build
 	$(MAKE) install-devel DESTDIR=$(CURDIR)/debian/bigloo
 	$(MAKE) install-docs DESTDIR=$(CURDIR)/debian/bigloo-doc
 	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl alsa pulseaudio flac wav mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
-	@IFSQLITE@ $(MAKE) install-apis APIS=sqlite DESTDIR=$(CURDIR)/debian/libsqlite-bigloo
-	@IFPKGLIB@ $(MAKE) install-apis APIS=pkglib DESTDIR=$(CURDIR)/debian/libpkglib-bigloo
-	@IFSSL@ $(MAKE) install-apis APIS=ssl DESTDIR=$(CURDIR)/debian/libssl-bigloo
-	@IFALSA@ $(MAKE) install-apis APIS=alsa DESTDIR=$(CURDIR)/debian/libalsa-bigloo
-	@IFPULSEAUDIO@ $(MAKE) install-apis APIS=pulseaudio DESTDIR=$(CURDIR)/debian/libpulseaudio-bigloo
-	@IFFLAC@ $(MAKE) install-apis APIS=flac DESTDIR=$(CURDIR)/debian/libflac-bigloo
-	@IFWAV@ $(MAKE) install-apis APIS=wav DESTDIR=$(CURDIR)/debian/libwav-bigloo
-	@IFMPG123@ $(MAKE) install-apis APIS=mpg123 DESTDIR=$(CURDIR)/debian/libmpg123-bigloo
-	@IFAVAHI@ $(MAKE) install-apis APIS=avahi DESTDIR=$(CURDIR)/debian/libavahi-bigloo
-	@IFGSTREAMER@ $(MAKE) install-apis APIS=gstreamer DESTDIR=$(CURDIR)/debian/libgstreamer-bigloo
-	@IFPHIDGET@ $(MAKE) install-apis APIS=phidget DESTDIR=$(CURDIR)/debian/libphidget-bigloo
+	@IFSQLITE@ $(MAKE) install-api API=sqlite DESTDIR=$(CURDIR)/debian/libsqlite-bigloo
+	@IFPKGLIB@ $(MAKE) install-api API=pkglib DESTDIR=$(CURDIR)/debian/libpkglib-bigloo
+	@IFSSL@ $(MAKE) install-api API=ssl DESTDIR=$(CURDIR)/debian/libssl-bigloo
+	@IFALSA@ $(MAKE) install-api API=alsa DESTDIR=$(CURDIR)/debian/libalsa-bigloo
+	@IFPULSEAUDIO@ $(MAKE) install-api API=pulseaudio DESTDIR=$(CURDIR)/debian/libpulseaudio-bigloo
+	@IFFLAC@ $(MAKE) install-api API=flac DESTDIR=$(CURDIR)/debian/libflac-bigloo
+	@IFWAV@ $(MAKE) install-api API=wav DESTDIR=$(CURDIR)/debian/libwav-bigloo
+	@IFMPG123@ $(MAKE) install-api API=mpg123 DESTDIR=$(CURDIR)/debian/libmpg123-bigloo
+	@IFAVAHI@ $(MAKE) install-api API=avahi DESTDIR=$(CURDIR)/debian/libavahi-bigloo
+	@IFGSTREAMER@ $(MAKE) install-api API=gstreamer DESTDIR=$(CURDIR)/debian/libgstreamer-bigloo
+	@IFPHIDGET@ $(MAKE) install-api API=phidget DESTDIR=$(CURDIR)/debian/libphidget-bigloo
 
 
 # Build architecture-independent files here.

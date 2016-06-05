@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Nov  4 12:36:56 2015 (serrano)                */
-#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jun  5 13:35:57 2016 (serrano)                */
+#*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -675,6 +675,13 @@ install-libs: install-dirs
 
 install-apis: install-dirs
 	$(MAKE) -C api install
+
+install-api: install-dirs
+	for p in $(APIS); do \
+	  if [ "$p " = "$(API) " ]; then \
+             $(MAKE) -C api APIS=$(API) \
+          fi; \
+	done
 
 install-docs: install-dirs
 	$(MAKE) -C manuals install
