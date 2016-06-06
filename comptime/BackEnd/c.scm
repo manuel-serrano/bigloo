@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Sat May 28 09:54:44 2016 (serrano)                */
+;*    Last change :  Mon Jun  6 08:52:57 2016 (serrano)                */
 ;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -157,6 +157,20 @@
 				((local? a)
 				 (type-occurrence-increment! (local-type a)))))
 		   (sfun-args (global-value global))))))))
+   (let ((fixpoint #f))
+      (let loop ()
+	 (unless fixpoint
+	    (set! fixpoint #t)
+	    (for-each (lambda (t::tclass)
+			 (when (>fx (type-occurrence t) 0)
+			    (with-access::tclass t (slots)
+			       (for-each (lambda (t::slot)
+					    (with-access::slot t (type)
+					       (when (=fx (type-occurrence type) 0)
+						  (type-occurrence-increment! type)
+						  (set! fixpoint #f))))
+				  slots))))
+	       (get-class-list)))))
    (let ((classes (filter (lambda (t)
 			     (>fx (type-occurrence t) 0))
 		     (get-class-list))))
