@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Jun  5 07:04:04 2016 (serrano)                */
+;*    Last change :  Thu Jun 16 07:19:43 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -333,7 +333,8 @@
 ;*    @deffn string-ascii-sentinel@ ...                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ascii-sentinel string)
-   ($string-ascii-sentinel string))
+   ($string-ascii-sentinel string)
+   0)
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ascii-sentinel-set!@ ...                           */
