@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Jun  5 10:05:58 2016 (serrano)                */
+#*    Last change :  Sun Jun 19 18:18:43 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3116,6 +3116,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_COMPILER_RPATH@|$crpath|" \
               -e "s|@C_STRIP_FLAGS@|$csflags|" \
               -e "s|@C_LINKER_STYLE@|$ldstyle|" \
+              -e "s|@C_LINKER_FLAGS@|$lflags|" \
               -e "s|@C_LINKER_O_OPTION@|-o |" \
               -e "s|@C_LINKER_DEBUG_OPTION@|-g |" \
               -e "s|@C_LINKER_OPTIM_FLAGS@||" \

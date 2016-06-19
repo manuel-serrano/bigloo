@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Wed Feb  3 09:42:40 2016 (serrano)                */
+;*    Last change :  Sun Jun 19 18:17:22 2016 (serrano)                */
 ;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -65,6 +65,7 @@
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
 	   (macro $configure-c-string-split::bool "C_STRING_SPLIT")
            (macro $configure-c-linker-style::string "C_LINKER_STYLE")
+	   (macro $configure-c-linker-flags::string "C_LINKER_FLAGS")
 	   (macro $configure-c-linker-o-option::string "C_LINKER_O_OPTION")
            (macro $configure-c-linker-debug-option::string "C_LINKER_DEBUG_OPTION")
 	   (macro $configure-c-linker-optim-flags::string "C_LINKER_OPTIM_FLAGS")
@@ -125,6 +126,7 @@
               (field static c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
 	      (field static c-string-split::bool "C_STRING_SPLIT")
               (field static c-linker-style::string "C_LINKER_STYLE")
+	      (field static c-linker-flags::string "C_LINKER_FLAGS")
 	      (field static c-linker-o-option::string "C_LINKER_O_OPTION")
               (field static c-linker-debug-option::string "C_LINKER_DEBUG_OPTION")
               (field static c-linker-optim-flags::string "C_LINKER_OPTIM_FLAGS")
@@ -202,6 +204,7 @@
      (c-object-file-extension . ,$configure-c-object-file-extension)
      (c-string-split . ,$configure-c-string-split)
      (c-linker-style . ,$configure-c-linker-style)
+     (c-linker-flags . ,$configure-c-linker-flags)
      (c-linker-o-option . ,$configure-c-linker-o-option)
      (c-linker-debug-option . ,$configure-c-linker-debug-option)
      (c-linker-optim-flags . ,$configure-c-linker-optim-flags)
