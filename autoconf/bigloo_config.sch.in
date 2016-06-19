@@ -24,6 +24,7 @@
   (c-object-file-extension . "@C_OBJECT_FILE_EXTENSION@")
   (c-string-split . ,(not (=fx @C_STRING_SPLIT@ 0)))
   (c-linker-style . "@C_LINKER_STYLE@")
+  (c-linker-flags . "@C_LINKER_FLAGS@")
   (c-linker-o-option . "@C_LINKER_O_OPTION@")
   (c-linker-debug-option . "@C_LINKER_DEBUG_OPTION@")
   (c-linker-optim-flags . "@C_LINKER_OPTIM_FLAGS@")
