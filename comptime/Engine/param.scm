@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Mon May 30 08:07:46 2016 (serrano)                */
+;*    Last change :  Sun Jun 19 18:31:16 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -421,7 +421,7 @@
 ;; ld options
 (param-define *ld-options*
    "ld options"
-   "")
+   (bigloo-config 'c-linker-flags))
 ;; the linker -o option
 (param-define *ld-o-option*
    "The C linker -o option"
