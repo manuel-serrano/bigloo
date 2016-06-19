@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Sat Jun  4 19:26:18 2016 (serrano)                */
+;*    Last change :  Thu Jun 16 09:23:48 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -341,9 +341,9 @@
 				 'nothing-to-do)))))))
       *funcall-list*)
    (when *optim-cfa-unbox-closure-args*
-   (trace (cfa 2)
-      " ----- light funcall! (optim cfa unbox) --------------------------"
-      #\Newline)
+      (trace (cfa 2)
+	 " ----- light funcall! (optim cfa unbox) --------------------------"
+	 #\Newline)
       ;; fix point over all the T procedures to merge all the types
       ;; on funcall sites
       (let ((funcall-l (filter (lambda (app::funcall)

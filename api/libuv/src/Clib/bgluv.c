@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jul  8 07:38:19 2015 (serrano)                */
-/*    Copyright   :  2014-15 Manuel Serrano                            */
+/*    Last change :  Fri Jun 17 09:00:03 2016 (serrano)                */
+/*    Copyright   :  2014-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
@@ -577,8 +577,6 @@ bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloo
 	 res = BINT( req.result );
       } else {
 	 res = bgl_uv_new_file( req.result, bpath );
-/* 	 ((bgl_uv_file_t)res)->BgL_z52readreqz52 =                     */
-/* 	    GC_MALLOC( sizeof( uv_fs_t ) );                            */
       }
 
       uv_fs_req_cleanup( &req );

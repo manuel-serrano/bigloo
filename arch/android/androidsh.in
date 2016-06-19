@@ -52,7 +52,7 @@ case "$basename" in
       # remove the executable from the list of parameters
       shift
       # execute and exit with its exit status
-      $adb shell "$binary_remote_path" $* | sed -e 's/\r//g'
+      $adb shell "$binary_remote_path 2> /dev/null" $* | sed -e 's/\r//g'
 
       if [ -f "$binary_local_path" ]; then
          $adb shell rm $binary_remote_path > /dev/null
