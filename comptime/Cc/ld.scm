@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Thu Mar  3 17:22:32 2016 (serrano)                */
+;*    Last change :  Sun Jun 19 18:41:52 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
@@ -246,7 +246,7 @@
 			     (string-append " " (bigloo-config 'c-strip-flag))
 			     "")
 			 ;; user ld options
-			 " " *ld-options*
+			 " " *ld-options* " "
 			 ;; the library path
 			 (let loop ((path *lib-dir*))
 			    (if (null? path)
