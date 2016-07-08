@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Nov 11 10:33:55 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jun 26 06:09:40 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -87,7 +87,7 @@
 		 (not (memq 'no-trace (sfun-property fun)))
 		 (user-symbol? (variable-id var)))
 	 (enter-function (trace-id var))
-	 (let* ((bd (if (or (>fx *compiler-debug-trace* 1)
+	 (let* ((bd (if (or (>=fx *compiler-debug-trace* 2)
 			    (and (global? var)
 				 (or (eq? (global-id var) 'toplevel-init)
 				     (eq? (global-id var) 'method-init)

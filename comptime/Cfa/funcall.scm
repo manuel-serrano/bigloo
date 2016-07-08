@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sat Jun  4 18:41:30 2016 (serrano)                */
+;*    Last change :  Sun Jun 26 06:43:49 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -44,36 +44,36 @@
 (define-method (cfa! node::funcall/Cinfo)
    (with-access::funcall/Cinfo node (approx fun args)
       (trace (cfa 2) ">>>  funcall: " (shape node) " approx=" (shape approx)
-	     #\Newline)
+	 #\Newline)
       (let* ((fapprox (cfa! fun))
 	     (aapprox (map cfa! (cdr args))))
 	 (trace (cfa 2)
-	     "      fun: " (shape fapprox) #\Newline
-	     "     args: " (shape aapprox) #\Newline)
-	 ;; we check for a possible type error
+	    "      fun: " (shape fapprox) #\Newline
+	    "     args: " (shape aapprox) #\Newline)
+	 ;; check for a possible type error
 	 (let ((fun-type (approx-type fapprox)))
-	    (when (and (not (eq? fun-type *_*))
-		       (not (eq? fun-type *obj*))
-		       (not (eq? fun-type *procedure*)))
+	    (unless (or (eq? fun-type *_*)
+			(eq? fun-type *obj*)
+			(eq? fun-type *procedure*))
 	       (funcall-type-error node fun-type)))
-	 ;; we check the type...
+	 ;; check the type...
 	 (when (or (not (eq? (approx-type fapprox) *procedure*))
 		   (approx-top? fapprox))
 	    (approx-set-type! approx *obj*))
-	 ;; and we compute the approximations
+	 ;; compute the approximations
 	 (cond
 	    ((or (approx-top? fapprox)
 		 (not (eq? (approx-type fapprox) *procedure*)))
 	     (for-each (lambda (approx) (loose! approx 'all)) aapprox)
 	     (for-each-approx-alloc
-	      (lambda (alloc)
-		 (if (make-procedure-app? alloc)
-		     (let ((eapprox (make-procedure-app-approx alloc)))
-			(union-approx!
-			 approx
-			 (funcall! alloc (cons eapprox aapprox) node)))
-		     (make-empty-approx)))
-	      fapprox)
+		(lambda (alloc)
+		   (if (make-procedure-app? alloc)
+		       (let ((eapprox (make-procedure-app-approx alloc)))
+			  (union-approx!
+			     approx
+			     (funcall! alloc (cons eapprox aapprox) node)))
+		       (make-empty-approx)))
+		fapprox)
 	     (approx-set-top! approx))
 	    ((empty-approx-alloc? fapprox)
 	     ;; this might occur when the the functions potentially invoked
@@ -82,15 +82,15 @@
 	     (approx-set-type! approx *obj*))
 	    (else
 	     (for-each-approx-alloc
-	      (lambda (alloc)
-		 (if (make-procedure-app? alloc)
-		     (let ((eapprox (make-procedure-app-approx alloc)))
-			(union-approx!
-			 approx
-			 (funcall! alloc (cons eapprox aapprox) node)))
-		     (make-empty-approx)))
-	      fapprox)))
-	 ;; If approx is *obj* it must be propagated in all the procedures
+		(lambda (alloc)
+		   (if (make-procedure-app? alloc)
+		       (let ((eapprox (make-procedure-app-approx alloc)))
+			  (union-approx!
+			     approx
+			     (funcall! alloc (cons eapprox aapprox) node)))
+		       (make-empty-approx)))
+		fapprox)))
+	 ;; if approx is *obj* it must be propagated in all the procedures
 	 ;; which from now they must return a bigloo type. In consequence
 	 ;; for each closure we find the most possible specific Bigloo type
    	 (when (and *optim-cfa-funcall-tracking?*
@@ -99,9 +99,9 @@
 	    (for-each-approx-alloc (lambda (a)
 				      (when (make-procedure-app? a)
 					 (set-procedure-approx-polymorphic! a)))
-				   fapprox))
+	       fapprox))
 	 (trace (cfa 2) "<<<  funcall: " (shape node) "-> approx=" (shape approx)
-	     #\Newline)
+	    #\Newline)
 	 approx)))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 22 18:11:52 1995                          */
-;*    Last change :  Fri Nov 18 07:40:33 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jun 26 06:41:58 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    THE control flow analysis engine                                 */
 ;*=====================================================================*/
@@ -47,12 +47,12 @@
 		   (if (or (eq? (global-import g) 'export)
 			   (exported-closure? g))
 		       (set! glodefs (cons g glodefs))))
-		globals)
-      ;; we add the top level forms
+	 globals)
+      ;; add the top level forms
       (set! glodefs (append (unit-initializers) glodefs))
-      ;; and we start iterations
+      ;; start iterations
       (continue-cfa! 'init)
-      ;; and we do it
+      ;; and loop
       (let loop ()
 	 (if (continue-cfa?)
 	     (begin
@@ -81,7 +81,7 @@
 		(trace (cfa 2) "Exporting " (shape g) #\: #\Newline)
 		(cfa-export-var! (global-value g) g)
 		(trace (cfa 2) #\Newline)) 
-	     globals)
+      globals)
    (trace cfa #\Newline))
 
 ;*---------------------------------------------------------------------*/
@@ -109,26 +109,26 @@
 (define-method (cfa-export-var! value::intern-sfun/Cinfo owner)
    (with-access::intern-sfun/Cinfo value (stamp args approx)
       (trace (cfa 3) "  ~~~ cfa-export-var!::intern-sfun/Cinfo[stamp: " stamp 
-	     " *cfa-stamp*: " *cfa-stamp*
-	     "] " (shape owner) #\Newline)
+	 " *cfa-stamp*: " *cfa-stamp*
+	 "] " (shape owner) #\Newline)
       (if (=fx stamp *cfa-stamp*)
 	  (begin
 	     (set! stamp *cfa-stamp*)
 	     approx)
 	  (begin
-	     ;; for each iteration, we re-loose the approximation of the
-	     ;; formal parameters. Doing this, we don't have to take care
-	     ;; when we add an approximation of a previous set if this
-	     ;; set contains `top' or not.
+	     ;; For each iteration, we re-loose the approximation of
+	     ;; the formal parameters. Doing this, we don't have to do
+	     ;; check when we add an approximation of a previous set
+	     ;; if this new set contains `top' or not.
 	     (for-each (lambda (local)
 			  (let ((val (local-value local)))
 			     (trace (cfa 3) " ~~~ formal " (shape local)
-				    " clo-env?: " (svar/Cinfo-clo-env? val)
-				    " val: " (shape (svar/Cinfo-approx val))
-				    #\Newline)
+				" clo-env?: " (svar/Cinfo-clo-env? val)
+				" val: " (shape (svar/Cinfo-approx val))
+				#\Newline)
 			     (unless (svar/Cinfo-clo-env? val)
 				(approx-set-top! (svar/Cinfo-approx val)))))
-		       args)
+		args)
 	     ;; after the formals, we loose the result.
 	     (loose! (cfa-intern-sfun! value owner) 'all)))))
  

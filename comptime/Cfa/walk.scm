@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Thu Apr 21 08:37:21 2016 (serrano)                */
+;*    Last change :  Sun Jun 26 06:38:00 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis' and its optimizations described in:  */
@@ -60,18 +60,17 @@
 ;*---------------------------------------------------------------------*/
 (define (cfa-walk! globals)
    (pass-prelude "Cfa")
-   ;; first of all, we scan the global definitions in order
+   ;; first, the global definitions are scanned in order
    ;; to collect all used types and allocations.
    (collect-all-approx! globals)
-   ;; we have collected all the approximations, we can now declare
-   ;; the approximations sets.
+   ;; declare the approximations sets.
    (declare-approx-sets!)
-   ;; we have collect all the possible approximation, we now
-   ;; prepare the ast to the iteration process.
+   ;; all approximations being now known, prepare the ast for
+   ;; the main CFA iteration loop.
    (set-initial-approx! globals)
-   ;; ok, we can start now the control flow analysis
+   ;; start now the control flow analysis.
    (let ((iteration-roots (cfa-iterate-to-fixpoint! globals)))
-      ;; the number of iterations
+      ;; show the number of iterations.
       (show-cfa-nb-iterations)
       ;; dead code removal
       (let ((globals (remove-var '(cfa inline) globals)))
@@ -79,13 +78,13 @@
 	 (show-cfa-results globals)
 	 ;; tvector optimization
 	 (let ((additional (profile tvect (vector->tvector! globals))))
-	    ;; we optimize closure allocations
+	    ;; closure allocations optimization
 	    (profile clo (closure-optimization! globals))
-	    ;; type settings
+	    ;; type setting
 	    (profile type (type-settings! globals))
 	    ;; generic arithmetic specialization
 	    (specialize! globals)
-	    ;; and we are done
+	    ;; cleanup and statistics display.
 	    (pass-postlude (shrinkify! (append additional globals))
 	       stop-closure-cache
 	       unpatch-vector-set!

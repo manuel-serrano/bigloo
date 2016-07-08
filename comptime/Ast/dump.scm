@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Tue Mar  1 17:28:52 2016 (serrano)                */
+;*    Last change :  Fri Jul  8 08:52:28 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -321,16 +321,14 @@
    (node->sexp-hook node)
    (let ((sym (shape-typed-node 'labels (node-type node))))
       (location-shape (node-loc node)
-		      `(,sym ,(map (lambda (fun)
-				      `(,(shape fun)
-					,(args-list->args*
-					  (map shape
-					       (sfun-args (local-value fun)))
-					  (sfun-arity (local-value fun)))
-					,(node->sexp
-					  (sfun-body (local-value fun)))))
-				   (let-fun-locals node))
-			     ,(node->sexp (let-fun-body node))))))
+	 `(,sym ,(map (lambda (fun)
+			 `(,(shape fun)
+			   ,(args-list->args*
+			       (map shape (sfun-args (local-value fun)))
+			       (sfun-arity (local-value fun)))
+			   ,(node->sexp (sfun-body (local-value fun)))))
+		    (let-fun-locals node))
+	     ,(node->sexp (let-fun-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::let-var ...                                         */

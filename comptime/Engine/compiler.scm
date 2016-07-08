@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sat May 28 09:38:16 2016 (serrano)                */
+;*    Last change :  Sun Jun 26 06:14:40 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -288,8 +288,8 @@
 
 	    ;; when the compiler is invoked in -g2 mode, we install
 	    ;; traces before the inlining
-	    (when (and (>fx *compiler-debug-trace* 0)
-		       (>fx (bigloo-compiler-debug) 1)
+	    (when (and (>=fx *compiler-debug-trace* 1)
+		       (>=fx (bigloo-compiler-debug) 2)
 		       (backend-trace-support (the-backend)))
 	       (set! ast (profile trace (trace-walk! ast))))
 	    (check-sharing "trace" ast)
@@ -331,7 +331,7 @@
 	    (check-type "beta" ast #f #f)
 	    
 	    ;; we introduce traces in `small debug mode'
-	    (when (and (>fx *compiler-debug-trace* 0)
+	    (when (and (>=fx *compiler-debug-trace* 1)
 		       (=fx (bigloo-compiler-debug) 1)
 		       (backend-trace-support (the-backend)))
 	       (set! ast (profile trace (trace-walk! ast))))
@@ -341,7 +341,7 @@
 	    
 	    ;; we replace `failure' invokation by `error/location' when
 	    ;; invoked in debug mode (to be performed after the coercion stage)
-	    (when (and (>fx (bigloo-compiler-debug) 0) *error-localization*)
+	    (when (and (>=fx (bigloo-compiler-debug) 1) *error-localization*)
 	       (set! ast (profile fail (fail-walk! ast))))
 	    (stop-on-pass 'fail  (lambda () (write-ast ast)))
 	    (check-sharing "fail" ast)

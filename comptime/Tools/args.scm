@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 09:49:59 1994                          */
-;*    Last change :  Mon Dec 12 12:00:19 2005 (serrano)                */
-;*    Copyright   :  1994-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul  8 08:52:13 2016 (serrano)                */
+;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Tools function for managing parameters.                          */
 ;*=====================================================================*/
@@ -116,18 +116,20 @@
 ;*---------------------------------------------------------------------*/
 ;*    args-list->args* ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (args-list->args* list arity)
+(define (args-list->args* lst arity)
    (cond
       ((>=fx arity 0)
-       list)
+       lst)
       ((=fx arity -1)
-       (car list))
+       (car lst))
       (else
-       (let loop ((list  list)
+       (let loop ((lst  lst)
 		  (arity arity))
-	  (if (=fx arity -1)
-	      (car list)
-	      (cons (car list) (loop (cdr list) (+fx arity 1))))))))
+	  (if (null? (cdr lst))
+	      (if (< arity 0)
+		  (car lst)
+		  (list lst))
+	      (cons (car lst) (loop (cdr lst) (+fx arity 1))))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    sound-arity? ...                                                 */

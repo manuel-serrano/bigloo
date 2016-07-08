@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Tue Mar 18 11:30:14 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Jun 26 06:35:45 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We collect all type and alloc approximations                     */
+;*    Collect all types and allocs approximations                      */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
