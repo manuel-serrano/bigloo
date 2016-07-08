@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 11:35:13 1996                          */
-;*    Last change :  Thu Jun 16 09:23:48 2016 (serrano)                */
+;*    Last change :  Fri Jul  8 15:46:51 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The closure optimization described in:                           */
@@ -173,10 +173,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    T-fix-point! ...                                                 */
 ;*    -------------------------------------------------------------    */
-;*    The computation of T require a fix point under all the funcalls. */
+;*    The computation of T requires a fix point under all the funcalls */
 ;*    -------------------------------------------------------------    */
-;*    If type checks are omitted, a funcall which can apply            */
-;*    procedure or other types, do not prevent optimization of         */
+;*    If type checks are omitted, a funcall that can apply             */
+;*    procedure or other types does not prevent optimization of        */
 ;*    the called functions.                                            */
 ;*---------------------------------------------------------------------*/
 (define (T-fix-point! funcall-list)
@@ -188,15 +188,15 @@
 	     (for-each
 		(lambda (app)
 		   (trace (cfa 3) "funcall: " (shape app) #\Newline)
-		   (let* ((fun     (funcall-fun app))
-			  (approx  (cfa! fun))
-			  (alloc   (set->list (approx-allocs approx)))
-			  (type    (approx-type approx))
+		   (let* ((fun (funcall-fun app))
+			  (approx (cfa! fun))
+			  (alloc (set->list (approx-allocs approx)))
+			  (type (approx-type approx))
 			  (T-init? (or (approx-top? approx)
 				       (not (or (eq? type *procedure*)
 						*unsafe-type*)))))
 		      (let loop ((one-non-T? T-init?)
-				 (allocs     alloc))
+				 (allocs alloc))
 			 (trace (cfa 3)
 			    "      one-non-T?: " one-non-T? #\newline
 			    "          allocs: " (shape allocs) #\Newline)
@@ -359,7 +359,9 @@
 				  (when (pair? (cdr apps))
 				     (set! cont
 					(or (merge-app-types! apps) cont)))
-				  (merge-app-return-types! apps (cfa! app)))))
+				  (let ((m (merge-app-return-types! apps
+					      (cfa! app))))
+				     (set! cont (or cont m))))))
 		  funcall-l)
 	       (when cont
 		  (loop)))))))
@@ -375,7 +377,8 @@
 	  (brt0 (get-bigloo-type rt0))
 	  (at (approx-type approx)))
       (unless (or (eq? rt0 at) (and (bigloo-type? rt0) (bigloo-type? at)))
-	 (approx-type-set! approx (approx-type r0)))))
+	 (approx-type-set! approx (approx-type r0))
+	 #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    merge-app-types! ...                                             */
