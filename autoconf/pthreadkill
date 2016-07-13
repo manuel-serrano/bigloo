@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Jun  5 10:33:10 2016 (serrano)                */
+#*    Last change :  Wed Jul 13 08:56:56 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host pthread kill library (Android only).          */
 #*=====================================================================*/
@@ -49,6 +49,30 @@ compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
 #*---------------------------------------------------------------------*/
 if( test -f $file.c ); then
    rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    pthread_kill                                                            */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <pthread.h>
+#include <stdio.h>
+
+int main( int argc, char *argv[] ) {
+   fprintf( stderr, "%p", &pthread_kill );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "PTHREAD_KILL"
+   \rm -f $file.*
+   \rm -f $aout
+   \rm -f $aout*
+
+   exit 0
 fi
 
 #*---------------------------------------------------------------------*/
