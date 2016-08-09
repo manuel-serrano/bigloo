@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Jun 19 18:31:16 2016 (serrano)                */
+;*    Last change :  Tue Aug  9 08:56:54 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -69,7 +69,6 @@
 	    *optim-cfa-fixnum-arithmetic?*
 	    *optim-cfa-flonum-arithmetic?*
 	    *optim-cfa-free-var-tracking?*
-	    *optim-cfa-funcall-tracking?*
 	    *optim-cfa-apply-tracking?*
 	    *optim-cfa-pair?*
 	    *optim-cfa-pair-quote-max-length*
@@ -887,9 +886,6 @@
    #f)
 (param-define *optim-cfa-free-var-tracking?*
    "Enable closure free-variables specialization"
-   #f)
-(param-define *optim-cfa-funcall-tracking?*
-   "Track values across funcall"
    #f)
 (param-define *optim-cfa-apply-tracking?*
    "Track values across apply"

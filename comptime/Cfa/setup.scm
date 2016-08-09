@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Mon Nov 11 09:54:14 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Aug  9 08:56:13 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
 ;*=====================================================================*/
@@ -272,7 +272,7 @@
    (with-access::funcall node (fun args)
       (node-setup! fun)
       (node-setup*! args)
-      (if *optim-cfa-funcall-tracking?*
+      (if *optim-cfa-unbox-closure-args*
 	  (widen!::funcall/Cinfo node
 	     (approx (make-empty-approx))
 	     (va-approx (make-empty-approx)))

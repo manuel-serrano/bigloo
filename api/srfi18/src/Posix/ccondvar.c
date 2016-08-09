@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed Dec 12 11:10:18 2012 (serrano)                */
-/*    Copyright   :  2004-12 Manuel Serrano                            */
+/*    Last change :  Tue Aug  9 10:55:29 2016 (serrano)                */
+/*    Copyright   :  2004-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix condition variable implementation                      */
 /*=====================================================================*/
@@ -29,6 +29,7 @@
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_condvar_init_register( obj_t (*)( obj_t ) );
 BGL_RUNTIME_DECL obj_t bgl_create_condvar( obj_t );
+BGL_RUNTIME_DECL void bglpth_condvar_init();
 
 /*---------------------------------------------------------------------*/
 /*    bool_t                                                           */

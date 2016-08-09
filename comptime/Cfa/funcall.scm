@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 07:47:42 1996                          */
-;*    Last change :  Sun Jun 26 06:43:49 2016 (serrano)                */
+;*    Last change :  Tue Aug  9 08:56:03 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The funcall management.                                          */
@@ -90,15 +90,16 @@
 			     (funcall! alloc (cons eapprox aapprox) node)))
 		       (make-empty-approx)))
 		fapprox)))
-	 ;; if approx is *obj* it must be propagated in all the procedures
-	 ;; which from now they must return a bigloo type. In consequence
-	 ;; for each closure we find the most possible specific Bigloo type
-   	 (when (and *optim-cfa-funcall-tracking?*
+	 ;; If approx is *obj* it must be propagated in all the procedures
+	 ;; which from now on must return a bigloo type. In consequence,
+	 ;; for each closure, we find the most possible specific Bigloo type
+   	 (when (and *optim-cfa-unbox-closure-args*
 		    (bigloo-type? (approx-type approx))
 		    (not (eq? (approx-type approx) *_*)))
-	    (for-each-approx-alloc (lambda (a)
-				      (when (make-procedure-app? a)
-					 (set-procedure-approx-polymorphic! a)))
+	    (for-each-approx-alloc
+	       (lambda (a)
+		  (when (make-procedure-app? a)
+		     (set-procedure-approx-polymorphic! a)))
 	       fapprox))
 	 (trace (cfa 2) "<<<  funcall: " (shape node) "-> approx=" (shape approx)
 	    #\Newline)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Tue Oct  9 08:41:46 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Aug  9 10:38:43 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -65,14 +65,14 @@
 ;*---------------------------------------------------------------------*/
 (define (globalized-type type)
    (cond
-      ((not *optim-cfa-funcall-tracking?*)
+      ((not *optim-cfa-unbox-closure-args*)
        ;; we set function types of the escaping function.
        ;; unless funcall-tracking optimization is enabled, these
        ;; function are _always_ of type procedure x obj x .. x obj -> obj
-       ;; because type check cannot be perform on the call site.
+       ;; because type check cannot be performed on the call site.
        *obj*)
       (else
-       ;; if funcall-tracking is enable, the type of the global function
+       ;; if funcall-tracking is enabled, the type of the global function
        ;; is the type of the local function
        type)))
 
@@ -114,6 +114,14 @@
       ;; we must set now the info slot of env
       (widen!::svar/Ginfo (local-value env) (kaptured? #f))
       (global-type-set! global (globalized-type (local-type local)))
+;*       ;; temporary test for debugging (9 aug 2016)                  */
+;*       (unless (eq? (global-type global) *obj*)                      */
+;* 	 (when (member (symbol->string (global-id global))             */
+;* 		'(                                                     */
+;* {* 		  "&<anonymous:2437>"                                  *} */
+;* 		  ))                                                   */
+;* 	    (tprint "patching " (global-id global))                    */
+;* 	    (global-type-set! global *obj*)))                          */
       ;; associate the closure entry point and the function
       (sfun-the-closure-global-set! new-fun local)
       (let ((nargs (cdr (sfun-args new-fun))))

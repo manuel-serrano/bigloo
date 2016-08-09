@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Jun 26 06:14:40 2016 (serrano)                */
+;*    Last change :  Tue Aug  9 08:56:41 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -107,7 +107,7 @@
       (unless (backend-type-check (the-backend))
 	 (set! *unsafe-type* #t)))
    (unless (backend-typed-funcall (the-backend))
-      (set! *optim-cfa-funcall-tracking?* #f))
+      (set! *optim-cfa-unbox-closure-args* #f))
    
    ;; we read the source file
    (let ((src (*pre-processor* (profile read (read-src)))))

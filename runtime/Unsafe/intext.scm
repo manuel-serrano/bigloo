@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Thu Mar 31 18:21:48 2016 (serrano)                */
+;*    Last change :  Tue Jul 19 13:43:51 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -1346,13 +1346,22 @@
 		  *custom-serialization*))))))
 
 ;*---------------------------------------------------------------------*/
+;*    excerpt ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (excerpt obj)
+   (cond
+      ((not (string? obj)) obj)
+      ((<=fx (string-length obj) 80) (string-for-read obj))
+      (else (string-append (string-for-read (substring obj 0 80)) "..."))))
+       
+;*---------------------------------------------------------------------*/
 ;*    find-custom-serializer ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (find-custom-serializer ident)
    (let ((cell (assoc ident *custom-serialization*)))
       (if (pair? cell)
 	  (cadr cell)
-	  (error "obj->string" "Cannot find custom serializer" ident))))
+	  (error "obj->string" "Cannot find custom serializer" (excerpt ident)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    find-custom-unserializer ...                                     */
@@ -1361,7 +1370,7 @@
    (let ((cell (assoc ident *custom-serialization*)))
       (if (pair? cell)
 	  (caddr cell)
-	  (error "string->obj" "Cannot find custom unserializer" ident))))
+	  (error "string->obj" "Cannot find custom unserializer" (excerpt ident)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-custom-serialization ...                                     */
@@ -1377,14 +1386,14 @@
 ;*---------------------------------------------------------------------*/
 (define *procedure->string*
    (lambda (item)
-      (error "obj->string" "can't extern procedure" item)))
+      (error "obj->string" "can't extern procedure" (excerpt item))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *string->procedure* ...                                          */
 ;*---------------------------------------------------------------------*/
 (define *string->procedure*
    (lambda (string)
-      (error "string->obj" "Can't intern procedure item" string)))
+      (error "string->obj" "Can't intern procedure item" (excerpt string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-procedure-serialization!@ ...                    */
@@ -1404,14 +1413,14 @@
 ;*---------------------------------------------------------------------*/
 (define *process->string*
    (lambda (item)
-      (error "obj->string" "can't extern process" item)))
+      (error "obj->string" "can't extern process" (excerpt item))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *string->process* ...                                            */
 ;*---------------------------------------------------------------------*/
 (define *string->process*
    (lambda (string)
-      (error "string->obj" "Can't intern process item" string)))
+      (error "string->obj" "Can't intern process item" (excerpt string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn register-process-serialization!@ ...                      */
@@ -1431,7 +1440,7 @@
 ;*---------------------------------------------------------------------*/
 (define *opaque->string*
    (lambda (item)
-      (error "obj->string" "can't extern opaque" item)))
+      (error "obj->string" "can't extern opaque" (excerpt item))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *string->opaque* ...                                             */

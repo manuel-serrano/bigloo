@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Feb  3 09:56:11 1995                          */
-;*    Last change :  Wed Jan 29 09:44:37 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Aug  9 08:57:35 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The global closure creation                                      */
 ;*=====================================================================*/
@@ -169,7 +169,7 @@
 (define (globalized-type-id global)
    (let ((type (global-type global)))
       (cond
-	 ((not *optim-cfa-funcall-tracking?*)
+	 ((not *optim-cfa-unbox-closure-args*)
 	  'obj)
 	 ((bigloo-type? type)
 	  (type-id type))

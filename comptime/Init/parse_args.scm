@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat May 28 09:19:50 2016 (serrano)                */
+;*    Last change :  Tue Aug  9 08:58:07 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -422,18 +422,16 @@
       (("-fno-cfa-arithmetic-flonum" (help "Disable flonum arithmetic spec. "))
        (set! *optim-cfa-flonum-arithmetic?* #f))
       (("-fcfa-tracking" (help "Enable CFA tracking (enabled from -O2)"))
-       (set! *optim-cfa-free-var-tracking?* #t)
-       (set! *optim-cfa-funcall-tracking?* #t))
-      (("-fnocfa-tracking" (help "Disable CFA tracking"))
-       (set! *optim-cfa-free-var-tracking?* #f)
-       (set! *optim-cfa-funcall-tracking?* #f))
+       (set! *optim-cfa-free-var-tracking?* #t))
+      (("-fno-cfa-tracking" (help "Disable CFA tracking"))
+       (set! *optim-cfa-free-var-tracking?* #f))
       (("-fcfa-pair" (help "Enable CFA pairs approximations"))
        (set! *optim-cfa-pair?* #t))
-      (("-fnocfa-pair" (help "Disable CFA pairs approximations"))
+      (("-fno-cfa-pair" (help "Disable CFA pairs approximations"))
        (set! *optim-cfa-pair?* #f))
       (("-fcfa-unbox-closure-args" (help "Enable CFA unboxed closure args (enabled from -O2)"))
        (set! *optim-cfa-unbox-closure-args* #t))
-      (("-fnocfa-unbox-closure-args" (help "Disable CFA unboxed closure args"))
+      (("-fno-cfa-unbox-closure-args" (help "Disable CFA unboxed closure args"))
        (set! *optim-cfa-unbox-closure-args* #f))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
@@ -1140,13 +1138,16 @@
 ;*    parse-bdb-args ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (parse-bdb-args string)
+   
    (define (-gbdb2!)
       (set! *bdb-debug* 2)
       (set! *compiler-debug* 1)
       (set! *user-heap-size* 1)
       (set! *jas-warning* #f))
+   
    (define (-gbdb3!)
       (set! *bdb-debug* 3))
+   
    (if (bigloo-config 'have-bdb)
        (begin 
 ;* 	  (set! *additional-heap-names*                                */
@@ -1177,26 +1178,29 @@
 ;*    parse-optim-args ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (parse-optim-args string)
+   
    (define (-O2!)
       (set! *cc-options* (append *cc-options* (list *cflags-optim*)))
-      (set! *optim-jvm-inlining* 2)
-      (set! *optim-jvm-branch* 3)
-      (set! *optim-jvm-fasteq* #t)
-      (set! *optim-reduce-beta?* #t)
-      (set! *optim-cfa-flonum-arithmetic?* #t)
-      (set! *optim-dataflow-types?* #t)
-      (set! *optim-initflow?* #t)
-      ;; (set! *optim-narrow?* #t)
-      ;; (set! *optim-return?* #t)
-      (set! *optim-cfa-free-var-tracking?* #t)
-      (set! *optim-cfa-funcall-tracking?* #t)
-      (set! *optim-cfa-unbox-closure-args* #t))
+;*       (set! *optim-jvm-inlining* 2)                                 */
+;*       (set! *optim-jvm-branch* 3)                                   */
+;*       (set! *optim-jvm-fasteq* #t)                                  */
+;*       (set! *optim-reduce-beta?* #t)                                */
+;*       (set! *optim-cfa-flonum-arithmetic?* #t)                      */
+;*       (set! *optim-dataflow-types?* #t)                             */
+;*       (set! *optim-initflow?* #t)                                   */
+;*       ;; (set! *optim-narrow?* #t)                                  */
+;*       ;; (set! *optim-return?* #t)                                  */
+;*       (set! *optim-cfa-free-var-tracking?* #t)                      */
+      (set! *optim-cfa-unbox-closure-args* #t)
+      )
+      
    (define (-O3!)
       (-O2!)
       (set! *optim-jvm-inlining* 3)
       (set! *optim-jvm-branch* 5)
       (if (not (boolean? *optim-unroll-loop?*))
 	  (set! *optim-unroll-loop?* #t)))
+   
    (set! *optim* 1)
    (set! *optim-sync-failsafe?* #t)
    (set! *optim-jvm-inlining* 1)

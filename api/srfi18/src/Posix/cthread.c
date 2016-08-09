@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Dec 11 20:18:34 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Tue Aug  9 10:55:10 2016 (serrano)                */
+/*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -21,6 +21,12 @@
 #if HAVE_SIGACTION
 #include <signal.h>
 #endif
+
+/*---------------------------------------------------------------------*/
+/*    extern                                                           */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DECL void srfi18_mutexes_abandon();
+BGL_RUNTIME_DECL void bglpth_thread_run();
 
 /*---------------------------------------------------------------------*/
 /*    srfi18read_t                                                     */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Thu Apr 21 08:31:28 2016 (serrano)                */
+;*    Last change :  Tue Aug  9 10:39:45 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -383,7 +383,7 @@
    (with-access::app-ly/Cinfo node (fun arg type approx)
       (set! fun (type-node! fun))
       (set! arg (type-node! arg))
-      (if *optim-cfa-funcall-tracking?*
+      (if *optim-cfa-unbox-closure-args*
 	  (set! type (get-approx-type approx node))
 	  (set! type *obj*))
       node))
@@ -406,18 +406,21 @@
    (with-access::funcall/Cinfo node (fun args type approx)
       (set! fun (type-node! fun))
       (type-node*! args)
-      (if *optim-cfa-funcall-tracking?*
-	  (begin
-	     (let ((typ (get-approx-type approx node)))
-		(if (eq? typ *_*)
-		    ;; the function is actually never called,
-		    ;; the funcall node is removed
-		    (begin
-		       (set! type *obj*)
-		       node)
-		    (begin
-		       (set! type typ)
-		       node))))
+      (if *optim-cfa-unbox-closure-args*
+	  (let ((typ (get-approx-type approx node)))
+	     (if (eq? typ *_*)
+		 ;; the function is actually never called,
+		 ;; the funcall node is removed
+		 (begin
+		    (set! type *obj*)
+		    node)
+		 (begin
+		    ;; check type-closures! (loc2glo.scm), non optimized closures
+		    ;; must return bigloo boxed types
+		    (if (memq (funcall-strength node) '(light elight))
+			(set! type typ)
+			(set! type (get-bigloo-type typ)))
+		    node)))
 	  (begin
 	     (set! type *obj*)
 	     node))))
