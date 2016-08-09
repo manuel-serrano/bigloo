@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Aug  9 10:51:36 2016 (serrano)                */
+/*    Last change :  Tue Aug  9 10:57:47 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
@@ -138,7 +138,7 @@ public class jthread extends Thread {
       } catch( Throwable e ) {
 	 try {
 	    foreign.internalerror( e );
-	 } catch( Throwable t ) {
+	 } catch( Throwable _t ) {
 	    System.exit( 1 );
 	 }
       }

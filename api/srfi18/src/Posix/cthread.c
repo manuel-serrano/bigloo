@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Aug  9 10:55:10 2016 (serrano)                */
+/*    Last change :  Tue Aug  9 10:57:32 2016 (serrano)                */
 /*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
@@ -27,6 +27,7 @@
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void srfi18_mutexes_abandon();
 BGL_RUNTIME_DECL void bglpth_thread_run();
+BGL_RUNTIME_DECL void bglpth_thread_env_create();
 
 /*---------------------------------------------------------------------*/
 /*    srfi18read_t                                                     */
