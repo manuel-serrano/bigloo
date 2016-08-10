@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Tue Aug  9 10:38:43 2016 (serrano)                */
+;*    Last change :  Tue Aug  9 11:11:01 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -114,14 +114,6 @@
       ;; we must set now the info slot of env
       (widen!::svar/Ginfo (local-value env) (kaptured? #f))
       (global-type-set! global (globalized-type (local-type local)))
-;*       ;; temporary test for debugging (9 aug 2016)                  */
-;*       (unless (eq? (global-type global) *obj*)                      */
-;* 	 (when (member (symbol->string (global-id global))             */
-;* 		'(                                                     */
-;* {* 		  "&<anonymous:2437>"                                  *} */
-;* 		  ))                                                   */
-;* 	    (tprint "patching " (global-id global))                    */
-;* 	    (global-type-set! global *obj*)))                          */
       ;; associate the closure entry point and the function
       (sfun-the-closure-global-set! new-fun local)
       (let ((nargs (cdr (sfun-args new-fun))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Tue Jan 29 17:12:19 2013 (serrano)                */
+;*    Last change :  Wed Aug 10 10:58:36 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -14,7 +14,8 @@
 (module __r4_control_features_6_9
    
    (import  __error
-	    __param)
+	    __param
+	    __evaluate)
    
    (use     __type
 	    __bigloo
@@ -32,8 +33,7 @@
 	    __r4_pairs_and_lists_6_3
 	    __r5_control_features_6_4
 	    
-	    __evenv
-	    __evaluate)
+	    __evenv)
    
    (extern  (macro c-procedure?::bool (::obj) "PROCEDUREP")
 	    (call-cc::obj (::procedure) "call_cc")

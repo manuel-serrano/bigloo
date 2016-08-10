@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Thu Aug 27 20:19:32 2015 (serrano)                */
+;*    Last change :  Wed Aug 10 08:32:30 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -658,16 +658,36 @@
 	      (notify-&error/location-loc err fname lnum loc lstring lpoint)))))
 
 ;*---------------------------------------------------------------------*/
+;*    open-for-error ...                                               */
+;*---------------------------------------------------------------------*/
+(define (open-for-error fname)
+   (if (file-exists? fname)
+       (open-input-file fname)
+       (open-input-string fname)))
+
+;*---------------------------------------------------------------------*/
+;*    filename-for-error ...                                           */
+;*---------------------------------------------------------------------*/
+(define (filename-for-error file)
+   (cond
+      ((file-exists? file)
+       (relative-file-name file))
+      ((<=fx (string-length file) 255)
+       file)
+      (else
+       (string-append (substring file 0 252) "..."))))
+
+;*---------------------------------------------------------------------*/
 ;*    location-line-num ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (location-line-num loc)
-   
+
    (define (location-at file point)
       (when (and (string? file) (integer? point))
 	 (let* ((fname (if (string=? (os-class) "win32")
 			   (string-replace (uncygdrive file) #\/ #\\)
 			   file))
-		(port (open-input-file fname)))
+		(port (open-for-error fname)))
 	    (if (input-port? port)
 		(unwind-protect
 		   (let loop ((ostring #f)
@@ -689,7 +709,7 @@
 	  (let* ((fname (if (string=? (os-class) "win32")
 			    (string-replace (uncygdrive file) #\/ #\\)
 			    file))
-		 (port (open-input-file fname)))
+		 (port (open-for-error fname)))
 	     (if (input-port? port)
 		 (unwind-protect
 		    (let loop ((ostring #f)
@@ -793,7 +813,7 @@
 ;*---------------------------------------------------------------------*/
 (define (warning/location-file fname loc args)
    ;; we compute the message to print the location
-   (let ((port (open-input-file fname)))
+   (let ((port (open-for-error fname)))
       (if (not (input-port? port))
 	  ;; we are enable to re-open the file, we just print a
 	  ;; standard warning
@@ -960,12 +980,12 @@
 		    (if (integer? lnum)
 			(fprintf (current-error-port)
 			   "File ~s, line ~d, character ~d\n"
-			   (relative-file-name file)
+			   (filename-for-error file)
 			   lnum
 			   lpoint)
 			(fprintf (current-error-port)
 			   "File ~s, character ~d\n"
-			   (relative-file-name file)
+			   (filename-for-error file)
 			   lpoint)))
 		   (else
 		    (loop (cdr stack))))))
@@ -997,7 +1017,7 @@
 ;*---------------------------------------------------------------------*/
 (define (print-cursor fname line char string space-string)
    (fprint (current-error-port)
-	   "File \"" (relative-file-name fname) "\", line " line ", character "
+	   "File \"" (filename-for-error fname) "\", line " line ", character "
 	   char ":"
 	   #\Newline
 	   "#" string #\Newline
