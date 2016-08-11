@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Aug 10 08:32:30 2016 (serrano)                */
+;*    Last change :  Wed Aug 10 15:35:02 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -668,14 +668,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    filename-for-error ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (filename-for-error file)
+(define (filename-for-error file #!optional (sz 255))
    (cond
       ((file-exists? file)
        (relative-file-name file))
-      ((<=fx (string-length file) 255)
+      ((<=fx (string-length file) sz)
        file)
       (else
-       (string-append (substring file 0 252) "..."))))
+       (string-append (substring file 0 (-fx sz 3)) "..."))))
 
 ;*---------------------------------------------------------------------*/
 ;*    location-line-num ...                                            */
@@ -864,7 +864,16 @@
 ;*    display-trace-stack ...                                          */
 ;*---------------------------------------------------------------------*/
 (define (display-trace-stack stack port #!optional (offset 1))
-   
+
+   (define (filename file num)
+      (cond
+	 ((=fx num 1)
+	  (filename-for-error file 12))
+	 ((file-exists? file)
+	  file)
+	 (else
+	  "")))
+	  
    (define (display-trace-stack-frame frame level num)
       (match-case frame
 	 ((?name ?loc . (and (? alist?) ?rest))
@@ -896,7 +905,7 @@
 		    (location-line-num loc)
 		    ;; file name
 		    (when file
-		       (display (relative-file-name file) port))
+		       (display (filename file num) port))
 		    ;; line num
 		    (cond
 		       (lnum
