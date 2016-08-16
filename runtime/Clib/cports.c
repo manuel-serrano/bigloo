@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon May 16 15:08:58 2016 (serrano)                */
+/*    Last change :  Sun Aug 14 19:43:17 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2384,7 +2384,7 @@ gc_sendfile( struct sendfile_info_t *si ) {
    fd_set writefds;
 
 #if DEBUG_SENDCHARS
-   fprintf(stderr, "gc_sendfile(%s:%d) out=%p in=%p offset=%d sz=%d\n",
+   fprintf( stderr, "gc_sendfile(%s:%d) out=%p in=%p offset=%d sz=%d\n",
 	   __FILE__, __LINE__, si->out, si->in, offset ? *offset : 0, si->sz);
 #endif
 
@@ -2392,11 +2392,19 @@ gc_sendfile( struct sendfile_info_t *si ) {
       if( (n = BGL_SENDFILE( si->out, si->in, offset, sz )) < 0 ) {
 	 si->errnum = errno;
 
+#if DEBUG_SENDCHARS
+	 fprintf( stderr, "gc_sendfile (%s:%d)...errno=%d (%d,%d)\n", __FILE__, __LINE__,
+		  errno, EAGAIN, EINTR);
+#endif
+	 
 	 if( errno == EAGAIN || errno == EINTR ) {
 	    FD_ZERO( &writefds );
 	    FD_SET( si->out, &writefds );
 
 	    if( select( si->out + 1, NULL, &writefds, NULL, 0 ) <= 0 ) {
+#if DEBUG_SENDCHARS
+	       fprintf( stderr, "gc_sendfile (%s:%d) aborting after %d\n", __FILE__, __LINE__, errno );
+#endif
 	       si->res = -1;
 	       return;
 	    } else {
@@ -2611,10 +2619,10 @@ bgl_sendfile( obj_t name, obj_t op, long sz, long offset ) {
       return BFALSE;
    }
 
-      /* Some operating systems (such as Linux 2.6.10) are demanding */
-      /* on the input and output ports. These requirements are set   */
-      /* in the configuration files and used to determine what has   */
-      /* to be checked before invoking the actual sendfile sys call  */
+   /* Some operating systems (such as Linux 2.6.10) are demanding */
+   /* on the input and output ports. These requirements are set   */
+   /* in the configuration files and used to determine what has   */
+   /* to be checked before invoking the actual sendfile sys call  */
 #  if( BGL_SENDFILE_REQUIRE_OUTPUT_SOCKET )
    if( outp.port.kindof != KINDOF_SOCKET)
       return BFALSE;
