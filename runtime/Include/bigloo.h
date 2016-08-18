@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jun  2 15:22:27 2016 (serrano)                */
+/*    Last change :  Thu Aug 18 15:18:35 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -524,6 +524,8 @@ union scmobj {
       union scmobj *pbuffer;
       /* index in pbuffer */
       long pbufpos;
+      /* the procedure */
+      union scmobj *proc;
    } input_procedure_port_t;
    
    /* gzipped input ports */
