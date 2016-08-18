@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Aug 18 14:38:16 2016 (serrano)                */
+/*    Last change :  Thu Aug 18 15:28:51 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -414,7 +414,8 @@ bgl_proc_read( obj_t port, char *b, long l ) {
       }
    } else {
       /* invoke the procedure to fill the buffer */
-      obj_t proc = CREF( port )->input_port_t.port.name;
+      //obj_t proc = CREF( port )->input_port_t.port.name;
+      obj_t proc = CREF( port )->input_procedure_port_t.proc;
       obj_t nbuf = PROCEDURE_ENTRY( proc )( proc, BEOA );
 
       if( STRINGP( nbuf ) ) {
@@ -1722,7 +1723,8 @@ bgl_open_input_procedure( obj_t fun, obj_t buffer ) {
 					buffer );
 
       CREF( port )->port_t.stream.channel = port;
-      CREF( port )->port_t.name = fun;
+      //CREF( port )->port_t.name = fun;
+      CREF( port )->input_procedure_port_t.proc = fun;
       CREF( port )->input_procedure_port_t.pbuffer = BUNSPEC;
       CREF( port )->input_procedure_port_t.pbufpos = 0;
 
@@ -1747,7 +1749,8 @@ bgl_open_input_gzip_port( obj_t fun, obj_t in, obj_t buffer ) {
 					buffer );
 
       CREF( port )->port_t.stream.channel = port;
-      CREF( port )->port_t.name = fun;
+      //CREF( port )->port_t.name = fun;
+      CREF( port )->input_procedure_port_t.proc = fun;
       CREF( port )->input_procedure_port_t.pbuffer = BUNSPEC;
       CREF( port )->input_procedure_port_t.pbufpos = 0;
       CREF( port )->input_gzip_port_t.gzip = in;
