@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Jun 16 08:47:03 2016 (serrano)                */
+;*    Last change :  Fri Aug 19 13:18:54 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -333,25 +333,28 @@
 ;*    @deffn string-ascii-sentinel@ ...                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ascii-sentinel string)
-   ($string-ascii-sentinel string))
+;*    ($string-ascii-sentinel string)                                  */
+   0)
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ascii-sentinel-set!@ ...                           */
 ;*---------------------------------------------------------------------*/
 (define-inline (string-ascii-sentinel-set! string len)
-   ($string-ascii-sentinel-set! string len))
+;*    ($string-ascii-sentinel-set! string len)                         */
+   string)
 
 ;*---------------------------------------------------------------------*/
 ;*    string-ascii-sentinel-mark! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (string-ascii-sentinel-mark! string)
-   (let ((len (string-length string)))
-      (let loop ((i 0))
-	 (when (<fx i len)
-	    (if (>fx (char->integer (string-ref string i)) 127)
-		(string-ascii-sentinel-set! string i)
-		(loop (+fx i 1)))))
-      string))
+   string)
+;*    (let ((len (string-length string)))                              */
+;*       (let loop ((i 0))                                             */
+;* 	 (when (<fx i len)                                             */
+;* 	    (if (>fx (char->integer (string-ref string i)) 127)        */
+;* 		(string-ascii-sentinel-set! string i)                  */
+;* 		(loop (+fx i 1)))))                                    */
+;*       string))                                                      */
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string-ref@ ...                                           */

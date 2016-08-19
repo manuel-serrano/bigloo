@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Tue May 24 12:58:10 2016 (serrano)                */
+;*    Last change :  Fri Aug 19 13:18:18 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -665,19 +665,21 @@
 ;*    ascii-string? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (ascii-string? str)
-   (>=fx (string-ascii-sentinel str) (string-length str)))
+   #f)
+;*    (>=fx (string-ascii-sentinel str) (string-length str)))          */
 
 ;*---------------------------------------------------------------------*/
 ;*    string-ascii-sentinel-mark! ...                                  */
 ;*---------------------------------------------------------------------*/
 (define (string-ascii-sentinel-mark! string)
-   (let ((len (string-length string)))
-      (let loop ((i 0))
-	 (when (<fx i len)
-	    (if (>fx (char->integer (string-ref string i)) 127)
-		(string-ascii-sentinel-set! string i)
-		(loop (+fx i 1)))))
-      string))
+   string)
+;*    (let ((len (string-length string)))                              */
+;*       (let loop ((i 0))                                             */
+;* 	 (when (<fx i len)                                             */
+;* 	    (if (>fx (char->integer (string-ref string i)) 127)        */
+;* 		(string-ascii-sentinel-set! string i)                  */
+;* 		(loop (+fx i 1)))))                                    */
+;*       string))                                                      */
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string? ...                                                 */
