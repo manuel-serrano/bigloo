@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & John G. Malecki                  */
 ;*    Creation    :  Sun Jul 10 16:21:17 2005                          */
-;*    Last change :  Mon Jul 21 12:06:50 2014 (serrano)                */
-;*    Copyright   :  2005-14 Manuel Serrano and 2009 John G Malecki    */
+;*    Last change :  Sat Aug 20 10:01:19 2016 (serrano)                */
+;*    Copyright   :  2005-16 Manuel Serrano and 2009 John G Malecki    */
 ;*    -------------------------------------------------------------    */
 ;*    MP3 ID3 tags and Vorbis tags                                     */
 ;*=====================================================================*/
@@ -420,7 +420,7 @@
 		    (+fx (bit-lsh n1 (*fx 2 7))
 			 (+fx (bit-lsh n2 7)
 			      n3))))
-	      (mmap-substring/len mm (+ o 8) #e2))))
+	      (mmap-substring/len mm (+elong o #e8) #e2))))
 
 ;*---------------------------------------------------------------------*/
 ;*    id3v2.3-frames ...                                               */
@@ -453,7 +453,7 @@
 				  (cons (cons id (id3v2-get-string mm (+ i 10) sz))
 					frames)))
 			   ((#\C)
-			    (loop (+ i (+ sz 14))
+			    (loop (+ i (+ sz 10))
 				  (cons (cons id (id3v2-get-string mm (+ i 14) (- sz 4)))
 					frames)))
 			   (else
