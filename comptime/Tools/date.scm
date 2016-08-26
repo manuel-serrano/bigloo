@@ -1,4 +1,4 @@
 ;; Automatically generated file (don't edit)
 (module tools_date (export (bigloo-date)))
 
-(define (bigloo-date)  " Fri Aug 26 09:14:58 CEST 2016 ")
+(define (bigloo-date)  " Fri Aug 26 21:11:58 CEST 2016 ")

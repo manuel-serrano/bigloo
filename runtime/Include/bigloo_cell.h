@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar 16 11:01:31 2016 (serrano)                */
+/*    Last change :  Fri Aug 26 19:05:20 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
@@ -79,7 +79,7 @@ struct bgl_cell {
 #  else
 #     define MAKE_CELL( v ) \
          ({ obj_t an_object = GC_MALLOC( CELL_SIZE ); \
-	    BGL_INIT_CELL( an_object, v );
+	    BGL_INIT_CELL( an_object, v ); \
 	    BCELL( an_object ); })
 #  endif
 

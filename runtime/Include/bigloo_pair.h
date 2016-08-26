@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar 16 12:57:09 2016 (serrano)                */
+/*    Last change :  Fri Aug 26 19:06:19 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -128,11 +128,11 @@ struct bgl_epair {
 #  else
 #     define MAKE_PAIR( a, d ) \
          ({ obj_t an_object = GC_MALLOC( PAIR_SIZE ); \
-	    BGL_INIT_PAIR( an_object, a, d );
+	    BGL_INIT_PAIR( an_object, a, d ); \
 	    BPAIR( an_object ); })
 #     define MAKE_EPAIR( a, d, e ) \
          ({ obj_t an_object = GC_MALLOC( EPAIR_SIZE ); \
-	    BGL_INIT_EPAIR( a, d, e ); \
+	    BGL_INIT_EPAIR( an_object, a, d, e );       \
 	    BPAIR( an_object ); })
 #  endif
 
