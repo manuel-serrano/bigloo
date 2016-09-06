@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Fri Apr 22 16:59:09 2016 (serrano)                */
+#*    Last change :  Mon Aug 29 07:54:28 2016 (serrano)                */
 #*    Copyright   :  2003-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -92,7 +92,6 @@ $(BOOTLIBDIR)/bmem/bmem_fth.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_fth.$(SHAREDSUFFIX) \
-           GCCLOSELIB="-lbigloogc_fth-$(RELEASE)" \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 #*--- lib/bmem --------------------------------------------------------*/
