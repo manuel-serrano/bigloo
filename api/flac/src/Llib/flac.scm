@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 24 16:30:32 2011                          */
-;*    Last change :  Wed Jan 27 17:21:22 2016 (serrano)                */
+;*    Last change :  Wed Sep 28 04:00:15 2016 (serrano)                */
 ;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo binding for the flac library                          */
@@ -63,7 +63,8 @@
 	   (generic flac-volume-get::obj ::flac-decoder)
 	   (generic flac-volume-set! ::flac-decoder ::obj)
 
-	   (flac-error::int ::string ::string ::obj)))
+	   (flac-error::int ::string ::string ::obj)
+	   (flac-file-offset ::bstring)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-print ::flac-decoder ...                                  */
@@ -270,3 +271,19 @@
 	     (msg msg)
 	     (obj obj)))
    0)
+
+;*---------------------------------------------------------------------*/
+;*    flac-file-offset ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Returns the offset in the FILE where the true flac starts.       */
+;*---------------------------------------------------------------------*/
+(define (flac-file-offset file)
+   (let ((mm (open-mmap file)))
+      (if (not (mmap? mm))
+	  (raise (instantiate::&flac-error
+		    (proc "flac-file-offset")
+		    (msg "cannot open file for input")
+		    (obj file)))
+	  (let ((kt (bm-table "fLaC")))
+	     (bm-mmap kt mm 0)))))
+			   

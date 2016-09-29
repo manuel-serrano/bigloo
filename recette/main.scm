@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov  2 17:24:13 1992                          */
-;*    Last change :  Wed Mar 16 09:27:53 2016 (serrano)                */
+;*    Last change :  Thu Sep 29 06:03:10 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The recette entry point                                          */
 ;*=====================================================================*/
@@ -202,6 +202,23 @@
    (print file-name ":"))
 
 ;*---------------------------------------------------------------------*/
+;*    recette-resume ...                                               */
+;*---------------------------------------------------------------------*/
+(define (recette-resume inc)
+   (set! *nb-err* (+fx inc *nb-err*))
+   (close-output-port *recette-port*)
+   (print #\Newline "------------------------------")
+   (if (> *nb-err* 0)
+       (begin
+	  (fprint (current-error-port) "recette failed: "
+	     *nb-err* " error(s) occurred.")
+	  -1)
+       (begin
+	  (print "recette succeeded: the " *nb-test*
+	     " tests are clear.")
+	  0)))
+
+;*---------------------------------------------------------------------*/
 ;*    recette ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (recette argv)
@@ -328,16 +345,8 @@
 	  (cond-expand
 	     (bigloo-.net #t)
 	     (else (if-module 'process test-process)))
-	  (close-output-port *recette-port*)
-	  (print #\Newline "------------------------------")
-	  (if (> *nb-err* 0)
-	      (begin
-		 (fprint (current-error-port) "recette failed: "
-			 *nb-err* " error(s) occurred.")
-		 -1)
-	      (begin
-		 (print "recette succeeded: the " *nb-test*
-			" tests are clear.")
-		 0)))))
+	  (if-module 'wind (lambda () (test-wind-sans-handler recette-resume)))
+	  (recette-resume 0))))
+
  
  

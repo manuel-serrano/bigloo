@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Wed Nov 19 13:20:32 2014 (serrano)                */
+;*    Last change :  Thu Sep 29 09:19:57 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -152,10 +152,7 @@
 ;*---------------------------------------------------------------------*/
 (define (unwind-until! exitd val)
    (if (pair? exitd)
-       (begin
-	  (tprint "UNWIND-UNTIL, got one exitd=" (typeof exitd) " val="
-	     (typeof val))
-	  (unwind-stack-until! (car exitd) #f val (cdr exitd)))
+       (unwind-stack-until! (car exitd) #f val (cdr exitd))
        (unwind-stack-until! exitd #f val #f)))
 
 ;*---------------------------------------------------------------------*/
@@ -170,13 +167,15 @@
    (let loop ()
       (let ((exitd-top ($get-exitd-top)))
 	 (if ($exitd-bottom? exitd-top)
-	     (if (procedure? proc-bottom)
-		 (proc-bottom val)
-		 (let ((hdl ($get-uncaught-exception-handler)))
-		    ((if (procedure? hdl)
-			 hdl
-			 default-uncaught-exception-handler)
-		     val)))
+	     (begin
+		(exitd-exec-and-pop-protects! exitd-top)
+		(if (procedure? proc-bottom)
+		    (proc-bottom val)
+		    (let ((hdl ($get-uncaught-exception-handler)))
+		       ((if (procedure? hdl)
+			    hdl
+			    default-uncaught-exception-handler)
+			val))))
 	     (begin
 		;; execute the unwind protects pushed above the exitd block
 		(exitd-exec-and-pop-protects! exitd-top)

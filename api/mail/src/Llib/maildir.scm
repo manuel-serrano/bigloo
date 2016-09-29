@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Thu Oct  1 11:57:37 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Tue Sep 20 23:54:45 2016 (serrano)                */
+;*    Copyright   :  2007-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -120,7 +120,9 @@
 (define-method (mailbox-folder-select! m::maildir s::bstring)
    (with-access::maildir m (%mutex folder-selection %selection %selection-info)
       (synchronize %mutex
-	 (if (and (string? folder-selection) (string=? folder-selection s))
+	 (if (and (string? folder-selection)
+		  (string=? folder-selection s)
+		  (isa? %selection-info folderinfo))
 	     (with-access::folderinfo %selection-info (count recent)
 		`((count . ,count) (recent . ,recent)))
 	     (let ((path (folder->directory
@@ -128,7 +130,9 @@
 		(set! %selection path)
 		(set! %selection-info (get-folder-info m path))
 		(unless (isa? %selection-info folderinfo)
-		   (error "mailbox-folder-select!" "Illegal folder" path))
+		   (error "mailbox-folder-select!"
+		      (format "Illegal folder ~s" s)
+		      path))
 		(set! folder-selection s)
 		(with-access::folderinfo %selection-info (count recent)
 		   `((count . ,count) (recent . ,recent))))))))

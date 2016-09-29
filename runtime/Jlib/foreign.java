@@ -4856,7 +4856,7 @@ public final class foreign
       }
 
    public static boolean BGL_EXITD_BOTTOMP( Object o ) {
-      return o == BFALSE;
+      return ((exit)o).prev == null;
    }
       
    public static Object BGL_EXITD_TOP_SET(Object o)
@@ -6403,7 +6403,6 @@ public final class foreign
 	       return true;
 	    } else {
 	       boolean r = rgc_fill_buffer( p );
-	       System.err.println( "eof2 pas glop..." + r);
 	       return !r;
 	    }
 	 }

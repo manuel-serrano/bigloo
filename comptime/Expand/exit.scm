@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Dec  1 08:09:09 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Sep 28 10:33:04 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/

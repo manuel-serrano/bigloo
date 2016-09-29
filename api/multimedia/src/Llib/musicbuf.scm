@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jun 25 06:55:51 2011                          */
-;*    Last change :  Thu Mar 31 14:59:22 2016 (serrano)                */
+;*    Last change :  Wed Sep 28 04:43:47 2016 (serrano)                */
 ;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A (multimedia) buffer music player.                              */
@@ -924,7 +924,12 @@
 		(string-prefix? "https://" path)))
        (let ((i (string-index-right path #\?)))
 	  (if i
-	      (mime-type (substring path 6 i))
+	      (let ((base (substring path 6 i)))
+		 (if (string-index base #\.)
+		     ;; there is something that looks like a suffix in base url
+		     (mime-type base)
+		     ;; there is suffix, try in the arguments
+		     (mime-type-file (substring path (+fx i 1)))))
 	      (mime-type-file path)))
        (mime-type-file path)))
 

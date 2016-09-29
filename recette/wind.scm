@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar  8 19:31:00 1998                          */
-;*    Last change :  Thu Jul 18 12:56:11 2013 (serrano)                */
+;*    Last change :  Thu Sep 29 06:04:45 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Wind test (dynamic-wind and unwind-protect).                     */
 ;*=====================================================================*/
@@ -14,7 +14,36 @@
 (module wind
    (import  (main "main.scm"))
    (include "test.sch")
-   (export  (test-wind)))
+   (export  (test-wind)
+	    (test-wind-sans-handler end::procedure))
+   (static (class &dummy-exn::&exception)))
+
+;*---------------------------------------------------------------------*/
+;*    exception-notify ::&dummy-exn ...                                */
+;*---------------------------------------------------------------------*/
+(define-method (exception-notify e::&dummy-exn)
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    test-wind-sans-handler ...                                       */
+;*    -------------------------------------------------------------    */
+;*    This test is the last to be executed by the recette as it exit   */
+;*    the main process.                                                */
+;*---------------------------------------------------------------------*/
+(define (test-wind-sans-handler end)
+   (let ((unwind-sans-res #f))
+      (register-exit-function!
+	 (lambda (v)
+	    (if unwind-sans-res
+		(end 0)
+		(begin
+		   (fprint (current-error-port)
+		      "XX.wind : unwind-sans-handler -> failed.")
+		   (end 1)))))
+      (test-module "wind" "wind.scm")
+      (unwind-protect
+	 (raise (instantiate::&dummy-exn))
+	 (set! unwind-sans-res #t))))
 
 ;*---------------------------------------------------------------------*/
 ;*    A global variable                                                */
@@ -34,6 +63,17 @@
 			(set! x (+ 10 x)))
 		     (set! x (+ 1 x)))))
       x))
+
+;*---------------------------------------------------------------------*/
+;*    test-unwind-sans-handler ...                                     */
+;*---------------------------------------------------------------------*/
+(define (test-unwind-sans-handler)
+   (let ((r #f))
+      (bind-exit (exit)
+	 (unwind-protect
+	    (exit 0)
+	    (set! r #t)))
+      (test "unwind-sans-handler" r #t)))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-wind ...                                                    */
