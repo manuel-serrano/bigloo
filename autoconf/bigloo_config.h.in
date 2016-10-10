@@ -97,6 +97,9 @@
 #undef BGL_HAVE_IOCTL
 #define BGL_HAVE_IOCTL @BGL_HAVE_IOCTL@
 
+#undef BGL_HAVE_SYSLOG
+#define BGL_HAVE_SYSLOG @BGL_HAVE_SYSLOG@
+
 #undef HAVE_SIGSETMASK
 #define HAVE_SIGSETMASK @HAVE_SIGSETMASK@
 
@@ -667,5 +670,11 @@ typedef unsigned long uint64_t;
 #  define BGL_LONGLONG_MIN LONG_MIN
 #endif
 
+/*---------------------------------------------------------------------*/
+/*    syslog                                                           */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_SYSLOG )
+#  include <syslog.h>
+#endif
 
 #endif

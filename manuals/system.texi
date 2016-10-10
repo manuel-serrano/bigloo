@@ -222,6 +222,23 @@ If the user is found, these two procedures returns a list of seven elements:
 When no user is found, these procedures returns @code{#f}.
 @end deffn
 
+@deffn {bigloo procedure} openlog name option facility
+@deffnx {bigloo procedure} syslog level . obj
+@deffnx {bigloo procedure} closelog
+@deffnx {bigloo procedure} syslog-option
+@deffnx {bigloo procedure} syslog-level
+@deffnx {bigloo procedure} syslog-facility
+
+Wrapper to Unix syslog facilities. See the @code{syslog} man page for detail.
+Example.
+
+@smalllisp @noindent
+(openlog "foo.scm" (syslog-option 'LOG_PID 'LOG_ODELAY) (syslog-facility 'LOG_MAIL))
+(syslog (syslog-level 'LOG_INFO) "this is a log message")
+(closelog)
+@end smalllisp
+@end deffn
+
 
 @c -- File name ------------------------------------------------------ @c
 @node Files, Process, Operating System Interface, System Programming

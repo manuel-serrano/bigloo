@@ -1,12 +1,12 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ioctl                       */
+#*    serrano/prgm/project/bigloo/autoconf/syslog                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Sun Oct  2 16:48:51 2016 (serrano)                */
+#*    Last change :  Sun Oct  2 16:48:46 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
-#*    Check if IOCTL exits. Return 0, 1.                               */
+#*    Check if SYSLOG exits. Return 0, 1.                              */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -50,10 +50,12 @@ fi
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-#include <sys/ioctl.h>
+#include <syslog.h>
 
 int main( int argc, char *argv[] ) {
-   ioctl( 0, 0 );
+   openlog( "bigloo", LOG_NDELAY, LOG_AUTH );
+   syslog( LOG_WARNING, "%s", "foo" );
+   closelog();
    return 0;
 }
 EOF

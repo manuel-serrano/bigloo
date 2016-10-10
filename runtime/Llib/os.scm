@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Fri Jun  3 07:07:34 2016 (serrano)                */
+;*    Last change :  Fri Oct  7 13:41:47 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -28,6 +28,7 @@
 	    __object
 	    __thread
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
@@ -92,7 +93,44 @@
 	    (macro $getpid::int () "getpid")
 	    (macro $getppid::int () "getppid")
 	    ($getgroups::vector () "bgl_getgroups")
-	    ($ioctl::bool (::obj ::elong ::elong) "bgl_ioctl"))
+	    ($ioctl::bool (::obj ::elong ::elong) "bgl_ioctl")
+	    (macro $openlog::void (::string ::int ::int) "openlog")
+	    (macro $syslog::void (::int ::string ::string) "syslog")
+	    (macro $closelog::void () "closelog")
+	    (macro $syslog-log-cons::int "LOG_CONS")
+	    (macro $syslog-log-ndelay::int "LOG_NDELAY")
+	    (macro $syslog-log-nowait::int "LOG_NOWAIT")
+	    (macro $syslog-log-odelay::int "LOG_ODELAY")
+	    ;; (macro $syslog-log-perror::int "LOG_PERROR")
+	    (macro $syslog-log-pid::int "LOG_PID")
+	    (macro $syslog-log-auth::int "LOG_AUTH")
+	    (macro $syslog-log-authpriv::int "LOG_AUTHPRIV")
+	    (macro $syslog-log-cron::int "LOG_CRON")
+	    (macro $syslog-log-daemon::int "LOG_DAEMON")
+	    (macro $syslog-log-ftp::int "LOG_FTP")
+	    (macro $syslog-log-kern::int "LOG_KERN")
+	    (macro $syslog-log-local0::int "LOG_LOCAL0")
+	    (macro $syslog-log-local1::int "LOG_LOCAL1")
+	    (macro $syslog-log-local2::int "LOG_LOCAL2")
+	    (macro $syslog-log-local3::int "LOG_LOCAL3")
+	    (macro $syslog-log-local4::int "LOG_LOCAL4")
+	    (macro $syslog-log-local5::int "LOG_LOCAL5")
+	    (macro $syslog-log-local6::int "LOG_LOCAL6")
+	    (macro $syslog-log-local7::int "LOG_LOCAL7")
+	    (macro $syslog-log-lpr::int "LOG_LPR")
+	    (macro $syslog-log-mail::int "LOG_MAIL")
+	    (macro $syslog-log-news::int "LOG_NEWS")
+	    (macro $syslog-log-syslog::int "LOG_SYSLOG")
+	    (macro $syslog-log-user::int "LOG_USER")
+	    (macro $syslog-log-uucp::int "LOG_UUCP")
+	    (macro $syslog-log-emerg::int "LOG_EMERG")
+	    (macro $syslog-log-alert::int "LOG_ALERT")
+	    (macro $syslog-log-crit::int "LOG_CRIT")
+	    (macro $syslog-log-err::int "LOG_ERR")
+	    (macro $syslog-log-warning::int "LOG_WARNING")
+	    (macro $syslog-log-notice::int "LOG_NOTICE")
+	    (macro $syslog-log-info::int "LOG_INFO")
+	    (macro $syslog-log-debug::int "LOG_DEBUG"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -227,7 +265,13 @@
 	    (inline getgroups::vector)
 	    (ioctl-register-request! ::bstring ::uint64)
 	    (ioctl::bool ::obj ::obj ::obj)
-	    (umask::int #!optional mask)))
+	    (umask::int #!optional mask)
+	    (inline openlog ::bstring ::int ::int)
+	    (syslog ::int . args)
+	    (inline closelog)
+	    (syslog-option::int . opts)
+	    (syslog-facility::int ::symbol)
+	    (syslog-level::int ::symbol)))
 
 ;*---------------------------------------------------------------------*/
 ;*    Variables setup ...                                              */
@@ -1166,3 +1210,106 @@
        (let ((old ($umask 0)))
 	  ($umask old)
 	  old)))
+
+;*---------------------------------------------------------------------*/
+;*    openlog ...                                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (openlog ident::bstring option::int facility::int)
+   (cond-expand
+      ((and bigloo-c (config have-syslog #t))
+       ($openlog ident option facility)))
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    syslog ...                                                       */
+;*---------------------------------------------------------------------*/
+(define (syslog priority::int . args)
+   (cond-expand
+      ((and bigloo-c (config have-syslog #t))
+       ($syslog priority "%s"
+	  (call-with-output-string
+	     (lambda (op)
+		(for-each (lambda (a) (display a op)) args))))))
+   #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    closelog ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (closelog)
+   (cond-expand
+      ((and bigloo-c (config have-syslog #t)) ($closelog)))
+    #unspecified)
+
+;*---------------------------------------------------------------------*/
+;*    syslog-option ...                                                */
+;*---------------------------------------------------------------------*/
+(define (syslog-option . opts)
+   (cond-expand
+      ((and bigloo-c (config have-syslog #t))
+       (let loop ((opts opts)
+		  (o 0))
+	  (if (null? opts)
+	      o
+	      (loop (cdr opts)
+		 (bit-or o
+		    (case (car opts)
+		       ((LOG_CONS) $syslog-log-cons)
+		       ((LOG_NDELAY) $syslog-log-ndelay)
+		       ((LOG_NOWAIT) $syslog-log-nowait)
+		       ((LOG_ODELAY) $syslog-log-odelay)
+		       ;; ((LOG_PERROR) $syslog-log-perror)
+		       ((LOG_PID) $syslog-log-pid)
+		       (else (error "syslog-option"
+				"unknown option" (car opts)))))))))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    syslog-facility ...                                              */
+;*---------------------------------------------------------------------*/
+(define (syslog-facility facility)
+   (cond-expand
+      ((and bigloo-c (config have-syslog #t))
+       (case facility
+	  ((LOG_AUTH) $syslog-log-auth)
+	  ((LOG_AUTHPRIV) $syslog-log-authpriv)
+	  ((LOG_CRON) $syslog-log-cron)
+	  ((LOG_DAEMON) $syslog-log-daemon)
+	  ((LOG_FTP) $syslog-log-ftp)
+	  ((LOG_KERN) $syslog-log-kern)
+	  ((LOG_LOCAL0) $syslog-log-local0)
+	  ((LOG_LOCAL1) $syslog-log-local1)
+	  ((LOG_LOCAL2) $syslog-log-local2)
+	  ((LOG_LOCAL3) $syslog-log-local3)
+	  ((LOG_LOCAL4) $syslog-log-local4)
+	  ((LOG_LOCAL5) $syslog-log-local5)
+	  ((LOG_LOCAL6) $syslog-log-local6)
+	  ((LOG_LOCAL7) $syslog-log-local7)
+	  ((LOG_LPR) $syslog-log-lpr)
+	  ((LOG_MAIL) $syslog-log-mail)
+	  ((LOG_NEWS) $syslog-log-news)
+	  ((LOG_SYSLOG) $syslog-log-syslog)
+	  ((LOG_USER) $syslog-log-user)
+	  ((LOG_UUCP) $syslog-log-uucp)
+	  (else (error "syslog-facility" "unknown facility" facility))))
+      (else
+       0)))
+
+;*---------------------------------------------------------------------*/
+;*    syslog-level ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (syslog-level lvl)
+   (cond-expand
+      ((and bigloo-c (config have-syslog #t))
+       (case lvl
+	  ((LOG_EMERG) $syslog-log-emerg)
+	  ((LOG_ALERT) $syslog-log-alert)
+	  ((LOG_CRIT) $syslog-log-crit)
+	  ((LOG_ERR) $syslog-log-err)
+	  ((LOG_WARNING) $syslog-log-warning)
+	  ((LOG_NOTICE) $syslog-log-notice)
+	  ((LOG_INFO) $syslog-log-info)
+	  ((LOG_DEBUG) $syslog-log-debug)
+	  (else (error "syslog-level" "unknown level" lvl))))
+      (else
+       0)))

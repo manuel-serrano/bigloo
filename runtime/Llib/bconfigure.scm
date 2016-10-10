@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sun Jun 19 18:17:22 2016 (serrano)                */
+;*    Last change :  Sun Oct  2 18:53:50 2016 (serrano)                */
 ;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -103,7 +103,8 @@
 	   (macro $configure-regexp-family::string "BGL_REGEXP_FAMILY")
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
-	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING"))
+	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
+	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG"))
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -165,6 +166,7 @@
 	      (field static int-size::int "BGL_INT_BIT_SIZE")
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
+	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
 	      "bigloo.configure"))
 
    (export    (bigloo-config #!optional config)
@@ -244,7 +246,8 @@
      (regexp . ,$configure-regexp-family)
      (int-size . ,$configure-int-size)
      (elong-size . ,$configure-elong-size)
-     (have-unistring . ,$configure-have-unistring)))
+     (have-unistring . ,$configure-have-unistring)
+     (have-syslog . ,$configure-have-syslog)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */
