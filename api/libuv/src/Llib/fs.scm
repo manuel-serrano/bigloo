@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Tue Mar  1 17:50:22 2016 (serrano)                */
+;*    Last change :  Fri Oct 14 12:18:56 2016 (serrano)                */
 ;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
@@ -134,7 +134,7 @@
 	  :callback
 	  (lambda (fd)
 	     (if (isa? fd UvFile)
-		 (uv-fs-ftruncate fd offset
+		 (uv-fs-ftruncate fd (fixnum->int64 offset)
 		    :callback
 		    (lambda (res)
 		       (uv-fs-close fd

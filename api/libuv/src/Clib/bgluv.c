@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Jun 17 09:00:03 2016 (serrano)                */
+/*    Last change :  Fri Oct 14 13:11:02 2016 (serrano)                */
 /*    Copyright   :  2014-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -28,8 +28,11 @@ typedef BgL_uvfseventz00_bglt bgl_uv_fs_event_t;
 typedef BgL_uvprocessz00_bglt bgl_uv_process_t;
 typedef BgL_uvprocessoptionsz00_bglt bgl_uv_process_options_t;
 typedef BgL_uvworkz00_bglt bgl_uv_work_t;
+typedef BgL_uvfspollz00_bglt bgl_uv_fs_poll_t;
+typedef BgL_uvpollz00_bglt bgl_uv_poll_t;
 
 extern obj_t bgl_uv_handle_type_symbol( long );
+extern obj_t bgl_uv_events_to_list( int );
 
 /*---------------------------------------------------------------------*/
 /*    bgl_uv_mutex                                                     */
@@ -155,7 +158,7 @@ bgl_uv_fs_event_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
 /*---------------------------------------------------------------------*/
 void
 bgl_uv_fs_poll_cb( uv_handle_t *handle, int status, const uv_stat_t* prev, const uv_stat_t* curr ) {
-   bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
+   bgl_uv_fs_poll_t o = (bgl_uv_fs_poll_t)handle->data;
    obj_t p = o->BgL_cbz00;
 
    /* some libuv versions uses -2 instead of -1 for error, fix this! */
@@ -173,12 +176,63 @@ bgl_uv_fs_poll_cb( uv_handle_t *handle, int status, const uv_stat_t* prev, const
 /*    bgl_uv_fs_poll_new ...                                           */
 /*---------------------------------------------------------------------*/
 uv_fs_poll_t *
-bgl_uv_fs_poll_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
+bgl_uv_fs_poll_new( bgl_uv_fs_poll_t o, bgl_uv_loop_t loop ) {
    uv_fs_poll_t *new = (uv_fs_poll_t *)GC_MALLOC( sizeof( uv_fs_poll_t ) );
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
    uv_fs_poll_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   return new;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_uv_fs_poll_getpath ...                                       */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_uv_fs_poll_getpath( uv_fs_poll_t *o ) {
+   obj_t buf = make_string_sans_fill( 256 );
+   size_t size = STRING_LENGTH( buf );
+   int len = uv_fs_poll_getpath( o, BSTRING_TO_STRING( buf ), &size );
+
+   if( len == UV_ENOBUFS ) {
+      obj_t buf = make_string_sans_fill( size + 1 );
+      uv_fs_poll_getpath( o, BSTRING_TO_STRING( buf ), &size );
+   }
+
+   return buf;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_poll_cb ...                                               */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_poll_cb( uv_handle_t *handle, int status, int state ) {
+   bgl_uv_poll_t o = (bgl_uv_poll_t)handle->data;
+   obj_t p = o->BgL_cbz00;
+
+   /* some libuv versions uses -2 instead of -1 for error, fix this! */
+   if( status < 0 ) { status = -1; }
+   
+   if( PROCEDUREP( p ) ) {
+      PROCEDURE_ENTRY( p )( p, o, BINT( status ), bgl_uv_events_to_list( state ), BEOA );
+   }
+}
+
+
+/*---------------------------------------------------------------------*/
+/*    uv_poll_t *                                                      */
+/*    bgl_uv_poll_new ...                                              */
+/*---------------------------------------------------------------------*/
+uv_poll_t *
+bgl_uv_poll_new( obj_t o, bgl_uv_loop_t loop ) {
+   uv_poll_t *new = (uv_poll_t *)GC_MALLOC( sizeof( uv_poll_t ) );
+   new->data = o;
+   new->close_cb = &bgl_uv_close_cb;
+
+   uv_poll_init( (uv_loop_t *)loop->BgL_z42builtinz42, new,
+		 ((bgl_uv_poll_t)o)->BgL_fdz00 );
    return new;
 }
 

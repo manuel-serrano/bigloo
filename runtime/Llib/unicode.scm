@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Aug 19 13:18:18 2016 (serrano)                */
+;*    Last change :  Fri Oct 14 13:57:11 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -191,7 +191,11 @@
 	    (iso-latin->utf8::bstring ::bstring)
 	    (iso-latin->utf8!::bstring ::bstring)
 	    (cp1252->utf8::bstring ::bstring)
-	    (cp1252->utf8!::bstring ::bstring))
+	    (cp1252->utf8!::bstring ::bstring)
+
+	    (string-minimal-charset::symbol ::bstring)
+	    (utf8-string-minimal-charset::symbol ::bstring)
+	    (ucs2-string-minimal-charset::symbol ::ucs2string))
    
    (pragma  (c-ucs2-string? (predicate-of ucs2string) no-cfa-top nesting)
 	    (ucs2-string? side-effect-free no-cfa-top nesting)
@@ -492,7 +496,7 @@
 ;*    ucs2-string->utf8-string ...                                     */
 ;*---------------------------------------------------------------------*/
 (define-inline (ucs2-string->utf8-string ucs2)
-   (string-ascii-sentinel-mark! (c-ucs2-string->utf8-string ucs2)))
+   (c-ucs2-string->utf8-string ucs2))
 
 ;*---------------------------------------------------------------------*/
 ;*    8bits ...                                                        */
@@ -665,21 +669,7 @@
 ;*    ascii-string? ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (ascii-string? str)
-   #f)
-;*    (>=fx (string-ascii-sentinel str) (string-length str)))          */
-
-;*---------------------------------------------------------------------*/
-;*    string-ascii-sentinel-mark! ...                                  */
-;*---------------------------------------------------------------------*/
-(define (string-ascii-sentinel-mark! string)
-   string)
-;*    (let ((len (string-length string)))                              */
-;*       (let loop ((i 0))                                             */
-;* 	 (when (<fx i len)                                             */
-;* 	    (if (>fx (char->integer (string-ref string i)) 127)        */
-;* 		(string-ascii-sentinel-set! string i)                  */
-;* 		(loop (+fx i 1)))))                                    */
-;*       string))                                                      */
+   (eq? (string-minimal-charset str) 'asci))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string? ...                                                 */
@@ -790,19 +780,13 @@
 	   (<fx start 0)
 	   (>fx start end))
        (error "utf8-normalize-utf16" "Illegal indexes" (cons start end)))
-      ((ascii-string? str)
-       ;; no need to replace anything, its an ascii string
-       (let ((s (substring str start end)))
-	  (string-ascii-sentinel-set! s (-fx end start))
-	  s))
       (else
        (let* ((len (-fx end start))
 	      (res (make-string (*fx 3 len))))
-	  ;; mask the UTF8 sentinel
 	  (let loop ((r start)
 		     (w 0))
 	     (if (=fx r end)
-		 (string-ascii-sentinel-mark! (string-shrink! res w))
+		 (string-shrink! res w)
 		 (let* ((c (string-ref str r))
 			(n (char->integer c)))
 		    (cond
@@ -1053,31 +1037,24 @@
 ;*    Return the number of characters of an UTF8 string.               */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-length str)
-   (let ((len (string-length str))
-	 (sen (string-ascii-sentinel str)))
-      (if (>=fx sen len)
-	  len
-	  (let loop ((r sen)
-		     (l sen))
-	     (if (=fx r len)
-		 l
-		 (loop (+fx r (utf8-char-size (string-ref str r)))
-		    (+fx l 1)))))))
+   (let ((len (string-length str)))
+      (let loop ((r 0)
+		 (l 0))
+	 (if (=fx r len)
+	     l
+	     (loop (+fx r (utf8-char-size (string-ref str r))) (+fx l 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-ref ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-ref str i)
-   (let ((sentinel (string-ascii-sentinel str)))
-      (if (<fx i sentinel)
-	  (string-ascii-sentinel-mark! (string (string-ref str i)))
-	  (let ((len (string-length str)))
-	     (let loop ((r sentinel) (i (-fx i sentinel)))
-		(let* ((c (string-ref str r))
-		       (s (utf8-char-size c)))
-		   (if (=fx i 0)
-		       (string-ascii-sentinel-mark! (substring str r (+fx r s)))
-		       (loop (+fx r s) (-fx i 1)))))))))
+   (let ((len (string-length str)))
+      (let loop ((r 0) (i i))
+	 (let* ((c (string-ref str r))
+		(s (utf8-char-size c)))
+	    (if (=fx i 0)
+		(substring str r (+fx r s))
+		(loop (+fx r s) (-fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-index->string-index ...                              */
@@ -1086,8 +1063,6 @@
    (cond
       ((<fx i 0)
        -1)
-      ((<fx i (string-ascii-sentinel str))
-       i)
       (else
        (let ((len (string-length str)))
 	  (let loop ((r 0) (i i))
@@ -1107,8 +1082,6 @@
    (cond
       ((<fx i 0)
        -1)
-      ((<fx i (string-ascii-sentinel str))
-       i)
       (else
        (let ((len (string-length str)))
 	  (let loop ((m 0)
@@ -1188,8 +1161,6 @@
 ;*    Append the LEFT and RIGHT string into the BUFFER at index        */
 ;*    This function handles cases where the last char of the           */
 ;*    concatanated char is a UNICODE remplacement char.                */
-;*    -------------------------------------------------------------    */
-;*    This function sets the BUFFER ascii sentinel.                    */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append-fill! buffer index str)
    (let ((len (string-length str)))
@@ -1197,12 +1168,7 @@
 	 ((ascii-string? str)
 	  ;; left string is ascii
 	  (blit-string! str 0 buffer index len)
-	  ;; update the sentinel
-	  (let ((nindex (+fx index len))
-		(sentinel (string-ascii-sentinel buffer)))
-	     (when (>=fx sentinel index)
-		(string-ascii-sentinel-set! buffer nindex))
-	     nindex))
+	  (+fx index len))
 	 ((and (>=fx index 4)
 	       (utf8-string-right-replacement? str len 0)
 	       (utf8-string-left-replacement? buffer index (-fx index 4)))
@@ -1213,15 +1179,12 @@
 	 (else
 	  ;; an utf8 string
 	  (blit-string! str 0 buffer index len)
-	  (let ((sentinel (string-ascii-sentinel buffer)))
-	     (when (>=fx sentinel index)
-		(string-ascii-sentinel-set! buffer (+fx index (string-ascii-sentinel str))))
-	     (+fx index len))))))
+	  (+fx index len)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */
 ;*    -------------------------------------------------------------    */
-;*    Append two UTF8 strings and update the ascii-sentinel.           */
+;*    Append two UTF8 strings.                                         */
 ;*    -------------------------------------------------------------    */
 ;*    This function handles cases where the last char of the           */
 ;*    concatanated char is a UNICODE remplacement char.                */
@@ -1237,7 +1200,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append* ...                                          */
 ;*    -------------------------------------------------------------    */
-;*    Append N UTF8 strings and update the ascii-sentinel.             */
+;*    Append N UTF8 strings.                                           */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append* . strings)
    (let ((len 0))
@@ -1272,16 +1235,12 @@
 	     end))
 	 ((=fx start end)
 	  "")
-	 ((ascii-string? str)
-	  (let ((s (substring str start end)))
-	     (string-ascii-sentinel-set! s (-fx end start))
-	     s))
 	 (else
 	  (let loop ((r 0)
 		     (n 0)
 		     (i -1))
 	     (if (=fx r len)
-		 (string-ascii-sentinel-mark! (substring str i r))
+		 (substring str i r)
 		 (let* ((c (string-ref str r))
 			(s (utf8-char-size c)))
 		    (cond
@@ -1332,7 +1291,7 @@
    (let loop ((r 0)
 	      (w 0))
       (if (=fx r len)
-	  (string-ascii-sentinel-mark! nstr)
+	  nstr
 	  (let* ((c (string-ref str r))
 		 (n (char->integer c)))
 	     (cond
@@ -1452,7 +1411,7 @@
    (let loop ((r 0)
 	      (w 0))
       (if (=fx r len)
-	  (string-ascii-sentinel-mark! nstr)
+	  nstr
 	  (let ((c (char->integer (string-ref-ur str r))))
 	     (cond
 		((>=fx c #xc0)
@@ -1522,3 +1481,67 @@
 ;*---------------------------------------------------------------------*/
 (define (cp1252->utf8! str)
    (8bits->utf8! str cp1252))
+
+;*---------------------------------------------------------------------*/
+;*    string-minimal-charset ...                                       */
+;*    -------------------------------------------------------------    */
+;*    Computes the minimal charset for that string                     */
+;*    return value: ascii, latin1                                      */
+;*---------------------------------------------------------------------*/
+(define (string-minimal-charset str)
+   (let loop ((i (-fx (string-length str) 1)))
+      (cond
+	 ((=fx i -1) 'ascii)
+	 ((char<=? (string-ref-ur str i) #a127) (loop (-fx i 1)))
+	 (else 'latin1))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-string-minimal-charset ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Computes the minimal charset for that utf8- string               */
+;*    return value: ascii, latin1, utf8                                */
+;*---------------------------------------------------------------------*/
+(define (utf8-string-minimal-charset str)
+   ;; skip the last char as it can only be 7bits wide
+   (let ((len (-fx (string-length str) 1)))
+      (let loop ((i 0)
+		 (charset 'ascii))
+	 (if (>=fx i len)
+	     charset
+	     (let ((n (char->integer (string-ref-ur str i))))
+		(cond
+		   ((<=fx n #x7f)
+		    (loop (+fx i 1) charset))
+		   ((or (=fx n #xc2) (=fx n #xc3))
+		    (let ((m (char->integer (string-ref-ur str (+fx i 1)))))
+		       (if (and (>=fx m #x80) (<=fx m #xbf))
+			   (loop (+fx i 2) 'latin1)
+			   'utf8)))
+		   (else
+		    'utf8)))))))
+
+;*---------------------------------------------------------------------*/
+;*    ucs2-string-minimal-charset ...                                  */
+;*    -------------------------------------------------------------    */
+;*    Computes the minimal charset for that ucs2-string                */
+;*    return value: ascii, latin1, ucs2, utf16                         */
+;*---------------------------------------------------------------------*/
+(define (ucs2-string-minimal-charset str)
+   ;; skip the last char as it can only be 16bits wide 
+   (let ((len (-fx (ucs2-string-length str) 1)))
+      (let loop ((i 0)
+		 (charset 'ascii))
+	 (if (>=fx i len)
+	     charset
+	     (let ((n (ucs2->integer (ucs2-string-ref-ur str i))))
+		(cond
+		   ((<=fx n #x7f)
+		    (loop (+fx i 1) charset))
+		   ((<=fx n #xff)
+		    (loop (+fx i 1) (if (eq? charset 'ucs2) 'ucs2 'latin1)))
+		   ((or (<fx n #xdc00) (>fx n #xdbff))
+		    (loop (+fx i 1) 'ucs2))
+		   (else
+		    'utf16)))))))
+   
+   

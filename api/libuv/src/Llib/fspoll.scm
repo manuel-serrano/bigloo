@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Thu Jun  4 19:11:36 2015 (serrano)                */
-;*    Copyright   :  2014-15 Manuel Serrano                            */
+;*    Last change :  Fri Oct 14 11:44:51 2016 (serrano)                */
+;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fspoll                                                     */
 ;*=====================================================================*/
@@ -55,3 +55,10 @@
 (define (uv-fs-poll-stop o::UvFsPoll)
    (with-access::UvFsPoll o ($builtin)
       ($uv_fs_poll_stop ($uv-fs-poll-t $builtin))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-get-path ...                                               */
+;*---------------------------------------------------------------------*/
+(define (uv-fs-get-path o::UvFsPoll)
+   (with-access::UvFsPoll o ($builtin)
+      ($bgl_uv_fs_poll_getpath $builtin)))

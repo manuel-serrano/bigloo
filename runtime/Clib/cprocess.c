@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Mon May 16 15:09:49 2016 (serrano)                */
+/*    Last change :  Wed Oct 12 11:48:03 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -336,7 +336,7 @@ cannot_run( HANDLE pipes[ 3 ][ 2 ], obj_t bcommand, char *msg ) {
 /*---------------------------------------------------------------------*/
 static obj_t
 make_process() {
-   int   i;
+   int i;
    obj_t a_proc;
 
    a_proc = GC_MALLOC( PROCESS_SIZE );
@@ -667,8 +667,8 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    } else {
 	       PROCESS( proc ).exit_status = info;
 	       PROCESS( proc ).exited = 1;
-         if( PROCESS(proc).index != -1 )
-           c_unregister_process( proc );
+	       if( PROCESS( proc ).index != -1 )
+		  c_unregister_process( proc );
 	    }
 	 }
    }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Fri Feb  6 10:43:27 2015 (serrano)                */
-;*    Copyright   :  2014-15 Manuel Serrano                            */
+;*    Last change :  Fri Oct 14 12:05:11 2016 (serrano)                */
+;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
 ;*=====================================================================*/
@@ -62,6 +62,9 @@
 	   (class UvIdle::UvWatcher)
 
 	   (class UvAsync::UvWatcher)
+
+	   (class UvPoll::UvWatcher
+	      (fd::int read-only))
 
 	   (class UvFile
 	      (fd::int read-only)

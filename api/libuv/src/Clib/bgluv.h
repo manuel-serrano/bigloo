@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/uvtypes.scm)                                                      */
-/*   Bigloo (4.2a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Tue Feb 17 10:37:06 CET 2015        */
+/*   Bigloo (4.3a)                                                           */
+/*   Inria -- Sophia Antipolis (c)       Fri Oct 14 16:17:34 CEST 2016       */
 /*===========================================================================*/
-/* COMPILATION: (/home/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -I Llib -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.2a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/libuv/libuv-1.x-24jan2015/include -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen)*/
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.3a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.3a -srfi libuv -copt -I/home/serrano/prgm/project/bigloo/libuv/libuv-1.x-24jan2015/include -safee -unsafe -copt -fPIC -copt -IClib -copt  Llib/uvtypes.scm -o Clib/bgluv.h -hgen) */
 
 /* Object type definitions */
 typedef struct BgL_z52uvz52_bgl {
@@ -149,6 +149,18 @@ typedef struct BgL_uvasyncz00_bgl {
    struct BgL_uvloopz00_bgl * BgL_loopz00;
    obj_t BgL_cbz00;
 } *BgL_uvasyncz00_bglt;
+
+typedef struct BgL_uvpollz00_bgl {
+   header_t header;
+   obj_t widening;
+   uv_handle_t * BgL_z42builtinz42;
+   obj_t BgL_z52onclosez52;
+   obj_t BgL_z52gcmarksz52;
+   bool_t BgL_closedz00;
+   struct BgL_uvloopz00_bgl * BgL_loopz00;
+   obj_t BgL_cbz00;
+   int BgL_fdz00;
+} *BgL_uvpollz00_bglt;
 
 typedef struct BgL_uvfilez00_bgl {
    header_t header;

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Mon Jul  6 14:03:42 2015 (serrano)                */
-;*    Copyright   :  2014-15 Manuel Serrano                            */
+;*    Last change :  Fri Oct 14 13:07:18 2016 (serrano)                */
+;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
 ;*    -------------------------------------------------------------    */
@@ -117,7 +117,25 @@
       (macro $uv_fs_poll_stop::void (::$uv_fs_poll_t) "uv_fs_poll_stop")
       
       ($bgl_uv_fs_poll_cb::$uv_fs_poll_cb (::$uv_fs_poll_t ::int ::$uv_stat_t ::$uv_stat_t) "bgl_uv_fs_poll_cb")
+      ($bgl_uv_fs_poll_getpath::bstring (::$uv_fs_poll_t) "bgl_uv_fs_poll_getpath")
       (macro $BGL_UV_FS_POLL_CB::$uv_fs_poll_cb "(uv_fs_poll_cb)&bgl_uv_fs_poll_cb")
+      
+      ;; poll
+      (type $uv_poll_t void* "uv_poll_t *")
+      (type $uv_poll_cb void* "uv_poll_cb")
+      (macro $uv-poll-t::$uv_poll_t (::$uv_handle_t) "(uv_poll_t *)")
+      (macro $uv_readable::int "UV_READABLE")
+      (macro $uv_writable::int "UV_WRITABLE")
+      ;;(macro $uv_disconnect::int "UV_DISCONNECT")
+      
+      (macro $uv_poll_nil::$uv_poll_t "0L")
+      
+      ($bgl_uv_poll_new::$uv_poll_t (::UvPoll ::UvLoop) "bgl_uv_poll_new")
+      (macro $uv_poll_start::void (::$uv_poll_t ::int ::$uv_poll_cb) "uv_poll_start")
+      (macro $uv_poll_stop::void (::$uv_poll_t) "uv_poll_stop")
+      
+      ($bgl_uv_poll_cb::$uv_poll_cb (::$uv_poll_t ::int ::$uv_stat_t ::$uv_stat_t) "bgl_uv_poll_cb")
+      (macro $BGL_UV_POLL_CB::$uv_poll_cb "(uv_poll_cb)&bgl_uv_poll_cb")
       
       ;; timer
       (type $uv_timer_t void* "uv_timer_t *")
@@ -385,8 +403,8 @@
       (macro $uv-process-t::$uv_process_t (::$uv_handle_t) "(uv_process_t *)")
       
       ($uv-process-new::$uv_process_t (::UvProcess) "bgl_uv_process_new")
-      (macro $uv-process-spawn::int (::UvLoop ::UvProcess ::UvProcessOptions ::obj)
-	     "bgl_uv_spawn")
+      ($uv-process-spawn::int (::UvLoop ::UvProcess ::UvProcessOptions ::obj)
+	 "bgl_uv_spawn")
       (macro $uv-process-kill::int (::$uv_process_t ::int)
 	     "uv_process_kill")
       (macro $uv-kill::int (::int ::int)
