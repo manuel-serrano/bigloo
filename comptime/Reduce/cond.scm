@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Oct 15 09:51:26 2016 (serrano)                */
+;*    Last change :  Sat Oct 15 19:30:57 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
@@ -205,7 +205,8 @@
 	       (atom? true) (atom? false)
 	       (equal?
 		  (with-access::atom true (value) value)
-		  (with-access::atom false (value) value)))
+		  (with-access::atom false (value) value))
+	       (not (with-access::atom true (value) (flonum? value))))
 	  ;; this help improve static resolution of multiple type tests
 	  true)
 	 ((atom? test)
