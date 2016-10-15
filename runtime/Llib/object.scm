@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Mar  9 16:55:28 2016 (serrano)                */
+;*    Last change :  Fri Oct 14 18:14:45 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1335,6 +1335,10 @@
    (let ((port (current-error-port)))
       (display "*** UNKNOWN EXCEPTION: " port)
       (write-circle exc port)
+      (when (current-thread)
+	 (display " [[" port)
+	 (display (current-thread) port)
+	 (display "]]" port))
       (newline port)
       (let ((stack (if (isa? exc &exception)
 		       (with-access::&exception exc (stack)

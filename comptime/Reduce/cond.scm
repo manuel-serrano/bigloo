@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Dec 23 12:32:28 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Oct 15 09:51:26 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
 	    type_cache
 	    ast_var
 	    ast_env
-	    ast_node)
+	    ast_node
+	    effect_effect)
    (export  (reduce-conditional! globals)))
 
 ;*---------------------------------------------------------------------*/
@@ -200,6 +201,13 @@
       (set! true (node-cond! true))
       (set! false (node-cond! false))
       (cond
+	 ((and (not (side-effect? test))
+	       (atom? true) (atom? false)
+	       (equal?
+		  (with-access::atom true (value) value)
+		  (with-access::atom false (value) value)))
+	  ;; this help improve static resolution of multiple type tests
+	  true)
 	 ((atom? test)
 	  (set! *cond-reduced* (+fx 1 *cond-reduced*))
 	  (trace (reduce 2) "Je reduis le cond: " (shape node) #\Newline)
