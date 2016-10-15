@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Wed Oct 14 11:04:28 2015 (serrano)                */
-;*    Copyright   :  2006-15 Manuel Serrano                            */
+;*    Last change :  Sat Oct 15 09:17:47 2016 (serrano)                */
+;*    Copyright   :  2006-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -29,7 +29,6 @@
 	    __object
 	    __hash
 	    __reader
-	    __macro
 	    __expand
 	    __trace
 	    
@@ -58,6 +57,8 @@
 	    __everror
 	    __evcompile
 	    __evobject)
+
+   (use     __macro)
 
    (extern  (macro $eval-module-set!::obj (::obj) "BGL_MODULE_SET")
 	    (macro $eval-module::obj () "BGL_MODULE"))
