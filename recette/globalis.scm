@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 11:30:18 1992                          */
-;*    Last change :  Tue Feb  9 07:28:30 2016 (serrano)                */
+;*    Last change :  Mon Oct 17 10:04:27 2016 (serrano)                */
 ;*                                                                     */
 ;*    Des tests qui globalisent des fonctions locales par la passe Glo */
 ;*---------------------------------------------------------------------*/
@@ -274,6 +274,14 @@
       (read/rp g p)))
 
 ;*---------------------------------------------------------------------*/
+;*    static-application ...                                           */
+;*---------------------------------------------------------------------*/
+(define (static-application)
+   (((lambda (a b) b)
+     3
+     (lambda (x) x)) 3))
+
+;*---------------------------------------------------------------------*/
 ;*    test-globalisation ...                                           */
 ;*---------------------------------------------------------------------*/
 (define (test-globalisation)
@@ -286,4 +294,5 @@
    (test "cell.2" ((test5 1 2 3 4) 2) 2)
    (test "cell.3" ((test6 1 2 3 4) 2) 2)
    (test "rgc" (test8 "(foo(bar(gee)))") '(foo bar gee))
-   (test "_" (_plante-4 5 6) 11))
+   (test "_" (_plante-4 5 6) 11)
+   (test "ast" (static-application) 3))

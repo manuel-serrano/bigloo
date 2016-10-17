@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Feb 18 08:48:04 2016 (serrano)                */
+;*    Last change :  Mon Oct 17 09:51:27 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -399,7 +399,7 @@
 				    (normalize-progn body)
 				    (lambda (obj proc msg)
 				       (user-error/location loc obj proc msg))))))
-	  (let->node nexp stack loc site)))
+	  (let->node nexp stack loc 'value)))
 ;*--- the direct if applications --------------------------------------*/
       (((if ?test
 	    (and (? proc-or-lambda?) ?proc1)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Tue Feb  9 09:05:21 2016 (serrano)                */
+;*    Last change :  Mon Oct 17 09:01:39 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -66,6 +66,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::var)
    (with-access::var node (variable type)
+;*       (with-access::variable variable (id)                          */
+;* 	 (tprint "var=" id " " (typeof (variable-value variable))))    */
       (let ((approx (cfa-variable-value-approx (variable-value variable))))
 	 (if (or (eq? (variable-type variable) type) (eq? type *_*))
 	     approx
@@ -82,7 +84,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    cfa-variable-value-approx ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-generic (cfa-variable-value-approx value::value))
+(define-generic (cfa-variable-value-approx value::value)
+   (tprint "PAS GLOP " (typeof value) " " (shape value))
+   (error "pas" "glop" "glup"))
 
 ;*---------------------------------------------------------------------*/
 ;*    cfa-variable-value-approx ::svar/Cinfo ...                       */
