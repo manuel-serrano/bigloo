@@ -134,7 +134,7 @@
       (macro $uv_poll_start::void (::$uv_poll_t ::int ::$uv_poll_cb) "uv_poll_start")
       (macro $uv_poll_stop::void (::$uv_poll_t) "uv_poll_stop")
       
-      ($bgl_uv_poll_cb::$uv_poll_cb (::$uv_poll_t ::int ::$uv_stat_t ::$uv_stat_t) "bgl_uv_poll_cb")
+      ($bgl_uv_poll_cb::$uv_poll_cb (::$uv_poll_t ::int ::int) "bgl_uv_poll_cb")
       (macro $BGL_UV_POLL_CB::$uv_poll_cb "(uv_poll_cb)&bgl_uv_poll_cb")
       
       ;; timer

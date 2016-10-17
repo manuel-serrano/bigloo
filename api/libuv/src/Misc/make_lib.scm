@@ -26,6 +26,7 @@
 	   __libuv_pipe
 	   __libuv_fs-event
 	   __libuv_fs-poll
+	   __libuv_poll
 	   __libuv_check
 	   __libuv_process)
    

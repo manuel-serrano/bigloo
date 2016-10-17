@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Thu Dec 31 19:07:35 2015 (serrano)                */
+;*    Last change :  Mon Oct 17 16:19:30 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -71,7 +71,7 @@
 	      (bloc (if (pair? body)
 			(find-location/loc (car body) nloc)
 			nloc))
-	      (body (sexp->node (normalize-progn body) stack bloc site)))
+	      (body (sexp->node (normalize-progn body) stack bloc 'value)))
 	  (trace (ast 3)
 	     "make-empty-let: " (shape exp) #\Newline
 	     "bloc: " bloc #\Newline

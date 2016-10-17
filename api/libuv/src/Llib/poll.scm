@@ -57,9 +57,8 @@
 	    (set! %gcmarks (cons o %gcmarks))
 	    ;; force Bigloo to add the extern clause for bgl_uv_poll_cb
 	    (when (null? %gcmarks)
-	       ($bgl_uv_poll_cb $uv_poll_nil 0
-		  $uv-stat-nil $uv-stat-nil))))
-      (if (correct-arity? proc 4)
+	       ($bgl_uv_poll_cb $uv_poll_nil 0 0))))
+      (if (correct-arity? proc 3)
 	  (begin
 	     (set! cb proc)
 	     ($uv_poll_start ($uv-poll-t $builtin)
