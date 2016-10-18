@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Wed May 11 18:32:14 2016 (serrano)                */
+;*    Last change :  Tue Oct 18 06:48:38 2016 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -597,5 +597,11 @@
 						(loop body data-x data-y))))
 				       '()))))
 		       (loop3634 args3633))))))
-      '<HOPIMPRESS:ROW>))
+      '<HOPIMPRESS:ROW>)
+   (test "eval flonum"
+      (eval '(let  ((add 1.3))
+	      (let ((toadd  (*fl add 1e-4)))
+		 (lambda (dum) (set! add 1.0))
+		 (>fl toadd 0.0))))
+      #t))
 		       

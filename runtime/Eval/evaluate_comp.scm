@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Wed Nov 19 13:33:29 2014 (serrano)                */
-;*    Copyright   :  2011-14 Manuel Serrano                            */
+;*    Last change :  Tue Oct 18 10:06:03 2016 (serrano)                */
+;*    Copyright   :  2011-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -956,7 +956,7 @@
 	 ((0) (EVC (vector-ref bc 1)))
 	 ((1) (vector-ref bc 1))
 	 ((2) (vector-ref s (+fx (vector-ref s 0) (vector-ref bc 1))))
-	 ((3) (mcell-value (vector-ref s (+fx (vector-ref s 0) (vector-ref s 1)))))
+	 ((3) (mcell-value (vector-ref s (+fx (vector-ref s 0) (vector-ref bc 1)))))
 	 ((4) (__evmeaning_address-ref (eval-global-value (vector-ref bc 1))))
 	 ((5) (eval-global-value (vector-ref bc 1)))
 	 ((6) (+fl (E (vector-ref bc 1)) (E (vector-ref bc 2))))
