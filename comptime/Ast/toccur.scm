@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Oct 20 11:31:31 2016 (serrano)                */
+;*    Last change :  Thu Oct 20 11:53:21 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -285,7 +285,6 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::set-ex-it)
    (with-access::set-ex-it node (var)
-      (tprint "SET-EXIT" (node->sexp (set-ex-it-body node)))
       (occur-node! (set-ex-it-body node))))
 
 ;*---------------------------------------------------------------------*/
