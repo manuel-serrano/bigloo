@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Mon Jun  6 08:52:57 2016 (serrano)                */
+;*    Last change :  Thu Oct 20 11:15:39 2016 (serrano)                */
 ;*    Copyright   :  2003-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
@@ -172,6 +172,10 @@
 				  slots))))
 	       (get-class-list)))))
    (let ((classes (filter (lambda (t)
+			     (unless (>fx (type-occurrence t) 0)
+				(with-access::tclass t (id)
+				   (when (eq? id 'xml-tilde)
+				      (tprint "REMOVING " id))))
 			     (>fx (type-occurrence t) 0))
 		     (get-class-list))))
       (emit-class-types classes *c-port*))

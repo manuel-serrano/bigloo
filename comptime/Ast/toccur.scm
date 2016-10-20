@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Mon Nov 11 09:47:08 2013 (serrano)                */
+;*    Last change :  Thu Oct 20 11:31:31 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -22,6 +22,9 @@
 	    type_type
 	    type_typeof
 	    ast_local)
+   (import 
+	    object_class
+	    ast_dump)
    (export  (type-increment-global! ::global)))
 
 ;*---------------------------------------------------------------------*/
@@ -36,17 +39,18 @@
 ;*    type-increment-sfun! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (type-increment-sfun! var)
-   (type-occurrence-increment! (variable-type var))
-   (for-each (lambda (a)
-		(cond
-		   ((type? a)
-		    (type-occurrence-increment! a))
-		   ((local? a)
-		    (type-occurrence-increment! (local-type a)))))
-	     (sfun-args (variable-value var)))
-   (let ((node (sfun-body (variable-value var))))
-      (when (node? node)
-	 (occur-node! node))))
+   (with-access::variable var (id)
+      (type-occurrence-increment! (variable-type var))
+      (for-each (lambda (a)
+		   (cond
+		      ((type? a)
+		       (type-occurrence-increment! a))
+		      ((local? a)
+		       (type-occurrence-increment! (local-type a)))))
+	 (sfun-args (variable-value var)))
+      (let ((node (sfun-body (variable-value var))))
+	 (when (node? node)
+	    (occur-node! node)))))
    
 ;*---------------------------------------------------------------------*/
 ;*    occur-node-in! ...                                               */
@@ -281,6 +285,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::set-ex-it)
    (with-access::set-ex-it node (var)
+      (tprint "SET-EXIT" (node->sexp (set-ex-it-body node)))
       (occur-node! (set-ex-it-body node))))
 
 ;*---------------------------------------------------------------------*/
@@ -311,6 +316,13 @@
       (occur-node! var)
       (occur-node! value)))
 
+;*---------------------------------------------------------------------*/
+;*    occur-node! ::retblock ...                                       */
+;*---------------------------------------------------------------------*/
+(define-method (occur-node! node::retblock)
+   (with-access::retblock node (body)
+      (occur-node! body)))
+		  
 ;*---------------------------------------------------------------------*/
 ;*    occur-node*! ...                                                 */
 ;*---------------------------------------------------------------------*/

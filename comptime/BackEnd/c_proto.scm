@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Fri Feb 26 19:08:57 2016 (serrano)                */
+;*    Last change :  Thu Oct 20 11:14:57 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -62,7 +62,7 @@
    ;; when a main is produced
    (let ((init (find-global 'bigloo-initialized! '__param)))
       (when init (set-variable-name! init)))
-   ;; first, we print the prototype of non procedure
+   ;; first, we print the prototype of non procedures
    (for-each-global!
     (lambda (global)
        (if (and (require-prototype? global)
@@ -636,9 +636,9 @@
       (fprint oport "} *"
 	 (type-name (tclass-wide-type class))
 	 ";\n"))
-   
+
    (when (pair? class-list)
-      (fprint oport #\Newline "/* Object type definitions */")
+      (fprint oport #\Newline "/* object type definitions */")
       (for-each (lambda (class)
 		   (unless (eq? class (get-object-type))
 		      (if (wide-class? class)
