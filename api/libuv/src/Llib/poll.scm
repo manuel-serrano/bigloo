@@ -77,8 +77,8 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-events->list events::int)
    (let ((r '()))
-      (when (bit-or events $uv_readable) (set! r (cons 'UV_READABLE r)))
-      (when (bit-or events $uv_writable) (set! r (cons 'UV_WRITABLE r)))
-      ;;(when (bit-or events $uv_disconnect) (set! r (cons 'UV_DISCONNECT r)))
+      (when (= (bit-and events $uv_readable) $uv_readable) (set! r (cons 'UV_READABLE r)))
+      (when (= (bit-and events $uv_writable) $uv_writable) (set! r (cons 'UV_WRITABLE r)))
+      ;;(when (= (bit-and events $uv_disconnect) $uv_disconnect) (set! r (cons 'UV_DISCONNECT r)))
       r))
       
