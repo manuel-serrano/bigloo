@@ -5017,7 +5017,7 @@ public final class foreign
 	    notify_exception( v );
 	 } catch( bexception be ) {
 	    return debug_handler( be, tag );
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _e ) {
 	    System.err.println( "Unexpected Java Exception: " +
 				v.getClass().getName().getBytes() );
 	    v.printStackTrace( new stackwriter( System.err, true ) );
@@ -5093,7 +5093,7 @@ public final class foreign
    public static void internalerror(Throwable e) throws Throwable {
       try {
 	 notify_exception( e );
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
       } finally {
 	 synchronized( err_lock ) {
 	    final stackwriter sw = new stackwriter( System.err, true );
@@ -5121,8 +5121,8 @@ public final class foreign
       try {
 	 bgldynamic.abgldynamic.get().exitd_top =
 	    ((exit) bgldynamic.abgldynamic.get().exitd_top).prev;
-      } catch( Throwable _ ) {
-	 System.err.println( "\n\n\n******************* POP_EXIT: " + _ );
+      } catch( Throwable _t ) {
+	 System.err.println( "\n\n\n******************* POP_EXIT: " + _t );
       }
       return unspecified.unspecified;
    }
@@ -5308,12 +5308,12 @@ public final class foreign
 	    FileOutputStream stream = new FileOutputStream(new String(path));
 	    try {
 	       return JDK.truncate(stream, size);
-	    } catch( Exception _ ) {
+	    } catch( Exception _e ) {
 	       return false;
 	    } finally {
 	       stream.close();
 	    }
-	 } catch( Exception _ ) {
+	 } catch( Exception _e ) {
 	    return false;
 	 }
       }
@@ -5323,7 +5323,7 @@ public final class foreign
 	 if( port.out instanceof FileOutputStream ) {
 	    try {
 	       return JDK.truncate((FileOutputStream)port.out, size);
-	    } catch( Exception _ ) {
+	    } catch( Exception _e ) {
 	       return false;
 	    }
 	 } else {
@@ -5608,7 +5608,7 @@ public final class foreign
 
 	    try {
 	       process.waitFor();
-	    } catch  (InterruptedException _) {
+	    } catch  (InterruptedException _i) {
 	    }
 
 	    return (process.exitValue() == 0);
@@ -5628,7 +5628,7 @@ public final class foreign
 
 	    try {
 	       process.waitFor();
-	    } catch  (InterruptedException _) {
+	    } catch  (InterruptedException _i) {
 	    }
 
 	    return (process.exitValue() == 0);
@@ -5712,7 +5712,7 @@ public final class foreign
       try {
 	 return java.net.InetAddress.getByName( new String( hostname ) ).getHostAddress().getBytes();
       }
-      catch( Exception _ ) {
+      catch( Exception _e ) {
 	 bigloo.runtime.Llib.error.bgl_system_failure(
 	    BGL_IO_UNKNOWN_HOST_ERROR,
 	    "host".getBytes(),
@@ -5835,7 +5835,7 @@ public final class foreign
       {
 	 try {
 	    return s.getsockopt( se );
-	 } catch( IOException _ ) {
+	 } catch( IOException _i ) {
 	    return BFALSE;
 	 }
       }
@@ -5845,7 +5845,7 @@ public final class foreign
       {
 	 try {
 	    return s.setsockopt( se, flag );
-	 } catch( IOException _ ) {
+	 } catch( IOException _i ) {
 	    return BUNSPEC;
 	 }
       }
@@ -5917,7 +5917,7 @@ public final class foreign
       {
 	 try {
 	    return s.getsockopt( se );
-	 } catch( IOException _ ) {
+	 } catch( IOException _i ) {
 	    return BFALSE;
 	 }
       }
@@ -5927,7 +5927,7 @@ public final class foreign
       {
 	 try {
 	    return s.setsockopt( se, flag );
-	 } catch( IOException _ ) {
+	 } catch( IOException _i ) {
 	    return BUNSPEC;
 	 }
       }
@@ -6080,7 +6080,7 @@ public final class foreign
 	    return (input_pipe_port.pipe_name_p(s)
 		    ? (Object) new input_pipe_port(s, b)
 		    : (Object) new input_file_port(s, b));
-	 } catch(IOException _) {
+	 } catch(IOException _i) {
 	    return BFALSE;
 	 }
       }
@@ -6710,7 +6710,7 @@ public final class foreign
 	 } else {
 	    try {
 	       return new binary_port(new FileInputStream(new String(file)));
-	    } catch( Exception _ ) {
+	    } catch( Exception _e ) {
 	       return BFALSE;
 	    }
 	 }
@@ -7279,7 +7279,7 @@ public final class foreign
       try {
 	 InetAddress addr = java.net.InetAddress.getLocalHost();
 	 return addr.getHostName().getBytes();
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return "localhost".getBytes();
       }
    }
@@ -7288,7 +7288,7 @@ public final class foreign
       try {
 	 InetAddress addr = java.net.InetAddress.getByName( new String( ip ) );
 	 return addr.getHostName().getBytes();
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return "".getBytes();
       }
    }

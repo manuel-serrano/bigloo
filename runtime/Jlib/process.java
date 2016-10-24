@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Dec  8 07:55:39 2000                          */
-/*    Last change :  Fri Nov 11 15:48:01 2005 (serrano)                */
-/*    Copyright   :  2000-05 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:46:07 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The simplified JVM Bigloo process implementation.                */
 /*=====================================================================*/
@@ -276,7 +276,7 @@ public class process extends obj
       process.exitValue();
       return false;
     }
-    catch (IllegalThreadStateException _)
+    catch (IllegalThreadStateException _i)
     {
       return true;
     }
@@ -293,7 +293,7 @@ public class process extends obj
        else
 	  return new bint( r & 0xff );
     }
-    catch (IllegalThreadStateException _)
+    catch (IllegalThreadStateException _i)
     {
       return foreign.BFALSE;
     }
@@ -314,7 +314,7 @@ public class process extends obj
         while (!flushers.isEmpty())
           ((flusher)flushers.remove( 0 )).join();
     }
-    catch (InterruptedException _)
+    catch (InterruptedException _i)
     {
     }
   }

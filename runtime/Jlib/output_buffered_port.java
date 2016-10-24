@@ -80,7 +80,7 @@ public class output_buffered_port extends output_port {
 	 invoke_flush_hook( bigloo.foreign.BINT( count ) );
 	 try {
 	    out.write( buffer, 0, count );
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _t ) {
 	    ;
 	 }
 	 count = 0;
@@ -88,7 +88,7 @@ public class output_buffered_port extends output_port {
 
       try {
 	 super.flush();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 return bbool.faux;
       }
       

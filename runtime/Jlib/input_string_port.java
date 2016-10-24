@@ -18,7 +18,7 @@ public class input_string_port extends input_port {
       eof = true;
    }
 
-   public input_string_port( final byte[] s, int start, int end, boolean _ ) {
+   public input_string_port( final byte[] s, int start, int end, boolean _b ) {
       super( "[string]", s );
       int size = end - start;
       

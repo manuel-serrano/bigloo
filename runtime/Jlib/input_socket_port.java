@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Fri Oct  3 18:12:52 2014 (serrano)                */
-/*    Copyright   :  2000-14 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:45:28 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -27,7 +27,7 @@ public class input_socket_port extends input_port {
       
       try { 
 	 is = socket.getInputStream();
-      } catch( IOException _ ) {
+      } catch( IOException _i ) {
 	 is = null;
       }
 
@@ -42,7 +42,7 @@ public class input_socket_port extends input_port {
       buffer = null;
       try {
 	 in.close();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 ;
       }
       super.close();
@@ -51,7 +51,7 @@ public class input_socket_port extends input_port {
    public boolean rgc_charready() {
       try {
 	 return ( (forward+1) < bufpos) || (0 < in.available());
-      } catch (final Exception _) {
+      } catch (final Exception _e) {
 	 return false;
       }
    }
@@ -125,7 +125,7 @@ public class input_socket_port extends input_port {
       try {
 	 socket.setSoTimeout( to );
 	 return true;
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return false;
       }
    }

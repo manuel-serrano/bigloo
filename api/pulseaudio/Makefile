@@ -64,7 +64,6 @@ pop:
 #*---------------------------------------------------------------------*/
 clean:
 	(cd src && $(MAKE) clean)
-	(cd examples && $(MAKE) clean)
 
 distclean: clean
 	(cd src && $(MAKE) distclean)

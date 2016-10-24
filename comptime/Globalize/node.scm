@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Sun Nov 24 18:19:33 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 24 11:38:00 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -41,8 +41,8 @@
    (trace (globalize 5) "node-globalize!=" (shape node) #\Newline)
    ;; for each celled variable, we declare a new local
    ;; variable
-   (let* ((fun      (variable-value integrator))
-	  (celled   (celled-bindings (sfun-args fun)))
+   (let* ((fun (variable-value integrator))
+	  (celled (celled-bindings (sfun-args fun)))
 	  (what/by* (append celled what/by*)))
       ;; we set alpha-fast slot 
       (for-each (lambda (w-b)
@@ -67,20 +67,22 @@
 	 ((not (celled? (car formals)))
 	  (loop celled (cdr formals)))
 	 (else
-	  (let* ((vtype (local-type (car formals)))
-		 (ntype (cond
-			   ((eq? vtype *_*) *obj*)
-			   ((bigloo-type? vtype) vtype)
-			   (else (get-bigloo-type vtype))))
-		 (var (make-local-svar (local-id (car formals)) ntype))
-		 (o-n (cons (car formals) var)))
-	     (local-access-set! var 'cell-globalize)
-	     (local-user?-set! var (local-user? (car formals)))
-	     (widen!::svar/Ginfo (local-value var)
-		(celled? #t)
-		(kaptured? #t))
-	     (loop (cons o-n celled) (cdr formals)))))))
+	  (let* ((ovar (car formals))
+		 (nvar (cell-variable ovar)))
+	     (loop (cons (cons ovar nvar) celled) (cdr formals)))))))
 
+;*---------------------------------------------------------------------*/
+;*    cell-variable ...                                                */
+;*---------------------------------------------------------------------*/
+(define (cell-variable::local local::local)
+   (let ((var (make-local-svar (local-id local) *cell*)))
+      (local-access-set! var 'cell-globalize)
+      (local-user?-set! var (local-user? local))
+      (widen!::svar/Ginfo (local-value var)
+	 (celled? #t)
+	 (kaptured? #t))
+      var))
+   
 ;*---------------------------------------------------------------------*/
 ;*    cell-formals ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -158,13 +160,18 @@
 	       ((global? variable)
 		node)
 	       ((celled? variable)
-		(local-access-set! variable 'cell-globalize)
-		(node-type-set! node (get-bigloo-defined-type vtype))
-		(instantiate::box-ref
-		   (loc (node-loc node))
-		   (vtype (get-bigloo-defined-type vtype))
-		   (type (get-bigloo-defined-type (node-type node)))
-		   (var node)))
+		;; (local-access-set! variable 'cell-globalize)
+		(let ((vtype (get-bigloo-defined-type vtype))
+		      (ntype (get-bigloo-defined-type (node-type node))))
+		   ;; (node-type-set! node (get-bigloo-defined-type vtype))
+		   (node-type-set! node *cell*)
+		   (instantiate::box-ref
+		      (loc (node-loc node))
+		      ;; (vtype (get-bigloo-defined-type vtype))
+		      ;; (type (get-bigloo-defined-type (node-type node)))
+		      (vtype vtype)
+		      (type ntype)
+		      (var node))))
 	       (else
 		node))))))
 
@@ -416,13 +423,20 @@
 		   (let ((var (car binding))
 			 (val (cdr binding)))
 		      (set-cdr! binding (glo! val integrator))
-		      (if (celled? var)
-			  (begin
-			     (local-type-set! var *obj*)
-			     (set-cdr! binding (a-make-cell (cdr binding)
-							    var))))))
-		bindings)
+		      (when (celled? var)
+			 (let ((nvar (cell-variable var)))
+			    (local-fast-alpha-set! var nvar)
+			    (set-cdr! binding
+			       (a-make-cell (cdr binding) var))))))
+	 bindings)
       (set! body (glo! body integrator))
+      (for-each (lambda (binding)
+		   (let ((var (car binding)))
+		      (when (celled? var)
+			 (let ((nvar (cell-variable var)))
+			    (set-car! binding (variable-fast-alpha var))
+			    (local-fast-alpha-set! var #unspecified)))))
+	 bindings)
       node))
 
 ;*---------------------------------------------------------------------*/

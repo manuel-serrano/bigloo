@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Dec  9 11:49:41 2000                          */
-/*    Last change :  Mon Sep  8 17:44:14 2014 (serrano)                */
-/*    Copyright   :  2000-14 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:44:07 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo JVM input pipe ports.                                     */
 /*=====================================================================*/
@@ -38,7 +38,7 @@ public class input_pipe_port extends input_port {
 	 final Process process = Runtime.getRuntime().exec( scmd );
 
 	 in = process.getInputStream();
-      } catch (final IOException _) {
+      } catch (final IOException _i) {
 	 final String scmd = new String( cmd, 2, cmd.length-2 );
 
 	 foreign.fail("open-input-file","Can't execute command",scmd.getBytes());
@@ -58,7 +58,7 @@ public class input_pipe_port extends input_port {
 	 final Process process = Runtime.getRuntime().exec( scmd );
 
 	 in= process.getInputStream();
-      } catch (final IOException _) {
+      } catch (final IOException _i) {
 	 foreign.fail("open-input-file", "Can't execute command", cmd.getBytes());
       }
    }
@@ -70,7 +70,7 @@ public class input_pipe_port extends input_port {
       other_eof = true;
       try {
 	 in.close();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 ;
       }
    }
@@ -78,7 +78,7 @@ public class input_pipe_port extends input_port {
    public boolean rgc_charready() {
       try {
 	 return (((forward+1) < bufpos) || (0 < in.available()));
-      } catch (Exception _) {
+      } catch (Exception _e) {
 	 return false;
       }
    }

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Thu Sep  3 08:04:47 2015 (serrano)                */
-/*    Copyright   :  2000-15 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:44:56 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -29,7 +29,7 @@ public class server_socket extends socket {
       try {
          String n = (name == bbool.faux) ? null : new String((byte[])name);
          server_socket = JDK.makeServerSocket(n, port);
-      } catch (final IOException _) {
+      } catch (final IOException _i) {
 	 socket_error( "make-server-socket",
 		       "cannot create socket",
 		       new bint( port ) );
@@ -94,10 +94,10 @@ public class server_socket extends socket {
 		     client_socket.shutdownOutput();
 		     break;
 	       }
-	    } catch (Exception _) {
+	    } catch (Exception _e) {
 	       return 2;
 	    }
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 return 1;
       }
 
@@ -107,7 +107,7 @@ public class server_socket extends socket {
    public Object close() {
       try {
 	 server_socket.close();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 ;
       } finally {
 	 down = true;

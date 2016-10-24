@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Tue Aug  9 10:39:45 2016 (serrano)                */
+;*    Last change :  Mon Oct 24 13:26:28 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -605,7 +605,8 @@
 (define-method (type-node! node::box-ref)
    (with-access::box-ref node (var type)
       (set! var (type-node! var))
-      (set! type (get-type var))
+      ;; MS: 24oct2016
+      ;;(set! type (get-type var))
       node))
 
 ;*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 11:53:13 2000                          */
-/*    Last change :  Mon Sep  8 17:42:32 2014 (serrano)                */
-/*    Copyright   :  2000-14 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:45:50 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JVM Socket input ports implementation.                           */
 /*=====================================================================*/
@@ -102,7 +102,7 @@ public class input_datagram_port extends input_port {
       try {
 	 socket.socket.setSoTimeout( to );
 	 return true;
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return false;
       }
    }

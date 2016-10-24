@@ -23,7 +23,7 @@ public class input_resource_port extends input_port {
 	 int sz = in.available();
 	 in.close();
 	 return sz;
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return -1;
       }
    }
@@ -73,7 +73,7 @@ public class input_resource_port extends input_port {
 	 } else {
 	    return bigloo.foreign.BNIL;
 	 }
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return bigloo.foreign.BNIL;
       }
    }
@@ -90,7 +90,7 @@ public class input_resource_port extends input_port {
       other_eof = true;
       try {
 	 in.close();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 ;
       }
       super.close();

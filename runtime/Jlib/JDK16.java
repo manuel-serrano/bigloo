@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:51:26 2008                          */
-/*    Last change :  Sun May 18 09:36:39 2014 (serrano)                */
-/*    Copyright   :  2008-14 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:41:46 2016 (serrano)                */
+/*    Copyright   :  2008-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK 1.6 specifics                                                */
 /*=====================================================================*/
@@ -77,12 +77,12 @@ public class JDK16 extends JDK {
 	 try {
 	    outChan.truncate( size );
 	    return true;
-	 } catch( Exception _ ) {
+	 } catch( Exception _e ) {
 	    return false;
 	 } finally {
 	    outChan.close();
 	 }
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return false;
       }
    }

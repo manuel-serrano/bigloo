@@ -34,13 +34,6 @@
 (defvar compilation-font-lock-keywords '())
 (defvar compilation-font-lock-keywords-tmp '())
 
-;*---------------------------------------------------------------------*/
-;*    compilation-process-setup-function ...                           */
-;*---------------------------------------------------------------------*/
-(setq compilation-process-setup-function
-  '(lambda ()
-     (set-window-point outwin (point-max))
-     (sit-for 0)))
 
 ;*---------------------------------------------------------------------*/
 ;*    ude-compile-init ...                                             */

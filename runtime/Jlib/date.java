@@ -42,7 +42,7 @@ public class date extends obj {
       timezone = -tmz.getRawOffset() / 1000;
    }
    
-   public date( final long nseconds, boolean _ ) {
+   public date( final long nseconds, boolean _b ) {
       calendar = new GregorianCalendar();
       final Date d = new Date();
 	 

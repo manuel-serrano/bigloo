@@ -31,7 +31,7 @@ public class os
       
       try {
 	 OS_TMP = System.getProperty( "java.io.tmpdir", "C:\\Temp" ).getBytes();
-      } catch( SecurityException _ ) {
+      } catch( SecurityException _s ) {
 	 OS_TMP = "".getBytes();
       }
     }
@@ -46,7 +46,7 @@ public class os
       
       try {
 	 OS_TMP = System.getProperty( "java.io.tmpdir", "/tmp" ).getBytes();
-      } catch( SecurityException _ ) {
+      } catch( SecurityException _s ) {
 	 OS_TMP = "".getBytes();
       }
     }

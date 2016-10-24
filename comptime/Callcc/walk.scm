@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Sun Nov 24 18:21:21 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 24 10:22:29 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -70,7 +70,7 @@
 			   ((eq? vtype *_*) *obj*)
 			   ((bigloo-type? vtype) vtype)
 			   (else (get-bigloo-type vtype))))
-		 (var (make-local-svar (local-id (car formals)) ntype))
+		 (var (make-local-svar (local-id (car formals)) *cell*))
 		 (o-n (cons (car formals) var)))
 	     (widen!::local/cell var)
 	     (loop (cons o-n celled) (cdr formals)))))))
@@ -88,12 +88,13 @@
 	     (type (node-type body))
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
-				     (a-make-cell (instantiate::var
-						     (type (variable-type (car o-n)))
-						     (loc loc)
-						     (variable (car o-n)))
-						  (car o-n))))
-			    celled))))))
+				  (a-make-cell
+				     (instantiate::var
+					(type (variable-type (car o-n)))
+					(loc loc)
+					(variable (car o-n)))
+				     (car o-n))))
+			  celled))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    a-make-cell ...                                                  */
@@ -156,12 +157,13 @@
 		((not (celled? var))
 		 node)
 		(else
-		 (node-type-set! node (get-bigloo-defined-type vtype))
-		 (instantiate::box-ref
-		    (type *obj*)
-		    (vtype (get-bigloo-defined-type vtype))
-		    (loc (node-loc node))
-		    (var node))))))))
+		 (let ((vtype (get-bigloo-defined-type vtype)))
+		    (node-type-set! node *cell*)
+		    (instantiate::box-ref
+		       (type vtype)
+		       (vtype vtype)
+		       (loc (node-loc node))
+		       (var node)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    callcc! ::sequence ...                                           */
@@ -307,9 +309,9 @@
 		      (set-cdr! binding (callcc! val))
 		      (if (celled? var)
 			  (begin
-			     (local-type-set! var *obj*)
 			     (set-cdr! binding
-				       (a-make-cell (cdr binding) var))))))
+				(a-make-cell (cdr binding) var))
+			     (local-type-set! var *cell*)))))
 		bindings)
       node))
 

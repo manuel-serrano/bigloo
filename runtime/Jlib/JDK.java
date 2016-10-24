@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Mar 11 08:50:33 2008                          */
-/*    Last change :  Tue Dec  8 08:02:57 2015 (serrano)                */
-/*    Copyright   :  2008-15 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:41:19 2016 (serrano)                */
+/*    Copyright   :  2008-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java auto-configuration                                          */
 /*=====================================================================*/
@@ -107,7 +107,7 @@ public abstract class JDK {
       System.err.print( prompt );
       try {
 	 return in.readLine().getBytes();
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return "".getBytes();
       }
    }

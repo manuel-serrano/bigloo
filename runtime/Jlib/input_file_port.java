@@ -19,7 +19,7 @@ public class input_file_port extends input_port
     other_eof = true;
     try {
        in.close();
-    } catch( Throwable _ ) {
+    } catch( Throwable _t ) {
        ;
     }
     super.close();
@@ -34,7 +34,7 @@ public class input_file_port extends input_port
     {
       return ((forward+1) < bufpos) || (in.getFilePointer() < in.length());
     }
-    catch (final Exception _)
+    catch (final Exception _e)
     {
       return false;
     }

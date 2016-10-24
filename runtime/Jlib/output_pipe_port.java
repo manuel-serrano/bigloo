@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 30 14:14:16 2009                          */
-/*    Last change :  Wed Feb 17 16:08:44 2010 (serrano)                */
-/*    Copyright   :  2009-10 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:43:55 2016 (serrano)                */
+/*    Copyright   :  2009-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java output pipe ports                                           */
 /*=====================================================================*/
@@ -119,7 +119,7 @@ public class output_pipe_port extends output_buffered_port {
 	       }
 	    } );
 	 thread.start();
-      } catch (final IOException _) {
+      } catch (final IOException _i) {
 	 final String scmd = new String( cmd, 2, cmd.length-2 );
 
 	 foreign.fail( "open-output-file",
@@ -134,7 +134,7 @@ public class output_pipe_port extends output_buffered_port {
 	 out.close();
 	 process.waitFor();
 	 return bbool.vrai;
-      } catch( Exception _ ) {
+      } catch( Exception _e ) {
 	 return bbool.faux;
      }
    }

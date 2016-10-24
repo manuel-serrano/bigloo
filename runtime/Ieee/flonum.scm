@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Sat Mar 12 13:53:15 2016 (serrano)                */
+;*    Last change :  Sun Oct 23 11:40:00 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -61,7 +61,7 @@
 	    (macro c-absfl::double (::double) "fabs")
 	    (macro c-maxfl::double (::double ::double) "BGL_FL_MAX2")
 	    (macro c-minfl::double (::double ::double) "BGL_FL_MIN2")
-	    (macro c-signbit::long (::double) "BGL_SIGNBIT")
+	    (macro $signbit::long (::double) "BGL_SIGNBIT")
 	    (macro c-roundfl::double (::double) "BGL_FL_ROUND")
 	    (macro c-isfinite::bool (::double) "BGL_IS_FINITE")
 	    (macro c-isinf::bool (::double) "BGL_IS_INF")
@@ -141,7 +141,7 @@
 		  "max")
 	       (method static c-minfl::double (::double ::double)
 		  "min")
-	       (method static c-signbit::long (::double)
+	       (method static $signbit::long (::double)
 		  "BGL_SIGNBIT")
 	       (method static c-roundfl::double (::double)
 		  "round")
@@ -253,7 +253,7 @@
 	    (c-absfl side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-minfl side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-maxfl side-effect-free no-cfa-top nesting args-safe fail-safe)
-	    (c-signbit side-effect-free no-cfa-top nesting args-safe fail-safe)
+	    ($signbit side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-roundfl side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-isnan no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c-isinf no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
@@ -556,7 +556,7 @@
 ;*    signbitfl ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define-inline (signbitfl r)
-   (c-signbit r))
+   ($signbit r))
 
 ;*---------------------------------------------------------------------*/
 ;*    integerfl? ...                                                   */

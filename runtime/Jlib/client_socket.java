@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Tue Jan 20 19:38:49 2015 (serrano)                */
-/*    Copyright   :  2000-15 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:44:37 2016 (serrano)                */
+/*    Copyright   :  2000-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Client Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -57,7 +57,7 @@ public class client_socket extends socket {
       try {
 	 String name = socket.toString();
 	 set_socket_io_ports( socket, inbuf, outbuf, name.getBytes() );
-      } catch (final IOException _) {
+      } catch (final IOException _i) {
 	 socket_error( "make-client-socket",
 		       "cannot create socket",
 		       unspecified.unspecified );
@@ -93,7 +93,7 @@ public class client_socket extends socket {
 	       break;
 	    }
 	    down = true;
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _t ) {
 	    return 1;
 	 }
       }
@@ -103,7 +103,7 @@ public class client_socket extends socket {
    public Object close() {
       try {
 	 socket.close();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 ;
       } finally {
 	 super.close();

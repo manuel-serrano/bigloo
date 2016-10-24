@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Fri Jul  8 08:52:28 2016 (serrano)                */
+;*    Last change :  Mon Oct 24 12:42:39 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -61,7 +61,11 @@
 			       (not (sfun? (variable-value variable)))
 			       (not (eq? type (variable-type variable))))
 			  (string->symbol (format "~a[::~a]" vshape (shape type)))
-			  vshape)))
+			  vshape))
+	     (tvshape (if *access-shape?*
+			  (string->symbol
+			     (format "~a{~a}" tvshape (variable-access variable)))
+			  tvshape)))
 	 (location-shape (node-loc node) tvshape))))
 		     
 ;*---------------------------------------------------------------------*/

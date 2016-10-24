@@ -53,7 +53,7 @@ public class output_port extends obj
 	 try {
 	    isclosed = true;
 	    out.close();
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _t ) {
 	    ;
 	 }
 	 if( chook instanceof procedure )
@@ -104,7 +104,7 @@ public class output_port extends obj
 	       }
 	       
 	    }
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _t ) {
 	    ;
 	 }
       }

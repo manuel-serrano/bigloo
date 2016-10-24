@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Sat Feb 15 14:10:16 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Oct 24 13:31:13 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -65,20 +65,21 @@
 	 ((not (integrate-celled? (car formals)))
 	  (loop celled (cdr formals)))
 	 (else
-	  (let* ((vtype (local-type (car formals)))
-		 (ntype (cond
-			   ((eq? vtype *_*) *obj*)
-			   ((bigloo-type? vtype) vtype)
-			   ((eq? (local-access (car formals)) 'read) vtype)
-			   (else (get-bigloo-type vtype))))
-		 (var (make-local-svar (local-id (car formals)) ntype))
-		 (o-n (cons (car formals) var)))
-	     (local-access-set! var 'cell-integrate)
-	     (widen!::svar/Iinfo (local-value var)
-		(celled? #t)
-		(kaptured? #t))
-	     (loop (cons o-n celled) (cdr formals)))))))
+	  (let* ((ovar (car formals))
+		 (nvar (cell-variable ovar)))
+	     (loop (cons (cons ovar nvar) celled) (cdr formals)))))))
 
+;*---------------------------------------------------------------------*/
+;*    cell-variable ...                                                */
+;*---------------------------------------------------------------------*/
+(define (cell-variable::local local::local)
+   (let ((var (make-local-svar (local-id local) *cell*)))
+      (local-access-set! var 'cell-integrate)
+      (widen!::svar/Iinfo (local-value var)
+	 (celled? #t)
+	 (kaptured? #t))
+      var))
+   
 ;*---------------------------------------------------------------------*/
 ;*    cell-formals ...                                                 */
 ;*---------------------------------------------------------------------*/
@@ -92,12 +93,12 @@
 	     (type (node-type body))
 	     (bindings (map (lambda (o-n)
 			       (cons (cdr o-n)
-				     (a-make-cell (instantiate::var
-						     (type (variable-type (car o-n)))
-						     (loc loc)
-						     (variable (car o-n)))
-						  (car o-n))))
-			    celled))))))
+				  (a-make-cell (instantiate::var
+						  (type (variable-type (car o-n)))
+						  (loc loc)
+						  (variable (car o-n)))
+				     (car o-n))))
+			  celled))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    a-make-cell ...                                                  */
@@ -166,13 +167,16 @@
 	       ((global? variable)
 		node)
 	       ((integrate-celled? variable)
-		(local-access-set! variable 'cell-integrate)
-		(node-type-set! node (get-bigloo-type vtype))
-		(instantiate::box-ref
-		   (loc (node-loc node))
-		   (type (get-bigloo-type (node-type node)))
-		   (vtype (get-bigloo-type vtype))
-		   (var node)))
+		;(local-access-set! variable 'cell-integrate)
+		(let ((vtype (get-bigloo-type vtype)))
+		   ;; (node-type-set! node (get-bigloo-type vtype))
+		   (node-type-set! node *cell*)
+		   (instantiate::box-ref
+		      (loc (node-loc node))
+		      ;;(type (get-bigloo-type (node-type node)))
+		      (type vtype)
+		      (vtype vtype)
+		      (var node))))
 	       (else
 		node))))))
 
@@ -362,13 +366,20 @@
 		   (let ((var (car binding))
 			 (val (cdr binding)))
 		      (set-cdr! binding (glo! val integrator))
-		      (if (integrate-celled? var)
-			  (begin
-			     (local-type-set! var *obj*)
-			     (set-cdr! binding (a-make-cell (cdr binding)
-							    var))))))
-		bindings)
+		      (when (integrate-celled? var)
+			 (let ((nvar (cell-variable var)))
+			    (local-fast-alpha-set! var nvar)
+			    (set-cdr! binding
+			       (a-make-cell (cdr binding) var))))))
+	 bindings)
       (set! body (glo! body integrator))
+      (for-each (lambda (binding)
+		   (let ((var (car binding)))
+		      (when (integrate-celled? var)
+			 (let ((nvar (cell-variable var)))
+			    (set-car! binding (variable-fast-alpha var))
+			    (local-fast-alpha-set! var #unspecified)))))
+	 bindings)
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -402,6 +413,11 @@
 (define-method (glo! node::box-ref integrator)
    (trace (integrate 3) "box-ref: " (shape node) #\Newline)
    (with-access::box-ref node (var)
+      (when (integrate-celled? (var-variable var))
+	 (let ((v (var-variable var)))
+	    (tprint "box-ref=" (shape node))
+	    (tprint "access=" (variable-access v))
+	    (error "integration" "box-ref" (shape node))))
       (set! var (glo! var integrator))
       node))
 

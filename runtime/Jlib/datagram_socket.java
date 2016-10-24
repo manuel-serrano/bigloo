@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Apr 30 06:45:59 2011                          */
-/*    Last change :  Tue Nov 18 08:59:46 2014 (serrano)                */
-/*    Copyright   :  2011-14 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 13:45:40 2016 (serrano)                */
+/*    Copyright   :  2011-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Datagram socket implementation of the JVM back-end.          */
 /*=====================================================================*/
@@ -57,7 +57,7 @@ public abstract class datagram_socket extends obj {
    public Object close() {
       try {
 	 socket.close();
-      } catch( Throwable _ ) {
+      } catch( Throwable _t ) {
 	 ;
       }
 

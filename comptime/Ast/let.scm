@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Oct 17 16:19:30 2016 (serrano)                */
+;*    Last change :  Mon Oct 24 13:03:12 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -519,28 +519,28 @@
 ;*    -------------------------------------------------------------    */
 ;*    Decompose a letrec* in a let* and a labels, i.e.,                */
 ;*      (LETREC* ((f1 (lambda (x) ...))                                */
-;*    	    (f2 (lambda (y) ...))                                      */
-;*    	    (v1 i1)                                                    */
-;*    	    (v2 i2)                                                    */
-;*    	    (f3 (lambda (y) ...))                                      */
-;*    	    (v3 i3)                                                    */
-;*    	    ...)                                                       */
+;*    	          (f2 (lambda (y) ...))                                */
+;*    	          (v1 i1)                                              */
+;*    	          (v2 i2)                                              */
+;*    	          (f3 (lambda (y) ...))                                */
+;*    	          (v3 i3)                                              */
+;*    	          ...)                                                 */
 ;*         body)                                                       */
 ;*                                                                     */
 ;*      ==>                                                            */
 ;*                                                                     */
 ;*      (let* ((v1 i1)                                                 */
-;*    	 (v2 i2)                                                       */
-;*    	 (v3 i1))                                                      */
+;*    	       (v2 i2)                                                 */
+;*    	       (v3 i1))                                                */
 ;*         (letrec ((f1 (lambda (x) ...))                              */
-;*    	      (f2 (lambda (x) ...))                                    */
-;*    	      (f3 (lambda (x) ...)))                                   */
+;*    	            (f2 (lambda (x) ...))                              */
+;*    	            (f3 (lambda (x) ...)))                             */
 ;*    	body))                                                         */
 ;*---------------------------------------------------------------------*/
 (define (letrec*->node sexp stack loc site)
    
    (define (free-vars sexp v vars)
-      ;; compute an over approximation of all the
+      ;; compute an over-approximation of all the
       ;; free vars appearing in sexp
       (let loop ((sexp sexp)
 		 (res '()))
@@ -806,8 +806,8 @@
 			      stack loc site)))))))))
    
    (define (decompose-letrec* bindings body)
-      ;; for each bindings, extract the variable name and the set
-      ;; of scope free variables used in the expression
+      ;; for each binding, extract the variable name and the set
+      ;; of scoped free variables used in the expression
       (let* ((vars (map (lambda (b) (fast-id-of-id (car b) loc)) bindings))
 	     (ebindings (map (lambda (b v)
 				(list b v (free-vars (cadr b) v vars)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Sat Feb 13 10:32:29 2016 (serrano)                */
+;*    Last change :  Mon Oct 24 11:37:36 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -489,7 +489,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::make-box caller to safe)
    (with-access::make-box node (value vtype)
-      (set! value (coerce! value caller vtype safe))
+      (let ((vt (coerce! value caller vtype safe)))
+	 (set! value (coerce! vt caller *obj* safe)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -504,6 +505,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::box-set! caller to safe)
    (with-access::box-set! node (var value vtype type)
-      (set! value (coerce! value caller vtype safe))
+      (let ((vt (coerce! value caller vtype safe)))
+	 (set! value (coerce! vt caller *obj* safe)))
       (convert! node type to safe)))
 

@@ -17,7 +17,7 @@ public class input_console_port extends input_port
     {
       return ( (forward+1) < bufpos) || (0 < in.available());
     }
-    catch (final Exception _)
+    catch (final Exception _e)
     {
       return false;
     }

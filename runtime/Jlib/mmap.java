@@ -70,7 +70,7 @@ public class mmap extends obj {
 	 try {
 	    fc.close();
 	    raf.close();
-	 } catch( IOException _ ) {
+	 } catch( IOException _i ) {
 	    return bbool.faux;
 	 }
 
@@ -80,7 +80,7 @@ public class mmap extends obj {
       if( in != null ) {
 	 try {
 	    in.close();
-	 } catch( IOException _ ) {
+	 } catch( IOException _i ) {
 	    return bbool.faux;
 	 }
 
@@ -111,7 +111,7 @@ public class mmap extends obj {
 	    foreign.fail( "mmap-ref", "write only mmap", this );
 	    return 0;
 	 }
-      } catch( IOException _ ) {
+      } catch( IOException _i ) {
 	 return 0;
       }
    }

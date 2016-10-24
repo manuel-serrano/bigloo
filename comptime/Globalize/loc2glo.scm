@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Tue Aug  9 11:11:01 2016 (serrano)                */
+;*    Last change :  Mon Oct 24 12:52:22 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
@@ -200,7 +200,10 @@
 			       (widen!::local/Ginfo new)
 			       (widen!::svar/Ginfo (local-value new)
 				  (kaptured? #t))
-			       (local-access-set! new (local-access old))
+			       ;; MS: 24oct2016
+			       (when (eq? (local-access old) 'write)
+				  (local-access-set! new 'cell-globalize))
+			       ;;(local-access-set! new (local-access old))
 			       new))
 			 kaptured))
 	  (old-fun  (local-value local))

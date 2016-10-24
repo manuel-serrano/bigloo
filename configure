@@ -3466,7 +3466,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # Directories
-  echo "DESTDIR=" >> $makefile_cfg
+  echo "DESTDIR?=" >> $makefile_cfg
   echo "BINDIR=$bindir" >> $makefile_cfg
   echo 'LIBDIR=$(DESTDIR)'"$libdir" >> $makefile_cfg
   echo "FILDIR=$fildir" >> $makefile_cfg
@@ -3474,7 +3474,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo 'SYSZIPDIR=$(DESTDIR)'"$syszipdir" >> $makefile_cfg
   echo 'DLLDIR=$(DESTDIR)'"$dlldir" >> $makefile_cfg
   echo 'SYSDLLDIR=$(DESTDIR)'"$sysdlldir" >> $makefile_cfg
-  echo 'RPATH=$(DESTDIR)'"$libdir/$fildir" >> $makefile_cfg
+  echo 'RPATH=$(DESTDIR)'"$libdir/$fildir:$libdir/$fildir" >> $makefile_cfg
   echo 'LIBPATH=$(DESTDIR)'"$libdir/$fildir" >> $makefile_cfg
   echo 'MANDIR=$(DESTDIR)'"$mandir" >> $makefile_cfg
   echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg

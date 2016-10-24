@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Tue Mar  1 13:26:17 2016 (serrano)                */
+;*    Last change :  Mon Oct 24 09:47:58 2016 (serrano)                */
 ;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -270,8 +270,8 @@
 (define-method (check-node-type node::box-ref)
    (with-access::box-ref node (type var)
       (check-node-type var)
-      (unless (eqtype? type (node-type var))
-	 (err node type (node-type var)))))
+      (unless (eqtype? *cell* (node-type var))
+	 (err node type (variable-type (var-variable var))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    check-node-type ::box-set! ...                                   */
