@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Apr 17 17:26:42 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 14:11:20 2016 (serrano)                */
+/*    Copyright   :  2002-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java utilities for native Bigloo fair threads implementation.    */
 /*=====================================================================*/
@@ -78,7 +78,7 @@ public class bglpthread extends Thread {
    }
    
    // The thread entry-point
-   public void start( Object t, boolean _ ) {
+   public void start( Object t, boolean _b ) {
       thread = t;
       env = new bgldynamic( bgldynamic.abgldynamic.get() );
       
@@ -92,7 +92,7 @@ public class bglpthread extends Thread {
       } catch( Throwable e ) {
 	 try {
 	    foreign.internalerror( e );
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _t ) {
 	    System.exit( 1 );
 	 }
       } finally {
@@ -138,7 +138,7 @@ public class bglpthread extends Thread {
       } catch( Throwable e ) {
 	 try {
 	    foreign.internalerror( e );
-	 } catch( Throwable _ ) {
+	 } catch( Throwable _t ) {
 	    System.exit( 1 );
 	 }
       }

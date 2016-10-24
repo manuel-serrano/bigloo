@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Mon Jun 24 15:28:09 2013 (serrano)                */
-/*    Copyright   :  2004-13 Manuel Serrano                            */
+/*    Last change :  Mon Oct 24 14:10:02 2016 (serrano)                */
+/*    Copyright   :  2004-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -33,8 +33,14 @@
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL void bgl_mutex_init_register( obj_t (*)(obj_t) );
+BGL_RUNTIME_DECL void bgl_spinlock_init_register( obj_t (*)(obj_t) );
 BGL_RUNTIME_DECL obj_t bgl_create_mutex( obj_t );
 BGL_RUNTIME_DECL void bgl_sleep( long );
+
+#if( defined( BGL_INLINE_MUTEX ) )
+BGL_RUNTIME_DECL void bgl_create_mutex_register( obj_t (*)(obj_t) );
+BGL_RUNTIME_DECL void bgl_create_spinlock_register( obj_t (*)(obj_t) );
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Mutex symbols                                                    */
