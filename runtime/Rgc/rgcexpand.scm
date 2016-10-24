@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Thu Oct  1 21:19:05 2015 (serrano)                */
+;*    Last change :  Mon Oct 24 20:38:30 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -140,9 +140,34 @@
 (define (make-regular-parser args states actions else-num submatch? defs)
    `(let ((the-rgc-context #unspecified))
        (lambda (iport ,@args)
+	  ;; submatches (to be removed because wrong)
+	  ,@(if submatch?
+		(list
+		   '(define rgc-submatches (quote ()))
+		   '(define (rgc-submatch-start2! match::int submatch::int forward)
+		     (set! rgc-submatches
+			(cons (vector match
+				 submatch
+				 (rgc-buffer-position iport forward)
+				 (quote start))
+			   rgc-submatches)))
+		   '(define (rgc-submatch-start*2! match::int submatch::int forward)
+		     (set! rgc-submatches
+			(cons (vector match
+				 submatch
+				 (rgc-buffer-position iport forward)
+				 (quote start*))
+			   rgc-submatches)))
+		   '(define (rgc-submatch-stop2! match::int submatch::int forward)
+		     (set! rgc-submatches
+			(cons (vector match
+				 submatch
+				 (rgc-buffer-position iport forward)
+				 (quote stop))
+			   rgc-submatches))))
+		'())	  ;; rgc library functions
 	  ;; compiled states
 	  ,@states
-	  ;; rgc library functions
 	  ;; @deffn the-port@
 	  (define (the-port::input-port)
 	     iport)
@@ -259,31 +284,6 @@
 	     (if (pair? context)
 		 (set! the-rgc-context (car context))
 		 (set! the-rgc-context #unspecified)))
-	  ,@(if submatch?
-		(list
-		   '(define rgc-submatches (quote ()))
-		   '(define (rgc-submatch-start2! match::int submatch::int forward)
-		     (set! rgc-submatches
-			(cons (vector match
-				 submatch
-				 (rgc-buffer-position iport forward)
-				 (quote start))
-			   rgc-submatches)))
-		   '(define (rgc-submatch-start*2! match::int submatch::int forward)
-		     (set! rgc-submatches
-			(cons (vector match
-				 submatch
-				 (rgc-buffer-position iport forward)
-				 (quote start*))
-			   rgc-submatches)))
-		   '(define (rgc-submatch-stop2! match::int submatch::int forward)
-		     (set! rgc-submatches
-			(cons (vector match
-				 submatch
-				 (rgc-buffer-position iport forward)
-				 (quote stop))
-			   rgc-submatches))))
-		'())
 	  ;; user definitions
 	  ,@defs
 	  ;; main function
