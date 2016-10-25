@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Wed Nov  4 11:49:47 2015 (serrano)                */
-;*    Copyright   :  2014-15 Manuel Serrano                            */
+;*    Last change :  Tue Oct 25 18:53:48 2016 (serrano)                */
+;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
 ;*=====================================================================*/
@@ -280,7 +280,7 @@
    (when reviver (check-procedure reviver 3 :reviver))
 
    (let ((val (parse-text #f)))
-      (unless (eq? expr *eot*)
+      (unless expr
 	 (let ((token (parse-text 'EOS)))
 	    (unless (eq? token *eot*)
 	       (if (pair? token)
