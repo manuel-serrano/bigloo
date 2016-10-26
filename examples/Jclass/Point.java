@@ -4,7 +4,7 @@ import bigloo.*;
 public class Point implements Intf {
     public int x;
     public int y;
-    private static int point_num = 0;
+    public static int point_num = 0;
     
     public Point( int _x, int _y ) {
 	point_num++;

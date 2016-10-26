@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Oct 26 08:15:24 2016 (serrano)                */
+;*    Last change :  Wed Oct 26 16:07:34 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -485,14 +485,26 @@
       (convert! node type to safe)))
 
 ;*---------------------------------------------------------------------*/
+;*    cast-obj ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (cast-node node to)
+   (with-access::node node (loc)
+      (instantiate::cast
+	 (loc loc)
+	 (type to)
+	 (arg node))))
+
+;*---------------------------------------------------------------------*/
 ;*    coerce! ::make-box ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::make-box caller to safe)
    (with-access::make-box node (value vtype)
-      (let ((vt (coerce! value caller vtype safe)))
-	 (set! value (coerce! vt caller *obj* safe)))
+      (let ((nodev (coerce! value caller vtype safe)))
+	 (if (tclass? (get-type nodev))
+	     (set! value (cast-node nodev *obj*))
+	     (set! value nodev)))
       node))
-
+;
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ::box-ref ...                                            */
 ;*---------------------------------------------------------------------*/
@@ -500,11 +512,7 @@
    (with-access::box-ref node (var type vtype loc)
       (let ((cnode (convert! node vtype to safe)))
 	 (if (tclass? to)
-	     ;; for avoiding C warnings
-	     (instantiate::cast
-		(loc loc)
-		(type to)
-		(arg cnode))
+	     (cast-node cnode to)
 	     cnode))))
 
 ;*---------------------------------------------------------------------*/

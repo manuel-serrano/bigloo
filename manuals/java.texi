@@ -329,10 +329,11 @@ generates:
 
 @item a predicate named @code{ar?}.
 
-@item a getter named @code{ar-ref} which is a function of one integer argument.
+@item a getter named @code{ar-ref} which is a function of two arguments:
+an array and one integer argument.
 
-@item a setter named @code{ar-set!} which is a function of two arguments, an
-      integer and a value of the array item types.
+@item a setter named @code{ar-set!} which is a function of three arguments:
+an array, an integer, and a value of the array item types.
 
 @item a length named @code{ar-length}.
 
@@ -380,6 +381,129 @@ Here is an example of exportation:
 
 (define (fib x) (if (< x 2) 1 ...))
 @end smalllisp
+
+Here is a concrete example that illustrates how to invoke Scheme
+functions from Java code. First, here is a Java source file:
+
+@smalllisp
+// arr.java
+import java.io.*;
+import bigloo.*;
+
+public class arr @{
+   public static int hello( int[] tab ) @{
+      System.out.println( "tab[ 0 ]: " + tab[ 0 ] );
+      System.out.println( "tab[ 1 ]: " + tab[ 1 ] );
+      System.out.println( "<callback: " + main.callback( 10 ) + ">" );
+      System.out.println("tab = main.squareJavaArray(tab);");
+      tab = main.squareJavaArray(tab);
+      System.out.println( "tab[ 0 ]: " + tab[ 0 ] );
+      System.out.println( "tab[ 1 ]: " + tab[ 1 ] );
+      return tab.length;
+   @}
+@}
+@end smalllisp
+
+Then the main Scheme file
+
+@smalllisp
+;; main.scm
+(module main
+   (java (array int* ::int)
+      
+      (class bar
+	 (method static hello::int (::int*) "hello")
+	 "bar"))
+   
+   (export (callback::int ::int))
+   (export (squareJavaArray::int* ::int*))
+   
+   (main main))
+
+(define (main argv)
+  (let ((tab (make-int* 2)))
+    (print "tab length: " (int*-length tab))
+    (int*-set! tab 0 3)
+    (int*-set! tab 1 6)
+    (display (int*-ref tab 1))
+    (newline)
+
+    (display "(java-array-int->scheme-vector tab) : ")
+    (display (java-array-int->scheme-vector tab))
+    (newline)
+    (display "(square-vector (java-array-int->scheme-vector tab)) : ")
+    (display (square-vector (java-array-int->scheme-vector tab)))
+    (newline)
+  
+    (print (bar-hello tab))))
+
+(define (callback x)
+   (+ 1 x))
+
+(define (square x)
+   (* x x))
+
+(define (square-list L)
+   (map square L))
+
+(define (square-vector V)
+   (vector-map square V))
+
+(define (sum-vector V)
+   (apply + (vector->list V)))
+
+(define (squareJavaArray A)
+   (scheme-vector->java-array-int
+      (square-vector (java-array-int->scheme-vector A))))
+
+(define (java-array-int->scheme-vector A)
+   (let* ((len (int*-length A))
+	  (res (make-vector len)))
+      (display len)
+      (newline)
+      (let loop ((i 0))
+	 (vector-set! res i (int*-ref A i))
+	 (if (= i (- len 1))
+	     res
+	     (loop (+ i 1))))))
+
+(define (scheme-vector->java-array-int V)
+   (let* ((len (vector-length V))
+	  (res (make-int* len)))
+      (let loop ((i 0))
+	 (int*-set! res i (vector-ref V i))
+	 (if (= i (- len 1))
+	     res
+	     (loop (+ i 1))))))
+@end smalllisp
+
+To compile this example:
+
+@display
+$ bigloo -jvm main.scm -c
+$ javac arr.java -classpath=bigloo.zip:.
+$ bigloo -jvm main.scm arr.class
+@end display
+
+To run it:
+
+@display
+$ ./a.out
+tab length: 2
+6
+(java-array-int->scheme-vector tab) : 2
+#(3 6)
+(square-vector (java-array-int->scheme-vector tab)) : 2
+#(9 36)
+tab[ 0 ]: 3
+tab[ 1 ]: 6
+<callback: 11>
+tab = main.squareJavaArray(tab);
+2
+tab[ 0 ]: 9
+tab[ 1 ]: 36
+2
+@end display
 
 @c -- Bigloo module initialization ----------------------------------- @c
 @node Bigloo module initialization, ,Exporting Scheme variables, Connecting Scheme and Java code

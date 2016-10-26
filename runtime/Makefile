@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Mar 17 08:12:18 2016 (serrano)                */
+#*    Last change :  Wed Oct 26 08:36:46 2016 (serrano)                */
 #*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -108,24 +108,24 @@ C_CLIB		= $(CLIB:%=Clib/%.c)
 #*---------------------------------------------------------------------*/
 JDK_LIBS	= JDK
 ifeq ($(JAVA_VERSION), 1.9)
-    JDK_LIBS	+= JDK16
+    JDK_LIBS += JDK16
   else
     ifeq ($(JAVA_VERSION), 1.8)
-      JDK_LIBS	+= JDK16
+      JDK_LIBS += JDK16
     else
     ifeq ($(JAVA_VERSION), 1.7)
-      JDK_LIBS	+= JDK16
+      JDK_LIBS += JDK16
     else
       ifeq ($(JAVA_VERSION), 1.6)
-        JDK_LIBS	+= JDK16
+        JDK_LIBS += JDK16
        else
         ifeq ($(JAVA_VERSION), 1.5)
-          JDK_LIBS	+= JDK15
+          JDK_LIBS += JDK15
         else
          ifeq ($(JAVA_VERSION), 1.4)
-           JDK_LIBS	+= JDK14
+           JDK_LIBS += JDK14
          else
-           JDK_LIBS	+= JDK13
+           JDK_LIBS += JDK13
          endif
        endif
      endif
