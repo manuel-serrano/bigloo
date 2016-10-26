@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/rgc-jm.scm                   */
+;*    serrano/prgm/project/bigloo/recette/rgc_jm.scm                   */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 12:14:43 1992                          */
-;*    Last change :  Mon May 19 06:12:04 2003 (serrano)                */
+;*    Last change :  Wed Oct 26 08:14:02 2016 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de grammaire de Jean-Marie qui faisait planter          */
 ;*    bigloov1.0                                                       */
