@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Jan 26 13:24:36 2016 (serrano)                */
+;*    Last change :  Sat Oct 29 21:17:39 2016 (serrano)                */
 ;*    Copyright   :  2001-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -18,6 +18,7 @@
 	   __multimedia-m3u
 	   __multimedia-id3
 	   __multimedia-mp3
+	   __multimedia-flac
 	   __multimedia-mpd
 	   __multimedia-music
 	   __multimedia-musicproc
