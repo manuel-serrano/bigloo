@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Aug 18 15:28:51 2016 (serrano)                */
+/*    Last change :  Tue Nov  1 12:35:41 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1598,6 +1598,8 @@ bgl_input_string_seek( obj_t port, long pos ) {
       INPUT_PORT( port ).matchstart = pos + offset;
       INPUT_PORT( port ).matchstop = pos + offset;
       INPUT_PORT( port ).forward = pos + offset;
+   } else if( pos == BGL_INPUT_PORT_BUFSIZ( port ) ) {
+      INPUT_PORT( port ).eof = 1;
    } else {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"set-input-port-position!",
