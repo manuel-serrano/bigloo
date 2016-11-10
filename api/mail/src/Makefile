@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Sep 20 09:43:37 2016 (serrano)                */
+#*    Last change :  Thu Nov 10 13:08:21 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -35,7 +35,7 @@ JFILE		= $(BGLBUILDBINDIR)/bgljfile.sh
 DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 # Bigloo compilation options
-BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -unsafe -safee
+BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) -safee -unsafe
 SPIFLAGS	= 
 EAFLAGS		= --suffix spi --module-keyword interface
 EJFLAGS		= --suffix spi --module-keyword interface

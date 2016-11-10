@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Tue Mar 15 20:26:46 2016 (serrano)                */
+/*    Last change :  Thu Nov 10 13:09:54 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1122,10 +1122,15 @@ create_string_for_read( obj_t bstring, int symbolp ) {
 #define BUFFER_SIZE 200
    unsigned char buffer[ BUFFER_SIZE ];
 	
-   if( ((len * 4) + 1) > BUFFER_SIZE )
-      dst = alloca( (len * 4) + 1 );
-   else
+   if( ((len * 4) + 1) > BUFFER_SIZE ) {
+      if( len > 8192 ) {
+	 dst = malloc( (len * 4) + 1 );
+      } else {
+	 dst = alloca( (len * 4) + 1 );
+      }
+   } else {
       dst = buffer;
+   }
 #undef BUFFER_SIZE
 
    for( r = 0, w = 0; r < len; r++ )
@@ -1207,6 +1212,10 @@ create_string_for_read( obj_t bstring, int symbolp ) {
 
    BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
    BGL_ENV_MVALUES_VAL_SET( env, 1, esc ? BTRUE : BFALSE );
+
+   if( len > 8192 ) {
+      free( dst );
+   }
    
    return res;
 }

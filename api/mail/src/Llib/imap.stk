@@ -1,3 +1,4 @@
+;;;; -*-mode: bee;-*-
 ;;;;
 ;;;; imap-lib.stk	-- IMAP Library
 ;;;; 
@@ -523,14 +524,7 @@
 ;;	imap-folder-exists? ...
 ;; ----------------------------------------------------------------------
 (define (imap-folder-exists? s name)
-  (let ((result #f))
-    (%imap-send s
-		(format "LIST ~S \"\"" name)
-		(lambda (x)
-		  (when (and (pair? x) (equal? (car x) "LIST"))
-		    (set! result #t)))
-		void)
-    result))
+  (member name (imap-folders s)))
 
 ;; ----------------------------------------------------------------------
 ;;	imap-folder-status ...

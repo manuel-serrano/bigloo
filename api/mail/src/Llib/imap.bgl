@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 23 15:19:16 2005                          */
-;*    Last change :  Sat Oct 13 07:55:28 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Thu Nov 10 11:59:36 2016 (serrano)                */
+;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The Bigloo declaration and specific part for the Erick           */
 ;*    Gallesio's IMAP Scheme library                                   */
@@ -377,7 +377,6 @@
 (define-imap-method mailbox-message-move! m::imap i::int s::bstring)
 (define-imap-method mailbox-message-create! m::imap s1::bstring s2::bstring)
 (define-imap-method mailbox-message-copy! m::imap i::int s::bstring)
-(define-imap-method mailbox-message-create! m::imap s1::bstring s2::bstring)
 
 ;*---------------------------------------------------------------------*/
 ;*    mailbox-separator ::imap ...                                     */
