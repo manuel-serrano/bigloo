@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 29 21:10:13 2016                          */
-;*    Last change :  Sat Oct 29 21:12:12 2016 (serrano)                */
+;*    Last change :  Fri Nov 11 09:41:33 2016 (serrano)                */
 ;*    Copyright   :  2016 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Flac utils                                                       */
@@ -21,7 +21,7 @@
 ;*    Returns the offset in the FILE where the true flac starts.       */
 ;*---------------------------------------------------------------------*/
 (define (flac-file-offset file)
-   (let ((mm (open-mmap file)))
+   (let ((mm (open-mmap file :write #f)))
       (if (not (mmap? mm))
 	  (raise (instantiate::&error
 		    (proc "flac-file-offset")

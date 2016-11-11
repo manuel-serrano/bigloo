@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Fri Feb  6 05:54:57 2015 (serrano)                */
+/*    Last change :  Thu Nov 10 19:41:22 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -611,7 +611,7 @@ BGL_RUNTIME_DEF
 obj_t
 utf8_string_to_ucs2_string( obj_t butf8 ) {
    int len = STRING_LENGTH( butf8 );
-   ucs2_t *aux = (ucs2_t *)alloca( len * sizeof( ucs2_t ) );
+   ucs2_t *aux = (ucs2_t *)malloc( len * sizeof( ucs2_t ) );
    char *cutf8 = BSTRING_TO_STRING( butf8 );
    int read, write;
    obj_t string;
@@ -645,6 +645,7 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
 	 
 	 aux[ write ] = (ucs2_t)( zzzzzz | (yyyy << 6) | (hi << 10) );
       } else if( (byte <= 0xbf) || (byte >= 0xfd) ) {
+	 free( aux );
 	 C_FAILURE( "utf8-string->ucs2-string",
 		    "Illegal first byte",
 		    BINT( byte ) );
@@ -655,10 +656,12 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
 	 while( byte & 0x40 ) {
 	    unsigned char next = cutf8[ read++ ];
                
-	    if( (next <= 0x7f) || (next > 0xbf) )
+	    if( (next <= 0x7f) || (next > 0xbf) ) {
+	       free( aux );
 	       C_FAILURE( "utf8-string->ucs2-string",
 			  "Illegal following byte",
 			  BINT( next ) );
+	    }
                
 	    ucs2 = (ucs2 << 6) + (next & 0x3f);
 	    byte <<= 1;
@@ -693,5 +696,7 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
    string->ucs2_string_t.length = write;
    ucs2cpy( cstring, aux, write );
                 
+   free( aux );
+   
    return BUCS2STRING( string );
 }
