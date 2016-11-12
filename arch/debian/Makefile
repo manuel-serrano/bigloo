@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Feb  7 07:41:50 2010                          */
-#*    Last change :  Wed Jan  9 07:46:45 2013 (serrano)                */
-#*    Copyright   :  2010-13 Manuel Serrano                            */
+#*    Last change :  Sat Nov 12 09:23:52 2016 (serrano)                */
+#*    Copyright   :  2010-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles debian specific files                  */
 #*=====================================================================*/
@@ -17,7 +17,7 @@ include ../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Variables                                                        */
 #*---------------------------------------------------------------------*/
-POPULATION = Makefile makedeb.sh.in changelog \
+POPULATION = Makefile makedeb.sh.in makedeb.sh changelog \
   control.in postinst.in rules.in README
 
 #*---------------------------------------------------------------------*/
