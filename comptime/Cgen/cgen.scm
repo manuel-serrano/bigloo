@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Tue Apr 19 14:03:21 2016 (serrano)                */
+;*    Last change :  Mon Nov 14 15:20:21 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -696,30 +696,28 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node->cop node::retblock kont inpushexit)
    (with-access::retblock node (body loc)
-      (if (and #f (eq? kont *return-kont*))
-	  (node->cop body kont inpushexit)
-	  (let* ((local (make-local-svar (gensym '__retval) (node-type node)))
-		 (label (instantiate::clabel
-			   (loc loc)
-			   (used? #t)
-			   (name (symbol->string (gensym '__return)))
-			   (body (kont (instantiate::varc
-					  (loc loc)
-					  (variable local))))))
-		 (retkont (make-setq-kont local loc (lambda (c) c))))
-	     (widen!::retblock/goto node
-		(local local)
-		(label label))
-	     (instantiate::cblock
-		(loc loc)
-		(body (instantiate::csequence
-			 (loc loc)
-			 (cops (list
-				  (instantiate::local-var
-				     (loc loc)
-				     (vars (list local)))
-				  (node->cop body retkont inpushexit)
-				  label)))))))))
+      (let* ((local (make-local-svar (gensym '__retval) (node-type node)))
+	     (label (instantiate::clabel
+		       (loc loc)
+		       (used? #t)
+		       (name (symbol->string (gensym '__return)))
+		       (body (kont (instantiate::varc
+				      (loc loc)
+				      (variable local))))))
+	     (retkont (make-setq-kont local loc (lambda (c) c))))
+	 (widen!::retblock/goto node
+	    (local local)
+	    (label label))
+	 (instantiate::cblock
+	    (loc loc)
+	    (body (instantiate::csequence
+		     (loc loc)
+		     (cops (list
+			      (instantiate::local-var
+				 (loc loc)
+				 (vars (list local)))
+			      (node->cop body retkont inpushexit)
+			      label))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::return ...                                           */

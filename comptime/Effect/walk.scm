@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:25:23 1995                          */
-;*    Last change :  Thu Dec 20 18:16:08 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 14:46:33 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the effect property.                          */
 ;*=====================================================================*/
@@ -52,7 +52,7 @@
    (trace effect "spread..." #\Newline)
    (for-each (lambda (global)
 		(spread-side-effect! (sfun-body (global-value global))))
-	     globals)
+      globals)
    ;; the refined effect computation
    (trace effect "feffect..." #\Newline)
    ;; CARE: *saw* (formerly only *saw*)

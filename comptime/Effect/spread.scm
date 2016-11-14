@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 11:36:01 1996                          */
-;*    Last change :  Mon Nov 11 09:58:34 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 14:49:23 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We spread the computed side-effect properties                    */
 ;*=====================================================================*/
@@ -193,6 +193,21 @@
       (spread-side-effect! value)
       #t))
 
+;*---------------------------------------------------------------------*/
+;*    spread-side-effect! ::return ...                                 */
+;*---------------------------------------------------------------------*/
+(define-method (spread-side-effect! node::return)
+   (with-access::return node (value)
+      (spread-side-effect! value)
+      #t))
+
+;*---------------------------------------------------------------------*/
+;*    spread-side-effect! ::retblock ...                               */
+;*---------------------------------------------------------------------*/
+(define-method (spread-side-effect! node::retblock)
+   (with-access::retblock node (body)
+      (spread-side-effect! body)))
+   
 ;*---------------------------------------------------------------------*/
 ;*    spread-side-effect! ::box-ref ...                                */
 ;*    -------------------------------------------------------------    */

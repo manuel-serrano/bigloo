@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 31 08:56:22 1993                          */
-;*    Last change :  Wed Dec 23 14:23:03 2015 (serrano)                */
-;*    Copyright   :  1993-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Nov 14 14:40:14 2016 (serrano)                */
+;*    Copyright   :  1993-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The tracing macro.                                               */
 ;*=====================================================================*/
@@ -23,7 +23,7 @@
       (let ((*pass-names* '(ast heap inline inline+ cfa cc effect effect+ expand
 			    globalize integrate coerce cnst cgen reduce
 			    reduce- reduce+ recovery egen jvmas init
-			    make-add-heap make-heap fail)))
+			    make-add-heap make-heap fail return)))
 	 (if *debug-mode*
 	     (match-case mask
 		((? symbol?)
