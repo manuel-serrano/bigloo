@@ -3746,88 +3746,74 @@ public final class foreign
    //////
    // EXTENDED_PAIR
    //////
-   public static boolean EPAIRP(Object o)
-      {
-	 return (o instanceof extended_pair);
-      }
+   public static boolean EPAIRP(Object o) {
+      return (o instanceof extended_pair);
+   }
 
-   public static extended_pair MAKE_EPAIR(Object car, Object cdr, Object cer)
-      {
-	 return new extended_pair(car, cdr, cer);
-      }
+   public static extended_pair MAKE_EPAIR(Object car, Object cdr, Object cer) {
+      return new extended_pair(car, cdr, cer);
+   }
 
-   public static Object CER(extended_pair c)
-      {
-	 return c.cer;
-      }
+   public static Object CER(extended_pair c) {
+      return c.cer;
+   }
 
-   public static Object SET_CER(extended_pair c, Object o)
-      {
-	 c.cer = o;
-	 return unspecified.unspecified;
-      }
+   public static Object SET_CER(extended_pair c, Object o) {
+      c.cer = o;
+      return unspecified.unspecified;
+   }
 
    //////
    // VECTOR
    //////
    // Predicates
-   public static boolean VECTORP(Object o)
-      {
-	 return (o instanceof Object[]);
-      }
+   public static boolean VECTORP(Object o) {
+      return (o instanceof Object[]);
+   }
 
-   public static void FREE_VECTOR_UNCOLLECTABLE(Object[]v)
-      {
-	 ;
-      }
+   public static void FREE_VECTOR_UNCOLLECTABLE(Object[]v) {
+      ;
+   }
 
    // Open functions
-   public static int VECTOR_LENGTH(Object[]v)
-      {
-	 return v.length;
-      }
+   public static int VECTOR_LENGTH(Object[]v) {
+      return v.length;
+   }
 
-   public static Object VECTOR_REF(Object[]v, int i)
-      {
-	 return v[i];
-      }
+   public static Object VECTOR_REF(Object[]v, int i) {
+      return v[i];
+   }
 
-   public static Object VECTOR_SET(Object[]v, int i, Object o)
-      {
-	 v[i] = o;
-	 return unspecified.unspecified;
-      }
+   public static Object VECTOR_SET(Object[]v, int i, Object o) {
+      v[i] = o;
+      return unspecified.unspecified;
+   }
 
-   public static boolean BOUND_CHECK(int n1, int n2)
-      {
-	 return (n1 < n2);
-      }
+   public static boolean BOUND_CHECK(int n1, int n2) {
+      return (n1 < n2);
+   }
 
-   public static boolean BOUND_CHECK(long n1, long n2)
-      {
-	 return (n1 < n2);
-      }
+   public static boolean BOUND_CHECK(long n1, long n2) {
+      return (n1 < n2);
+   }
 
-   public static Object VECTOR_TAG_SET(Object[]v, int n)
-      {
-	 return unspecified.unspecified;
-      }
+   public static Object VECTOR_TAG_SET(Object[]v, int n) {
+      return unspecified.unspecified;
+   }
 
-   public static int VECTOR_TAG(Object[]v)
-      {
-	 return 0;
-      }
+   public static int VECTOR_TAG(Object[]v) {
+      return 0;
+   }
 
    // Lib functions
-   public static Object[] make_vector(int n, Object init)
-      {
-	 final Object[] r = new Object[n];
+   public static Object[] make_vector(int n, Object init) {
+      final Object[] r = new Object[ n ];
 
-	 for (int i = 0; i < n; ++i)
-	    r[i] = init;
+      for (int i = 0; i < n; ++i)
+	 r[i] = init;
 
-	 return r;
-      }
+      return r;
+   }
 
    public static Object[] make_vector0() {
       return(new Object[]{});
@@ -3867,37 +3853,48 @@ public final class foreign
       return(i);
    }
 
-   public static Object[] create_vector(int n)
-      {
-	 return new Object[n];
-      }
+   public static Object[] create_vector(int n) {
+      return new Object[n];
+   }
 
-   public static Object fill_vector(Object[]v, int start, int len, Object o)
-      {
-	 for (int i = start; i < len; ++i)
-	    v[i] = o;
-	 return unspecified.unspecified;
-      }
+   public static Object fill_vector(Object[]v, int start, int len, Object o) {
+      for (int i = start; i < len; ++i)
+	 v[i] = o;
+      return unspecified.unspecified;
+   }
 
-   public static Object[] sort_vector(Object[]v, procedure p)
-      {
-	 final int n = v.length;
+   public static Object[] sort_vector(Object[]v, procedure p) {
+      final int n = v.length;
 
-	 for (int incr = n / 2; incr != 0; incr /= 2)
-	    for (int i = incr; i < n; ++i)
-	       for (int j = i - incr; j >= 0; j -= incr)
-		  if (p.funcall2(v[j], v[j + incr]) != bbool.faux)
-		     break;
-		  else
-		  {
-		     final Object tmp = v[j + incr];
+      for (int incr = n / 2; incr != 0; incr /= 2)
+	 for (int i = incr; i < n; ++i)
+	    for (int j = i - incr; j >= 0; j -= incr)
+	       if (p.funcall2(v[j], v[j + incr]) != bbool.faux)
+		  break;
+	       else
+	       {
+		  final Object tmp = v[j + incr];
 
-		     v[j + incr] = v[j];
-		     v[j] = tmp;
-		  }
+		  v[j + incr] = v[j];
+		  v[j] = tmp;
+	       }
 
+      return v;
+   }
+
+   public static Object[] BGL_VECTOR_SHRINK( Object[] v, int nlen ) {
+      if( nlen >= 0 && nlen < VECTOR_LENGTH( v ) ) {
+	 final Object[] r = new Object[ nlen ];
+
+	 for( int i = 0; i < nlen; ++i ){
+	    r[ i ] = v[ i ];
+	 }
+	 
+	 return r;
+      } else {
 	 return v;
       }
+   }
 
    //////
    // HVECTOR

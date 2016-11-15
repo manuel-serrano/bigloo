@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Apr  1 07:33:08 2016 (serrano)                */
+/*    Last change :  Tue Nov 15 08:10:05 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -96,6 +96,25 @@ struct bgl_hvector {
 #define VECTOR_REF( v, i ) ((&(VECTOR( v ).obj0))[ i ])
 #define VECTOR_SET( v, i, o ) BASSIGN( VECTOR_REF( v, i ), o, v)
 
+#define BGL_VLENGTH( v ) \
+   (VECTOR( v ).length & VECTOR_LENGTH_MASK)
+
+#define VECTOR_LENGTH( v ) \
+   BGL_VLENGTH( v )
+
+#define VECTOR_TAG_SET( v, tag ) \
+    (VECTOR( v ).length = \
+     (BGL_VLENGTH( v ) | (((unsigned long) tag) << VECTOR_LENGTH_SHIFT)), \
+     BUNSPEC)
+
+#define VECTOR_TAG( v ) \
+   ((VECTOR( v ).length & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT)
+
+#define BGL_VECTOR_SHRINK( v, l ) \
+   ((l >= 0 && l < BGL_VLENGTH( v )) ? \
+    VECTOR( v ).length = (l | (VECTOR( v ).length & ~VECTOR_LENGTH_MASK)), v : v)
+      
+
 /*---------------------------------------------------------------------*/
 /*    Typed vectors                                                    */
 /*---------------------------------------------------------------------*/
@@ -148,17 +167,6 @@ struct bgl_hvector {
    
 #define TVECTOR_SET( it, tv, o, v ) \
      (TVECTOR_REF( it, tv, o ) = (v), BUNSPEC)
-
-#define VECTOR_LENGTH( v ) \
-   (VECTOR( v ).length & VECTOR_LENGTH_MASK)
-
-#define VECTOR_TAG_SET( v, tag ) \
-    (VECTOR( v ).length = \
-     (VECTOR_LENGTH( v ) | (((unsigned long) tag) << VECTOR_LENGTH_SHIFT)), \
-     BUNSPEC)
-
-#define VECTOR_TAG( v ) \
-   ((VECTOR( v ).length & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT)
 
 /*---------------------------------------------------------------------*/
 /*    HVECTOR                                                          */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Tue Oct  7 13:30:29 2014 (serrano)                */
+;*    Last change :  Tue Nov 15 08:10:32 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -50,41 +50,44 @@
 	    (macro $vector-bound-check?::bool (::int ::int) "BOUND_CHECK")
 	    (macro $vector-tag-set!::obj (::vector ::int) "VECTOR_TAG_SET")
 	    (macro $vector-tag::int (::vector) "VECTOR_TAG")
-	    ($sort-vector::vector (::vector ::procedure) "sort_vector"))
+	    ($sort-vector::vector (::vector ::procedure) "sort_vector")
+	    (macro $vector-shrink!::vector (::vector ::long) "BGL_VECTOR_SHRINK"))
    
    (java    (class foreign
 	       (method static $vector?::bool (::obj)
-		       "VECTORP")
+		  "VECTORP")
 	       (method static $free-vector-uncollectable::void (::vector)
-		       "FREE_VECTOR_UNCOLLECTABLE")
+		  "FREE_VECTOR_UNCOLLECTABLE")
 	       (method static $make-vector::vector (::int ::obj)
-		       "make_vector")
+		  "make_vector")
 	       (method static $make-vector-uncollectable::vector (::int ::obj)
-		       "make_vector")
+		  "make_vector")
 	       (method static $create-vector::vector (::int)
-		       "create_vector")
+		  "create_vector")
 	       (method static $create-vector-uncollectable::vector (::int)
-		       "create_vector")
+		  "create_vector")
 	       (method static $vector-fill!::obj (::vector ::int ::int ::obj)
-		       "fill_vector")
+		  "fill_vector")
 	       (method static $vector-length::int (::vector)
-		       "VECTOR_LENGTH")
+		  "VECTOR_LENGTH")
 	       (method static $vector-ref::obj (::vector ::int)
-		       "VECTOR_REF")
+		  "VECTOR_REF")
 	       (method static $vector-ref-ur::obj (::vector ::int)
-		       "VECTOR_REF")
+		  "VECTOR_REF")
 	       (method static $vector-set!::obj (::vector ::int ::obj)
-		       "VECTOR_SET")
+		  "VECTOR_SET")
 	       (method static $vector-set-ur!::obj (::vector ::int ::obj)
-		       "VECTOR_SET")
+		  "VECTOR_SET")
 	       (method static $vector-bound-check?::bool (::int ::int)
-		       "BOUND_CHECK")
+		  "BOUND_CHECK")
 	       (method static $vector-tag-set!::obj (::vector ::int)
-		       "VECTOR_TAG_SET")
+		  "VECTOR_TAG_SET")
 	       (method static $sort-vector::vector (::vector ::procedure)
-		       "sort_vector")
+		  "sort_vector")
 	       (method static $vector-tag::int (::vector)
-		       "VECTOR_TAG")))
+		  "VECTOR_TAG")
+	       (method static $vector-shrink!::vector (::vector ::long)
+		  "BGL_VECTOR_SHRINK")))
    
    (export  (inline vector?::bool obj)
 	    (inline make-vector::vector ::int #!optional (fill #unspecified))
@@ -107,7 +110,8 @@
 	    (vector-append::vector ::vector . args)
 	    (sort ::obj ::obj)
 	    (vector-map::vector ::procedure ::vector . rests)
-	    (vector-map!::vector ::procedure ::vector . rests))
+	    (vector-map!::vector ::procedure ::vector . rests)
+	    (inline vector-shrink!::vector ::vector ::long))
    
    (pragma  ($make-vector no-cfa-top nesting)
 	    ($create-vector no-cfa-top nesting)
@@ -393,3 +397,9 @@
 	  (vector-mapN! proc v v rest))
 	 (else
 	  (error "vector-map!" "Illegal arguments" rest)))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-shrink! ...                                               */
+;*---------------------------------------------------------------------*/
+(define-inline (vector-shrink! vec nlen)
+   ($vector-shrink! vec nlen))

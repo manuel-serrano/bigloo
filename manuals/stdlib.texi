@@ -1303,12 +1303,12 @@ an exact integers satisfying:
   0 <= END <= (string-length STRING)
 @end smallexample
 
-@code{string-shrink!} returns a newly allocated string formed from the
-characters of @var{STRING} beginning with index 0 (inclusive) 
-and ending with index @var{END} (exclusive). As much as possible 
-@code{string-shrink!} changes the argument @var{string}. That is, as much
-as possible, and for the back-ends that enable it, @var{string-shrink!}
-operate a side effect on its argument.
+@code{string-shrink!} returns a new string formed from the characters
+of @var{STRING} beginning with index 0 (inclusive) and ending with
+index @var{END} (exclusive). As much as possible @code{string-shrink!}
+changes the argument @var{string}. That is, as much as possible, and
+for the back-ends that enable it, @var{string-shrink!} operates a side
+effect on its argument.
 
 @smalllisp
 (let ((s (string #\a #\b #\c #\d #\e)))
@@ -1779,6 +1779,28 @@ initial vectors.
 
 The function @code{vector-map!} modifies the elements of the argument
 @var{vector}.
+@end deffn
+
+@deffn {bigloo procedure} vector-shrink! vector end
+
+Shrink a vector. The argument @var{vector} must be a vector,
+and @var{end} must be
+an exact integers satisfying:
+
+@smallexample
+  0 <= END <= (vector-length STRING)
+@end smallexample
+
+Shrink a vector. The resulting vector's len is the minimum value
+of @code{(vector-length vec)} and @var{nlen}.
+
+@code{vector-shrink!} returns a new vector formed from the values
+of @var{VECTOR} beginning with index 0 (inclusive) and ending with
+index @var{END} (exclusive). As much as possible @code{vector-shrink!}
+changes the argument @var{vector}. That is, as much as possible, and
+for the back-ends that enable it, @var{vector-shrink!} operates a side
+effect on its argument.
+
 @end deffn
 
 @c -- Homogenous Vectors --------------------------------------------- @c
