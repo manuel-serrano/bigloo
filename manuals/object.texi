@@ -331,6 +331,21 @@ is equivalent to:
 (duplicate::point old (y 10))
 @end smalllisp
 
+The duplicated instance might be a subclass of duplicated instance. Example:
+
+@smalllisp
+(module foo
+   (export (class point x y)
+	   (class point3::point z)
+	   (class point4::point3 t))
+   (main main))
+
+(define (main x)
+   (let ((p (instantiate::point (x 1) (y 2))))
+      (print (duplicate::point4 p (z 6) (t 55)))))
+@end smalllisp
+
+
 @end deffn
 
 @c ------------------------------------------------------------------- @c

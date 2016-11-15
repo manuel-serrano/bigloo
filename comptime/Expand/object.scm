@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Sat Nov  7 09:39:05 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Nov 15 10:40:09 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -371,7 +371,7 @@
 ;*---------------------------------------------------------------------*/
 (define (duplicate->make class duplicated provided x e)
    
-   (define (collect-slot-values slots dupvar)
+   (define (collect-slot-values slots dupvar parent)
       (let ((vargs (make-vector (length slots))))
 	 ;; we collect the provided values
 	 (let loop ((provided provided))
@@ -392,23 +392,49 @@
 	    (when (pair? slots)
 	       (let ((value (vector-ref vargs i)))
 		  (unless (pair? value)
-		     (let ((slot (car slots)))
-			;; no value is provided for this object we pick
-			;; one from this duplicated object.
-			(vector-set! vargs
-			   i
-			   (cons #t (field-access dupvar (slot-id slot) #t)))))
+		     ;; no value is provided for this object we pick
+		     ;; one from this duplicated object.
+		     (let* ((slot (car slots))
+			    (clazz (slot-class-owner slot))
+			    (val (if (eq? clazz parent)
+				     (field-access dupvar (slot-id slot) #t)
+				     (let* ((tmp (gensym 'tmp))
+					    (cid (type-id clazz))
+					    (ttmp (make-typed-ident tmp cid)))
+					`(let ((,ttmp ,dupvar))
+					    ,(field-access tmp (slot-id slot) #t))))))
+			(vector-set! vargs i (cons #t val))))
 		  (loop (+fx i 1) (cdr slots)))))
 	 ;; build the result
 	 (vector->list vargs)))
    
+   (define (find-slot-parent-class slots)
+      (if (null? slots)
+	  class
+	  (let loop ((parent (slot-class-owner (car slots)))
+		     (slots (cdr slots)))
+	     (cond
+		((null? slots)
+		 parent)
+		((type-subclass? parent (slot-class-owner (car slots)))
+		 (slot-class-owner (car slots)))
+		(else
+		 parent)))))
+   
+   (define (slot-set new slot v)
+      (let ((c (slot-class-owner slot))
+	    (id (slot-id slot)))
+	 `(set! ,(field-access new id #t) ,v)))
+   
    (let* ((id (type-id class))
 	  (slots (tclass-slots class))
 	  (new (gensym 'new))
+	  (tmp (gensym 'tmp))
 	  (tnew (make-typed-ident new id))
 	  (dupvar (mark-symbol-non-user! (gensym 'duplicated)))
-	  (tdupvar (make-typed-ident dupvar (type-id class)))
-	  (args (collect-slot-values slots dupvar)))
+	  (parent (find-slot-parent-class slots))
+	  (tdupvar (make-typed-ident dupvar (type-id parent)))
+	  (args (collect-slot-values slots dupvar parent)))
       ;; allocate the object and set the fields,
       ;; first the actual fields, second the virtual fields
       `(let ((,tdupvar ,(e duplicated e))
@@ -416,10 +442,8 @@
 	  ;; actual fields
 	  ,@(filter-map (lambda (slot val)
 			   (unless (slot-virtual? slot)
-			      (let ((v (e (cdr val) e))
-				    (id (slot-id slot)))
-				 (localize (cdr val)
-				    `(set! ,(field-access new id #t) ,v)))))
+			      (localize (cdr val)
+				 (slot-set new slot (e (cdr val) e)))))
 	       slots args)
 	  ;; constructors
 	  ,(when (find-class-constructor class)
@@ -427,16 +451,14 @@
 		 (e `(((@ class-constructor __object)
 		       (@ ,(global-id g) ,(global-module g)))
 		      ,new)
-		     e)))
+		    e)))
 	  ;; virtual fields
 	  ,@(filter-map (lambda (slot val)
 			   (when (and (slot-virtual? slot)
 				      (not (slot-read-only? slot))
 				      (car val))
-			      (let ((v (e (cdr val) e))
-				    (id (slot-id slot)))
-				 (localize (cdr val)
-				    `(set! ,(field-access new id #t) ,v)))))
+			      (localize (cdr val)
+				 (slot-set new slot (e (cdr val) e)))))
 	       slots args)
 	  ,new)))
 
