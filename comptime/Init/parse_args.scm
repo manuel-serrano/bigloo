@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Nov 14 14:40:20 2016 (serrano)                */
+;*    Last change :  Wed Nov 16 17:54:40 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -486,6 +486,11 @@
        (set! *optim-return?* #t))
       (("-fno-return" (help "Disable set-exit replacement"))
        (set! *optim-return?* #f))
+      (("-freturn-local" (help "Enable local set-exit replacement with return"))
+       (set! *optim-return?* #t)
+       (set! *optim-return-local?* #t))
+      (("-fno-return-local" (help "Disable local set-exit replacement"))
+       (set! *optim-return-local?* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -1181,18 +1186,17 @@
    
    (define (-O2!)
       (set! *cc-options* (append *cc-options* (list *cflags-optim*)))
-;*       (set! *optim-jvm-inlining* 2)                                 */
-;*       (set! *optim-jvm-branch* 3)                                   */
-;*       (set! *optim-jvm-fasteq* #t)                                  */
-;*       (set! *optim-reduce-beta?* #t)                                */
-;*       (set! *optim-cfa-flonum-arithmetic?* #t)                      */
-;*       (set! *optim-dataflow-types?* #t)                             */
-;*       (set! *optim-initflow?* #t)                                   */
-;*       ;; (set! *optim-narrow?* #t)                                  */
-;*       ;; (set! *optim-return?* #t)                                  */
-;*       (set! *optim-cfa-free-var-tracking?* #t)                      */
-      (set! *optim-cfa-unbox-closure-args* #t)
-      )
+      (set! *optim-jvm-inlining* 2)
+      (set! *optim-jvm-branch* 3)
+      (set! *optim-jvm-fasteq* #t)
+      (set! *optim-reduce-beta?* #t)
+      (set! *optim-cfa-flonum-arithmetic?* #t)
+      (set! *optim-dataflow-types?* #t)
+      (set! *optim-initflow?* #t)
+      ;; (set! *optim-narrow?* #t)
+      ;; (set! *optim-return?* #t)
+      (set! *optim-cfa-free-var-tracking?* #t)
+      (set! *optim-cfa-unbox-closure-args* #t))
       
    (define (-O3!)
       (-O2!)

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Mon Apr  4 18:01:55 2016 (serrano)                */
+;*    Last change :  Wed Nov 16 19:02:41 2016 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -598,6 +598,7 @@
    (test "string-index-right.3" (string-index-right "foobar-ge-e" "-" 7) 6)
    (test "string-index-right.4" (string-index-right "foobar-ge-e" "_") #f)
    (test "string-index-right.5" (string-index-right "foobar-ge-e" "_" 7) #f)
+   (test "string-index-right.6" (string-index-right "true" #\t 0) 0)
    (test "string-skip.1" (string-skip "foobar-gee" #\f) 1)
    (test "string-skip.2" (string-skip "foobar-gee" "f") 1)
    (test "string-skip.3" (string-skip "foobar-gee" "fo") 3)

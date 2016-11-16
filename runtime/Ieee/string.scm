@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Fri Oct 14 13:52:23 2016 (serrano)                */
+;*    Last change :  Wed Nov 16 19:03:05 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -212,7 +212,7 @@
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
 	    (string-char-index::obj ::bstring ::char #!optional (start 0))
 	    (string-index-right::obj s::bstring ::obj
-	       #!optional (start (string-length s)))
+	       #!optional (start (-fx (string-length s) 1)))
 	    (string-skip::obj ::bstring ::obj #!optional (start 0))
 	    (string-skip-right::obj s::bstring ::obj
 	       #!optional (start (string-length s)))
@@ -970,9 +970,9 @@
 ;*---------------------------------------------------------------------*/
 ;*    string-index-right ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (string-index-right s rs #!optional (start (string-length s)))
+(define (string-index-right s rs #!optional (start (-fx (string-length s) 1)))
    (define (string-char-index s c)
-      (let loop ((i (-fx start 1)))
+      (let loop ((i (minfx start (-fx (string-length s) 1))))
 	 (cond
 	    ((<fx i 0)
 	     #f)

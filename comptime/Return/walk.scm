@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Apr 20 10:30:33 2016 (serrano)                */
+;*    Last change :  Wed Nov 16 18:35:05 2016 (serrano)                */
 ;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    Replace set-exit/unwind-until with return. Currently this passe  */
+;*    Replace set-exit/unwind-until with return. Currently this pass   */
 ;*    is only executed when generating plain C code.                   */
 ;*=====================================================================*/
 
@@ -29,8 +29,11 @@
 	    ast_lvtype
 	    ast_dump
 	    ast_walk
+	    engine_param
 	    backend_backend)
-   (export  (return-walk! globals)))
+   (export  (return-walk! globals)
+	    (function-exit-node ::node)
+	    (is-exit-return?::bool ::node ::local)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return-walk! ...                                                 */
@@ -52,10 +55,11 @@
 ;*    init-cache! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (init-cache!)
-   (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
-   (set! *unwind-until!* (find-global 'unwind-until! '__bexit))
-   (set! *pop-exit!* (find-global 'pop-exit! 'foreign))
-   (set! *push-exit!* (find-global 'push-exit! 'foreign))
+   (unless (global? *get-exitd-top*)
+      (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
+      (set! *unwind-until!* (find-global 'unwind-until! '__bexit))
+      (set! *pop-exit!* (find-global 'pop-exit! 'foreign))
+      (set! *push-exit!* (find-global 'push-exit! 'foreign)))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -87,6 +91,8 @@
 		     (set! body (return! exitnode exitvar rblock)))
 		  (sfun-class-set! fun 'sfun)
 		  (sfun-body-set! fun rblock)))))
+      (when *optim-return-local?*
+	 (return-local-funs! body))
       (leave-function)
       var))
 
@@ -193,6 +199,7 @@
 		     (step2 nodes variable)))))))
    
    (when (isa? node set-ex-it)
+      (init-cache!)
       (with-access::set-ex-it node (body var)
 	 (step1 body var))))
 
@@ -208,8 +215,6 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    is-return? ...                                                   */
-;*    -------------------------------------------------------------    */
-;*    Is the exit binding only used as a mere return?                  */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::node exitvar::local abort)
    (call-default-walker))
@@ -266,4 +271,18 @@
 		    (call-default-walker)))
 	     (call-default-walker)))))
 
+;*---------------------------------------------------------------------*/
+;*    return-local-funs! ...                                           */
+;*---------------------------------------------------------------------*/
+(define-walk-method (return-local-funs! node::node)
+   (call-default-walker))
 
+;*---------------------------------------------------------------------*/
+;*    return-local-funs! ::let-fun ...                                 */
+;*---------------------------------------------------------------------*/
+(define-walk-method (return-local-funs! node::let-fun)
+   (with-access::let-fun node (locals body)
+      (for-each return-fun! locals)
+      (set! body (return-local-funs! body))
+      node))
+		  

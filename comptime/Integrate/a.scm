@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed Apr 20 09:57:39 2016 (serrano)                */
+;*    Last change :  Wed Nov 16 18:35:17 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -23,7 +23,9 @@
 	    engine_param
 	    ast_var
 	    ast_node
+	    ast_dump
 	    integrate_info
+	    return_walk
 	    type_cache
 	    type_typeof)
    (export  (A ::global ::node)
@@ -37,8 +39,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    A ...                                                            */
 ;*    -------------------------------------------------------------    */
-;*    We compute the A property (see Seniak's thesis) and for          */
-;*    each function, we compute the set of its free variables.         */
+;*    Compute the A property (see Seniak's thesis) and for             */
+;*    each function, compute its free variables set.                   */
 ;*---------------------------------------------------------------------*/
 (define (A global node)
    ;; the setups
@@ -383,20 +385,19 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::set-ex-it host k A)
    (with-access::set-ex-it node (var body)
-      ;; `set-ex-it' handler must alway be globalized
-      ;; in order to be sure that `set-ex-it' handler
-      ;; are always globalized we simulate to two-non tail
-      ;; calls to them if the handler is not detached
-      ;; (see globalize pass)
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
 	 (if (not (sexit-detached? (local-value exit)))
-	     ;; CARE, MS 28mar2011: used to be a trick with two fake
-	     ;; continuations (see integrate_ctn).
 	     (begin
-		(with-access::sfun/Iinfo (local-value hdlg) (forceG?)
-		   (set! forceG? #t))
+		(unless (and *optim-return-local?*
+			     (let ((fext (function-exit-node node)))
+				(when (pair? fext)
+				   (let ((exitvar (car fext))
+					 (exitnode (cdr fext)))
+				      (is-exit-return? exitnode exitvar)))))
+		   (with-access::sfun/Iinfo (local-value hdlg) (forceG?)
+		      (set! forceG? #t)))
 		(node-A body
 		   host (cons (get-new-kont) (get-type body)) A))
 	     A))))
