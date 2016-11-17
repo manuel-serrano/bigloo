@@ -3,10 +3,12 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:10:09 1995                          */
-;*    Last change :  Mon Mar 28 16:21:45 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 17 08:35:44 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of `Cn' and `Ct'.                                */
+;*       Cn(f,g) === exists k, A(f,g,k)                                */
+;*       Ct(f,g) === A(f,g,t)                                          */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -53,8 +55,8 @@
 		     (loop (cdr As) G/cn)))
 		((eq? k 'tail)
 		 (sfun/Iinfo-Ct-set! fi (cons g (sfun/Iinfo-Ct fi)))
-		 (if (and (not (eq? f g))
-			  (not (memq g (sfun/Iinfo-kont fi))))
+		 (when (and (not (eq? f g))
+			    (not (memq g (sfun/Iinfo-kont fi))))
 		     (sfun/Iinfo-kont-set! fi (cons g (sfun/Iinfo-kont fi))))
 		 (loop (cdr As) G/cn))
 		((eq? k 'escape)
@@ -84,7 +86,7 @@
 	     (for-each (lambda (p)
 			  (let ((ifun (variable-value p)))
 			     (fprint *trace-port*
-				     " --> " (shape p) #\: #\Newline
+				     " " (shape p) #\: #\Newline
 				     "   Cn        : "
 				     (shape (sfun/Iinfo-Cn ifun))
 				     #\Newline

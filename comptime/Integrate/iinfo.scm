@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 28 14:06:46 1996                          */
-;*    Last change :  Wed Jan 22 08:41:46 2014 (serrano)                */
-;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 17 08:47:03 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The extension for the integrate pass.                            */
 ;*=====================================================================*/
@@ -28,7 +28,9 @@
 	      ;; is a local kaptured ?
 	      (kaptured?::bool (default #f))
 	      ;; celled?
-	      (celled?::bool (default #f)))
+	      (celled?::bool (default #f))
+	      ;; set-exit handler
+	      (xhdl::obj (default #f)))
 
 	   (wide-class sexit/Iinfo::sexit
 	      ;; a stamp to compute free variables
@@ -78,6 +80,8 @@
 	      ;; the list of the kaptured variables
 	      (kaptured (default #unspecified))
 	      ;; tail-coercion
-	      (tail-coercion::obj (default #unspecified)))))
+	      (tail-coercion::obj (default #unspecified))
+	      ;; is it an exit handler
+	      (xhdl?::bool (default #f)))))
 	      
 	   

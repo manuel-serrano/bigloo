@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Nov 16 18:35:05 2016 (serrano)                */
+;*    Last change :  Thu Nov 17 08:13:09 2016 (serrano)                */
 ;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -32,16 +32,19 @@
 	    engine_param
 	    backend_backend)
    (export  (return-walk! globals)
+	    (init-return-cache!)
 	    (function-exit-node ::node)
+	    (is-unwind-until?::bool ::variable)
+	    (is-get-exitd-top?::bool ::variable)
 	    (is-exit-return?::bool ::node ::local)))
 
 ;*---------------------------------------------------------------------*/
 ;*    return-walk! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (return-walk! globals)
-   (pass-prelude "Return" init-cache!) 
+   (pass-prelude "Return" init-return-cache!) 
    (for-each return-fun! globals)
-   (pass-postlude globals clear-cache!))
+   (pass-postlude globals clear-return-cache!))
 
 ;*---------------------------------------------------------------------*/
 ;*    cache ...                                                        */
@@ -52,9 +55,9 @@
 (define *pop-exit!* #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    init-cache! ...                                                  */
+;*    init-return-cache! ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (init-cache!)
+(define (init-return-cache!)
    (unless (global? *get-exitd-top*)
       (set! *get-exitd-top* (find-global '$get-exitd-top 'foreign))
       (set! *unwind-until!* (find-global 'unwind-until! '__bexit))
@@ -63,9 +66,9 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    clear-cache! ...                                                 */
+;*    clear-return-cache! ...                                          */
 ;*---------------------------------------------------------------------*/
-(define (clear-cache!)
+(define (clear-return-cache!)
    (set! *get-exitd-top* #f)
    (set! *unwind-until!* #f)
    (set! *push-exit!* #f)
@@ -199,9 +202,20 @@
 		     (step2 nodes variable)))))))
    
    (when (isa? node set-ex-it)
-      (init-cache!)
       (with-access::set-ex-it node (body var)
 	 (step1 body var))))
+
+;*---------------------------------------------------------------------*/
+;*    is-unwind-until? ...                                             */
+;*---------------------------------------------------------------------*/
+(define (is-unwind-until? v::variable)
+   (eq? v *unwind-until!*))
+
+;*---------------------------------------------------------------------*/
+;*    is-get-exitd-top? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (is-get-exitd-top? v::variable)
+   (eq? v *get-exitd-top*))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-exit-return? ...                                              */

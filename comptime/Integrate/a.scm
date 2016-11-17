@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed Nov 16 18:35:17 2016 (serrano)                */
+;*    Last change :  Thu Nov 17 08:50:07 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -43,6 +43,7 @@
 ;*    each function, compute its free variables set.                   */
 ;*---------------------------------------------------------------------*/
 (define (A global node)
+   (when *optim-return-local?* (init-return-cache!))
    ;; the setups
    (set! *phi*  (list global))
    (set! *kont* 0)
@@ -124,7 +125,7 @@
 		(match-case a
 		   ((?- ?callee (?- . ?type))
 		    (let ((fun (variable-value callee)))
-		       (with-access::sfun/Iinfo fun (tail-coercion body forceG?)
+		       (with-access::sfun/Iinfo fun (tail-coercion body)
 			  (cond
 			     ((not tail-coercion)
 			      #unspecified)
@@ -225,15 +226,38 @@
 ;*    node-A ::app ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::app host k A)
+
+   (define (set-exit-call node::node)
+      (when *optim-return-local?*
+	 (with-access::app node (fun args)
+	    (with-access::var fun (variable)
+	       (when (is-unwind-until? variable)
+		  (when (isa? (car args) var)
+		     (with-access::var (car args) (variable)
+			(let ((val (variable-value variable)))
+			   (when (isa? val svar/Iinfo)
+			      (with-access::svar/Iinfo val (xhdl)
+				 xhdl))))))))))
+
+   (define (is-exit-handler? callee)
+      (when *optim-return-local?*
+	 (when (isa? (variable-value callee) sfun/Iinfo)
+	    (with-access::sfun/Iinfo (variable-value callee) (xhdl?)
+	       xhdl?))))
+   
    (with-access::app node (fun)
       (let ((callee (var-variable fun)))
-	 ;; we manage the actuals
 	 (let liip ((args (app-args node))
 		    (A A))
 	    (if (null? args)
 		(cond
 		   ((local? callee)
-		    (cons `(,host ,callee ,k) A))
+		    (if (is-exit-handler? host)
+			(cons `(,host ,callee tail) A)
+			(cons `(,host ,callee ,k) A)))
+		   ((set-exit-call node)
+		    =>
+		    (lambda (callee) (cons `(,host ,callee ,k) A)))
 		   (else
 		    A))
 		(liip (cdr args)
@@ -367,6 +391,13 @@
 ;*    node-A ::let-var ...                                             */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::let-var host k A)
+   
+   (define (is-get-exitd-top-app? node)
+      (when (isa? node app)
+	 (with-access::app node (fun args)
+	    (with-access::var fun (variable)
+	       (is-get-exitd-top? variable)))))
+      
    (with-access::let-var node (body)
       (let liip ((bindings (let-var-bindings node))
 		 (A A))
@@ -375,7 +406,10 @@
 	     (let* ((binding (car bindings))
 		    (var (car binding))
 		    (val (cdr binding)))
-		(widen!::svar/Iinfo (local-value var))
+		(if (and *optim-return-local?* (is-get-exitd-top-app? val))
+		    (widen!::svar/Iinfo (local-value var)
+		       (xhdl host))
+		    (widen!::svar/Iinfo (local-value var)))
 		(liip (cdr bindings)
 		   (node-A val
 		      host (cons (get-new-kont) (local-type var)) A)))))))
@@ -390,12 +424,14 @@
 	 (widen!::sexit/Iinfo (local-value exit))
 	 (if (not (sexit-detached? (local-value exit)))
 	     (begin
-		(unless (and *optim-return-local?*
-			     (let ((fext (function-exit-node node)))
-				(when (pair? fext)
-				   (let ((exitvar (car fext))
-					 (exitnode (cdr fext)))
-				      (is-exit-return? exitnode exitvar)))))
+		(if (and *optim-return-local?*
+			 (let ((fext (function-exit-node node)))
+			    (when (pair? fext)
+			       (let ((exitvar (car fext))
+				     (exitnode (cdr fext)))
+				  (is-exit-return? exitnode exitvar)))))
+		    (with-access::sfun/Iinfo (local-value hdlg) (xhdl?)
+		      (set! xhdl? #t))
 		   (with-access::sfun/Iinfo (local-value hdlg) (forceG?)
 		      (set! forceG? #t)))
 		(node-A body

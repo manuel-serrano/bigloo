@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 13 16:16:29 1995                          */
-;*    Last change :  Mon Mar 28 16:21:53 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 17 05:46:12 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The integration of one global definition.                        */
 ;*=====================================================================*/
@@ -16,6 +16,7 @@
    (include "Tools/trace.sch"
 	    "Tools/verbose.sch")
    (import  type_type
+	    engine_param
 	    ast_var
 	    ast_node
 	    ast_remove

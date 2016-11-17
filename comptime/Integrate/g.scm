@@ -3,10 +3,10 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 15 14:53:50 1995                          */
-;*    Last change :  Thu Aug  9 07:02:04 2007 (serrano)                */
-;*    Copyright   :  1995-2007 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Nov 17 05:41:06 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We compute the set of globalized functions.                      */
+;*    Compute the set of globalized functions.                         */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
