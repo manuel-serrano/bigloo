@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Wed Nov 16 19:14:41 2016 (serrano)                */
+;*    Last change :  Thu Nov 17 16:10:10 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -745,7 +745,7 @@
 		    (copy-path))))))
       
       (define (pop-directory j)
-	 (let ((nj (string-index-right res sep (-fx j 2))))
+	 (let ((nj (string-index-right res sep (-fx j 1))))
 	    (if (fixnum? nj)
 		(+fx nj 1)
 		0)))
