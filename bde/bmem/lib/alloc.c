@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Thu Jun  2 15:34:15 2016 (serrano)                */
+/*    Last change :  Mon Nov 21 16:07:12 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -766,8 +766,8 @@ WRAPPER( bstring_to_keyword, KEYWORD_TYPE_NUM, (void *s), (s) )
 
 /* vector */
 WRAPPER( create_vector, VECTOR_TYPE_NUM, (int len), (len) )
-WRAPPER( make_vector, VECTOR_TYPE_NUM, (int len, void *init), (len, init) )
-WRAPPER( make_vector_uncollectable, VECTOR_TYPE_NUM, (int len, void *init), (len, init) )
+WRAPPER( make_vector, VECTOR_TYPE_NUM, (int len, obj_t init), (len, init) )
+WRAPPER( make_vector_uncollectable, VECTOR_TYPE_NUM, (int len, obj_t init), (len, init) )
 
 /* create_vector_uncollectable is only */ 
 /* used to allocate class objects.     */

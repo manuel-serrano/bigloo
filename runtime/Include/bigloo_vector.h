@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Nov 15 08:10:05 2016 (serrano)                */
+/*    Last change :  Mon Nov 21 16:10:41 2016 (serrano)                */
 /*    Copyright   :  2016 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -25,6 +25,11 @@ extern "C" {
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t create_vector( int );
+BGL_RUNTIME_DECL obj_t create_vector_uncollectable( int );
+BGL_RUNTIME_DECL obj_t make_vector( int len, obj_t );
+BGL_RUNTIME_DECL obj_t make_vector_uncollectable( int, obj_t );
+BGL_RUNTIME_DECL obj_t bgl_fill_vector( obj_t, long, long, obj_t );
+BGL_RUNTIME_DECL obj_t fill_vector( obj_t, long, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy( obj_t );
 
 /*---------------------------------------------------------------------*/

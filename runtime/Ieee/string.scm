@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Nov 17 13:39:57 2016 (serrano)                */
+;*    Last change :  Thu Nov 17 16:27:23 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -982,7 +982,7 @@
 	     (loop (-fx i 1))))))
    (cond
       ((>fx start (string-length s))
-       (error "string-index" "index out of bound" start))
+       (error "string-index-right" "index out of bound" start))
       ((char? rs)
        (string-char-index s rs))
       ((not (string? rs))

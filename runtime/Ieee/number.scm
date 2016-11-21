@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Mon Mar 14 15:18:28 2016 (serrano)                */
+;*    Last change :  Fri Nov 18 14:28:34 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -701,14 +701,12 @@
 (define (+ . x)
    ;; CARE: 0 cannot be the initial value of the recursion, otherwise,
    ;; -0.0 + -0.0 would be incorrectly handled
-   ;; iteration 
    (if (null? x)
        0
        (let loop ((sum (car x))
 		  (x (cdr x)))
 	  (if (pair? x)
-	      (loop (2+ sum (car x))
-		 (cdr x))
+	      (loop (2+ sum (car x)) (cdr x))
 	      sum))))
 
 ;*---------------------------------------------------------------------*/
