@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Nov 16 17:53:51 2016 (serrano)                */
+;*    Last change :  Thu Nov 24 07:40:35 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -87,7 +87,7 @@
 	    *optim-jvm-fasteq*
 	    *optim-symbol-case*
 	    *optim-return?*
-	    *optim-return-local?*
+	    *optim-return-goto?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -936,7 +936,7 @@
 (param-define *optim-return?*
    "Optimize set-exit used as return"
    #f)
-(param-define *optim-return-local?*
+(param-define *optim-return-goto?*
    "Optimize set-exit by enabling local return"
    #f)
 

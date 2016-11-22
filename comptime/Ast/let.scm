@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Mon Oct 24 13:03:12 2016 (serrano)                */
+;*    Last change :  Tue Nov 22 17:58:08 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -27,6 +27,7 @@
 	    ast_substitute
 	    ast_occur
 	    ast_remove
+	    ast_dump
 	    backend_backend)
    (export  (let-sym? ::obj)
 	    (let-sym::symbol)
@@ -172,7 +173,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    make-smart-generic-let ...                                       */
 ;*    -------------------------------------------------------------    */
-;*    We patch bindings which concerns a function and where the        */
+;*    We patch the bindings that concern a function and where the      */
 ;*    variable is never mutated. These bindings are put all together   */
 ;*    in a labels form.                                                */
 ;*    -------------------------------------------------------------    */
@@ -182,6 +183,8 @@
 ;*    (labels ((f args body)) (let (...) ...))                         */
 ;*---------------------------------------------------------------------*/
 (define (make-smart-generic-let let/letrec node-let site)
+   
+   
    (let loop ((bindings (let-var-bindings node-let))
 	      (fun      '())
 	      (value    '()))
@@ -355,10 +358,16 @@
    
    (define (safe-let-optim? node)
       (with-access::let-var node (bindings)
-	 (every (lambda (b)
-		   (when (eq? (variable-access (car b)) 'read)
-		      (safe-rec-val-optim? (cdr b) vars)))
-	    bindings)))
+	 (cond
+	    ((null? bindings)
+	     #t)
+	    ((null? (cdr bindings))
+	     (safe-rec-val-optim? (cdar bindings) vars))
+	    (else
+	     (every (lambda (b)
+		       (when (eq? (variable-access (car b)) 'read)
+			  (safe-rec-val-optim? (cdr b) vars)))
+		bindings)))))
 
    (cond
       ((or (eq? let/letrec 'let) (let-sym? let/letrec))
@@ -822,17 +831,24 @@
       (match-case exp
 	 ((?- (lambda ?- . ?-))
 	  #t)
+	 ((?- (labels ((?sym . ?-)) (and ?var (? symbol?))))
+	  (eq? (fast-id-of-id sym #f) var))
 	 ((?- ((and ?sym (? symbol?)) ?- . ?-))
 	  (eq? (fast-id-of-id sym #f) 'lambda))
 	 (else
 	  #f)))
-   
+
    (with-trace 3 "letrec*"
       (match-case sexp
 	 ((letrec* () . ?body)
 	  ;; not a real letrec*
 	  (sexp->node
-	     (epairify-propagate-loc `(begin ,@body) loc) stack loc site))
+	     (epairify-propagate-loc `(begin ,@body) loc)
+	     stack loc site))
+	 ((letrec* (and ?bindings (?binding)) . ?body)
+	  (sexp->node
+	     (epairify-propagate-loc `(letrec ,bindings ,@body) loc)
+	     stack loc site))
 	 ((letrec* (and (? list?) ?bindings) . ?body)
 	  (if (every lambda? bindings)
 	      ;; a plain letrec
@@ -859,6 +875,8 @@
    (cond
       ((null? bindings)
        body)
+      ((null? (cdr bindings))
+       `(letrec ,bindings ,body))
       ((function? (cadr (car bindings)))
        `(letrec (,(car bindings))
 	   ,(letrecstar (cdr bindings) body)))
@@ -880,8 +898,8 @@
    (match-case exp
       ((quote . ?-)
        #f)
-      ((labels ((?id . ?-)) ?id)
-       #t)
+      ((labels ((?tid . ?-)) ?id)
+       (eq? (fast-id-of-id tid #f) #t))
       ((?var . (and ?args ??-))
        (or (eq? var 'lambda)
 	   (and (symbol? var) (eq? (fast-id-of-id var #f) 'lambda))

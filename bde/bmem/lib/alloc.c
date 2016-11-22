@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Nov 21 16:07:12 2016 (serrano)                */
+/*    Last change :  Tue Nov 22 08:00:24 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -610,12 +610,11 @@ GC_local_malloc_atomic( size_t lb ) {
 /*    register_class ...                                               */
 /*---------------------------------------------------------------------*/
 obj_t
-BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
-					 int abstract,
-					 obj_t creator, obj_t allocate,
-					 obj_t nil, obj_t predicate,
-					 long hash, obj_t def,
-					 obj_t constructor, obj_t virt ) {
+BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t module, obj_t super,
+					 long hash,
+					 obj_t creator, obj_t ator, obj_t ctor,
+					 obj_t nil, obj_t shrink,
+					 obj_t plain, obj_t virtual ) {
    static int init = 0;
    char tmp[ 256 ];
    obj_t alloc;
@@ -628,7 +627,11 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
       init = 1;
    }
 
-   fprintf( stderr, "  %s (%d)...", cname, tnum );
+   fprintf( stderr, "  %s@%s (%d) [%s]...",
+	    cname,
+	    BSTRING_TO_STRING( SYMBOL_TO_STRING( module ) ),
+	    tnum );
+	       
    fflush( stderr );
    declare_type( tnum, cname );
 
@@ -642,10 +645,11 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t super,
    ((esymbol_t *)(CSYMBOL(alloc)))->class_alloc = tnum;
    ((esymbol_t *)(CSYMBOL(alloc)))->class_offset = 1;
 
-   class = ____register_class( name, super, abstract, creator, allocate,
-			       nil, predicate,
-			       hash, def,
-			       constructor, virt );
+   class = ____register_class( name, module, super,
+			       hash,
+			       creator, ator, ctor,
+			       nil, shrink,
+			       plain, virtual );
 
    fprintf( stderr, "ok\n" );
 

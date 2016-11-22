@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Thu Jun  2 15:34:45 2016 (serrano)                */
+/*    Last change :  Tue Nov 22 07:58:14 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -161,9 +161,11 @@ extern void *(*____scheduler_react)( void * );
 extern void (*____bglthread_switch)( void *, void * );
 extern void (*____bglasync_scheduler_notify)( void * );
 
-extern void *(*____register_class )( void *, void *, int, void *, void *,
+extern void *(*____register_class )( void *, void *, void *,
+				     long,
+				     void *, void *, void *,
 				     void *, void *,
-				     long, void *, void *, void * );
+				     void *, void * );
 extern int (*____bgl_types_number)();
 
 extern void *(*____pthread_getspecific)( pthread_key_t );

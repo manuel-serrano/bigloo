@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Thu Jun  2 15:35:26 2016 (serrano)                */
+/*    Last change :  Tue Nov 22 07:58:54 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -142,7 +142,7 @@ void *(*____bgl_make_date )( int, int, int, int, int, int, long, bool_t, int );
 void *(*____bgl_seconds_format )( long, void * );
 					   
 /* classes */
-void *(*____register_class)( void *, void *, int, void *, void *, void *, void *, long, void *, void *, void * );
+void *(*____register_class )( void *, void *, void *, long, void *, void *, void *, void *, void *, void *, void * );
 int (*____bgl_types_number)();
 long (*____get_hash_power_number)( char *, unsigned long );
 void *(*____bgl_get_symtab)() = 0;

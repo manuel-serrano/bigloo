@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Nov 16 17:54:40 2016 (serrano)                */
+;*    Last change :  Thu Nov 24 07:40:29 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -486,11 +486,11 @@
        (set! *optim-return?* #t))
       (("-fno-return" (help "Disable set-exit replacement"))
        (set! *optim-return?* #f))
-      (("-freturn-local" (help "Enable local set-exit replacement with return"))
+      (("-freturn-goto" (help "Enable local set-exit replacement with return"))
        (set! *optim-return?* #t)
-       (set! *optim-return-local?* #t))
-      (("-fno-return-local" (help "Disable local set-exit replacement"))
-       (set! *optim-return-local?* #f))
+       (set! *optim-return-goto?* #t))
+      (("-fno-return-goto" (help "Disable local set-exit replacement"))
+       (set! *optim-return-goto?* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))

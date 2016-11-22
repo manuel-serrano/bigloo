@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Thu Nov 17 08:50:07 2016 (serrano)                */
+;*    Last change :  Thu Nov 24 07:40:47 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -43,7 +43,7 @@
 ;*    each function, compute its free variables set.                   */
 ;*---------------------------------------------------------------------*/
 (define (A global node)
-   (when *optim-return-local?* (init-return-cache!))
+   (when *optim-return-goto?* (init-return-cache!))
    ;; the setups
    (set! *phi*  (list global))
    (set! *kont* 0)
@@ -228,7 +228,7 @@
 (define-method (node-A node::app host k A)
 
    (define (set-exit-call node::node)
-      (when *optim-return-local?*
+      (when *optim-return-goto?*
 	 (with-access::app node (fun args)
 	    (with-access::var fun (variable)
 	       (when (is-unwind-until? variable)
@@ -240,7 +240,7 @@
 				 xhdl))))))))))
 
    (define (is-exit-handler? callee)
-      (when *optim-return-local?*
+      (when *optim-return-goto?*
 	 (when (isa? (variable-value callee) sfun/Iinfo)
 	    (with-access::sfun/Iinfo (variable-value callee) (xhdl?)
 	       xhdl?))))
@@ -252,12 +252,17 @@
 	    (if (null? args)
 		(cond
 		   ((local? callee)
-		    (if (is-exit-handler? host)
-			(cons `(,host ,callee tail) A)
-			(cons `(,host ,callee ,k) A)))
+		    (cond
+		       ((is-exit-handler? host)
+			(cons `(,host ,callee tail) A))
+		       ((is-exit-handler? callee)
+			(cons `(,host ,callee tail) A))
+		       (else
+			(cons `(,host ,callee ,k) A))))
 		   ((set-exit-call node)
 		    =>
-		    (lambda (callee) (cons `(,host ,callee ,k) A)))
+		    ;;(lambda (callee) (cons `(,host ,callee ,k) A)))
+		    (lambda (callee) (cons `(,host ,callee tail) A)))
 		   (else
 		    A))
 		(liip (cdr args)
@@ -406,7 +411,7 @@
 	     (let* ((binding (car bindings))
 		    (var (car binding))
 		    (val (cdr binding)))
-		(if (and *optim-return-local?* (is-get-exitd-top-app? val))
+		(if (and *optim-return-goto?* (is-get-exitd-top-app? val))
 		    (widen!::svar/Iinfo (local-value var)
 		       (xhdl host))
 		    (widen!::svar/Iinfo (local-value var)))
@@ -424,7 +429,7 @@
 	 (widen!::sexit/Iinfo (local-value exit))
 	 (if (not (sexit-detached? (local-value exit)))
 	     (begin
-		(if (and *optim-return-local?*
+		(if (and *optim-return-goto?*
 			 (let ((fext (function-exit-node node)))
 			    (when (pair? fext)
 			       (let ((exitvar (car fext))

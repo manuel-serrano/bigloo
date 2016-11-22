@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Nov 17 08:13:09 2016 (serrano)                */
+;*    Last change :  Thu Nov 24 07:41:17 2016 (serrano)                */
 ;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -94,8 +94,8 @@
 		     (set! body (return! exitnode exitvar rblock)))
 		  (sfun-class-set! fun 'sfun)
 		  (sfun-body-set! fun rblock)))))
-      (when *optim-return-local?*
-	 (return-local-funs! body))
+      (when *optim-return-goto?*
+	 (return-goto-funs! body))
       (leave-function)
       var))
 
@@ -255,7 +255,7 @@
 			(is-return? (car args) exitvar abort)))
 		 (call-default-walker)))
 	    ((eq? variable *get-exitd-top*)
-	     (abort #f))
+	     (or *optim-return-goto?* (abort #f)))
 	    (else
 	     (call-default-walker))))))
 
@@ -286,17 +286,17 @@
 	     (call-default-walker)))))
 
 ;*---------------------------------------------------------------------*/
-;*    return-local-funs! ...                                           */
+;*    return-goto-funs! ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (return-local-funs! node::node)
+(define-walk-method (return-goto-funs! node::node)
    (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
-;*    return-local-funs! ::let-fun ...                                 */
+;*    return-goto-funs! ::let-fun ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (return-local-funs! node::let-fun)
+(define-walk-method (return-goto-funs! node::let-fun)
    (with-access::let-fun node (locals body)
       (for-each return-fun! locals)
-      (set! body (return-local-funs! body))
+      (set! body (return-goto-funs! body))
       node))
 		  
