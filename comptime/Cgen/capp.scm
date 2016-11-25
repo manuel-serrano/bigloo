@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Tue Dec 11 09:26:40 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 25 08:44:30 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
 ;*=====================================================================*/
@@ -120,7 +120,7 @@
 		 (auxs         '())
 		 (exps         '()))
 	 (if (null? old-actuals)
-	     (let* ((type (get-type node))
+	     (let* ((type (get-type node #f))
 		    (aux (make-local-svar/name 'tmp type))
 		    (cop (node->cop (node-setq aux fun) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
@@ -174,7 +174,7 @@
 					      (strength strength)
 					      (type type)))))))))))
 	     (let* ((a (car old-actuals))
-		    (aux (make-local-svar/name 'a (get-type a)))
+		    (aux (make-local-svar/name 'a (get-type a #f)))
 		    (cop (node->cop (node-setq aux a) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
 			 (eq? (varc-variable (csetq-var cop)) aux))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Feb 13 10:08:49 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 08:44:43 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -323,7 +323,7 @@
    
    (define (check-type node typec typea)
       (with-access::app node (loc)
-	 (let ((type  (get-type node)))
+	 (let ((type  (get-type node #f)))
 	    (cond
 	       ((type-less-specific? typec typea)
 		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
@@ -365,11 +365,11 @@
 		  (null? (cdr args))
 		  (type? typec)
 		  (not (side-effect? (car args))))
-	     (check-type node typec (get-type (car args))))
+	     (check-type node typec (get-type (car args) #f)))
 	    ((isa-of node)
 	     =>
 	     (lambda (typec)
-		(check-type node typec (get-type (car args)))))
+		(check-type node typec (get-type (car args) #f))))
 	    (else
 	     node)))))
 
@@ -382,7 +382,7 @@
 	 (and (eq? (var-variable fun) *pair?*)
 	      (pair? args)
 	      (null? (cdr args))
-	      (eq? (get-type (car args)) *pair-nil*)))))
+	      (eq? (get-type (car args) #f) *pair-nil*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    set-null-test! ...                                               */

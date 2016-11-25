@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Mon Mar 10 14:14:58 2014 (serrano)                */
-;*    Copyright   :  1996-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 25 08:38:46 2016 (serrano)                */
+;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -27,7 +27,7 @@
    (export  (is-subtype? t1 t2)
 	    (get-type-atom::type <atom>)
 	    (get-type-kwote::type <kwote>)
-	    (generic get-type::type ::node)))
+	    (generic get-type::type ::node ::bool)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type-atom ...                                                */
@@ -83,7 +83,7 @@
 ;*    is equal to *_*) then, a recursive descent search for the        */
 ;*    type of node.                                                    */
 ;*---------------------------------------------------------------------*/
-(define-generic (get-type::type node::node)
+(define-generic (get-type::type node::node strict)
    (node-type node))
 
 ;*---------------------------------------------------------------------*/
@@ -105,7 +105,7 @@
 ;*    The predicate TYPE-MORE-SPECIFIC? handles is used to detect      */
 ;*    these cases.                                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::var)
+(define-method (get-type node::var strict)
    
    (define (verbose-type typen typev)
       (unless (or (eq? typen *obj*)
@@ -129,40 +129,47 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::sequence ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::sequence)
+(define-method (get-type node::sequence strict)
    (with-access::sequence node (type)
       (if (eq? type *_*)
 	  (with-access::sequence node (nodes)
-	     (get-type (car (last-pair nodes))))
+	     (get-type (car (last-pair nodes)) strict))
 	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::sync ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::sync)
+(define-method (get-type node::sync strict)
    (with-access::sync node (type)
       (if (eq? type *_*)
 	  (with-access::sync node (body)
-	     (get-type body))
+	     (get-type body strict))
 	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::conditional ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::conditional)
+(define-method (get-type node::conditional strict)
    (with-access::conditional node (type test true false)
       (if (eq? type *_*)
 	  (with-access::conditional node (test true false)
-	     (let ((ttrue (get-type true))
-		   (tfalse (get-type false)))
+	     (let ((ttrue (get-type true strict))
+		   (tfalse (get-type false strict)))
 		(cond
 		   ((or (eq? ttrue tfalse) (eq? tfalse *magic*)) ttrue)
 		   ((eq? ttrue *magic*) tfalse)
 		   ((and (pair-nil? ttrue) (pair-nil? tfalse)) *pair-nil*)
-		   ((is-subtype? ttrue tfalse) tfalse)
-		   ((is-subtype? tfalse ttrue) ttrue)
+		   ((is-strict-subtype? ttrue tfalse strict) tfalse)
+		   ((is-strict-subtype? tfalse ttrue strict) ttrue)
 		   (else *obj*))))
 	  type)))
+
+;*---------------------------------------------------------------------*/
+;*    is-strict-subtype? ...                                           */
+;*---------------------------------------------------------------------*/
+(define (is-strict-subtype? t1 t2 strict)
+   (when (is-subtype? t1 t2)
+      (or (not strict) (and (not (eq? t1 *_*)) (not (eq? t2 *_*))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-subtype? ...                                                  */
@@ -191,14 +198,14 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::select ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::select)
+(define-method (get-type node::select strict)
    (with-access::select node (type clauses test)
       (if (eq? type *_*)
 	  (let loop ((clauses (cdr clauses))
-		     (type (get-type (cdr (car clauses)))))
+		     (type (get-type (cdr (car clauses)) strict)))
 	     (if (null? clauses)
 		 type
-		 (let ((ntype (get-type (cdr (car clauses)))))
+		 (let ((ntype (get-type (cdr (car clauses)) strict)))
 		    (cond
 		       ((eq? ntype type)
 			(loop (cdr clauses) type))
@@ -214,25 +221,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::let-fun ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::let-fun)
+(define-method (get-type node::let-fun strict)
    (with-access::let-fun node (type body)
       (if (eq? type *_*)
-	  (get-type body)
+	  (get-type body strict)
 	  type)))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::let-var ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::let-var)
+(define-method (get-type node::let-var strict)
    (with-access::let-var node (type body)
       (if (eq? type *_*)
-	  (get-type body)
+	  (get-type body strict)
 	  type)))
  
 ;*---------------------------------------------------------------------*/
 ;*    get-type ::app ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::app)
+(define-method (get-type node::app strict)
    (with-access::app node (type fun)
       (if (eq? type *_*)
 	  (variable-type (var-variable fun))

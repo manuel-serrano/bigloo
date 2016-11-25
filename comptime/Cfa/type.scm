@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Mon Oct 24 13:26:28 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 08:42:34 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
@@ -250,7 +250,7 @@
       (type-node*! nodes)
       (when (eq? type *_*)
 	 (if (pair? nodes)
-	     (set! type (get-type (car (last-pair nodes))))
+	     (set! type (get-type (car (last-pair nodes)) #f))
 	     (set! type *unspec*)))
       node))
 
@@ -263,7 +263,7 @@
       (set! prelock (type-node! prelock))
       (set! body (type-node! body))
       (when (eq? type *_*)
-	 (set! type (get-type body)))
+	 (set! type (get-type body #f)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -330,7 +330,7 @@
 	  (let ((atype (get-procedure-approx-type approx node)))
 	     (if (and (bigloo-type? atype)
 		      (not (eq? atype *_*))
-		      (not (eq? atype (get-type node))))
+		      (not (eq? atype (get-type node #f))))
 		 (instantiate::cast
 		    (type atype)
 		    (arg node))
@@ -347,7 +347,7 @@
 	 (let ((atype (get-procedure-approx-type vapprox node)))
 	    (when (and (bigloo-type? atype)
 		       (not (eq? atype *_*))
-		       (not (eq? atype (get-type (caddr args)))))
+		       (not (eq? atype (get-type (caddr args) #f))))
 	       (set-car! (cddr args)
 			 (instantiate::cast
 			    (type *obj*)
@@ -492,7 +492,7 @@
        (set! test (type-node! test))
        (set! true (type-node! true))
        (set! false (type-node! false))
-       (set! type (get-type node))
+       (set! type (get-type node #f))
        node))
 
 ;*---------------------------------------------------------------------*/
@@ -524,7 +524,7 @@
       ;; we cannot use the type of the approximation here because the
       ;; approximated type might be more precise that the actual
       ;; code generation (for instance when some procedure-el are applied)
-      (set! type (get-type node))
+      (set! type (get-type node #f))
       node))
 
 ;* {*---------------------------------------------------------------------*} */
@@ -606,7 +606,7 @@
    (with-access::box-ref node (var type)
       (set! var (type-node! var))
       ;; MS: 24oct2016
-      ;;(set! type (get-type var))
+      ;;(set! type (get-type var #f))
       node))
 
 ;*---------------------------------------------------------------------*/

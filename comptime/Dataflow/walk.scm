@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Sun Nov 24 18:17:25 2013 (serrano)                */
-;*    Copyright   :  2010-13 Manuel Serrano                            */
+;*    Last change :  Fri Nov 25 08:33:31 2016 (serrano)                */
+;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
 ;*    For instance, for an expression such as (if (pair? x) then else),*/
@@ -29,6 +29,7 @@
 	    ast_var
 	    ast_node
 	    ast_env
+	    ast_dump
 	    effect_cgraph
 	    effect_spread
 	    effect_feffect
@@ -167,7 +168,7 @@
 	 (with-access::var var (variable)
 	    (if (global? variable)
 		(remove-variable-from-env variable nenv)
-		(let ((typ (get-type value)))
+		(let ((typ (get-type value #t)))
 		   (if (or (eq? typ *_*) (eq? typ *obj*))
 		       (remove-variable-from-env variable nenv)
 		       (cons (cons variable typ) nenv))))))))
@@ -191,9 +192,9 @@
 	     (false-env (append (dataflow-test-false-env test) tenv)))
 	 (let ((tenv (dataflow-node! false false-env))
 	       (fenv (dataflow-node! true true-env)))
-	 (if (abort? false)
-	     tenv
-	     (lub tenv fenv))))))
+	    (if (abort? false)
+		tenv
+		(lub tenv fenv))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dataflow-node! ::fail ...                                        */

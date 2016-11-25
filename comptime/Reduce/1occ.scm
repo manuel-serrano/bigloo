@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sun Feb  7 06:40:41 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 08:44:59 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
@@ -335,7 +335,7 @@
 			       (eq? (local-access var) 'read)
 			       (not (side-effect? val))
 			       (type-less-specific? (local-type var)
-				  (get-type val)))
+				  (get-type val #f)))
 			  (trace (reduce 3) "***1occ: apply: "
 			     (shape var) " " (shape val) #\Newline)
 			  (loop (cdr obindings)

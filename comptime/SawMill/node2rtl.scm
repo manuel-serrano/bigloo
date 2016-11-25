@@ -57,16 +57,6 @@
 		 var))
 	  var)))
 
-;* (define (mget-type e)                                               */
-;*    (let ((t (get-type e)))                                          */
-;*       (if (eq? (type-id t) 'foreign)                                */
-;* 	  (tprint "\n\n\n\n\nPAS GLOP: " (shape e)))                   */
-;*       t))                                                           */
-;*                                                                     */
-;* (define-expander get-type                                           */
-;*    (lambda (x e)                                                    */
-;*       `(mget-type ,(e (cadr x) e))))                                */
-			   
 ;;
 ;; Regs
 ;;
@@ -81,7 +71,7 @@
 	      (type (variable-type (var-variable e)))
 	      (var #f)
 	      (name (gensym))) )
-       (instantiate::rtl_reg (type (get-type e)) (var #f) (name (gensym)))) )
+       (instantiate::rtl_reg (type (get-type e #f)) (var #f) (name (gensym)))) )
 
 (define (new-ureg::rtl_reg var::local) ; ()
    (instantiate::rtl_reg (type (local-type var)) (var var)) )
@@ -368,7 +358,7 @@
 	     ;; Forget fun which is always the first argument of args.
 	     (call* e
 		    (instantiate::rtl_lightfuncall
-		       (rettype (get-type e))
+		       (rettype (get-type e #f))
 		       (name (gensym))
 		       (funs (funcall-functions e)) )
 		    args) )
@@ -401,13 +391,13 @@
 ;;
 (define-method (node->rtl::area e::new) ; ()
    (with-access::new e (expr* args-type)
-      (call* e (instantiate::rtl_new (type (get-type e)) (constr args-type))
+      (call* e (instantiate::rtl_new (type (get-type e #f)) (constr args-type))
 	     expr* )))
 
 ;;
 (define-method (node->rtl::area e::valloc) ; ()
    (with-access::valloc e (expr* ftype)
-      (call* e (instantiate::rtl_valloc (type ftype) (vtype (get-type e)))
+      (call* e (instantiate::rtl_valloc (type ftype) (vtype (get-type e #f)))
 	     expr* )))
 
 ;;
@@ -435,7 +425,7 @@
 (define-method (node->rtl::area e::cast) ; ()
   (with-access::cast e (arg)
       ; CARE MANU pourquoi il y aurait des mauvais type!!
-      ; (call e (instantiate::rtl_cast (type (get-type e))) arg)
+      ; (call e (instantiate::rtl_cast (type (get-type e #f))) arg)
       (node->rtl arg) ))
 
 ;;

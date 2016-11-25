@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Tue Feb  4 09:59:42 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 25 08:44:51 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -169,7 +169,7 @@
 		   (let* ((fun (app-fun node))
 			  (val (variable-value (var-variable fun)))
 			  (typec (fun-predicate-of val))
-			  (typev (get-type (car args))))
+			  (typev (get-type (car args) #f)))
 		      (cond
 			 ((not (type? typec))
 			  ;; this is not a predicate

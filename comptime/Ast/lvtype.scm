@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Wed Dec 23 12:27:13 2015 (serrano)                */
+;*    Last change :  Fri Nov 25 08:41:00 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -80,7 +80,7 @@
    (with-access::sequence node (type nodes)
       (lvtype-node*! nodes)
       (when (eq? type *_*)
-	 (set! type (get-type node)))))
+	 (set! type (get-type node #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::sync ...                                          */
@@ -91,7 +91,7 @@
       (lvtype-node! prelock)
       (lvtype-node! body)
       (when (eq? type *_*)
-	 (set! type (get-type node)))))
+	 (set! type (get-type node #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app ...                                           */
@@ -100,7 +100,7 @@
    (with-access::app node (type fun args)
       (lvtype-node*! args)
       (when (eq? type *_*)
-	 (set! type (get-type node)))))
+	 (set! type (get-type node #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app-ly ...                                        */
@@ -149,7 +149,7 @@
        (lvtype-node! true)
        (lvtype-node! false)
        (when (eq? type *_*)
-	  (set! type (get-type node)))))
+	  (set! type (get-type node #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::fail ...                                          */
@@ -180,7 +180,7 @@
 		locals)
       (lvtype-node! body)
       (when (eq? type *_*)
-	 (set! type (get-type body)))))
+	 (set! type (get-type body #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::let-var ...                                       */
@@ -191,11 +191,11 @@
 		   (let ((var (car binding))
 			 (val (cdr binding)))
 		      (lvtype-node! val)
-		      (set-variable-type! var (get-type val))))
+		      (set-variable-type! var (get-type val #f))))
 		bindings)
       (lvtype-node! body)
       (when (eq? type *_*)
-	 (set! type (get-type body)))))
+	 (set! type (get-type body #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::set-ex-it ...                                     */

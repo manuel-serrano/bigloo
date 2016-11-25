@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Mon Nov 11 10:10:19 2013 (serrano)                */
-;*    Copyright   :  2000-13 Manuel Serrano                            */
+;*    Last change :  Fri Nov 25 08:45:08 2016 (serrano)                */
+;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -459,7 +459,7 @@
 (define (node-beta-predicate! node)
    (with-access::app node (fun args loc type)
       (let ((vfun (var-variable fun))
-	    (atype (get-type (car args))))
+	    (atype (get-type (car args) #f)))
 	 (cond
 	    ((eq? atype *obj*)
 	     node)

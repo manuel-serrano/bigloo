@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Tue Mar 18 11:29:55 2014 (serrano)                */
-;*    Copyright   :  1997-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 25 08:43:31 2016 (serrano)                */
+;*    Copyright   :  1997-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
@@ -357,7 +357,7 @@
       (patch*! nodes)
       (when (eq? type *obj*)
 	 (set! type *_*)
-	 (set! type (get-type node)))
+	 (set! type (get-type node #f)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -370,7 +370,7 @@
       (set! body (patch! body))
       (when (eq? type *obj*)
 	 (set! type *_*)
-	 (set! type (get-type node)))
+	 (set! type (get-type node #f)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -426,7 +426,7 @@
        (set! false (patch! false))
        (when (eq? type *obj*)
 	  (set! type *_*)
-	  (set! type (get-type node)))
+	  (set! type (get-type node #f)))
        node))
 
 ;*---------------------------------------------------------------------*/
@@ -459,7 +459,7 @@
       (set! body (patch! body))
       (when (eq? type *obj*)
 	 (set! type *_*)
-	 (set! type (get-type node)))
+	 (set! type (get-type node #f)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -474,7 +474,7 @@
       (set! body (patch! body))
        (when (eq? type *obj*)
 	  (set! type *_*)
-	  (set! type (get-type node)))
+	  (set! type (get-type node #f)))
       node))
 
 ;*---------------------------------------------------------------------*/
@@ -551,7 +551,7 @@
 (define (specialize-app!::app node::app)
    
    (define (normalize-get-type val)
-      (let ((ty (get-type val)))
+      (let ((ty (get-type val #f)))
 	 (if (eq? ty *int*)
 	     *long*
 	     ty)))
@@ -597,8 +597,8 @@
       (if (and (eq? (var-variable fun) *c-eq?*)
 	       (backend-typed-eq (the-backend)))
 	  ;; here we are...
-	  (let ((t1 (get-type (car args)))
-		(t2 (get-type (cadr args))))
+	  (let ((t1 (get-type (car args) #f))
+		(t2 (get-type (cadr args) #f)))
 	     (cond
 		((and (eq? t1 *obj*) (eq? t2 *obj*))
 		 #unspecified)
@@ -629,3 +629,4 @@
 		 #unspecified))
 	     node)
 	  node)))
+<

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Wed Nov 16 18:31:04 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 08:39:51 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -46,7 +46,7 @@
        (location-shape (node-loc node)
 		       (if *type-shape?*
 			   `#(,(atom-value node)
-			      ,(shape (get-type node))
+			      ,(shape (get-type node #f))
 			      ,(shape (node-type node)))
 			   (atom-value node)))))
 
@@ -152,7 +152,7 @@
 		 ((light) 'funcall-l)
 		 ((elight) 'funcall-el)
 		 (else 'funcall)))
-	  (top (shape-typed-node op (get-type node))))
+	  (top (shape-typed-node op (get-type node #f))))
       (location-shape (node-loc node)
 	 `(,top
 	     ,(node->sexp (funcall-fun node))
@@ -167,7 +167,7 @@
 		   (let ((p (if (pragma-side-effect node)
 				'pragma
 				'free-pragma)))
-		      `(,(shape-typed-node p (get-type node))
+		      `(,(shape-typed-node p (get-type node #f))
 			,(pragma-format node)
 			,@(map node->sexp (pragma-expr* node))))))
 
@@ -178,7 +178,7 @@
    (node->sexp-hook node)
    (with-access::getfield node (fname ftype otype expr*)
       (location-shape (node-loc node)
-	 `(,(shape-typed-node 'getfield (get-type node))
+	 `(,(shape-typed-node 'getfield (get-type node #f))
 	   (,fname ,(type-id ftype))
 	   ,(type-id otype) ,(node->sexp (car expr*))))))
    
@@ -224,7 +224,7 @@
 	     `(,(string->symbol
 		 (string-append (symbol->string id)
 				"::"
-				(shape (get-type node))
+				(shape (get-type node #f))
 				"[::" (shape ftype) "]"))
 	       ,@(map node->sexp expr*))
 	     `(,id ,@(map node->sexp expr*))))))
@@ -235,7 +235,7 @@
 (define-method (node->sexp node::vset!)
    (node->sexp-hook node)
    (with-access::vset! node (expr* ftype unsafe)
-      (let ((id (shape-typed-node (if unsafe 'vset-ur! 'vset!) (get-type node))))
+      (let ((id (shape-typed-node (if unsafe 'vset-ur! 'vset!) (get-type node #f))))
 	 (if *type-shape?*
 	     `(,id ,(vector (shape ftype)) ,@(map node->sexp expr*))
 	     `(,id ,@(map node->sexp expr*))))))
@@ -248,7 +248,7 @@
    (with-access::valloc node (expr* type ftype)
       `(,(string->symbol
 	  (string-append "valloc::"
-			 (shape (get-type node))
+			 (shape (get-type node #f))
 			 "[::" (shape ftype) "]"))
 	,@(map node->sexp expr*))))
    

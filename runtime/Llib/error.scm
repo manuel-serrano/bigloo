@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Aug 10 15:35:02 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 11:10:26 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -974,7 +974,7 @@
 	 (fix-tabulation! ncol lstring tabs)
 	 ;; we now print the error message
 	 (print-cursor file lnum lpoint lstring tabs)))
-   
+
    (let loop ((stack stack))
       (when (pair? stack)
 	 (match-case (car stack)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Mon Oct 24 09:47:58 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 08:41:30 2016 (serrano)                */
 ;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
@@ -242,7 +242,7 @@
    (with-access::set-ex-it node (type var body)
       (check-node-type var)
       (check-node-type body)
-      (unless (eqtype? type (get-type node))
+      (unless (eqtype? type (get-type node #f))
 	 (err node type (node-type body)))))
 
 ;*---------------------------------------------------------------------*/

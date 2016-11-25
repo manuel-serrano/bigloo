@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Wed Oct 26 16:07:34 2016 (serrano)                */
+;*    Last change :  Fri Nov 25 08:40:47 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
@@ -83,13 +83,13 @@
 ;*    coerce! ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::atom caller to safe)
-   (convert! node (get-type node) to safe))
+   (convert! node (get-type node #f) to safe))
  
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::kwote caller to safe)
-   (convert! node (get-type node) to safe))
+   (convert! node (get-type node #f) to safe))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce! ...                                                      */
@@ -105,7 +105,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (coerce! node::var caller to safe)
    (with-access::var node (type variable)
-      (let ((ntype (get-type node))
+      (let ((ntype (get-type node #f))
 	    (vtype (variable-type variable)))
 	 (cond
 	    ((eq? vtype to)
@@ -135,7 +135,7 @@
 		      (set! type (strict-node-type to type))
 		      node)
 		   (begin
-		      (set-car! nodes (coerce! n caller (get-type n) s))
+		      (set-car! nodes (coerce! n caller (get-type n #f) s))
 		      (loop (cdr nodes)))))))))
 
 ;*---------------------------------------------------------------------*/
@@ -156,9 +156,9 @@
    (with-access::extern node (expr*)
       (let loop ((values expr*))
 	 (if (null? values)
-	     (convert! node (get-type node) to safe)
+	     (convert! node (get-type node #f) to safe)
 	     (let* ((v (car values))
-		    (nv (coerce! v caller (get-type v) safe)))
+		    (nv (coerce! v caller (get-type v #f) safe)))
 		(set-car! values nv)
 		(loop (cdr values)))))))
 
@@ -199,7 +199,7 @@
 	 (if (null? l)
 	     (convert! node type to safe)
 	     (let* ((v (car l))
-		    (nv (coerce! v caller (get-type v) safe)))
+		    (nv (coerce! v caller (get-type v #f) safe)))
 		(set-car! l nv)
 		(loop (cdr l)))))
       (convert! node type to safe)))
@@ -255,7 +255,7 @@
    (with-access::cast node (arg type)
       (trace (coerce 2) "coerce-cast!: " (shape node) " -> " (shape to)
 	     #\Newline)
-      (set! arg (coerce! arg caller (get-type arg) safe))
+      (set! arg (coerce! arg caller (get-type arg #f) safe))
       (convert! node type to safe)))
 
 ;*---------------------------------------------------------------------*/
@@ -292,7 +292,7 @@
 	      (null? (cdr args))
 	      (not (side-effect? (car args)))
 	      (let* ((typec (app-predicate-of node))
-		     (typev (get-type (car args))))
+		     (typev (get-type (car args) #f)))
 		 (cond
 		    ((not (type? typec))
 		     ;; this is not a predicate
@@ -328,7 +328,7 @@
 		       (typec (app-predicate-of body))
 		       (typep (variable-type (car (car bindings))))
 		       (typev (if (eq? typep *obj*)
-				  (get-type (cdr (car bindings)))
+				  (get-type (cdr (car bindings)) #f)
 				  typep)))
 		   (cond
 		      ((not (type? typec))
@@ -354,11 +354,11 @@
       (with-access::app node (args)
 	 (let ((typev (cond
 			 ((var? (car args))
-			  (get-type (car args)))
+			  (get-type (car args) #f))
 			 ((cast? (car args))
 			  (with-access::cast (car args) (type arg)
 			     (when (and (eq? type *obj*) (var? arg))
-				(get-type arg)))))))
+				(get-type arg #f)))))))
 	    (cond
 	       ((not (type? typev))
 		#f)
@@ -411,7 +411,7 @@
       (set! type to)
       (let ((clauses clauses)
 	    (test-type (select-item-type node))
-	    (test-node-type (get-type test)))
+	    (test-node-type (get-type test #f)))
 	 (unless (coercer-exists? test-node-type test-type)
 	    (tprint "select test-type=" (shape test-type)
 	       " test-node-type=" (shape test-node-type)))
@@ -481,7 +481,7 @@
 (define-method (coerce! node::jump-ex-it caller to safe)
    (with-access::jump-ex-it node (exit value type)
       (set! exit (coerce! exit caller *exit* safe))
-      (set! value (coerce! value caller (get-type value) safe))
+      (set! value (coerce! value caller (get-type value #f) safe))
       (convert! node type to safe)))
 
 ;*---------------------------------------------------------------------*/
@@ -500,7 +500,7 @@
 (define-method (coerce! node::make-box caller to safe)
    (with-access::make-box node (value vtype)
       (let ((nodev (coerce! value caller vtype safe)))
-	 (if (tclass? (get-type nodev))
+	 (if (tclass? (get-type nodev #f))
 	     (set! value (cast-node nodev *obj*))
 	     (set! value nodev)))
       node))

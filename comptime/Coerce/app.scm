@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Fri Mar 25 10:49:57 2011 (serrano)                */
-;*    Copyright   :  1995-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Nov 25 08:42:12 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
 ;*=====================================================================*/
@@ -81,7 +81,7 @@
       (if (memq (global-id callee) make-procedure-ids)
 	  (coerce-procedure args (cfun-args-type fun) loc)
 	  (coerce-args! args (cfun-args-type fun))))
-   (convert! node (get-type node) to safe))
+   (convert! node (get-type node #f) to safe))
 
 ;*---------------------------------------------------------------------*/
 ;*    coerce-foreign-va-app! ...                                       */
@@ -94,7 +94,7 @@
 	  ;; this is the formals of a foreign va-args
 	  (let loop ((actuals actuals))
 	     (if (null? actuals)
-		 (convert! node (get-type node) to safe)
+		 (convert! node (get-type node #f) to safe)
 		 (begin
 		    (set-car! actuals (coerce! (car actuals)
 					       caller
@@ -132,7 +132,7 @@
    (let* ((fun   (variable-value callee))
 	  (arity (sfun-arity fun))
 	  (sh    (shape callee))
-	  (ntype (get-type node)))
+	  (ntype (get-type node #f)))
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
 	 (assert (actuals formals sh) (=fx (length actuals) (length formals)))
@@ -154,7 +154,7 @@
 (define (coerce-bigloo-extern-app! callee::variable caller node to safe)
    (let* ((fun (variable-value callee))
 	  (arity (sfun-arity fun))
-	  (ntype (get-type node)))
+	  (ntype (get-type node #f)))
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
 	 (if (null? actuals)
