@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Thu Jun  2 16:44:16 2016 (serrano)                */
+;*    Last change :  Sun Nov 27 07:38:38 2016 (serrano)                */
 ;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -66,6 +66,7 @@
 	      "bgl_ssl_load_private_key")
 
 	   (macro $ssl-clear-error::void () "ERR_clear_error")
+	   ($ssl-error-string::bstring () "bgl_ssl_error_string")
 	   
 	   (macro $ssl-rand-status::bool () "RAND_status")
 	   (macro $ssl-rand-poll::bool () "RAND_poll")
@@ -1304,7 +1305,7 @@
    (cond-expand
       (bigloo-c
        (unless ($bgl-ssl-cipher-init ssl-cipher cipher key offset len enc)
-	  (error "ssl-cipher-init" "Cipher method not supported" cipher))
+	  (error "ssl-cipher-init" ($ssl-error-string) cipher))
        ssl-cipher)
       (else
        #f)))
@@ -1322,8 +1323,7 @@
 		  key offset len
 		  iv ivoffset ivlen
 		  enc)
-	  (error "ssl-cipher-initiv" "Cipher method not supported" ssl-cipher))
-       ssl-cipher)
+	  (error "ssl-cipher-initiv" ($ssl-error-string) ssl-cipher)))
       (else
        #f)))
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Jun  2 15:42:41 2016 (serrano)                */
+/*    Last change :  Sun Nov 27 09:01:56 2016 (serrano)                */
 /*    Copyright   :  2005-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -3131,7 +3131,7 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
 		       obj_t iv, long ivoffset, long ivlen, bool_t enc ) {
 #if( SSL_DEBUG )
    BGL_MUTEX_LOCK( bigloo_mutex );
-   
+
    if( !init ) {
       init = 1;
       bgl_ssl_library_init();
@@ -3142,11 +3142,11 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
 #else
    bgl_ssl_init();
 #endif
-   
+    
    cipher->BgL_z42cipherz42 =
       (void *)EVP_get_cipherbyname( (const char *)BSTRING_TO_STRING( type ) );
 
-   if( !cipher ) {
+   if( !cipher->BgL_z42cipherz42 ) {
       fprintf( stderr, "node-crypto : Unknown cipher %s\n",
 	       (const char *)BSTRING_TO_STRING( type ));
       return 0;
@@ -3162,9 +3162,9 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
    } else {
       EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)GC_MALLOC( sizeof( EVP_CIPHER_CTX ) );
       cipher->BgL_z42cipherzd2ctxz90 = ctx;
-       
+
       EVP_CIPHER_CTX_init( ctx );
-      EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42, NULL, NULL, NULL, 1 );
+      EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42, NULL, NULL, NULL, enc );
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, klen ) ) {
 	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
@@ -3176,6 +3176,7 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
 			 &(STRING_REF( key, koffset )),
 			 &(STRING_REF( iv, ivoffset )),
 			 enc );
+
       return 1;
    }
 }
@@ -3232,7 +3233,8 @@ bgl_cipher_final( ssl_cipher cipher ) {
       obj_t obj = make_string( size, ' ' );
       int r;
 
-      r = EVP_CipherFinal_ex( ctx, &(STRING_REF( obj, 0 )), &size );
+      r = EVP_CipherFinal_ex( ctx, BSTRING_TO_STRING( obj ), &size );
+
       EVP_CIPHER_CTX_cleanup( ctx );
       cipher->BgL_z42cipherzd2ctxz90 = 0L;
 
@@ -3269,3 +3271,14 @@ bgl_pkcs5_pbkdf2_hmac_sha1( obj_t pass, obj_t salt, int iter, int keylen ) {
    }
 }
       
+/*---------------------------------------------------------------------*/
+/*    bgl_ssl_error_string                                             */
+/*---------------------------------------------------------------------*/
+obj_t bgl_ssl_error_string() {
+   int err = ERR_get_error();
+   obj_t errmsg = make_string( 128, 0 );
+   
+   ERR_error_string_n(err, BSTRING_TO_STRING( errmsg ), 128 );
+
+   return errmsg;
+}
