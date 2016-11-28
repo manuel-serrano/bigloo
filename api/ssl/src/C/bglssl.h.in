@@ -21,6 +21,7 @@
 #define BGLSSL_TLSV1_1 6
 #define BGLSSL_TLSV1_2 7
 
+#define BGLSSL_HAVE_TLSV1 @HAVETLS1@
 #define BGLSSL_HAVE_TLSV1_1 @HAVETLS1_1@
 #define BGLSSL_HAVE_TLSV1_2 @HAVETLS1_2@
 #define BGLSSL_HAVE_DTLS @HAVEDTLS@
@@ -29,5 +30,105 @@
 #define BGLSSL_HAVE_SSLV23 @HAVEV23@
 #define BGLSSL_HAVE_RAND_STATUS @HAVERANDSTATUS@
 #define BGLSSL_HAVE_RAND_POLL @HAVERANDPOLL@
+#define BGLSSL_HAVE_GETTER @HAVEGETTER@
   
+#if( !defined( SSL_F_SSL_CTX_USE_CERTIFICATE_CHAIN_FILE ) )
+#  define SSL_F_SSL_CTX_USE_CERTIFICATE_CHAIN_FILE \
+  SSL_F_SSL_CTX_USE_CERTIFICATE_FILE
+#endif
 
+#if BGLSSL_HAVE_GETTER
+#  define BGL_SSL_CTX_get_ssl_method( ctx ) SSL_CTX_get_ssl_method( ctx )
+#else
+#  define BGL_SSL_CTX_get_ssl_method( ctx ) (ctx->method)
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_SSL_CTX_clear_extra_chain_certs( ctx ) \
+   SSL_CTX_clear_extra_chain_certs( ctx )
+#else
+#  define BGL_SSL_CTX_clear_extra_chain_certs( ctx ) \
+   ((ctx->extra_certs != NULL) ? \
+    (sk_X509_pop_free( ctx->extra_certs, X509_free ), ctx->extra_certs = NULL) \
+    : 0)
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_SSL_SESSION_get_id( sess, len ) \
+  SSL_SESSION_get_id( sess, &len )
+#else
+#  define BGL_SSL_SESSION_get_id( sess, len ) \
+  (en = sess->session_id_length, sess->session_id)
+#endif
+
+#if( !defined( STACK_OF ) )
+#  define STACK_OF( type ) type
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_EVP_MD_CTX_new() EVP_MD_CTX_new()
+#  define BGL_EVP_MD_CTX_free( evp ) EVP_MD_CTX_free( evp )
+#  define BGL_EVP_MD_CTX_reset( evp ) EVP_MD_CTX_reset( evp ) 
+#else
+#  define BGL_EVP_MD_CTX_new GC_MALLOC( sizeof( EVP_MD_CTX ) )
+#  define BGL_EVP_MD_CTX_free( evp )
+#  define BGL_EVP_MD_CTX_reset( evp ) EVP_MD_CTX_cleanup( evp ) 
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_EVP_CIPHER_CTX_new() EVP_CIPHER_CTX_new()
+#  define BGL_EVP_CIPHER_CTX_free( evp ) EVP_CIPHER_CTX_free( evp )
+#  define BGL_EVP_CIPHER_CTX_reset( evp ) EVP_CIPHER_CTX_reset( evp )
+#else
+#  define BGL_EVP_CIPHER_CTX_new GC_MALLOC( sizeof( EVP_CIPHER_CTX ) )
+#  define BGL_EVP_CIPHER_CTX_free( evp )
+#  define BGL_EVP_CIPHER_CTX_reset( evp ) EVP_CIPHER_CTX_cleanup( evp )
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_HMAC_CTX_new() HMAC_CTX_new()
+#  define BGL_HMAC_CTX_init( hmac ) 
+#  define BGL_HMAC_CTX_free( hmac ) HMAC_CTX_free( hmac ) 
+#  define BGL_HMAC_CTX_reset( hmac ) HMAC_CTX_reset( hmac )
+#  define BGL_HMAC_Init( c, k, l, m ) HMAC_Init_ex( c, k, l, m, 0 )
+#else
+#  define BGL_HMAC_CTX_new() GC_MALLOC( sizeof( HMAC_CTX ) )
+#  define BGL_HMAC_CTX_init( hmac ) HMAC_CTX_init( hmac ) 
+#  define BGL_HMAC_CTX_free( hmac) 
+#  define BGL_HMAC_CTX_reset( hmac ) HMAC_CTX_cleanup( hmac )
+#  define BGL_HMAC_Init( c, k, l, m ) HMAC_Init( c, k, l, m )
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_DH_GET_PUB( dh, kres ) (DH_get0_key( dh, &kres, 0 ), kres)
+#  define BGL_DH_GET_PRIV( dh, kres ) (DH_get0_key( dh, 0, &kres ), kres)
+#  define BGL_DH_SET_PUB( dh, key ) DH_set0_key( dh, key, 0 )
+#  define BGL_DH_SET_PRIV( dh, key ) DH_set0_key( dh, 0, key )
+#  define BGL_DH_GET_P( dh, kres ) (DH_get0_pqg( dh, &kres, 0, 0 ), kres)
+#  define BGL_DH_SET_P( dh, key ) DH_set0_pqg( dh, key, 0, 0 )
+#  define BGL_DH_GET_Q( dh, kres ) (DH_get0_pqg( dh, 0, &kres, 0 ), kres)
+#  define BGL_DH_SET_Q( dh, key ) DH_set0_pqg( dh, 0, key, 0 )
+#  define BGL_DH_GET_G( dh, kres ) (DH_get0_pqg( dh, 0, 0, &kres ), kres)
+#  define BGL_DH_SET_G( dh, key ) DH_set0_pqg( dh, 0, 0, key )
+#else
+#  define BGL_DH_GET_PUB( dh, kres ) kres = dh->priv_key
+#  define BGL_DH_GET_PRIV( dh, kres ) kres = dh->pub_key
+#  define BGL_DH_SET_PUB( dh, key ) dh->pub_key = key
+#  define BGL_DH_SET_PRIV( dh, key ) dh->pub_key = key
+#  define BGL_DH_GET_P( dh, kres ) dh->p
+#  define BGL_DH_SET_P( dh, key ) (dh->p = key)
+#  define BGL_DH_GET_Q( dh, kres ) dh->q
+#  define BGL_DH_SET_Q( dh, key ) (dh->q = key)
+#  define BGL_DH_GET_G( dh, kres ) dh->g
+#  define BGL_DH_SET_G( dh, key ) (dh->g = key)
+#endif
+
+#if BGLSSL_HAVE_GETTER
+#  define BGL_RSA_N( rsa, kres ) (RSA_get0_key( rsa, &kres, 0, 0 ), kres)
+#  define BGL_RSA_E( rsa, kres ) (RSA_get0_key( rsa, 0, &kres, 0 ), kres)
+#  define BGL_RSA_D( rsa, kres ) (RSA_get0_key( rsa, 0, 0, &kres ), kres)
+#else
+#  define BGL_RSA_N( rsa, kres ) (kres = rsa->n)
+#  define BGL_RSA_E( rsa, kres ) (kres = rsa->e)
+#  define BGL_RSA_D( rsa, kres ) (kres = rsa->d)
+#endif

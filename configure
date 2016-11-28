@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Oct  2 16:44:25 2016 (serrano)                */
+#*    Last change :  Mon Nov 28 09:12:48 2016 (serrano)                */
 #*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -164,12 +164,14 @@ pthreadlocalstorage=
 #*--- openssl library (left blank for autoconfiguration) --------------*/
 openssllibs=
 openssldtls=
+openssltls1=
 openssltls11=
 openssltls12=
 opensslrand=
 opensslv2=
 opensslv23=
 opensslcflags=
+opensslgetter=
 
 #*--- sqlite library (left blank for autoconfiguration) ---------------*/
 sqlitelibs=
@@ -2162,12 +2164,14 @@ fi
 
 if [ "$openssllibs" != "no" ]; then
   openssldtls=`$autoconf openssl-dtls --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  openssltls1=`$autoconf openssl-tls1 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   openssltls11=`$autoconf openssl-tls11 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   openssltls12=`$autoconf openssl-tls12 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslrand=`$autoconf openssl-rand --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv2=`$autoconf openssl-v2 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv3=`$autoconf openssl-v3 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv23=`$autoconf openssl-v23 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  opensslgetter=`$autoconf openssl-getter --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
 fi
 
 #*---------------------------------------------------------------------*/
@@ -3671,6 +3675,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
               -e "s|@OPENSSLCFLAGS@|$opensslcflags|g" \
         >>  api/ssl/src/Misc/ssl.init
 
+    tls1=1
     tls11=1
     tls12=1
     dtls=1
@@ -3679,14 +3684,19 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     sslv23=1
     randstatus=1;
     randpoll=1;
+    getter=1;
+    
     if [ "$openssldtls" = "no" ]; then
       dtls=0;
     fi
+    if [ "$openssltls1" = "no" ]; then
+      tls1=0;
+    fi
     if [ "$openssltls11" = "no" ]; then
-      ttl11=0;
+      tls11=0;
     fi
     if [ "$openssltls12" = "no" ]; then
-      ttl12=0;
+      tls12=0;
     fi
     if [ "$opensslv2" = "no" ]; then
       sslv2=0;
@@ -3701,10 +3711,14 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       randstatus=0;
       randpoll=0;
     fi
-
+    if [ "$opensslgetter" = "no" ]; then
+      getter=0;
+    fi
+    
     echo "/* automatically generated, Don't edit */" >  api/ssl/src/C/bglssl.h
     cat api/ssl/src/C/bglssl.h.in \
       | sed -e "s|@HAVEDTLS@|$dtls|g" \
+	    -e "s|@HAVETLS1@|$tls1|g" \
 	    -e "s|@HAVETLS1_1@|$tls11|g" \
 	    -e "s|@HAVETLS1_2@|$tls12|g" \
             -e "s|@HAVEV2@|$sslv2|g" \
@@ -3712,7 +3726,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
             -e "s|@HAVEV23@|$sslv23|g" \
             -e "s|@HAVERANDSTATUS@|$randstatus|g" \
             -e "s|@HAVERANDPOLL@|$randpoll|g" \
-        >>  api/ssl/src/C/bglssl.h
+            -e "s|@HAVEGETTER@|$getter|g" \
+            >>  api/ssl/src/C/bglssl.h
+
   else
     napis=;
     for a in $apis; do

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Sun Nov 27 09:01:56 2016 (serrano)                */
+/*    Last change :  Mon Nov 28 11:28:53 2016 (serrano)                */
 /*    Copyright   :  2005-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -190,21 +190,25 @@ bgl_ssl_init() {
 #if( BGLSSL_HAVE_SSLV23 )
       ctxc[ BGLSSL_SSLV23 ] = SSL_CTX_new( SSLv23_client_method() );
 #endif      
+#if( BGLSSL_HAVE_TLSV1 )
       ctxc[ BGLSSL_TLSV1 ] = SSL_CTX_new( TLSv1_client_method() );
+#else      
+      ctxc[ BGLSSL_TLSV1 ] = SSL_CTX_new( TLS_client_method() );
+#endif      
 #if( BGLSSL_HAVE_TLSV1_1 )
       ctxc[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_1_client_method() );
 #else      
-      ctxc[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_client_method() );
+      ctxc[ BGLSSL_TLSV1_1 ] = ctxc[ BGLSSL_TLSV1 ];
 #endif
 #if( BGLSSL_HAVE_TLSV1_2 )
       ctxc[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_2_client_method() );
 #else      
-      ctxc[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_client_method() );
+      ctxc[ BGLSSL_TLSV1_2 ] = ctxc[ BGLSSL_TLSV1 ];
 #endif
 #if( BGLSSL_HAVE_DTLS )
       ctxc[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLSv1_client_method() );
 #else      
-      ctxc[ BGLSSL_DTLSV1 ] = 0;
+      ctxc[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLS_client_method() );
 #endif
       
 #if( BGLSSL_HAVE_SSLV2 )
@@ -216,21 +220,25 @@ bgl_ssl_init() {
 #if( BGLSSL_HAVE_SSLV23 )
       ctxs[ BGLSSL_SSLV23 ] = SSL_CTX_new( SSLv23_server_method() );
 #endif      
+#if( BGLSSL_HAVE_TLSV1 )
       ctxs[ BGLSSL_TLSV1 ] = SSL_CTX_new( TLSv1_server_method() );
+#else
+      ctxs[ BGLSSL_TLSV1 ] = SSL_CTX_new( TLS_server_method() );
+#endif      
 #if( BGLSSL_HAVE_TLSV1_1 )
       ctxs[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_1_server_method() );
 #else      
-      ctxs[ BGLSSL_TLSV1_1 ] = SSL_CTX_new( TLSv1_server_method() );
+      ctxs[ BGLSSL_TLSV1_1 ] = ctxs[ BGLSSL_TLSV1 ];
 #endif
 #if( BGLSSL_HAVE_TLSV1_2 )
       ctxs[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_2_server_method() );
 #else      
-      ctxs[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_server_method() );
+      ctxs[ BGLSSL_TLSV1_2 ] = ctxs[ BGLSSL_TLSV1 ];
 #endif
 #if( BGLSSL_HAVE_DTLS )
       ctxs[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLSv1_server_method() );
 #else      
-      ctxs[ BGLSSL_DTLSV1 ] = 0;
+      ctxs[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLS_server_method() );
 #endif
    }
    
@@ -417,7 +425,7 @@ socket_enable_ssl( obj_t s, char accept, SSL_CTX *ctx, obj_t cert,
       /* keep the ca_list away from the GC */
       drag = MAKE_PAIR( ca_list, drag );
 
-      ctx = SSL_CTX_new( ctx->method );
+      ctx = SSL_CTX_new( BGL_SSL_CTX_get_ssl_method( ctx ) );
       if( ctx == NULL )
 	 C_SYSTEM_FAILURE( BGL_IO_ERROR,
 			   "make-client-ssl-socket, cannot create SSL context",
@@ -890,7 +898,7 @@ SSL_CTX_use_certificate_chain( SSL_CTX *ctx, BIO *in ) {
    x = PEM_read_bio_X509_AUX( in, NULL, NULL, NULL );
 
    if( x == NULL ) {
-      SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_CHAIN_FILE, ERR_R_PEM_LIB );
+      SSLerr( SSL_F_SSL_CTX_USE_CERTIFICATE_CHAIN_FILE, ERR_R_PEM_LIB );
       goto end;
    }
 
@@ -908,10 +916,14 @@ SSL_CTX_use_certificate_chain( SSL_CTX *ctx, BIO *in ) {
       int r;
       unsigned long err;
 
-      if( ctx->extra_certs != NULL ) {
-	 sk_X509_pop_free( ctx->extra_certs, X509_free );
-	 ctx->extra_certs = NULL;
-      }
+      // MS 28 Novembre 2016: WARNING !!!
+      // before openssl 1.1, used to be
+      // if( ctx->extra_certs != NULL ) {
+      //   sk_X509_pop_free( ctx->extra_certs, X509_free );
+      //   ctx->extra_certs = NULL;
+      // }
+      // see bglss.h for the definition of BGL_SSL_CTX_clear_extra_chain_certs
+      BGL_SSL_CTX_clear_extra_chain_certs( ctx );
 
       while( (ca = PEM_read_bio_X509( in, NULL, NULL, NULL )) ) {
 	 r = SSL_CTX_add_extra_chain_cert( ctx, ca );
@@ -1732,9 +1744,12 @@ bgl_new_session_callback( SSL *ssl, SSL_SESSION *sess ) {
 	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ssl-session",
 			   "wrong callback arity", cb );
       } else {
+	 unsigned int sidlen;
+	 const char *sid = BGL_SSL_SESSION_get_id( sess, sidlen );
+
 	 PROCEDURE_ENTRY( cb )
 	 ( cb,
-	   string_to_bstring_len( sess->session_id, sess->session_id_length ),
+	   string_to_bstring_len( (char *)sid, sidlen ),
 	   serialized,
 	   BEOA );
 	 return 0;
@@ -2206,12 +2221,13 @@ bgl_ssl_connection_get_peer_certificate( ssl_connection ssl ) {
       RSA *rsa = NULL;
       if( NULL != (pkey = X509_get_pubkey( peer_cert ))
 	  && NULL != (rsa = EVP_PKEY_get1_RSA( pkey )) ) {
-	 BN_print( bio, rsa->n );
+	 const BIGNUM *z;
+	 BN_print( bio, BGL_RSA_N( rsa, z ) );
 	 BIO_get_mem_ptr( bio, &mem );
 	 info = MAKE_PAIR( cons( "modulus", mem ), info );
 	 BIO_reset( bio );
 
-	 BN_print( bio, rsa->e );
+	 BN_print( bio, BGL_RSA_E( rsa, z ) );
 	 BIO_get_mem_ptr( bio, &mem );
 	 info = MAKE_PAIR( cons( "exponent", mem ), info );
 	 BIO_reset( bio );
@@ -2260,7 +2276,7 @@ bgl_ssl_connection_get_peer_certificate( ssl_connection ssl ) {
 	    info );
       }
 
-      ASN1_OBJECT *eku =
+      STACK_OF(ASN1_OBJECT) *eku =
 	 (ASN1_OBJECT *)X509_get_ext_d2i( peer_cert, NID_ext_key_usage, NULL, NULL );
       if( eku != NULL ) {
 	 char buf[ 256 ];
@@ -2404,11 +2420,23 @@ bgl_ssl_ctx_init( secure_context sc ) {
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "TLSv1_method" ) ) {
+#if( BGLSSL_HAVE_TLSV1 )      
       sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_method() );
+#else      
+      sc->BgL_z42nativez42 = SSL_CTX_new( TLS_method() );
+#endif      
    } else if( !strcmp( sslmethod, "TLSv1_server_method" ) ) {
+#if( BGLSSL_HAVE_TLSV1 )      
       sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_server_method() );
+#else      
+      sc->BgL_z42nativez42 = SSL_CTX_new( TLS_server_method() );
+#endif      
    } else if( !strcmp( sslmethod, "TLSv1_client_method" ) ) {
+#if( BGLSSL_HAVE_TLSV1 )      
       sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_client_method() );
+#else      
+      sc->BgL_z42nativez42 = SSL_CTX_new( TLS_client_method() );
+#endif      
    } else {
       goto unsupported;
    }
@@ -2518,7 +2546,8 @@ bgl_bn_bin2bn( char *s, int len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BIGNUM *
 bgl_dh_private_key( DH *dh ) {
-   return dh->priv_key;
+   const BIGNUM *priv_key;
+   return (BIGNUM *)BGL_DH_GET_PRIV( dh, priv_key );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2527,7 +2556,7 @@ bgl_dh_private_key( DH *dh ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void 
 bgl_dh_private_key_set( DH *dh, BIGNUM *v ) {
-   dh->priv_key = v;
+   BGL_DH_SET_PRIV( dh, v );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2536,7 +2565,8 @@ bgl_dh_private_key_set( DH *dh, BIGNUM *v ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BIGNUM *
 bgl_dh_public_key( DH *dh ) {
-   return dh->pub_key;
+   const BIGNUM *pub_key;
+   return (BIGNUM *)BGL_DH_GET_PUB( dh, pub_key );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2545,7 +2575,7 @@ bgl_dh_public_key( DH *dh ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void 
 bgl_dh_public_key_set( DH *dh, BIGNUM *v ) {
-   dh->pub_key = v;
+   BGL_DH_SET_PUB( dh, v );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2554,7 +2584,8 @@ bgl_dh_public_key_set( DH *dh, BIGNUM *v ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BIGNUM *
 bgl_dh_p( DH *dh ) {
-   return dh->p;
+   const BIGNUM *key;
+   return (BIGNUM *)BGL_DH_GET_P( dh, key );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2563,7 +2594,26 @@ bgl_dh_p( DH *dh ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void 
 bgl_dh_p_set( DH *dh, BIGNUM *v ) {
-   dh->p = v;
+   BGL_DH_SET_P( dh, v );
+}
+
+/*---------------------------------------------------------------------*/
+/*    BIGNUM *                                                         */
+/*    bgl_dh_q ...                                                     */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF BIGNUM *
+bgl_dh_q( DH *dh ) {
+   const BIGNUM *key;
+   return (BIGNUM *)BGL_DH_GET_Q( dh, key );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_dh_q_set ...                                                 */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void 
+bgl_dh_q_set( DH *dh, BIGNUM *v ) {
+   BGL_DH_SET_Q( dh, v );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2572,7 +2622,8 @@ bgl_dh_p_set( DH *dh, BIGNUM *v ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BIGNUM *
 bgl_dh_g( DH *dh ) {
-   return dh->g;
+   const BIGNUM *key;
+   return (BIGNUM *)BGL_DH_GET_G( dh, key );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2581,7 +2632,7 @@ bgl_dh_g( DH *dh ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void 
 bgl_dh_g_set( DH *dh, BIGNUM *v ) {
-   dh->g = v;
+   BGL_DH_SET_G( dh, v );
 }
 
 /*---------------------------------------------------------------------*/
@@ -2605,8 +2656,12 @@ bgl_ssl_get_ciphers() {
 #else
    bgl_ssl_init();
 #endif
-   
+
+#if( BGLSSL_HAVE_TLSV1 )  
    ctx = SSL_CTX_new( TLSv1_server_method() );
+#else   
+   ctx = SSL_CTX_new( TLS_server_method() );
+#endif   
    if( ctx == NULL ) {
       C_SYSTEM_FAILURE( BGL_IO_ERROR,
 			"ssl-get-ciphers",
@@ -2630,7 +2685,7 @@ bgl_ssl_get_ciphers() {
       res = create_vector( sk_SSL_CIPHER_num( ciphers ) );
       
       for( i = 0; i < sk_SSL_CIPHER_num( ciphers ); ++i ) {
-	 SSL_CIPHER *c = sk_SSL_CIPHER_value( ciphers, i );
+	 const SSL_CIPHER *c = sk_SSL_CIPHER_value( ciphers, i );
 	 VECTOR_SET( res, i, string_to_bstring( (char *)SSL_CIPHER_get_name( c ) ) );
       }
 
@@ -2719,7 +2774,8 @@ bgl_ssl_hash_init( ssl_hash hash ) {
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( hash->BgL_typez00 ) );
    if( !(hash->BgL_z42mdz42) ) return 0;
 
-   hash->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
+   hash->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
+   
    EVP_MD_CTX_init( hash->BgL_z42mdzd2ctxz90 );
    
    EVP_DigestInit_ex( hash->BgL_z42mdzd2ctxz90, hash->BgL_z42mdz42, NULL );
@@ -2755,7 +2811,8 @@ bgl_ssl_hash_digest( ssl_hash hash ) {
       unsigned int md_len;
 
       EVP_DigestFinal_ex( hash->BgL_z42mdzd2ctxz90, md_value, &md_len );
-      EVP_MD_CTX_cleanup( hash->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_reset( hash->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_free( hash->BgL_z42mdzd2ctxz90 );
       hash->BgL_z42mdzd2ctxz90 = 0L;
 
       return string_to_bstring_len( md_value, md_len );
@@ -2786,19 +2843,19 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
    if( !(hmac->BgL_z42mdz42) ) return BFALSE;
 
-   hmac->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( HMAC_CTX ) );
-   HMAC_CTX_init( hmac->BgL_z42mdzd2ctxz90 );
+   hmac->BgL_z42mdzd2ctxz90 = BGL_HMAC_CTX_new();
+   BGL_HMAC_CTX_init( hmac->BgL_z42mdzd2ctxz90 );
 
    if( !STRINGP( key ) ) {
-      HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
-		 "",
-		 0,
-		 hmac->BgL_z42mdz42 );
+      BGL_HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
+		     "",
+		     0,
+		     hmac->BgL_z42mdz42 );
    } else {
-      HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
-		 BSTRING_TO_STRING( key ),
-		 STRING_LENGTH( key ),
-		 hmac->BgL_z42mdz42 );
+      BGL_HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
+		     BSTRING_TO_STRING( key ),
+		     STRING_LENGTH( key ),
+		     hmac->BgL_z42mdz42 );
    }
    return BTRUE;
 }
@@ -2832,7 +2889,8 @@ bgl_ssl_hmac_digest( ssl_hmac hmac ) {
       unsigned int md_len;
 
       HMAC_Final( hmac->BgL_z42mdzd2ctxz90, md_value, &md_len );
-      HMAC_CTX_cleanup( hmac->BgL_z42mdzd2ctxz90 );
+      BGL_HMAC_CTX_reset( hmac->BgL_z42mdzd2ctxz90 );
+      BGL_HMAC_CTX_free( hmac->BgL_z42mdzd2ctxz90 );
       hmac->BgL_z42mdzd2ctxz90 = 0L;
 
       return string_to_bstring_len( md_value, md_len );
@@ -2863,7 +2921,7 @@ bgl_ssl_sign_init( ssl_sign sign, obj_t type ) {
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
    if( !(sign->BgL_z42mdz42) ) return 0;
 
-   sign->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
+   sign->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
    EVP_MD_CTX_init( sign->BgL_z42mdzd2ctxz90 );
    
    EVP_SignInit_ex( sign->BgL_z42mdzd2ctxz90, sign->BgL_z42mdz42, NULL );
@@ -2916,7 +2974,8 @@ bgl_ssl_sign_sign( ssl_sign sign, obj_t key_pem, long offset, long kplen ) {
 	 return BFALSE;
       }
 
-      EVP_MD_CTX_cleanup( sign->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_reset( sign->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_free( sign->BgL_z42mdzd2ctxz90 );
       sign->BgL_z42mdzd2ctxz90 = 0L;
 
       EVP_PKEY_free( pkey );
@@ -2950,7 +3009,7 @@ bgl_ssl_verify_init( ssl_verify verify, obj_t type ) {
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
    if( !(verify->BgL_z42mdz42) ) return 0;
 
-   verify->BgL_z42mdzd2ctxz90 = GC_MALLOC( sizeof( EVP_MD_CTX ) );
+   verify->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
    EVP_MD_CTX_init( verify->BgL_z42mdzd2ctxz90 );
    
    EVP_VerifyInit_ex( verify->BgL_z42mdzd2ctxz90, verify->BgL_z42mdz42, NULL );
@@ -3062,7 +3121,8 @@ bgl_ssl_verify_final( ssl_verify verify,
       if( pkey ) EVP_PKEY_free( pkey );
       if( x509 ) X509_free( x509 );
       if( bp ) BIO_free( bp );
-      EVP_MD_CTX_cleanup( verify->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_reset( verify->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_free( verify->BgL_z42mdzd2ctxz90 );
       verify->BgL_z42mdzd2ctxz90 = 0;
 
       return r && (r != -1);
@@ -3101,7 +3161,7 @@ bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
 				    EVP_md5(), NULL,
 				    &(STRING_REF( keybuf, koffset )), klen,
 				    1, key, iv );
-      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)GC_MALLOC( sizeof( EVP_CIPHER_CTX ) );
+      EVP_CIPHER_CTX *ctx = BGL_EVP_CIPHER_CTX_new();
       cipher->BgL_z42cipherzd2ctxz90 = ctx;
 
       EVP_CIPHER_CTX_init( ctx );
@@ -3110,7 +3170,8 @@ bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, key_len )) {
 	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
-	 EVP_CIPHER_CTX_cleanup( ctx );
+	 BGL_EVP_CIPHER_CTX_reset( ctx );
+	 BGL_EVP_CIPHER_CTX_free( ctx );
 	 return 0;
       }
       EVP_CipherInit_ex( ctx, NULL, NULL,
@@ -3160,7 +3221,7 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
       fprintf( stderr, "node-crypto : Invalid IV length %d\n", ivlen );
       return 0;
    } else {
-      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)GC_MALLOC( sizeof( EVP_CIPHER_CTX ) );
+      EVP_CIPHER_CTX *ctx = BGL_EVP_CIPHER_CTX_new();
       cipher->BgL_z42cipherzd2ctxz90 = ctx;
 
       EVP_CIPHER_CTX_init( ctx );
@@ -3168,7 +3229,8 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, klen ) ) {
 	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
-	 EVP_CIPHER_CTX_cleanup( ctx );
+	 BGL_EVP_CIPHER_CTX_reset( ctx );
+	 BGL_EVP_CIPHER_CTX_free( ctx );
 	 return 0;
       }
       
@@ -3235,7 +3297,8 @@ bgl_cipher_final( ssl_cipher cipher ) {
 
       r = EVP_CipherFinal_ex( ctx, BSTRING_TO_STRING( obj ), &size );
 
-      EVP_CIPHER_CTX_cleanup( ctx );
+      BGL_EVP_CIPHER_CTX_reset( ctx );
+      BGL_EVP_CIPHER_CTX_free( ctx );
       cipher->BgL_z42cipherzd2ctxz90 = 0L;
 
       if( r ) {

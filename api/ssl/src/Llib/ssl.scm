@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Sun Nov 27 07:38:38 2016 (serrano)                */
+;*    Last change :  Mon Nov 28 11:30:10 2016 (serrano)                */
 ;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -193,6 +193,10 @@
 	   ($bgl-dh-p::$bignum (::$dh)
 	      "bgl_dh_p")
 	   ($bgl-dh-p-set!::void (::$dh $bignum)
+	      "bgl_dh_p_set")
+	   ($bgl-dh-q::$bignum (::$dh)
+	      "bgl_dh_p")
+	   ($bgl-dh-q-set!::void (::$dh $bignum)
 	      "bgl_dh_p_set")
 	   ($bgl-dh-g::$bignum (::$dh)
 	      "bgl_dh_g")
@@ -429,6 +433,14 @@
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native)
 			   ($bgl-dh-p-set! $native ($obj->bignum v))
+			   v))))
+	     (q
+		(get (lambda (o::dh)
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-q $native)))))
+		(set (lambda (o::dh v::foreign)
+			(with-access::dh o ($native)
+			   ($bgl-dh-q-set! $native ($obj->bignum v))
 			   v))))
 	     (g
 		(get (lambda (o::dh)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Mon Jul  6 14:03:34 2015 (serrano)                */
-;*    Copyright   :  2014-15 Manuel Serrano                            */
+;*    Last change :  Sun Nov 27 11:58:21 2016 (serrano)                */
+;*    Copyright   :  2014-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
 ;*=====================================================================*/
@@ -156,7 +156,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-write o::UvStream buf offset length #!key callback (loop (uv-default-loop)))
+(define (uv-stream-write o::UvStream buf offset len #!key callback (loop (uv-default-loop)))
    (letrec ((cb (lambda (status)
 		   ;; make sure buf is referenced to prevent
 		   ;; premature collection
@@ -164,7 +164,7 @@
 		      (with-access::UvStream o (%gcmarks)
 			 (set! %gcmarks (remq! cb %gcmarks))
 			 (callback status))))))
-      (let ((r ($uv-write o buf offset length cb loop)))
+      (let ((r ($uv-write o buf offset len cb loop)))
 	 (when (=fx r 0)
 	    (with-access::UvStream o (%gcmarks)
 	       (set! %gcmarks (cons cb %gcmarks))))
@@ -173,7 +173,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-stream-write2 ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (uv-stream-write2 o::UvStream buf offset length handle::obj #!key callback (loop (uv-default-loop)))
+(define (uv-stream-write2 o::UvStream buf offset len handle::obj #!key callback (loop (uv-default-loop)))
    (letrec ((cb (lambda (status)
 		   ;; make sure buf is referenced to prevent
 		   ;; premature collection
@@ -181,7 +181,7 @@
 		      (with-access::UvStream o (%gcmarks)
 			 (set! %gcmarks (remq! cb %gcmarks))
 			 (callback status))))))
-      (let ((r ($uv-write2 o buf offset length handle cb loop)))
+      (let ((r ($uv-write2 o buf offset len handle cb loop)))
 	 (when (=fx r 0)
 	    (with-access::UvStream o (%gcmarks)
 	       (set! %gcmarks (cons cb %gcmarks))))
@@ -404,10 +404,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-send ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (uv-udp-send handle::UvUdp buf offset length port address #!key (family 4) callback (loop (uv-default-loop)))
+(define (uv-udp-send handle::UvUdp buf offset len port address #!key (family 4) callback (loop (uv-default-loop)))
    (with-access::UvUdp handle ($builtin)
       ($uv-udp-send ($uv-udp-t $builtin) buf
-	 offset length
+	 offset len
 	 port address
 	 family callback loop)))
 
