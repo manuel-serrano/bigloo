@@ -1,9 +1,9 @@
- ;*=====================================================================*/
+;*=====================================================================*/
 ;*    serrano/prgm/project/bigloo/api/ssl/src/Llib/ssl.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Mon Nov 28 11:30:10 2016 (serrano)                */
+;*    Last change :  Tue Nov 29 09:48:10 2016 (serrano)                */
 ;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -52,6 +52,7 @@
 
 	   (macro $obj->bignum::$bignum (::obj) "(BIGNUM *)FOREIGN_TO_COBJ")
 	   (macro $bignum->obj::obj ($bignum) "void_star_to_obj")
+	   (macro $bignum-nil::$bignum "((BIGNUM *)0L)")
 	   
 	   ($ssl-version::string () "bgl_ssl_version")
            ($certificate-subject::bstring (::certificate)
@@ -182,6 +183,8 @@
 	   ($bgl-evp-get-ciphers::pair-nil () "bgl_evp_get_ciphers")
 	   ($bgl-evp-get-hashes::pair-nil () "bgl_evp_get_hashes")
 
+	   ($bgl-dh-pub-priv-key-set!::void (::$dh $bignum $bignum)
+	      "bgl_dh_pub_priv_key_set")
 	   ($bgl-dh-private-key::$bignum (::$dh)
 	      "bgl_dh_private_key")
 	   ($bgl-dh-private-key-set!::void (::$dh $bignum)
@@ -192,16 +195,16 @@
 	      "bgl_dh_public_key_set")
 	   ($bgl-dh-p::$bignum (::$dh)
 	      "bgl_dh_p")
-	   ($bgl-dh-p-set!::void (::$dh $bignum)
-	      "bgl_dh_p_set")
+	   ($bgl-dh-pqg-set!::void (::$dh $bignum $bignum $bignum)
+	      "bgl_dh_pqg_set")
 	   ($bgl-dh-q::$bignum (::$dh)
 	      "bgl_dh_p")
-	   ($bgl-dh-q-set!::void (::$dh $bignum)
-	      "bgl_dh_p_set")
+;* 	   ($bgl-dh-q-set!::void (::$dh $bignum)                       */
+;* 	      "bgl_dh_p_set")                                          */
 	   ($bgl-dh-g::$bignum (::$dh)
 	      "bgl_dh_g")
-	   ($bgl-dh-g-set!::void (::$dh $bignum)
-	      "bgl_dh_g_set")
+;* 	   ($bgl-dh-g-set!::void (::$dh $bignum)                       */
+;* 	      "bgl_dh_g_set")                                          */
 
 	   ($bgl-ssl-hash-init::bool (::ssl-hash)
 	      "bgl_ssl_hash_init")
@@ -426,45 +429,56 @@
 	  (class dh
 	     (dh-init)
 	     ($native::$dh (default $dh-nil))
+	     (%p::$bignum (default $bignum-nil))
+	     (%q::$bignum (default $bignum-nil))
+	     (%g::$bignum (default $bignum-nil))
+	     (%pub::$bignum (default $bignum-nil))
+	     (%priv::$bignum (default $bignum-nil))
 	     (p
 		(get (lambda (o::dh)
-			(with-access::dh o ($native)
-			   ($bignum->obj ($bgl-dh-p $native)))))
+			(with-access::dh o (%p)
+			   ($bignum->obj %p))))
 		(set (lambda (o::dh v::foreign)
-			(with-access::dh o ($native)
-			   ($bgl-dh-p-set! $native ($obj->bignum v))
+			(with-access::dh o ($native %p %q %g)
+			   (set! %p ($obj->bignum v))
+			   ($bgl-dh-pqg-set! $native %p %q %g)
 			   v))))
 	     (q
 		(get (lambda (o::dh)
-			(with-access::dh o ($native)
-			   ($bignum->obj ($bgl-dh-q $native)))))
+			(with-access::dh o (%q)
+			   ($bignum->obj %q))))
 		(set (lambda (o::dh v::foreign)
-			(with-access::dh o ($native)
-			   ($bgl-dh-q-set! $native ($obj->bignum v))
+			(with-access::dh o ($native %p %q %g)
+			   (set! %q ($obj->bignum v))
+			   ($bgl-dh-pqg-set! $native %p %q %g)
 			   v))))
 	     (g
 		(get (lambda (o::dh)
-			(with-access::dh o ($native)
-			   ($bignum->obj ($bgl-dh-g $native)))))
+			(with-access::dh o (%g)
+			   ($bignum->obj %g))))
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native)
-			   ($bgl-dh-g-set! $native ($obj->bignum v))
-			   v))))
+			   (with-access::dh o ($native %p %q %g)
+			      (set! %g ($obj->bignum v))
+			      ($bgl-dh-pqg-set! $native %p %q %g)
+			      v)))))
 	     (private-key
 		(get (lambda (o::dh)
-			(with-access::dh o ($native)
-			   ($bignum->obj ($bgl-dh-private-key $native)))))
+			(with-access::dh o (%priv)
+			   ($bignum->obj %priv))))
 		(set (lambda (o::dh v::foreign)
-			(with-access::dh o ($native)
-			   ($bgl-dh-private-key-set! $native ($obj->bignum v))
+			(with-access::dh o ($native %pub %priv)
+			   (set! %priv ($obj->bignum v))
+			   ($bgl-dh-pub-priv-key-set! $native %pub %priv)
 			   v))))
 	     (public-key
 		(get (lambda (o::dh)
-			(with-access::dh o ($native)
-			   ($bignum->obj ($bgl-dh-public-key $native)))))
+			(with-access::dh o (%pub)
+			   ($bignum->obj %pub))))
 		(set (lambda (o::dh v::foreign)
-			(with-access::dh o ($native)
-			   ($bgl-dh-public-key-set! $native ($obj->bignum v))
+			(with-access::dh o ($native %pub %priv)
+			   (set! %pub ($obj->bignum v))
+			   ($bgl-dh-pub-priv-key-set! $native %pub %priv)
 			   v)))))
 	  
 	  (class ssl-hash

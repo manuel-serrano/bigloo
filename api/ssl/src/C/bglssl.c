@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Nov 28 11:28:53 2016 (serrano)                */
+/*    Last change :  Tue Nov 29 09:35:42 2016 (serrano)                */
 /*    Copyright   :  2005-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -2541,6 +2541,15 @@ bgl_bn_bin2bn( char *s, int len ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF void                                             */
+/*    bgl_dh_pub_priv_key_set ...                                      */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void
+bgl_dh_pub_priv_key_set( DH *dh, BIGNUM *pub, BIGNUM *priv ) {
+   BGL_DH_SET_PUB_PRIV( dh, pub, priv );
+}
+
+/*---------------------------------------------------------------------*/
 /*    BIGNUM *                                                         */
 /*    bgl_dh_private_key ...                                           */
 /*---------------------------------------------------------------------*/
@@ -2576,6 +2585,17 @@ bgl_dh_public_key( DH *dh ) {
 BGL_RUNTIME_DEF void 
 bgl_dh_public_key_set( DH *dh, BIGNUM *v ) {
    BGL_DH_SET_PUB( dh, v );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_dh_pqg_set ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF void 
+bgl_dh_pqg_set( DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g ) {
+   if( p != 0 && g != 0 ) {
+      BGL_DH_SET_PQG( dh, p, q, g );
+   }
 }
 
 /*---------------------------------------------------------------------*/
