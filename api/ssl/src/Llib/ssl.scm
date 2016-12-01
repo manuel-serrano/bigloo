@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Nov 29 09:48:10 2016 (serrano)                */
+;*    Last change :  Wed Nov 30 06:41:39 2016 (serrano)                */
 ;*    Copyright   :  2005-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
@@ -436,8 +436,8 @@
 	     (%priv::$bignum (default $bignum-nil))
 	     (p
 		(get (lambda (o::dh)
-			(with-access::dh o (%p)
-			   ($bignum->obj %p))))
+			(with-access::dh o (%p $native)
+			   ($bignum->obj ($bgl-dh-p $native)))))
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native %p %q %g)
 			   (set! %p ($obj->bignum v))
@@ -445,8 +445,8 @@
 			   v))))
 	     (q
 		(get (lambda (o::dh)
-			(with-access::dh o (%q)
-			   ($bignum->obj %q))))
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-q $native)))))
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native %p %q %g)
 			   (set! %q ($obj->bignum v))
@@ -454,8 +454,8 @@
 			   v))))
 	     (g
 		(get (lambda (o::dh)
-			(with-access::dh o (%g)
-			   ($bignum->obj %g))))
+			(with-access::dh o ($native)
+			   ($bignum->obj ($bgl-dh-g $native)))))
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native)
 			   (with-access::dh o ($native %p %q %g)
@@ -464,8 +464,8 @@
 			      v)))))
 	     (private-key
 		(get (lambda (o::dh)
-			(with-access::dh o (%priv)
-			   ($bignum->obj %priv))))
+			(with-access::dh o (%priv $native)
+			   ($bignum->obj ($bgl-dh-private-key $native)))))
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native %pub %priv)
 			   (set! %priv ($obj->bignum v))
@@ -473,8 +473,8 @@
 			   v))))
 	     (public-key
 		(get (lambda (o::dh)
-			(with-access::dh o (%pub)
-			   ($bignum->obj %pub))))
+			(with-access::dh o (%pub $native)
+			   ($bignum->obj ($bgl-dh-public-key $native)))))
 		(set (lambda (o::dh v::foreign)
 			(with-access::dh o ($native %pub %priv)
 			   (set! %pub ($obj->bignum v))

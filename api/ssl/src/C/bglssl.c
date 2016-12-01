@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Nov 29 09:35:42 2016 (serrano)                */
+/*    Last change :  Wed Nov 30 07:40:42 2016 (serrano)                */
 /*    Copyright   :  2005-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -2546,7 +2546,9 @@ bgl_bn_bin2bn( char *s, int len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF void
 bgl_dh_pub_priv_key_set( DH *dh, BIGNUM *pub, BIGNUM *priv ) {
-   BGL_DH_SET_PUB_PRIV( dh, pub, priv );
+   if( pub != 0 && priv !=0 ) {
+      BGL_DH_SET_PUB_PRIV( dh, pub, priv );
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -2936,7 +2938,7 @@ bgl_ssl_sign_init( ssl_sign sign, obj_t type ) {
 #else
    bgl_ssl_init();
 #endif
-   
+
    sign->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
    if( !(sign->BgL_z42mdz42) ) return 0;
