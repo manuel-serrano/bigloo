@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Fri Nov 25 08:43:55 2016 (serrano)                */
+;*    Last change :  Fri Dec  2 09:13:43 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -188,7 +188,17 @@
 ;*    node-A ::var ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::var host k A)
-   A)
+   (if *optim-return-goto?*
+       (with-access::var node (variable)
+	  (let ((val (variable-value variable)))
+	     (if (isa? val svar/Iinfo)
+		 (with-access::svar/Iinfo val (xhdl)
+		    (if xhdl
+			(let ((nk (cons (get-new-kont) (get-type node #f))))
+			   (cons `(,host ,xhdl ,nk) A))
+			A))
+		 A)))
+       A))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::closure ...                                             */
@@ -226,7 +236,7 @@
 ;*    node-A ::app ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (node-A node::app host k A)
-
+   
    (define (set-exit-call node::node)
       (when *optim-return-goto?*
 	 (with-access::app node (fun args)
@@ -238,7 +248,7 @@
 			   (when (isa? val svar/Iinfo)
 			      (with-access::svar/Iinfo val (xhdl)
 				 xhdl))))))))))
-
+   
    (define (is-exit-handler? callee)
       (when *optim-return-goto?*
 	 (when (isa? (variable-value callee) sfun/Iinfo)
@@ -247,29 +257,31 @@
    
    (with-access::app node (fun)
       (let ((callee (var-variable fun)))
-	 (let liip ((args (app-args node))
-		    (A A))
-	    (if (null? args)
+	 (cond
+	    ((set-exit-call node)
+	     =>
+	     ;;(lambda (callee) (cons `(,host ,callee ,k) A)))
+	     (lambda (callee) (cons `(,host ,callee tail) A)))
+	    (else
+	     (let liip ((args (app-args node))
+			(A A))
 		(cond
-		   ((local? callee)
+		   ((null? args)
 		    (cond
+		       ((not (local? callee))
+			A)
 		       ((is-exit-handler? host)
 			(cons `(,host ,callee tail) A))
 		       ((is-exit-handler? callee)
 			(cons `(,host ,callee tail) A))
 		       (else
 			(cons `(,host ,callee ,k) A))))
-		   ((set-exit-call node)
-		    =>
-		    ;;(lambda (callee) (cons `(,host ,callee ,k) A)))
-		    (lambda (callee) (cons `(,host ,callee tail) A)))
 		   (else
-		    A))
-		(liip (cdr args)
-		   (node-A (car args)
-		      host
-		      (cons (get-new-kont) (get-type (car args) #f))
-		      A)))))))
+		    (liip (cdr args)
+		       (node-A (car args)
+			  host
+			  (cons (get-new-kont) (get-type (car args) #f))
+			  A))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::app-ly ...                                              */

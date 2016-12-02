@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Mon Oct  5 17:54:14 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Thu Dec  1 09:11:29 2016 (serrano)                */
+;*    Copyright   :  2007-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC 2047             */
 ;*    MIME (Multipurpose Internet Mail Extensions) Part Three:         */
@@ -167,7 +167,7 @@
 		     'utf-8)
 		    ((iso-latin-1 ISO-LATIN-1 iso-8859-1 ISO-8859-1)
 		     'iso-latin-1)
-		    ((cp1252 CP1252 cp-1252 CP-1252)
+		    ((cp1252 CP1252 cp-1252 CP-1252 windows-1252)
 		     'cp1252)
 		    (else
 		     (error 'rfc2047-decode-port "Illegal charset" charset))))))

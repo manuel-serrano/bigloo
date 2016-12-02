@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Nov 24 07:41:17 2016 (serrano)                */
+;*    Last change :  Fri Dec  2 15:31:35 2016 (serrano)                */
 ;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -224,13 +224,13 @@
 ;*---------------------------------------------------------------------*/
 (define (is-exit-return? node::node exitvar::local)
    (bind-exit (abort)
-      (is-return? node exitvar abort)
+      (is-return? node (list exitvar) abort)
       #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-return? ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (is-return? node::node exitvar::local abort)
+(define-walk-method (is-return? node::node exitvar::pair-nil abort)
    (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
@@ -238,8 +238,27 @@
 ;*---------------------------------------------------------------------*/
 (define-walk-method (is-return? node::var exitvar abort)
    (with-access::var node (variable)
-      (when (eq? variable exitvar)
+      (when (memq variable exitvar)
 	 (abort #f))))
+
+;*---------------------------------------------------------------------*/
+;*    is-exit-return? ::let-var ...                                    */
+;*---------------------------------------------------------------------*/
+(define-walk-method (is-return? node::let-var exitvar abort)
+   (with-access::let-var node (bindings body)
+      (cond
+	 ((not *optim-return-goto?*)
+	  (call-default-walker))
+	 ((and (pair? bindings) (null? (cdr bindings)))
+	  (let ((bnode (cdar bindings)))
+	     (if (isa? bnode app)
+		 (with-access::app bnode (fun)
+		    (if (eq? fun *get-exitd-top*)
+			(is-return? body (cons (caar bindings) exitvar) abort)
+			(call-default-walker)))
+		 (call-default-walker))))
+	 (else
+	  (call-default-walker)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    is-exit-return? ::app ...                                        */
