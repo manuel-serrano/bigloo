@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon Nov 28 09:13:14 2016 (serrano)                */
+#*    Last change :  Mon Dec  5 18:39:52 2016 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check for the host openssl library.                              */
 #*=====================================================================*/
@@ -70,6 +70,9 @@ cat > $file.c <<EOF
 static SSL_CTX *ctx;
 
 main( int argc, char *argv[] ) {
+    DH *dh;
+    const BIGNUM *key;
+    DH_get0_key( dh, &key, 0 );
     return SSL_CTX_get_ssl_method( ctx );
 }
 EOF
