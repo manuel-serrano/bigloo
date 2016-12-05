@@ -58,7 +58,7 @@
   SSL_SESSION_get_id( sess, &len )
 #else
 #  define BGL_SSL_SESSION_get_id( sess, len ) \
-  (en = sess->session_id_length, sess->session_id)
+  (len = sess->session_id_length, sess->session_id)
 #endif
 
 #if( !defined( STACK_OF ) )
@@ -70,7 +70,7 @@
 #  define BGL_EVP_MD_CTX_free( evp ) EVP_MD_CTX_free( evp )
 #  define BGL_EVP_MD_CTX_reset( evp ) EVP_MD_CTX_reset( evp ) 
 #else
-#  define BGL_EVP_MD_CTX_new GC_MALLOC( sizeof( EVP_MD_CTX ) )
+#  define BGL_EVP_MD_CTX_new() ((EVP_MD_CTX *)GC_MALLOC( sizeof( EVP_MD_CTX ) ))
 #  define BGL_EVP_MD_CTX_free( evp )
 #  define BGL_EVP_MD_CTX_reset( evp ) EVP_MD_CTX_cleanup( evp ) 
 #endif
@@ -80,7 +80,7 @@
 #  define BGL_EVP_CIPHER_CTX_free( evp ) EVP_CIPHER_CTX_free( evp )
 #  define BGL_EVP_CIPHER_CTX_reset( evp ) EVP_CIPHER_CTX_reset( evp )
 #else
-#  define BGL_EVP_CIPHER_CTX_new GC_MALLOC( sizeof( EVP_CIPHER_CTX ) )
+#  define BGL_EVP_CIPHER_CTX_new() ((EVP_CIPHER_CTX *)GC_MALLOC( sizeof( EVP_CIPHER_CTX ) ))
 #  define BGL_EVP_CIPHER_CTX_free( evp )
 #  define BGL_EVP_CIPHER_CTX_reset( evp ) EVP_CIPHER_CTX_cleanup( evp )
 #endif
@@ -92,7 +92,7 @@
 #  define BGL_HMAC_CTX_reset( hmac ) HMAC_CTX_reset( hmac )
 #  define BGL_HMAC_Init( c, k, l, m ) HMAC_Init_ex( c, k, l, m, 0 )
 #else
-#  define BGL_HMAC_CTX_new() GC_MALLOC( sizeof( HMAC_CTX ) )
+#  define BGL_HMAC_CTX_new() ((HMAC_CTX *)GC_MALLOC( sizeof( HMAC_CTX ) ))
 #  define BGL_HMAC_CTX_init( hmac ) HMAC_CTX_init( hmac ) 
 #  define BGL_HMAC_CTX_free( hmac) 
 #  define BGL_HMAC_CTX_reset( hmac ) HMAC_CTX_cleanup( hmac )
@@ -115,10 +115,10 @@
 #else
 #  define BGL_DH_SET_PUB_PRIV( dh, pub, priv ) \
   (BGL_DH_SET_PUB( dh, pub ), BGL_DH_SET_PRIV( dh, priv ))
-#  define BGL_DH_GET_PUB( dh, kres ) kres = dh->priv_key
-#  define BGL_DH_GET_PRIV( dh, kres ) kres = dh->pub_key
+#  define BGL_DH_GET_PUB( dh, kres ) dh->pub_key
+#  define BGL_DH_GET_PRIV( dh, kres ) dh->priv_key
 #  define BGL_DH_SET_PUB( dh, key ) dh->pub_key = key
-#  define BGL_DH_SET_PRIV( dh, key ) dh->pub_key = key
+#  define BGL_DH_SET_PRIV( dh, key ) dh->priv_key = key
 #  define BGL_DH_SET_PQG( dh, p, q, g ) \
   (BGL_DH_SET_P( dh, p ), BGL_DH_SET_Q( dh, q ), BGL_DH_SET_G( dh, g ))
 #  define BGL_DH_GET_P( dh, kres ) dh->p
