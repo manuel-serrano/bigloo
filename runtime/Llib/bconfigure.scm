@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sun Oct  2 18:53:50 2016 (serrano)                */
+;*    Last change :  Tue Dec  6 20:55:36 2016 (serrano)                */
 ;*    Copyright   :  2000-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -104,7 +104,8 @@
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
-	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG"))
+	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
+	   (macro $configure-class-display-min-size::long "BGL_CLASS_DISPLAY_MIN_SIZE"))
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -167,6 +168,7 @@
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
+	      (field static class-display-min-size::int "BGL_CLASS_DISPLAY_MIN_SIZE")
 	      "bigloo.configure"))
 
    (export    (bigloo-config #!optional config)
@@ -247,7 +249,8 @@
      (int-size . ,$configure-int-size)
      (elong-size . ,$configure-elong-size)
      (have-unistring . ,$configure-have-unistring)
-     (have-syslog . ,$configure-have-syslog)))
+     (have-syslog . ,$configure-have-syslog)
+     (class-display-min-size . ,$configure-class-display-min-size)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */

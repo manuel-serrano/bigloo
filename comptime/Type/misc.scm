@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Sat Feb  6 09:01:26 2016 (serrano)                */
+;*    Last change :  Wed Dec  7 07:13:57 2016 (serrano)                */
 ;*    Copyright   :  2004-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
@@ -123,34 +123,10 @@
 	 (set! *isa* (find-global/module 'isa? '__object)))
       (with-access::app node (fun args)
 	 (when (pair? args)
-	    (when (and (eq? (var-variable fun) *isa*)
+	    (when (and (or (eq? (var-variable fun) *isa*))
 		       (var? (cadr args))
 		       (global? (var-variable (cadr args))))
 	       (find-type (global-id (var-variable (cadr args)))))))))
-
-(define (isa-of-old node::node)
-   
-   (define (first-arg args)
-      (cond
-	 ((var? (car args))
-	  (car args))
-	 ((cast? (car args))
-	  (with-access::cast (car args) (arg)
-	     (when (var? arg)
-		arg)))))
-   
-   (when (app? node)
-      (unless (global? *isa*)
-	 (set! *isa* (find-global/module 'isa? '__object)))
-      (with-access::app node (fun args)
-	 (when (pair? args)
-	    (let ((arg0 (first-arg args)))
-	       (when (and (eq? (var-variable fun) *isa*)
-			  (var? arg0)
-			  (bigloo-type? (variable-type (var-variable arg0)))
-			  (var? (cadr args))
-			  (global? (var-variable (cadr args))))
-		  (find-type (global-id (var-variable (cadr args))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    app-predicate-of ...                                             */

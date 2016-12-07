@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Nov 24 07:40:29 2016 (serrano)                */
+;*    Last change :  Wed Dec  7 07:21:01 2016 (serrano)                */
 ;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -446,6 +446,11 @@
        (set! *inlining?* #f))
       (("-fno-user-inlining" (help "Disable user inline optimization"))
        (set! *user-inlining?* #f))
+      ;; isa inlining
+      (("-fisa" (help "Inline isa? type predicate"))
+       (set! *optim-isa?* #t))
+      (("-fno-isa" (help "Inline isa? type predicate"))
+       (set! *optim-isa?* #f))
       ;; data flow optimization
       (("-fbeta-reduce" (help "Enable simple beta reduction (enabled from -O2)"))
        (set! *optim-reduce-beta?* #t))
@@ -902,6 +907,8 @@
        (set! *pass* 'tailc))
       (("-return" (help "Stop after the return stage"))
        (set! *pass* 'return))
+      (("-isa" (help "Stop after the isa stage"))
+       (set! *pass* 'isa))
       (("-init" (help "Stop after the initialization construction stage"))
        (set! *pass* 'init))
       (("-classgen" (help "Produce an include file for class accessors"))

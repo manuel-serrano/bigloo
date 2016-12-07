@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Nov 24 07:40:35 2016 (serrano)                */
+;*    Last change :  Wed Dec  7 07:21:25 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -65,6 +65,7 @@
 	    *optim-loop-inlining?*
 	    *optim-atom-inlining?*
 	    *optim-O-macro?*
+	    *optim-isa?*
 	    *optim-cfa?*
 	    *optim-cfa-fixnum-arithmetic?*
 	    *optim-cfa-flonum-arithmetic?*
@@ -876,6 +877,9 @@
 (param-define *optim-jvm*
    "Enable optimization by inlining jvm code"
    0)
+(param-define *optim-isa?*
+   "Enable isa type tests optimization (inlining)"
+   #f)
 (param-define *optim-cfa?*
    "Enable CFA"
    #t)

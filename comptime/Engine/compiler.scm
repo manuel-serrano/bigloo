@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Mon Nov 14 14:44:30 2016 (serrano)                */
+;*    Last change :  Wed Dec  7 07:21:39 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -79,6 +79,7 @@
 	    bdb_walk
 	    prof_walk
 	    return_walk
+	    isa_walk
 	    cc_cc
 	    cc_ld
 	    cc_roots
@@ -347,7 +348,7 @@
 	    (check-sharing "fail" ast)
 	    (check-type "fail" ast #f #f)
 
-	    ;; compute type informationa based on the explicit type tests found
+	    ;; compute type information based on the explicit type tests found
 	    ;; in the source code.
 	    (when *optim-dataflow-types?*
 	       (if *call/cc?*
@@ -464,6 +465,13 @@
 	    (stop-on-pass 'return (lambda () (write-ast ast)))
 	    (check-sharing "return" ast)
 	    (check-type "return" ast #t #f)
+
+	    ;; isa expansion
+	    (when *optim-isa?*
+	       (set! ast (profile isa (isa-walk! ast))))
+	    (stop-on-pass 'isa (lambda () (write-ast ast)))
+	    (check-sharing "isa" ast)
+	    (check-type "isa" ast #t #f)
 	    
 	    ;; we re-perform the inlining pass in high optimization mode
 	    ;; in order to inline all type checkers.

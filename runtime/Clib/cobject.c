@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Mon Mar  7 08:44:37 2016 (serrano)                */
+/*    Last change :  Tue Dec  6 19:42:07 2016 (serrano)                */
 /*    Copyright   :  2012-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
@@ -24,8 +24,11 @@ bgl_make_class( obj_t name, obj_t module, long num,
 		long depth, 
 		obj_t evdata ) {
    obj_t klass;
+   long dspsz = depth < BGL_OBJECT_MIN_DISPLAY_SIZE ?
+      BGL_OBJECT_MIN_DISPLAY_SIZE : depth;
+   //dspsz = depth;
 
-   klass = GC_MALLOC_UNCOLLECTABLE( BGL_CLASS_SIZE + (sizeof( obj_t ) * depth) );
+   klass = GC_MALLOC_UNCOLLECTABLE( BGL_CLASS_SIZE + (sizeof(obj_t) * dspsz) );
 
    klass->class_t.header = MAKE_HEADER( CLASS_TYPE, 0 );
    klass->class_t.name = name;
@@ -52,7 +55,10 @@ bgl_make_class( obj_t name, obj_t module, long num,
       memcpy( &(klass->class_t.ancestor0),
 	      &(BGL_CLASS_ANCESTORS_REF( super, 0 )),
 	      sizeof( obj_t ) * (depth - 1) );
-      (&klass->class_t.ancestor0)[ depth - 1 ] = super;
+	 (&klass->class_t.ancestor0)[ depth - 1 ] = super;
+      if( depth < BGL_OBJECT_MIN_DISPLAY_SIZE ) {
+	 (&klass->class_t.ancestor0)[ depth ] = BREF( klass );
+      }
    }
 
    return BREF( klass );

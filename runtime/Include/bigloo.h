@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Oct  2 19:03:17 2016 (serrano)                */
+/*    Last change :  Tue Dec  6 19:28:16 2016 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1709,6 +1709,8 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*---------------------------------------------------------------------*/
 #define BGL_OBJECTP( _obj ) \
    ((POINTERP( _obj ) && (TYPE( _obj ) >= OBJECT_TYPE)))
+
+#define BGL_OBJECT_MIN_DISPLAY_SIZE 6
 
 #define BGL_OBJECT_CLASS_NUM( _obj ) \
    (TYPE( _obj ))

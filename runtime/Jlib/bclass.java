@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 10:19:34 2012                          */
-/*    Last change :  Sun Oct 28 19:10:58 2012 (serrano)                */
-/*    Copyright   :  2012 Manuel Serrano                               */
+/*    Last change :  Tue Dec  6 20:05:56 2016 (serrano)                */
+/*    Copyright   :  2012-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Java Bigloo class implementation                                 */
 /*=====================================================================*/
@@ -39,6 +39,8 @@ public class bclass extends obj {
 		  procedure nil_fun, Object shrink,
 		  int depth, 
 		  Object evdata ) {
+      int dspsz = (depth < foreign.MIN_DISPLAY_SIZE)
+	 ? foreign.MIN_DISPLAY_SIZE : depth;
       this.name = name;
       this.module = module;
       this.index = num;
@@ -54,15 +56,18 @@ public class bclass extends obj {
       this.nil_fun = nil_fun;
       this.shrink = shrink;
       this.depth = depth;
+      this.nil = foreign.BFALSE;
       this.evdata = evdata;
-      this.ancestors = new Object[ depth ];
+      this.ancestors = new Object[ dspsz ];
 
       if( depth > 0 ) {
 	 bclass sup = (bclass)bsuper;
 	 System.arraycopy( sup.ancestors, 0, this.ancestors, 0, depth - 1 );
 	 this.ancestors[ depth - 1 ] = bsuper;
-      }
 
-      this.nil = foreign.BFALSE;
+	 if( depth < foreign.MIN_DISPLAY_SIZE ) {
+	    this.ancestors[ depth ] = this;
+	 }
+      }
    }
 }

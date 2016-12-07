@@ -4287,6 +4287,8 @@ public final class foreign
 
    public static int OBJECT_TYPE = 0;
 
+   public static int MIN_DISPLAY_SIZE = 6;
+   
    public static Object BGL_OBJECT_WIDENING_SET(object o, Object v)
       {
 	 o.widening = v;

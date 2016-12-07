@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Sat May 28 09:38:24 2016 (serrano)                */
+#*    Last change :  Wed Dec  7 07:04:48 2016 (serrano)                */
 #*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -310,10 +310,10 @@ USER_FILE	= user
 
 USER_OBJ	= $(USER_FILE:%=User/%.o)
 
-#*--- narrow ----------------------------------------------------------*/
-NARROW_FILE	= walk types narrow defuse set
+#*--- isa -------------------------------------------------------------*/
+ISA_FILE	= walk
 
-NARROW_OBJ	= $(NARROW_FILE:%=Narrow/%.o)
+ISA_OBJ	        = $(ISA_FILE:%=Isa/%.o)
 
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
@@ -329,7 +329,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(NARROW_OBJ) $(RETURN_OBJ) \
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
                   Tools/date.o
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)

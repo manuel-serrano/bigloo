@@ -456,6 +456,8 @@
 #define BGL_REGEXP_FAMILY "@BGL_REGEXP_FAMILY@"
 #define BGL_REGEXP_HAS_FREE_STUDY @BGL_REGEXP_HAS_FREE_STUDY@
 
+#define BGL_CLASS_DISPLAY_MIN_SIZE 6
+
 /*---------------------------------------------------------------------*/
 /*    DNS caching                                                      */
 /*---------------------------------------------------------------------*/

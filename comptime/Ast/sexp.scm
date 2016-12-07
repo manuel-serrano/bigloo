@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Oct 17 09:51:27 2016 (serrano)                */
+;*    Last change :  Wed Dec  7 07:11:51 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -24,6 +24,7 @@
 	    tools_dsssl
 	    type_type
 	    type_env
+	    type_misc
 	    type_cache
 	    object_class
 	    type_typeof

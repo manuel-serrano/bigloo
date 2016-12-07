@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Oct 14 18:14:45 2016 (serrano)                */
+;*    Last change :  Wed Dec  7 08:27:18 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -296,6 +296,10 @@
 	    (inline generic-method-array ::procedure)
 	    (inline method-array-ref ::procedure ::vector ::int)
 	    (isa?::bool ::obj ::class)
+	    (inline %isa/cdepth?::bool ::obj ::class ::long)
+	    (inline %isa-object/cdepth?::bool ::object ::class ::long)
+	    (inline %isa/final?::bool ::obj ::class)
+	    (inline %isa-object/final?::bool ::object ::class)
 	    (nil?::bool ::object)
 	    (generic object-print ::object ::output-port ::procedure)
 	    (generic object-display ::object . port)
@@ -338,6 +342,10 @@
 	    (object-class side-effect-free no-cfa-top no-trace nesting)
 	    (find-super-class-method side-effect-free no-cfa-top no-trace nesting)
 	    (isa? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%isa/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%isa-object/cdepth? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%isa/final? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
+	    (%isa-object/final? fail-safe side-effect-free no-cfa-top no-trace nesting (effect))
 	    (%object? (predicate-of object) no-cfa-top nesting)
 	    (wide-object? side-effect-free no-cfa-top no-trace nesting)
 	    (object-widening side-effect-free no-cfa-top nesting)
@@ -1216,20 +1224,33 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    %isa/cdepth? ...                                                 */
-;*    -------------------------------------------------------------    */
-;*    The constant-time and thread-safe implementation of is-a?        */
 ;*---------------------------------------------------------------------*/
-(define (%isa/cdepth? obj class cdepth)
-   (if (object? obj)
-       (let ((oclass (object-class obj)))
-	  (if (eq? oclass class)
-	      #t
-	      (let ((odepth (class-depth oclass))
-		    (cdepth (class-depth class)))
-		 (if (<fx cdepth odepth)
-		     (eq? (class-ancestors-ref oclass cdepth) class)
-		     #f))))
-       #f))
+(define-inline (%isa/cdepth? obj class cdepth)
+   (when (object? obj)
+      (let ((oclass (object-class obj)))
+	 (eq? ($class-ancestors-ref oclass cdepth) class))))
+
+;*---------------------------------------------------------------------*/
+;*    %isa-object/cdepth? ...                                          */
+;*---------------------------------------------------------------------*/
+(define-inline (%isa-object/cdepth? obj class cdepth)
+   (let ((oclass (object-class obj)))
+      (eq? ($class-ancestors-ref oclass cdepth) class)))
+
+;*---------------------------------------------------------------------*/
+;*    %isa/final? ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (%isa/final? obj class)
+   (when (object? obj)
+      (let ((oclass (object-class obj)))
+	 (eq? oclass class))))
+
+;*---------------------------------------------------------------------*/
+;*    %isa-object/final? ...                                           */
+;*---------------------------------------------------------------------*/
+(define-inline (%isa-object/final? obj class)
+   (let ((oclass (object-class obj)))
+      (eq? oclass class)))
 
 ;*---------------------------------------------------------------------*/
 ;*    object-display ...                                               */

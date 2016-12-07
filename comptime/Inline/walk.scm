@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Thu Dec 24 06:52:26 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Dec  7 07:02:22 2016 (serrano)                */
+;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
 ;*=====================================================================*/
@@ -44,7 +44,7 @@
    (trace (inline inline+ 0) " ================ INLINING ================\n")
    ;; we setup the inlining
    (inline-setup! what)
-   ;; count the number of occurences of each variable
+   ;; count the number of occurences of all variables
    (when (eq? what 'all)
       (occur-var globals))
    ;; we scan all the local definitions to inline their body
@@ -52,9 +52,6 @@
 		(let ((kfactor (if (eq? (sfun-class (global-value g)) 'sifun)
 				   1
 				   *kfactor*)))
-		   ;; I think that it is useless to inline the body of
-		   ;; inline definitions. It only looses a little bit when
-		   ;; this inline is used as value but I think this is rare.
 		   (enter-function (global-id g))
 		   (inline-sfun! g kfactor '())
 		   (leave-function)))
