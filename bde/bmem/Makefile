@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Mon Aug 29 07:54:28 2016 (serrano)                */
+#*    Last change :  Wed Dec  7 13:56:06 2016 (serrano)                */
 #*    Copyright   :  2003-16 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -155,10 +155,10 @@ clean: cleanbmem cleanlib
 #*    Automatic rule                                                   */
 #*---------------------------------------------------------------------*/
 lib/%.o: lib/%.c $(LIBINCLUDE:%=lib/%)
-	$(CC) $(CPICFLAGS) $(CFLAGS) $(CMEMFLAGS) $(IFLAGS) $< -o $@ -c
+	$(CC) $(CEFLAGS) $(CPICFLAGS) $(CFLAGS) $(CMEMFLAGS) $(IFLAGS) $< -o $@ -c
 
 bmem/%.o: bmem/%.scm $(INCLUDE:%=bmem/%)
-	$(BIGLOO) $(BMEMFLAGS) $< -o $@ -c
+	$(BIGLOO) $(EFLAGS) $(BMEMFLAGS) $< -o $@ -c
 
 #*---------------------------------------------------------------------*/
 #*    ude                                                              */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Tue Nov 22 08:00:24 2016 (serrano)                */
+/*    Last change :  Wed Dec  7 13:58:01 2016 (serrano)                */
 /*    Copyright   :  2003-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -627,7 +627,7 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t module, obj_t super,
       init = 1;
    }
 
-   fprintf( stderr, "  %s@%s (%d) [%s]...",
+   fprintf( stderr, "  %s@%s (%d)...",
 	    cname,
 	    BSTRING_TO_STRING( SYMBOL_TO_STRING( module ) ),
 	    tnum );
