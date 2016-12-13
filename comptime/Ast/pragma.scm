@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:11:13 1996                          */
-;*    Last change :  Thu Feb 18 08:38:00 2016 (serrano)                */
+;*    Last change :  Mon Dec 12 21:13:13 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The creation of pragma forms.                                    */
 ;*=====================================================================*/
@@ -76,6 +76,20 @@
 				  (find-location/loc (car exps) loc)
 				  (if free 'value 'set!))
 			       nodes)))))))
+	  ((?- ?ident)
+	   (let ((v (sexp->node ident stack loc site)))
+	      (if (isa? v var)
+		  (with-access::var v (variable)
+		     (with-access::variable variable (name removable)
+			(instantiate::pragma
+			   (loc loc)
+			   (type type)
+			   (format "")
+			   (expr* (list v))
+			   (side-effect (not free))
+			   (effect effect))))
+		  (error-sexp->node "Illegal `pragma' expression" exp
+		     (find-location/loc exp loc)))))
 	  (else
 	   (error-sexp->node "Illegal \"pragma\" form" exp loc)))))
 

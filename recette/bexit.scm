@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 12 10:06:03 1992                          */
-;*    Last change :  Fri Jan 17 08:00:29 2014 (serrano)                */
+;*    Last change :  Thu Dec 22 19:55:31 2016 (serrano)                */
 ;*                                                                     */
 ;*    On test les trois sortes de `bind-exit'                          */
 ;*---------------------------------------------------------------------*/
@@ -191,6 +191,13 @@
 	 (return 2222))))
 
 ;*---------------------------------------------------------------------*/
+;*    test-bexit-type ...                                              */
+;*---------------------------------------------------------------------*/
+(define (test-bexit-type::bool x)
+   (bind-exit (exit)
+      (exit x)))
+
+;*---------------------------------------------------------------------*/
 ;*    test-bind-exit ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (test-bind-exit)
@@ -215,5 +222,6 @@
    (test "trace stack.1" (test-stack-traces) #t)
    (test "trace stack.2" (test-trace-stack) #t)
    (test "trace stack.3" (test-trace-stack2) #t)
-   (test "multiple-return" (test-multiple-return) 2222))
+   (test "multiple-return" (test-multiple-return) 2222)
+   (test "bind-exit type" (test-bexit-type #t) #t))
 	 

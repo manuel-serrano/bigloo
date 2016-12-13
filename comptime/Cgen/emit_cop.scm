@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Tue Apr 19 14:09:08 2016 (serrano)                */
+;*    Last change :  Fri Dec 23 06:36:18 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
@@ -588,7 +588,7 @@
       (emit-cop exit)
       (display ") ) { " *c-port*)
       (trace cgen (display "/* cop-cset-ex-it */" *c-port*))
-      (emit-cop jump-value)
+      (when (emit-cop jump-value) (display ";" *c-port*))
       (emit-bdb-loc loc)
       (display "} else {\n" *c-port*)
       (display "#if( SIGSETJMP_SAVESIGS == 0 )\n" *c-port*)

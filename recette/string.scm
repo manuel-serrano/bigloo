@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Thu Nov 17 13:42:34 2016 (serrano)                */
+;*    Last change :  Sun Dec 25 07:52:31 2016 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -684,4 +684,14 @@
    (test "string-delete.3" (string-delete "abcedfghij" #\b 1 5)
       "ced")
    (test "string-delete.4" (string-delete "abcedfghij" (lambda (c) #t) 7)
-      ""))
+      "")
+   (test "strint-char-index.1" (string-char-index "abcdef" #\f) 5)
+   (test "strint-char-index.2" (string-char-index "abcdef" #\f 5 1) 5)
+   (test "strint-char-index.3" (string-char-index "abcdef" #\f 4 2) 5)
+   (test "strint-char-index.4" (string-char-index "abcdef" #\f 4 1) #f)
+   (test "strint-char-index.5" (string-char-index "abcdef" #\f 4 2) 5)
+   (test "strint-char-index.6" (string-char-index "abcdef" #\e) 4)
+   (test "strint-char-index.7" (string-char-index "abcdef" #\e 4 1) 4)
+   (test "strint-char-index.8" (string-char-index "abcdef" #\e 4 2) 4)
+   (test "strint-char-index.9" (string-char-index "abcdef" #\e 3 1) #f)
+   (test "strint-char-index.10" (string-char-index "abcdef" #\e 3 3) 4))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu Nov 17 16:27:23 2016 (serrano)                */
+;*    Last change :  Sun Dec 25 07:58:16 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -210,7 +210,8 @@
 	    (string-split::pair-nil ::bstring . opt)
 	    (string-cut::pair-nil ::bstring . opt)
 	    (string-index::obj ::bstring ::obj #!optional (start 0))
-	    (string-char-index::obj ::bstring ::char #!optional (start 0))
+	    (string-char-index::obj ::bstring ::char #!optional (start 0) (count -1))
+	    (string-char-index-ur::obj ::bstring ::char ::long ::long)
 	    (string-index-right::obj s::bstring ::obj
 	       #!optional (start (string-length s)))
 	    (string-skip::obj ::bstring ::obj #!optional (start 0))
@@ -902,19 +903,17 @@
 		    (loop (+fx e 1) nr)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    string-char-index ...                                            */
+;*    string-char-index-ur ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (string-char-index string char #!optional (start 0))
-   (let ((len (string-length string)))
-      (cond-expand
-	 (bigloo-c
-	  (when (>fx len start)
-	     (let* ((s0::string string)
-		    (s1::string ($memchr s0 (char->integer char)
-				   (-fx len start) start)))
-		(unless ($memchr-zero? s1)
-		   ($memchr-diff s1 s0)))))
-	 (else
+(define (string-char-index-ur string char start::long n::long)
+   (cond-expand
+      (bigloo-c
+       (let* ((s0::string string)
+	      (s1::string ($memchr s0 (char->integer char) n start)))
+	  (unless ($memchr-zero? s1)
+	     ($memchr-diff s1 s0))))
+      (else
+       (let ((len (+fx start n)))
 	  (let loop ((i start))
 	     (cond
 		((>=fx i len)
@@ -923,6 +922,18 @@
 		 i)
 		(else
 		 (loop (+fx i 1)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-char-index ...                                            */
+;*---------------------------------------------------------------------*/
+(define (string-char-index string char #!optional (start 0) (count -1))
+   (let* ((len (string-length string))
+	  (n (if (and (integer? count)
+		      (>=fx count 0) (<=fx count (-fx len start)))
+		 count
+		 (-fx len start))))
+      (when (>fx len start)
+	 (string-char-index-ur string char start n))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-index ...                                                 */

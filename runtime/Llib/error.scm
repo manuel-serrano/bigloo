@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Nov 25 11:10:26 2016 (serrano)                */
+;*    Last change :  Mon Dec 12 07:21:57 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -661,9 +661,13 @@
 ;*    open-for-error ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (open-for-error fname)
-   (if (file-exists? fname)
-       (open-input-file fname)
-       (open-input-string fname)))
+   (cond
+      ((file-exists? fname)
+       (open-input-file fname))
+      ((string=? fname "stdin")
+       (open-input-string (input-port-buffer (current-input-port))))
+      (else
+       #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    filename-for-error ...                                           */

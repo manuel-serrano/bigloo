@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 15 11:05:03 2016                          */
-;*    Last change :  Wed Mar 23 12:12:46 2016 (serrano)                */
+;*    Last change :  Sat Dec 24 06:57:40 2016 (serrano)                */
 ;*    Copyright   :  2016 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    "Boyer Moore" search algorithm.                                  */
@@ -43,7 +43,10 @@
 
    (export (bm-table::epair ::bstring)
 	   (bm-mmap::elong ::epair ::mmap ::elong)
-	   (bm-string::long ::epair ::bstring ::long)))
+	   (bm-string::long ::epair ::bstring ::long)
+	   (bmh-table::epair ::bstring)
+	   (bmh-mmap::elong ::epair ::mmap ::elong)
+	   (bmh-string::long ::epair ::bstring ::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    alphabet-length ...                                              */
@@ -202,7 +205,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bm-search ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-macro (bm-search ref len conv conv2)
+(define-macro (bm-search ref len conv)
    `(cond
       ((not (u32vector? (car tp)))
        (bigloo-type-error "bm" 'u32vector (car tp)))
@@ -243,11 +246,87 @@
 ;*    bm-mmap ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (bm-mmap tp obj m)
-   (bm-search mmap-ref mmap-length
-      fixnum->elong elong->fixnum))
+   (bm-search mmap-ref mmap-length fixnum->elong))
 
 ;*---------------------------------------------------------------------*/
 ;*    bm-string ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (bm-string tp obj m)
-   (bm-search string-ref string-length (lambda (x) x) (lambda (x)  x)))
+   (bm-search string-ref string-length (lambda (x) x)))
+
+;*---------------------------------------------------------------------*/
+;*    bmh-table ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (bmh-table pat::bstring)
+   (let ((delta1 (make-u32vector (alphabet-length))))
+      (make-delta1 delta1 pat)
+      (cons delta1 pat)))
+   
+;*---------------------------------------------------------------------*/
+;*    bmh-search ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-macro (bmh-search ref len conv)
+   `(cond
+       ((not (u32vector? (car tp)))
+	(bigloo-type-error "bmh" 'u32vector (car tp)))
+       ((not (string? (cdr tp)))
+	(error "bmh" "Illegal bmh-table" tp))
+       (else
+	(let* ((pat (cdr tp))
+	       (patlen (string-length pat)))
+	   (if (=fx patlen 0)
+	       -1
+	       (let ((delta1 (car tp))
+		     (strlen (,len obj)))
+		  (let while1 ((skip 0))
+		     (if (>=fx (-fx strlen skip) patlen)
+			 (let while2 ((i (-fx patlen 1)) )
+			    (cond
+			       ((not (char=? (,ref obj (+fx skip i))
+					(string-ref pat i)))
+				(while1
+				   (+fx skip
+				      (uint32->fixnum
+					 (u32vector-ref delta1
+					    (char->integer
+					       (,ref obj
+						  (+fx skip (-fx patlen 1)))))))))
+			       ((=fx i 0)
+				(,conv skip))
+			       (else
+				(while2 (-fx i 1)))))
+			 (,conv -1)))))))))
+;*                                                                     */
+;* 		                                                       */
+;* 		 (let loop ((i::long (+fx m (-fx patlen 1))))          */
+;* 		    (if (<fx i strlen)                                 */
+;* 			(let liip ((j (-fx patlen 1)))                 */
+;* 			   (cond                                       */
+;* 			      ((<fx j 0)                               */
+;* 			       (,conv (+fx i 1)))                      */
+;* 			      ((char=? (,ref obj (,conv i))            */
+;* 				  (string-ref pat j))                  */
+;* 			       (set! i (-fx i 1))                      */
+;* 			       (liip (-fx j 1)))                       */
+;* 			      (else                                    */
+;* 			       (let ((inc (maxfx                       */
+;* 					     (uint32->fixnum           */
+;* 						(u32vector-ref delta1  */
+;* 						   (char->integer      */
+;* 						      (,ref obj i))))  */
+;* 					     (uint32->fixnum           */
+;* 						(u32vector-ref delta2 j))))) */
+;* 				  (loop (+fx i inc))))))               */
+;* 			(,conv -1)))))))))                             */
+
+;*---------------------------------------------------------------------*/
+;*    bmh-mmap ...                                                     */
+;*---------------------------------------------------------------------*/
+(define (bmh-mmap tp obj m)
+   (bmh-search mmap-ref mmap-length fixnum->elong))
+
+;*---------------------------------------------------------------------*/
+;*    bmh-string ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (bmh-string tp obj m)
+   (bmh-search string-ref string-length (lambda (x) x)))

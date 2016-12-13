@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Nov 25 08:44:17 2016 (serrano)                */
+;*    Last change :  Fri Dec 23 06:35:33 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -351,8 +351,15 @@
    (trace (cgen 3)
 	  "(node->cop node::pragma kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
-   (with-access::pragma node (format effect)
-      (extern->cop format #f node kont inpushexit)))
+   (with-access::pragma node (format effect expr*)
+      (if (and (string-null? format)
+	       (pair? expr*)
+	       (null? (cdr expr*))
+	       (isa? (car expr*) var))
+	  (with-access::var (car expr*) (variable)
+	     (with-access::variable variable (name)
+		(extern->cop name #f node kont inpushexit)))
+	  (extern->cop format #f node kont inpushexit))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::private ...                                          */
@@ -496,12 +503,12 @@
 	  "(node->cop node::let-fun kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::let-fun node (body locals loc)
-      ;; local function are open-coded of their first call site.
+      ;; local function are open-coded on their first call site.
       ;; So, the compilation of `let-fun' construction is just
       ;; the declaration of all local functions' formals (and
       ;; a initialization mark in local function to express the
       ;; need of integration of the first call site).
-      (let loop ((locals      locals)
+      (let loop ((locals locals)
 		 (all-formals '()))
 	 (if (null? locals)
 	     (block-kont
@@ -509,7 +516,7 @@
 	       (instantiate::csequence
 		  (loc loc)
 		  (cops (list (instantiate::local-var
-				 (loc  loc)
+				 (loc loc)
 				 (vars all-formals))
 			      (node->cop body kont inpushexit))))
 	       loc)
@@ -587,12 +594,13 @@
 		      (exit (instantiate::varc
 			       (loc loc)
 			       (variable exit)))
-		      (jump-value (node->cop (instantiate::pragma
-						(loc loc)
-						(type *_*)
-						(format "BGL_EXIT_VALUE()")
-						(expr* '()))
-					     kont inpushexit))
+		      (jump-value (node->cop
+				     (instantiate::pragma
+					(loc loc)
+					(type *_*)
+					(format "BGL_EXIT_VALUE()")
+					(expr* '()))
+				     kont inpushexit))
 		      (body (instantiate::csequence
 			       (loc loc)
 			       (cops

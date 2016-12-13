@@ -1156,14 +1156,16 @@ in the string @code{string1}. It returns @code{#f} otherwise.
 @deffnx {library procedure} string-ci>=? string1 string2
 @end deffn
 
-@deffn {bigloo procedure} string-index string charset [start 0]
+@deffn {bigloo procedure} string-index string charset [start 0] [count -1]
 @deffnx {bigloo procedure} string-char-index string char [start 0]
 @deffnx {bigloo procedure} string-index-right string charset [start len-1]
 @cindex SRFI-13
 
 Returns the first occurrence of a character of @var{char-or-set} in
 @var{string}. The argument @var{charset} is either a character or a string.
-If no character is found, @code{string-index} returns @code{#f}.
+If no character is found, @code{string-index} returns @code{#f}
+The argument @var{count}, if provided, is the number of characters to
+be scanned in the string.
 @end deffn
 
 @deffn {bigloo procedure} string-skip string charset [start 0]

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Sat Jun  4 10:47:37 2016 (serrano)                */
+;*    Last change :  Tue Dec 20 11:12:46 2016 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -172,6 +172,18 @@
 		(out (string-append "#e" (number->string obj)) col))
 	       ((llong? obj)
 		(out (string-append "#l" (number->string obj)) col))
+	       ((uint8? obj)
+		(out (string-append "#u8:" (number->string obj)) col))
+	       ((uint16? obj)
+		(out (string-append "#u16:" (number->string obj)) col))
+	       ((uint32? obj)
+		(out (string-append "#u32:" (number->string obj)) col))
+	       ((int8? obj)
+		(out (string-append "#s8:" (number->string obj)) col))
+	       ((int16? obj)
+		(out (string-append "#s16:" (number->string obj)) col))
+	       ((int32? obj)
+		(out (string-append "#s32:" (number->string obj)) col))
 	       (else
 		(out (number->string obj) col))))
 	   ((symbol? obj)

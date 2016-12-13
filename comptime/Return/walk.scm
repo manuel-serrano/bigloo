@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Fri Dec  2 15:31:35 2016 (serrano)                */
+;*    Last change :  Fri Dec 16 19:25:38 2016 (serrano)                */
 ;*    Copyright   :  2010-16 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace set-exit/unwind-until with return. Currently this pass   */
@@ -115,7 +115,7 @@
 ;*                      (pop-exit!)                   ;; step7         */
 ;*                      (f res1015)))))))             ;; step8         */
 ;*                                                                     */
-;*    It returns <EXITVAR x STEP5'> or #f                              */
+;*    It returns <EXITVAR x EXITNODE> or #f                            */
 ;*---------------------------------------------------------------------*/
 (define (function-exit-node node::node)
    
@@ -253,9 +253,10 @@
 	  (let ((bnode (cdar bindings)))
 	     (if (isa? bnode app)
 		 (with-access::app bnode (fun)
-		    (if (eq? fun *get-exitd-top*)
-			(is-return? body (cons (caar bindings) exitvar) abort)
-			(call-default-walker)))
+		    (with-access::var fun (variable)
+		       (if (eq? variable *get-exitd-top*)
+			   (is-return? body (cons (caar bindings) exitvar) abort)
+			   (call-default-walker))))
 		 (call-default-walker))))
 	 (else
 	  (call-default-walker)))))
@@ -270,7 +271,7 @@
 	    ((eq? variable *unwind-until!*)
 	     (if (isa? (car args) var)
 		 (with-access::var (car args) (variable)
-		    (or (eq? variable exitvar)
+		    (or (and (pair? exitvar) (memq variable exitvar))
 			(is-return? (car args) exitvar abort)))
 		 (call-default-walker)))
 	    ((eq? variable *get-exitd-top*)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Sat Feb 13 10:16:51 2016 (serrano)                */
+;*    Last change :  Mon Dec 19 12:54:30 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
@@ -240,20 +240,20 @@
 ;*---------------------------------------------------------------------*/
 (define (convert! node from to safe)
    (trace coerce
-	  "convert: " (shape node) " " (shape from) " -> " (shape to)
-	  "  (safe: " safe ")\n")
+      "convert: " (shape node) " " (shape from) " -> " (shape to)
+      "  (safe: " safe ")\n")
    (if (eq? from to)
        node
        (let ((to (get-aliased-type to))
-	     (from (get-aliased-type from)))
-	  (if (or (eq? from to) (type-magic? from))
+	     (fro (get-aliased-type from)))
+	  (if (or (eq? fro to) (type-magic? fro))
 	      node
-	      (let ((coercer (find-coercer from to))
+	      (let ((coercer (find-coercer fro to))
 		    (loc (node-loc node)))
 		 (if (not (coercer? coercer))
 		     ;; There is no convertion between these types. 
 		     ;; Thus, it is a type error.
-		     (convert-error from to loc node)
+		     (convert-error fro to loc node)
 		     (let loop ((checks (coercer-check-op coercer))
 				(coerces (coercer-coerce-op coercer))
 				(node node))
@@ -262,21 +262,21 @@
 			    (if (null? coerces)
 				node
 				(internal-error "Illegal conversion"
-						(shape from)
-						(shape to))))
+				   (shape from)
+				   (shape to))))
 			   ((null? coerces)
 			    (internal-error "Illegal conversion"
-					    (shape from)
-					    (shape to)))
+			       (shape from)
+			       (shape to)))
 			   (else
 			    (loop (cdr checks)
-				  (cdr coerces)
-				  (make-one-conversion (cdar checks)
-						       (cdar coerces)
-						       (caar checks)
-						       (caar coerces)
-						       node
-						       safe)))))))))))
+			       (cdr coerces)
+			       (make-one-conversion (cdar checks)
+				  (cdar coerces)
+				  (caar checks)
+				  (caar coerces)
+				  node
+				  safe)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-one-conversion ...                                          */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Mon Oct 24 11:38:00 2016 (serrano)                */
+;*    Last change :  Fri Dec 16 18:45:29 2016 (serrano)                */
 ;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -449,8 +449,8 @@
 		"# glo!   :" (shape node) #\Newline
 		"# handler: " (shape hdlg)
 		#\Newline)
-	 (if (sfun/Ginfo-G? (local-value hdlg))
-	     (sexit-detached?-set! (local-value (var-variable var)) #t))
+	 (when (sfun/Ginfo-G? (local-value hdlg))
+	    (sexit-detached?-set! (local-value (var-variable var)) #t))
 	 (set! body (glo! body integrator))
 	 node)))
 

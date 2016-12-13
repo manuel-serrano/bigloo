@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Fri Nov 25 08:44:30 2016 (serrano)                */
+;*    Last change :  Thu Dec 22 18:28:14 2016 (serrano)                */
 ;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
@@ -298,7 +298,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    node-cfun-non-tail-app->cop ...                                  */
 ;*    -------------------------------------------------------------    */
-;*    cfun differ from sfun because we have to take care to the        */
+;*    cfun differ from sfun because we have to take care of the        */
 ;*    n-ary functions.                                                 */
 ;*---------------------------------------------------------------------*/
 (define (node-cfun-non-tail-app->cop var::variable node kont inpushexit)
@@ -317,7 +317,7 @@
 	  (let loop ((old-actuals  (app-args node))
 		     (args-type    args-type)
 		     (new-actuals  '())
-		     (aux          (make-local-svar/name 'aux *obj*))
+		     (aux          (make-local-svar/name 'tmp *obj*))
 		     (auxs         '())
 		     (exps         '()))
 	     (if (null? old-actuals)
@@ -326,10 +326,11 @@
 			      (loc (node-loc node))
 			      (fun (node->cop (app-fun node) *id-kont* inpushexit))
 			      (args (reverse! new-actuals))))
-		     ;; when this function call uses arguments we have to take
-		     ;; care where to emit source line information. We have to
-		     ;; do it at the beginning of the lexical block that will bind
-		     ;; the actual parameter and that's it. nothing more.
+		     ;; when this function call uses arguments we have to pay
+		     ;; attention to where to emit source line information. We
+		     ;; have to do it at the beginning of the lexical block
+		     ;; that will bind the actual parameter and that's it.
+		     ;; nothing more.
 		     (let ((loc (app-loc node)))
 			(instantiate::cblock
 			   (loc  loc)
