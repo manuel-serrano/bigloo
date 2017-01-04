@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Mon Oct 24 14:10:47 2016 (serrano)                */
-/*    Copyright   :  2002-16 Manuel Serrano                            */
+/*    Last change :  Wed Jan  4 08:05:33 2017 (serrano)                */
+/*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -218,6 +218,7 @@ bglpth_thread_env_create( bglpthread_t thread, obj_t bglthread ) {
 void
 bglpth_thread_start( bglpthread_t thread, obj_t bglthread, bool_t dt ) {
    pthread_attr_t a;
+   int ret;
 
    pthread_attr_init( &a );
    
@@ -238,10 +239,10 @@ bglpth_thread_start( bglpthread_t thread, obj_t bglthread, bool_t dt ) {
 
    bglpth_thread_env_create( thread, bglthread );
    
-   if( pthread_create( &(thread->pthread), &a, bglpth_thread_run, thread ) )
+   if( ret = pthread_create( &(thread->pthread), &a, bglpth_thread_run, thread ) )
       FAILURE( string_to_bstring( "thread-start!" ),
 	       string_to_bstring( "Cannot start thread" ),
-	       string_to_bstring( strerror( errno ) ) );
+	       string_to_bstring( strerror( ret ) ) );
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 12:12:04 2002                          */
-/*    Last change :  Tue Aug  9 10:57:32 2016 (serrano)                */
-/*    Copyright   :  2002-16 Manuel Serrano                            */
+/*    Last change :  Wed Jan  4 08:05:57 2017 (serrano)                */
+/*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C utilities for native Bigloo pthreads implementation.           */
 /*=====================================================================*/
@@ -84,6 +84,7 @@ srfi18_thread_run( void *arg ) {
 void
 srfi18_thread_start( srfi18thread_t thread, obj_t bglthread, bool_t dt ) {
    pthread_attr_t a;
+   int ret;
 
    pthread_attr_init( &a );
 
@@ -91,8 +92,8 @@ srfi18_thread_start( srfi18thread_t thread, obj_t bglthread, bool_t dt ) {
 
    bglpth_thread_env_create( thread, bglthread );
    
-   if( pthread_create( &(thread->bglpthread.pthread), &a, srfi18_thread_run, thread ) )
+   if( ret = pthread_create( &(thread->bglpthread.pthread), &a, srfi18_thread_run, thread ) )
       FAILURE( string_to_bstring( "thread-start!" ),
 	       string_to_bstring( "Cannot start thread" ),
-	       string_to_bstring( strerror( errno ) ) );
+	       string_to_bstring( strerror( ret ) ) );
 }

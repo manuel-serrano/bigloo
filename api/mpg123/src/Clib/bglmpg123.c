@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Sat Apr 18 07:44:21 2015 (serrano)                */
-/*    Copyright   :  2011-15 Manuel Serrano                            */
+/*    Last change :  Sat Dec 31 09:30:53 2016 (serrano)                */
+/*    Copyright   :  2011-16 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
 /*=====================================================================*/
@@ -97,9 +97,13 @@ bgl_mpg123_getformat( mpg123_handle *m ) {
 long
 bgl_mpg123_position( mpg123_handle *m ) {
    off_t frame = mpg123_tellframe( m );
-   double tpf = mpg123_tpf( m );
 
-   return (long)(tpf * 1000.) * frame;
+   if( frame <= 0 ) {
+      return 0;
+   } else {
+      double tpf = mpg123_tpf( m );
+      return (long)(tpf * 1000.) * frame;
+   }
 /*    off_t current_frame, frames_left;                                */
 /*    double current_seconds, seconds_left;                            */
 /*    long cs, sl;                                                     */
