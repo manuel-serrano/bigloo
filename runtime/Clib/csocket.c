@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Aug 23 14:37:40 2016 (serrano)                */
+/*    Last change :  Tue Jan 10 08:05:07 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1309,8 +1309,8 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
 
    /* Create input port */
    SOCKET( sock ).input = bgl_make_input_port( name, fs, KINDOF_SOCKET, inb );
-   SOCKET( sock ).input->input_port_t.sysread = bgl_read;
-   SOCKET( sock ).input->input_port_t.sysseek = bgl_input_socket_seek;
+   SOCKET( sock ).input->input_port_t.sysread = &bgl_read;
+   SOCKET( sock ).input->input_port_t.sysseek = &bgl_input_socket_seek;
    SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
 
    /* Create output port */

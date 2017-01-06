@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Tue Oct 18 10:06:03 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Fri Jan  6 10:26:19 2017 (serrano)                */
+;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -981,7 +981,10 @@
    (let rec ( (l fun*) )
       (if (null? l)
 	  '#f
-	  (let* ( (slot (car l)) (type (car slot)) (pred (cadr slot)) )
+	  (let* ( (slot (car l))
+		  (type (car slot))
+		  (pred (if (pair? (cadr slot)) (car (cadr slot)) (cadr slot)))
+		  (typev (when (pair? (cadr slot)) (cadr (cadr slot)))) )
 	     (let rec2 ( (names (cddr slot)) )
 		(if (null? names)
 		    (rec (cdr l))
@@ -993,7 +996,7 @@
 				       ,@(if pred
 					     (map (lambda (v)
 						     `(unless (,pred ,v)
-							 (loc-type-error ',fname ',type ,v ,loc) ))
+							 (loc-type-error ',fname ',type ,(if typev `(,typev ,v) v) ,loc) ))
 						  vars )
 					     '() )
 				       (,fname ,@vars) )))
@@ -1005,7 +1008,7 @@
 	 (let ( (n (length args)) )
 	    (or (when (=fx n 1)
 		   (let ( (a1 (car args)) )
-		      (inline ((pair pair? car cdr) (pair cadr? cadr)) loc val (a1) stk) ))
+		      (inline ((pair pair? car cdr) (pair (cadr? cadrerrv) cadr)) loc val (a1) stk) ))
 		(when (=fx n 2)
 		   (let ( (a1 (car args)) (a2 (cadr args)) )
 		      (inline ((number number? + - * / < > <= >= =)
@@ -1015,6 +1018,9 @@
 
 (define (cadr? l)
    (and (pair? l) (pair? (cdr l))) )
+
+(define (cadrerrv v)
+   (if (pair? v) (car v) v) )
 
 ;; main method for application
 (define-macro (comp-dispatch cur max vars)

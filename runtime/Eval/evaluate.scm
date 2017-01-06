@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Wed Nov 19 13:25:11 2014 (serrano)                */
-;*    Copyright   :  2010-14 Manuel Serrano                            */
+;*    Last change :  Fri Jan  6 10:05:31 2017 (serrano)                */
+;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -187,7 +187,7 @@
 	     (e1 (conv e1 locals globals #f where (get-location e1 loc) top?))
 	     (e2 (conv-begin r locals globals tail? where loc top?)) ))
 	 (else
-	  (evcompile-error loc "eval" "bad syntax" l)) )))
+	  (evcompile-error loc "eval" "Bad syntax" l)) )))
 
 ;*---------------------------------------------------------------------*/
 ;*    conv-global ...                                                  */
@@ -601,5 +601,5 @@
 	     (fun fun)
 	     (args args)
 	     (tail? tail?)) ))
-      (else (evcompile-error loc "eval" "bad syntax" e)) ))
+      (else (evcompile-error loc "eval" "Bad syntax" e)) ))
 

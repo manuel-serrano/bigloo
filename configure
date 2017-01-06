@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Nov 28 09:12:48 2016 (serrano)                */
-#*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Jan 12 07:53:47 2017 (serrano)                */
+#*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -1410,9 +1410,9 @@ case $hostos in
       droidadb=$droidsdkroot/platform-tools/adb
     fi
     
-    echo -n "executing $droidadb shell ls -> " >&2
+    echo -n "executing $droidadb shell ls /mnt/sdcard -> " >&2
   
-    $droidadb shell ls 2> /dev/null > /dev/null
+    $droidadb shell ls /mnt/sdcard 2> /dev/null > /dev/null
   
     if [ $? = 0 ]; then
       echo "ok" >&2
