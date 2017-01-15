@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/androidmkdir                */
+#*    /tmp/build.hop.android/bigloo4.3a/autoconf/androidmkdir          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 23 14:28:53 2010                          */
-#*    Last change :  Sun Jan  9 15:42:32 2011 (serrano)                */
-#*    Copyright   :  2010-11 Manuel Serrano                            */
+#*    Last change :  Mon Jan 16 15:10:13 2017 (serrano)                */
+#*    Copyright   :  2010-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Create a directory on the Android emulator                       */
 #*=====================================================================*/
@@ -15,11 +15,11 @@ dir=$2
 ok=0
 
 # test the dir exists
-if $adb shell ls $dir | grep -iq 'no such'; then
+if $adb shell ls $dir 2>&1 | grep -iq 'no such'; then
    # no; try to create it
    $adb shell mkdir $dir > /dev/null
 
-   if $adb shell ls $dir | grep -iq 'no such'; then
+   if $adb shell ls $dir 2>&1 | grep -iq 'no such'; then
       ok=1
    fi
 fi
@@ -27,16 +27,16 @@ fi
 if [ $ok -eq 0 ]; then
    # the directory exists
    # try to create an exec
-   if $adb shell "echo 'echo yes' > $dir/foo" | grep -iq 'read-only'; then
+   if $adb shell "echo 'echo yes' > $dir/foo" 2>&1 | grep -iq 'read-only'; then
       # read only
       ok=1
    else
       # set it executable and run it
-      if $adb shell chmod 755 $dir/foo | grep -iq "Operation not permitted"; then
+      if $adb shell chmod 755 $dir/foo 2>&1 | grep -iq "Operation not permitted"; then
         # can't chmod
         ok=1;
       else 
-        if $adb shell $dir/foo | grep -iq 'permission denied'; then
+        if $adb shell $dir/foo 2>&1 | grep -iq 'permission denied'; then
           # can't execute
           ok=1
         fi

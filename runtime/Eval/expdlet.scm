@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Wed Dec 30 16:44:48 2015 (serrano)                */
-;*    Copyright   :  2004-15 Manuel Serrano                            */
+;*    Last change :  Sun Jan 15 07:30:44 2017 (serrano)                */
+;*    Copyright   :  2004-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -204,6 +204,20 @@
    (define (lambda? b)
       (and (pair? (cadr b)) (eq? (car (cadr b)) 'lambda)))
    
+   (define (untype-ident id::symbol)
+      (let* ((string (symbol->string id))
+	     (len (string-length string)))
+	 (let loop ((walker  0))
+	    (cond
+	       ((=fx walker len)
+		id)
+	       ((and (char=? (string-ref string walker) #\:)
+		     (<fx walker (-fx len 1))
+		     (char=? (string-ref string (+fx walker 1)) #\:))
+		(string->symbol (substring string 0 walker)))
+	       (else
+		(loop (+fx walker 1)))))))
+   
    (let* ((e (eval-begin-expander e))
 	  (res (match-case x
 		  ((?- () . (and ?body (not ())))
@@ -232,7 +246,7 @@
 					    (list (car b) #unspecified))
 				       bindings)
 				 ,@(map (lambda (b)
-					   `(set! ,(car b)
+					   `(set! ,(untype-ident (car b))
 					       ,(e (expand-progn (cdr b)) e)))
 				      bindings)
 				 ,@body)
