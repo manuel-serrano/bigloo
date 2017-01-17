@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Nov 22 17:58:08 2016 (serrano)                */
+;*    Last change :  Tue Jan 17 13:44:26 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -565,6 +565,24 @@
 	     res)
 	    (else
 	     (loop (car sexp) (loop (cdr sexp) res))))))
+
+   (define (set-vars sexp v vars)
+      ;; compute an over-approximation of all the
+      ;; free vars set in sexp
+      (let loop ((sexp sexp)
+		 (res '()))
+	 (cond
+	    ((not (pair? sexp))
+	     res)
+	    ((eq? (car sexp) 'quote)
+	     res)
+	    ((and (eq? (car sexp) 'set!) (symbol? (cadr sexp)) (pair? (cddr sexp)))
+	     (cond
+		((or (eq? sexp v) (not (memq (cadr sexp) vars))) res)
+		((memq (cadr sexp) res) (loop (caddr sexp) res))
+		(else (loop (caddr sexp) (cons (cadr sexp) res)))))
+	    (else
+	     (loop (car sexp) (loop (cdr sexp) res))))))
    
    (define (split-function-bindings ebindings)
       ;; extract the head bindings that do not bind functions
@@ -735,6 +753,38 @@
 		 `(let (,(caar bindings))
 		     ,(letstar (cdr bindings) body))))))
    
+   (define (split-let-bindings ebindings)
+      
+      (define (literal? val)
+	 (or (atom? val)
+	     (kwote? val)
+	     (null? val)
+	     (number? val)
+	     (cnst? val)
+	     (string? val)
+	     (char? val)
+	     (boolean? val)
+	     (number? val)))
+      
+      (with-trace 3 "split-let-bindings"
+	 (let loop ((e ebindings)
+		    (let-bindings '())
+		    (letrec-bindings '()))
+	    (cond
+	       ((null? e)
+		(values (reverse! let-bindings) (reverse! letrec-bindings)))
+	       ((and (literal? (cadr (caar e)))
+		     (not (any (lambda (eb)
+				  (memq (cadr (car e)) (cadddr eb)))
+			     ebindings)))
+		(loop (cdr e)
+		   (cons (car e) let-bindings)
+		   letrec-bindings))
+	       (else
+		(loop (cdr e)
+		   let-bindings
+		   (cons (car e) letrec-bindings)))))))
+   
    (define (split-let*-bindings ebindings)
       (with-trace 3 "split-let*-bindings"
 	 (let loop ((ebindings ebindings)
@@ -809,19 +859,44 @@
 					     (list (caar b) #unspecified))
 					ebindings)
 				  ,@(map (lambda (b)
-					    `(set! ,(caar b) ,(cadr (car b))))
+					    `(set! ,(fast-id-of-id (caar b) loc)
+						,(cadr (car b))))
 				       ebindings)
 				  ,body)
 			      stack loc site)))))))))
+   
+   (define (stage0 ebindings body)
+      ;; stage 1, try to put as many variables as possible on tail positions
+      (with-trace 3 "letrec*, stage0"
+	 (trace-item "ebindings=" (map (lambda (b) (shape (caar b))) ebindings))
+	 (cond
+	    ((null? ebindings)
+	     (sexp->node body stack loc site))
+	    (else
+	     (multiple-value-bind (let-bindings letrec*-bindings)
+		(split-let-bindings ebindings)
+		(trace-item "head let="
+		   (map (lambda (x) (shape (caar x))) let-bindings))
+		(trace-item "head letrec*="
+		   (map (lambda (x) (shape (caar x))) letrec*-bindings))
+		(if (pair? let-bindings)
+		    (sexp->node
+		       `(let ,(map car let-bindings)
+			   (letrec* ,(map car letrec*-bindings)
+			      ,body))
+		       stack loc site)
+		    (stage1 ebindings body)))))))
    
    (define (decompose-letrec* bindings body)
       ;; for each binding, extract the variable name and the set
       ;; of scoped free variables used in the expression
       (let* ((vars (map (lambda (b) (fast-id-of-id (car b) loc)) bindings))
 	     (ebindings (map (lambda (b v)
-				(list b v (free-vars (cadr b) v vars)))
+				(list b v
+				   (free-vars (cadr b) v vars)
+				   (set-vars (cadr b) v vars)))
 			   bindings vars)))
-	 (stage1 ebindings (epairify-propagate-loc `(begin ,@body) loc))))
+	 (stage0 ebindings (epairify-propagate-loc `(begin ,@body) loc))))
    
    (define (letrec*->letrec sexp stack loc site)
       (set-car! sexp 'letrec)
@@ -837,7 +912,7 @@
 	  (eq? (fast-id-of-id sym #f) 'lambda))
 	 (else
 	  #f)))
-
+   
    (with-trace 3 "letrec*"
       (match-case sexp
 	 ((letrec* () . ?body)

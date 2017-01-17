@@ -894,6 +894,25 @@ The function @code{unsigned->string} only accepts the following radixes:
 
 @end deffn
 
+@deffn {bigloo procedure} nanfl? z
+Returns @code{#t} if the floating @var{z} is @code{not-a-number}. Returns
+@code{#f} otherwise.
+@end deffn
+
+@deffn {bigloo procedure} infinitefl? z
+@deffnx {bigloo procedure} finitefl? z
+The predicate @code{infinitefl?} returns @code{#t} if the floating
+@var{z} is positive or negative infinite.  Returns @code{#f}
+otherwise.
+
+The predicate @code{finitefl?} is true if and only if @code{z} is finite.
+@end deffn
+
+@deffn {bigloo procedure} signbitfl z
+Returns @code{0} is @code{z} is positive or null. Returns a positive
+integer otherwise.
+@end deffn
+
 @deffn {bigloo procedure} bignum->octet-string bignum
 
 Returns a binary big-endian representation of the given bignum @var{bignum}.
