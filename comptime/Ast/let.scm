@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Jan 24 11:09:30 2017 (serrano)                */
+;*    Last change :  Tue Jan 24 18:10:07 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -869,7 +869,15 @@
 			   (multiple-value-bind (vbindings fbindings)
 			      ;; split values/functions
 			      (split-valfun-bindings ebindings)
-			      (if (pair? vbindings)
+			      (trace-item "vbindings="
+				 (reverse 
+				    (map (lambda (x) (shape (caar x)))
+				       vbindings)))
+			      (trace-item "fbindings="
+				 (reverse 
+				    (map (lambda (x) (shape (caar x)))
+				       fbindings)))
+			      (if (and (pair? vbindings) (pair? fbindings))
 				  `(letrec* ,(map car vbindings)
 				      (letrec* ,(map car fbindings)
 					 ,body))
