@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Fri Jan  6 10:26:19 2017 (serrano)                */
+;*    Last change :  Wed Jan 25 14:28:45 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
@@ -1020,7 +1020,7 @@
    (and (pair? l) (pair? (cdr l))) )
 
 (define (cadrerrv v)
-   (if (pair? v) (car v) v) )
+   (if (pair? v) (cdr v) v) )
 
 ;; main method for application
 (define-macro (comp-dispatch cur max vars)

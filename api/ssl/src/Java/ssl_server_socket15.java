@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  5 10:53:03 2000                          */
-/*    Last change :  Thu Jun  2 16:45:12 2016 (serrano)                */
-/*    Copyright   :  2000-16 Manuel Serrano                            */
+/*    Last change :  Wed Jan 25 09:44:39 2017 (serrano)                */
+/*    Copyright   :  2000-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Server Socket implementation for the JVM back-end.           */
 /*=====================================================================*/
@@ -64,8 +64,8 @@ public class ssl_server_socket extends server_socket {
         // remember the accepted certs
         this.acceptedCerts = acceptedCerts;
       }
-      catch( final Exception _ ) {
-        _.printStackTrace();
+      catch( final Exception _e ) {
+        _e.printStackTrace();
 	 socket_error( "make-ssl-server-socket",
 		       "cannot create socket",
 		       unspecified.unspecified );

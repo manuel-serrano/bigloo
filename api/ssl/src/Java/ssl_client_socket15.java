@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul  8 11:11:03 2005                          */
-/*    Last change :  Sun Nov 27 09:11:26 2016 (serrano)                */
-/*    Copyright   :  2005-16 Manuel Serrano                            */
+/*    Last change :  Wed Jan 25 09:44:06 2017 (serrano)                */
+/*    Copyright   :  2005-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    JDK>=1.5 SSL Java socket                                         */
 /*=====================================================================*/
@@ -94,7 +94,7 @@ public class ssl_client_socket extends client_socket {
 	 set_socket_io_ports( socket, inbuf, outbuf );
       }
       catch (final Exception _e) {
-	 _.printStackTrace();
+	 _e.printStackTrace();
 	 socket_error( "make-ssl-client-socket",
 		       "cannot create socket",
 		       unspecified.unspecified );
@@ -165,7 +165,7 @@ public class ssl_client_socket extends client_socket {
 	 set_socket_io_ports( socket, new byte[ 8192 ], new byte[ 8192 ] );
       }
       catch (final Exception _e) {
-	 _.printStackTrace();
+	 _e.printStackTrace();
 	 socket_error( "make-ssl-client-socket",
 		       "cannot create socket",
 		       unspecified.unspecified );
