@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Jan 24 18:10:07 2017 (serrano)                */
+;*    Last change :  Wed Jan 25 07:20:17 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -912,16 +912,28 @@
 		       stack loc site)
 		    (sexp->node (stage1 ebindings body)
 		       stack loc site)))))))
+
+
+   (define (make-ebinding b v vars)
+      ;; ebinding: < binding, variable, free vars, set vars >
+      (list b v
+	 (free-vars (cadr b) v vars)
+	 (set-vars (cadr b) v vars)))
    
+   (define (binding->ebinding b v vars)
+      (let ((c (assq b *ebindings*)))
+	 (if (pair? c)
+	     (cdr c)
+	     (let ((eb (make-ebinding b v vars)))
+		(set! *ebindings* (cons (cons b eb) *ebindings*))
+		eb))))
+
    (define (decompose-letrec* bindings body)
       ;; for each binding, extract the variable name and the set
       ;; of scoped free variables used in the expression
-      ;; ebinding: < binding, variable, free vars, set vars >
       (let* ((vars (map (lambda (b) (fast-id-of-id (car b) loc)) bindings))
 	     (ebindings (map (lambda (b v)
-				(list b v
-				   (free-vars (cadr b) v vars)
-				   (set-vars (cadr b) v vars)))
+				(binding->ebinding b v vars))
 			   bindings vars)))
 	 (trace-item "ebindings=" (map (lambda (b) (shape (caar b))) ebindings))
 	 (stage0 ebindings (epairify-propagate-loc `(begin ,@body) loc))))
@@ -961,6 +973,14 @@
 	 (else
 	  (error-sexp->node (string-append "Illegal 'letrec*' form")
 	     exp (find-location/loc exp loc))))))
+
+;*---------------------------------------------------------------------*/
+;*    *ebindings* ...                                                  */
+;*    -------------------------------------------------------------    */
+;*    A simple cache to avoid recomputing free vars and set vars       */
+;*    each time letrec*->node is called recursively                    */
+;*---------------------------------------------------------------------*/
+(define *ebindings* '())
 
 ;*---------------------------------------------------------------------*/
 ;*    letstar ...                                                      */
