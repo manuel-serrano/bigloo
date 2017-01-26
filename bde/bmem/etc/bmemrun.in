@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Fri Apr 22 15:38:17 2016 (serrano)                */
-#*    Copyright   :  2003-16 Manuel Serrano                            */
+#*    Last change :  Thu Jan 26 08:12:20 2017 (serrano)                */
+#*    Copyright   :  2003-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
 #*=====================================================================*/
@@ -13,7 +13,8 @@
 #*---------------------------------------------------------------------*/
 #*    Configuration                                                    */
 #*---------------------------------------------------------------------*/
-lib=<fildir>/bmem/bmem.so
+safety=s
+lib=
 exe=a.out
 bmon=
 
@@ -28,15 +29,24 @@ while : ; do
     -h|--help)
       echo "bglmemrun: [options] exe [arg1] [arg2]..." >&2;
       echo "  -h|--help            -- This message" >&2;
+      echo "  -s|-safe|--safe      -- Preload safe libraries" >&2;
       echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
       echo "  -t|--thread          -- Profile multithreaded program" >&2;
+      echo "" >&2;
+      echo "When running unsafe multithread programs use" >&2;
+      echo "  -u -t, in that order" >&2;
       exit 0;;
 
+    -s|-safe|--safe)
+      safety=s;
+      lib=<fildir>/bmem/bmem_$safety.so;;
+    
     -u|-unsafe|--unsafe)
-      export BMEMUNSAFE=_u;;
+      safety=u;
+      lib=<fildir>/bmem/bmem_$safety.so;;
 
     -t|--thread)
-      lib=<fildir>/bmem/bmem_fth.so;;
+      lib=<fildir>/bmem/bmem_fth_$safety.so;;
     
     *)
       exe=$1;
@@ -52,7 +62,33 @@ while : ; do
   shift
 done
 
+
+#*---------------------------------------------------------------------*/
+#*    autoconfiguration                                                */
+#*---------------------------------------------------------------------*/
+if [ "$lib " = " " ]; then
+  # safety
+  g=`ldd $exe | grep libbigloo_u`
+  if [ "$g " = " " ]; then
+    safety=s
+  else
+    safety=u
+  fi
+
+  # gc
+  g=`ldd $exe | grep libbigloogc_fth`
+  if [ "$g " = " " ]; then
+    gc=
+  else
+    gc=_fth
+  fi
+    
+  lib=<fildir>/bmem/bmem"$gc"_"$safety".so
+fi
+
+
 #*---------------------------------------------------------------------*/
 #*    Run the program                                                  */
 #*---------------------------------------------------------------------*/
+export BMEMUNSAFE=_$safety
 LD_PRELOAD="$lib" $exe $args
