@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Fri Apr 22 17:01:31 2016 (serrano)                */
+/*    Last change :  Wed Feb  1 17:22:50 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------*/
 extern obj_t make_vector( int, obj_t );
 extern long get_hash_power_number( char *, unsigned long );
+extern long get_hash_power_number_len( char *, unsigned long, long );
 extern bool_t bigloo_strcmp( obj_t, obj_t );
 
 /*---------------------------------------------------------------------*/
@@ -73,22 +74,35 @@ make_symbol( obj_t name ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    symbol_strcmp ...                                                */
+/*---------------------------------------------------------------------*/
+static bool_t
+symbol_strcmp( obj_t o1, char *o2, long l2 ) {
+   if( STRING_LENGTH( o1 ) == l2 ) {
+      return !memcmp( (void *)BSTRING_TO_STRING( o1 ), o2, l2 );
+   } else {
+      return 0;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bstring_to_symbol ...                                            */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_bstring_to_symbol( obj_t name ) {
+bgl_bstring_to_symbol( char *cname, long len ) {
    long hash_number;
    obj_t bucket;
-   char *cname = BSTRING_TO_STRING( name );
 
-   hash_number = get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
-   
+   hash_number =
+      get_hash_power_number_len( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT, len );
+
    BGL_MUTEX_LOCK( symbol_mutex );
    bucket = VECTOR_REF( c_symtab, hash_number );
    
    if( NULLP( bucket ) ) {
-      obj_t symbol = make_symbol( name );
+      obj_t symbol = make_symbol( string_to_bstring_len( cname, len) );
       obj_t pair = MAKE_PAIR( symbol, BNIL );
 
       VECTOR_SET( c_symtab, hash_number, pair );
@@ -100,17 +114,16 @@ bgl_bstring_to_symbol( obj_t name ) {
       
       while( !NULLP( run ) &&
 	     SYMBOL( CAR( run ) ).string &&
-	     !bigloo_strcmp( SYMBOL( CAR( run ) ).string, name ) )
+	     !symbol_strcmp( SYMBOL( CAR( run ) ).string, cname, len ) )
          back = run, run = CDR( run );
       
       if( !NULLP( run ) ) {
 	 BGL_MUTEX_UNLOCK( symbol_mutex );
          return CAR( run );
-      }
-      else {
-         obj_t symbol = make_symbol( name );
+      } else {
+	 obj_t symbol = make_symbol( string_to_bstring_len( cname, len) );
 	 obj_t pair = MAKE_PAIR( symbol, BNIL );
-	 
+
          SET_CDR( back, pair );
 
 	 BGL_MUTEX_UNLOCK( symbol_mutex );
@@ -126,8 +139,7 @@ bgl_bstring_to_symbol( obj_t name ) {
 BGL_RUNTIME_DEF obj_t
 bstring_to_symbol( obj_t name ) {
    return bgl_bstring_to_symbol(
-      string_to_bstring_len(
-	 BSTRING_TO_STRING( name ), STRING_LENGTH( name ) ) );
+      BSTRING_TO_STRING( name ), STRING_LENGTH( name ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -136,7 +148,7 @@ bstring_to_symbol( obj_t name ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_string_to_symbol_len( char *cname, long len ) {
-   return bgl_bstring_to_symbol( string_to_bstring_len( cname, len ) );
+   return bgl_bstring_to_symbol( cname, len );
 }
    
 /*---------------------------------------------------------------------*/
@@ -145,7 +157,7 @@ bgl_string_to_symbol_len( char *cname, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 string_to_symbol( char *cname ) {
-   return bgl_bstring_to_symbol( string_to_bstring( cname ) );
+   return bgl_bstring_to_symbol( cname, strlen( cname ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -216,7 +228,6 @@ bgl_symbol_genname( obj_t o, char *name ) {
       sprintf( &gn[ n ], "%ld", ++gensym_counter );
 
       hn = get_hash_power_number( gn, SYMBOL_HASH_TABLE_SIZE_SHIFT );
-
 
       if( !symbol_exists_sans_lock_p( gn, hn ) ) break;
    }

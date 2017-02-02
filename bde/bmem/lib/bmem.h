@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Tue Nov 22 07:58:14 2016 (serrano)                */
-/*    Copyright   :  2003-16 Manuel Serrano                            */
+/*    Last change :  Wed Feb  1 17:30:17 2017 (serrano)                */
+/*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -174,6 +174,7 @@ extern int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
 extern int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
 
 extern long (*____get_hash_power_number)( char *, unsigned long );
+extern long (*____get_hash_power_number_len)( char *, unsigned long, long );
 extern void *(*____bgl_get_symtab)();
 
 /*---------------------------------------------------------------------*/

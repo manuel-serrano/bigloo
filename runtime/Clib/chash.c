@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Nov 26 15:23:07 1993                          */
-/*    Last change :  Wed Mar  9 08:56:34 2011 (serrano)                */
+/*    Last change :  Wed Feb  1 17:22:27 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Le hashage                                                       */
 /*=====================================================================*/
@@ -103,6 +103,21 @@ get_hash_power_number( char *string, unsigned long power ) {
 
    while( (c = *string++) )
       result += (result << 3) + (long)c;
+
+   return result & ((1 << power) - 1);
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    get_hash_power_number_len ...                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF long
+get_hash_power_number_len( char *string, unsigned long power, long len ) {
+   unsigned long result = 0;
+
+   while( len-- ) {
+      result += (result << 3) + (long)(*string++);
+   }
 
    return result & ((1 << power) - 1);
 }

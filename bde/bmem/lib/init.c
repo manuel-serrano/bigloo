@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Tue Nov 22 07:58:54 2016 (serrano)                */
-/*    Copyright   :  2003-16 Manuel Serrano                            */
+/*    Last change :  Wed Feb  1 17:29:29 2017 (serrano)                */
+/*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -145,6 +145,7 @@ void *(*____bgl_seconds_format )( long, void * );
 void *(*____register_class )( void *, void *, void *, long, void *, void *, void *, void *, void *, void *, void * );
 int (*____bgl_types_number)();
 long (*____get_hash_power_number)( char *, unsigned long );
+long (*____get_hash_power_number_len)( char *, unsigned long, long );
 void *(*____bgl_get_symtab)() = 0;
 void (*____bgl_init_objects)() = 0;
 void (*____bglpth_setup)() = 0;
@@ -368,6 +369,7 @@ bmem_init_inner() {
    ____command_line = get_variable( hdl, "command_line" );
    ____bgl_init_objects = (void (*)())get_function( hdl, "bgl_init_objects" );
    ____get_hash_power_number = (long (*)())get_function( hdl, "get_hash_power_number" );
+   ____get_hash_power_number_len = (long (*)())get_function( hdl, "get_hash_power_number_len" );
    ____bgl_get_symtab = get_function( hdl, "bgl_get_symtab" );
    /* string */
    ____string_to_bstring = get_function( hdl, "string_to_bstring" );

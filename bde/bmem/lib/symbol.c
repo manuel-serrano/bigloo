@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Fri Apr 22 16:52:44 2016 (serrano)                */
-/*    Copyright   :  2003-16 Manuel Serrano                            */
+/*    Last change :  Wed Feb  1 17:29:46 2017 (serrano)                */
+/*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/
@@ -50,20 +50,32 @@ make_symbol( obj_t name ) {
 }
    
 /*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    symbol_strcmp ...                                                */
+/*---------------------------------------------------------------------*/
+static bool_t
+symbol_strcmp( obj_t o1, char *o2, long l2 ) {
+   if( STRING_LENGTH( o1 ) == l2 ) {
+      return !memcmp( (void *)BSTRING_TO_STRING( o1 ), o2, l2 );
+   } else {
+      return 0;
+   }
+}
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_bstring_to_symbol ...                                        */
 /*---------------------------------------------------------------------*/
 static obj_t
-bgl_bstring_to_symbol( obj_t name ) {
+bgl_bstring_to_symbol( char *cname, long len ) {
    long hash_number;
    obj_t bucket;
-   char *cname = BSTRING_TO_STRING( name );
-   hash_number = ____get_hash_power_number( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT );
+   hash_number = ____get_hash_power_number_len( cname, SYMBOL_HASH_TABLE_SIZE_SHIFT, len );
    
    bucket = VECTOR_REF( ____bgl_get_symtab(), hash_number );
    
    if( NULLP( bucket ) ) {
-      obj_t symbol = make_symbol( name );
+      obj_t symbol = make_symbol( ____string_to_bstring_len( cname, len) );
       obj_t pair = MAKE_PAIR( symbol, BNIL );
 
       VECTOR_SET( ____bgl_get_symtab(), hash_number, pair );
@@ -74,14 +86,13 @@ bgl_bstring_to_symbol( obj_t name ) {
       
       while( !NULLP( run ) &&
 	     SYMBOL( CAR( run ) ).string &&
-	     !bigloo_strcmp( SYMBOL( CAR( run ) ).string, name ) )
+	     !symbol_strcmp( SYMBOL( CAR( run ) ).string, cname, len ) )
          back = run, run = CDR( run );
       
       if( !NULLP( run ) ) {
          return CAR( run );
-      }
-      else {
-         obj_t symbol = make_symbol( name );
+      } else {
+         obj_t symbol = make_symbol( ____string_to_bstring_len( cname, len) );
 	 obj_t pair = MAKE_PAIR( symbol, BNIL );
 	 
          SET_CDR( back, pair );
@@ -98,8 +109,7 @@ bgl_bstring_to_symbol( obj_t name ) {
 obj_t
 bstring_to_symbol( obj_t name ) {
    return bgl_bstring_to_symbol(
-      ____string_to_bstring_len(
-	 BSTRING_TO_STRING( name ), STRING_LENGTH( name ) ) );
+      BSTRING_TO_STRING( name ), STRING_LENGTH( name ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -108,7 +118,7 @@ bstring_to_symbol( obj_t name ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_string_to_symbol_len( char *cname, long len ) {
-   return bgl_bstring_to_symbol( ____string_to_bstring_len( cname, len ) );
+   return bgl_bstring_to_symbol( cname, len );
 }
    
 /*---------------------------------------------------------------------*/
@@ -117,7 +127,7 @@ bgl_string_to_symbol_len( char *cname, long len ) {
 /*---------------------------------------------------------------------*/
 obj_t
 string_to_symbol( char *cname ) {
-   return bgl_bstring_to_symbol( ____string_to_bstring( cname ) );
+   return bgl_bstring_to_symbol( cname, strlen( cname ) );
 }
 
 /*---------------------------------------------------------------------*/
