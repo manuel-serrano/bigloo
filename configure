@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jan 12 07:53:47 2017 (serrano)                */
+#*    Last change :  Mon Feb  6 10:18:33 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2596,6 +2596,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
     if [ $resolv = "no" ]; then
       haveresolv=0;
+      haveresolvapl=0;
+      haveresolvzxfr=0;
       if [ $resolvforce = "yes" ]; then
 	echo "*** ERROR:configure:--enable-resolv. Cannot find RESOLV library."
 	echo "Aborting";
@@ -2605,9 +2607,13 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       haveresolv=1;
       featureflags="-srfi enable-resolv $featureflags";
       extralibs="-l$resolv $extralibs"
+      haveresolvapl=`$autoconf resolvsym --sym=apl --lib=$resolv` || exit 1
+      haveresolvzxfr=`$autoconf resolvsym --sym=zxfr --lib=$resolv` || exit 1
     fi
   else
     haveresolv=0;
+    haveresolvapl=0;
+    haveresolvzxfr=0;
   fi
 
   # Is unistring available?
@@ -3078,6 +3084,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_STRTOULL@|$strtoull|" \
               -e "s|@BGL_HAVE_GMP@|$havegmp|" \
               -e "s|@BGL_HAVE_RESOLV@|$haveresolv|" \
+              -e "s|@BGL_HAVE_RESOLV_APL@|$haveresolvapl|" \
+              -e "s|@BGL_HAVE_RESOLV_ZXFR@|$haveresolvzxfr|" \
               -e "s|@BGL_HAVE_UNISTRING@|$haveunistring|" \
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
               -e "s|@HAVE_SETENV@|$setenv|" \

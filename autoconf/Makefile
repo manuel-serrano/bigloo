@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Mon Nov 28 09:07:16 2016 (serrano)                */
-#*    Copyright   :  1997-2016 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Feb  6 10:03:54 2017 (serrano)                */
+#*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -56,7 +56,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
                   gstreamer gstreameraudio \
                   alsa pulseaudio mpg123 flac pcre pcrefreestudy avahi \
-                  dbus gmp resolv unistring limbs signbit rdynamic \
+                  dbus gmp resolv resolvsym unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
                   gcconfigureopt ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \

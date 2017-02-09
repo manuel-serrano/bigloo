@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Sun Jun 26 06:09:40 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb  9 08:48:15 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -48,7 +48,7 @@
 	  (with-access::sfun (global-value glo) (body)
 	     (set! body (toplevel-trace-node body)))))
    ;; then, we trace all functions (including the toplevel one)
-   (for-each (lambda (v) (trace-fun! v '())) globals)
+   (for-each (lambda (v) (trace-fun! v '() *compiler-debug-trace*)) globals)
    (pass-postlude globals))
 
 ;*---------------------------------------------------------------------*/
@@ -77,7 +77,7 @@
 ;*    We don't trace predicates. It is useless and makes the code      */
 ;*    much bigger in safe modes.                                       */
 ;*---------------------------------------------------------------------*/
-(define (trace-fun! var stack)
+(define (trace-fun! var stack level)
    (let* ((fun  (variable-value var))
 	  (body (sfun-body fun))
 	  (lloc (if (global? var)
@@ -87,7 +87,7 @@
 		 (not (memq 'no-trace (sfun-property fun)))
 		 (user-symbol? (variable-id var)))
 	 (enter-function (trace-id var))
-	 (let* ((bd (if (or (>=fx *compiler-debug-trace* 2)
+	 (let* ((bd (if (or (>fx level 1)
 			    (and (global? var)
 				 (or (eq? (global-id var) 'toplevel-init)
 				     (eq? (global-id var) 'method-init)
@@ -102,8 +102,8 @@
 			(if (or (local? var)
 				(eq? (global-id var) 'method-init)
 			        (eq? (global-id var) 'generic-init))
-			    (trace-node body stack)
-			    (trace-node body (cons var stack)))
+			    (trace-node body stack (-fx level 1))
+			    (trace-node body (cons var stack) (-fx level 1)))
 			body))
 		(t (strict-node-type (node-type body) (variable-type var)))
 		(id (trace-id var))
@@ -272,169 +272,169 @@
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-generic (trace-node::node node::node stack)
+(define-generic (trace-node::node node::node stack level)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::sequence ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::sequence stack)
-   (trace-node*! (sequence-nodes node) stack)
+(define-method (trace-node node::sequence stack level)
+   (trace-node*! (sequence-nodes node) stack level)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::sync ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::sync stack)
+(define-method (trace-node node::sync stack level)
    (with-access::sync node (mutex prelock body)
-      (set! mutex (trace-node mutex stack))
-      (set! prelock (trace-node prelock stack))
-      (set! body (trace-node body stack)))
+      (set! mutex (trace-node mutex stack level))
+      (set! prelock (trace-node prelock stack level))
+      (set! body (trace-node body stack level)))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::app ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::app stack)
-   (trace-node*! (app-args node) stack)
+(define-method (trace-node node::app stack level)
+   (trace-node*! (app-args node) stack level)
    node)
  
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::app-ly ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::app-ly stack)
+(define-method (trace-node node::app-ly stack level)
    (with-access::app-ly node (fun arg)
-      (set! fun (trace-node fun stack))
-      (set! arg (trace-node arg stack))
+      (set! fun (trace-node fun stack level))
+      (set! arg (trace-node arg stack level))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::funcall ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::funcall stack)
+(define-method (trace-node node::funcall stack level)
    (with-access::funcall node (fun args)
-      (set! fun (trace-node fun stack))
-      (trace-node*! args stack)
+      (set! fun (trace-node fun stack level))
+      (trace-node*! args stack level)
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::extern ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::extern stack)
-   (trace-node*! (extern-expr* node) stack)
+(define-method (trace-node node::extern stack level)
+   (trace-node*! (extern-expr* node) stack level)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::cast ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::cast stack)
-   (trace-node (cast-arg node) stack)
+(define-method (trace-node node::cast stack level)
+   (trace-node (cast-arg node) stack level)
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::setq ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::setq stack)
-   (setq-value-set! node (trace-node (setq-value node) stack))
+(define-method (trace-node node::setq stack level)
+   (setq-value-set! node (trace-node (setq-value node) stack level))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::conditional ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::conditional stack)
+(define-method (trace-node node::conditional stack level)
    (with-access::conditional node (test true false)
-       (set! test (trace-node test stack))
-       (set! true (trace-node true stack))
-       (set! false (trace-node false stack))
+       (set! test (trace-node test stack level))
+       (set! true (trace-node true stack level))
+       (set! false (trace-node false stack level))
        node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::fail ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::fail stack)
+(define-method (trace-node node::fail stack level)
    (with-access::fail node (proc msg obj)
-      (set! proc (trace-node proc stack))
-      (set! msg (trace-node msg stack))
-      (set! obj (trace-node obj stack))
+      (set! proc (trace-node proc stack level))
+      (set! msg (trace-node msg stack level))
+      (set! obj (trace-node obj stack level))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::select ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::select stack)
+(define-method (trace-node node::select stack level)
    (with-access::select node (clauses test)
-      (set! test (trace-node test stack))
+      (set! test (trace-node test stack level))
       (for-each (lambda (clause)
-		   (set-cdr! clause (trace-node (cdr clause) stack)))
+		   (set-cdr! clause (trace-node (cdr clause) stack level)))
 		clauses)
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::let-fun ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::let-fun stack)
+(define-method (trace-node node::let-fun stack level)
    (with-access::let-fun node (body locals)
-      (for-each (lambda (v) (trace-fun! v stack)) locals)
-      (set! body (trace-node body stack))
+      (for-each (lambda (v) (trace-fun! v stack level)) locals)
+      (set! body (trace-node body stack level))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::let-var ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::let-var stack)
+(define-method (trace-node node::let-var stack level)
    (with-access::let-var node (body bindings)
       (for-each (lambda (binding)
-		   (set-cdr! binding (trace-node (cdr binding) stack)))
+		   (set-cdr! binding (trace-node (cdr binding) stack level)))
 		bindings)
-      (set! body (trace-node body stack))
+      (set! body (trace-node body stack level))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::set-ex-it ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::set-ex-it stack)
-   (set-ex-it-body-set! node (trace-node (set-ex-it-body node) stack))
+(define-method (trace-node node::set-ex-it stack level)
+   (set-ex-it-body-set! node (trace-node (set-ex-it-body node) stack level))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::jump-ex-it ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::jump-ex-it stack)
+(define-method (trace-node node::jump-ex-it stack level)
    (with-access::jump-ex-it node (exit value)
-      (set! exit (trace-node exit stack)) 
-      (set! value (trace-node value stack))
+      (set! exit (trace-node exit stack level)) 
+      (set! value (trace-node value stack level))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::make-box ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::make-box stack)
-   (make-box-value-set! node (trace-node (make-box-value node) stack))
+(define-method (trace-node node::make-box stack level)
+   (make-box-value-set! node (trace-node (make-box-value node) stack level))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::box-ref ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::box-ref stack)
-   (box-ref-var-set! node (trace-node (box-ref-var node) stack))
+(define-method (trace-node node::box-ref stack level)
+   (box-ref-var-set! node (trace-node (box-ref-var node) stack level))
    node)
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node ::box-set! ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::box-set! stack)
+(define-method (trace-node node::box-set! stack level)
    (with-access::box-set! node (var value)
-      (set! var (trace-node var stack))
-      (set! value (trace-node value stack))
+      (set! var (trace-node var stack level))
+      (set! value (trace-node value stack level))
       node))
 
 ;*---------------------------------------------------------------------*/
 ;*    trace-node*! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (trace-node*! node* stack)
+(define (trace-node*! node* stack level)
    (unless (null? node*)
-      (set-car! node* (trace-node (car node*) stack))
-      (trace-node*! (cdr node*) stack)))
+      (set-car! node* (trace-node (car node*) stack level))
+      (trace-node*! (cdr node*) stack level)))
    
 ;*---------------------------------------------------------------------*/
 ;*    toplevel-trace-node ...                                          */

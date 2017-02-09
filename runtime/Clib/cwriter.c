@@ -612,7 +612,7 @@ bgl_write_socket( obj_t o, obj_t op ) {
 	       48 + (STRINGP( SOCKET( o ).hostname ) ?
 		     STRING_LENGTH( SOCKET( o ).hostname ) :
 		     sizeof( "localhost" )),
-	       "#<socket:%s.%d.%x>",
+	       "#<socket:%s.%d.%lx>",
 	       STRINGP( SOCKET( o ).hostname ) ?
 	       BSTRING_TO_STRING( SOCKET( o ).hostname ) :
 	       "localhost",

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Jun  6 11:04:39 2015                          */
-/*    Last change :  Mon May 16 15:14:17 2016 (serrano)                */
-/*    Copyright   :  2015-16 Manuel Serrano                            */
+/*    Last change :  Mon Feb  6 10:00:49 2017 (serrano)                */
+/*    Copyright   :  2015-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Resolv library binding (optional)                                */
 /*=====================================================================*/
@@ -75,7 +75,6 @@ nstype( obj_t name ) {
    if( !strcmp( n, "ns_t_dname" ) ) { return ns_t_dname; }
    if( !strcmp( n, "ns_t_sink" ) ) { return ns_t_sink; }
    if( !strcmp( n, "ns_t_opt" ) ) { return ns_t_opt; }
-   // if( !strcmp( n, "ns_t_apl" ) ) { return ns_t_apl; }
    if( !strcmp( n, "ns_t_tkey" ) ) { return ns_t_tkey; }
    if( !strcmp( n, "ns_t_tsig" ) ) { return ns_t_tsig; }
    if( !strcmp( n, "ns_t_ixfr" ) ) { return ns_t_ixfr; }
@@ -83,7 +82,47 @@ nstype( obj_t name ) {
    if( !strcmp( n, "ns_t_mailb" ) ) { return ns_t_mailb; }
    if( !strcmp( n, "ns_t_maila" ) ) { return ns_t_maila; }
    if( !strcmp( n, "ns_t_any" ) ) { return ns_t_any; }
+#if( BGL_HAVE_RESOLV_ZXFR )   
    if( !strcmp( n, "ns_t_zxfr" ) ) { return ns_t_zxfr; }
+#endif
+#if( BGL_HAVE_RESOLV_APL )   
+   if( !strcmp( n, "ns_t_apl" ) ) { return ns_t_apl; }
+   if( !strcmp( n, "ns_t_ds" ) ) { return ns_t_ds; }
+   if( !strcmp( n, "ns_t_sshfp" ) ) { return ns_t_sshfp; }
+   if( !strcmp( n, "ns_t_ipseckey" ) ) { return ns_t_ipseckey; }
+   if( !strcmp( n, "ns_t_rrsig" ) ) { return ns_t_rrsig; }
+   if( !strcmp( n, "ns_t_nsec" ) ) { return ns_t_nsec; }
+   if( !strcmp( n, "ns_t_dnskey" ) ) { return ns_t_dnskey; }
+   if( !strcmp( n, "ns_t_dhcid" ) ) { return ns_t_dhcid; }
+   if( !strcmp( n, "ns_t_nsec3" ) ) { return ns_t_nsec3; }
+   if( !strcmp( n, "ns_t_nsec3param" ) ) { return ns_t_nsec3param; }
+   if( !strcmp( n, "ns_t_tlsa" ) ) { return ns_t_tlsa; }
+   if( !strcmp( n, "ns_t_smimea" ) ) { return ns_t_smimea; }
+   if( !strcmp( n, "ns_t_hip" ) ) { return ns_t_hip; }
+   if( !strcmp( n, "ns_t_ninfo" ) ) { return ns_t_ninfo; }
+   if( !strcmp( n, "ns_t_rkey" ) ) { return ns_t_rkey; }
+   if( !strcmp( n, "ns_t_talink" ) ) { return ns_t_talink; }
+   if( !strcmp( n, "ns_t_cds" ) ) { return ns_t_cds; }
+   if( !strcmp( n, "ns_t_cdnskey" ) ) { return ns_t_cdnskey; }
+   if( !strcmp( n, "ns_t_openpgpkey" ) ) { return ns_t_openpgpkey; }
+   if( !strcmp( n, "ns_t_csync" ) ) { return ns_t_csync; }
+   if( !strcmp( n, "ns_t_spf" ) ) { return ns_t_spf; }
+   if( !strcmp( n, "ns_t_uinfo" ) ) { return ns_t_uinfo; }
+   if( !strcmp( n, "ns_t_uid" ) ) { return ns_t_uid; }
+   if( !strcmp( n, "ns_t_gid" ) ) { return ns_t_gid; }
+   if( !strcmp( n, "ns_t_unspec" ) ) { return ns_t_unspec; }
+   if( !strcmp( n, "ns_t_nid" ) ) { return ns_t_nid; }
+   if( !strcmp( n, "ns_t_l32" ) ) { return ns_t_l32; }
+   if( !strcmp( n, "ns_t_l64" ) ) { return ns_t_l64; }
+   if( !strcmp( n, "ns_t_lp" ) ) { return ns_t_lp; }
+   if( !strcmp( n, "ns_t_eui48" ) ) { return ns_t_eui48; }
+   if( !strcmp( n, "ns_t_eui64" ) ) { return ns_t_eui64; }
+   if( !strcmp( n, "ns_t_uri" ) ) { return ns_t_uri; }
+   if( !strcmp( n, "ns_t_caa" ) ) { return ns_t_caa; }
+   if( !strcmp( n, "ns_t_avc" ) ) { return ns_t_avc; }
+   if( !strcmp( n, "ns_t_ta" ) ) { return ns_t_ta; }
+   if( !strcmp( n, "ns_t_dlv" ) ) { return ns_t_dlv; }
+#endif
    
    C_SYSTEM_FAILURE( BGL_ERROR, "resolv", "bad query type", name );
 }

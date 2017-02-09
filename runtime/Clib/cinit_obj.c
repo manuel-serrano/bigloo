@@ -238,7 +238,7 @@ obj_t
 __debug( char *lbl, obj_t o ) {
    fprintf( stderr, "%s:%d %s o=%p\n", __FILE__, __LINE__, lbl, o );
    if( BGL_HVECTORP( o ) ) {
-      fprintf( stderr, "   hvector=%d\n",BGL_HVECTOR_LENGTH( o ) );
+      fprintf( stderr, "   hvector=%lu\n",BGL_HVECTOR_LENGTH( o ) );
    } else if( REALP( o ) ) {
       fprintf( stderr, "   real\n" );
    } else if( PAIRP( o ) ) {
@@ -251,7 +251,7 @@ __debug( char *lbl, obj_t o ) {
    } else if( REALP( o ) ) {
       fprintf( stderr, "   real=%f\n",REAL_TO_DOUBLE( o ) );
    } else if( POINTERP( o ) ) {
-      fprintf( stderr, "   PTRP=%d TYPE=%d\n", POINTERP( o ), TYPE( o ) );
+      fprintf( stderr, "   PTRP=%d TYPE=%ld\n", POINTERP( o ), TYPE( o ) );
    }
    return o;
 }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 20 14:46:34 2011                          */
-;*    Last change :  Mon Oct 24 14:16:51 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Mon Feb  6 10:39:47 2017 (serrano)                */
+;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    C avahi functions                                                */
 ;*=====================================================================*/

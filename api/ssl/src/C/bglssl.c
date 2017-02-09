@@ -3191,7 +3191,7 @@ bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
 			 NULL, NULL, NULL, 0 );
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, key_len )) {
-	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
+	 fprintf( stderr, "node-crypto : Invalid key length %ld\n", klen );
 	 BGL_EVP_CIPHER_CTX_reset( ctx );
 	 BGL_EVP_CIPHER_CTX_free( ctx );
 	 return 0;
@@ -3240,7 +3240,7 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
    if( EVP_CIPHER_iv_length( cipher->BgL_z42cipherz42 ) != ivlen &&
        !(EVP_CIPHER_mode( cipher->BgL_z42cipherz42) == EVP_CIPH_ECB_MODE &&
 	 ivlen == 0) ) {
-      fprintf( stderr, "node-crypto : Invalid IV length %d\n", ivlen );
+      fprintf( stderr, "node-crypto : Invalid IV length %ld\n", ivlen );
       return 0;
    } else {
       EVP_CIPHER_CTX *ctx = BGL_EVP_CIPHER_CTX_new();
@@ -3250,7 +3250,7 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
       EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42, NULL, NULL, NULL, enc );
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, klen ) ) {
-	 fprintf( stderr, "node-crypto : Invalid key length %d\n", klen );
+	 fprintf( stderr, "node-crypto : Invalid key length %ld\n", klen );
 	 BGL_EVP_CIPHER_CTX_reset( ctx );
 	 BGL_EVP_CIPHER_CTX_free( ctx );
 	 return 0;

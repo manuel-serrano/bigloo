@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Thu Jan 26 08:12:20 2017 (serrano)                */
+#*    Last change :  Thu Feb  9 09:08:58 2017 (serrano)                */
 #*    Copyright   :  2003-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
@@ -33,8 +33,14 @@ while : ; do
       echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
       echo "  -t|--thread          -- Profile multithreaded program" >&2;
       echo "" >&2;
-      echo "When running unsafe multithread programs use" >&2;
-      echo "  -u -t, in that order" >&2;
+      echo "To be profiled, programs have to be compiled with" >&2;
+      echo "  -g [-gtraceN]" >&2;
+      echo "" >&2;
+      echo "Normally bmem finds automatically the correct libraries to use" >&2;
+      echo "however, if needed, to force the unsafe multithread libaries" >&2;
+      echo "use the following options" >&2;
+      echo "  -u -t" >&2;
+      echo "in that order" >&2;
       exit 0;;
 
     -s|-safe|--safe)

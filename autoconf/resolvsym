@@ -1,0 +1,159 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/resolvsym                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Jose Romildo                                      */
+#*    Creation    :  Sat Nov 11 13:27:23 1995                          */
+#*    Last change :  Mon Feb  6 10:19:53 2017 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host resolv symbols.                               */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+resolvlib="resolv"
+type=
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --sym=*)
+      sym="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*)
+      resolvlib="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest.$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout -l$resolvlib >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+if [ "$sym " = "apl " ]; then
+  echo "#define BGL_HAVE_RESOLV_APL 1" > $file.c
+elif [ "$sym " = "zxfr " ]; then
+  echo "#define BGL_HAVE_RESOLV_ZXFR 1" > $file.c
+fi
+
+cat >> $file.c <<EOF
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <resolv.h>
+#include <netdb.h>
+
+#define N 4096
+
+int main( int argc, char *argv[] ) {
+    u_char nsbuf[ N ];
+    char dispbuf[ N];
+    ns_msg msg;
+    ns_rr rr;
+    int i, l;
+    char *n = argv[ 1 ];
+
+    l = res_query( argv[ 1 ], ns_c_any, ns_t_a, nsbuf, sizeof( nsbuf ) );
+    if( l >= 0 ) {
+       ns_initparse( nsbuf, l, &msg );
+       l = ns_msg_count( msg, ns_s_an );
+       for( i = 0; i < l; i++ ) {
+	  ns_parserr( &msg, ns_s_an, 0, &rr );
+	  ns_sprintrr( &msg, &rr, NULL, NULL, dispbuf, sizeof( dispbuf ) );
+       }
+    }
+
+#if( BGL_HAVE_RESOLV_ZXFR )   
+   if( !strcmp( n, "ns_t_zxfr" ) ) { return ns_t_zxfr; }
+#endif
+#if( BGL_HAVE_RESOLV_APL )   
+   if( !strcmp( n, "ns_t_apl" ) ) { return ns_t_apl; }
+   if( !strcmp( n, "ns_t_ds" ) ) { return ns_t_ds; }
+   if( !strcmp( n, "ns_t_sshfp" ) ) { return ns_t_sshfp; }
+   if( !strcmp( n, "ns_t_ipseckey" ) ) { return ns_t_ipseckey; }
+   if( !strcmp( n, "ns_t_rrsig" ) ) { return ns_t_rrsig; }
+   if( !strcmp( n, "ns_t_nsec" ) ) { return ns_t_nsec; }
+   if( !strcmp( n, "ns_t_dnskey" ) ) { return ns_t_dnskey; }
+   if( !strcmp( n, "ns_t_dhcid" ) ) { return ns_t_dhcid; }
+   if( !strcmp( n, "ns_t_nsec3" ) ) { return ns_t_nsec3; }
+   if( !strcmp( n, "ns_t_nsec3param" ) ) { return ns_t_nsec3param; }
+   if( !strcmp( n, "ns_t_tlsa" ) ) { return ns_t_tlsa; }
+   if( !strcmp( n, "ns_t_smimea" ) ) { return ns_t_smimea; }
+   if( !strcmp( n, "ns_t_hip" ) ) { return ns_t_hip; }
+   if( !strcmp( n, "ns_t_ninfo" ) ) { return ns_t_ninfo; }
+   if( !strcmp( n, "ns_t_rkey" ) ) { return ns_t_rkey; }
+   if( !strcmp( n, "ns_t_talink" ) ) { return ns_t_talink; }
+   if( !strcmp( n, "ns_t_cds" ) ) { return ns_t_cds; }
+   if( !strcmp( n, "ns_t_cdnskey" ) ) { return ns_t_cdnskey; }
+   if( !strcmp( n, "ns_t_openpgpkey" ) ) { return ns_t_openpgpkey; }
+   if( !strcmp( n, "ns_t_csync" ) ) { return ns_t_csync; }
+   if( !strcmp( n, "ns_t_spf" ) ) { return ns_t_spf; }
+   if( !strcmp( n, "ns_t_uinfo" ) ) { return ns_t_uinfo; }
+   if( !strcmp( n, "ns_t_uid" ) ) { return ns_t_uid; }
+   if( !strcmp( n, "ns_t_gid" ) ) { return ns_t_gid; }
+   if( !strcmp( n, "ns_t_unspec" ) ) { return ns_t_unspec; }
+   if( !strcmp( n, "ns_t_nid" ) ) { return ns_t_nid; }
+   if( !strcmp( n, "ns_t_l32" ) ) { return ns_t_l32; }
+   if( !strcmp( n, "ns_t_l64" ) ) { return ns_t_l64; }
+   if( !strcmp( n, "ns_t_lp" ) ) { return ns_t_lp; }
+   if( !strcmp( n, "ns_t_eui48" ) ) { return ns_t_eui48; }
+   if( !strcmp( n, "ns_t_eui64" ) ) { return ns_t_eui64; }
+   if( !strcmp( n, "ns_t_uri" ) ) { return ns_t_uri; }
+   if( !strcmp( n, "ns_t_caa" ) ) { return ns_t_caa; }
+   if( !strcmp( n, "ns_t_avc" ) ) { return ns_t_avc; }
+   if( !strcmp( n, "ns_t_ta" ) ) { return ns_t_ta; }
+   if( !strcmp( n, "ns_t_dlv" ) ) { return ns_t_dlv; }
+#endif
+   return 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   eval "$HOSTSH $aout hop.inria.fr"
+   ret_code=$?
+   \rm -f $file.*
+   rm -f $aout
+   rm -f $aout*
+   if [ $ret_code = 0 ]; then
+     echo "1"
+   else
+     echo "0"
+   fi
+   exit 0
+else
+   \rm -f $file.*
+   echo "0"
+   exit 0
+fi
+

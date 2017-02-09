@@ -896,7 +896,7 @@ int rgc_debug_port( obj_t port, char *msg ) {
    long bufpos = INPUT_PORT( port ).bufpos;
    int eof = INPUT_PORT( port ).eof;
    
-   fprintf( stderr, "RGC_DEBUG(%s) port=%p:%s mstart=%d mstop=%d forward=%d bpos=%d bsiz=%d %s\n", msg, 
+   fprintf( stderr, "RGC_DEBUG(%s) port=%p:%s mstart=%ld mstop=%ld forward=%ld bpos=%ld bsiz=%ld %s\n", msg, 
 	    port, BSTRING_TO_STRING( INPUT_PORT_NAME( port ) ),
 	    matchstart, matchstop, forward, bufpos, bufsiz,
 	    eof ? "eof" : "" );

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 15 10:37:40 2003                          */
-/*    Last change :  Fri Sep 16 09:29:23 2011 (serrano)                */
-/*    Copyright   :  2003-11 Manuel Serrano                            */
+/*    Last change :  Thu Feb  9 08:30:15 2017 (serrano)                */
+/*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Profalloc css                                                    */
 /*=====================================================================*/
@@ -119,7 +119,7 @@ div.profile td.sample {
   padding-left: 5px;
   padding-right: 5px;
   padding-bottom: 5px;
-  border: 10px black solid;
+  border: 2px transparent solid;
 }
 
 div.profile td.color-item {
@@ -154,7 +154,6 @@ div.type-ident {
 div.function-ident:hover,
 div.type-ident:hover {
   font-weight: bold;
-  overflow: visible;
 }
 
 div.function-ident span.function-index {

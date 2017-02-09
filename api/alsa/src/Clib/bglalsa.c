@@ -384,7 +384,7 @@ loop:
 	       __FILE__, __LINE__, snd_strerror( written ) );
       written = 0;
    } else if( written == -EPIPE ) {
-      fprintf( stderr, "%s:%d snd_pcm_writei( ..., %d) %s (-EPIPE)\n",
+      fprintf( stderr, "%s:%d snd_pcm_writei( ..., %ld) %s (-EPIPE)\n",
 	       __FILE__, __LINE__,
 	       sz,
 	       snd_strerror( written ) );
@@ -404,7 +404,7 @@ loop:
 	 goto loop;
       }
    } else {
-      fprintf( stderr, "%s:%d snd_pcm_writei (%d<0) -> %s\n",
+      fprintf( stderr, "%s:%d snd_pcm_writei (%ld<0) -> %s\n",
 	       __FILE__, __LINE__, written, snd_strerror( written ) );
    
       if( snd_pcm_state( pcm ) == SND_PCM_STATE_SUSPENDED ) {

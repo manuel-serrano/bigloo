@@ -1725,7 +1725,7 @@ Vectors are not autoquoted objects.
 @deffnx {library procedure} list->vector list
 @end deffn
 
-@deffn {library procedure} vector-fill! vector obj
+@deffn {library procedure} vector-fill! vector obj [start [end]]
 Stores  @var{obj} in every element of @var{vector}. For instance:
 
 @smalllisp

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Sun Jul 27 08:26:14 2014 (serrano)                */
-;*    Copyright   :  2003-14 Manuel Serrano                            */
+;*    Last change :  Thu Feb  9 09:05:10 2017 (serrano)                */
+;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
 ;*    from a monitor file.                                             */
@@ -258,7 +258,7 @@
 			(html-span :class "function-index" (match 0))))
 		 (else
 		  (html-string i))))
-	  (hid (html-div :class "function-ident" :title id id)))
+	  (hid (html-div :class "XX function-ident" :title i id)))
       (if (not (http-request?))
 	  hid
 	  (let ((url (format "http://~a:~a/~a?fun=~a"

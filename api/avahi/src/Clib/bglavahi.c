@@ -479,7 +479,7 @@ bgl_avahi_string_list_to_list( AvahiStringList *list ) {
 /*---------------------------------------------------------------------*/
 AvahiStringList *
 bgl_avahi_list_to_string_list( obj_t p ) {
-   AvahiStringList *l = avahi_string_list_new( 0L );
+   AvahiStringList *l = avahi_string_list_new( "", NULL );
 
    while( PAIRP( p ) ) {
       l = avahi_string_list_add( l, BSTRING_TO_STRING( CAR( p ) ) );

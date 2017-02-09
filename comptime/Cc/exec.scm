@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:09:34 1995                          */
-;*    Last change :  Fri Jun 21 11:09:11 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb  6 10:35:29 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When we don't need to make any action after invoking the C       */
 ;*    compiler (i.e. when the C compiler is called in a tail           */
@@ -19,8 +19,9 @@
 ;*---------------------------------------------------------------------*/
 (module cc_exec
    (include "Tools/trace.sch")
-   (extern  (macro execl::int (::string ::string ::string ::string ::long)
-		   "execl"))
+   (extern  (macro execl::int (::string ::string ::string ::string ::void*)
+		   "execl")
+	    (macro NULL::void* "0L"))
    (import  tools_error
 	    engine_param
 	    init_main)
@@ -71,7 +72,7 @@
 	  (cond-expand
 	     (bigloo-jvm (system cmd))
 	     (bigloo-.net (system cmd))
-	     (bigloo-c (print (execl *shell* *shell* "-c" cmd 0)))
+	     (bigloo-c (print (execl *shell* *shell* "-c" cmd NULL)))
 	     (else (error "system/kill"
 			  "System not implemented on the current architecture"
 			  #unspecified)))

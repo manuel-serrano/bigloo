@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Tue Nov 15 08:10:32 2016 (serrano)                */
+;*    Last change :  Thu Feb  9 10:04:02 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -209,7 +209,7 @@
       ((<fx start 0)
        (error "vector-fill!" "wrong negative start" start))
       ((>fx end (vector-length vec))
-       (error "vector-fill!" "start index too large" start))
+       (error "vector-fill!" "end index too large" end))
       ((>=fx start end)
        (error "vector-fill!" "start index larger than end" (cons start end)))
       (else
