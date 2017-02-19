@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Sun Sep 29 11:45:22 2013 (serrano)                */
-;*    Copyright   :  2005-13 Manuel Serrano                            */
+;*    Last change :  Thu Feb 16 18:17:53 2017 (serrano)                */
+;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -364,7 +364,7 @@
 		(when (and info (libinfo-eval info))
 		   (eval '((libinfo-eval info))))
 		info)))))
-   
+
    (let ((mod (eval-module)))
       ($eval-module-set! (interaction-environment))
       (unwind-protect

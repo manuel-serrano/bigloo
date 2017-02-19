@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Wed Dec 23 16:17:28 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Feb 16 18:44:02 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -43,7 +43,8 @@
       (cond
 	 ((not (sfun? sfun))
 	  node)
-	 ((inline-app? var kfactor (call-size node) stack)
+	 ((or (inline-app? var kfactor (call-size node) stack)
+	      (inline-closure? var stack))
 	  (unless (eq? (sfun-class sfun) 'sifun)
 	     (set! *inlined-calls* (+fx *inlined-calls* 1)))
 	  (when (and (global? var) (global-library var))
@@ -55,6 +56,15 @@
 	      (inline-app-simple node kfactor stack "simple")))
 	 (else
 	  node))))
+
+;*---------------------------------------------------------------------*/
+;*    inline-closure? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (inline-closure? var stack)
+   (when (and (pair? stack) (global? (car stack)))
+      (when (eq? var (sfun-the-closure-global (variable-value (car stack))))
+	 (and (or (local? var) (eq? (global-import var) 'static))
+	      (=fx (variable-occurrence var) 1)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    call-size ...                                                    */
