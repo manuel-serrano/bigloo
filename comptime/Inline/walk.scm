@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Wed Dec  7 07:02:22 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb 20 05:52:17 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
 ;*=====================================================================*/
@@ -41,7 +41,8 @@
 (define (inline-walk! globals what)
    (assert (what) (memq what '(all reducer predicate)))
    (pass-prelude "Inlining" reset-stat!)
-   (trace (inline inline+ 0) " ================ INLINING ================\n")
+   (trace (inline inline+ 0) "================ INLINING ================ "
+      what "\n")
    ;; we setup the inlining
    (inline-setup! what)
    ;; count the number of occurences of all variables

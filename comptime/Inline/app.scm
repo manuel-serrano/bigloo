@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Thu Feb 16 18:44:02 2017 (serrano)                */
+;*    Last change :  Mon Feb 20 05:17:44 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -99,6 +99,14 @@
 	  (body (if (isfun? sfun)
 		    (isfun-original-body sfun)
 		    (sfun-body sfun))))
+      (when (eq? (sfun-class sfun) 'sifun)
+	 (unless (and (eq? (sfun-class sfun) 'sifun)
+		      (not (memq var stack))
+		      (or (not (eq? *inline-mode* 'reducer))
+			  (not (contains-kwote? (sfun-body sfun))))
+		      (or (not (eq? *inline-mode* 'predicate))
+			  (fun-predicate-of sfun)))
+	    (tprint "NO " (shape var))))
       (cond
          ((not *inlining?*)
           ;; no, because the user said so

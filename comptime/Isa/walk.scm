@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Dec  7 09:07:51 2016 (serrano)                */
-;*    Copyright   :  2010-16 Manuel Serrano                            */
+;*    Last change :  Mon Feb 20 08:35:14 2017 (serrano)                */
+;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
 ;*=====================================================================*/
@@ -91,36 +91,55 @@
 ;*    isa! ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (isa! node::app)
-
+   
    (define (uncasted-type node::node)
       (if (isa? node cast)
 	  (with-access::cast node (arg)
 	     (node-type arg))
 	  (node-type node)))
+
+   (define (static-final-class? typ)
+      (and (eq? (global-import (tclass-holder typ)) 'static)
+	   (null? (tclass-subclasses typ))))
    
    (let ((typ (isa-of node)))
       (if typ
 	  (with-access::app node (fun args loc)
 	     (cond
-		((tclass-final? typ)
-		 (let* ((pred (if (isa? (uncasted-type (car args)) tclass)
-				  *isa-object/final*
-				  *isa/final*))
-			(nfun (duplicate::var fun
-				 (variable pred))))
-		    (set! fun nfun)))
+		((or (static-final-class? typ)
+		     (and #f (tclass-final? typ)))
+		 (if (isa? (uncasted-type (car args)) tclass)
+		     (let ((nfun (duplicate::var fun
+				    (variable *isa-object/final*))))
+			(set-car! args
+			   (instantiate::cast
+			      (arg (car args))
+			      (type (get-object-type))))
+			(set! fun nfun))
+		     (let ((nfun (duplicate::var fun
+				    (variable *isa/final*))))
+			(set! fun nfun))))
 		((< (tclass-depth typ) (bigloo-config 'class-display-min-size))
-		 (let* ((pred (if (isa? (uncasted-type (car args)) tclass)
-				  *isa-object/cdepth*
-				  *isa/cdepth*))
-			(nfun (duplicate::var fun
-				 (variable pred)))
-			(depth (instantiate::atom
-				  (loc loc)
-				  (type (get-type-atom (tclass-depth typ)))
-				  (value (tclass-depth typ)))))
-		    (set! fun nfun)
-		    (set! args (append args (list depth))))))
+		 (if (isa? (uncasted-type (car args)) tclass)
+		     (let ((nfun (duplicate::var fun
+				    (variable *isa-object/cdepth*)))
+			   (depth (instantiate::atom
+				     (loc loc)
+				     (type (get-type-atom (tclass-depth typ)))
+				     (value (tclass-depth typ))))
+			   (arg0 (instantiate::cast
+				    (arg (car args))
+				    (type (get-object-type)))))
+			(set! fun nfun)
+			(set! args (list arg0 (cadr args) depth)))
+		     (let* ((nfun (duplicate::var fun
+				     (variable *isa/cdepth*)))
+			    (depth (instantiate::atom
+				      (loc loc)
+				      (type (get-type-atom (tclass-depth typ)))
+				      (value (tclass-depth typ)))))
+			(set! fun nfun)
+			(set! args (append args (list depth)))))))
 	     node)
-	  node)))
+	  (call-default-walker))))
 		  

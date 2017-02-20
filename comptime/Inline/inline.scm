@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Wed Jun  1 18:00:44 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb 20 06:04:35 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
    (import  inline_walk
 	    inline_app
 	    ast_alphatize
+	    ast_dump
 	    engine_param
 	    tools_shape
 	    tools_error)
@@ -53,12 +54,13 @@
 			o-body)))
       (sfun-body-set! sfun
          (if (or (eq? *inline-mode* 'all)
-		 (>fx (variable-occurrence variable) 0)
+		 (or (>fx (variable-occurrence variable) 0)
+		     (eq? (variable-removable variable) 'cgen))
                  (and (global? variable)
                       (not (eq? (global-import variable) 'static))))
              (inline-node inl-body kfactor (cons variable stack))
              inl-body)))
-   (trace inline
+   (trace (inline inline+ 0)
       "--- END SCANNING: " (shape variable) " ----" #\Newline))
 
 ;*---------------------------------------------------------------------*/
@@ -102,6 +104,8 @@
 ;*    inline-node ::sequence ...                                       */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::sequence kfactor stack)
+   (trace (inline inline+ 0)
+      "SEQ " (node->sexp node) #\Newline)
    (inline-node*! (sequence-nodes node) kfactor stack)
    node)
 
@@ -165,6 +169,8 @@
 ;*    inline-node ::conditional ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::conditional kfactor stack)
+   (trace (inline inline+ 0)
+      "COND " (node->sexp node) #\Newline)
    (with-access::conditional node (test true false)
        (set! test (inline-node test kfactor stack))
        (set! true (inline-node true kfactor stack))
@@ -209,6 +215,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::let-var kfactor stack)
    (for-each (lambda (binding)
+		(trace (inline inline+ 1)
+		   "LET-VAR binding=" (shape (car binding)) #\Newline)
 		(set-cdr! binding (inline-node (cdr binding) kfactor stack)))
 	     (let-var-bindings node))
    (let-var-body-set! node (inline-node (let-var-body node) kfactor stack))

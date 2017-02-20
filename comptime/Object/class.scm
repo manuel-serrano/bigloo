@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Fri Nov 25 15:29:37 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Feb 20 08:30:03 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
 ;*=====================================================================*/
@@ -51,7 +51,9 @@
 	       ;; abstract class
 	       (abstract?::bool read-only (default #f))
 	       ;; the true wide type associated with the wide classes
-	       (wide-type (default #f)))
+	       (wide-type (default #f))
+	       ;; the list of subclasses
+	       (subclasses::pair-nil (default '())))
 
 	    (wide-class jclass::type
 	       ;; the `super' field
@@ -169,6 +171,9 @@
 	 (final?      final?)
 	 (abstract?   abstract?)
 	 (constructor (cadr class-def)))
+      (when (isa? super tclass)
+	 (with-access::tclass super (subclasses)
+	    (set! subclasses (cons type subclasses))))
       ;; wide classes creates a new type denoting the wide chunk of the
       ;; wide class. In addition, the type name of a wide classes is the
       ;; type name of its super class.

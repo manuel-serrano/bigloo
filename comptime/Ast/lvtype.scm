@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Fri Nov 25 08:41:00 2016 (serrano)                */
+;*    Last change :  Sun Feb 19 21:17:45 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This types a node (straightforward typing used by passes, i.e.,  */
 ;*    Coerce and Cnst, which occur after the Cfa). This pass only      */
@@ -19,6 +19,7 @@
 	    type_typeof
 	    tools_shape
 	    tools_error
+	    ast_dump
 	    ast_var
 	    ast_node)
    (export  (lvtype-ast! ::pair-nil)
@@ -33,6 +34,15 @@
 		(lvtype-node! (sfun-body (global-value g))))
 	     ast)
    ast)
+
+;*---------------------------------------------------------------------*/
+;*    get-obj-type ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (get-obj-type node)
+   (let ((ty (get-type node #f)))
+      (if (eq? ty *_*)
+	  *obj*
+	  ty)))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node ...                                                  */
@@ -80,7 +90,7 @@
    (with-access::sequence node (type nodes)
       (lvtype-node*! nodes)
       (when (eq? type *_*)
-	 (set! type (get-type node #f)))))
+	 (set! type (get-obj-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::sync ...                                          */
@@ -91,7 +101,7 @@
       (lvtype-node! prelock)
       (lvtype-node! body)
       (when (eq? type *_*)
-	 (set! type (get-type node #f)))))
+	 (set! type (get-obj-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app ...                                           */
@@ -100,7 +110,7 @@
    (with-access::app node (type fun args)
       (lvtype-node*! args)
       (when (eq? type *_*)
-	 (set! type (get-type node #f)))))
+	 (set! type (get-obj-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::app-ly ...                                        */
@@ -123,7 +133,9 @@
 ;*---------------------------------------------------------------------*/
 (define-method (lvtype-node! node::extern)
    (with-access::extern node (expr* type)
-      (lvtype-node*! expr*)))
+      (lvtype-node*! expr*)
+      (when (eq? type *_*)
+	 (set! type (get-obj-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::cast ...                                          */
@@ -149,7 +161,7 @@
        (lvtype-node! true)
        (lvtype-node! false)
        (when (eq? type *_*)
-	  (set! type (get-type node #f)))))
+	  (set! type (get-obj-type node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::fail ...                                          */
@@ -180,7 +192,7 @@
 		locals)
       (lvtype-node! body)
       (when (eq? type *_*)
-	 (set! type (get-type body #f)))))
+	 (set! type (get-obj-type body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::let-var ...                                       */
@@ -195,7 +207,7 @@
 		bindings)
       (lvtype-node! body)
       (when (eq? type *_*)
-	 (set! type (get-type body #f)))))
+	 (set! type (get-obj-type body)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    lvtype-node! ::set-ex-it ...                                     */

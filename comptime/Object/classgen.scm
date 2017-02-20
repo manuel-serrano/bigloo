@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Sat Feb 13 07:19:18 2016 (serrano)                */
-;*    Copyright   :  2011-16 Manuel Serrano                            */
+;*    Last change :  Mon Feb 20 07:49:24 2017 (serrano)                */
+;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
 ;*=====================================================================*/
@@ -373,8 +373,8 @@
 		  ((@ object-class-num-set! __object)
 		   ,tmp
 		   ((@ class-num __object)
-		    (@ ,(global-id holder) ,(global-module holder))))))
-	  ,tmp)))
+		    (@ ,(global-id holder) ,(global-module holder))))
+		  ,tmp)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    classgen-widen-anonymous ...                                     */

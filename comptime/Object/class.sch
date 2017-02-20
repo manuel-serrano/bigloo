@@ -1,7 +1,7 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
+;; Bigloo (4.3a)
+;; Inria -- Sophia Antipolis     Mon Feb 20 07:54:14 CET 2017 
 ;; (bigloo.new -classgen Object/class.scm)
 ;; ==========================================================
 
@@ -11,9 +11,11 @@
 ;; tclass
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-tclass::tclass id1176::symbol name1177::obj size1178::obj class1179::obj coerce-to1180::obj parents1181::obj init?1182::bool magic?1183::bool $1184::obj alias1185::obj pointed-to-by1186::obj tvector1187::obj location1188::obj import-location1189::obj occurrence1190::int its-super1191::obj slots1192::obj holder1193::global widening1194::obj depth1195::long final?1196::bool constructor1197::obj virtual-slots-number1198::obj abstract?1199::bool wide-type1200::obj)
+    (inline make-tclass::tclass id1179::symbol name1180::obj size1181::obj class1182::obj coerce-to1183::obj parents1184::obj init?1185::bool magic?1186::bool $1187::obj alias1188::obj pointed-to-by1189::obj tvector1190::obj location1191::obj import-location1192::obj occurrence1193::int its-super1194::obj slots1195::obj holder1196::global widening1197::obj depth1198::long final?1199::bool constructor1200::obj virtual-slots-number1201::obj abstract?1202::bool wide-type1203::obj subclasses1204::pair-nil)
     (inline tclass?::bool ::obj)
     (tclass-nil::tclass)
+    (inline tclass-subclasses::pair-nil ::tclass)
+    (inline tclass-subclasses-set! ::tclass ::pair-nil)
     (inline tclass-wide-type::obj ::tclass)
     (inline tclass-wide-type-set! ::tclass ::obj)
     (inline tclass-abstract?::bool ::tclass)
@@ -62,7 +64,7 @@
 ;; jclass
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-jclass::jclass id1157::symbol name1158::obj size1159::obj class1160::obj coerce-to1161::obj parents1162::obj init?1163::bool magic?1164::bool $1165::obj alias1166::obj pointed-to-by1167::obj tvector1168::obj location1169::obj import-location1170::obj occurrence1171::int its-super1172::obj slots1173::obj package1174::bstring)
+    (inline make-jclass::jclass id1159::symbol name1160::obj size1161::obj class1162::obj coerce-to1163::obj parents1164::obj init?1165::bool magic?1166::bool $1167::obj alias1168::obj pointed-to-by1169::obj tvector1170::obj location1171::obj import-location1172::obj occurrence1173::int its-super1174::obj slots1175::obj package1176::bstring)
     (inline jclass?::bool ::obj)
     (jclass-nil::jclass)
     (inline jclass-package::bstring ::jclass)
@@ -103,7 +105,7 @@
 ;; wclass
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (export
-    (inline make-wclass::wclass id1140::symbol name1141::obj size1142::obj class1143::obj coerce-to1144::obj parents1145::obj init?1146::bool magic?1147::bool $1148::obj alias1149::obj pointed-to-by1150::obj tvector1151::obj location1152::obj import-location1153::obj occurrence1154::int its-class1155::obj)
+    (inline make-wclass::wclass id1141::symbol name1142::obj size1143::obj class1144::obj coerce-to1145::obj parents1146::obj init?1147::bool magic?1148::bool $1149::obj alias1150::obj pointed-to-by1151::obj tvector1152::obj location1153::obj import-location1154::obj occurrence1155::int its-class1156::obj)
     (inline wclass?::bool ::obj)
     (wclass-nil::wclass)
     (inline wclass-its-class::obj ::wclass)
@@ -141,9 +143,11 @@
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; tclass
-(define-inline (make-tclass::tclass id1176::symbol name1177::obj size1178::obj class1179::obj coerce-to1180::obj parents1181::obj init?1182::bool magic?1183::bool $1184::obj alias1185::obj pointed-to-by1186::obj tvector1187::obj location1188::obj import-location1189::obj occurrence1190::int its-super1191::obj slots1192::obj holder1193::global widening1194::obj depth1195::long final?1196::bool constructor1197::obj virtual-slots-number1198::obj abstract?1199::bool wide-type1200::obj) (instantiate::tclass (id id1176) (name name1177) (size size1178) (class class1179) (coerce-to coerce-to1180) (parents parents1181) (init? init?1182) (magic? magic?1183) ($ $1184) (alias alias1185) (pointed-to-by pointed-to-by1186) (tvector tvector1187) (location location1188) (import-location import-location1189) (occurrence occurrence1190) (its-super its-super1191) (slots slots1192) (holder holder1193) (widening widening1194) (depth depth1195) (final? final?1196) (constructor constructor1197) (virtual-slots-number virtual-slots-number1198) (abstract? abstract?1199) (wide-type wide-type1200)))
+(define-inline (make-tclass::tclass id1179::symbol name1180::obj size1181::obj class1182::obj coerce-to1183::obj parents1184::obj init?1185::bool magic?1186::bool $1187::obj alias1188::obj pointed-to-by1189::obj tvector1190::obj location1191::obj import-location1192::obj occurrence1193::int its-super1194::obj slots1195::obj holder1196::global widening1197::obj depth1198::long final?1199::bool constructor1200::obj virtual-slots-number1201::obj abstract?1202::bool wide-type1203::obj subclasses1204::pair-nil) (instantiate::tclass (id id1179) (name name1180) (size size1181) (class class1182) (coerce-to coerce-to1183) (parents parents1184) (init? init?1185) (magic? magic?1186) ($ $1187) (alias alias1188) (pointed-to-by pointed-to-by1189) (tvector tvector1190) (location location1191) (import-location import-location1192) (occurrence occurrence1193) (its-super its-super1194) (slots slots1195) (holder holder1196) (widening widening1197) (depth depth1198) (final? final?1199) (constructor constructor1200) (virtual-slots-number virtual-slots-number1201) (abstract? abstract?1202) (wide-type wide-type1203) (subclasses subclasses1204)))
 (define-inline (tclass?::bool obj::obj) ((@ isa? __object) obj (@ tclass object_class)))
 (define (tclass-nil::tclass) (class-nil (@ tclass object_class)))
+(define-inline (tclass-subclasses::pair-nil o::tclass) (-> |#!bigloo_wallow| o subclasses))
+(define-inline (tclass-subclasses-set! o::tclass v::pair-nil) (set! (-> |#!bigloo_wallow| o subclasses) v))
 (define-inline (tclass-wide-type::obj o::tclass) (-> |#!bigloo_wallow| o wide-type))
 (define-inline (tclass-wide-type-set! o::tclass v::obj) (set! (-> |#!bigloo_wallow| o wide-type) v))
 (define-inline (tclass-abstract?::bool o::tclass) (-> |#!bigloo_wallow| o abstract?))
@@ -196,7 +200,7 @@
 (define-inline (tclass-id-set! o::tclass v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; jclass
-(define-inline (make-jclass::jclass id1157::symbol name1158::obj size1159::obj class1160::obj coerce-to1161::obj parents1162::obj init?1163::bool magic?1164::bool $1165::obj alias1166::obj pointed-to-by1167::obj tvector1168::obj location1169::obj import-location1170::obj occurrence1171::int its-super1172::obj slots1173::obj package1174::bstring) (instantiate::jclass (id id1157) (name name1158) (size size1159) (class class1160) (coerce-to coerce-to1161) (parents parents1162) (init? init?1163) (magic? magic?1164) ($ $1165) (alias alias1166) (pointed-to-by pointed-to-by1167) (tvector tvector1168) (location location1169) (import-location import-location1170) (occurrence occurrence1171) (its-super its-super1172) (slots slots1173) (package package1174)))
+(define-inline (make-jclass::jclass id1159::symbol name1160::obj size1161::obj class1162::obj coerce-to1163::obj parents1164::obj init?1165::bool magic?1166::bool $1167::obj alias1168::obj pointed-to-by1169::obj tvector1170::obj location1171::obj import-location1172::obj occurrence1173::int its-super1174::obj slots1175::obj package1176::bstring) (instantiate::jclass (id id1159) (name name1160) (size size1161) (class class1162) (coerce-to coerce-to1163) (parents parents1164) (init? init?1165) (magic? magic?1166) ($ $1167) (alias alias1168) (pointed-to-by pointed-to-by1169) (tvector tvector1170) (location location1171) (import-location import-location1172) (occurrence occurrence1173) (its-super its-super1174) (slots slots1175) (package package1176)))
 (define-inline (jclass?::bool obj::obj) ((@ isa? __object) obj (@ jclass object_class)))
 (define (jclass-nil::jclass) (class-nil (@ jclass object_class)))
 (define-inline (jclass-package::bstring o::jclass) (-> |#!bigloo_wallow| o package))
@@ -237,7 +241,7 @@
 (define-inline (jclass-id-set! o::jclass v::symbol) (set! (-> |#!bigloo_wallow| o id) v))
 
 ;; wclass
-(define-inline (make-wclass::wclass id1140::symbol name1141::obj size1142::obj class1143::obj coerce-to1144::obj parents1145::obj init?1146::bool magic?1147::bool $1148::obj alias1149::obj pointed-to-by1150::obj tvector1151::obj location1152::obj import-location1153::obj occurrence1154::int its-class1155::obj) (instantiate::wclass (id id1140) (name name1141) (size size1142) (class class1143) (coerce-to coerce-to1144) (parents parents1145) (init? init?1146) (magic? magic?1147) ($ $1148) (alias alias1149) (pointed-to-by pointed-to-by1150) (tvector tvector1151) (location location1152) (import-location import-location1153) (occurrence occurrence1154) (its-class its-class1155)))
+(define-inline (make-wclass::wclass id1141::symbol name1142::obj size1143::obj class1144::obj coerce-to1145::obj parents1146::obj init?1147::bool magic?1148::bool $1149::obj alias1150::obj pointed-to-by1151::obj tvector1152::obj location1153::obj import-location1154::obj occurrence1155::int its-class1156::obj) (instantiate::wclass (id id1141) (name name1142) (size size1143) (class class1144) (coerce-to coerce-to1145) (parents parents1146) (init? init?1147) (magic? magic?1148) ($ $1149) (alias alias1150) (pointed-to-by pointed-to-by1151) (tvector tvector1152) (location location1153) (import-location import-location1154) (occurrence occurrence1155) (its-class its-class1156)))
 (define-inline (wclass?::bool obj::obj) ((@ isa? __object) obj (@ wclass object_class)))
 (define (wclass-nil::wclass) (class-nil (@ wclass object_class)))
 (define-inline (wclass-its-class::obj o::wclass) (-> |#!bigloo_wallow| o its-class))
