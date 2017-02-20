@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Oct 24 14:14:59 2016 (serrano)                */
-/*    Copyright   :  2011-16 Manuel Serrano                            */
+/*    Last change :  Mon Feb 20 18:06:55 2017 (serrano)                */
+/*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
 /*    avahi documentation available at:                                */
@@ -479,7 +479,9 @@ bgl_avahi_string_list_to_list( AvahiStringList *list ) {
 /*---------------------------------------------------------------------*/
 AvahiStringList *
 bgl_avahi_list_to_string_list( obj_t p ) {
-   AvahiStringList *l = avahi_string_list_new( "", NULL );
+   // MS: 28 feb 2017
+   // AvahiStringList *l = avahi_string_list_new( "", NULL );
+   AvahiStringList *l = avahi_string_list_new( 0L );
 
    while( PAIRP( p ) ) {
       l = avahi_string_list_add( l, BSTRING_TO_STRING( CAR( p ) ) );
