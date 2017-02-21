@@ -82,9 +82,6 @@ The @code{bigloo-debug} parameter is used to control traces
 Specifies the active trace (see @code{with-trace} form). The argument
 @var{list} is the list of symbols which are active and which triggers
 the display of a @code{with-trace} form. 
-
-This parameter is dynamically adjusted according to the value of the
-SHELL variable @var{BIGLOOSTACKDEPTH}.
 @end deffn
 
 @c -- bigloo-trace-color --------------------------------------------- @c
