@@ -91,5 +91,6 @@ public class configure {
   public static final byte[] BGL_REGEXP_FAMILY = "@BGL_REGEXP_FAMILY@".getBytes();
   public static final boolean BGL_HAVE_UNISTRING = false;
   public static final boolean BGL_HAVE_SYSLOG = false;
+  public static final boolean BGL_HAVE_OVERFLOW = false;
   public static final int BGL_CLASS_DISPLAY_MIN_SIZE = 6;
 }

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Feb  6 10:18:33 2017 (serrano)                */
+#*    Last change :  Fri Feb 24 08:45:04 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2510,6 +2510,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Does the system have syslog?
   syslog=`$autoconf syslog`
 
+  # Does the system have overflow?
+  overflow=`$autoconf overflow`
+
   # Does the system have sigsetmask?
   sigsetmask=`$autoconf sigsetmask` || exit 1
 
@@ -3056,6 +3059,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@BGL_HAVE_GETGROUPS@|$getgroups|" \
               -e "s|@BGL_HAVE_IOCTL@|$ioctl|" \
               -e "s|@BGL_HAVE_SYSLOG@|$syslog|" \
+              -e "s|@BGL_HAVE_OVERFLOW@|$overflow|" \
               -e "s|@HAVE_SIGSETMASK@|$sigsetmask|" \
               -e "s|@HAVE_SIGPROCMASK@|$sigprocmask|" \
               -e "s|@HAVE_ALLOCA@|$alloca|" \

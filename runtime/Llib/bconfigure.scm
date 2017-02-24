@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Dec  6 20:55:36 2016 (serrano)                */
-;*    Copyright   :  2000-16 Manuel Serrano                            */
+;*    Last change :  Fri Feb 24 08:46:16 2017 (serrano)                */
+;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -105,6 +105,7 @@
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
 	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
+	   (macro $configure-have-overflow::bool "BGL_HAVE_OVERFLOW")
 	   (macro $configure-class-display-min-size::long "BGL_CLASS_DISPLAY_MIN_SIZE"))
    
    (java   (class $configure
@@ -168,6 +169,7 @@
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
+	      (field static have-overflow::bool "BGL_HAVE_OVERFLOW")
 	      (field static class-display-min-size::int "BGL_CLASS_DISPLAY_MIN_SIZE")
 	      "bigloo.configure"))
 
@@ -250,6 +252,7 @@
      (elong-size . ,$configure-elong-size)
      (have-unistring . ,$configure-have-unistring)
      (have-syslog . ,$configure-have-syslog)
+     (have-overflow . ,$configure-have-overflow)
      (class-display-min-size . ,$configure-class-display-min-size)))
 
 ;*---------------------------------------------------------------------*/
