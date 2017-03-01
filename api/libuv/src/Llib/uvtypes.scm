@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Fri Oct 14 12:05:11 2016 (serrano)                */
-;*    Copyright   :  2014-16 Manuel Serrano                            */
+;*    Last change :  Wed Mar  1 11:35:52 2017 (serrano)                */
+;*    Copyright   :  2014-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
 ;*=====================================================================*/
@@ -26,7 +26,8 @@
 	   (class UvHandle::%Uv
 	      ($builtin::$uv_handle_t (default $uv_handle_nil))
 	      (%onclose (default #f))
-	      (%gcmarks::pair-nil (default '()))
+	      (%gcmarkshead::pair-nil (default '()))
+	      (%gcmarkstail::pair-nil (default '()))
 	      (closed::bool (default #f)))
 
 	   (class UvLoop::UvHandle
@@ -41,7 +42,8 @@
 	      (%alloc::obj (default #f))
 	      (%offset::obj (default 0))
 	      (%proca (default #f))
-	      (%procc (default #f)))
+	      (%procc (default #f))
+	      (%callback (default #f)))
 
 	   (class UvTcp::UvStream)
 	   
@@ -159,7 +161,10 @@
 	   (uv-err-name::bstring ::int)
 
 	   (uv-handle-type-symbol ::int)
-	   (uv-guess-handle::symbol ::int)))
+	   (uv-guess-handle::symbol ::int)
+	   (inline uv-push-gcmark! ::UvHandle o)
+	   (uv-pop-gcmark! ::UvHandle o)
+	   (uv-gcmarks-empty?::bool o::UvHandle)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-version ...                                                   */
@@ -259,3 +264,47 @@
       ((=fx r $uv-handle-file) 'FILE)
       ((=fx r $uv-handle-unknown) 'UNKNOWN)
       (else 'UNDEFINED)))
+
+;*---------------------------------------------------------------------*/
+;*    uv-push-gcmark! ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-push-gcmark! o::UvHandle val)
+   (with-access::UvHandle o (%gcmarkshead %gcmarkstail)
+      (if (null? %gcmarkstail)
+	  (begin
+	     (set! %gcmarkshead (cons val '()))
+	     (set! %gcmarkstail %gcmarkshead))
+	  (begin
+	     (set-cdr! %gcmarkstail (cons val '()))
+	     (set! %gcmarkstail (cdr %gcmarkstail))))
+      [assert (val) (memq val %gcmarkshead)]))
+
+;*---------------------------------------------------------------------*/
+;*    uv-pop-gcmark! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (uv-pop-gcmark! o::UvHandle val)
+   (with-access::UvHandle o (%gcmarkshead %gcmarkstail)
+      (when (pair? %gcmarkshead)
+	 (if (eq? val (car %gcmarkshead))
+	     (if (eq? %gcmarkshead %gcmarkstail)
+		 (begin
+		    (set! %gcmarkshead '())
+		    (set! %gcmarkstail '()))
+		 (set! %gcmarkshead (cdr %gcmarkshead)))
+	     (let loop ((p %gcmarkshead))
+		(let ((n (cdr p)))
+		   (if (pair? n)
+		       (if (eq? (car n) val)
+			   (begin
+			      (when (eq? n %gcmarkstail)
+				 (set! %gcmarkstail p))
+			      (set-cdr! p (cdr n)))
+			   (loop n))
+		       (error "uv-pop-gcmark!" "Cannot find object" val))))))))
+
+;*---------------------------------------------------------------------*/
+;*    uv-gcmarks-empty? ...                                            */
+;*---------------------------------------------------------------------*/
+(define (uv-gcmarks-empty? o::UvHandle)
+   (with-access::UvHandle o (%gcmarkshead)
+      (null? %gcmarkshead)))

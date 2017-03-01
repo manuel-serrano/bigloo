@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Sat Oct 11 16:37:48 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Wed Mar  1 10:25:49 2017 (serrano)                */
+;*    Copyright   :  2014-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fsevent                                                    */
 ;*=====================================================================*/
@@ -36,12 +36,12 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-fs-event-start o::UvFsEvent proc path::bstring)
    (with-access::UvFsEvent o ($builtin loop cb)
-      (with-access::UvLoop loop (%mutex %gcmarks)
+      (with-access::UvLoop loop (%mutex)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
-	    (set! %gcmarks (cons o %gcmarks))
+	    (uv-push-gcmark! loop o)
 	    ;; force Bigloo to add the extern clause for bgl_uv_fs_event_cb
-	    (when (null? %gcmarks)
+	    (when (uv-gcmarks-empty? loop)
 	       ($bgl_uv_fs_event_cb $uv_fs_event_nil $string-nil 0 0))))
       (if (correct-arity? proc 4)
 	  (begin
@@ -54,8 +54,10 @@
 ;*    uv-fs-event-stop ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (uv-fs-event-stop o::UvFsEvent)
-   (with-access::UvFsEvent o ($builtin)
-      ($uv_fs_event_stop ($uv-fs-event-t $builtin))))
+   (with-access::UvFsEvent o ($builtin cb loop)
+      (let ((r ($uv_fs_event_stop ($uv-fs-event-t $builtin))))
+	 (uv-pop-gcmark! loop o)
+	 r)))
       
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-event-rename ...                                           */

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Fri Oct 14 13:11:02 2016 (serrano)                */
-/*    Copyright   :  2014-16 Manuel Serrano                            */
+/*    Last change :  Wed Mar  1 12:24:22 2017 (serrano)                */
+/*    Copyright   :  2014-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
@@ -1353,6 +1353,7 @@ bgl_uv_inet_pton( char *addr, int family ) {
 /*    static void                                                      */
 /*    bgl_uv_write_cb ...                                              */
 /*---------------------------------------------------------------------*/
+static long CNT = 0;
 static void
 bgl_uv_write_cb( uv_write_t *req, int status ) {
    obj_t p = (obj_t)req->data;
@@ -1382,8 +1383,12 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
       req->data = proc;
 
       iov = uv_buf_init( buffer + offset, length );
-      
-      return uv_write( req, handle, &iov, 1, bgl_uv_write_cb );
+
+      if( r = uv_write( req, handle, &iov, 1, bgl_uv_write_cb ) ) {
+	 free( req );
+      }
+
+      return r;
    }
 }
    
@@ -1410,7 +1415,11 @@ bgl_uv_write2( obj_t obj, char *buffer, long offset, long length, obj_t sendhand
       
       iov = uv_buf_init( buffer + offset, length );
 
-      return uv_write2( req, handle, &iov, 1, sendhdl, bgl_uv_write_cb );
+      if( r = uv_write2( req, handle, &iov, 1, sendhdl, bgl_uv_write_cb ) ) {
+	 free( req );
+      }
+
+      return r;
    }
 }
 

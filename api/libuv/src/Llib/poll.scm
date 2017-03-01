@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Fri Oct 14 13:10:17 2016 (serrano)                */
-;*    Copyright   :  2014-16 Manuel Serrano                            */
+;*    Last change :  Wed Mar  1 10:26:32 2017 (serrano)                */
+;*    Copyright   :  2014-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fspoll                                                     */
 ;*=====================================================================*/
@@ -51,12 +51,12 @@
 		      (else (error "uv-poll-start" "Illegal uv-poll-start" lst))))))))
    
    (with-access::UvPoll o ($builtin loop cb)
-      (with-access::UvLoop loop (%mutex %gcmarks)
+      (with-access::UvLoop loop (%mutex)
 	 (synchronize %mutex
 	    ;; store in the loop for the GC
-	    (set! %gcmarks (cons o %gcmarks))
+	    (uv-push-gcmark! loop o)
 	    ;; force Bigloo to add the extern clause for bgl_uv_poll_cb
-	    (when (null? %gcmarks)
+	    (when (uv-gcmarks-empty? loop)
 	       ($bgl_uv_poll_cb $uv_poll_nil 0 0))))
       (if (correct-arity? proc 3)
 	  (begin
@@ -69,8 +69,10 @@
 ;*    uv-poll-stop ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (uv-poll-stop o::UvPoll)
-   (with-access::UvPoll o ($builtin)
-      ($uv_poll_stop ($uv-poll-t $builtin))))
+   (with-access::UvPoll o ($builtin loop)
+      (let ((r ($uv_poll_stop ($uv-poll-t $builtin))))
+	 (uv-pop-gcmark! loop o)
+	 r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-events->list ...                                              */

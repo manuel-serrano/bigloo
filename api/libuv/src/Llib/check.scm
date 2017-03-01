@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Wed Oct 15 15:46:50 2014 (serrano)                */
-;*    Copyright   :  2014 Manuel Serrano                               */
+;*    Last change :  Wed Mar  1 10:27:15 2017 (serrano)                */
+;*    Copyright   :  2014-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV check callback                                             */
 ;*=====================================================================*/
@@ -36,12 +36,13 @@
    (with-access::UvCheck o ($builtin loop cb)
       (if (not (and (procedure? cb) (correct-arity? cb 1)))
 	  (error "uv-check-start" "wrong callback" o)
-	  (with-access::UvLoop loop (%mutex %gcmarks)
+	  (with-access::UvLoop loop (%mutex)
 	     (synchronize %mutex
 		;; store in the loop for the GC
-		(set! %gcmarks (cons o %gcmarks))
+		(uv-push-gcmark! loop o)
 		;; force Bigloo to add the extern clause for bgl_uv_check_cb
-		(when (null? %gcmarks) ($bgl_uv_check_cb $uv_check_nil 0)))
+		(when (uv-gcmarks-empty? loop)
+		   ($bgl_uv_check_cb $uv_check_nil 0)))
 	     ($uv_check_start ($uv-check-t $builtin) $BGL_UV_CHECK_CB)))))
 
 ;*---------------------------------------------------------------------*/
@@ -49,9 +50,9 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-check-stop o::UvCheck)
    (with-access::UvCheck o ($builtin loop)
-      (with-access::UvLoop loop (%mutex %gcmarks)
+      (with-access::UvLoop loop (%mutex)
 	 (synchronize %mutex
 	    ;; remove in the loop for the GC
-	    (set! %gcmarks (remq! o %gcmarks))))
+	    (uv-pop-gcmark! loop o)))
       ($uv_check_stop ($uv-check-t $builtin))))
       

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Sun Nov 27 11:58:21 2016 (serrano)                */
-;*    Copyright   :  2014-16 Manuel Serrano                            */
+;*    Last change :  Wed Mar  1 12:08:32 2017 (serrano)                */
+;*    Copyright   :  2014-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
 ;*=====================================================================*/
@@ -106,12 +106,10 @@
 	  (set! callback
 	     (lambda ()
 		(with-access::UvStream o (loop)
-		   (with-access::UvLoop loop (%gcmarks)
-		      (set! %gcmarks (remq! o %gcmarks))))
+		   (uv-pop-gcmark! loop o))
 		cb)))
        (with-access::UvStream o (loop)
-	  (with-access::UvLoop loop (%gcmarks)
-	     (set! %gcmarks (remq! o %gcmarks)))))
+	  (uv-pop-gcmark! loop o)))
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
@@ -161,13 +159,11 @@
 		   ;; make sure buf is referenced to prevent
 		   ;; premature collection
 		   (unless (eq? buf cb)
-		      (with-access::UvStream o (%gcmarks)
-			 (set! %gcmarks (remq! cb %gcmarks))
-			 (callback status))))))
+		      (uv-pop-gcmark! o cb)
+		      (callback status)))))
       (let ((r ($uv-write o buf offset len cb loop)))
 	 (when (=fx r 0)
-	    (with-access::UvStream o (%gcmarks)
-	       (set! %gcmarks (cons cb %gcmarks))))
+	    (uv-push-gcmark! o cb))
 	 r)))
 
 ;*---------------------------------------------------------------------*/
@@ -178,13 +174,11 @@
 		   ;; make sure buf is referenced to prevent
 		   ;; premature collection
 		   (unless (eq? buf cb)
-		      (with-access::UvStream o (%gcmarks)
-			 (set! %gcmarks (remq! cb %gcmarks))
-			 (callback status))))))
+		      (uv-pop-gcmark! o cb)
+		      (callback status)))))
       (let ((r ($uv-write2 o buf offset len handle cb loop)))
 	 (when (=fx r 0)
-	    (with-access::UvStream o (%gcmarks)
-	       (set! %gcmarks (cons cb %gcmarks))))
+	    (uv-push-gcmark! o cb))
 	 r)))
 
 ;*---------------------------------------------------------------------*/
@@ -193,10 +187,9 @@
 (define (uv-stream-read-start o::UvStream #!key onalloc callback (loop (uv-default-loop)))
    (let ((r ($uv-read-start o onalloc callback loop)))
       (when (=fx r 0)
-	 (with-access::UvStream o (%gcmarks)
-	    (set! %gcmarks (cons (cons 'read callback) %gcmarks)))
-	 (with-access::UvLoop loop (%gcmarks)
-	    (set! %gcmarks (cons o %gcmarks))))
+	 (with-access::UvStream o (%callback)
+	    (set! %callback callback))
+	 (uv-push-gcmark! loop o))
       r))
 
 ;*---------------------------------------------------------------------*/
@@ -204,10 +197,9 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-stream-read-stop o::UvStream)
    (with-access::UvStream o ($builtin loop)
-      (with-access::UvStream o (%gcmarks)
-	 (set! %gcmarks (filter! procedure? %gcmarks)))
-      (with-access::UvLoop loop (%gcmarks)
-	 (set! %gcmarks (remq! o %gcmarks)))
+      (with-access::UvStream o (%callback)
+	 (set! %callback #f))
+      (uv-pop-gcmark! loop o)
       ($uv-read-stop ($uv-stream-t $builtin))))
 
 ;*---------------------------------------------------------------------*/
@@ -216,11 +208,8 @@
 (define (uv-stream-shutdown handle #!key callback (loop (uv-default-loop)))
    (let ((r ($uv-shutdown handle callback loop)))
       (when (=fx r 0)
-	 (with-access::UvStream handle (%gcmarks)
-	    (set! %gcmarks (cons callback %gcmarks)))
-	 (with-access::UvLoop loop (%gcmarks)
-	    (unless (memq handle %gcmarks)
-	       (set! %gcmarks (cons handle %gcmarks)))))
+	 (uv-push-gcmark! handle callback)
+	 (uv-push-gcmark! loop handle))
       r))
    
 ;*---------------------------------------------------------------------*/
@@ -229,10 +218,8 @@
 (define (uv-listen handle backlog #!key callback (loop (uv-default-loop)))
    (let ((r ($uv-listen handle backlog callback loop)))
       (when (=fx r 0)
-	  (with-access::UvStream handle (%gcmarks)
-	     (set! %gcmarks (cons callback %gcmarks)))
-	  (with-access::UvLoop loop (%gcmarks)
-	     (set! %gcmarks (cons handle %gcmarks))))
+	 (uv-push-gcmark! handle callback)
+	 (uv-push-gcmark! loop handle))
       r))
 
 ;*---------------------------------------------------------------------*/
@@ -270,10 +257,8 @@
 (define (uv-tcp-connect handle host port #!key (family::int 4) callback (loop (uv-default-loop)))
    (let ((r ($uv-tcp-connect handle host port family callback loop)))
       (when (=fx r 0)
-	 (with-access::UvStream handle (%gcmarks)
-	    (set! %gcmarks (cons callback %gcmarks)))
-	 (with-access::UvLoop loop (%gcmarks)
-	    (set! %gcmarks (cons handle %gcmarks))))
+	 (uv-push-gcmark! handle callback)
+	 (uv-push-gcmark! loop handle))
       r))
 
 ;*---------------------------------------------------------------------*/
