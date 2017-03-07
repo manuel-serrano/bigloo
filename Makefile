@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Jun  5 21:06:48 2016 (serrano)                */
-#*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar  7 19:43:47 2017 (serrano)                */
+#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -131,7 +131,6 @@ DIRECTORIES	= cigloo \
                   api \
                   srfi \
                   bdl \
-		  pnet2ms \
                   bglpkg \
                   gc \
                   gmp \

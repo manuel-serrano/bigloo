@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Tue Mar  7 19:00:44 2017 (serrano)                */
+;*    Last change :  Wed Mar  8 10:52:27 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -274,7 +274,7 @@
 	   (display "'\\''" *c-port*))
 	  ((char=? value #\\)
 	   (display "'\\\\'" *c-port*))
-	  ((and (>=fx (char->integer value) 32) (<=fx (char->integer value) 128))
+	  ((and (>=fx (char->integer value) 32) (<fx (char->integer value) 128))
 	   (write-char #\' *c-port*)
 	   (write-char value *c-port*)
 	   (write-char #\' *c-port*))

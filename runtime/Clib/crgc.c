@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Tue Mar  7 18:24:32 2017 (serrano)                */
+/*    Last change :  Wed Mar  8 12:13:20 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -766,7 +766,7 @@ rgc_buffer_flonum( obj_t ip ) {
    unsigned char *buf = &RGC_BUFFER_REF( ip, 0 );
 
    if( (stop < INPUT_PORT( ip ).bufpos) && isspace( buf[ stop ] ) ) {
-      return strtod( &buf[ INPUT_PORT( ip ).matchstart ], 0 );
+      return strtod( (const char *)(&buf[ INPUT_PORT( ip ).matchstart ]), 0 );
    } else {
       long sz = stop - start;
       char *tmp = alloca( sz +1 );

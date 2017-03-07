@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Thu Nov 10 19:41:22 2016 (serrano)                */
+/*    Last change :  Tue Mar  7 21:05:42 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -504,7 +504,7 @@ ucs2_string_to_utf8_string( obj_t bucs2 ) {
 
    /* now, we allocate the new string */
    result  = make_string( utf8_len, '0' );
-   cresult = BSTRING_TO_STRING( result );
+   cresult = BSTRING_TO_USTRING( result );
 
    /* and we fill it */
    for( read = 0, write = 0; read < len; read++ ) {

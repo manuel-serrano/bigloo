@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Sat Dec 12 10:52:00 2015 (serrano)                */
+/*    Last change :  Tue Mar  7 20:16:13 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -27,7 +27,7 @@ extern obj_t bgl_output_flush( obj_t, char *, size_t );
 /*---------------------------------------------------------------------*/
 /*    Les noms des caracateres                                         */
 /*---------------------------------------------------------------------*/
-static unsigned char *char_name[] = {
+static char *char_name[] = {
    "","","","","","","","",
    "",  "tab", "newline", "", "", "return", "", "",
    "", "","","","","","","",
@@ -312,11 +312,11 @@ bgl_write_char( obj_t o, obj_t op ) {
    BGL_MUTEX_LOCK( mutex );
    
    if( (c > 0) && (c < 128) && char_name[ c ][ 0 ] ) {
-      unsigned char *name = char_name[ c ];
+      char *name = char_name[ c ];
 	 
       PUTC( op, '#' );
       PUTC( op, '\\' );
-      bgl_write( op, name, strlen( name ) );
+      bgl_write( op, (unsigned char *)name, strlen( name ) );
    } else {
       PUTC( op, '#' );
       PUTC( op, 'a' );

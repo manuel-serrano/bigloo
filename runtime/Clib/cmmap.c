@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Jul 10 10:46:32 2005                          */
-/*    Last change :  Mon Jun 28 11:22:31 2010 (serrano)                */
-/*    Copyright   :  2005-10 Manuel Serrano                            */
+/*    Last change :  Tue Mar  7 21:05:54 2017 (serrano)                */
+/*    Copyright   :  2005-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Bigloo C mmap implementation                                 */
 /*=====================================================================*/
@@ -130,7 +130,7 @@ bgl_string_to_mmap( obj_t s, bool_t r, bool_t w ) {
    mm->mmap_t.name = s;
    mm->mmap_t.length = STRING_LENGTH( s );
    mm->mmap_t.fd = 0;
-   mm->mmap_t.map = BSTRING_TO_STRING( s );
+   mm->mmap_t.map = BSTRING_TO_USTRING( s );
    mm->mmap_t.rp = 0;
    mm->mmap_t.wp = 0;
 

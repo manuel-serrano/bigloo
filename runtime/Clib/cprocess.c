@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Wed Oct 12 11:48:03 2016 (serrano)                */
+/*    Last change :  Tue Mar  7 20:08:18 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -642,7 +642,7 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 					      KINDOF_PROCPIPE,
 					      make_string_sans_fill( 80 ),
 					      bgl_syswrite,
-					      lseek,
+					      (long (*)())lseek,
 					      close );
 					      
 		  else

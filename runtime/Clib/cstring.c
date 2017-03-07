@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Thu Nov 10 13:09:54 2016 (serrano)                */
+/*    Last change :  Wed Mar  8 11:45:18 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -246,7 +246,7 @@ integer_to_string( long x, long radix ) {
    *s = '\0';
 
    for( ax = x, s--; bits > 0; bits--, s--, ax /= radix )
-      *s = letters[ abs(ax % radix) ];
+      *s = letters[ abs( (int)(ax % radix) ) ];
 
    if( x < 0 ) *(s+1) = '-';
    
@@ -360,7 +360,7 @@ llong_to_string( BGL_LONGLONG_T x, long radix ) {
    *s = '\0';
 
    for( ax = x, s--; bits > 0; bits--, s--, ax /= radix )
-      *s = letters[ abs(ax % radix) ];
+      *s = letters[ abs( (int)(ax % radix) ) ];
 
    if( x < 0 ) *(s+1) = '-';
 

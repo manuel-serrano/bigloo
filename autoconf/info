@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 15:12:37 1999                          */
-#*    Last change :  Fri Jul 12 20:13:32 2013 (serrano)                */
+#*    Last change :  Tue Mar  7 19:21:53 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the info setting.                                          */
 #*=====================================================================*/
@@ -216,5 +216,6 @@ rm -f $file.html
 rm -f $file.info
 rm -f $file.log
 rm -f $file.toc
+rm -f $file.aux
 echo $res
 exit 0

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar  7 16:45:01 2017 (serrano)                */
+#*    Last change :  Wed Mar  8 16:42:38 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -270,9 +270,11 @@ modfile=644
 #*--- ld shared library option ----------------------------------------*/
 # set $ldopt to `no-share' if you don't want shared library
 ldopt=
+ldsharedopt=
 ldrpath=
 # set $ldsoname to `blank' if you want to force it empty
 ldsoname=
+ldsonameopt=
 ldinstallname=
 ldinstallnamedirroot=$LDINSTALLNAMEDIRROOT
 
@@ -1683,6 +1685,7 @@ case $hostos in
       ldinstallname="-install_name";
       sharedsuffix="dylib";
       ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
+      ldsonameopt="-install_name ~a";
       sharedcompiler=yes;
       sharedbde=yes;
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
@@ -2804,7 +2807,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
      fi
      
      if [ "$cwarningflags " != " " ]; then
-       cflags=$cflags $cwarningflags
+       cflags="$cflags $cwarningflags"
      fi
   fi
 
@@ -2836,7 +2839,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     ldsoname=""
   else
     ldsoname=`$autoconf ldsoname $libdir --ld="$ld" --soname="$ldsoname"` || exit 1
-    ldsonameopt="$ldsoname=~a"
+
+    if [ "$ldsoname " != " " -a "$ldsonameopt " = " " ]; then
+      ldsonameopt="$ldsoname=~a"
+    fi
   fi
 
   # The shared libraries
@@ -3235,7 +3241,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@SHAREDSUFFIX@|$sharedsuffix|" \
 	      -e "s|@SONAME@|$ldsoname|" \
 	      -e "s|@C_LINKER_SONAME_OPTION@|$ldsonameopt|" \
-	      -e "s|@C_LINKER_SHARED_OPTION@|$ldopt|" \
+	      -e "s|@C_LINKER_SHARED_OPTION@|$ldopt$ldsharedopt|" \
         > $p
     fi
   done

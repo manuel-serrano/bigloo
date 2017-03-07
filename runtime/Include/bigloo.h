@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Mar  7 18:37:11 2017 (serrano)                */
+/*    Last change :  Tue Mar  7 19:08:10 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1531,7 +1531,7 @@ extern bool_t BXNEGATIVE( obj_t );
 
 #define BGL_MMAPP( o ) (POINTERP( o ) && (TYPE( o ) == MMAP_TYPE))
 
-#define BGL_MMAP_TO_STRING( s ) (BGL_MMAP( s ).map)
+#define BGL_MMAP_TO_STRING( s ) ((char *)(BGL_MMAP( s ).map))
    
 #define BGL_MMAP_LENGTH( s ) BGL_MMAP( s ).length
 #define BGL_MMAP_NAME( s ) BGL_MMAP( s ).name

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Mar  7 18:36:57 2017 (serrano)                */
+/*    Last change :  Wed Mar  8 17:38:32 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -100,7 +100,7 @@ extern "C" {
 #define BGL_UINT64P( o ) (POINTERP( o ) && (TYPE( o ) == UINT64_TYPE))
 
 #define BGL_INT8_TO_BINT8( i ) \
-   ((obj_t)(BINT8H + ((int8_t)(i) << BGL_CNST_SHIFT_INT16))) 
+   ((obj_t)(BINT8H + ((uint8_t)(i) << BGL_CNST_SHIFT_INT16))) 
 #define BGL_UINT8_TO_BUINT8( i ) \
    ((obj_t)(BUINT8H + ((uint8_t)(i) << BGL_CNST_SHIFT_INT16)))
 
@@ -110,7 +110,7 @@ extern "C" {
    ((uint8_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT16))
 
 #define BGL_INT16_TO_BINT16( i ) \
-   ((obj_t)(BINT16H + ((int16_t)(i) << BGL_CNST_SHIFT_INT16))) 
+   ((obj_t)(BINT16H + ((uint16_t)(i) << BGL_CNST_SHIFT_INT16))) 
 #define BGL_UINT16_TO_BUINT16( i ) \
    ((obj_t)(BUINT16H + ((uint16_t)(i) << BGL_CNST_SHIFT_INT16))) 
 	    
@@ -126,9 +126,9 @@ extern "C" {
    const obj_t name = BGL_UINT32_TO_BUINT32( num )
    
 #  define BGL_INT32_TO_BINT32( i ) \
-   ((obj_t)(BINT32H + ((long)(i) << BGL_CNST_SHIFT_INT32))) 
+   ((obj_t)(BINT32H + ((unsigned long)(i) << BGL_CNST_SHIFT_INT32))) 
 #  define BGL_UINT32_TO_BUINT32( i ) \
-   ((obj_t)(BUINT32H + ((long)(i) << BGL_CNST_SHIFT_INT32))) 
+   ((obj_t)(BUINT32H + ((unsigned long)(i) << BGL_CNST_SHIFT_INT32))) 
 #  define BGL_BINT32_TO_INT32( o ) \
    ((int32_t)((unsigned long)(o) >> BGL_CNST_SHIFT_INT32))
 #  define BGL_BUINT32_TO_UINT32( o ) \

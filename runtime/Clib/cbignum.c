@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Sep 30 21:38:11 2014 (serrano)                */
-/*    Copyright   :  2003-14 Manuel Serrano                            */
+/*    Last change :  Tue Mar  7 20:09:45 2017 (serrano)                */
+/*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -163,13 +163,8 @@ bgl_uint64_to_bignum( const uint64_t n ) {
    obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
    
 #if BGL_LONGLONG_LIMBS == 1
-   if( n < 0 ) {
-      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) -n;
-      BXSIZ( x ) = -1;
-   } else {
-      BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
-      BXSIZ( x ) = (n!=0);
-   }
+   BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
+   BXSIZ( x ) = (n!=0);
 #else
    mp_size_t size = 0;
    uint64_t vl = (uint64_t) (n < 0 ? -n : n);
