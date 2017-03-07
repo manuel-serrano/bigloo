@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Dec 19 08:16:32 2013                          */
-/*    Last change :  Tue Feb 18 19:31:10 2014 (serrano)                */
-/*    Copyright   :  2013-14 Manuel Serrano                            */
+/*    Last change :  Tue Mar  7 18:29:48 2017 (serrano)                */
+/*    Copyright   :  2013-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C i18n implementation                                            */
 /*=====================================================================*/
@@ -21,6 +21,9 @@
 #  include <locale.h>
 #endif
 
+#define BSTRING_TO_CONST_USTRING( s ) \
+   (const unsigned char *)BSTRING_TO_USTRING( s )
+
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
 /*    bgl_strcoll ...                                                  */
@@ -29,7 +32,8 @@
 BGL_RUNTIME_DEF
 int
 bgl_strcoll( obj_t left, obj_t right ) {
-   return u8_strcoll( BSTRING_TO_STRING( left ), BSTRING_TO_STRING( right ) );
+   return u8_strcoll( BSTRING_TO_CONST_USTRING( left ),
+		      BSTRING_TO_CONST_USTRING( right ) );
 }
 #endif
 
@@ -43,7 +47,7 @@ bgl_utf8_string_locale_upcase( obj_t str ) {
    size_t len = STRING_LENGTH( str );
    
 #if( BGL_HAVE_UNISTRING )
-   uint8_t *src = BSTRING_TO_STRING( str );
+   uint8_t *src = (uint8_t *)BSTRING_TO_USTRING( str );
    size_t buflen;
    uint8_t *buf;
    obj_t res;
@@ -76,7 +80,7 @@ bgl_utf8_string_locale_downcase( obj_t str ) {
    size_t len = STRING_LENGTH( str );
 
 #if( BGL_HAVE_UNISTRING )
-   uint8_t *src = BSTRING_TO_STRING( str );
+   uint8_t *src = (uint8_t *)BSTRING_TO_USTRING( str );
    size_t buflen;
    uint8_t *buf;
    obj_t res;
@@ -109,7 +113,7 @@ bgl_utf8_string_locale_capitalize( obj_t str ) {
    size_t len = STRING_LENGTH( str );
    
 #if( BGL_HAVE_UNISTRING )
-   uint8_t *src = BSTRING_TO_STRING( str );
+   uint8_t *src = (uint8_t *)BSTRING_TO_USTRING( str );
    size_t buflen;
    uint8_t *buf;
    obj_t res;

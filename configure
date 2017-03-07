@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Feb 24 08:45:04 2017 (serrano)                */
+#*    Last change :  Tue Mar  7 16:45:01 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -66,6 +66,7 @@ coflags=-O3
 crpath=
 
 cstrip=""
+cwarning=""
 cpicflags="demanded" # Possible values for cpicflags are:
              #  - "no" not to use position independent code (recommended)
              #  - "demanded" auto configuration but with a preference to "no"
@@ -798,6 +799,9 @@ while : ; do
       cflags="$cflags -g";
       bflags="-cg -q";;
 
+    --cwarningflags=*)
+      cwarningflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --cpicflags=*)
       cpicflags="`echo $1 | sed 's/^[^=]*=//'`";;
 
@@ -1022,6 +1026,7 @@ while : ; do
       echo "   --cflags=C compilation flags" >&2;
       echo "   --lflags=compiler link flags" >&2;
       echo "   --coflags=optimization_flags" >&2;
+      echo "   --cwarningflags=warning_flags" >&2;
       echo "   --cpicflags=pic_flags" >&2;
       echo "   --ldlibs=ld_libs" >&2;
       echo "   --ldcomplibs=ld_compiler_libs" >&2;
@@ -1139,6 +1144,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_saw_h=lib/bigloo/$release/bigloo_saw.h
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
+  bigloo_int_h=lib/bigloo/$release/bigloo_int.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
   bigloo_string_h=lib/bigloo/$release/bigloo_string.h
   bigloo_struct_h=lib/bigloo/$release/bigloo_struct.h
@@ -2791,6 +2797,17 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # The gmtoff field
   gmtoff=`$autoconf gmtoff --cflags="$coflags"` || exit 1
 
+  # The warning C compiler options
+  if [ "$cwarningflags" != "no" ]; then
+     if [ "$cwarningflags " = " " ]; then
+        cwarningflags=`$autoconf ccwarning --cflags="$cwarningflags"` || exit 1
+     fi
+     
+     if [ "$cwarningflags " != " " ]; then
+       cflags=$cflags $cwarningflags
+     fi
+  fi
+
   # The -pic C compiler options
   if [ "$cpicflags" = "no" ]; then
     cpicflags=""
@@ -3228,6 +3245,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_saw_h` $bigloo_saw_h
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
+  cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h
   cp runtime/Include/`basename $bigloo_string_h` $bigloo_string_h
   cp runtime/Include/`basename $bigloo_struct_h` $bigloo_struct_h

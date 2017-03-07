@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Thu Nov 19 18:29:29 2015 (serrano)                */
+/*    Last change :  Tue Mar  7 18:24:32 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -107,7 +107,7 @@ rgc_shift_buffer( obj_t port ) {
 /*    sysread ...                                                      */
 /*---------------------------------------------------------------------*/
 static long
-sysread( obj_t port, char *buf, long o, size_t size ) {
+sysread( obj_t port, unsigned char *buf, long o, size_t size ) {
 /*    fprintf( stderr, "%s,%d: sysread sysread(%p)\n",                 */
 /* 	    __FILE__, __LINE__, port );                                */
    long r = INPUT_PORT( port ).sysread( port, &buf[ o ], size );
@@ -127,7 +127,7 @@ sysread( obj_t port, char *buf, long o, size_t size ) {
 /*    rgc_fillsize_buffer ...                                          */
 /*---------------------------------------------------------------------*/
 static long
-rgc_fillsize_buffer( obj_t port, char *buf, int bufpos, int size ) {
+rgc_fillsize_buffer( obj_t port, unsigned char *buf, int bufpos, int size ) {
    long r;
    int fb = INPUT_PORT( port ).fillbarrier;
    
@@ -259,7 +259,7 @@ bgl_rgc_blit_string( obj_t p, char *s, long o, long l ) {
 _loop:
 	 if( !(INPUT_PORT( p ).eof) ) {
 	    long size = l < default_io_bufsiz ? l : default_io_bufsiz;
-	    long r = sysread( p, s, o, size );
+	    long r = sysread( p, (unsigned char *)s, o, size );
 
 	    o += r;
 	    l -= r;
@@ -584,7 +584,7 @@ rgc_buffer_substring( obj_t ip, long offset, long end ) {
 BGL_RUNTIME_DEF obj_t
 rgc_buffer_escape_substring( obj_t ip, long offset, long end, bool_t strict ) {
    long start = INPUT_PORT( ip ).matchstart;
-   char *s = (char *)&RGC_BUFFER_REF( ip, start );
+   unsigned char *s = &RGC_BUFFER_REF( ip, start );
    
    if( strict )
       return bgl_escape_scheme_string( s, offset, end );
@@ -599,9 +599,9 @@ rgc_buffer_escape_substring( obj_t ip, long offset, long end, bool_t strict ) {
 BGL_RUNTIME_DEF obj_t
 rgc_buffer_symbol( obj_t ip ) {
    long start = INPUT_PORT( ip ).matchstart;
-   char *s = &RGC_BUFFER_REF( ip, start );
+   unsigned char *s = &RGC_BUFFER_REF( ip, start );
    
-   return bgl_string_to_symbol_len( s, RGC_BUFFER_MATCH_LENGTH( ip ) );
+   return bgl_string_to_symbol_len( (char *)s, RGC_BUFFER_MATCH_LENGTH( ip ) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -612,9 +612,9 @@ BGL_RUNTIME_DEF obj_t
 rgc_buffer_subsymbol( obj_t ip, long offset, long end ) {
    long start = INPUT_PORT( ip ).matchstart;
    long len = end - offset;
-   char *s = &RGC_BUFFER_REF( ip, start + offset );
+   unsigned char *s = &RGC_BUFFER_REF( ip, start + offset );
 
-   return bgl_string_to_symbol_len( s, len );
+   return bgl_string_to_symbol_len( (char *)s, len );
 }
 
 /*---------------------------------------------------------------------*/
@@ -632,7 +632,7 @@ rgc_buffer_upcase_subsymbol( obj_t ip, long offset, long end ) {
       if( isascii( s[ i ] ) ) s[ i ] = toupper( s[ i ] );
    }
 
-   return bgl_string_to_symbol_len( s, len );
+   return bgl_string_to_symbol_len( (char *)s, len );
 }
 
 /*---------------------------------------------------------------------*/
@@ -650,7 +650,7 @@ rgc_buffer_downcase_subsymbol( obj_t ip, long offset, long end ) {
       if( isascii( s[ i ] ) ) s[ i ] = tolower( s[ i ] );
    }
 
-   return bgl_string_to_symbol_len( s, len );
+   return bgl_string_to_symbol_len( (char *)s, len );
 }
 
 /*---------------------------------------------------------------------*/
@@ -664,7 +664,7 @@ rgc_buffer_keyword( obj_t ip ) {
    
    if( *s == ':' ) s++;
 
-   return bgl_string_to_keyword_len( s, RGC_BUFFER_MATCH_LENGTH( ip ) - 1 );
+   return bgl_string_to_keyword_len( (char *)s, RGC_BUFFER_MATCH_LENGTH( ip ) - 1 );
 }
  
 /*---------------------------------------------------------------------*/
@@ -683,7 +683,7 @@ rgc_buffer_downcase_keyword( obj_t ip ) {
       if( isascii( s[ i ] ) ) s[ i ] = tolower( s[ i ] );
    }
 
-   return bgl_string_to_keyword_len( s, len );
+   return bgl_string_to_keyword_len( (char *)s, len );
 }
  
 /*---------------------------------------------------------------------*/
@@ -703,30 +703,9 @@ rgc_buffer_upcase_keyword( obj_t ip ) {
       if( isascii( s[ i ] ) ) s[ i ] = toupper( s[ i ] );
    }
 
-   return bgl_string_to_keyword_len( s, len );
+   return bgl_string_to_keyword_len( (char *)s, len );
 }
 
-/* {*---------------------------------------------------------------------*} */
-/* {*    CHEAT_BUFFER_AT                                                  *} */
-/* {*---------------------------------------------------------------------*} */
-/* #define CHEAT_BUFFER_AT( s ) \                                      */
-/*    long stop  = s; \                                                */
-/*    char bck; \                                                      */
-/*    bck = RGC_BUFFER_REF( ip, stop ); \                              */
-/*    RGC_BUFFER_SET( ip, stop, '\0' );                                */
-/*                                                                     */
-/* {*---------------------------------------------------------------------*} */
-/* {*    CHEAT_BUFFER                                                     *} */
-/* {*---------------------------------------------------------------------*} */
-/* #define CHEAT_BUFFER() \                                            */
-/*    CHEAT_BUFFER_AT( INPUT_PORT( ip ).matchstop )                    */
-/*                                                                     */
-/* {*---------------------------------------------------------------------*} */
-/* {*    RESTORE_BUFFER                                                   *} */
-/* {*---------------------------------------------------------------------*} */
-/* #define RESTORE_BUFFER() \                                          */
-/*    RGC_BUFFER_SET( ip, stop, bck );                                 */
-/*                                                                     */
 /*---------------------------------------------------------------------*/
 /*    long                                                             */
 /*    rgc_buffer_fixnum ...                                            */
@@ -736,7 +715,7 @@ rgc_buffer_fixnum( obj_t ip ) {
    long res = 0;
    long stop = INPUT_PORT( ip ).matchstop;
    long start = INPUT_PORT( ip ).matchstart;
-   char *buf = &RGC_BUFFER_REF( ip, 0 );
+   unsigned char *buf = &RGC_BUFFER_REF( ip, 0 );
    long i;
    
    if( buf[ start ] == '-' || buf[ start ] == '+' ) {
@@ -749,10 +728,6 @@ rgc_buffer_fixnum( obj_t ip ) {
       res = (res * 10) + (buf[ i ] - '0');
    }
    
-/*    CHEAT_BUFFER();                                                  */
-/*    res = atol( (const char *)&RGC_BUFFER_REF( ip, INPUT_PORT(ip).matchstart ) ); */
-/*    RESTORE_BUFFER();                                                */
-
    return ( buf[ start ] == '-' ) ? -res : res;
 }
 
@@ -764,11 +739,11 @@ static obj_t
 rgc_buffer_bignum( obj_t ip ) {
    long start = INPUT_PORT( ip ).matchstart;
    long stop = INPUT_PORT( ip ).matchstop;
-   char *buf = &RGC_BUFFER_REF( ip, 0 );
+   unsigned char *buf = &RGC_BUFFER_REF( ip, 0 );
    obj_t res;
    
    if( (stop < INPUT_PORT( ip ).bufpos) && isspace( buf[ stop ] ) ) {
-      return bgl_string_to_bignum( &RGC_BUFFER_REF( ip, start ), 10 );
+      return bgl_string_to_bignum( (char *)&RGC_BUFFER_REF( ip, start ), 10 );
    } else {
       long sz = stop - start;
       char *tmp = alloca( sz +1 );
@@ -777,15 +752,6 @@ rgc_buffer_bignum( obj_t ip ) {
       
       return bgl_string_to_bignum( tmp, 10 );
    }
-/*                                                                     */
-/*                                                                     */
-/*    CHEAT_BUFFER();                                                  */
-/*                                                                     */
-/*    res = bgl_string_to_bignum( &RGC_BUFFER_REF( ip, start ), 10 );  */
-/*                                                                     */
-/*    RESTORE_BUFFER();                                                */
-/*                                                                     */
-/*    return res;                                                      */
 }
    
 /*---------------------------------------------------------------------*/
@@ -797,7 +763,7 @@ rgc_buffer_flonum( obj_t ip ) {
    double res;
    long stop = INPUT_PORT( ip ).matchstop;
    long start = INPUT_PORT( ip ).matchstart;
-   char *buf = &RGC_BUFFER_REF( ip, 0 );
+   unsigned char *buf = &RGC_BUFFER_REF( ip, 0 );
 
    if( (stop < INPUT_PORT( ip ).bufpos) && isspace( buf[ stop ] ) ) {
       return strtod( &buf[ INPUT_PORT( ip ).matchstart ], 0 );
@@ -809,13 +775,6 @@ rgc_buffer_flonum( obj_t ip ) {
 
       return strtod( tmp, 0 );
    }
-/*    CHEAT_BUFFER();                                                  */
-/*                                                                     */
-/*    res = strtod( (const char *)&RGC_BUFFER_REF(ip, INPUT_PORT(ip).matchstart), 0 ); */
-/*                                                                     */
-/*    RESTORE_BUFFER();                                                */
-/*                                                                     */
-/*    return res;                                                      */
 }
 
 /*---------------------------------------------------------------------*/

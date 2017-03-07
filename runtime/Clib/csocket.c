@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jan 10 08:05:07 2017 (serrano)                */
+/*    Last change :  Tue Mar  7 18:18:39 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -915,7 +915,7 @@ bgl_gethostent( obj_t hostname ) {
 static obj_t
 bgl_inet_ntop( int af, struct in_addr *addr ) {
    obj_t obj = make_string_sans_fill( INET_ADDRSTRLEN );
-   char *buf = &(STRING_REF( obj, 0 ));
+   char *buf = (char *)&(STRING_REF( obj, 0 ));
    const char *s = inet_ntop( af, addr, buf, INET_ADDRSTRLEN );
    
    return bgl_string_shrink( obj, strlen( s ) );
@@ -1320,7 +1320,7 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
 						 KINDOF_SOCKET,
 						 outb,
 						 bgl_syswrite,
-						 lseek,
+						 (long (*)())&lseek,
 						 &bgl_sclose_wd );
    SOCKET( sock ).output->output_port_t.sysflush = &bgl_socket_flush;
       
@@ -1716,7 +1716,7 @@ bgl_socket_localp( obj_t sock ) {
 	 BGL_MUTEX_UNLOCK( socket_mutex );
       
 	 socket_error( "socket-localp", buffer, sock );
-      } else if( SOCKET( sock ).family = AF_INET ) {
+      } else if( SOCKET( sock ).family == AF_INET ) {
 	 /* ipv4 addr */
 	 return sin.sin_addr.s_addr == SOCKET( sock ).address.in_addr.s_addr;
       } else {
@@ -2550,7 +2550,6 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    int s, err;
    obj_t a_socket;
    obj_t hname;
-   obj_t oport;
    struct sockaddr_in *server;
 
    /* determine port to use */
@@ -2614,8 +2613,8 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
 			    &datagram_socket_write,
 			    0L,
 			    &bgl_sclose_wd );
-   OUTPUT_PORT( oport ).sysflush = &bgl_socket_flush;
-   OUTPUT_PORT( oport ).bufmode = BGL_IONB;
+   a_socket->datagram_socket_t.port->output_port_t.sysflush = &bgl_socket_flush;
+   a_socket->datagram_socket_t.port->output_port_t.bufmode = BGL_IONB;
    
    return BREF( a_socket );
 }

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon May 25 07:28:09 1998                          */
-;*    Last change :  Fri Apr  4 08:13:06 2014 (serrano)                */
+;*    Last change :  Fri Mar  3 11:16:56 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The Bee configuration file.                                      */
 ;*    -------------------------------------------------------------    */
@@ -199,7 +199,7 @@ Setting that variable must change the buffer local UDE-MAKEMAKE"
 		 "\\|string-case\\|syntax-rules\\)[ :\n\t]")
 	 1
 	 'font-lock-keyword-face)
-   (cons "\\[assert[^\]]*\\]\\|\(assert[^\)]*\)"
+   (cons "\\[assert[^\] \n]*\\]\\|\(assert[^\) \n]*\)"
 	 'ude-font-lock-face-2)
    (list (concat "\(\\(error\\|error/location\\|error/source\\|warning\\|pragma\\|trace\\|"
 		 "with-trace\\|trace-item\\|"

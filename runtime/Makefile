@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Oct 26 08:36:46 2016 (serrano)                */
-#*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Mar  2 08:02:04 2017 (serrano)                */
+#*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -289,7 +289,8 @@ SRC_FILES	= $(SCM_USR_SRC) $(SCM_SYS_SRC) $(SCM_REGEXP_SRC) \
 INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
                   Include/bigloo_pair.h Include/bigloo_real.h \
                   Include/bigloo_vector.h Include/bigloo_string.h \
-                  Include/bigloo_struct.h Include/bigloo_cell.h
+                  Include/bigloo_struct.h Include/bigloo_cell.h \
+                  Include/bigloo_int.h
 
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
@@ -443,9 +444,11 @@ bps_cp_avant:
 	  sudo cp Include/bigloo_saw.h /usr/local/lib/bigloo/4.3a; \
 	  sudo cp Include/bigloo_pair.h /usr/local/lib/bigloo/4.3a; \
 	  sudo cp Include/bigloo_real.h /usr/local/lib/bigloo/4.3a; \
+	  sudo cp Include/bigloo_int.h /usr/local/lib/bigloo/4.3a; \
 	  sudo cp Include/bigloo_vector.h /usr/local/lib/bigloo/4.3a; \
 	  cp Include/bigloo_pair.h ../lib/bigloo/4.3a; \
 	  cp Include/bigloo_real.h ../lib/bigloo/4.3a; \
+	  cp Include/bigloo_int.h ../lib/bigloo/4.3a; \
 	  cp Include/bigloo_vector.h ../lib/bigloo/4.3a; \
         fi
 

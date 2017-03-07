@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Nov  1 12:35:41 2016 (serrano)                */
+/*    Last change :  Tue Mar  7 18:08:16 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -226,7 +226,7 @@ static ssize_t procwrite( obj_t, void *, size_t );
 static obj_t procflush( obj_t );
 static int procclose( obj_t );
 
-static obj_t output_flush( obj_t, char*, size_t, int, bool_t );
+static obj_t output_flush( obj_t, unsigned char*, size_t, int, bool_t );
 static ssize_t syswrite_with_timeout( obj_t, void *, size_t );
 
 static long sysread_with_timeout( obj_t, char *, long );
@@ -750,7 +750,7 @@ invoke_flush_hook( obj_t fhook, obj_t port, size_t slen, bool_t err ) {
 /*    output_flush ...                                                 */
 /*---------------------------------------------------------------------*/
 obj_t
-output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err ) {
+output_flush( obj_t port, unsigned char *str, size_t slen, int is_read_flush, bool_t err ) {
    if( PORT( port ).kindof == KINDOF_CLOSED ) {
       C_OUTPUT_PORT_SYSTEM_FAILURE(
 	 BGL_IO_PORT_ERROR,
@@ -784,7 +784,7 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 	 flush_string( port, buf_start, use, err );
 	 
 	 /* write the string that raises the buffer overflow */
-	 flush_string( port, str, slen, err );
+	 flush_string( port, (char *)str, slen, err );
 
 	 /* Update the port */
 	 if ( port == _stdout ) {
@@ -833,7 +833,7 @@ output_flush( obj_t port, char *str, size_t slen, int is_read_flush, bool_t err 
 /*    There is no room for str, and cnt has not been decremented.      */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_output_flush( obj_t op, char *str, size_t slen ) {
+bgl_output_flush( obj_t op, unsigned char *str, size_t slen ) {
    return output_flush( op, str, slen, 0, 1 );
 }
 
@@ -843,7 +843,7 @@ bgl_output_flush( obj_t op, char *str, size_t slen ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_output_flush_char( obj_t op, char c ) {
-   return output_flush( op, &c, 1, 0, 1 );
+   return output_flush( op, (unsigned char *)&c, 1, 0, 1 );
 }
    
 /*---------------------------------------------------------------------*/
@@ -1824,8 +1824,8 @@ bgl_input_port_seek( obj_t port, long pos ) {
 BGL_RUNTIME_DEF long
 bgl_output_port_filepos( obj_t port ) {
    long (*sysseek)() = OUTPUT_PORT( port ).sysseek;
-   char *buf = &STRING_REF( BGL_OUTPUT_PORT_BUFFER( port ), 0 );
-   long bufsz = (char *)(OUTPUT_PORT( port ).ptr) - buf;
+   unsigned char *buf = &STRING_REF( BGL_OUTPUT_PORT_BUFFER( port ), 0 );
+   long bufsz = (unsigned char *)(OUTPUT_PORT( port ).ptr) - buf;
 
    if( sysseek ) {
       switch( OUTPUT_PORT( port ).stream_type ) {
@@ -2276,6 +2276,7 @@ bgl_file_to_string( char *path ) {
 static obj_t
 force_unlock_output_mutex_proc( obj_t env ) {
    BGL_MUTEX_UNLOCK( OUTPUT_PORT( PROCEDURE_REF( env, 0 ) ).mutex );
+   return BUNSPEC;
 }
 
 /*---------------------------------------------------------------------*/

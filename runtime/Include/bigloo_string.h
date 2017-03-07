@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Apr  1 07:32:45 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Tue Mar  7 18:27:04 2017 (serrano)                */
+/*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -141,7 +141,8 @@ struct bgl_ucs2_string {
 #define INVERSE_STRING_LENGTH( s ) \
    ((STRING_LENGTH( s ) = (-STRING_LENGTH( s ))), BUNSPEC)
    
-#define BSTRING_TO_STRING( s ) ((char *)(&(STRING( s ).char0)))
+#define BSTRING_TO_USTRING( s ) (&(STRING( s ).char0))
+#define BSTRING_TO_STRING( s ) ((char *)(BSTRING_TO_USTRING( s )))
 
 #define STRING_REF( v, i ) (((unsigned char *)BSTRING_TO_STRING( v ))[ i ])
 #define STRING_SET( s, i, c ) (STRING_REF( s, i ) = c, BUNSPEC)

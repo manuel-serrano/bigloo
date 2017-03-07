@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Feb 24 08:42:31 2017 (serrano)                */
+#*    Last change :  Tue Mar  7 16:28:56 2017 (serrano)                */
 #*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -39,7 +39,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   readline ldextraopt \
                   socket getaddrinfo getifaddrs gethwaddrs socklen setsockopt \
                   inet_aton inet_pton \
-                  unixsocket info cctest ccoptim ccbracket ccdiv0 \
+                  unixsocket info cctest ccoptim ccbracket ccdiv0 ccwarning \
                   ccprof termio termios installinfo installinfodir dlopen \
                   user xemacsbin gmaketest ccpic ccpic2 \
                   ziptest javatest jartest \
