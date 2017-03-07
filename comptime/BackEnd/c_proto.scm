@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Thu Oct 20 11:14:57 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar  7 19:03:25 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -272,17 +272,6 @@
 			  (shape node))))))
 
 ;*---------------------------------------------------------------------*/
-;*    ascii-sentinel ...                                               */
-;*---------------------------------------------------------------------*/
-(define (ascii-sentinel str)
-   (let ((len (string-length str)))
-      (let loop ((i 0))
-	 (cond
-	    ((=fx i len) len)
-	    ((>fx (char->integer (string-ref str i)) 127) i)
-	    (else (loop (+fx i 1)))))))
-
-;*---------------------------------------------------------------------*/
 ;*    emit-cnst-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (emit-cnst-string ostr global)
@@ -317,7 +306,7 @@
        (let ((str (string-for-read ostr)))
 	  ;; regular C compilers
 	  (fprin *c-port*
-		 "DEFINE_STRING_ASCII_SENTINEL( "
+		 "DEFINE_STRING( "
 		 (global-name global)
 		 ", "
 		 (id->name (gensym (global-name global)))
@@ -328,8 +317,7 @@
 		((<=fx rlen *max-c-token-length*)
 		 (display (untrigraph (substring str read (+fx read rlen)))
 			  *c-port*)
-		 (fprint *c-port* "\", " (string-length ostr)
-		    ", " (ascii-sentinel ostr) " );"))
+		 (fprint *c-port* "\", " (string-length ostr) " );"))
 		(else
 		 (let laap ((offset (+fx read *max-c-token-length*)))
 		    (cond

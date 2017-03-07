@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Thu Mar  3 14:36:02 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Mar  7 19:00:44 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -267,29 +267,19 @@
        (display "((" *c-port*)
        (display (string-sans-$ (type-name *char*)) *c-port*)
        (display ")" *c-port*)
-       (if (=fx (char->integer value) 0)
-	   (display "'\\000'" *c-port*)
-	   (begin
-	      (write-char #\' *c-port*)
-	      (if (=fx (char->integer value) 39)
-		  (display "\\''" *c-port*)
-		  (begin
-		     (case value
-			((#\return)
-			 (write-char #\\ *c-port*)
-			 (write-char #\r *c-port*))
-			((#\tab)
-			 (write-char #\\ *c-port*)
-			 (write-char #\t *c-port*))
-			((#\newline)
-			 (write-char #\\ *c-port*)
-			 (write-char #\n *c-port*))
-			((#\\)
-			 (write-char #\\ *c-port*)
-			 (write-char #\\ *c-port*))
-			(else
-			 (write-char value *c-port*)))
-		     (write-char #\' *c-port*)))))
+       (cond
+	  ((=fx (char->integer value) 0)
+	   (display "'\\000'" *c-port*))
+	  ((char=? value #\')
+	   (display "'\\''" *c-port*))
+	  ((char=? value #\\)
+	   (display "'\\\\'" *c-port*))
+	  ((and (>=fx (char->integer value) 32) (<=fx (char->integer value) 128))
+	   (write-char #\' *c-port*)
+	   (write-char value *c-port*)
+	   (write-char #\' *c-port*))
+	  (else
+	   (display (integer->string (char->integer value)) *c-port*)))
        (write-char #\) *c-port*))
       ((int8? value) 
        (display "(int8_t)(" *c-port*)
