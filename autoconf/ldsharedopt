@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Aug 10 09:05:45 1998                          */
-#*    Last change :  Wed Mar  8 16:39:52 2017 (serrano)                */
+#*    Last change :  Wed Mar  8 18:19:45 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    This script setup the link option for dynamic linking.           */
 #*    -------------------------------------------------------------    */
@@ -41,9 +41,6 @@ case $HOSTOS in
         echo "";;
      esac
     ;;
-
-  darwin)
-    echo " -dynamiclib -single_module";;
 
   aix)
     if [ "$CC" = "gcc" ]; then
