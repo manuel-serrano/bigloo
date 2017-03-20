@@ -382,7 +382,7 @@ Alternatively, libraries can be explicitly loaded using the
 
 ;; a dummy reference to a facility of the format library
 (let ((dummy format))
-   (eval '(library-load bformat))
+   (eval '(library-load 'bformat))
    (repl))
 @end smalllisp
 

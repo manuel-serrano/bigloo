@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Sat Feb 23 14:42:35 2013 (serrano)                */
-;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 18 21:02:26 2017 (serrano)                */
+;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
 ;*=====================================================================*/
@@ -29,7 +29,13 @@
 	   (expand-*fx ::obj ::procedure)
 	   (expand-/fx ::obj ::procedure)
 	   (expand-maxfx ::obj ::procedure)
-	   (expand-minfx ::obj ::procedure))
+	   (expand-minfx ::obj ::procedure)
+	   (expand-bit-lsh ::obj ::procedure)
+	   (expand-bit-lshu32 ::obj ::procedure)
+	   (expand-bit-rsh ::obj ::procedure)
+	   (expand-bit-rshu32 ::obj ::procedure)
+	   (expand-bit-ursh ::obj ::procedure)
+	   (expand-bit-urshu32 ::obj ::procedure))
    (import tools_error))
 
 ;*---------------------------------------------------------------------*/
@@ -324,3 +330,31 @@
       (else
        (error #f "Incorrect number of arguments for `minfx'" x))))
 
+;*---------------------------------------------------------------------*/
+;*    expand-bit ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-macro (expand-bit op test)
+   `(match-case x
+       ((?- (and ?n (? ,test)) (and ?shift (? fixnum?)))
+	(if (and (<=fx shift 31)
+		 (>= n 0)
+		 (>= (,op n shift) 0)
+		 (<= (,op n shift) (bit-lsh 1 28)))
+	    (,op n shift)
+	    (epairify! x (map (lambda (x) (e x e)) x))))
+       (else
+	(epairify! x (map (lambda (x) (e x e)) x)))))
+
+;*---------------------------------------------------------------------*/
+;*    expand-bit-lsh ...                                               */
+;*---------------------------------------------------------------------*/
+(define (expand-bit-lsh x e) (expand-bit bit-lsh fixnum?))
+(define (expand-bit-lshu32 x e) (expand-bit bit-lshu32 uint32?))
+
+(define (expand-bit-rsh x e) (expand-bit bit-rsh fixnum?))
+(define (expand-bit-rshu32 x e) (expand-bit bit-rshu32 uint32?))
+
+(define (expand-bit-ursh x e)
+   ;;(expand-bit bit-ursh fixnum?)
+   (map (lambda (x) (e x e)) x))
+(define (expand-bit-urshu32 x e) (expand-bit bit-urshu32 uint32?))

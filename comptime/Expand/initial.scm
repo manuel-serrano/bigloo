@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue Mar 22 16:04:56 2016 (serrano)                */
-;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Mar 18 20:54:45 2017 (serrano)                */
+;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -425,7 +425,15 @@ v   (install-G-comptime-expander 'filter!
 					(call-check x 'number? "number" e)))
    (install-G-comptime-expander 'max (lambda (x::obj e::procedure)
 					(call-check x 'number? "number" e)))
-   
+
+   ;; bit-ops
+   (install-O-comptime-expander 'bit-lsh expand-bit-lsh)
+   (install-O-comptime-expander 'bit-lshu32 expand-bit-lshu32)
+   (install-O-comptime-expander 'bit-rsh expand-bit-rsh)
+   (install-O-comptime-expander 'bit-rshu32 expand-bit-rshu32)
+   (install-O-comptime-expander 'bit-ursh expand-bit-ursh)
+   (install-O-comptime-expander 'bit-urshu32 expand-bit-urshu32)
+
    ;; eq?
    (install-O-comptime-expander 'eq? expand-eq?)
    
