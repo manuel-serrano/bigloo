@@ -96,7 +96,7 @@
     ;; Other atom delimiters
     (modify-syntax-entry ?\( "()  " local-syntax-table)
     (modify-syntax-entry ?\) ")(  " local-syntax-table)
-    (if (or t (< bmacs-emacs-version 22))
+    (if (< bmacs-emacs-version 22)
 	(modify-syntax-entry ?\; "<   " local-syntax-table)
       (modify-syntax-entry ?\; "< 2 " local-syntax-table))
     (modify-syntax-entry ?\" "\"    " local-syntax-table)
@@ -106,9 +106,9 @@
 
     ;; Special characters
     (modify-syntax-entry ?, "'   " local-syntax-table)
-    (if (or t (< bmacs-emacs-version 22))
+    (if (< bmacs-emacs-version 22)
 	(modify-syntax-entry ?# "'   " local-syntax-table)
-      (modify-syntax-entry ?# "' 14b" local-syntax-table))
+      (modify-syntax-entry ?# "' 14" local-syntax-table))
     (modify-syntax-entry ?\\ "\\   " local-syntax-table)
 
     ;; legal Bigloo identifier chars that are not recognized by the \w syntax
@@ -263,9 +263,9 @@ if that value is non-nil."
   ;; the bee hook
   (run-hooks 'bee-mode-hook)
   ;; turn on font-lock
-  (when ude-font-lock-p
-    (font-lock-mode nil)
-    (font-lock-mode t)))
+  (if ude-font-lock-p
+      (font-lock-mode t)
+    (font-lock-mode nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bee-set-font-lock ...                                            */
@@ -307,7 +307,6 @@ if that value is non-nil."
                    (forward-sexp 1)
                    (point))
                (scan-error (nth 2 err)))))
-	(message-box "start: %a end: %a" pos end)
         (when (< pos (- end 2))
           (put-text-property pos (- end 2)
                              'syntax-table bee-sexp-comment-syntax-table))
