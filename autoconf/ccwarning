@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar  7 16:28:42 2017                          */
-#*    Last change :  Tue Mar  7 19:25:45 2017 (serrano)                */
+#*    Last change :  Thu Mar 30 11:02:04 2017 (serrano)                */
 #*    Copyright   :  2017 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Disable useless but painful clang warning messages.              */
@@ -37,7 +37,8 @@ file=$TMP/actest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $cwarning $file.c -c >/dev/null"
+compilesans="$CC $cflags $file.c -c -Werror >/dev/null"
+compile="$CC $cflags $cwarning $file.c -c -Werror >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -48,20 +49,26 @@ fi
 
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
-#*    -------------------------------------------------------------    */
-#*    GCC versions 3.xx (until gcc3.3.3 I think) on the register       */
-#*    allocations. We try to detect this in the Bigloo configuration.  */
 #*---------------------------------------------------------------------*/
 cat > $file.c <<EOF
-int foo() {
-  8;
-  return 0;
+int foo( long x ) {
+   if( x = 3 ) {
+      return x + 1;
+   } else {
+      return x - 1;
+   }
 }
 EOF
 
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compilesans"; then
+   \rm -f $file.*
+   echo ""
+   exit 0
+fi
+
 if eval "$BUILDSH $compile"; then
    \rm -f $file.*
    echo $cwarning
