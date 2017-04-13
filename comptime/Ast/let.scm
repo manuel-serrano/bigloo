@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Wed Jan 25 07:20:17 2017 (serrano)                */
+;*    Last change :  Tue Apr 11 12:29:36 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -576,7 +576,9 @@
 	     res)
 	    ((eq? (car sexp) 'quote)
 	     res)
-	    ((and (eq? (car sexp) 'set!) (symbol? (cadr sexp)) (pair? (cddr sexp)))
+	    ((and (eq? (car sexp) 'set!)
+		  (symbol? (cadr sexp))
+		  (pair? (cddr sexp)))
 	     (cond
 		((or (eq? sexp v) (not (memq (cadr sexp) vars))) res)
 		((memq (cadr sexp) res) (loop (caddr sexp) res))
@@ -820,17 +822,14 @@
 		      (vars (map cadr vbindings)))
 		   (trace-item "vals=" vars)
 		   (trace-item "funs" funs)
-		   (if (or (any (lambda (veb)
-				   (let ((frees (caddr veb)))
-				      (find (lambda (v) (memq v funs)) frees)))
-			      vbindings)
-			   (any (lambda (feb)
-				   (let ((sets (cadddr feb)))
-				      (find (lambda (v) (memq v vars)) sets)))
-			      fbindings))
-		       (values '() ebindings)
-		       (values (reverse! vbindings) (reverse! fbindings)))))
-	       ((function? (cadr (car (car l))))
+		   (let ((frees (append-map caddr vbindings))
+			 (sets (append-map cadddr fbindings)))
+;* 		      (if (or (any (lambda (b) (memq (cadr b) frees)) fbindings) */
+;* 			      (any (lambda (b) (memq (cadr b) sets)) vbindings)) */
+		      (if (any (lambda (b) (memq (cadr b) frees)) fbindings)
+			  (values '() ebindings)
+			  (values (reverse! vbindings) (reverse! fbindings))))))
+	       ((function? (cadr (car (car l))) #t)
 		(loop (cdr l) vbindings (cons (car l) fbindings)))
 	       (else
 		(loop (cdr l) (cons (car l) vbindings) fbindings))))))
@@ -1012,7 +1011,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Does exp contain a lambda definition (possibly nested)           */
 ;*---------------------------------------------------------------------*/
-(define (function? exp)
+(define (function? exp #!optional directp)
 
    (define (any* pred lst)
       (when (pair? lst)
@@ -1027,6 +1026,6 @@
        (or (eq? var 'lambda)
 	   (and (symbol? var) (eq? (fast-id-of-id var #f) 'lambda))
 	   (function? var)
-	   (any* function? args)))
+	   (and (not directp) (any* function? args))))
       (else
        #f)))

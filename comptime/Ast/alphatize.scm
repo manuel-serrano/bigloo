@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Tue Apr 19 10:29:36 2016 (serrano)                */
+;*    Last change :  Thu Apr 13 10:43:34 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -409,36 +409,39 @@
 (define-method (do-alphatize node::let-fun loc)
    (let* ((old-locals (let-fun-locals node))
 	  (new-locals (map (lambda (l)
-			      (make-local-sfun (local-id l)
-					       (local-type l)
-					       (local-value l)))
-			   old-locals)))
+			      (let ((v (make-local-sfun (local-id l)
+					  (local-type l)
+					  (local-value l))))
+				 (variable-occurrence-set! v
+				    (variable-occurrence l))
+				 v))
+			 old-locals)))
       (for-each (lambda (old new)
 		   (let* ((old-sfun (local-value old))
 			  (old-args (sfun-args old-sfun))
 			  (new-args (map (lambda (l)
 					    (make-local-svar (local-id l)
-							     (local-type l)))
-					 old-args))
+					       (local-type l)))
+				       old-args))
 			  (old-body (sfun-body old-sfun))
 			  (new-body (alphatize (append old-locals old-args)
-					       (append new-locals new-args)
-					       (get-location node loc)
-					       old-body))
+				       (append new-locals new-args)
+				       (get-location node loc)
+				       old-body))
 			  (new-sfun (duplicate::sfun old-sfun
 				       (args new-args)
 				       (body new-body))))
 		      (local-user?-set! new (local-user? old))
 		      (local-value-set! new new-sfun)))
-		old-locals
-		new-locals)
+	 old-locals
+	 new-locals)
       (duplicate::let-fun node
 	 (loc (get-location node loc))
 	 (locals new-locals)
 	 (body (alphatize old-locals
-			  new-locals
-			  (get-location node loc)
-			  (let-fun-body node))))))
+		  new-locals
+		  (get-location node loc)
+		  (let-fun-body node))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::let-var ...                                       */

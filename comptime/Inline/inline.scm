@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Mon Feb 20 06:04:35 2017 (serrano)                */
+;*    Last change :  Thu Apr 13 10:44:33 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -206,7 +206,7 @@
    ;; results the other way around.
    (for-each (lambda (local)
 		(inline-sfun! local kfactor stack))
-	     (let-fun-locals node))
+      (let-fun-locals node))
    (let-fun-body-set! node (inline-node (let-fun-body node) kfactor stack))
    node)
 

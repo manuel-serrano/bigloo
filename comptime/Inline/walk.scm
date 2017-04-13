@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  9 19:15:23 1995                          */
-;*    Last change :  Mon Feb 20 05:52:17 2017 (serrano)                */
+;*    Last change :  Thu Apr 13 10:34:48 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining pass                                                */
@@ -46,7 +46,7 @@
    ;; we setup the inlining
    (inline-setup! what)
    ;; count the number of occurences of all variables
-   (when (eq? what 'all)
+   (when (memq what '(all reducer))
       (occur-var globals))
    ;; we scan all the local definitions to inline their body
    (for-each (lambda (g)

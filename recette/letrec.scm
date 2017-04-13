@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov 17 19:18:37 1992                          */
-;*    Last change :  Tue Mar 15 22:17:58 2016 (serrano)                */
+;*    Last change :  Tue Apr 11 12:03:41 2017 (serrano)                */
 ;*                                                                     */
 ;*    On test `letrec'                                                 */
 ;*---------------------------------------------------------------------*/
@@ -202,6 +202,31 @@
 ;*    test-letrec*11 ...                                               */
 ;*---------------------------------------------------------------------*/
 (define (test-letrec*11 n)
+   (letrec* (
+	     (foo (begin
+		     (set! a 1)
+		     (lambda (x) a)))
+	     (a 10)
+	     (bar (begin
+		     (set! a (+ 1 a))
+		     (lambda (x) a)))
+	     )
+      (+ (foo 1) a)))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec*11b ...                                              */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*11b n)
+   (letrec* ((foo (begin
+		     (set! a 1)
+		     (lambda (x) a)))
+	     (a 10))
+      (+ (foo 1) a)))
+
+;*---------------------------------------------------------------------*/
+;*    test-letrec*11c ...                                              */
+;*---------------------------------------------------------------------*/
+(define (test-letrec*11c n)
    (letrec* ((u 1)
 	     (foo (begin
 		     (set! a 1)
@@ -294,6 +319,8 @@
    (test "letrec*.9" (test-letrec*9) 2)
    (test "letrec*.10" (test-letrec*10 3) #f)
    (test "letrec*.11" (test-letrec*11 3) 22)
+   (test "letrec*.11b" (test-letrec*11b 3) 20)
+   (test "letrec*.11c" (test-letrec*11c 3) 22)
    (test "letrec*.12" (test-letrec*12) 10)
    (test "letrec*.13" (test-letrec*13) 1)
    (test "letrec*.14" (test-letrec*14 4) 10)

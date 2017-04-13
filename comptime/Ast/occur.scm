@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed Dec 23 15:09:49 2015 (serrano)                */
+;*    Last change :  Thu Apr 13 10:44:05 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -20,7 +20,8 @@
 	    tools_shape
 	    ast_sexp
 	    ast_env
-	    ast_local)
+	    ast_local
+	    ast_dump)
    (export  (occur-var globals)
 	    (occur-node-in! ::node ::global)
 	    (generic occur-node! ::node)))
@@ -178,6 +179,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::let-fun)
    (with-access::let-fun node (body locals)
+      
       (for-each (lambda (local)
 		   (with-access::local local (occurrence occurrencew access)
 		      (set! occurrence 0)
@@ -185,13 +187,13 @@
 		      ;; re-compute the access property of written locals
 		      (when (eq? access 'write) (set! access 'read)))
 		   (for-each (lambda (a) (local-occurrence-set! a 1))
-			     (sfun-args (local-value local))))
-		locals)
+		      (sfun-args (local-value local))))
+	 locals)
       (for-each (lambda (local)
 		   (let ((old (local-occurrence local)))
 		      (occur-node! (sfun-body (local-value local)))
 		      (local-occurrence-set! local old)))
-		locals)
+	 locals)
       (occur-node! body)))
 
 ;*---------------------------------------------------------------------*/
