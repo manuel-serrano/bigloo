@@ -1,9 +1,9 @@
 /*===========================================================================*/
 /*   (Llib/avahi.scm)                                                        */
-/*   Bigloo (4.3a)                                                           */
-/*   Inria -- Sophia Antipolis (c)       Thu Apr 13 12:39:29 CEST 2017       */
+/*   Bigloo (4.3b)                                                           */
+/*   Inria -- Sophia Antipolis (c)       Wed Apr 19 19:33:45 CEST 2017       */
 /*===========================================================================*/
-/* COMPILATION: (/home/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.3a -I Llib -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.3a -unsafe -safee -srfi avahi -copt -D_REENTRANT -copt -fPIC -copt -IClib -copt  Llib/avahi.scm -o Clib/bglavahi.h -hgen) */
+/* COMPILATION: (/home/serrano/prgm/project/bigloo/bin/bigloo -O3 -fcfa-arithmetic -q -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.3b -I Llib -lib-dir /home/serrano/prgm/project/bigloo/lib/bigloo/4.3b -unsafe -safee -srfi avahi -copt -D_REENTRANT -copt -fPIC -copt -IClib -copt  Llib/avahi.scm -o Clib/bglavahi.h -hgen) */
 
 /* object type definitions */
 typedef struct BgL_z62avahizd2errorzb0_bgl {

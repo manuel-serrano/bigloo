@@ -22,7 +22,7 @@
 @set edition @value{bigloovers}
 @set update-month @value{bigloodate}
 @set update-date @value{update-month}
-@set bigloo-url http://www.inria.fr/indes/fp/Bigloo
+@set bigloo-url http://www-sop.inria.fr/indes/fp/Bigloo
 @set bigloo-mail bigloo@@sophia.inria.fr
 
 @settitle Bigloo @value{edition}
@@ -65,7 +65,7 @@
 This file documents Bigloo, an implementation of an extended version
 of the Scheme programming language.
 
-Copyright (C) 1992-99, 2000-08 Manuel Serrano
+Copyright (C) 1992-99, 2000-17 Manuel Serrano
 
 @display
 This program is free software; you can redistribute it            
