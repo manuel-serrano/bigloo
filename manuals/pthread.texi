@@ -35,6 +35,7 @@ with the Fair Threads library (see Section @ref{Fair Threads}).
 * Threads API::
 * Mutexes API::
 * Condition Variables API::
+* Semaphores API::
 * SRFI-18::
 @end menu
 
@@ -148,7 +149,7 @@ Otherwise, it returns the symbol @code{unlocked}.
 @end deffn
 
 @c -- Condition Variables -------------------------------------------- @c
-@node Condition Variables API, SRFI-18, Mutexes API, Posix Threads
+@node Condition Variables API, Semaphores API, Mutexes API, Posix Threads
 @subsection Condition Variables
 
 Posix thread condition variables follows the common thread API
@@ -180,8 +181,33 @@ Posix thread condition variables follows the common thread API
       res))
 @end smalllisp
 
-@c -- Condition Variables -------------------------------------------- @c
-@node SRFI-18, , Condition Variables API, Posix Threads
+@c -- Semaphores ----------------------------------------------------- @c
+@node Semaphores API, Condition Variables API, Condition Variables API, Posix Threads
+@subsection Semaphores
+
+@deffn {Bigloo function} open-semaphore @var{name} [@var{create} @code{#t}] [@var{excl} @code{#t}] [@var{read} @code{#t}] [@var{write} @code{#t}] [@var{value} @code{1}]
+@deffnx {Bigloo function} close-semaphore @var{sem}
+@deffnx {Bigloo function} delete-semaphore @var{name}
+Opens, closes, and deletes a named semaphore.
+@end deffn
+
+@deffn {Bigloo function} semaphore? @var{obj}
+Returns @code{#t} if @var{obj} is a semaphore, returns @code{#f} otherwise.
+@end deffn
+
+@deffn {Bigloo function} semaphore-post @var{sem}
+@deffnx {Bigloo function} semaphore-wait @var{sem} [@var{timeout} 0]
+@deffnx {Bigloo function} semaphore-trywait @var{sem}
+Wait and post for a semaphore.
+@end deffn
+
+@deffn {Bigloo function} semaphore-value @var{sem}
+Returns the current value of the semaphoe
+@end deffn
+
+
+@c -- SRFI18 --------------------------------------------------------- @c
+@node SRFI-18, , Semaphores API, Posix Threads
 @subsection SRFI-18
 
 @deffn {SRFI-18 function} {mutex-state} mutex

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Fri Dec 14 19:55:59 2012 (serrano)                */
-/*    Copyright   :  2002-12 Manuel Serrano                            */
+/*    Last change :  Thu Apr 20 11:26:24 2017 (serrano)                */
+/*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
 /*=====================================================================*/
@@ -92,6 +92,45 @@ typedef struct bglpcondvar {
   (BGLPTH_CONDVAR_BGLPCONDVAR( m )->specific)
 #define BGLPTH_CONDVAR_SPECIFIC_SET( m, v ) \
   (BGLPTH_CONDVAR_SPECIFIC( m ) = (v))
+
+/*---------------------------------------------------------------------*/
+/*    Semaphors                                                        */
+/*---------------------------------------------------------------------*/
+#if( BGL_HAVE_SEMAPHORE )
+#  define BGL_SEMAPHORE_CLOSE( s ) sem_close( BGL_SEMAPHORE_SEM( s ) )
+#else
+#  define BGL_SEMAPHORE_CLOSE( s ) 
+#endif
+
+#if( BGL_HAVE_SEMAPHORE )
+#  define BGL_SEMAPHORE_DELETE( name ) sem_unlink( name )
+#else
+#  define BGL_SEMAPHORE_DELETE( name ) 
+#endif
+
+#if( BGL_HAVE_SEMAPHORE )
+#  define BGL_SEMAPHORE_WAIT( s ) sem_wait( BGL_SEMAPHORE_SEM( s ) )
+#else
+#  define BGL_SEMAPHORE_WAIT( s ) 
+#endif
+
+#if( BGL_HAVE_SEMAPHORE )
+#  define BGL_SEMAPHORE_TRYWAIT( s ) sem_trywait( BGL_SEMAPHORE_SEM( s ) )
+#else
+#  define BGL_SEMAPHORE_TRYWAIT( s ) 
+#endif
+
+#if( BGL_HAVE_SEMAPHORE )
+#  define BGL_SEMAPHORE_POST( s ) sem_post( BGL_SEMAPHORE_SEM( s ) )
+#else
+#  define BGL_SEMAPHORE_POST( s ) 
+#endif
+
+#if( BGL_HAVE_SEMAPHORE )
+#  define BGL_SEMAPHORE_VALUE( s ) sem_getvalue( BGL_SEMAPHORE_SEM( s ) )
+#else
+#  define BGL_SEMAPHORE_VALUE( s ) 
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Prototypes                                                       */

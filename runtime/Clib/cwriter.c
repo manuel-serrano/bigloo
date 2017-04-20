@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Tue Mar  7 20:16:13 2017 (serrano)                */
+/*    Last change :  Thu Apr 20 11:50:17 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -686,6 +686,29 @@ bgl_write_mmap( obj_t o, obj_t op ) {
    BGL_MUTEX_LOCK( mutex );
    
    PRINTF1( op, 16, ":%ld>", (long)BGL_MMAP( o ).length );
+
+   BGL_MUTEX_UNLOCK( mutex );
+   
+   return op;
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_write_semaphore ...                                          */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_write_semaphore( obj_t o, obj_t op ) {
+   obj_t mutex = OUTPUT_PORT( op ).mutex;
+   
+   BGL_MUTEX_LOCK( mutex );
+   
+   PUTS( op, "#<semaphore:" );
+   
+   BGL_MUTEX_UNLOCK( mutex );
+   bgl_display_obj( BGL_SEMAPHORE( o ).name, op );
+   BGL_MUTEX_LOCK( mutex );
+   
+   PUTS( op, ">" );
 
    BGL_MUTEX_UNLOCK( mutex );
    

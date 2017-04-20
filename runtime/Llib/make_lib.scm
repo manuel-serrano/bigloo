@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Tue Mar 15 11:05:54 2016 (serrano)                */
+;*    Last change :  Thu Apr 20 09:28:21 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -39,6 +39,7 @@
 	    __date
 	    __thread
 	    __mmap
+	    __semaphore
 	    __trace
 	    __base64
 	    __md5

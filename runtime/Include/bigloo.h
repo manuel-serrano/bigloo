@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Mar  7 19:08:10 2017 (serrano)                */
+/*    Last change :  Thu Apr 20 11:52:07 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -331,6 +331,7 @@ error "Unknown garbage collector type"
 #endif
 #define INT64_TYPE 50
 #define UINT64_TYPE 51
+#define SEMAPHORE_TYPE 52
        
 /* OBJECT must be the last defined type because new classes   */
 /* will be allocated TYPE number starting at OBJECT_TYPE + 1. */
@@ -349,6 +350,7 @@ typedef union scmobj *obj_t;
 
 #include <bigloo_saw.h>
 #include <bigloo_pair.h>
+#include <bigloo_semaphore.h>
 #include <bigloo_int.h>
 #include <bigloo_real.h>
 #include <bigloo_vector.h>
@@ -882,7 +884,7 @@ union scmobj {
       union scmobj *ancestor0;
    } class_t;
 
-   /* Thread dynamic environment */
+   /* thread dynamic environment */
    struct bgl_dynamic_env {
       header_t header;
       /* global IO ports */
@@ -936,11 +938,10 @@ union scmobj {
       union scmobj *user_data;
    } dynamic_env_t;
 
+   /* semaphores */
+   struct bgl_semaphore semaphore_t;
 };
 
-/* MS: TO BE REMOVED (5 Mars 2016) */   
-typedef obj_t _;
-   
 /* function type */
 typedef obj_t (*function_t)();
 
@@ -1549,7 +1550,7 @@ extern bool_t BXNEGATIVE( obj_t );
 #  define BGL_MMAP_REF( s, i ) bgl_mmap_nommap_ref( s, i )
 #  define BGL_MMAP_SET( s, i, c ) bgl_mmap_nommap_set( s, i, c )
 #endif
-   
+
 /*---------------------------------------------------------------------*/
 /*    WEAKPTR                                                          */
 /*---------------------------------------------------------------------*/

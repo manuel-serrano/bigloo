@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Tue Feb  9 15:02:09 2016 (serrano)                */
+;*    Last change :  Thu Apr 20 11:49:21 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -44,6 +44,7 @@
 	    __rgc
 	    __foreign
 	    __mmap
+	    __semaphore
 	    __process
 	    __socket
 	    __custom
@@ -130,6 +131,8 @@
 	       "bgl_write_regexp")
 	    ($write-mmap::obj (::mmap ::output-port)
 	       "bgl_write_mmap")
+	    ($write-semaphore::obj (::semaphore ::output-port)
+	       "bgl_write_semaphore")
 	    ($write-opaque::obj (::obj ::output-port)
 	       "bgl_write_opaque")
 	    ($write-custom::obj (::obj ::output-port)
@@ -198,6 +201,8 @@
 	       (method static $write-regexp::obj (::obj ::output-port)
 		  "write_object")
 	       (method static $write-mmap::obj (::obj ::output-port)
+		  "write_object")
+	       (method static $write-semaphore::obj (::obj ::output-port)
 		  "write_object")
 	       (method static $write-opaque::obj (::obj ::output-port)
 		  "write_object")
@@ -694,6 +699,8 @@
 	   ($write-regexp ,obj ,port))
 	  ((mmap? ,obj)
 	   ($write-mmap ,obj ,port))
+	  ((semaphore? ,obj)
+	   ($write-semaphore ,obj ,port))
 	  ((opaque? ,obj)
 	   ($write-opaque ,obj ,port))
 	  ((custom? ,obj)

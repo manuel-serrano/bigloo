@@ -7302,10 +7302,9 @@ public final class foreign
    //////
    // MUTEX and CONDITION VARIABLE
    //////
-   public static boolean BGL_MUTEXP(Object o)
-      {
-	 return (o instanceof mutex);
-      }
+   public static boolean BGL_MUTEXP(Object o) {
+      return (o instanceof mutex);
+   }
 
    public static mutex bigloo_generic_mutex = bgl_make_mutex( BFALSE );
    
@@ -7385,6 +7384,16 @@ public final class foreign
       return c.signal();
    }
 
+   //////
+   // Semaphore
+   //////
+   public static boolean BGL_SEMAPHOREP(Object o) {
+      return (o instanceof semaphore);
+   }
+
+   //////
+   // MMAP
+   //////
    public static boolean BGL_MMAPP( Object o ) {
       return (o instanceof mmap);
    }

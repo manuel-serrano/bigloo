@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Mar  2 08:02:04 2017 (serrano)                */
+#*    Last change :  Thu Apr 20 11:32:36 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -156,7 +156,7 @@ JLIB		= foreign buffer configure stackwriter\
                   process flusher stack_trace dlopen \
                   bucs2 ucs2string bgldynamic date os \
                   input_procedure_port input_gzip_port input_resource_port \
-                  mutex condvar mmap mmaps \
+                  mutex condvar mmap mmaps semaphore \
                   hvector \
                   s8vector u8vector s16vector u16vector \
                   s32vector u32vector s64vector u64vector \
@@ -191,7 +191,8 @@ C_SCM_R5RS	= $(R5RS:%=R5rs/%.c)
 LLIB		= bexit type bigloo object error struct os hash weakhash \
                   tvector bit binary foreign dsssl ucs2 weakptr \
                   unicode process socket custom date \
-                  param thread trace bconfigure mmap srfi4 module i18n
+                  param thread trace bconfigure mmap srfi4 module i18n \
+                  semaphore
 
 SCM_LLIB	= $(LLIB:%=Llib/%.scm)
 C_SCM_LLIB	= $(LLIB:%=Llib/%.c)
@@ -290,7 +291,7 @@ INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
                   Include/bigloo_pair.h Include/bigloo_real.h \
                   Include/bigloo_vector.h Include/bigloo_string.h \
                   Include/bigloo_struct.h Include/bigloo_cell.h \
-                  Include/bigloo_int.h
+                  Include/bigloo_int.h Include/bigloo_semaphore.h
 
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */

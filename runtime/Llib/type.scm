@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Apr  4 18:07:12 2016 (serrano)                */
+;*    Last change :  Thu Apr 20 10:34:24 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -102,6 +102,7 @@
     (subtype mutex "obj_t" (obj))
     (subtype condvar "obj_t" (obj))
     (subtype mmap "obj_t" (obj))
+    (subtype semaphore "obj_t" (obj))
     (subtype opaque "obj_t" (obj))
 
     ;; srfi4 vectors
@@ -220,6 +221,7 @@
     (coerce obj mutex ($mutex?) ())
     (coerce obj condvar ($condvar?) ())
     (coerce obj mmap ($mmap?) ())
+    (coerce obj semaphore ($semaphore?) ())
     (coerce obj class ((@ class? __object)) ())
     (coerce obj class-field ((@ class-field? __object)) ())
     (coerce obj opaque (c-opaque?) ())
@@ -351,6 +353,7 @@
     (coerce mutex obj () ())
     (coerce condvar obj () ())
     (coerce mmap obj () ())
+    (coerce semaphore obj () ())
     (coerce opaque obj () ())
     (coerce class obj () ())
     (coerce class vector () ())
@@ -759,6 +762,9 @@
 
     ;; mmap
     (coerce mmap bool () ((lambda (x) #t)))
+
+    ;; semaphore
+    (coerce semaphore bool () ((lambda (x) #t)))
 
     ;; class
     (coerce class bool () ((lambda (x) #t)))

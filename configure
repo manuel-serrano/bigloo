@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Apr 19 18:13:46 2017 (serrano)                */
+#*    Last change :  Thu Apr 20 11:13:18 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1151,6 +1151,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_string_h=lib/bigloo/$release/bigloo_string.h
   bigloo_struct_h=lib/bigloo/$release/bigloo_struct.h
   bigloo_cell_h=lib/bigloo/$release/bigloo_cell.h
+  bigloo_semaphore_h=lib/bigloo/$release/bigloo_semaphore.h
 fi
 
 # The bigloo_gc.h file
@@ -1937,6 +1938,11 @@ else
     pthreadhastls=0
   fi
 fi
+
+#*---------------------------------------------------------------------*/
+#*    semaphore                                                        */
+#*---------------------------------------------------------------------*/
+semaphore=`$autoconf semaphore` || exit 1;
 
 #*---------------------------------------------------------------------*/
 #*    Java configuration                                               */
@@ -3212,6 +3218,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@PTHREAD_HAVE_MUTEX_RECURSIVE@|$pthreadmutexrec|" \
               -e "s|@PTHREAD_POSIX_CONDV_TIMEDWAIT@|$pthreadcondvtimedwait|" \
               -e "s|@PTHREAD_HAVE_TIMEDJOIN@|$pthreadtimedjoin|" \
+              -e "s|@BGL_HAVE_SEMAPHORE@|$semaphore|" \
               -e "s|@BGL_PTHREAD_TERM_SIG@|$pthreadtermsig|" \
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \
@@ -3257,6 +3264,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_string_h` $bigloo_string_h
   cp runtime/Include/`basename $bigloo_struct_h` $bigloo_struct_h
   cp runtime/Include/`basename $bigloo_cell_h` $bigloo_cell_h
+  cp runtime/Include/`basename $bigloo_semaphore_h` $bigloo_semaphore_h
 
   # bigloo.sh
   for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
