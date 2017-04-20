@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sat Sep 20 12:11:23 2008 (serrano)                */
-;*    Copyright   :  2001-08 Manuel Serrano                            */
+;*    Last change :  Thu Apr 20 13:18:18 2017 (serrano)                */
+;*    Copyright   :  2001-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -17,7 +17,8 @@
    (import __pth_backend
 	   __pth_thread
 	   __pth_mutex
-	   __pth_condvar)
+	   __pth_condvar
+	   __pth_semaphore)
 
    (eval   (export-all)
 

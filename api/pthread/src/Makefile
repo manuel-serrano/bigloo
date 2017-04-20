@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Apr 20 11:04:15 2017 (serrano)                */
+#*    Last change :  Thu Apr 20 13:11:06 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -49,7 +49,8 @@ EXTRALIBS	= "$(PTHREADLIBS)" "$(GCCLOSELIB)"
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= pmutex pcondvar pthread pbackend psemaphore
 
-_POSIX_OBJECTS	= bglsetup bglbmem bglpmutex bglpcondvar bglpthread
+_POSIX_OBJECTS	= bglsetup bglbmem bglpmutex bglpcondvar bglpthread \
+                  bglpsemaphore
 _JAVA_CLASSES	= bglpmutex bglpcondvar bglpthread bglpdynamic \
                   bglpsemaphore
  
