@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 09:38:46 1995                          */
-;*    Last change :  Fri Nov 25 08:44:08 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:43:59 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which remove displaced         */
 ;*    local functions and which adds the integrated ones.              */
@@ -233,11 +233,11 @@
       (displace-let-fun-node! obj hosts)))
 
 ;*---------------------------------------------------------------------*/
-;*    displace-let-fun-node! ::select ...                              */
+;*    displace-let-fun-node! ::switch ...                              */
 ;*---------------------------------------------------------------------*/
-(define-method (displace-let-fun-node! node::select hosts)
-   (with-access::select node (test)
-      (let liip ((clauses (select-clauses node)))
+(define-method (displace-let-fun-node! node::switch hosts)
+   (with-access::switch node (test)
+      (let liip ((clauses (switch-clauses node)))
 	 (if (null? clauses)
 	     (displace-let-fun-node! test hosts)
 	     (begin

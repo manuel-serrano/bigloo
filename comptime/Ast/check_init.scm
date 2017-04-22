@@ -158,10 +158,10 @@
       (check-init obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    check-init ::select ...                                          */
+;*    check-init ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (check-init node::select)
-   (with-access::select node (clauses test)
+(define-method (check-init node::switch)
+   (with-access::switch node (clauses test)
       (check-init test)
       (for-each (lambda (clause)
 		   (check-init (cdr clause)))

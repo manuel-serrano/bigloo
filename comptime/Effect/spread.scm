@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 11:36:01 1996                          */
-;*    Last change :  Mon Nov 14 14:49:23 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:45:39 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We spread the computed side-effect properties                    */
 ;*=====================================================================*/
@@ -121,10 +121,10 @@
 	 #t)))
    
 ;*---------------------------------------------------------------------*/
-;*    spread-side-effect! ::select ...                                 */
+;*    spread-side-effect! ::switch ...                                 */
 ;*---------------------------------------------------------------------*/
-(define-method (spread-side-effect! node::select)
-   (with-access::select node (side-effect test clauses)
+(define-method (spread-side-effect! node::switch)
+   (with-access::switch node (side-effect test clauses)
       (let loop ((clauses clauses)
 		 (res     (spread-side-effect! test)))
 	 (if (null? clauses)

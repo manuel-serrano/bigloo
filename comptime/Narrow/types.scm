@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov  9 08:19:20 2013                          */
-;*    Last change :  Sat Nov 23 07:03:04 2013 (serrano)                */
-;*    Copyright   :  2013 Manuel Serrano                               */
+;*    Last change :  Fri Apr 21 18:45:13 2017 (serrano)                */
+;*    Copyright   :  2013-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Wide types used by the narrow stage                              */
 ;*=====================================================================*/
@@ -54,7 +54,7 @@
 	      (def::pair-nil read-only)
 	      (use::pair-nil read-only))
 
-	   (wide-class select/narrow::select
+	   (wide-class switch/narrow::switch
 	      (def::pair-nil read-only)
 	      (use::pair-nil read-only))
 

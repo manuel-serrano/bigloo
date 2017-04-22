@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Fri Dec 16 19:22:01 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:40:05 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
 ;*    -------------------------------------------------------------    */
@@ -359,11 +359,11 @@
 	       host (cons (get-new-kont) (get-type obj #f)) A)))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-A ::select ...                                              */
+;*    node-A ::switch ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (node-A node::select host k A)
-   (with-access::select node (test item-type)
-      (let liip ((clauses (select-clauses node))
+(define-method (node-A node::switch host k A)
+   (with-access::switch node (test item-type)
+      (let liip ((clauses (switch-clauses node))
 		 (A (node-A test
 		       host (cons (get-new-kont) item-type) A)))
 	 (if (null? clauses)

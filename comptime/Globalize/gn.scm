@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:54:22 1995                          */
-;*    Last change :  Wed Jan 22 07:44:32 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:47:39 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We compute the G0 and G1 properties which is defined as follow:  */
 ;*                                                                     */
@@ -160,10 +160,10 @@
       (E proc caller (E msg caller (E obj caller g)))))
 
 ;*---------------------------------------------------------------------*/
-;*    E ::select ...                                                   */
+;*    E ::switch ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-method (E node::select caller g)
-   (with-access::select node (clauses test)
+(define-method (E node::switch caller g)
+   (with-access::switch node (clauses test)
       (let loop ((clauses clauses)
 		 (g       g))
 	 (if (null? clauses)

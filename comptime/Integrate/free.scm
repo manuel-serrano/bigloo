@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Mon Nov 11 10:06:27 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:41:31 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
 ;*=====================================================================*/
@@ -202,10 +202,10 @@
       (node-free proc (node-free msg (node-free obj free)))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-free ::select ...                                           */
+;*    node-free ::switch ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node-free node::select free)
-   (with-access::select node (clauses test)
+(define-method (node-free node::switch free)
+   (with-access::switch node (clauses test)
       (let loop ((clauses clauses)
 		 (free    free))
 	 (if (null? clauses)

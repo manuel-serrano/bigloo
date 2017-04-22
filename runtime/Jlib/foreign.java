@@ -5435,6 +5435,25 @@ public final class foreign
 	 "feature not supported" );
       return 0;
    }
+
+   public static Object bgl_select( int timeout, Object r, Object w, Object e ) {
+      BGL_MVALUES_NUMBER_SET( 3 );
+      BGL_MVALUES_VAL_SET( 1, BNIL );
+      BGL_MVALUES_VAL_SET( 2, BNIL );
+      return BNIL;
+   }
+	 
+   public static Object bgl_open_pipes( Object name ) {
+      bigloo.runtime.Llib.error.bgl_system_failure(
+	 BGL_IO_ERROR,
+	 stack_trace.get_top(),
+	 "open-pipes", "feature not supported" );
+      
+      BGL_MVALUES_NUMBER_SET( 1 );
+      BGL_MVALUES_VAL_SET( 1, BFALSE );
+      
+      return BFALSE;
+   }
 	 
    //////
    // SYSTEM and OS

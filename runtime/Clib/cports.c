@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Mar  7 18:08:16 2017 (serrano)                */
+/*    Last change :  Sat Apr 22 07:01:11 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2876,5 +2876,36 @@ bgl_port_isatty( obj_t port ) {
       }
    } else {
       return 0;
+   }
+}
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_open_pipes ...                                               */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF obj_t
+bgl_open_pipes( obj_t name ) {
+   int pipefd[ 2 ];
+   obj_t env = BGL_CURRENT_DYNAMIC_ENV();
+
+   if( !pipe( pipefd ) ) {
+      obj_t out = bgl_make_output_port( name,
+					(bgl_stream_t)pipefd[ 1 ],
+					BGL_STREAM_TYPE_FD,
+					KINDOF_PIPE,
+					make_string_sans_fill( 0 ),
+					bgl_syswrite,
+					lseek,
+					close );
+      obj_t in = bgl_make_input_port( name,
+				      fdopen( pipefd[ 0 ], "r" ),
+				      KINDOF_PIPE,
+				      make_string_sans_fill( default_io_bufsiz ) );
+				      
+      BGL_ENV_MVALUES_NUMBER_SET( env, 2 );
+      BGL_ENV_MVALUES_VAL_SET( env, 1, out );
+   
+      return in;
+   } else {
+      C_SYSTEM_FAILURE( BGL_ERROR, "open-pipes", strerror( errno ), BFALSE );
    }
 }

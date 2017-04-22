@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 30 09:25:08 1995                          */
-;*    Last change :  Tue Feb  9 09:29:23 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:45:33 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    For each globalized function, we set its new body.               */
 ;*=====================================================================*/
@@ -254,10 +254,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    rem! ::select ...                                                */
+;*    rem! ::switch ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (rem! node::select owner current)
-   (with-access::select node (clauses test)
+(define-method (rem! node::switch owner current)
+   (with-access::switch node (clauses test)
       (set! test (rem! test owner current))
       (for-each (lambda (clause)
 		   (set-cdr! clause (rem! (cdr clause) owner current)))

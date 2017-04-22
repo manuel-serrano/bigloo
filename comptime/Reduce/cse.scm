@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Dec 23 12:31:01 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:40:53 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -186,10 +186,10 @@
 		     (values (or reset reset' reset'') node))))))))
    
 ;*---------------------------------------------------------------------*/
-;*    node-cse! ::select ...                                           */
+;*    node-cse! ::switch ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node-cse! node::select stack)
-   (with-access::select node (clauses test)
+(define-method (node-cse! node::switch stack)
+   (with-access::switch node (clauses test)
       (multiple-value-bind (reset ntest)
 	 (node-cse! test stack)
 	 (set! test ntest)

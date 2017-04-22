@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Thu Apr 13 10:44:33 2017 (serrano)                */
+;*    Last change :  Fri Apr 21 18:48:59 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -188,13 +188,13 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    inline-node ::select ...                                         */
+;*    inline-node ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (inline-node node::select kfactor stack)
-   (select-test-set! node (inline-node (select-test node) kfactor stack))
+(define-method (inline-node node::switch kfactor stack)
+   (switch-test-set! node (inline-node (switch-test node) kfactor stack))
    (for-each (lambda (clause)
 		(set-cdr! clause (inline-node (cdr clause) kfactor stack)))
-	     (select-clauses node))
+	     (switch-clauses node))
    node)
 
 ;*---------------------------------------------------------------------*/

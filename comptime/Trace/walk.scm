@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Thu Feb  9 08:48:15 2017 (serrano)                */
+;*    Last change :  Fri Apr 21 18:39:59 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -206,10 +206,10 @@
    (find-last-node (fail-obj node)))
 
 ;*---------------------------------------------------------------------*/
-;*    find-last-node ::select ...                                      */
+;*    find-last-node ::switch ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (find-last-node node::select)
-   (with-access::select node (clauses test)
+(define-method (find-last-node node::switch)
+   (with-access::switch node (clauses test)
       (if (pair? clauses)
 	  (find-last-node (cdr (last-pair clauses)))
 	  (find-last-sexp test))))
@@ -359,10 +359,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    trace-node ::select ...                                          */
+;*    trace-node ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (trace-node node::select stack level)
-   (with-access::select node (clauses test)
+(define-method (trace-node node::switch stack level)
+   (with-access::switch node (clauses test)
       (set! test (trace-node test stack level))
       (for-each (lambda (clause)
 		   (set-cdr! clause (trace-node (cdr clause) stack level)))

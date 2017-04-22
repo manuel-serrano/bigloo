@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Nov 11 19:18:58 2013                          */
-;*    Last change :  Tue Dec 17 11:31:30 2013 (serrano)                */
-;*    Copyright   :  2013 Manuel Serrano                               */
+;*    Last change :  Fri Apr 21 18:41:06 2017 (serrano)                */
+;*    Copyright   :  2013-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Narrow functions body                                            */
 ;*=====================================================================*/
@@ -226,10 +226,10 @@
    n)
 
 ;*---------------------------------------------------------------------*/
-;*    narrow-scope! ::select ...                                       */
+;*    narrow-scope! ::switch ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (narrow-scope! n::select locals::pair-nil)
-   (with-access::select n (test clauses)
+(define-method (narrow-scope! n::switch locals::pair-nil)
+   (with-access::switch n (test clauses)
       (multiple-value-bind (deftest usetest)
 	 (defuse test)
 	 (let ((defs (kill-used locals (map cdr clauses))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  6 17:48:38 2013                          */
-;*    Last change :  Wed Dec 23 11:45:07 2015 (serrano)                */
-;*    Copyright   :  2013-15 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:47:51 2017 (serrano)                */
+;*    Copyright   :  2013-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Ast walkers                                                      */
 ;*=====================================================================*/
@@ -309,7 +309,7 @@
 (gen-walks box-ref var)
 (gen-walks box-set! var value)
 (gen-walks sync mutex prelock body)
-(gen-walks select
+(gen-walks switch
    test
    (=> cdr set-cdr! clauses))
 (gen-walks let-fun

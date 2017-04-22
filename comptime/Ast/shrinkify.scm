@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 11:09:52 1996                          */
-;*    Last change :  Mon Nov 11 09:46:46 2013 (serrano)                */
+;*    Last change :  Fri Apr 21 18:47:26 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We shrink all the ast to get rid off all the pass info for the   */
 ;*    following passes.                                                */
@@ -147,13 +147,13 @@
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
-;*    shrink-node! ::select ...                                        */
+;*    shrink-node! ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (shrink-node! node::select)
-   (shrink-node! (select-test node))
+(define-method (shrink-node! node::switch)
+   (shrink-node! (switch-test node))
    (for-each (lambda (clause)
 		(shrink-node! (cdr clause)))
-	     (select-clauses node))
+	     (switch-clauses node))
    #unspecified)
 
 ;*---------------------------------------------------------------------*/

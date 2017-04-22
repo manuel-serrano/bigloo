@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Fri Dec 16 18:45:29 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:46:03 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
 ;*    remove the useless local functions (globalized or integrated     */
@@ -362,10 +362,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    glo! ::select ...                                                */
+;*    glo! ::switch ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (glo! node::select integrator)
-   (with-access::select node (clauses test)
+(define-method (glo! node::switch integrator)
+   (with-access::switch node (clauses test)
       (set! test (glo! test integrator))
       (for-each (lambda (clause)
 		   (set-cdr! clause (glo! (cdr clause) integrator)))

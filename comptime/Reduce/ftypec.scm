@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 25 08:44:51 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:43:09 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -221,10 +221,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    node-typec! ::select ...                                         */
+;*    node-typec! ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (node-typec! node::select stack)
-   (with-access::select node (clauses test)
+(define-method (node-typec! node::switch stack)
+   (with-access::switch node (clauses test)
       (set! test (node-typec! test stack))
       (for-each (lambda (clause)
 		   (set-cdr! clause (node-typec! (cdr clause) stack)))

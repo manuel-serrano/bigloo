@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Fri Nov 25 08:43:31 2016 (serrano)                */
-;*    Copyright   :  1997-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:47:45 2017 (serrano)                */
+;*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
 ;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
@@ -440,10 +440,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    patch! ::select ...                                              */
+;*    patch! ::switch ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (patch! node::select)
-   (with-access::select node (clauses test)
+(define-method (patch! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (patch! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (patch! (cdr clause))))

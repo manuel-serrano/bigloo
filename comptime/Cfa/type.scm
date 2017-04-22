@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Fri Nov 25 08:42:34 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:47:05 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We make the obvious type election (taking care of tvectors).     */
 ;*=====================================================================*/
@@ -513,10 +513,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    type-node! ::select ...                                          */
+;*    type-node! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (type-node! node::select)
-   (with-access::select node (type clauses test)
+(define-method (type-node! node::switch)
+   (with-access::switch node (type clauses test)
       (set! test (type-node! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (type-node! (cdr clause))))
@@ -528,12 +528,12 @@
       node))
 
 ;* {*---------------------------------------------------------------------*} */
-;* {*    type-node! ::select ...                                          *} */
+;* {*    type-node! ::switch ...                                          *} */
 ;* {*---------------------------------------------------------------------*} */
-;* (define-method (type-node! node::select/Cinfo)                      */
+;* (define-method (type-node! node::switch/Cinfo)                      */
 ;*    (call-next-method)                                               */
 ;*    (unless *strict-node-type*                                       */
-;*       (with-access::select/Cinfo node (type approx)                 */
+;*       (with-access::switch/Cinfo node (type approx)                 */
 ;* 	 (set! type (get-approx-type approx node))))                        */
 ;*    node)                                                            */
 

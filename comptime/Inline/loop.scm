@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 11 09:27:29 1996                          */
-;*    Last change :  Mon Nov 11 10:00:49 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:40:40 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The loop unrolling module.                                       */
 ;*=====================================================================*/
@@ -128,13 +128,13 @@
 	  (find-let-fun? obj))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-let-fun? ::select ...                                       */
+;*    find-let-fun? ::switch ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (find-let-fun? node::select)
-   (let loop ((clauses (select-clauses node)))
+(define-method (find-let-fun? node::switch)
+   (let loop ((clauses (switch-clauses node)))
       (cond
 	 ((null? clauses)
-	  (find-let-fun? (select-test node)))
+	  (find-let-fun? (switch-test node)))
 	 ((find-let-fun? (cdr (car clauses)))
 	  #t)
 	 (else
@@ -315,10 +315,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    nest-loop! ::select ...                                          */
+;*    nest-loop! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (nest-loop! node::select var nester)
-   (with-access::select node (test clauses)
+(define-method (nest-loop! node::switch var nester)
+   (with-access::switch node (test clauses)
       (set! test (nest-loop! test var nester))
       (for-each (lambda (clause)
 		   (set-cdr! clause (nest-loop! (cdr clause) var nester)))

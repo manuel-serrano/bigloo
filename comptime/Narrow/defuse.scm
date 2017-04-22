@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 10 07:53:36 2013                          */
-;*    Last change :  Tue Dec 17 11:11:16 2013 (serrano)                */
-;*    Copyright   :  2013 Manuel Serrano                               */
+;*    Last change :  Fri Apr 21 18:40:20 2017 (serrano)                */
+;*    Copyright   :  2013-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Def/Use node property.                                           */
 ;*=====================================================================*/
@@ -228,10 +228,10 @@
       (values def use)))
       
 ;*---------------------------------------------------------------------*/
-;*    defuse ::select ...                                              */
+;*    defuse ::switch ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (defuse n::select)
-   (with-access::select n (test clauses)
+(define-method (defuse n::switch)
+   (with-access::switch n (test clauses)
       (multiple-value-bind (deftest usetest)
 	 (defuse test)
 	 ;; compute separatly the def use props of all clauses
@@ -244,12 +244,12 @@
 			    (set! uses (cons use uses))))
 	       clauses)
 	    (defuse
-	       (widen!::select/narrow n
+	       (widen!::switch/narrow n
 		  (def (union deftest (apply intersection defs)))
 		  (use (union usetest (disjonction (apply union uses) deftest)))))))))
 
-(define-method (defuse n::select/narrow)
-   (with-access::select/narrow n (def use)
+(define-method (defuse n::switch/narrow)
+   (with-access::switch/narrow n (def use)
       (values def use)))
       
 ;*---------------------------------------------------------------------*/

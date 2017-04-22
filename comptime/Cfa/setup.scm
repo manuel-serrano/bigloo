@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Mon Oct 17 09:22:53 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:44:58 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
 ;*=====================================================================*/
@@ -381,15 +381,15 @@
 	 (approx (make-type-approx *obj*)))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-setup! ::select ...                                         */
+;*    node-setup! ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (node-setup! node::select)
-   (with-access::select node (clauses test)
+(define-method (node-setup! node::switch)
+   (with-access::switch node (clauses test)
       (node-setup! test)
       (for-each (lambda (clause)
 		   (node-setup! (cdr clause)))
 		clauses)
-      (widen!::select/Cinfo node
+      (widen!::switch/Cinfo node
 	 (approx (make-empty-approx)))))
 
 ;*---------------------------------------------------------------------*/

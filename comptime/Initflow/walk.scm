@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Mar 12 06:58:13 2011                          */
-;*    Last change :  Mon Nov 11 10:00:10 2013 (serrano)                */
-;*    Copyright   :  2011-13 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:45:46 2017 (serrano)                */
+;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the initialization property for global variables. The    */
 ;*    init property of a global can be one of:                         */
@@ -246,10 +246,10 @@
       (initflow-node* (list proc msg obj) e)))
 
 ;*---------------------------------------------------------------------*/
-;*    initflow-node ::select ...                                       */
+;*    initflow-node ::switch ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (initflow-node node::select e)
-   (with-access::select node (test clauses)
+(define-method (initflow-node node::switch e)
+   (with-access::switch node (test clauses)
       (let ((i0 (initflow-node test e)))
 	 (let ((is (map (lambda (c) (initflow-node (cdr c) #f)) clauses)))
 	    ;; the lub

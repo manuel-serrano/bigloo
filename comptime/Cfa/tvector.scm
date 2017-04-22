@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Tue Mar  1 17:22:48 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:46:36 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
 ;*=====================================================================*/
@@ -402,10 +402,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    patch! ::select ...                                              */
+;*    patch! ::switch ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (patch! node::select)
-   (with-access::select node (clauses test)
+(define-method (patch! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (patch! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (patch! (cdr clause))))

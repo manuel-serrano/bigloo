@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 09:57:49 1995                          */
-;*    Last change :  Fri Nov 25 08:40:47 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:46:24 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We coerce an Ast                                                 */
 ;*=====================================================================*/
@@ -404,27 +404,27 @@
       (convert! node *magic* to safe)))
 
 ;*---------------------------------------------------------------------*/
-;*    coerce! ::select ...                                             */
+;*    coerce! ::switch ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (coerce! node::select caller to safe)
-   (with-access::select node (loc clauses test type)
+(define-method (coerce! node::switch caller to safe)
+   (with-access::switch node (loc clauses test type)
       (set! type to)
       (let ((clauses clauses)
-	    (test-type (select-item-type node))
+	    (test-type (switch-item-type node))
 	    (test-node-type (get-type test #f)))
 	 (unless (coercer-exists? test-node-type test-type)
-	    (tprint "select test-type=" (shape test-type)
+	    (tprint "switch test-type=" (shape test-type)
 	       " test-node-type=" (shape test-node-type)))
-	 ;; select constructions are normalized: the test should have
+	 ;; switch constructions are normalized: the test should have
 	 ;; been placed in a variable. That's why this test below should
 	 ;; work. This test may fail (in strange cases that I'm currently
-	 ;; ignoring) and then, it may happen that some `correct' select
+	 ;; ignoring) and then, it may happen that some `correct' switch
 	 ;; forms could be rejected. These forms are those where the
 	 ;; else clause trap objects of different types from the one tested
 	 ;; in the clauses.
 	 (if (coercer-exists? test-node-type test-type)
 	     (begin
-		(select-test-set! node (coerce! test caller test-type safe))
+		(switch-test-set! node (coerce! test caller test-type safe))
 		(for-each (lambda (clause)
 			     (set-cdr! clause
 				(coerce! (cdr clause) caller to safe)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Nov 26 08:17:46 2010                          */
-;*    Last change :  Fri Nov 25 08:33:31 2016 (serrano)                */
-;*    Copyright   :  2010-16 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:43:50 2017 (serrano)                */
+;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute type variable references according to dataflow tests.    */
 ;*    For instance, for an expression such as (if (pair? x) then else),*/
@@ -207,10 +207,10 @@
       env))
 
 ;*---------------------------------------------------------------------*/
-;*    dataflow-node! ::select ...                                      */
+;*    dataflow-node! ::switch ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (dataflow-node! node::select env)
-   (with-access::select node (test clauses)
+(define-method (dataflow-node! node::switch env)
+   (with-access::switch node (test clauses)
       (dataflow-node! test env)
       (for-each (lambda (clause)
 		   (dataflow-node! (cdr clause) env))

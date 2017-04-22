@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 25 15:52:39 1995                          */
-;*    Last change :  Mon Nov 11 10:06:14 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:48:28 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the `cto' property.                           */
 ;*=====================================================================*/
@@ -158,11 +158,11 @@
       (set-cto! obj local)))
 
 ;*---------------------------------------------------------------------*/
-;*    set-cto! ::select ...                                            */
+;*    set-cto! ::switch ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (set-cto! node::select local)
-   (with-access::select node (test)
-      (let liip ((clauses (select-clauses node)))
+(define-method (set-cto! node::switch local)
+   (with-access::switch node (test)
+      (let liip ((clauses (switch-clauses node)))
 	 (if (null? clauses)
 	     (set-cto! test local)
 	     (begin

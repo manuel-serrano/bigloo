@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 09:48:45 2000                          */
-;*    Last change :  Mon Nov 11 10:32:43 2013 (serrano)                */
-;*    Copyright   :  2000-13 Manuel Serrano, see LICENSE file          */
+;*    Last change :  Fri Apr 21 18:44:21 2017 (serrano)                */
+;*    Copyright   :  2000-17 Manuel Serrano, see LICENSE file          */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a refined estimate computations for       */
 ;*    generic operator. The key idea is that, if we call a function    */
@@ -144,10 +144,10 @@
       (cleanup-node! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    cleanup-node! ::select ...                                       */
+;*    cleanup-node! ::switch ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (cleanup-node! node::select)
-   (with-access::select node (clauses test)
+(define-method (cleanup-node! node::switch)
+   (with-access::switch node (clauses test)
       (cleanup-node! test)
       (for-each (lambda (clause) (cleanup-node! (cdr clause))) clauses)))
 

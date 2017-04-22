@@ -259,8 +259,8 @@
 			    (new-reg e) ))))
 
 ;;
-(define-method (node->rtl::area e::select) ; ()
-   (with-access::select e (test clauses item-type)
+(define-method (node->rtl::area e::switch) ; ()
+   (with-access::switch e (test clauses item-type)
       (fork/join (call e (instantiate::rtl_select (type item-type)
 						  (patterns (coerce clauses)) )
 		       test)
@@ -275,7 +275,7 @@
 		  (map (lambda (n)
 			  (cond ((integer? n) n)
 				((char? n) (char->integer n))
-				(else (error 'select "bad constant" n)) ))
+				(else (error "switch" "bad constant" n)) ))
 		       p ))))
 	clauses ))
 

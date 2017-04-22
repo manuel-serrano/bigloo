@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Nov 25 08:41:30 2016 (serrano)                */
-;*    Copyright   :  2000-16 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:48:43 2017 (serrano)                */
+;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -200,10 +200,10 @@
 	 (err node type *magic*))))
 
 ;*---------------------------------------------------------------------*/
-;*    check-node-type ::select ...                                     */
+;*    check-node-type ::switch ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (check-node-type node::select)
-   (with-access::select node (clauses test type)
+(define-method (check-node-type node::switch)
+   (with-access::switch node (clauses test type)
       (check-node-type test)
       (let loop ((clauses clauses))
 	 (if (null? clauses)

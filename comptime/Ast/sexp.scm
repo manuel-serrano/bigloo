@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Dec 12 20:26:12 2016 (serrano)                */
+;*    Last change :  Fri Apr 21 18:48:33 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -499,7 +499,7 @@
 	      (let loop ((cls clauses)
 			 (nclauses '()))
 		 (if (null? cls)
-		     (instantiate::select
+		     (instantiate::switch
 			(loc loc)
 			(type *_*)
 			(test test)

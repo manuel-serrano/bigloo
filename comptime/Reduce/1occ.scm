@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Nov 25 08:44:59 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:42:53 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
 ;*    The only goal of this pass is to prune the ast.                  */
@@ -210,10 +210,10 @@
 		     (values (or reset reset' reset'') node))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-1occ! ::select ...                                          */
+;*    node-1occ! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node-1occ! node::select 1-exp*)
-   (with-access::select node (clauses test)
+(define-method (node-1occ! node::switch 1-exp*)
+   (with-access::switch node (clauses test)
       (multiple-value-bind (reset ntest)
 	 (node-1occ! test 1-exp*)
 	 (set! test ntest)

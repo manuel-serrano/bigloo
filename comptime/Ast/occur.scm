@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Apr 13 10:44:05 2017 (serrano)                */
+;*    Last change :  Fri Apr 21 18:48:15 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -165,10 +165,10 @@
       (occur-node! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    occur-node! ::select ...                                         */
+;*    occur-node! ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (occur-node! node::select)
-   (with-access::select node (test clauses)
+(define-method (occur-node! node::switch)
+   (with-access::switch node (test clauses)
       (occur-node! test)
       (for-each (lambda (clause)
 		   (occur-node! (cdr clause)))

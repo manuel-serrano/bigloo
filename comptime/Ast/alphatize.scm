@@ -367,16 +367,16 @@
       (obj  (do-alphatize (fail-obj node) loc))))
 
 ;*---------------------------------------------------------------------*/
-;*    do-alphatize ::select ...                                        */
+;*    do-alphatize ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::select loc)
-   (duplicate::select node
+(define-method (do-alphatize node::switch loc)
+   (duplicate::switch node
       (loc (get-location node loc))
-      (test (do-alphatize (select-test node) loc))
+      (test (do-alphatize (switch-test node) loc))
       (clauses (map (lambda (clause)
 		       (cons (car clause)
 			     (do-alphatize (cdr clause) loc)))
-		    (select-clauses node)))))
+		    (switch-clauses node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::make-box ...                                      */

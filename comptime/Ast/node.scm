@@ -205,7 +205,7 @@
 	      obj::node)
 
 	   ;; the `case' constructions
-	   (final-class select::node/effect
+	   (final-class switch::node/effect
 	      ;; the test of the switch
 	      test::node
 	      ;; the clauses
@@ -387,13 +387,13 @@
    (proc node))
 
 ;*---------------------------------------------------------------------*/
-;*    node-walk ::select ...                                           */
+;*    node-walk ::switch ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node-walk node::select proc::procedure)
-   (node-walk (select-test node) proc)
+(define-method (node-walk node::switch proc::procedure)
+   (node-walk (switch-test node) proc)
    (for-each (lambda (clause)
 		(node-walk (cdr clause) proc))
-	     (select-clauses node))
+	     (switch-clauses node))
    (proc node))
 
 ;*---------------------------------------------------------------------*/

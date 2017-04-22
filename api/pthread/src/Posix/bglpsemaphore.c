@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Thu Apr 20 13:37:03 2017 (serrano)                */
+/*    Last change :  Fri Apr 21 16:38:29 2017 (serrano)                */
 /*    Copyright   :  2004-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix semaphore implementation                               */
@@ -56,7 +56,8 @@ bgl_open_semaphore( obj_t name,
    }
    return BREF( sem );
 #else
-   C_SYSTEM_FAILURE( BGL_ERROR, "ioctl", "semaphore not supported by architecture", name );
+   C_SYSTEM_FAILURE( BGL_ERROR, "open-semaphore",
+		     "semaphore not supported by architecture", name );
    return 0;
 #endif   
 }

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Mon Oct 24 10:22:29 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:47:20 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -278,10 +278,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    callcc! ::select ...                                             */
+;*    callcc! ::switch ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (callcc! node::select)
-   (with-access::select node (clauses test)
+(define-method (callcc! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (callcc! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (callcc! (cdr clause))))

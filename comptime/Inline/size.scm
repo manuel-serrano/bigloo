@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Wed Dec 23 14:17:25 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:42:16 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -19,7 +19,7 @@
    
    (static  (wide-class sized-sequence::sequence (size::long read-only))
 	    (wide-class sized-sync::sync (size::long read-only))
-	    (wide-class sized-select::select (size::long read-only))
+	    (wide-class sized-switch::switch (size::long read-only))
 	    (wide-class sized-let-fun::let-fun (size::long read-only))
 	    (wide-class sized-let-var::let-var (size::long read-only)))
 	      
@@ -151,14 +151,14 @@
       (+fx 2 (+fx proc-size (+fx msg-size obj-size)))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-size ::select ...                                           */
+;*    node-size ::switch ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node-size node::select)
-   (let loop ((clauses (select-clauses node))
-	      (size    (+fx 1 (node-size (select-test node)))))
+(define-method (node-size node::switch)
+   (let loop ((clauses (switch-clauses node))
+	      (size    (+fx 1 (node-size (switch-test node)))))
       (if (null? clauses)
 	  (begin
-	     (widen!::sized-select node (size size))
+	     (widen!::sized-switch node (size size))
 	     size)
 	  (loop (cdr clauses)
 		(+fx size (+fx (if (pair? (car (car clauses)))
@@ -167,10 +167,10 @@
 			       (node-size (cdr (car clauses)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    node-size ::sized-select ...                                     */
+;*    node-size ::sized-switch ...                                     */
 ;*---------------------------------------------------------------------*/
-(define-method (node-size node::sized-select)
-   (sized-select-size node))
+(define-method (node-size node::sized-switch)
+   (sized-switch-size node))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-size ::let-fun ...                                          */

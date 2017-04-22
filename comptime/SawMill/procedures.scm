@@ -70,8 +70,8 @@
       (get test (get true (get false r))) ))
 
 ;;
-(define-method (get e::select r) ; ()
-   (with-access::select e (test clauses item-type)
+(define-method (get e::switch r) ; ()
+   (with-access::switch e (test clauses item-type)
       (get test (get* (map cdr clauses) r)) ))
 
 ;;

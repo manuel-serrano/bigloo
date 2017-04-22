@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Nov 25 08:40:14 2016 (serrano)                */
+;*    Last change :  Fri Apr 21 18:48:38 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrence number of each types of the AST.          */
 ;*=====================================================================*/
@@ -251,10 +251,10 @@
       (occur-node! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    occur-node! ::select ...                                         */
+;*    occur-node! ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (occur-node! node::select)
-   (with-access::select node (test clauses)
+(define-method (occur-node! node::switch)
+   (with-access::switch node (test clauses)
       (occur-node! test)
       (for-each (lambda (clause)
 		   (occur-node! (cdr clause)))

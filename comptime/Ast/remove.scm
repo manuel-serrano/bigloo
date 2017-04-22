@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Tue Feb  9 09:32:34 2016 (serrano)                */
+;*    Last change :  Fri Apr 21 18:48:54 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
@@ -220,13 +220,13 @@
    node)
 
 ;*---------------------------------------------------------------------*/
-;*    node-remove! ::select ...                                        */
+;*    node-remove! ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (node-remove! node::select)
-   (select-test-set! node (node-remove! (select-test node)))
+(define-method (node-remove! node::switch)
+   (switch-test-set! node (node-remove! (switch-test node)))
    (for-each (lambda (clause)
 		(set-cdr! clause (node-remove! (cdr clause))))
-	     (select-clauses node))
+	     (switch-clauses node))
    node)
 
 ;*---------------------------------------------------------------------*/

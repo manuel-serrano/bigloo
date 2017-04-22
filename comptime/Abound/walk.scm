@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Tue Jun 17 16:33:50 2014 (serrano)                */
-;*    Copyright   :  2010-14 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:41:24 2017 (serrano)                */
+;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Introduce array bound checks                                     */
 ;*=====================================================================*/
@@ -378,10 +378,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    abound-node ::select ...                                         */
+;*    abound-node ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (abound-node node::select)
-   (with-access::select node (clauses test)
+(define-method (abound-node node::switch)
+   (with-access::switch node (clauses test)
       (set! test (abound-node test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (abound-node (cdr clause))))

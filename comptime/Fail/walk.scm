@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Nov 11 09:58:49 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:44:36 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of fail in debugging mode.                      */
 ;*    -------------------------------------------------------------    */
@@ -174,10 +174,10 @@
 	  node)))
 
 ;*---------------------------------------------------------------------*/
-;*    fail-node! ::select ...                                          */
+;*    fail-node! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (fail-node! node::select)
-   (with-access::select node (clauses test)
+(define-method (fail-node! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (fail-node! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (fail-node! (cdr clause))))

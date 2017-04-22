@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sat Oct 15 19:30:57 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:44:08 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
 ;*=====================================================================*/
@@ -237,10 +237,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    node-cond! ::select ...                                          */
+;*    node-cond! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node-cond! node::select)
-   (with-access::select node (clauses test)
+(define-method (node-cond! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (node-cond! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (node-cond! (cdr clause))))

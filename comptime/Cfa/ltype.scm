@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 27 10:33:17 1996                          */
-;*    Last change :  Mon Nov 11 09:53:47 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:42:41 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Type election for light closures.                                */
 ;*=====================================================================*/
@@ -247,10 +247,10 @@
       (type-node! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    type-node! ::select ...                                          */
+;*    type-node! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (type-node! node::select)
-   (with-access::select node (clauses test)
+(define-method (type-node! node::switch)
+   (with-access::switch node (clauses test)
       (type-node! test)
       (for-each (lambda (clause)
 		   (type-node! (cdr clause)))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:02:16 1996                          */
-;*    Last change :  Mon Oct 17 09:38:00 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:45:55 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The escape property computation                                  */
 ;*=====================================================================*/
@@ -177,10 +177,10 @@
       (escape! obj o)))
 
 ;*---------------------------------------------------------------------*/
-;*    escape! ::select ...                                             */
+;*    escape! ::switch ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (escape! node::select o)
-   (with-access::select node (clauses test)
+(define-method (escape! node::switch o)
+   (with-access::switch node (clauses test)
       (escape! test o)
       (for-each (lambda (clause)
 		   (escape! (cdr clause) o))

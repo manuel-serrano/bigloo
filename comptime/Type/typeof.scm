@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:25:05 1996                          */
-;*    Last change :  Fri Nov 25 08:38:46 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:39:45 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The type of the things                                           */
 ;*=====================================================================*/
@@ -196,10 +196,10 @@
        (eq? t2 *obj*))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-type ::select ...                                            */
+;*    get-type ::switch ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-method (get-type node::select strict)
-   (with-access::select node (type clauses test)
+(define-method (get-type node::switch strict)
+   (with-access::switch node (type clauses test)
       (if (eq? type *_*)
 	  (let loop ((clauses (cdr clauses))
 		     (type (get-type (cdr (car clauses)) strict)))

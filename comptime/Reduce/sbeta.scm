@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Fri Nov 25 08:45:08 2016 (serrano)                */
-;*    Copyright   :  2000-16 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:41:38 2017 (serrano)                */
+;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
 ;*    is simpler than the 1occ stage. It apply the following           */
@@ -373,10 +373,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    node-beta! ::select ...                                          */
+;*    node-beta! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node-beta! node::select)
-   (with-access::select node (clauses test)
+(define-method (node-beta! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (node-beta! test))
       (let loop ((clauses clauses))
 	 (if (null? clauses)

@@ -907,6 +907,70 @@ Reads a password from the current input port. The reading stops when the user
 hits the ,(code "Enter") key.
 @end deffn
 
+@deffn {bigloo procedure} open-pipes [name]
+Opens a bi-directional pipes. Returns two values, an @code{input-port} and
+an @code{output-port}. The optional argument @var{name} only servers
+debugging.
+
+Example:
+@smalllisp
+(multiple-value-bind (in out)
+  (open-pipes "my pipe")
+  (write-char #\z out)
+  (flush-output-port out))
+@end smalllisp
+@end deffn
+
+@deffn {bigloo procedure} select [:timeout 0] [:read '()] [:write '()] [:except '()]
+A wrapper of the Posix @code{select} function. Returns three values,
+the three lists of objects that are ready for reading, respectively writing,
+or that are in error.
+
+Example:
+@smalllisp
+(define *inpipe* #f)
+(define *outpipe* #f)
+(define *watch-mutex* (make-mutex "watch"))
+(define *sockets* '())
+
+(define (watch socket onclose)
+   (synchronize *watch-mutex*
+      (set! *sockets* (cons socket *sockets*))
+      (if *outpipe*
+	  (begin
+	     (write-char *outpipe*)
+	     (flush-output-port *outpipe*))
+	  (thread-start!
+	     (instantiate::hopthread
+		(body (watch-thread onclose)))))))
+
+(define (watch-thread onclose)
+   (let loop ()
+      (synchronize *watch-mutex*
+	 (unless *inpipe*
+	    (multiple-value-bind (in out)
+	       (open-pipes)
+	       (set! *inpipe* in)
+	       (set! *outpipe* out))))
+      (multiple-value-bind (readfs _ _)
+	 (select :read (cons *inpipe* *sockets*))
+	 (let ((socks (filter socket? readfs)))
+	    (for-each onclose socks)
+	    (synchronize *watch-mutex*
+	       (for-each (lambda (s)
+			    (set! *sockets* (remq! s *sockets*)))
+		  socks)
+	       (unless (pair? *sockets*)
+		  (close-input-port *inpipe*)
+		  (close-output-port *outpipe*)
+		  (set! *inpipe* #f)
+		  (set! *outpipe* #f)))
+	    (when *outpipe*
+	       (loop))))))
+@end smalllisp
+@end deffn
+
+
 @c ------------------------------------------------------------------- @c
 @c    MMAP                                                             @c
 @c ------------------------------------------------------------------- @c

@@ -173,10 +173,10 @@
       (lvtype-node! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    lvtype-node! ::select ...                                        */
+;*    lvtype-node! ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (lvtype-node! node::select)
-   (with-access::select node (clauses test)
+(define-method (lvtype-node! node::switch)
+   (with-access::switch node (clauses test)
       (lvtype-node! test)
       (for-each (lambda (clause)
 		   (lvtype-node! (cdr clause)))

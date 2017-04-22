@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Mon Nov 11 09:47:37 2013 (serrano)                */
-;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:45:18 2017 (serrano)                */
+;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for Bdb we have to turn all _ type into obj type. */
 ;*=====================================================================*/
@@ -131,10 +131,10 @@
       (spread-obj-node! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    spread-obj-node! ::select ...                                    */
+;*    spread-obj-node! ::switch ...                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (spread-obj-node! node::select)
-   (with-access::select node (clauses test)
+(define-method (spread-obj-node! node::switch)
+   (with-access::switch node (clauses test)
       (spread-obj-node! test)
       (for-each (lambda (clause)
 		   (spread-obj-node! (cdr clause)))

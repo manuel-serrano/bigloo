@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov 18 08:49:33 2012                          */
-;*    Last change :  Mon Nov 11 10:11:50 2013 (serrano)                */
-;*    Copyright   :  2012-13 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:40:29 2017 (serrano)                */
+;*    Copyright   :  2012-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The property FAILSAFE for a node is true, IFF that node cannot   */
 ;*    raise an exception or invoke an exit.                            */
@@ -174,10 +174,10 @@
       (and (failsafe? test stk) (failsafe? true stk) (failsafe? false stk))))
 
 ;*---------------------------------------------------------------------*/
-;*    failsafe? ::select ...                                           */
+;*    failsafe? ::switch ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (failsafe? n::select stk)
-   (with-access::select n (test clauses)
+(define-method (failsafe? n::switch stk)
+   (with-access::switch n (test clauses)
       (when (failsafe? test stk)
 	 (every (lambda (c) (failsafe? (cdr c) stk)) clauses))))
 

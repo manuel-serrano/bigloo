@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Mon Mar 10 14:35:14 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:47:59 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
 ;*    `make-??-procedure' calls).                                      */
@@ -182,10 +182,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    cnst! ::select ...                                               */
+;*    cnst! ::switch ...                                               */
 ;*---------------------------------------------------------------------*/
-(define-method (cnst! node::select)
-   (with-access::select node (clauses test)
+(define-method (cnst! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (cnst! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (cnst! (cdr clause))))

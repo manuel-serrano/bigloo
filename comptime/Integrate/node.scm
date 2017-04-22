@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 17:30:55 1995                          */
-;*    Last change :  Mon Oct 24 13:31:13 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:44:42 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of K and K* properties.                          */
 ;*=====================================================================*/
@@ -336,10 +336,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    glo! ::select ...                                                */
+;*    glo! ::switch ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (glo! node::select integrator)
-   (with-access::select node (clauses test)
+(define-method (glo! node::switch integrator)
+   (with-access::switch node (clauses test)
       (set! test (glo! test integrator))
       (for-each (lambda (clause)
 		   (set-cdr! clause (glo! (cdr clause) integrator)))

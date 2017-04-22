@@ -307,16 +307,16 @@
 			     ,(node->sexp (fail-obj node)))))
 
 ;*---------------------------------------------------------------------*/
-;*    node->sexp ::select ...                                          */
+;*    node->sexp ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node->sexp node::select)
+(define-method (node->sexp node::switch)
    (node->sexp-hook node)
    (location-shape (node-loc node)
 		   `(,(shape-typed-node 'case (node-type node))
-		     ,(node->sexp (select-test node))
+		     ,(node->sexp (switch-test node))
 		     ,@(map (lambda (clause)
 			       `(,(car clause) ,(node->sexp (cdr clause))))
-			    (select-clauses node)))))
+			    (switch-clauses node)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->sexp ::let-fun ...                                         */

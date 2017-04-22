@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Dec 23 06:35:33 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:44:27 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
 ;*=====================================================================*/
@@ -463,13 +463,13 @@
 	 inpushexit)))
 
 ;*---------------------------------------------------------------------*/
-;*    node->cop ::select ...                                           */
+;*    node->cop ::switch ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::select kont inpushexit)
+(define-method (node->cop node::switch kont inpushexit)
    (trace (cgen 3)
-      "(node->cop node::select kont): " (shape node) #\Newline
+      "(node->cop node::switch kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
-   (with-access::select node (clauses test item-type loc)
+   (with-access::switch node (clauses test item-type loc)
       (for-each (lambda (clause)
 		   (set-cdr! clause (node->cop (cdr clause) kont inpushexit)))
 	 clauses)

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul 15 10:55:41 1995                          */
-;*    Last change :  Mon Nov 11 09:58:07 2013 (serrano)                */
-;*    Copyright   :  1995-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:47:13 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the call-graph                                */
 ;*=====================================================================*/
@@ -130,10 +130,10 @@
       (call-graph! obj owner)))
 
 ;*---------------------------------------------------------------------*/
-;*    call-graph! ::select ...                                         */
+;*    call-graph! ::switch ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (call-graph! node::select owner)
-   (with-access::select node (test clauses)
+(define-method (call-graph! node::switch owner)
+   (with-access::switch node (test clauses)
       (call-graph! test owner)
       (for-each (lambda (clause)
 		   (call-graph! (cdr clause) owner))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 12:27:21 2014                          */
-;*    Last change :  Wed Mar  1 10:26:32 2017 (serrano)                */
+;*    Last change :  Fri Apr 21 15:10:27 2017 (serrano)                */
 ;*    Copyright   :  2014-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fspoll                                                     */
@@ -79,8 +79,10 @@
 ;*---------------------------------------------------------------------*/
 (define (uv-events->list events::int)
    (let ((r '()))
-      (when (= (bit-and events $uv_readable) $uv_readable) (set! r (cons 'UV_READABLE r)))
-      (when (= (bit-and events $uv_writable) $uv_writable) (set! r (cons 'UV_WRITABLE r)))
+      (when (= (bit-and events $uv_readable) $uv_readable)
+	 (set! r (cons 'UV_READABLE r)))
+      (when (= (bit-and events $uv_writable) $uv_writable)
+	 (set! r (cons 'UV_WRITABLE r)))
       ;;(when (= (bit-and events $uv_disconnect) $uv_disconnect) (set! r (cons 'UV_DISCONNECT r)))
       r))
       

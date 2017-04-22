@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Mon Nov 11 10:26:07 2013 (serrano)                */
+;*    Last change :  Fri Apr 21 18:43:39 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -138,13 +138,13 @@
    node)
 
 ;*---------------------------------------------------------------------*/
-;*    node-beta! ::select ...                                          */
+;*    node-beta! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node-beta! node::select stack)
-   (select-test-set! node (node-beta! (select-test node) stack))
+(define-method (node-beta! node::switch stack)
+   (switch-test-set! node (node-beta! (switch-test node) stack))
    (for-each (lambda (clause)
 		(set-cdr! clause (node-beta! (cdr clause) stack)))
-	     (select-clauses node))
+	     (switch-clauses node))
    node)
 
 ;*---------------------------------------------------------------------*/

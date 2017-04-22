@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Wed Jun  1 18:12:43 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:48:21 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -331,11 +331,11 @@
 	      (find-recursive-calls obj var #f tres))))
 
 ;*---------------------------------------------------------------------*/
-;*    find-recursive-calls ::select ...                                */
+;*    find-recursive-calls ::switch ...                                */
 ;*---------------------------------------------------------------------*/
-(define-method (find-recursive-calls node::select var tail tres)
-   (let loop ((clauses (select-clauses node))
-	      (calls (find-recursive-calls (select-test node) var #f tres)))
+(define-method (find-recursive-calls node::switch var tail tres)
+   (let loop ((clauses (switch-clauses node))
+	      (calls (find-recursive-calls (switch-test node) var #f tres)))
       (if (null? clauses)
 	  calls
 	  (loop (cdr clauses)

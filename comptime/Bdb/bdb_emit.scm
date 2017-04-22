@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  8 17:32:59 1998                          */
-;*    Last change :  Mon Nov 11 09:47:24 2013 (serrano)                */
-;*    Copyright   :  1992-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:44:14 2017 (serrano)                */
+;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the Bdb identifier translation table.            */
 ;*=====================================================================*/
@@ -262,10 +262,10 @@
       (bdb! obj)))
 
 ;*---------------------------------------------------------------------*/
-;*    bdb! ::select ...                                                */
+;*    bdb! ::switch ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-method (bdb! node::select)
-   (with-access::select node (clauses test)
+(define-method (bdb! node::switch)
+   (with-access::switch node (clauses test)
       (bdb! test)
       (for-each (lambda (clause) (bdb! (cdr clause))) clauses)))
 

@@ -170,11 +170,11 @@
       (check-node-sharing obj node)))
 
 ;*---------------------------------------------------------------------*/
-;*    check-node-sharing ::select ...                                  */
+;*    check-node-sharing ::switch ...                                  */
 ;*---------------------------------------------------------------------*/
-(define-method (check-node-sharing node::select context)
+(define-method (check-node-sharing node::switch context)
    (call-next-method)
-   (with-access::select node (clauses test)
+   (with-access::switch node (clauses test)
       (check-node-sharing test node)
       (for-each (lambda (clause)
 		   (check-node-sharing (cdr clause) node))

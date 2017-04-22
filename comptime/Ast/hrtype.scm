@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 11:58:06 1996                          */
-;*    Last change :  Sat Feb 13 10:43:50 2016 (serrano)                */
+;*    Last change :  Fri Apr 21 18:37:11 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This function hrtype-node! is used for inlined functions         */
 ;*    that are restored from additional heap. These bodies still       */
@@ -271,10 +271,10 @@
    (call-next-method))
 
 ;*---------------------------------------------------------------------*/
-;*    hrtype-node! ::select ...                                        */
+;*    hrtype-node! ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (hrtype-node! node::select)
-   (with-access::select node (clauses test item-type)
+(define-method (hrtype-node! node::switch)
+   (with-access::switch node (clauses test item-type)
       (set! item-type (find-type (type-id item-type)))
       (hrtype-node! test)
       (for-each (lambda (clause)

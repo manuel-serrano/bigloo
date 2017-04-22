@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Mon Nov 11 17:19:38 2013 (serrano)                */
+;*    Last change :  Fri Apr 21 18:45:25 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -200,13 +200,13 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    do-substitute! ::select ...                                      */
+;*    do-substitute! ::switch ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (do-substitute! node::select site)
-   (select-test-set! node (do-substitute! (select-test node) 'value))
+(define-method (do-substitute! node::switch site)
+   (switch-test-set! node (do-substitute! (switch-test node) 'value))
    (for-each (lambda (clause)
 		(set-cdr! clause (do-substitute! (cdr clause) site)))
-	     (select-clauses node))
+	     (switch-clauses node))
    node)
 
 ;*---------------------------------------------------------------------*/

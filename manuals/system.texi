@@ -434,6 +434,11 @@ Copies the file @var{string1} into @var{string2}. If the copy succeeds,
 the result is @code{#t}, otherwise it is @code{#f}.
 @end deffn
 
+@deffn {bigloo procedure} make-symlink target linkpath
+Creates a symbolic link named @var{linkpath} which contains the
+string @var{target}.
+@end deffn
+
 @deffn {bigloo procedure} directory? string
 This procedure returns @code{#t} if the file @var{string} exists and is a
 directory. Otherwise it returns @code{#f}.

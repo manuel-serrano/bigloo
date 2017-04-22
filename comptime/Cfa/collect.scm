@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 09:06:26 1995                          */
-;*    Last change :  Sun Jun 26 06:35:45 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:48:49 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Collect all types and allocs approximations                      */
 ;*=====================================================================*/
@@ -316,10 +316,10 @@
       (node-collect! obj owner)))
 
 ;*---------------------------------------------------------------------*/
-;*    node-collect! ::select ...                                       */
+;*    node-collect! ::switch ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (node-collect! node::select owner)
-   (with-access::select node (clauses test)
+(define-method (node-collect! node::switch owner)
+   (with-access::switch node (clauses test)
       (node-collect! test owner)
       (for-each (lambda (clause)
 		   (node-collect! (cdr clause) owner))

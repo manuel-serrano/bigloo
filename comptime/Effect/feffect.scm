@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Thu Feb 18 08:29:58 2016 (serrano)                */
-;*    Copyright   :  2003-16 Manuel Serrano                            */
+;*    Last change :  Fri Apr 21 18:45:04 2017 (serrano)                */
+;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
 ;*    does it set a vector or a global variable, ...).                 */
@@ -248,10 +248,10 @@
       (body-effect! false effect)))
 
 ;*---------------------------------------------------------------------*/
-;*    body-effect! ::select ...                                        */
+;*    body-effect! ::switch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (body-effect! node::select effect::feffect)
-   (with-access::select node (test clauses)
+(define-method (body-effect! node::switch effect::feffect)
+   (with-access::switch node (test clauses)
       (body-effect! test effect)
       (for-each (lambda (clause)
 		   (body-effect! (cdr clause) effect))

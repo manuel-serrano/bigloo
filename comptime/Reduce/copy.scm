@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed Dec 23 12:28:30 2015 (serrano)                */
-;*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:46:58 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
 ;*=====================================================================*/
@@ -164,10 +164,10 @@
       node))
 
 ;*---------------------------------------------------------------------*/
-;*    node-copy! ::select ...                                          */
+;*    node-copy! ::switch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (node-copy! node::select)
-   (with-access::select node (clauses test)
+(define-method (node-copy! node::switch)
+   (with-access::switch node (clauses test)
       (set! test (node-copy! test))
       (for-each (lambda (clause)
 		   (set-cdr! clause (node-copy! (cdr clause))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb 21 08:37:48 1995                          */
-;*    Last change :  Sat Nov 17 08:21:07 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:41:46 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `tail-call' pass.                                            */
 ;*=====================================================================*/
@@ -152,11 +152,11 @@
       (get-tail-calls true host (get-tail-calls false host tails))))
 
 ;*---------------------------------------------------------------------*/
-;*    get-tail-calls ::select ...                                      */
+;*    get-tail-calls ::switch ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (get-tail-calls node::select host tails)
-   (with-access::select node (test item-type)
-      (let liip ((clauses (select-clauses node))
+(define-method (get-tail-calls node::switch host tails)
+   (with-access::switch node (test item-type)
+      (let liip ((clauses (switch-clauses node))
 		 (tails tails))
 	 (if (null? clauses)
 	     tails

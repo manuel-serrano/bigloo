@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Fri Nov 18 07:38:51 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 21 18:46:52 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
 ;*=====================================================================*/
@@ -97,7 +97,7 @@
        (approx::approx read-only))
     (wide-class fail/Cinfo::fail
        (approx::approx read-only))
-    (wide-class select/Cinfo::select
+    (wide-class switch/Cinfo::switch
        (approx::approx read-only))
     (wide-class set-ex-it/Cinfo::set-ex-it
        (approx::approx read-only))
