@@ -1,0 +1,115 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/autoconf/semaphore                   */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Aug  9 13:27:23 1995                          */
+#*    Last change :  Thu Apr 20 09:22:08 2017 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    Check for the host semaphore support.                            */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=
+pthreadlibs="-lpthread"
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    --lib=*|-lib=*)
+      pthreadlibs="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+#*---------------------------------------------------------------------*/
+#*    compile                                                          */
+#*---------------------------------------------------------------------*/
+compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+#include <semaphore.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+extern void exit( int );
+extern void wait( int * );
+
+int N = 1000000000;
+
+int main() {
+  int pid;
+  int exit_code;
+
+  sem_t *sem1 = sem_open( "test_semaphore", O_CREAT|O_EXCL );
+  sem_t *sem2 = sem_open( "test_semaphore", O_CREAT|O_EXCL );
+
+  pid = fork();
+  if( pid == 0 ) {
+    sem_wait( sem1 );
+    int count1 = 0;
+    while( count1 != N ) {
+       count1++;
+    }
+    exit( 0 );
+  } else {
+    pid = fork();
+    if( pid == 0 ){
+        sem_wait( sem2 );
+        exit( 0 );
+    } else {
+        int status;
+        sem_post( sem1 );
+        sem_post( sem2 );
+
+        wait( &status );
+        wait( &status );
+
+    }
+  }
+  return 0;
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+if eval "$BUILDSH $compile"; then
+   echo "1"
+else
+   echo "0"
+fi
+
+\rm -f $file.*
+\rm -f $aout
+\rm -f $aout*
+
+exit 0

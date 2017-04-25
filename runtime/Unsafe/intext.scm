@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Fri Oct 14 13:53:20 2016 (serrano)                */
+;*    Last change :  Tue Apr 25 08:05:10 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -171,20 +171,27 @@
 	    (format "Corrupted string at index ~a/~a" *pointer* *strlen*)
 	    s)))
    
+   ;; check-size!
+   (define (check-size! sz lbl)
+      (when (or (<fx sz 0) (>fx sz (-fx *strlen* *pointer*)))
+	 (error "string->obj"
+	    (format "Corrupted string (~a) at index ~a/~a ~a" lbl *pointer* *strlen* sz)
+	    s)))
+   
    ;; read-integer
    (define (read-integer s)
-      (read-size s))
+      (read-size/unsafe s))
    
    ;; read-float
    (define (read-float s)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "float"))
 	     (res (string->real (substring s *pointer* (+fx *pointer* sz)))))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
    
    ;; read-bignum
    (define (read-bignum s)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "bignum"))
 	     (res (string->bignum (substring s *pointer* (+fx *pointer* sz)))))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
@@ -213,17 +220,23 @@
 			    (fixnum->llong (char->integer d))))
 	       (set! *pointer* (+fx *pointer* 1))))
 	 acc))
-   
-   ;; read-size
-   (define (read-size::long s)
+
+   ;; read-size/unsafe
+   (define (read-size/unsafe::long s)
       (string-guard! 1)
       (let ((sz (char->integer (string-ref s *pointer*))))
 	 (set! *pointer* (+fx *pointer* 1))
 	 (read-word s sz)))
    
+   ;; read-size
+   (define (read-size::long s lbl)
+      (let ((size (read-size/unsafe s)))
+	 (check-size! size lbl)
+	 size))
+   
    ;; read-string
    (define (read-string s)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "string"))
 	     (res (substring s *pointer* (+fx *pointer* sz))))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -274,21 +287,21 @@
    
    ;; read-elong
    (define (read-elong)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "elong"))
 	     (res (string->elong (substring s *pointer* (+fx *pointer* sz)))))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
    
    ;; read-llong
    (define (read-llong)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "llong"))
 	     (res (string->llong (substring s *pointer* (+fx *pointer* sz)))))
 	 (set! *pointer* (+fx *pointer* sz))
 	 res))
    
    ;; read-vector
    (define (read-vector)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "vector"))
  	     (res ($create-vector sz)))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -298,8 +311,8 @@
    
    ;; read-hvector
    (define (read-hvector)
-      (let ((len (read-size s))
-	    (bsize (read-size s)))
+      (let ((len (read-size s "hvector"))
+	    (bsize (read-size s "hvector-size")))
 	 (case (read-symbol)
 	    ((s8)
 	     (let ((res (make-s8vector len)))
@@ -347,7 +360,7 @@
    ;; read-tagged-vector
    (define (read-tagged-vector)
       (let* ((tag (read-item))
-	     (sz (read-size s))
+	     (sz (read-size s "tagged-vector"))
 	     (res ($create-vector sz)))
 	 (vector-tag-set! res tag)
 	 (when (fixnum? *defining*)
@@ -368,7 +381,7 @@
    
    ;; read-list
    (define (read-list)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "list"))
 	     (res (cons '() '())))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -387,7 +400,7 @@
    
    ;; read-extended-list
    (define (read-extended-list)
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size s "extended-list"))
 	     (res (econs '() '() #unspecified)))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -427,7 +440,7 @@
    ;; read-special
    (define (read-special s converter)
       ;; unserialize a process or an opaque
-      (let* ((sz (read-size s))
+      (let* ((sz (read-size/unsafe s))
 	     (res (substring s *pointer* (+fx *pointer* sz))))
 	 (when (fixnum? *defining*)
 	    (vector-set! *definitions* *defining* res)
@@ -441,7 +454,7 @@
 			  (set! *defining* #f)
 			  old))
 	     (key (read-item))
-	     (sz (read-size s))
+	     (sz (read-size s "structure"))
 	     (res (make-struct key sz #unspecified)))
 	 (when (fixnum? defining)
 	    (vector-set! *definitions* defining res))
@@ -454,7 +467,7 @@
 			  (set! *defining* #f)
 			  old))
 	     (cname (read-item))
-	     (sz (read-size s))
+	     (sz (read-size s "object"))
 	     (obj (allocate-instance cname))
 	     (klass (object-class obj))
 	     (fields (class-all-fields klass)))
@@ -499,7 +512,7 @@
    (define (read-procedure s)
       (let* ((arity (read-item))
 	     (entry (read-item))
-	     (len (read-size s))
+	     (len (read-size s "procedure"))
 	     (p ($make-procedure ($string->procedure-entry entry) arity len)))
 	 (for i 0 len (procedure-set! p i (read-item)))
 	 (procedure-attr-set! p (read-item))
@@ -601,7 +614,7 @@
    (let ((d (string-ref s *pointer*)))
       (when (char=? d #\c)
 	 (set! *pointer* (+fx *pointer* 1))
-	 (set! *definitions* (make-vector (read-size s)))))
+	 (set! *definitions* (make-vector (read-size s "definitions")))))
    
    (read-item))
 

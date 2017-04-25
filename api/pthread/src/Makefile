@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Apr 20 13:11:06 2017 (serrano)                */
+#*    Last change :  Tue Apr 25 17:18:50 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -76,7 +76,8 @@ SOURCES		= $(_BGL_SOURCES) \
 INCLUDES	= $(C_SRC_DIR)/bglpthread.h \
                   $(BIGLOO_SRC_DIR)/pthread.sch \
                   $(BIGLOO_SRC_DIR)/pmutex.sch \
-                  $(BIGLOO_SRC_DIR)/pcondvar.sch
+                  $(BIGLOO_SRC_DIR)/pcondvar.sch \
+                  $(BIGLOO_SRC_DIR)/psemaphore.sch \
  
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
