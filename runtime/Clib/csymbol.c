@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Wed Feb  1 17:22:50 2017 (serrano)                */
+/*    Last change :  Wed Apr 26 07:58:29 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -36,7 +36,7 @@ DEFINE_STRING( symbol_mutex_name, _1, "symbol-mutex", 12 );
 void
 bgl_init_symbol_table() {
    if( !VECTORP( c_symtab ) ) {
-      c_symtab = make_vector( SYMBOL_HASH_TABLE_SIZE, BNIL );
+      c_symtab = make_vector_uncollectable( SYMBOL_HASH_TABLE_SIZE, BNIL );
       symbol_mutex = bgl_make_spinlock( symbol_mutex_name );
    }
 }
@@ -62,7 +62,7 @@ static obj_t
 make_symbol( obj_t name ) {
    obj_t symbol;
 
-   symbol = GC_MALLOC( SYMBOL_SIZE );
+   symbol = GC_MALLOC_UNCOLLECTABLE( SYMBOL_SIZE );
 
 #if( !defined( TAG_SYMBOL ) )   
    symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );

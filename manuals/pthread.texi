@@ -196,7 +196,7 @@ Returns @code{#t} if @var{obj} is a semaphore, returns @code{#f} otherwise.
 @end deffn
 
 @deffn {Bigloo function} semaphore-post @var{sem}
-@deffnx {Bigloo function} semaphore-wait @var{sem} [@var{timeout} 0]
+@deffnx {Bigloo function} semaphore-wait @var{sem}
 @deffnx {Bigloo function} semaphore-trywait @var{sem}
 Wait and post for a semaphore.
 @end deffn

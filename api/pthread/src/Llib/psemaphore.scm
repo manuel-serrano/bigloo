@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 20 09:27:10 2017                          */
-;*    Last change :  Thu Apr 20 13:19:49 2017 (serrano)                */
+;*    Last change :  Thu Apr 27 14:31:01 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Semaphore                                                        */
@@ -21,7 +21,8 @@
 	    
 	    (close-semaphore ::semaphore)
 	    (delete-semaphore ::bstring)
-	    (semaphore-wait ::semaphore #!optional (timeout::long 0))
+;* 	    (semaphore-wait ::semaphore #!optional (timeout::long 0))  */
+	    (semaphore-wait ::semaphore)
 	    (semaphore-trywait ::semaphore)
 	    (semaphore-value::long ::semaphore)
 	    (semaphore-post ::semaphore)))
@@ -48,10 +49,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    semaphore-wait ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (semaphore-wait s::semaphore #!optional (timeout::long 0))
-   (if (=fx timeout 0)
-       (=fx ($psemaphore-wait s) 0)
-       (=fx ($psemaphore-timed-wait s timeout) 0)))
+(define (semaphore-wait s::semaphore)
+   (=fx ($psemaphore-wait s) 0))
+
+;* (define (semaphore-wait s::semaphore #!optional (timeout::long 0))  */
+;*    (if (=fx timeout 0)                                              */
+;*        (=fx ($psemaphore-wait s) 0)                                 */
+;*        (=fx ($psemaphore-timed-wait s timeout) 0)))                 */
 
 ;*---------------------------------------------------------------------*/
 ;*    semaphore-trywait ...                                            */

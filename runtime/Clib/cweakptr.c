@@ -3,9 +3,9 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Mon Mar  3 09:05:24 2014 (serrano)                */
+/*    Last change :  Wed Apr 26 07:58:03 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
-/*    C weak pointer managment                                         */
+/*    C weak pointer management                                        */
 /*=====================================================================*/
 #include <bigloo.h>
 

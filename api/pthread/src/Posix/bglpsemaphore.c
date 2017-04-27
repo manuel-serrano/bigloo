@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Fri Apr 21 16:38:29 2017 (serrano)                */
+/*    Last change :  Thu Apr 27 14:30:01 2017 (serrano)                */
 /*    Copyright   :  2004-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix semaphore implementation                               */
@@ -62,34 +62,34 @@ bgl_open_semaphore( obj_t name,
 #endif   
 }
 
-/*---------------------------------------------------------------------*/
-/*    long                                                             */
-/*    bgl_semaphore_timed_wait ...                                     */
-/*---------------------------------------------------------------------*/
-long
-bgl_semaphore_timed_wait( obj_t s, long ms ) {
-   struct timespec timeout;
-   long usec;
-      
-#  if defined( _MINGW_VER ) || defined( _MSC_VER )
-   struct timeb tb;
-   ftime( &tb );
-
-   usec = (tb.millitm + ms) * 1000;
-
-   timeout.tv_nsec = (usec % 1000000) * 1000;
-   timeout.tv_sec = tb.time + (usec / 1000000);
-#  else
-   struct timeval now;
-   gettimeofday( &now, 0 );
-
-   usec = (now.tv_usec + ms * 1000);
-   timeout.tv_nsec = (usec % 1000000) * 1000;
-   timeout.tv_sec = now.tv_sec + (usec / 1000000);
-#  endif
-
-   return sem_timedwait( BGL_SEMAPHORE_SEM( s ), &timeout );
-}
+/* {*---------------------------------------------------------------------*} */
+/* {*    long                                                             *} */
+/* {*    bgl_semaphore_timed_wait ...                                     *} */
+/* {*---------------------------------------------------------------------*} */
+/* long                                                                */
+/* bgl_semaphore_timed_wait( obj_t s, long ms ) {                      */
+/*    struct timespec timeout;                                         */
+/*    long usec;                                                       */
+/*                                                                     */
+/* #  if defined( _MINGW_VER ) || defined( _MSC_VER )                  */
+/*    struct timeb tb;                                                 */
+/*    ftime( &tb );                                                    */
+/*                                                                     */
+/*    usec = (tb.millitm + ms) * 1000;                                 */
+/*                                                                     */
+/*    timeout.tv_nsec = (usec % 1000000) * 1000;                       */
+/*    timeout.tv_sec = tb.time + (usec / 1000000);                     */
+/* #  else                                                             */
+/*    struct timeval now;                                              */
+/*    gettimeofday( &now, 0 );                                         */
+/*                                                                     */
+/*    usec = (now.tv_usec + ms * 1000);                                */
+/*    timeout.tv_nsec = (usec % 1000000) * 1000;                       */
+/*    timeout.tv_sec = now.tv_sec + (usec / 1000000);                  */
+/* #  endif                                                            */
+/*                                                                     */
+/*    return sem_timedwait( BGL_SEMAPHORE_SEM( s ), &timeout );        */
+/* }                                                                   */
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
