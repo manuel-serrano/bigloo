@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Fri Apr 21 18:40:05 2017 (serrano)                */
+;*    Last change :  Wed May  3 09:56:00 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -260,7 +260,6 @@
 	 (cond
 	    ((set-exit-call node)
 	     =>
-;* 	     (lambda (callee) (cons `(,host ,callee tail) A)))         */
 	     (lambda (callee) A))
 	    (else
 	     (let liip ((args (app-args node))
@@ -270,10 +269,6 @@
 		    (cond
 		       ((not (local? callee))
 			A)
-;* 		       ((is-exit-handler? host)                        */
-;* 			(cons `(,host ,callee tail) A))                */
-;* 		       ((is-exit-handler? callee)                      */
-;* 			(cons `(,host ,callee tail) A))                */
 		       (else
 			(cons `(,host ,callee ,k) A))))
 		   (else
@@ -377,20 +372,21 @@
 (define-method (node-A node::let-fun host k A)
 
    (define (set-exit? node)
-      (with-access::let-fun node (body locals)
-	 (when (and (pair? locals) (null? (cdr locals)))
-	    (let* ((var (car locals))
-		   (fun (local-value var)))
-	       (when (isa? (sfun-body fun) set-ex-it)
-		  (when (isa? body app)
-		     (with-access::app body (fun)
-			(with-access::var fun (variable)
-			   (eq? variable var)))))))))
+      (when *optim-return-goto?*
+	 (with-access::let-fun node (body locals)
+	    (when (and (pair? locals) (null? (cdr locals)))
+	       (let* ((var (car locals))
+		      (fun (local-value var)))
+		  (when (isa? (sfun-body fun) set-ex-it)
+		     (when (isa? body app)
+			(with-access::app body (fun)
+			   (with-access::var fun (variable)
+			      (eq? variable var))))))))))
 
    (define (mark-set-exit! node)
       (with-access::let-fun node (locals)
 	 (with-access::sfun/Iinfo (local-value (car locals)) (forceG? xhdl?)
-	    (set! forceG? (not (or *optim-return-goto?* (eq? (car k) 'tail))))
+	    (set! forceG? (not (eq? (car k) 'tail)))
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)
@@ -418,10 +414,11 @@
 (define-method (node-A node::let-var host k A)
    
    (define (is-get-exitd-top-app? node)
-      (when (isa? node app)
-	 (with-access::app node (fun args)
-	    (with-access::var fun (variable)
-	       (is-get-exitd-top? variable)))))
+      (when *optim-return-goto?*
+	 (when (isa? node app)
+	    (with-access::app node (fun args)
+	       (with-access::var fun (variable)
+		  (is-get-exitd-top? variable))))))
       
    (with-access::let-var node (body)
       (let liip ((bindings (let-var-bindings node))
@@ -431,7 +428,7 @@
 	     (let* ((binding (car bindings))
 		    (var (car binding))
 		    (val (cdr binding)))
-		(if (and *optim-return-goto?* (is-get-exitd-top-app? val))
+		(if (is-get-exitd-top-app? val)
 		    (widen!::svar/Iinfo (local-value var)
 		       (xhdl host))
 		    (widen!::svar/Iinfo (local-value var)))
@@ -447,6 +444,10 @@
       (let* ((exit (var-variable var))
 	     (hdlg (sexit-handler (local-value exit))))
 	 (widen!::sexit/Iinfo (local-value exit))
+	 (when (and (not *optim-return-goto?*)
+		    (not (sexit-detached? (local-value exit))))
+	    (with-access::sfun/Iinfo (local-value hdlg) (forceG?)
+	       (set! forceG? #t)))
 ;* 	 (when (and (not (sexit-detached? (local-value exit)))         */
 ;* 		    *optim-return-goto?*)                              */
 ;* 	    (let ((fext (function-exit-node node)))                    */
