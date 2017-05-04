@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 20 11:52:07 2017 (serrano)                */
+/*    Last change :  Thu May  4 07:37:41 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -357,6 +357,7 @@ typedef union scmobj *obj_t;
 #include <bigloo_string.h>
 #include <bigloo_struct.h>
 #include <bigloo_cell.h>
+#include <bigloo_object.h>
 
 /* stream (input and output) */
 typedef union bgl_stream {                    
@@ -944,29 +945,6 @@ union scmobj {
 
 /* function type */
 typedef obj_t (*function_t)();
-
-/* old name mangling framework */
-typedef struct __object_bgl {
-   header_t header;
-   obj_t widening;
-} *object_bglt;
-
-/* bootstrap configuration */   
-typedef struct __bgl__object_00_bgl {
-   header_t header;
-   obj_t widening;
-} *bgl__object_00_bglt;
-   
-/* new name mangling framework */   
-typedef struct BgL__object_00_bgl {
-   header_t header;
-   obj_t widening;
-} *BgL__object_00_bglt;
-   
-typedef struct BgL_objectz00_bgl {
-   header_t header;
-   obj_t widening;
-} *BgL_objectz00_bglt;
 
 /*---------------------------------------------------------------------*/
 /*    The garbage collector                                            */
@@ -1565,75 +1543,6 @@ BGL_RUNTIME_DECL obj_t make_weakptr( obj_t );
 BGL_RUNTIME_DECL obj_t weakptr_data( obj_t );
 BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 
-/*---------------------------------------------------------------------*/
-/*    Object macros                                                    */
-/*---------------------------------------------------------------------*/
-#define BGL_OBJECTP( _obj ) \
-   ((POINTERP( _obj ) && (TYPE( _obj ) >= OBJECT_TYPE)))
-
-#define BGL_OBJECT_MIN_DISPLAY_SIZE 6
-
-#define BGL_OBJECT_CLASS_NUM( _obj ) \
-   (TYPE( _obj ))
-
-#define BGL_OBJECT_CLASS_NUM_SET( _1, _2 ) \
-   (((obj_t)CREF(_1))->header = MAKE_HEADER( _2, 0 ), BUNSPEC)
-   
-#define BGL_OBJECT_WIDENING( _obj ) \
-   (((object_bglt)(CREF(_obj)))->widening)
-
-#define BGL_OBJECT_WIDENING_SET( _obj, _wdn ) \
-   BASSIGN( BGL_OBJECT_WIDENING( _obj ), _wdn, (obj_t)_obj )
-
-/*---------------------------------------------------------------------*/
-/*    Classes                                                          */
-/*---------------------------------------------------------------------*/
-#define BGL_CLASSP( o ) (POINTERP( o ) && (TYPE( o ) == CLASS_TYPE))
-
-#define BGL_CLASS_SIZE (sizeof( struct bgl_class ) )
-#define BGL_CLASS( f ) (CREF( f )->class_t)
-   
-#define BGL_CLASS_NAME( f ) (BGL_CLASS( f ).name)
-   
-#define BGL_CLASS_INDEX( f ) (BGL_CLASS( f ).index)
-   
-#define BGL_CLASS_DEPTH( f ) (BGL_CLASS( f ).depth)
-   
-#define BGL_CLASS_SUPER( f ) (BGL_CLASS( f ).super)
-#define BGL_CLASS_ANCESTORS( f ) (BGL_CLASS( f ).ancestors)
-#define BGL_CLASS_ANCESTORS_REF( f, i ) (&(BGL_CLASS( f ).ancestor0))[ i ]
-   
-#define BGL_CLASS_SUBCLASSES( f ) (BGL_CLASS( f ).subclasses)
-#define BGL_CLASS_SUBCLASSES_SET( f, v ) BASSIGN( BGL_CLASS_SUBCLASSES( f ), v, f )
-   
-#define BGL_CLASS_DIRECT_FIELDS( f ) (BGL_CLASS( f ).direct_fields)
-#define BGL_CLASS_DIRECT_FIELDS_SET( f, v ) BASSIGN( BGL_CLASS_DIRECT_FIELDS( f ), v, f )
-   
-#define BGL_CLASS_ALL_FIELDS( f ) (BGL_CLASS( f ).all_fields)
-#define BGL_CLASS_ALL_FIELDS_SET( f, v ) BASSIGN( BGL_CLASS_ALL_FIELDS( f ), v, f )
-   
-#define BGL_CLASS_VIRTUAL_FIELDS( f ) (BGL_CLASS( f ).virtual_fields)
-   
-#define BGL_CLASS_MODULE( f ) (BGL_CLASS( f ).module)
-   
-#define BGL_CLASS_ALLOC_FUN( f ) (BGL_CLASS( f ).alloc_fun)
-
-#define BGL_CLASS_HASH( f ) (BGL_CLASS( f ).hash)
-   
-#define BGL_CLASS_NEW_FUN( f ) (BGL_CLASS( f ).new_fun)
-   
-#define BGL_CLASS_NIL_FUN( f ) (BGL_CLASS( f ).nil_fun)
-   
-#define BGL_CLASS_NIL( f ) (BGL_CLASS( f ).nil)
-#define BGL_CLASS_NIL_SET( f, v ) BASSIGN( BGL_CLASS_NIL( f ), v, f )
-   
-#define BGL_CLASS_CONSTRUCTOR( f ) (BGL_CLASS( f ).constructor)
-   
-#define BGL_CLASS_SHRINK( f ) (BGL_CLASS( f ).shrink)
-   
-#define BGL_CLASS_EVDATA( f ) (BGL_CLASS( f ).evdata)   
-#define BGL_CLASS_EVDATA_SET( f, o ) (BGL_CLASS_EVDATA( f ) = o)
-   
 /*---------------------------------------------------------------------*/
 /*    Process handling                                                 */
 /*---------------------------------------------------------------------*/

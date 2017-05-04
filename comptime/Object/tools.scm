@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:52:24 1996                          */
-;*    Last change :  Fri Nov 25 16:14:13 2011 (serrano)                */
-;*    Copyright   :  1996-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu May  4 07:47:17 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Some tools for builing the class accessors                       */
 ;*=====================================================================*/
@@ -93,7 +93,7 @@
 (define (make-direct-ref type slot obj)
    (let* ((fname (slot-name slot))
 	  (tname (type-name type))
-	  (fmt (format "(((~a)CREF($1))->~a)" tname fname)))
+	  (fmt (format "(((~a)COBJECT($1))->~a)" tname fname)))
       (make-private-sexp 'getfield
 			 (type-id (slot-type slot))
 			 (type-id type)
@@ -107,7 +107,7 @@
 (define (make-direct-set! type slot obj val)
    (let* ((fname (slot-name slot))
 	  (tname (type-name type))
-	  (fmt (format "((((~a)CREF($1))->~a)=((~a)$2),BUNSPEC)" tname fname
+	  (fmt (format "((((~a)COBJECT($1))->~a)=((~a)$2),BUNSPEC)" tname fname
 		       (type-name (slot-type slot)))))
       (make-private-sexp 'setfield
 			 (type-id (slot-type slot))

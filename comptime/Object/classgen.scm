@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Mon Feb 20 07:49:24 2017 (serrano)                */
+;*    Last change :  Thu May  4 07:46:58 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -260,7 +260,7 @@
 			(type-name c))))
 	 `(,(make-typed-ident 'free-pragma tid)
 	   ,(string-append "((" tname
-	       ")BREF( GC_MALLOC( sizeof(" sizeof ") )))"))))
+	       ")BOBJECT( GC_MALLOC( sizeof(" sizeof ") )))"))))
 
    (define (init-widening new)
       (if (final-class? c)
@@ -343,7 +343,7 @@
 			(type-name w))))
 	 `(,(make-typed-ident 'free-pragma (type-id w))
 	   ,(string-append "((" tname
-	       ")BREF( GC_MALLOC( sizeof(" sizeof ") )))"))))
+	       ")BOBJECT( GC_MALLOC( sizeof(" sizeof ") )))"))))
    
    (define (nopragma-allocate w)
       (make-private-sexp 'new (type-id w)))

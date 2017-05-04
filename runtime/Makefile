@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Apr 21 16:33:36 2017 (serrano)                */
+#*    Last change :  Thu May  4 07:38:58 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -291,7 +291,8 @@ INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
                   Include/bigloo_pair.h Include/bigloo_real.h \
                   Include/bigloo_vector.h Include/bigloo_string.h \
                   Include/bigloo_struct.h Include/bigloo_cell.h \
-                  Include/bigloo_int.h Include/bigloo_semaphore.h
+                  Include/bigloo_int.h Include/bigloo_semaphore.h \
+                  Include/bigloo_object.h
 
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */
@@ -438,35 +439,13 @@ lib-c_s: includes
                 OBJDIR_USR=obj_s OBJDIR_SYS=obj_u \
                 LIBQ=_s
 
-bps_cp_avant:
-	if [ $(HOME) != /home/serrano ]; then \
-	  cp Include/bigloo_saw.h ../lib/bigloo/4.3a; \
-	  sudo cp Include/bigloo.h /usr/local/lib/bigloo/4.3a; \
-	  sudo cp Include/bigloo_saw.h /usr/local/lib/bigloo/4.3a; \
-	  sudo cp Include/bigloo_pair.h /usr/local/lib/bigloo/4.3a; \
-	  sudo cp Include/bigloo_real.h /usr/local/lib/bigloo/4.3a; \
-	  sudo cp Include/bigloo_int.h /usr/local/lib/bigloo/4.3a; \
-	  sudo cp Include/bigloo_vector.h /usr/local/lib/bigloo/4.3a; \
-	  cp Include/bigloo_pair.h ../lib/bigloo/4.3a; \
-	  cp Include/bigloo_real.h ../lib/bigloo/4.3a; \
-	  cp Include/bigloo_int.h ../lib/bigloo/4.3a; \
-	  cp Include/bigloo_vector.h ../lib/bigloo/4.3a; \
-        fi
-
-bps_cp_apres:
-	if [ $(HOME) != /home/serrano ]; then \
-	  sudo cp ../lib/bigloo/4.3a/libbigloo_saw_s-4.3a.* /usr/local/lib/bigloo/4.3a/; \
-        fi
-
 lib-saw: lib-saw_s
 lib-saw_s: includes
-	$(MAKE) bps_cp_avant
 	$(MAKE) one-lib-c \
                 BFLAGS_SYS="$(BUNSAFEFLAGS)" \
                 BFLAGS_USR="$(BSAFEFLAGS)" \
                 OBJDIR_USR=saw_s OBJDIR_SYS=saw_u \
                 LIBQ=_saw_s
-	$(MAKE) bps_cp_apres
 
 lib_u: lib-c_u
 lib-c_u: includes

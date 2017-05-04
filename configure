@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 20 11:13:18 2017 (serrano)                */
+#*    Last change :  Thu May  4 07:48:09 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1152,6 +1152,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_struct_h=lib/bigloo/$release/bigloo_struct.h
   bigloo_cell_h=lib/bigloo/$release/bigloo_cell.h
   bigloo_semaphore_h=lib/bigloo/$release/bigloo_semaphore.h
+  bigloo_object_h=lib/bigloo/$release/bigloo_object.h
 fi
 
 # The bigloo_gc.h file
@@ -3265,6 +3266,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_struct_h` $bigloo_struct_h
   cp runtime/Include/`basename $bigloo_cell_h` $bigloo_cell_h
   cp runtime/Include/`basename $bigloo_semaphore_h` $bigloo_semaphore_h
+  cp runtime/Include/`basename $bigloo_object_h` $bigloo_object_h
 
   # bigloo.sh
   for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
