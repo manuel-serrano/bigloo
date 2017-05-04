@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Wed Mar  8 11:45:18 2017 (serrano)                */
+/*    Last change :  Thu May  4 08:20:16 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -1228,6 +1228,16 @@ BGL_RUNTIME_DEF
 obj_t
 string_for_read( obj_t bstring ) {
   return create_string_for_read( bstring, 0 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    symbol_for_read ...                                              */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF
+obj_t
+symbol_for_read( obj_t bstring ) {
+  return create_string_for_read( bstring, 1 );
 }
 
 /*---------------------------------------------------------------------*/

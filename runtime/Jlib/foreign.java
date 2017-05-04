@@ -2934,6 +2934,11 @@ public final class foreign
 	 return create_string_for_read(src, false);
       }
 
+   public static byte[] symbol_for_read(byte[]src)
+      {
+	 return create_string_for_read(src, true);
+      }
+
    public static byte[] create_string_for_read(byte[]src, boolean symbolp)
       {
 	 final int len = src.length;

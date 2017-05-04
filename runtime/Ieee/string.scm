@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Dec 25 07:58:16 2016 (serrano)                */
+;*    Last change :  Thu May  4 08:19:49 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -79,6 +79,7 @@
 	    
 	    (macro $string-bound-check?::bool (::long ::long) "BOUND_CHECK")
 	    ($string-for-read::bstring (::bstring) "string_for_read")
+	    ($symbol-for-read::bstring (::bstring) "symbol_for_read")
 	    ($blit-string::obj (::bstring ::long ::bstring ::long ::long)
 				"blit_string")
 	    (macro $string-shrink!::bstring (::bstring ::long) "bgl_string_shrink"))
@@ -149,6 +150,8 @@
 		       "BOUND_CHECK")
 	       (method static $string-for-read::bstring (::bstring)
 		       "string_for_read")
+	       (method static $symbol-for-read::bstring (::bstring)
+		       "symbol_for_read")
 	       (method static $blit-string::obj (::bstring ::long ::bstring ::long ::long)
 		       "blit_string")
 	       (method static $make-string/wo-fill::bstring (::long)

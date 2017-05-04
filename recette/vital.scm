@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Thu Mar 26 11:01:39 2015 (serrano)                */
-;*    Copyright   :  2002-15 Manuel Serrano                            */
+;*    Last change :  Thu May  4 08:25:14 2017 (serrano)                */
+;*    Copyright   :  2002-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -380,6 +380,11 @@
    (test "eq? symbol.3" (eq? 'A 'A) #t)
    (test "eq? symbol.4" (eq? 'a 'b) #f)
    (test "eq? symbol.5" (eq? ':=   '|:=|) #f)
+   (test "symbol.1" '|foo\|bar| (string->symbol "foo\|bar"))
+   (test "symbol.2"
+      (string=? (call-with-output-string (lambda (p) (write '|foo\|bar| p)))
+	 "foo\|bar")
+      #t)
    (test "eq? integer.1" (eq? 1 2) #f)
    (test "eq? integer.2" (eq? 1 1) #t)
    (test "eq? integer.3" (eq? '1 1) #t)
