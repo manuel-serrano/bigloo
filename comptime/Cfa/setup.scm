@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Fri Apr 21 18:44:58 2017 (serrano)                */
+;*    Last change :  Fri May  5 08:54:47 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -236,8 +236,11 @@
 	  (if (sfun-top? fun) (approx-set-top! approx))
 	  (widen!::extern-sfun/Cinfo fun
 	     (approx approx)))
-       (widen!::intern-sfun/Cinfo fun
-	  (approx (make-type-approx (variable-type var))))))
+       (let ((approx (make-type-approx (variable-type var))))
+	  (when *optim-cfa-force-loose-local-function?*
+	     (approx-set-top! approx))
+	  (widen!::intern-sfun/Cinfo fun
+	     (approx approx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    fun-setup! ::cfun ...                                            */

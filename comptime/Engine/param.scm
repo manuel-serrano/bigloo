@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Sun Feb 19 20:52:13 2017 (serrano)                */
+;*    Last change :  Fri May  5 08:48:46 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -74,6 +74,7 @@
 	    *optim-cfa-pair?*
 	    *optim-cfa-pair-quote-max-length*
 	    *optim-cfa-unbox-closure-args*
+	    *optim-cfa-force-loose-local-function?*
 	    *optim-integrate?*
 	    *optim-dataflow?*
 	    *optim-dataflow-for-errors?*
@@ -903,6 +904,9 @@
    4)
 (param-define *optim-cfa-unbox-closure-args*
    "Unbox closure arguments"
+   #f)
+(param-define *optim-cfa-force-loose-local-function?*
+   "Force loosing local function approximations (for debugging)"
    #f)
 (param-define *optim-integrate?*
    "Enable function integration (closure analysis)"

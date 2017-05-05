@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Dec  7 07:21:01 2016 (serrano)                */
-;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri May  5 08:49:27 2017 (serrano)                */
+;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -433,6 +433,8 @@
        (set! *optim-cfa-unbox-closure-args* #t))
       (("-fno-cfa-unbox-closure-args" (help "Disable CFA unboxed closure args"))
        (set! *optim-cfa-unbox-closure-args* #f))
+      (("-fno-cfa-local-function" (help "Disable CFA local function tracking"))
+       (set! *optim-cfa-force-loose-local-function?* #t))
       ;; loop unrolling
       (("-funroll-loop" (help "Enable loop unrolling (enabled from -O3)"))
        (set! *optim-unroll-loop?* #t))
