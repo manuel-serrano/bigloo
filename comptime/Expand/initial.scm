@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat May  6 08:38:58 2017 (serrano)                */
+;*    Last change :  Tue May  9 11:27:56 2017 (serrano)                */
 ;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -436,6 +436,7 @@
    (install-O-comptime-expander 'bit-rshu32 expand-bit-rshu32)
    (install-O-comptime-expander 'bit-ursh expand-bit-ursh)
    (install-O-comptime-expander 'bit-urshu32 expand-bit-urshu32)
+   (install-O-comptime-expander 'bit-ors32 expand-bit-ors32)
 
    ;; eq?
    (install-O-comptime-expander 'eq? expand-eq?)

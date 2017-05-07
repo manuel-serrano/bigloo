@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Sat Mar 18 21:02:26 2017 (serrano)                */
+;*    Last change :  Tue May  9 11:27:38 2017 (serrano)                */
 ;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
@@ -35,7 +35,8 @@
 	   (expand-bit-rsh ::obj ::procedure)
 	   (expand-bit-rshu32 ::obj ::procedure)
 	   (expand-bit-ursh ::obj ::procedure)
-	   (expand-bit-urshu32 ::obj ::procedure))
+	   (expand-bit-urshu32 ::obj ::procedure)
+	   (expand-bit-ors32 ::obj ::procedure))
    (import tools_error))
 
 ;*---------------------------------------------------------------------*/
@@ -358,3 +359,9 @@
    ;;(expand-bit bit-ursh fixnum?)
    (map (lambda (x) (e x e)) x))
 (define (expand-bit-urshu32 x e) (expand-bit bit-urshu32 uint32?))
+(define (expand-bit-ors32 x e)
+   (match-case x
+      ((?- (and (?n (? int32?))) (and (?m (? int32?))))
+       (bit-ors32 n m))
+      (else
+       (epairify! x (map (lambda (x) (e x e)) x)))))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri May  5 08:49:27 2017 (serrano)                */
+;*    Last change :  Sat May 13 07:18:54 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -1116,19 +1116,23 @@
 ;*    parse-debug-args ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (parse-debug-args string)
+   
    (define (-g2!)
       (bigloo-compiler-debug-set! 2)
       (set! *compiler-debug* 2)
       (set! *jas-peephole* #f))
+   
    (define (-g3!)
       ;; -g3 and -call/cc are incompatible
       (unless *call/cc?*
 	 (bigloo-compiler-debug-set! 3)
 	 (set! *compiler-debug-trace* 2)
 	 (set! *compiler-debug* 3)))
+   
    (define (-g4!)
       (bigloo-compiler-debug-set! 4)
       (set! *compiler-debug* 4))
+   
    (bigloo-compiler-debug-set! 1)
    (set! *compiler-debug* 1)
    (set! *purify* #t)

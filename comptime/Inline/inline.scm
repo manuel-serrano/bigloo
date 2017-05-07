@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sun May  7 07:43:28 2017 (serrano)                */
+;*    Last change :  Sun May  7 08:35:49 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -303,7 +303,7 @@
    (define (noinline? body)
       (when (isa? body sequence)
 	 (with-access::sequence body (meta)
-	    (memq 'noinilne meta))))
+	    (memq 'noinline meta))))
    
    (with-access::let-fun n (locals body)
       (for-each (lambda (fun)
