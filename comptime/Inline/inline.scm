@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Fri Apr 21 18:48:59 2017 (serrano)                */
+;*    Last change :  Sun May  7 07:43:28 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -20,6 +20,7 @@
 	    inline_app
 	    ast_alphatize
 	    ast_dump
+	    ast_walk
 	    engine_param
 	    tools_shape
 	    tools_error)
@@ -106,7 +107,10 @@
 (define-method (inline-node node::sequence kfactor stack)
    (trace (inline inline+ 0)
       "SEQ " (node->sexp node) #\Newline)
-   (inline-node*! (sequence-nodes node) kfactor stack)
+   (with-access::sequence node (meta)
+      (if (memq 'noinline meta)
+	  (disable-inlining! node)
+	  (inline-node*! (sequence-nodes node) kfactor stack)))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -285,5 +289,34 @@
 	  (set-car! node* (inline-node (car node*) kfactor stack))
 	  (inline-node*! (cdr node*) kfactor stack))))
    
-   
+;*---------------------------------------------------------------------*/
+;*    disable-inlining! ::node ...                                     */
+;*---------------------------------------------------------------------*/
+(define-walk-method (disable-inlining! n::node)
+   (call-default-walker))
 
+;*---------------------------------------------------------------------*/
+;*    disable-inlining! ::let-fun ...                                  */
+;*---------------------------------------------------------------------*/
+(define-walk-method (disable-inlining! n::let-fun)
+   
+   (define (noinline? body)
+      (when (isa? body sequence)
+	 (with-access::sequence body (meta)
+	    (memq 'noinilne meta))))
+   
+   (with-access::let-fun n (locals body)
+      (for-each (lambda (fun)
+		   (with-access::local fun (value)
+		      (with-access::sfun value (body)
+			 (disable-inlining! body)
+			 (unless (noinline? body)
+			    (with-access::node body (loc type)
+			       (set! body
+				  (instantiate::sequence
+				     (nodes (list body))
+				     (type type)
+				     (meta '(noinline)))))))))
+	 locals)
+      (set! body (disable-inlining! body))
+      n))

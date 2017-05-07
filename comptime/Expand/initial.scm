@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sat Mar 18 20:54:45 2017 (serrano)                */
+;*    Last change :  Sat May  6 08:38:58 2017 (serrano)                */
 ;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -67,6 +67,9 @@
    ;; we first of all, we perform Oenv initialization
    (initialize-Oenv!)
    (initialize-Genv!)
+
+   ;; #meta
+   (install-compiler-expander '|#meta| expand-meta)
    
    ;; if
    (install-compiler-expander 'if expand-if)
@@ -225,7 +228,7 @@
 	  (else
 	   (error #f "Illegal `cons' form" x)))))
    
-v   ;; map
+   ;; map
    (install-O-comptime-expander 'map expand-map)
    (install-G-comptime-expander 'map
 				(lambda (x::obj e::procedure)
@@ -253,7 +256,7 @@ v   ;; map
    (install-G-comptime-expander 'filter
 				(lambda (x::obj e::procedure)
 				   (map-check x e '())))
-v   (install-G-comptime-expander 'filter!
+   (install-G-comptime-expander 'filter!
 				(lambda (x::obj e::procedure)
 				   (map-check x e #unspecified)))
    

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 14:11:36 2000                          */
-;*    Last change :  Tue Mar  1 14:46:00 2016 (serrano)                */
-;*    Copyright   :  2000-16 Manuel Serrano                            */
+;*    Last change :  Sat May  6 08:50:12 2017 (serrano)                */
+;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Private constructino of the AST.                                 */
 ;*=====================================================================*/
@@ -26,7 +26,8 @@
 	   (private-sexp?::bool ::pair)
 	   (cast-sexp?::bool ::pair)
 	   (cast-sexp-type::symbol ::pair)
-	   (make-private-sexp::pair ::symbol ::symbol . objs)))
+	   (make-private-sexp::pair ::symbol ::symbol . objs)
+	   (expand-meta ::pair ::procedure)))
 
 ;*---------------------------------------------------------------------*/
 ;*    *private-stamp* ...                                              */
@@ -214,6 +215,12 @@
 	  (type (use-type! type loc))
 	  (unsafe #t)
 	  (nodes (list (sexp->node exp stack loc 'value)))))
+      ((?- meta ?type ?kwds ?body)
+       (instantiate::sequence
+	  (loc loc)
+	  (type (use-type! type loc))
+	  (meta kwds)
+	  (nodes (sexp*->node body stack loc 'value))))
       (else
        (error "private-node"
 	      "Illegal private kind"
@@ -236,5 +243,16 @@
 			       ;; isa to be removed
 			       instanceof isa
 			       vlength vref vset! valloc unsafe
-			       vref-ur vset-ur!)))
+			       vref-ur vset-ur! meta)))
    (cons* *private-stamp* kind type-id objs))
+
+;*---------------------------------------------------------------------*/
+;*    expand-meta ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (expand-meta x e)
+   (match-case x
+      ((?- (and (? list?) ?keywords) . ?body)
+       (make-private-sexp 'meta '_ keywords (map (lambda (x) (e x e)) body)))
+      (else
+       (error "meta" "bad syntax" x))))
+       

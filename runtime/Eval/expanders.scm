@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Tue Dec  1 08:13:24 2015 (serrano)                */
-;*    Copyright   :  2002-15 Manuel Serrano                            */
+;*    Last change :  Sat May  6 08:48:11 2017 (serrano)                */
+;*    Copyright   :  2002-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -279,6 +279,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    Interpreter macros                                               */
 ;*---------------------------------------------------------------------*/
+   ;; #meta
+   (install-eval-expander '|#meta|
+      (lambda (x e)
+	 (match-case x
+	    ((?- (? list?) . ?body)
+	     (evepairify
+		`(begin ,@(map (lambda (x) (e x e)) body))
+		x))
+	    (else
+	     (expand-error "#meta" "Illegal form" x)))))
+   
    ;; bind-exit
    (install-eval-expander 'bind-exit
       (lambda (x e)
@@ -312,9 +323,7 @@
 	     (evepairify
 		`(unwind-protect
 		    ,(e body e)
-		    ,@(map (lambda (x)
-			      (e x e))
-			 exp))
+		    ,@(map (lambda (x) (e x e)) exp))
 		x))
 	    (else
 	     (expand-error "unwind-protect" "Illegal form" x)))))

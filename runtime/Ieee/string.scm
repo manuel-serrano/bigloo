@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Thu May  4 08:19:49 2017 (serrano)                */
+;*    Last change :  Sun May  7 07:54:33 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -55,15 +55,15 @@
 	    ($prefix-ci-at?::bool (::bstring ::bstring ::long) "bigloo_strcmp_ci_at")
 	    ($substring-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_at")
 	    ($substring-ci-at?::bool (::bstring ::bstring ::long ::long) "bigloo_strncmp_ci_at")
-	    ($strcicmp::bool (::bstring ::bstring) "strcicmp")
-	    ($string_lt::bool (::bstring ::bstring) "string_lt")
-	    ($string_le::bool (::bstring ::bstring) "string_le")
-	    ($string_gt::bool (::bstring ::bstring) "string_gt")
-	    ($string_ge::bool (::bstring ::bstring) "string_ge")
-	    ($string_cilt::bool (::bstring ::bstring) "string_cilt")
-	    ($string_cile::bool (::bstring ::bstring) "string_cile")
-	    ($string_cigt::bool (::bstring ::bstring) "string_cigt")
-	    ($string_cige::bool (::bstring ::bstring) "string_cige")
+	    ($strcicmp::bool (::bstring ::bstring) "bigloo_strcicmp")
+	    ($string_lt::bool (::bstring ::bstring) "bigloo_string_lt")
+	    ($string_le::bool (::bstring ::bstring) "bigloo_string_le")
+	    ($string_gt::bool (::bstring ::bstring) "bigloo_string_gt")
+	    ($string_ge::bool (::bstring ::bstring) "bigloo_string_ge")
+	    ($string_cilt::bool (::bstring ::bstring) "bigloo_string_cilt")
+	    ($string_cile::bool (::bstring ::bstring) "bigloo_string_cile")
+	    ($string_cigt::bool (::bstring ::bstring) "bigloo_string_cigt")
+	    ($string_cige::bool (::bstring ::bstring) "bigloo_string_cige")
 	    
 	    ($substring::bstring (::bstring ::long ::long) "c_substring")
 	    ($string-append::bstring (::bstring ::bstring) "string_append")

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Mar  7 21:05:09 2017 (serrano)                */
+/*    Last change :  Sun May  7 07:54:44 2017 (serrano)                */
 /*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -30,6 +30,21 @@ BGL_RUNTIME_DECL obj_t string_to_bstring_len( char *, int );
 BGL_RUNTIME_DECL obj_t close_init_string();
 BGL_RUNTIME_DECL obj_t bgl_string_shrink( obj_t, long );
 BGL_RUNTIME_DECL bool_t bigloo_strcmp( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_strcmp_at( obj_t, obj_t, long );
+BGL_RUNTIME_DECL bool_t bigloo_strcmp_ci_at( obj_t, obj_t, long );
+BGL_RUNTIME_DECL bool_t bigloo_strncmp_at( obj_t, obj_t, long, long );
+BGL_RUNTIME_DECL bool_t bigloo_strncmp_ci_at( obj_t, obj_t, long, long );
+BGL_RUNTIME_DECL bool_t bigloo_strncmp( obj_t, obj_t, long );
+BGL_RUNTIME_DECL bool_t bigloo_strncmp_ci( obj_t, obj_t, long );
+BGL_RUNTIME_DECL bool_t bigloo_stricmp( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_lt( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_le( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_gt( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_ge( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_cilt( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_cile( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_cigt( obj_t, obj_t );
+BGL_RUNTIME_DECL bool_t bigloo_string_cige( obj_t, obj_t );
 					
 #if( BGL_HAVE_UNISTRING )
 BGL_RUNTIME_DECL int bgl_strcoll( obj_t, obj_t );
