@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Apr 20 11:29:56 2017                          */
-/*    Last change :  Thu Apr 20 12:05:50 2017 (serrano)                */
+/*    Last change :  Wed May 17 09:27:01 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Semaphore implementation                                         */
@@ -21,7 +21,7 @@ import bigloo.*;
 /*---------------------------------------------------------------------*/
 public class bglpsemaphore extends bigloo.semaphore {
    static semaphore bgl_open_semaphore( Object name, boolean create, boolean excl,
-					boolean read, boolean write, int value ) {
+					int mode, int value ) {
       return new semaphore( name );
    }
 

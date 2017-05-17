@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Thu Apr 27 14:30:01 2017 (serrano)                */
+/*    Last change :  Wed May 17 09:14:00 2017 (serrano)                */
 /*    Copyright   :  2004-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix semaphore implementation                               */
@@ -36,12 +36,11 @@
 BGL_RUNTIME_DEF obj_t
 bgl_open_semaphore( obj_t name,
 		    bool_t create, bool_t excl,
-		    bool_t read, bool_t write,
+		    long mode,
 		    long val ) {
 #if BGL_HAVE_SEMAPHORE   
    obj_t sem = GC_MALLOC( BGL_SEMAPHORE_SIZE );
    long flag = (create?O_CREAT:0) | (excl?O_EXCL:0);
-   long mode = (read && write ? O_RDWR : (read ? O_RDONLY : O_WRONLY));
    
    sem->semaphore_t.header = MAKE_HEADER( SEMAPHORE_TYPE, 0 );
    sem->semaphore_t.name = name;

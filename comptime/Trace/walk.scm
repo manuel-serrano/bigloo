@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Fri Apr 21 18:39:59 2017 (serrano)                */
+;*    Last change :  Wed May 17 13:23:40 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
@@ -242,6 +242,12 @@
 ;*    make-traced-node ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (make-traced-node::let-var node::node type::type symbol lloc stack)
+
+   (define (fqname sym stack)
+      (if (null? stack)
+	  sym
+	  (symbol-append sym ': (fqname (trace-id (car stack)) (cdr stack)))))
+   
    (let* ((loc  (node-loc node))
 	  (aux  (mark-symbol-non-user! (gensym 'aux)))
 	  (taux (make-typed-ident aux (type-id type)))
@@ -249,7 +255,8 @@
 	  (tmp2 (mark-symbol-non-user! (gensym 'loc)))
 	  (tmp3 (mark-symbol-non-user! (gensym 'env)))
 	  (sym  (if (and (pair? stack) (variable? (car stack)))
-		    (symbol-append symbol ': (variable-id (car stack)))
+		    (fqname symbol stack)
+		    ;;(symbol-append symbol ': (variable-id (car stack)))
 		    symbol))
 	  (l    (when (location? loc)
 		   `(at ,(location-full-fname loc) ,(location-pos loc))))
