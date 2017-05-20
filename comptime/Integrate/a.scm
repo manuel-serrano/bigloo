@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 14 10:52:56 1995                          */
-;*    Last change :  Wed May  3 09:56:00 2017 (serrano)                */
+;*    Last change :  Sat May 20 09:47:49 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The computation of the A relation.                               */
@@ -372,21 +372,20 @@
 (define-method (node-A node::let-fun host k A)
 
    (define (set-exit? node)
-      (when *optim-return-goto?*
-	 (with-access::let-fun node (body locals)
-	    (when (and (pair? locals) (null? (cdr locals)))
-	       (let* ((var (car locals))
-		      (fun (local-value var)))
-		  (when (isa? (sfun-body fun) set-ex-it)
-		     (when (isa? body app)
-			(with-access::app body (fun)
-			   (with-access::var fun (variable)
-			      (eq? variable var))))))))))
+      (with-access::let-fun node (body locals)
+	 (when (and (pair? locals) (null? (cdr locals)))
+	    (let* ((var (car locals))
+		   (fun (local-value var)))
+	       (when (isa? (sfun-body fun) set-ex-it)
+		  (when (isa? body app)
+		     (with-access::app body (fun)
+			(with-access::var fun (variable)
+			   (eq? variable var)))))))))
 
    (define (mark-set-exit! node)
       (with-access::let-fun node (locals)
 	 (with-access::sfun/Iinfo (local-value (car locals)) (forceG? xhdl?)
-	    (set! forceG? (not (eq? (car k) 'tail)))
+	    (set! forceG? (not (or *optim-return-goto?* (eq? (car k) 'tail))))
 	    (set! xhdl? #t))))
    
    (with-access::let-fun node (body)
@@ -407,6 +406,46 @@
 		   (car locals)
 		   (cons 'tail (local-type (car locals)))
 		   A))))))
+
+;* ;; MS 20 May 2017                                                   */
+;* (define-method (node-A node::let-fun host k A)                      */
+;*                                                                     */
+;*    (define (set-exit? node)                                         */
+;*       (when *optim-return-goto?*                                    */
+;* 	 (with-access::let-fun node (body locals)                      */
+;* 	    (when (and (pair? locals) (null? (cdr locals)))            */
+;* 	       (let* ((var (car locals))                               */
+;* 		      (fun (local-value var)))                         */
+;* 		  (when (isa? (sfun-body fun) set-ex-it)               */
+;* 		     (when (isa? body app)                             */
+;* 			(with-access::app body (fun)                   */
+;* 			   (with-access::var fun (variable)            */
+;* 			      (eq? variable var))))))))))              */
+;*                                                                     */
+;*    (define (mark-set-exit! node)                                    */
+;*       (with-access::let-fun node (locals)                           */
+;* 	 (with-access::sfun/Iinfo (local-value (car locals)) (forceG? xhdl?) */
+;* 	    (set! forceG? (not (eq? (car k) 'tail)))                   */
+;* 	    (set! xhdl? #t))))                                         */
+;*                                                                     */
+;*    (with-access::let-fun node (body)                                */
+;*       ;; we initialize all the local definitions                    */
+;*       (for-each (lambda (f)                                         */
+;* 		   (initialize-fun! f host)                            */
+;* 		   (set! *phi* (cons f *phi*)))                        */
+;* 	 (let-fun-locals node))                                        */
+;*       ;; now, we scan the locals definitions and the body           */
+;*       (let liip ((locals (let-fun-locals node))                     */
+;* 		 (A A))                                                */
+;* 	 (if (null? locals)                                            */
+;* 	     (begin                                                    */
+;* 		(when (set-exit? node) (mark-set-exit! node))          */
+;* 		(node-A body host k A))                                */
+;* 	     (liip (cdr locals)                                        */
+;* 		(node-A (sfun-body (local-value (car locals)))         */
+;* 		   (car locals)                                        */
+;* 		   (cons 'tail (local-type (car locals)))              */
+;* 		   A))))))                                             */
 
 ;*---------------------------------------------------------------------*/
 ;*    node-A ::let-var ...                                             */
