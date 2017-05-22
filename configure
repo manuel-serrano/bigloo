@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu May  4 07:48:09 2017 (serrano)                */
+#*    Last change :  Mon May 22 09:24:46 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1946,6 +1946,11 @@ fi
 semaphore=`$autoconf semaphore` || exit 1;
 
 #*---------------------------------------------------------------------*/
+#*    semaphore                                                        */
+#*---------------------------------------------------------------------*/
+lockf=`$autoconf lockf` || exit 1;
+
+#*---------------------------------------------------------------------*/
 #*    Java configuration                                               */
 #*---------------------------------------------------------------------*/
 echo "+ Java specific configuration ($hostos)..." >> $configurelog
@@ -3220,6 +3225,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@PTHREAD_POSIX_CONDV_TIMEDWAIT@|$pthreadcondvtimedwait|" \
               -e "s|@PTHREAD_HAVE_TIMEDJOIN@|$pthreadtimedjoin|" \
               -e "s|@BGL_HAVE_SEMAPHORE@|$semaphore|" \
+              -e "s|@BGL_HAVE_LOCKF@|$lockf|" \
               -e "s|@BGL_PTHREAD_TERM_SIG@|$pthreadtermsig|" \
               -e "s|@BGL_HAS_THREAD_LOCALSTORAGE@|$pthreadhastls|" \
               -e "s|@BGL_THREAD_DECL@|$pthreaddecl|" \

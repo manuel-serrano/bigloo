@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Apr 22 07:01:11 2017 (serrano)                */
+/*    Last change :  Mon May 22 13:59:18 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -2908,4 +2908,46 @@ bgl_open_pipes( obj_t name ) {
    } else {
       C_SYSTEM_FAILURE( BGL_ERROR, "open-pipes", strerror( errno ), BFALSE );
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    static int                                                       */
+/*    port2fd ...                                                      */
+/*---------------------------------------------------------------------*/
+#if BGL_HAVE_LOCKF
+static int
+port2fd( obj_t port ) {
+   if( INTEGERP( port ) ) {
+      return CINT( port );
+   }
+   if( OUTPUT_PORTP( port ) && PORT( port ).kindof == KINDOF_FILE ) {
+      return PORT_FD( port );
+   }
+
+   C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ioctl", "file port or integer expected", port );
+   return -1;
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    BGL_RUNTIME_DEF bool_t                                           */
+/*    bgl_lockf ...                                                    */
+/*---------------------------------------------------------------------*/
+BGL_RUNTIME_DEF bool_t
+bgl_lockf( obj_t port, int cmd, long len ) {
+#if BGL_HAVE_LOCKF
+   if( lockf( port2fd( port ), cmd, len ) < 0 ) {
+      if( cmd == F_TLOCK ) {
+	 return 0;
+      } else {
+	 fprintf( stderr, "ERR=%s\n", strerror( errno ) );
+	 C_SYSTEM_FAILURE( BGL_ERROR, "lockf", strerror( errno ), BFALSE );
+	 return 0;
+      }
+   } else {
+      return 1;
+   }
+#else
+   return 0;
+#endif   
 }

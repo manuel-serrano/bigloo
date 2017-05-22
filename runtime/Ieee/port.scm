@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Sat Apr 22 06:43:47 2017 (serrano)                */
+;*    Last change :  Mon May 22 14:01:03 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -202,7 +202,12 @@
 	    ($file-type::symbol (::string) "bgl_file_type")
 	    ($symlink::int (::string ::string) "bgl_symlink")
 	    ($select::pair-nil (::long ::pair-nil ::pair-nil ::pair-nil) "bgl_select")
-	    ($open-pipes::obj (::obj) "bgl_open_pipes"))
+	    ($open-pipes::obj (::obj) "bgl_open_pipes")
+	    ($lockf::bool (::output-port ::int ::long) "bgl_lockf")
+	    (macro $F_LOCK::int "F_LOCK")
+	    (macro $F_TLOCK::int "F_TLOCK")
+	    (macro $F_ULOCK::int "F_ULOCK")
+	    (macro $F_TEST::int "F_TEST"))
 
    (java    (class foreign
 	       (method static c-input-port?::bool  (::obj)
@@ -514,7 +519,8 @@
 	    (input-port-protocol prototcol)
 	    (input-port-protocol-set! protocol open)
 
-	    (get-port-buffer::bstring ::obj ::obj ::int))
+	    (get-port-buffer::bstring ::obj ::obj ::int)
+	    (lockf::bool ::output-port ::symbol #!optional (len 0)))
    
    (pragma  (c-input-port? (predicate-of input-port) nesting)
 	    (c-output-port? (predicate-of output-port) nesting)
@@ -1615,3 +1621,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (open-pipes #!optional name)
    ($open-pipes name))
+
+;*---------------------------------------------------------------------*/
+;*    lockf ...                                                        */
+;*---------------------------------------------------------------------*/
+(define (lockf port cmd #!optional (len 0))
+   (cond-expand
+      (bigloo-c
+       (case cmd
+	  ((lock) ($lockf port $F_LOCK len))
+	  ((tlock) ($lockf port $F_TLOCK len))
+	  ((ulock) ($lockf port $F_ULOCK len))
+	  ((test) ($lockf port $F_TEST len))
+	  (else (error "lockf" "Bad command" cmd))))
+      (else #f)))
+	   
