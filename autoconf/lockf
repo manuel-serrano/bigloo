@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Mon May 22 10:52:26 2017 (serrano)                */
+#*    Last change :  Mon May 22 19:32:09 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if select exits. Returns 0 if it exists, 1 otherwise.      */
 #*=====================================================================*/
@@ -53,7 +53,7 @@ cat > $file.c <<EOF
 #include <unistd.h>
 #include <stdio.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    int val;
 
    val = lockf( 0, F_LOCK, 0 );

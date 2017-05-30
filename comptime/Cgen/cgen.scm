@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Apr 21 18:44:27 2017 (serrano)                */
+;*    Last change :  Tue May 30 07:59:12 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -98,7 +98,7 @@
 	 (global->c global)
 	 (let ((cop (block-kont (sfun/C-label sfun) loc)))
 	    ;; we define a local variable that acts as a temporary variable
-	    (display "{ AN_OBJECT;" *c-port*)
+	    (display "{ BGL_FUNCTION_BEGIN;" *c-port*)
 	    ;; when compiling for debugging, we have to insert a dummy
 	    ;; statement otherwise gdb get confused
 	    (if (and (> *bdb-debug* 0) (location? loc))
@@ -111,7 +111,7 @@
 	    ;; emit the current location before the closing bracket
 	    (emit-bdb-loc (get-current-bdb-loc))
 	    ;; and then clause the function body
-	    (fprint *c-port* "}"))
+	    (fprint *c-port* "BGL_FUNCTION_END;\n}"))
 	 (no-bdb-newline)
 	 (leave-function))))
   

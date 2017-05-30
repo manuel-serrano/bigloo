@@ -572,6 +572,13 @@ extern union scmobj * an_object;
 #  define AN_OBJECT 
 #endif
 
+#if( !defined( BGL_FUNCTION_BEGIN) )
+#  define BGL_FUNCTION_BEGIN AN_OBJECT
+#endif
+#if( !defined( BGL_FUNCTION_END ) )
+#  define BGL_FUNCTION_END
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    SETJMP                                                           */
 /*---------------------------------------------------------------------*/
