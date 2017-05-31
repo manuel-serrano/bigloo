@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 10:19:33 1995                          */
-;*    Last change :  Mon Dec 19 12:54:30 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 31 10:39:42 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The convertion. The coercion and type checks are generated       */
 ;*    inside this module.                                              */
@@ -181,7 +181,7 @@
 		 (type to)
 		 (nodes (list
 			   (coerce! node #unspecified from #f)
-			   (instantiate::atom (type to) (value 0)))))))
+			   (instantiate::literal (type to) (value 0)))))))
 	  ((eq? to *bool*)
 	   (let ((node (runtime-type-error loc (type-id to) node)))
 	      (type-warning/location loc (current-function) from to)
@@ -190,7 +190,7 @@
 		 (type to)
 		 (nodes (list
 			   (coerce! node #unspecified from #f)
-			   (instantiate::atom (type to) (value 0)))))))
+			   (instantiate::literal (type to) (value 0)))))))
 	  ((eq? to *real*)
 	   (let ((node (runtime-type-error loc (type-id to) node)))
 	      (type-warning/location loc (current-function) from to)
@@ -199,7 +199,7 @@
 		 (type to)
 		 (nodes (list
 			   (coerce! node #unspecified from #f)
-			   (instantiate::atom (type to) (value 0.0)))))))
+			   (instantiate::literal (type to) (value 0.0)))))))
 	  ((eq? to *char*)
 	   (let ((node (runtime-type-error loc (type-id to) node)))
 	      (type-warning/location loc (current-function) from to)
@@ -208,7 +208,7 @@
 		 (type to)
 		 (nodes (list
 			   (coerce! node #unspecified from #f)
-			   (instantiate::atom (type to) (value #a000)))))))
+			   (instantiate::literal (type to) (value #a000)))))))
 	  ((eq? to *schar*)
 	   (let ((node (runtime-type-error loc (type-id to) node)))
 	      (type-warning/location loc (current-function) from to)
@@ -217,7 +217,7 @@
 		 (type *char*)
 		 (nodes (list
 			   (coerce! node #unspecified from #f)
-			   (instantiate::atom (type *char*) (value #a000)))))))
+			   (instantiate::literal (type *char*) (value #a000)))))))
 	  ((eq? to *string*)
 	   (let ((node (runtime-type-error loc (type-id to) node)))
 	      (type-warning/location loc (current-function) from to)
@@ -226,7 +226,7 @@
 		 (type to)
 		 (nodes (list
 			   (coerce! node #unspecified from #f)
-			   (instantiate::atom (type to) (value "")))))))
+			   (instantiate::literal (type to) (value "")))))))
 	  (else
 	   (type-error/location loc (current-function) from to))))
       (else

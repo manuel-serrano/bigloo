@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Apr  5 18:47:23 1995                          */
-;*    Last change :  Fri Apr 21 18:46:36 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:43:16 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `vector->tvector' optimization.                              */
@@ -534,7 +534,7 @@
       (let* ((approx (cfa! (car args)))
 	     (type (approx-type approx)))
 	 (if (eq? type *vector*)
-	     (instantiate::atom
+	     (instantiate::literal
 		(loc loc)
 		(type (strict-node-type (get-type-atom #t) *bool*))
 		(value #t))

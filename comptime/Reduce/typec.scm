@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Apr 21 18:41:00 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:44:38 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -329,7 +329,7 @@
 		(set! *type-checks-removed* (+fx 1 *type-checks-removed*))
 		(trace (reduce 3) "typec: reducing: "
 		   (shape node) " => #t" #\Newline)
-		(let ((node (coerce! (instantiate::atom
+		(let ((node (coerce! (instantiate::literal
 					(loc loc)
 					(type type)
 					(value #t))
@@ -344,7 +344,7 @@
 		   (shape typec) " " (foreign-type? typec)
 		   " typea=" (shape typea) " " (jclass? typea) ")"
 		   #\Newline)
-		(let ((node (coerce! (instantiate::atom
+		(let ((node (coerce! (instantiate::literal
 					(loc loc)
 					(type type)
 					(value #f))

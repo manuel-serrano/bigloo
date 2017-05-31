@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Fri Apr 21 18:41:38 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:44:21 2017 (serrano)                */
 ;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
@@ -465,7 +465,7 @@
 	     node)
 	    ((eq? vfun *c-fixnum?*)
 	     (set! *removed* (+fx *removed* 1))
-	     (instantiate::atom
+	     (instantiate::literal
 		(type type)
 		(loc loc)
 		(value (or (eq? atype *bint*)
@@ -473,7 +473,7 @@
 			   (eq? atype *long*)))))
 	    ((eq? vfun *c-flonum?*)
 	     (set! *removed* (+fx *removed* 1))
-	     (instantiate::atom
+	     (instantiate::literal
 		(type type)
 		(loc loc)
 		(value (or (eq? atype *real*)
@@ -505,7 +505,7 @@
       (if (every atom? args)
 	  (if (and (=fx (length args) 1) (string? (atom-value (car args))))
 	      (if (eq? (var-variable fun) *c-string-length*)
-		  (instantiate::atom
+		  (instantiate::literal
 		     (loc (node-loc node))
 		     (type (node-type node))
 		     (value (string-length (atom-value (car args)))))

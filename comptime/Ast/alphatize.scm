@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Apr 13 10:43:34 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:32:29 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -22,7 +22,8 @@
 	    ast_local
 	    ast_apply
 	    ast_app
-	    ast_dump)
+	    ast_dump
+	    ast_patch)
    (static  (wide-class retblock/alpha::retblock
 	       alpha::retblock))
    (export  (alphatize::node what* by* loc ::node)
@@ -100,10 +101,18 @@
 (define-generic (do-alphatize::node node::node loc))
 
 ;*---------------------------------------------------------------------*/
-;*    do-alphatize ::atom ...                                          */
+;*    do-alphatize ::literal ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (do-alphatize node::atom loc)
-   (duplicate::atom node
+(define-method (do-alphatize node::literal loc)
+   (duplicate::literal node
+      (loc (get-location node loc))))
+
+;*---------------------------------------------------------------------*/
+;*    do-alphatize ::patch ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (do-alphatize node::patch loc)
+   (duplicate::patch node
+      (index (get-patch-index))
       (loc (get-location node loc))))
 
 ;*---------------------------------------------------------------------*/
@@ -126,8 +135,10 @@
 	      (duplicate::var node
 		 (loc (get-location node loc))
 		 (variable alpha))))
-	 ((atom? alpha)
-	  (duplicate::atom alpha))
+	 ((literal? alpha)
+	  (duplicate::literal alpha))
+	 ((patch? alpha)
+	  (duplicate::patch alpha (index (get-patch-index))))
 	 ((kwote? alpha)
 	  (duplicate::kwote alpha))
 	 (else

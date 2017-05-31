@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun 21 09:34:48 1996                          */
-;*    Last change :  Tue Mar  1 17:26:07 2016 (serrano)                */
+;*    Last change :  Wed May 31 10:30:01 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The application compilation                                      */
 ;*=====================================================================*/
@@ -465,7 +465,7 @@
 			 (args args))))
 	     (if (eq? (variable-type v) *void*)
 		 ;; the call is cast into obj
-		 (let ((unspec (instantiate::atom
+		 (let ((unspec (instantiate::literal
 				  (type (strict-node-type (get-type-atom #unspecified) *obj*))
 				  (value #unspecified))))
 		    (instantiate::sequence

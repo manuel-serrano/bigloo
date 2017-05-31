@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Fri Apr 21 18:41:53 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:47:10 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -38,10 +38,17 @@
    (internal-error "cfa!:no method for this ast" node (shape node)))
    
 ;*---------------------------------------------------------------------*/
-;*    cfa! ::atom/Cinfo ...                                            */
+;*    cfa! ::literal/Cinfo ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (cfa! node::atom/Cinfo)
-   (with-access::atom/Cinfo node (approx)
+(define-method (cfa! node::literal/Cinfo)
+   (with-access::literal/Cinfo node (approx)
+      approx))
+
+;*---------------------------------------------------------------------*/
+;*    cfa! ::patch/Cinfo ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (cfa! node::patch/Cinfo)
+   (with-access::patch/Cinfo node (approx)
       approx))
 
 ;*---------------------------------------------------------------------*/

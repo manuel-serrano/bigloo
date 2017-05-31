@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Apr 21 18:44:08 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:43:57 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
@@ -145,7 +145,7 @@
       (let ((triv (trivial-app node)))
 	 (if (not triv)
 	     node
-	     (instantiate::atom
+	     (instantiate::literal
 		(type type)
 		(value (eq? triv 'true)))))))
 

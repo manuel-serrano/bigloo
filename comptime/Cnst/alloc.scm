@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 13:51:36 1995                          */
-;*    Last change :  Mon Mar 10 15:20:35 2014 (serrano)                */
-;*    Copyright   :  1995-2014 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 31 10:42:35 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant allocations.                                        */
 ;*=====================================================================*/
@@ -206,7 +206,7 @@
 	      (loc loc)
 	      (type (strict-node-type (get-default-type) (variable-type *cnst-table-ref*)))
 	      (variable *cnst-table-ref*)))
-      (args (list (instantiate::atom
+      (args (list (instantiate::literal
 		     (loc loc)
 		     (type *int*)
 		     (value offset))))))
@@ -729,7 +729,7 @@
       (let loop ((pair pair))
 	 (cond
 	    ((null? pair)
-	     (instantiate::atom
+	     (instantiate::literal
 		(loc loc)
 		(type (strict-node-type (get-type-atom '()) *bnil*))
 		(value '())))
@@ -848,7 +848,7 @@
 					     (loc loc)
 					     (type (variable-type var))
 					     (variable var))
-					  (instantiate::atom
+					  (instantiate::literal
 					     (loc loc)
 					     (type (strict-node-type
 						    (get-type-atom (vector-tag vec))

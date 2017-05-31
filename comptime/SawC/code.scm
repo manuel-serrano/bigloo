@@ -623,9 +623,9 @@
 
 ;;
 (define (gname var::global) ;()
-   (patch (global-name var)) )
+   (patch-gname (global-name var)) )
 
-(define (patch s) ;()
+(define (patch-gname s) ;()
    (cond
       ((string=? s "==") "BGL_RTL_EQ")
       ((string=? s ">=") "BGL_RTL_GE")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Apr 21 18:48:33 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:58:32 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -135,7 +135,7 @@
 	  ((or (struct? atom) (vector? atom) (object? atom) (procedure? atom))
 	   (error-sexp->node "Illegal atom in s-expression" exp loc))
 	  ((not (symbol? atom))
-	   (instantiate::atom
+	   (instantiate::literal
 	      (loc loc)
 	      (type (get-type-atom atom))
 	      (value atom)))
@@ -190,7 +190,7 @@
 	   (let ((loc (find-location/loc exp loc)))
 	      (cond
 		 ((null? value)
-		  (instantiate::atom
+		  (instantiate::literal
 		     (loc loc)
 		     (type (strict-node-type (get-type-kwote value) *bnil*))
 		     (value '())))
@@ -217,6 +217,11 @@
 		  (error-sexp->node "Illegal `quote' expression" exp loc)))))
           (else
 	   (error-sexp->node "Illegal `quote' expression" exp loc))))
+;*--- patch -----------------------------------------------------------*/
+      ((patch (and (? fixnum?) ?idx) ?val)
+       (instantiate::patch
+	  (loc (find-location/loc exp loc))
+	  (idx 
 ;*--- begin -----------------------------------------------------------*/
       ((begin)
        (sexp->node #unspecified stack (find-location/loc exp loc) site))
@@ -689,10 +694,10 @@
 ;*---------------------------------------------------------------------*/
 (define (error-sexp->node msg exp loc)
    (user-error/location loc
-			(shape (current-function))
-			msg
-			exp
-			(sexp->node ''() '() loc 'value)))
+      (shape (current-function))
+      msg
+      exp
+      (sexp->node ''() '() loc 'value)))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-primop-ref->node ...                                      */

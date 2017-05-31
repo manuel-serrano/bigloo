@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Fri Apr 21 18:47:59 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:41:23 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -41,20 +41,21 @@
 ;*---------------------------------------------------------------------*/
 ;*    cnst! ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (cnst! node::atom)
-   (with-access::atom node (value loc)
+(define-method (cnst! node::literal)
+   (with-access::literal node (value loc)
       (cond
-	 ((keyword? value)
-	  (cnst-alloc-keyword value loc))
-	 ((ucs2-string? value)
-	  (cnst-alloc-ucs2-string value loc))
-	 ((string? value)
-	  (cnst-alloc-string value loc))
-	 ((bignum? value)
-	  (or (cnst-alloc-bignum value loc) node))
-	 (else
-	  node))))
- 
+	 ((keyword? value) (cnst-alloc-keyword value loc))
+	 ((ucs2-string? value) (cnst-alloc-ucs2-string value loc))
+	 ((string? value) (cnst-alloc-string value loc))
+	 ((bignum? value) (or (cnst-alloc-bignum value loc) node))
+	 (else node))))
+
+;*---------------------------------------------------------------------*/
+;*    cnst! ::patch ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (cnst! node::patch)
+   node)
+
 ;*---------------------------------------------------------------------*/
 ;*    cnst! ...                                                        */
 ;*---------------------------------------------------------------------*/
@@ -92,13 +93,13 @@
 	      (uint32? value)
 	      (int64? value)
 	      (uint64? value))
-	  (instantiate::atom
+	  (instantiate::literal
 	     (loc loc)
 	     (type (strict-node-type (get-type-atom value) type))
 	     (value value)))
 	 ((bignum? value)
 	  (or (cnst-alloc-bignum value loc)
-	      (instantiate::atom
+	      (instantiate::literal
 		 (loc loc)
 		 (type (strict-node-type (get-type-atom value) type))
 		 (value value))))

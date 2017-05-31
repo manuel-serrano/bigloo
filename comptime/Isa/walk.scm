@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Mon Feb 20 08:35:14 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:45:46 2017 (serrano)                */
 ;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Replace isa? calls with specialized inlinable versions           */
@@ -123,7 +123,7 @@
 		 (if (isa? (uncasted-type (car args)) tclass)
 		     (let ((nfun (duplicate::var fun
 				    (variable *isa-object/cdepth*)))
-			   (depth (instantiate::atom
+			   (depth (instantiate::literal
 				     (loc loc)
 				     (type (get-type-atom (tclass-depth typ)))
 				     (value (tclass-depth typ))))
@@ -134,7 +134,7 @@
 			(set! args (list arg0 (cadr args) depth)))
 		     (let* ((nfun (duplicate::var fun
 				     (variable *isa/cdepth*)))
-			    (depth (instantiate::atom
+			    (depth (instantiate::literal
 				      (loc loc)
 				      (type (get-type-atom (tclass-depth typ)))
 				      (value (tclass-depth typ)))))

@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:21:26 1995                          */
-;*    Last change :  Sat Aug 25 09:28:52 2012 (serrano)                */
-;*    Copyright   :  1995-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed May 31 10:35:18 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `funcall' coercion                                           */
 ;*=====================================================================*/
@@ -65,11 +65,10 @@
 		    (convert! node nty to safe))
 		 (let* ((fun    (make-local-svar 'fun *procedure*))
 			(loc    (node-loc node))
-			(len    (instantiate::atom
+			(len    (instantiate::literal
 				   (loc loc)
 				   (type *int*)
-				   (value (-fx (length (funcall-args node))
-					     2))))
+				   (value (-fx (length (funcall-args node)) 2))))
 			(a-len  (mark-symbol-non-user! (gensym 'len)))
 			(a-tlen (mark-symbol-non-user!
 				   (symbol-append a-len '::int)))

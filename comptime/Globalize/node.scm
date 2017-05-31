@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:12:58 1995                          */
-;*    Last change :  Fri Apr 21 18:46:03 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:38:06 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We transforme the ast in order to fix the free variables, to     */
@@ -577,11 +577,11 @@
 			(loc loc)
 			(type (variable-type (the-global local)))
 			(variable (the-global local)))
-		     (instantiate::atom
+		     (instantiate::literal
 			(loc loc)
 			(type (get-type-atom arity))
 			(value arity))
-		     (instantiate::atom
+		     (instantiate::literal
 			(loc loc)
 			(type (get-type-atom 1))
 			(value (length kaptured))))))))
@@ -631,7 +631,7 @@
 			(loc loc)
 			(type (variable-type new))
 			(variable new))
-		     (instantiate::atom
+		     (instantiate::literal
 			(loc loc)
 			(type (get-type-atom indice))
 			(value indice))

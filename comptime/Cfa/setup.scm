@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Fri May  5 08:54:47 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:45:22 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -56,11 +56,19 @@
 (define-generic (node-setup! node::node))
 
 ;*---------------------------------------------------------------------*/
-;*    node-setup! ::atom ...                                           */
+;*    node-setup! ::literal ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (node-setup! node::atom)
-   (with-access::atom node (value)
-      (widen!::atom/Cinfo node
+(define-method (node-setup! node::literal)
+   (with-access::literal node (value)
+      (widen!::literal/Cinfo node
+	 (approx (make-type-approx (get-type-atom value))))))
+
+;*---------------------------------------------------------------------*/
+;*    node-setup! ::patch ...                                          */
+;*---------------------------------------------------------------------*/
+(define-method (node-setup! node::patch)
+   (with-access::patch node (value)
+      (widen!::patch/Cinfo node
 	 (approx (make-type-approx (get-type-atom value))))))
 
 ;*---------------------------------------------------------------------*/

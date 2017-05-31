@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Sat May  6 08:31:23 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:19:42 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -41,11 +41,18 @@
 	      ;; but to avoid wasting time in node-key this field
 	      ;; is in the global tree)
 	      (key (default -1)))
-	   
+
 	   ;; the atom node
-	   (final-class atom::node
+	   (abstract-class atom::node
 	      ;; the atom value
 	      value::obj)
+
+	   ;; the literal node
+	   (final-class literal::atom)
+	   
+	   ;; the patch node (patchable literals)
+	   (final-class patch::atom
+	      index::long)
 
 	   ;; the variable node
 	   (class var::node

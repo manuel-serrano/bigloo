@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Fri Apr 21 18:43:39 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:34:40 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -25,7 +25,8 @@
 	    effect_effect
 	    engine_param
 	    ast_occur
-	    ast_remove)
+	    ast_remove
+	    ast_patch)
    (export  (beta-walk!::obj ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -75,9 +76,15 @@
    (map! (lambda (n)
 	    (if (and (var? n) (local? (var-variable n)))
 		(let ((red (assq (var-variable n) stack)))
-		   (if (pair? red)
-		       (duplicate::atom (cdr red))
-		       n))
+		   (cond
+		      ((not (pair? red))
+		       n)
+		      ((literal? (cdr red))
+		       (duplicate::literal (cdr red)))
+		      ((patch? (cdr red))
+		       (duplicate::patch (cdr red) (index (get-patch-index))))
+		      (else
+		       (error "node-beta!" "wrong node" (typeof (cdr red))))))
 		(node-beta! n stack)))
 	 (app-args node))
    node)

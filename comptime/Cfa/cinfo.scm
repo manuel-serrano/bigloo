@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Fri Apr 21 18:46:52 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:41:50 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
@@ -78,7 +78,9 @@
     (wide-class reshaped-global::global)
     
     ;; node extension
-    (wide-class atom/Cinfo::atom
+    (wide-class literal/Cinfo::literal
+       (approx::approx read-only))
+    (wide-class patch/Cinfo::patch
        (approx::approx read-only))
     (wide-class kwote/node::kwote
        (node::node read-only))

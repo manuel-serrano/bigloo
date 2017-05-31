@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 14:20:15 1995                          */
-;*    Last change :  Fri Apr 21 18:47:32 2017 (serrano)                */
+;*    Last change :  Wed May 31 10:38:56 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The search of free variables.                                    */
@@ -363,23 +363,19 @@
 	 (else
 	  (let* ((gloclo   (make-global-closure global))
 		 (arity    (fun-arity (global-value global)))
-		 (make-clo (cond
-			      ((<fx arity 0)
-			       'make-va-procedure)
-;* 			      ((sfun-optional? (global-value global))  */
-;* 			       'make-opt-procedure)                    */
-			      (else
-			       'make-fx-procedure)))
+		 (make-clo (if (<fx arity 0)
+			       'make-va-procedure
+			       'make-fx-procedure))
 		 (node     (sexp->node `(,make-clo
 					 ,(instantiate::var
 					     (loc loc)
 					     (type *_*)
 					     (variable gloclo))
-					 ,(instantiate::atom
+					 ,(instantiate::literal
 					     (loc loc)
 					     (type *_*)
 					     (value arity))
-					 ,(instantiate::atom
+					 ,(instantiate::literal
 					     (loc loc)
 					     (type *_*)
 					     (value 0)))
