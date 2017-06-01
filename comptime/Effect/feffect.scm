@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Fri Apr 21 18:45:04 2017 (serrano)                */
+;*    Last change :  Wed May 31 15:09:09 2017 (serrano)                */
 ;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
@@ -225,8 +225,8 @@
 ;*    body-effect! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-method (body-effect! node::var effect::feffect)
-   (if (global? (var-variable node))
-       (merge-effects! effect *effect-read-mem*))
+   (when (global? (var-variable node))
+      (merge-effects! effect *effect-read-mem*))
    effect)
  
 ;*---------------------------------------------------------------------*/
@@ -234,8 +234,8 @@
 ;*---------------------------------------------------------------------*/
 (define-method (body-effect! node::setq effect::feffect)
    (with-access::setq node (var value)
-      (if (global? (var-variable var))
-	  (merge-effects! effect *effect-write-mem*))
+      (when (global? (var-variable var))
+	 (merge-effects! effect *effect-write-mem*))
       (body-effect! value effect)))
 
 ;*---------------------------------------------------------------------*/

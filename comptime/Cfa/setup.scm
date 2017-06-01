@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed May 31 10:45:22 2017 (serrano)                */
+;*    Last change :  Wed May 31 15:22:42 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -302,6 +302,15 @@
       (widen!::pragma/Cinfo node
 	 (approx (make-type-approx type)))
       (approx-set-top! (pragma/Cinfo-approx node))))
+
+;*---------------------------------------------------------------------*/
+;*    node-setup! ::genpatchid ...                                     */
+;*---------------------------------------------------------------------*/
+(define-method (node-setup! node::genpatchid)
+   (with-access::genpatchid node (expr*)
+      (node-setup*! expr*)
+      (widen!::genpatchid/Cinfo node 
+	 (approx (make-type-approx *long*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-setup! ::getfield ...                                       */

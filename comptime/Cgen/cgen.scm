@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Tue May 30 07:59:12 2017 (serrano)                */
+;*    Last change :  Thu Jun  1 09:19:55 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -237,14 +237,43 @@
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define-method (node->cop node::atom kont inpushexit)
+(define-method (node->cop node::literal kont inpushexit)
    (trace (cgen 3)
-	  "(node->cop node::atom kont): " (shape node) #\Newline
+	  "(node->cop node::literal kont): " (shape node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::atom node (value loc)
       (kont (instantiate::catom
 	       (value value)
 	       (loc   loc)))))
+
+;*---------------------------------------------------------------------*/
+;*    node->cop ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::patch kont inpushexit)
+   (trace (cgen 3)
+      "(node->cop node::patch kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
+   (with-access::patch node (genpatchid loc)
+      (with-access::genpatchid genpatchid (rindex)
+	 (kont (instantiate::cpragma
+		  (loc   loc)
+		  (format "BGL_PATCHABLE_CONSTANT_64($1)")
+		  (args (list (instantiate::catom
+				 (value rindex)
+				 (loc loc)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    node->cop ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-method (node->cop node::genpatchid kont inpushexit)
+   (trace (cgen 3)
+      "(node->cop node::getnpatchid kont): " (shape node) #\Newline
+      "  kont: " kont #\Newline)
+   (with-access::genpatchid node (index loc)
+      (kont
+	 (instantiate::catom
+	    (value index)
+	    (loc loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */

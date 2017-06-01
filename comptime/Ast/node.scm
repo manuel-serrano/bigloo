@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Wed May 31 10:19:42 2017 (serrano)                */
+;*    Last change :  Thu Jun  1 08:50:51 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -52,7 +52,8 @@
 	   
 	   ;; the patch node (patchable literals)
 	   (final-class patch::atom
-	      index::long)
+	      (ref::var read-only)
+	      (genpatchid::obj (default #unspecified)))
 
 	   ;; the variable node
 	   (class var::node
@@ -110,6 +111,11 @@
 	   (final-class pragma::extern
 	      (format::bstring read-only))
 
+	   ;; getpatchid node
+	   (final-class genpatchid::extern
+	      (index::long (default -1))
+	      (rindex::long (default -1)))
+	   
 	   ;; private extern expression
 	   (class private::extern
 	      (c-format::bstring read-only))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 24 15:46:49 1996                          */
-;*    Last change :  Wed May 31 10:41:50 2017 (serrano)                */
+;*    Last change :  Wed May 31 15:21:00 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The cfa's information structures                                 */
@@ -79,6 +79,8 @@
     
     ;; node extension
     (wide-class literal/Cinfo::literal
+       (approx::approx read-only))
+    (wide-class genpatchid/Cinfo::genpatchid
        (approx::approx read-only))
     (wide-class patch/Cinfo::patch
        (approx::approx read-only))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Feb 23 14:21:20 1995                          */
-;*    Last change :  Wed May 31 10:47:10 2017 (serrano)                */
+;*    Last change :  Wed May 31 15:23:03 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `control flow analysis': the walk down the ast               */
@@ -168,6 +168,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (cfa! node::pragma/Cinfo)
    (with-access::pragma/Cinfo node (approx expr*)
+      (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
+      approx))
+
+;*---------------------------------------------------------------------*/
+;*    cfa! ::genpatchid/Cinfo ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (cfa! node::genpatchid/Cinfo)
+   (with-access::genpatchid/Cinfo node (approx expr*)
       (for-each (lambda (a) (loose! (cfa! a) 'all)) expr*)
       approx))
 

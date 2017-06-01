@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed May 31 10:29:28 2017 (serrano)                */
+#*    Last change :  Wed May 31 15:54:42 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -114,7 +114,7 @@ AST_FILE	= build venv glo_decl node unit dump glo_def pragma \
                   var find_gdefs ident remove local sexp labels let \
                   exit substitute alphatize occur toccur app apply lvtype \
                   hrtype shrinkify check_init private check_sharing init \
-                  check_type object walk patch
+                  check_type object walk
 
 AST_OBJ		= $(AST_FILE:%=Ast/%.o)
 
@@ -315,6 +315,11 @@ ISA_FILE	= walk
 
 ISA_OBJ	        = $(ISA_FILE:%=Isa/%.o)
 
+#*--- patch -----------------------------------------------------------*/
+PATCH_FILE	= patch
+
+PATCH_OBJ	= $(PATCH_FILE:%=Patch/%.o)
+
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
 #*---------------------------------------------------------------------*/
@@ -330,7 +335,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
                   $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  Tools/date.o
+                  $(PATCH_OBJ) Tools/date.o
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 

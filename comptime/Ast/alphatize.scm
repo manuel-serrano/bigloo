@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Wed May 31 10:32:29 2017 (serrano)                */
+;*    Last change :  Thu Jun  1 08:45:38 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -22,8 +22,7 @@
 	    ast_local
 	    ast_apply
 	    ast_app
-	    ast_dump
-	    ast_patch)
+	    ast_dump)
    (static  (wide-class retblock/alpha::retblock
 	       alpha::retblock))
    (export  (alphatize::node what* by* loc ::node)
@@ -111,9 +110,10 @@
 ;*    do-alphatize ::patch ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (do-alphatize node::patch loc)
-   (duplicate::patch node
-      (index (get-patch-index))
-      (loc (get-location node loc))))
+   (with-access::patch node (ref)
+      (duplicate::patch node
+	 (ref (do-alphatize ref loc))
+	 (loc (get-location node loc)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-alphatize ::var ...                                           */
@@ -138,7 +138,9 @@
 	 ((literal? alpha)
 	  (duplicate::literal alpha))
 	 ((patch? alpha)
-	  (duplicate::patch alpha (index (get-patch-index))))
+	  (with-access::patch alpha (ref)
+	     (duplicate::patch alpha
+		(ref (do-alphatize ref loc)))))
 	 ((kwote? alpha)
 	  (duplicate::kwote alpha))
 	 (else

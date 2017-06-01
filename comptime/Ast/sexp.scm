@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed May 31 10:58:32 2017 (serrano)                */
+;*    Last change :  Thu Jun  1 09:05:48 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -44,6 +44,7 @@
 	    ast_private
 	    ast_object
 	    ast_dump
+	    patch_patch
 	    effect_feffect)
    
    (export  (if-sym)
@@ -218,10 +219,10 @@
           (else
 	   (error-sexp->node "Illegal `quote' expression" exp loc))))
 ;*--- patch -----------------------------------------------------------*/
-      ((patch (and (? fixnum?) ?idx) ?val)
-       (instantiate::patch
-	  (loc (find-location/loc exp loc))
-	  (idx 
+      ((patch . ?-)
+       (patch->sexp exp stack (find-location/loc exp loc) site))
+      ((bind-patch . ?-)
+       (bind-patch->sexp exp stack (find-location/loc exp loc) site))
 ;*--- begin -----------------------------------------------------------*/
       ((begin)
        (sexp->node #unspecified stack (find-location/loc exp loc) site))
