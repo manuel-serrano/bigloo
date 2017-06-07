@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Sep 26 08:48:52 2003                          */
-;*    Last change :  Wed May 31 15:09:09 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 05:40:24 2017 (serrano)                */
 ;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The effect of the functions (i.e. does a function read a pair,   */
@@ -214,6 +214,14 @@
 ;*---------------------------------------------------------------------*/
 (define-method (body-effect! node::atom effect)
    effect)
+
+;*---------------------------------------------------------------------*/
+;*    body-effect! ::patch ...                                         */
+;*---------------------------------------------------------------------*/
+(define-method (body-effect! node::patch effect::feffect)
+   (with-access::patch node (value)
+      (merge-effects! effect *effect-write-mem*)
+      (body-effect! value effect)))
 
 ;*---------------------------------------------------------------------*/
 ;*    body-effect! ::kwote ...                                         */

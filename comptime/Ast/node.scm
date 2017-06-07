@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:14:41 1996                          */
-;*    Last change :  Thu Jun  1 08:50:51 2017 (serrano)                */
+;*    Last change :  Tue Jun  6 15:32:12 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast's node class definition                                  */
 ;*=====================================================================*/
@@ -53,7 +53,8 @@
 	   ;; the patch node (patchable literals)
 	   (final-class patch::atom
 	      (ref::var read-only)
-	      (genpatchid::obj (default #unspecified)))
+	      (index::long (default -1))
+	      (patchid::obj (default #unspecified)))
 
 	   ;; the variable node
 	   (class var::node

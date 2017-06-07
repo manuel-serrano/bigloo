@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 17:02:04 1994                          */
-;*    Last change :  Sat Feb  6 06:59:04 2016 (serrano)                */
-;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jun  1 19:01:11 2017 (serrano)                */
+;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    In order to print human readable messages, we designed this      */
 ;*    tool.                                                            */
@@ -160,4 +160,3 @@
 ;*---------------------------------------------------------------------*/
 (define-method (shape node::node)
    (node->sexp node))
-   

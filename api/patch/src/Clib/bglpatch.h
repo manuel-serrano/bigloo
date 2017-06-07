@@ -1,0 +1,63 @@
+/*=====================================================================*/
+/*    serrano/prgm/project/bigloo/api/patch/src/Clib/bglpatch.h        */
+/*    -------------------------------------------------------------    */
+/*    Author      :  Manuel Serrano                                    */
+/*    Creation    :  Fri Jun  2 08:27:57 2017                          */
+/*    Last change :  Wed Jun  7 08:38:20 2017 (serrano)                */
+/*    Copyright   :  2017 Manuel Serrano                               */
+/*    -------------------------------------------------------------    */
+/*    Bigloo wrapper to SELF-MOD                                       */
+/*=====================================================================*/
+
+#ifndef _BGL_PATCH_H
+#define _BGL_PATCH_H
+
+#if( BGL_SELF_MODIFYING_CODE )
+#  include <self-mod.h>
+
+#  ifdef linux
+extern uint8_t __executable_start;
+extern uint8_t __etext;
+
+#    define bgl_init_self_mod() init_self_mod( &__executable_start, &__etext )
+#  else
+  extern uint8_t _mh_execute_header;
+#    define bgl_init_self_mod() init_self_mod( &_mh_execute_header, 0 )
+#  endif
+
+typedef patch_descr __bgl_patch_descr;
+
+extern void bgl_init_patch_32( void *, size_t, patch_descr * );
+extern void bgl_init_patch_64( void *, size_t, patch_descr * );
+
+#  define BGL_PATCHABLE_CONSTANT_32( idx, gidx ) PATCHABLE_CONSTANT_32( idx )
+#  define BGL_PATCHABLE_CONSTANT_64( idx, gidx ) (obj_t)PATCHABLE_CONSTANT_64( idx )
+
+#  define BGL_PATCH_INT32_SET( _tbl, _idx, val ) patch_32( &(_tbl[ _idx ]), val)
+#  define BGL_PATCH_INT64_SET( _tbl, _idx, val ) patch_64( &(_tbl[ _idx ]), (long)val)
+#else
+typedef long __bgl_patch_descr;
+#  define bgl_init_self_mod()
+
+#  define fill_patch_32( f, len, tbl ) memset( tbl, (int)(long)BFALSE, sizeof( int32_t ) * len )
+#  define fill_patch_64( f, len, tbl ) memset( tbl, (int)(long)BFALSE, sizeof( int64_t ) * len )
+
+#  define bgl_init_patch_32( f, len, tbl ) fill_patch_32( f, len, tbl )
+#  define bgl_init_patch_64( f, len, tbl ) fill_patch_64( f, len, tbl )
+
+#  define BGL_PATCHABLE_CONSTANT_32( idx, gidx ) __bgl_patches[ gidx ]
+#  define BGL_PATCHABLE_CONSTANT_64( idx, gidx ) (obj_t)__bgl_patches[ gidx ]
+
+#  define BGL_PATCH_INT32_SET( _tbl, _idx, val ) (_tbl[ _idx ] = (val))
+#  define BGL_PATCH_INT64_SET( _tbl, _idx, val ) (_tbl[ _idx ] = ((long)val))
+#endif
+
+#if( PTR_ALIGNMENT == 3 )
+#  define BGL_PATCH_OBJ_SET( _tbl, _idx, val ) \
+     BGL_PATCH_INT64_SET( _tbl, _idx, (long)val )
+#else
+#  define BGL_PATCH_OBJ_SET( _tbl, _idx, val ) \
+     BGL_PATCH_INT32_SET( _tbl, _idx, (long)val )
+#endif
+
+#endif

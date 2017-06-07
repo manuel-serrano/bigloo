@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 31 10:22:17 2017                          */
-;*    Last change :  Thu Jun  1 09:06:22 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 08:04:24 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Patch management                                                 */
@@ -27,6 +27,7 @@
 	    object_class
 	    object_slots
 	    module_module
+	    engine_param
 	    ast_sexp
 	    ast_glo-def
 	    ast_local
@@ -37,19 +38,25 @@
 	    ast_walk
 	    backend_cplib)
    (export  (make-patch-unit)
+	    (emit-patch-header ::output-port)
 	    (patch->sexp exp stack loc site)
-	    (bind-patch->sexp exp stack loc site)
+	    (patch-index->sexp exp stack loc site)
 	    (patch-initialization! ast backend)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-patch-unit ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (make-patch-unit)
-   (unit 'patch
-      0
-      '(begin #t)
-      #t
-      #f))
+   (unit 'patch 0 '((begin #t)) #t #f))
+
+;*---------------------------------------------------------------------*/
+;*    emit-patch-header ...                                            */
+;*---------------------------------------------------------------------*/
+(define (emit-patch-header port)
+   (fprint port "/* runtime code modification */\n"
+      "#define BGL_SELF_MODIFYING_CODE "
+      (if *optim-patch?* 1 0)
+      "\n"))
 
 ;*---------------------------------------------------------------------*/
 ;*    *patch-index* ...                                                */
@@ -70,37 +77,30 @@
 ;*---------------------------------------------------------------------*/
 (define (patch->sexp exp stack loc site)
    (match-case exp
-      ((?- ?ref ?val)
+      ((?- ?ref ?init)
        (set! *patch-armed* #t)
        (let ((ref (sexp->node ref stack loc 'value)))
-	  (if (not (and (var? ref) (local? (var-variable ref))))
+	  (if (not (var? ref))
 	      (error-sexp->node "Illegal patch" exp loc)
 	      (instantiate::patch
 		 (loc loc)
 		 (ref ref)
-		 (type (get-patch-type val exp loc))
-		 (value val)))))
+		 (type (get-patch-type init exp loc))
+		 (value (sexp->node init stack loc 'value))))))
       (else
        (error-sexp->node "Illegal patch" exp loc))))
 
 ;*---------------------------------------------------------------------*/
-;*    bind-patch ...                                                   */
+;*    patch-index->sexp ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (bind-patch->sexp exp stack loc site)
+(define (patch-index->sexp exp stack loc site)
    (match-case exp
-      ((bind-patch (and ?vars (? (lambda (l) (every symbol? l)))) . ?exps)
-       (sexp->node
-	  (epairify-rec
-	     `(let ,(map (lambda (var)
-			    (list var
-			       (instantiate::genpatchid
-				  (loc loc)
-				  (type *long*))))
-		       vars)
-		 ,@exps) exp)
-	  stack loc site))
+      ((?-)
+       (instantiate::genpatchid
+	  (loc loc)
+	  (type *long*)))
       (else
-       (error-sexp->node "Illegal bind-patch" exp loc))))
+       (error-sexp->node "Illegal patch-index" exp loc))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-patch-type ...                                               */
@@ -108,10 +108,7 @@
 (define (get-patch-type value exp loc)
    (cond
       ((fixnum? value) *long*)
-      ((or (int32? value) (uint32? value)) *int32*)
-      ((or (int64? value) (uint64? value)) *int64*)
-      ((and (pair? value) (eq? (car value) 'quote)) (get-type-kwote (cadr value)))
-      (else (error-sexp->node "Illegal patch value" exp loc))))
+      (else *obj*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-initialization! ...                                        */
@@ -120,52 +117,72 @@
    
    (define global-patch-index 0)
    
-   (define (patch-init! g::global patches::pair)
-      (let* ((fun (variable-value g))
-	     (idx global-patch-index)
-	     (len (length patches)))
-	 ;; re-number the patches per function
-	 (set! global-patch-index (+fx global-patch-index len))
-	 (instantiate::pragma
-	    (type *void*)
-	    (format (format "bgl_init_patch_64( &~a, ~a, &(__bgl_patches[ ~a ]) )"
-		       (set-variable-name! g) len idx)))))
+   (define patch-init-nodes '())
    
+   (define (link-patches! g patches patchtypes sizeof)
+      (let ((tidx 0)
+	    (idx global-patch-index))
+	 (for-each (lambda (p)
+		      (with-access::patch p (patchid type index)
+			 (when (memq type patchtypes)
+			    (with-access::genpatchid patchid (index)
+			       (set! index global-patch-index)
+			       (set! global-patch-index
+				  (+fx 1 global-patch-index)))
+			    (set! index tidx)
+			    (set! tidx (+fx 1 tidx)))))
+	    patches)
+	 (when (>fx tidx 0)
+	    (let ((init (instantiate::pragma
+			   (type *void*)
+			   (format (format "bgl_init_patch_~a( &~a, ~a, &(__bgl_patches[ ~a ]) )"
+				      sizeof
+				      (set-variable-name! g) tidx idx)))))
+	       (set! patch-init-nodes (cons init patch-init-nodes))))))
+
    (when *patch-armed*
-      ;; first replace all the genpatchid by their actual value
-      (for-each (lambda (g)
-		   (let ((fun (variable-value g)))
-		      (with-access::sfun fun (body)
-			 (set! body
-			    (resolve-genpatchid! body '() *patch-index*)))))
-	 ast)
+      (let ((env0 (patch-global-env)))
+	 (for-each (lambda (g)
+		      (let ((fun (variable-value g)))
+			 (with-access::sfun fun (body)
+			    (let ((patches (make-cell '())))
+			       (bind-patch! body env0 patches)
+			       (when (pair? (cell-ref patches))
+				  (if (eq? (bigloo-config 'elong-size) 32)
+				      (link-patches! g (cell-ref patches)
+					 (list *long* *obj*) 32)
+				      (begin
+					 (link-patches! g (cell-ref patches)
+					    (list *long*) 32)
+					 (link-patches! g (cell-ref patches)
+					    (list *obj*) 64))))))))
+	    ast))
       
-      (let ((patches (filter-map collect-patches ast)))
-	 (when (pair? patches)
-	    (let* ((glo (find-global 'patch-init))
-		   (fun (variable-value glo)))
-	       (sfun-body-set! fun
-		  (instantiate::sequence
-		     (type *obj*)
-		     (nodes (list
-			       (instantiate::pragma
-				  (type *void*)
-				  (format "bgl_init_self_mod()"))
-			       (instantiate::sequence
-				  (type *void*)
-				  (nodes (append
-					    (map (lambda (e)
-						    (patch-init! (car e) (cdr e)))
-					       patches))))
-			       (instantiate::literal
-				  (type *obj*)
-				  (value #unspecified)))))))))
+      (let* ((glo (find-global 'patch-init))
+	     (fun (variable-value glo)))
+	 (sfun-side-effect-set! fun #t)
+	 (sfun-body-set! fun
+	    (instantiate::sequence
+	       (type *obj*)
+	       (nodes (list
+			 (when *main*
+			    (instantiate::pragma
+			       (type *void*)
+			       (format "bgl_init_self_mod()")))
+			 (instantiate::sequence
+			    (type *void*)
+			    (nodes (reverse! patch-init-nodes)))
+			 (instantiate::literal
+			    (type *obj*)
+			    (value #unspecified)))))))
       
       (let ((pvector (def-global-svar! '__bgl_patches
 			*module*
 			'patches
 			'never))
-	    (typ (declare-type! '__bgl_patch_descr "__bgl_patch_descr" 'C)))
+	    (typ (if *optim-patch?*
+		     (declare-type! '__bgl_patch_descr "__bgl_patch_descr" 'C)
+		     (declare-type! '__bgl_patch_descr "long" 'C))))
 	 (global-user?-set! pvector #f)
 	 (global-import-set! pvector 'static)
 	 (global-type-set! pvector typ)
@@ -183,7 +200,7 @@
 	 (cons var patches))))
 
 ;*---------------------------------------------------------------------*/
-;*    collect-pcaches* ...                                             */
+;*    collect-pcaches* ::node ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-walk-method (collect-patches* this::node)
    (call-default-walker))
@@ -195,67 +212,117 @@
    (list this))
 		  
 ;*---------------------------------------------------------------------*/
-;*    resolve-genpatchid! ...                                          */
+;*    bind-patch! ::node ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (resolve-genpatchid! this::node env ibase)
+(define-walk-method (bind-patch! this::node env patches)
    (call-default-walker))
 
 ;*---------------------------------------------------------------------*/
-;*    resolve-genpatchid! ...                                          */
+;*    bind-patch! ::patch ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (resolve-genpatchid! this::patch env ibase)
-   (with-access::patch this (ref genpatchid)
+(define-walk-method (bind-patch! this::patch env patches)
+   (with-access::patch this (ref index patchid loc)
       (cond
 	 ((not (isa? ref var))
-	  (user-error "resolve-genpatchid!" "Illegal patch" this))
+	  (user-error/location loc "patch" "illegal patch" this))
 	 ((assq (var-variable ref) env)
 	  =>
 	  (lambda (b)
-	     (set! genpatchid (cdr b))
-	     this))
+	     (if (eq? patchid #unspecified)
+		 (begin
+		    (set! patchid (cddr b))
+		    (cell-set! patches (cons this (cell-ref patches)))
+		    this)
+		 (user-error/location loc "patch" "duplicated index" index))))
 	 (else
-	  (user-error "resolve-genpatchid!" "Illegal patch" this)))))
+	  (user-error/location loc "patch" "unbound patch" this)))))
 
 ;*---------------------------------------------------------------------*/
-;*    resolve-genpatchid! ...                                          */
+;*    bind-patch! ::var ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (resolve-genpatchid! this::genpatchid env ibase)
-   (user-error "resolve-genpatchid!" "Illegal genpatchid" this))
+(define-walk-method (bind-patch! this::var env patches)
+   (let ((pid (assq (var-variable this) env)))
+      (if pid (cadr pid) this)))
 
 ;*---------------------------------------------------------------------*/
-;*    resolve-genpatchid! ...                                          */
+;*    bind-patch! ::setq ...                                           */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (resolve-genpatchid! this::var env ibase)
-   (let ((index (assq (var-variable this) env)))
-      (if index
-	  (cdr index)
-	  this)))
+(define-walk-method (bind-patch! this::setq env patches)
+   (with-access::setq this (value)
+      (set! value (bind-patch! value env patches)))
+   this)
 
 ;*---------------------------------------------------------------------*/
-;*    resolve-genpatchid! ...                                          */
+;*    bind-patch! ::let-var ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-walk-method (resolve-genpatchid! this::let-var env ibase)
+(define-walk-method (bind-patch! this::let-var env patches)
    
    (define (resolve-binding! b)
       (cond
 	 ((not (isa? (cdr b) genpatchid))
-	  (set-cdr! b (resolve-genpatchid! (cdr b) env ibase))
+	  (set-cdr! b (bind-patch! (cdr b) env patches))
 	  #f)
 	 ((>fx (variable-occurrencew (car b)) 0)
-	  (user-error "resolve-genpatchid!"
-	     "Variable should be immutable"
-	     (car b)))
+	  (with-access::node (cdr b) (loc)
+	     (user-error/location loc "patch-index"
+		"index must be bound to immutable variable"
+		(car b))))
 	 (else
-	  (with-access::genpatchid (cdr b) (index rindex)
-	     (let ((idx (get-patch-index)))
-		(set! index idx)
-		(set! rindex (-fx idx ibase)))
-	     #t))))
+	  (cons (car b) (cons (cdr b) (cdr b))))))
    
    (with-access::let-var this (body bindings loc)
-      (let ((nenv (append (filter resolve-binding! bindings) env)))
-	 (set! body (resolve-genpatchid! body nenv ibase))
+      (let ((nenv (append (filter-map resolve-binding! bindings) env)))
+	 (bind-patch! body nenv patches)
 	 this)))
-   
 
+;*---------------------------------------------------------------------*/
+;*    patch-global-env ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Collect the patch-index call of the global variables             */
+;*    initialization section.                                          */
+;*---------------------------------------------------------------------*/
+(define (patch-global-env)
+   (let* ((glo (find-global 'toplevel-init))
+	  (fun (variable-value glo)))
+      (collect-init-indexes* (sfun-body fun))))
+
+;*---------------------------------------------------------------------*/
+;*    collect-init-indexes* ::node ...                                 */
+;*---------------------------------------------------------------------*/
+(define-walk-method (collect-init-indexes* this::node)
+   (call-default-walker))
+
+;*---------------------------------------------------------------------*/
+;*    collect-init-indexes* ::setq ...                                 */
+;*---------------------------------------------------------------------*/
+(define-walk-method (collect-init-indexes* this::setq)
+   
+   (define (genpatch-value node)
+      (cond
+	 ((isa? node genpatchid)
+	  (values node node))
+	 ((isa? node app)
+	  (with-access::app node (fun args)
+	     (when (and (pair? args) (null? (cdr args)))
+		(when (isa? (car args) genpatchid)
+		   (let ((v (var-variable fun)))
+		      (when (and (global? v) (cfun? (global-value v)))
+			 (when (eq? (global-id v) '$long->bint)
+			    (values node (car args)))))))))
+	 (else
+	  #f)))
+   
+   (with-access::setq this (var value)
+      (multiple-value-bind (node genpatchid)
+	 (genpatch-value value)
+	 (if node
+	     (with-access::var var (variable loc)
+		(if (>fx (variable-occurrencew variable) 1)
+		    (user-error/location loc "patch-index"
+		       "index must be bound to immutable variable"
+		       variable)
+		    (list (cons variable (cons node genpatchid)))))
+	     (call-default-walker)))))
+	 
+      
 

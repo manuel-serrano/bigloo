@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Sat May 13 07:18:54 2017 (serrano)                */
+;*    Last change :  Fri Jun  2 09:28:31 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -69,8 +69,8 @@
 					   (let ((cell (and
 							(string? (car sfiles))
 							(assoc
-							 (suffix (car sfiles))
-							 *auto-mode*))))
+							   (suffix (car sfiles))
+							   *auto-mode*))))
 					      (if (pair? cell)
 						  (cdr cell)
 						  (loop (cdr sfiles))))))))
@@ -78,8 +78,8 @@
 			  (begin
 			     (set! *src-files* '())
 			     (do-parse-args `("-extend"
-					      ,auto-mode
-					      ,@(cdr args))))
+						,auto-mode
+						,@(cdr args))))
 			  #t)))))
       ;; we are done with the parsing, we invert all the lists
       (set! *src-files*       (reverse! *src-files*))
@@ -108,7 +108,7 @@
       ;; dynamic extend of the compilation).
       (when (memq *target-language* '(jvm .net))
 	 (set! *additional-heap-names*
-	       (delete! "bdb" *additional-heap-names*))
+	    (delete! "bdb" *additional-heap-names*))
 	 (when (or (not (number? *compiler-debug*)) (<= *compiler-debug* 1))
 	    (set! *optim-dataflow?* #t)
 	    (set! *optim-reduce-beta?* #t)))
@@ -130,9 +130,9 @@
 	    (for-each (lambda (pass)
 			 (if (not (memq pass passes))
 			     (warning "parse-args"
-				      "No trace for this pass -- "
-				      pass)))
-		      *additional-traces*)))
+				"No trace for this pass -- "
+				pass)))
+	       *additional-traces*)))
       ;; when the reader is used to construct the constant, it must
       ;; be initialized very soon
       (when (eq? *init-mode* 'read)
@@ -147,6 +147,10 @@
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
+      ;; runtime code patching
+      (when *patch-support*
+	 (use-library! 'patch)
+	 (register-srfi! 'runtime-code-patching))
       ;; and we are done for the arguments parsing
       pres))
  
@@ -389,7 +393,11 @@
       ;; type refefinition
       (("-fallow-type-redefinition" (help "allow type redifinition"))
        (set! *allow-type-redefinition* #t))
-      
+      ;; patch support
+      (("-runtime-code-patching" (help "Enable runtime code patching"))
+       (set! *patch-support* #t))
+      (("-no-runtime-code-patching" (help "Disable runtime code patching"))
+       (set! *patch-support* #f))
 ;*--- Optimization ----------------------------------------------------*/
       (section "Optimization")
       ;; benchmarking
@@ -498,6 +506,10 @@
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
        (set! *optim-return-goto?* #f))
+      (("-fruntime-code-patching" (help "Optimize self-modifying code"))
+       (set! *optim-patch?* #t))
+      (("-fno-runtime-code-paching" (help "Disable self-modifying code optimization"))
+       (set! *optim-patch?* #f))
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
@@ -1168,10 +1180,7 @@
    
    (if (bigloo-config 'have-bdb)
        (begin 
-;* 	  (set! *additional-heap-names*                                */
-;* 		(cons "bdb" *additional-heap-names*))                  */
 	  (set! *libraries* (cons 'bdb *libraries*))
-;* 		(cons (use-library! 'bdb 'delay) *library-init*))      */
 	  
 	  (set! *user-heap-size* 1)
 	  (set! *bdb-debug* 1)

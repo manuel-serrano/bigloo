@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 20 11:36:01 1996                          */
-;*    Last change :  Fri Apr 21 18:45:39 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 06:04:31 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We spread the computed side-effect properties                    */
@@ -28,6 +28,13 @@
 ;*---------------------------------------------------------------------*/
 (define-method (spread-side-effect! node::var)
    (not (eq? (variable-access (var-variable node)) 'read)))
+
+;*---------------------------------------------------------------------*/
+;*    spread-side-effect! ::patch ...                                  */
+;*---------------------------------------------------------------------*/
+(define-method (spread-side-effect! node::patch)
+   (spread-side-effect! (patch-value node))
+   #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    spread-side-effect! ::sequence ...                               */

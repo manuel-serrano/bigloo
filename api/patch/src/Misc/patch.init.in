@@ -1,0 +1,30 @@
+;; -*- mode: bee -*-
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/patch/src/Misc/patch.init.in     */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
+;*    Last change :  Fri Jun  2 08:24:45 2017 (serrano)                */
+;*    Copyright   :  2001-17 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    The PATCH init file.                                             */
+;*=====================================================================*/
+ 
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'patch
+   :srfi '(patch)
+   :basename "bigloopatch"
+   :module-init '__patch_patch
+   :module-eval '__patch_makelib)
+
+;*---------------------------------------------------------------------*/
+;*    Compile and Link options                                         */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; patch includes
+    (set! *additional-include-foreign*
+       (cons "bglpatch.h" *additional-include-foreign*))))
+

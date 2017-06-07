@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug  4 14:10:06 2003                          */
-;*    Last change :  Thu Oct 20 11:49:32 2016 (serrano)                */
-;*    Copyright   :  2003-16 Manuel Serrano                            */
+;*    Last change :  Thu Jun  1 18:43:30 2017 (serrano)                */
+;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The C back-end                                                   */
 ;*=====================================================================*/
@@ -54,7 +54,8 @@
 	    init_setrc
 	    read_reader
 	    ast_env
-	    ast_type-occur)
+	    ast_type-occur
+	    patch_patch)
 
    (with    cgen_compile
 	    saw_c_compile)
@@ -119,7 +120,10 @@
    
    ;; emit the GC selection
    (emit-garbage-collector-selection)
-   
+
+   ;; self modifying code switch
+   (emit-patch-header *c-port*)
+
    ;; if we are in debugging mode, we generate a macro
    (if (or (>fx *compiler-debug* 0) *c-debug*)
        (emit-debug-activation))

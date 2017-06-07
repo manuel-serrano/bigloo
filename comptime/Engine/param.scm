@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Fri May  5 08:48:46 2017 (serrano)                */
+;*    Last change :  Thu Jun  1 18:31:25 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -90,6 +90,7 @@
 	    *optim-symbol-case*
 	    *optim-return?*
 	    *optim-return-goto?*
+	    *optim-patch?*
 	    *purify*
 	    *jvm-env*
 	    *arithmetic-genericity*
@@ -232,6 +233,7 @@
 	    *eval-options*
 	    *allow-type-redefinition*
 	    *pre-processor*
+	    *patch-support*
 	    (bigloo-variables-usage ::bool)
 	    (reinitialize-bigloo-variables!))
    (eval    (export-all)))
@@ -947,6 +949,9 @@
 (param-define *optim-return-goto?*
    "Optimize set-exit by enabling local return"
    #f)
+(param-define *optim-patch?*
+   "Optimize self modifying code"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    *extend-entry* ...                                               */
@@ -1145,6 +1150,13 @@
 (param-define *pre-processor*
    "An optional function that pre-processes the source file"
    (lambda (x) x))
+
+;*---------------------------------------------------------------------*/
+;*    *patch-support* ...                                              */
+;*---------------------------------------------------------------------*/
+(param-define *patch-support*
+   "Enables/disables patch (runtime code modification) support"
+   #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    Other variables that are defined inside the interpreter...       */

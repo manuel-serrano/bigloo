@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Jun  1 09:05:48 2017 (serrano)                */
+;*    Last change :  Thu Jun  1 18:02:16 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -220,9 +220,13 @@
 	   (error-sexp->node "Illegal `quote' expression" exp loc))))
 ;*--- patch -----------------------------------------------------------*/
       ((patch . ?-)
-       (patch->sexp exp stack (find-location/loc exp loc) site))
-      ((bind-patch . ?-)
-       (bind-patch->sexp exp stack (find-location/loc exp loc) site))
+       (if *patch-support*
+	   (patch->sexp exp stack (find-location/loc exp loc) site)
+	   (call->node exp stack loc site)))
+      ((patch-index . ?-)
+       (if *patch-support*
+	   (patch-index->sexp exp stack (find-location/loc exp loc) site)
+	   (call->node exp stack loc site)))
 ;*--- begin -----------------------------------------------------------*/
       ((begin)
        (sexp->node #unspecified stack (find-location/loc exp loc) site))

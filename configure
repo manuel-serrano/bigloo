@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 22 09:24:46 2017 (serrano)                */
+#*    Last change :  Wed Jun  7 08:42:38 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -40,7 +40,7 @@ lispdir=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv"
-apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat"
+apis="$importantapis gstreamer phidget alsa pulseaudio wav flac mpg123 phone avahi srfi27 packrat patch"
 
 #*--- bee configuration -----------------------------------------------*/
 bee=partial # "partial" or "full"
@@ -223,6 +223,11 @@ customlibuv=yes
 libuvconfigureopt=
 libuvversion=master-18jul2014
 libuvversion=1.x-24jan2015
+
+#*--- patch (left blank for autoconfiguration) ------------------------*/
+patchapi=
+patchlibs=
+patchcflags=
 
 #*--- phidget (left blank for autoconfiguration) ----------------------*/
 phidget=
@@ -1264,6 +1269,7 @@ if [ "$action" != "bigloo_config_el" ]; then
   openpgp_is_enabled=no
   gstreamer_is_enabled=no
   libuv_is_enabled=no
+  patch_is_enabled=no
   
   for a in $apis; do
     case $a in
@@ -1281,6 +1287,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       openpgp) openpgp_is_enabled="yes";;
       gstreamer) gstreamer_is_enabled="yes";;
       libuv) libuv_is_enabled="yes";;
+      patch) patch_is_enabled="yes";;
     esac
   done
   
@@ -2385,6 +2392,19 @@ if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
 
      libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
   fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    patch                                                            */
+#*---------------------------------------------------------------------*/
+# find out the C library for patch
+if [ "$patch_is_enabled" = "yes" -a "$patchapi " = " " ]; then
+   patchapi=`$autoconf patch` || exit 1;
+fi
+
+if [ "$patch " != "no " ]; then
+  patchcflags=""
+  patchlibs=""
 fi
 
 #*---------------------------------------------------------------------*/
@@ -4035,6 +4055,31 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "LIBUVCUSTOM=no" >> $makefile_cfg
     echo "LIBUVLIBS=" >> $makefile_cfg
     echo "LIBUVCFLAGS=" >> $makefile_cfg
+  fi
+
+  # ALSA
+  if [ "$patch " != "no " ]; then
+    # Patch the code of the PATCH init file
+    echo ";; automatically generated. Don't edit" > api/patch/src/Misc/patch.init
+    cat api/patch/src/Misc/patch.init.in \
+      | sed -e "s|@PATCHLIBS@|$patchlibs|g" \
+            -e "s|@PATCHCFLAGS@|$patchcflags|g" \
+      >>  api/patch/src/Misc/patch.init
+  else
+    napis=;
+    for a in $apis; do
+       if [ "patch" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "PATCHAPI=" >> $makefile_cfg
+    echo "PATCHLIBS=" >> $makefile_cfg
+    echo "PATCHFLAGS=" >> $makefile_cfg
   fi
 
   # PHIDGET

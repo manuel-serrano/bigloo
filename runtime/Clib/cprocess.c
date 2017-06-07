@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Tue Mar  7 20:08:18 2017 (serrano)                */
+/*    Last change :  Fri Jun  2 07:40:18 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -177,10 +177,10 @@ c_process_alivep_with_lock( obj_t process, int lock )
       else {
         if( res == PROCESS_PID( process ) ) {
           /* process has terminated and we must save this information */
-          PROCESS(process).exited      = 1;
-          if( PROCESS(process).index != -1 )
+          PROCESS(process).exited = 1;
+          if( PROCESS( process ).index != -1 )
             c_unregister_process_with_lock( process, lock );
-          PROCESS(process).exit_status = info;
+          PROCESS( process ).exit_status = info;
           return 0;
         }
         else
@@ -209,7 +209,7 @@ c_process_alivep_with_lock( obj_t process, int lock )
          return 1;
 
       /* process is now terminated */
-      PROCESS( process ).exited      = 1;
+      PROCESS( process ).exited = 1;
       if( PROCESS(process).index != -1 )
         c_unregister_process_with_lock( process, lock );
       PROCESS( process ).exit_status = exit_code;
@@ -1027,30 +1027,28 @@ obj_t
 c_process_wait( obj_t proc )
 #ifndef _BGL_WIN32_VER
 {
-   if( PROCESS( proc ).exited )
+   if( PROCESS( proc ).exited || (PROCESS( proc ).pid == 0) ) {
       return BFALSE;
-   else {
+   } else {
       int ret = waitpid( PROCESS_PID(proc), &(PROCESS(proc).exit_status), 0 );
 
       PROCESS( proc ).exited = 1;
-      if( PROCESS(proc).index != -1 )
+      if( PROCESS( proc ).index != -1 )
         c_unregister_process( proc );
       return (ret == 0) ? BFALSE : BTRUE;
    }
 }
 #else
 {
-   if( PROCESS( proc ).exited )
+   if( PROCESS( proc ).exited ) {
       return BFALSE;
-   else
-   {
+   } else {
       obj_t result;
 
-      if( WaitForSingleObject( PROCESS( proc ).hProcess, INFINITE ) != WAIT_OBJECT_0 )
+      if( WaitForSingleObject( PROCESS( proc ).hProcess, INFINITE ) != WAIT_OBJECT_0 ) {
          /* process is still running */
          result = BFALSE;
-      else
-      {
+      } else {
          /* process is now terminated */
          DWORD exit_code;
 
@@ -1064,7 +1062,7 @@ c_process_wait( obj_t proc )
 
          PROCESS( proc ).exited = 1;
          if( PROCESS(proc).index != -1 )
-           c_unregister_process( proc );
+	    c_unregister_process( proc );
          PROCESS( proc ).exit_status = exit_code;
          CloseHandle( PROCESS( proc ).hProcess );
          PROCESS( proc ).hProcess= INVALID_HANDLE_VALUE;

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Dec 31 07:26:21 1994                          */
-;*    Last change :  Fri Nov 25 08:39:51 2016 (serrano)                */
+;*    Last change :  Wed Jun  7 06:00:58 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The ast->sexp translator                                         */
 ;*=====================================================================*/
@@ -341,7 +341,12 @@
    (node->sexp-hook node)
    (let ((sym (shape-typed-node 'let (node-type node))))
       (location-shape (node-loc node)
-	 `(,sym ,(map (lambda (b)
+	 `(,sym
+	     ,@(if *access-shape?*
+		   (list
+		      (list "side-effect:" (side-effect? node)))
+		   '())
+	     ,(map (lambda (b)
 			 `(,(shape (car b)) ,(node->sexp (cdr b))))
 		    (let-var-bindings node))
 	     ,(node->sexp (let-var-body node))))))
@@ -411,3 +416,17 @@
    (if *typenode-shape?*
        (string->symbol (string-append (symbol->string id) "::" (shape type)))
        id))
+
+;*---------------------------------------------------------------------*/
+;*    node->sexp ::patch ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (node->sexp node::patch)
+   (with-access::patch node (ref value type)
+      `(,(shape-typed-node 'patch type) ,(node->sexp ref) ,(node->sexp value))))
+
+;*---------------------------------------------------------------------*/
+;*    node->sexp ::genpatchid ...                                      */
+;*---------------------------------------------------------------------*/
+(define-method (node->sexp node::genpatchid)
+   (with-access::genpatchid node (index)
+      `(genpatchid ,index)))
