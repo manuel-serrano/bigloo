@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Jun  1 08:45:38 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 18:06:31 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -110,9 +110,10 @@
 ;*    do-alphatize ::patch ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (do-alphatize node::patch loc)
-   (with-access::patch node (ref)
+   (with-access::patch node (ref value)
       (duplicate::patch node
 	 (ref (do-alphatize ref loc))
+	 (value (do-alphatize value loc))
 	 (loc (get-location node loc)))))
 
 ;*---------------------------------------------------------------------*/

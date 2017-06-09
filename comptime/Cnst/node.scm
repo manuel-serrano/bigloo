@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  6 14:08:40 1995                          */
-;*    Last change :  Wed May 31 10:41:23 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 15:36:12 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The constant compilation (of the kwoted forms and                */
@@ -54,7 +54,9 @@
 ;*    cnst! ::patch ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-method (cnst! node::patch)
-   node)
+   (with-access::patch node (value)
+      (cnst! value)
+      node))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst! ...                                                        */

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  2 08:12:54 2017                          */
-;*    Last change :  Wed Jun  7 07:56:27 2017 (serrano)                */
+;*    Last change :  Thu Jun  8 16:31:54 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PATCH object wrapper                                             */
@@ -13,6 +13,8 @@
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module __patch_patch
+
+   (option (set! *optim-patch?* #t))
    
    (extern (include "../Clib/bglpatch.h")
 	   

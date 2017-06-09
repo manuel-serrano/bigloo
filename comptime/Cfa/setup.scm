@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Thu Jun  1 19:05:05 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 15:37:46 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
@@ -68,6 +68,7 @@
 ;*---------------------------------------------------------------------*/
 (define-method (node-setup! node::patch)
    (with-access::patch node (value type)
+      (node-setup! value)
       (widen!::patch/Cinfo node
 	 (approx (make-type-approx type)))))
 

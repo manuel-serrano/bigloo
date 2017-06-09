@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Tue May  9 11:27:56 2017 (serrano)                */
+;*    Last change :  Fri Jun  9 09:16:53 2017 (serrano)                */
 ;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -69,7 +69,9 @@
    (initialize-Genv!)
 
    ;; #meta
-   (install-compiler-expander '|#meta| expand-meta)
+   (install-compiler-expander '|#meta|
+      (lambda (x e)
+	 (expand-meta x (internal-begin-expander e))))
    
    ;; if
    (install-compiler-expander 'if expand-if)

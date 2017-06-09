@@ -264,20 +264,22 @@ void init_patch_32(void *fn, size_t len, patch_descr *patch_tab) {
 
   int8_t *probe = (int8_t*)fn;
   int i;
+  size_t count = len;
 
   for (i=0; i<len; i++) {
     patch_descr *patch = &patch_tab[i];
     patch->addr = NULL;
   }
 
-  while (*(int64_t*)probe != END_OF_PATCHABLE_FUNCTION_MARKER) {
+  //while (*(int64_t*)probe != END_OF_PATCHABLE_FUNCTION_MARKER) {
+  while (count>0) {
     patch_32_type val = *(patch_32_type*)probe;
     int32_t mult = 0;
     while (++mult <= 10) {
       int32_t offs = (val % (mult<<(32-BITS_FOR_ID))) -
                      (mult*(PATCHABLE_MARKER_32&((1<<(32-BITS_FOR_ID))-1)));
       if (offs >= OFFS_MIN && offs <= OFFS_MAX) {
-        uint64_t id = ((uint64_t)val - offs) / (mult<<(32-BITS_FOR_ID));
+        uint32_t id = ((uint64_t)val - offs) / (mult<<(32-BITS_FOR_ID));
         if (id >= len) {
           printf("int32_t constant #%d is out of range\n", id);
           exit(1);
@@ -287,11 +289,14 @@ void init_patch_32(void *fn, size_t len, patch_descr *patch_tab) {
             printf("int32_t constant #%d appears more than once in machine code\n", id);
             exit(1);
           }
-          printf("found int32_t constant #%d at %p with mult=%d and offset=%d\n", id, probe, mult, offs, mult);
+          printf("found int32_t constant #%d at %p with mult=%d and offset=%d\n", id, probe, mult, offs );
           patch->addr = (void*)probe;
           patch->mult = mult;
           patch->offs = offs;
           probe += sizeof (val);
+
+	  count--;
+	  
           goto done;
         }
       }
@@ -313,20 +318,22 @@ void init_patch_64(void *fn, size_t len, patch_descr *patch_tab) {
 
   int8_t *probe = (int8_t*)fn;
   int i;
+  size_t count = len;
 
   for (i=0; i<len; i++) {
     patch_descr *patch = &patch_tab[i];
     patch->addr = NULL;
   }
 
-  while (*(int64_t*)probe != END_OF_PATCHABLE_FUNCTION_MARKER) {
+//  while (*(int64_t*)probe != END_OF_PATCHABLE_FUNCTION_MARKER) {
+  while (count > 0) {
     patch_64_type val = *(patch_64_type*)probe;
     int32_t mult = 0;
     while (++mult <= 10) {
       int32_t offs = (val % ((uint64_t)mult<<(64-BITS_FOR_ID))) -
                      (mult*(PATCHABLE_MARKER_64&((1LL<<(64-BITS_FOR_ID))-1)));
       if (offs >= OFFS_MIN && offs <= OFFS_MAX) {
-        uint64_t id = ((uint64_t)val - offs) / ((uint64_t)mult<<(64-BITS_FOR_ID));
+        uint32_t id = ((uint64_t)val - offs) / ((uint64_t)mult<<(64-BITS_FOR_ID));
         if (id >= len) {
           printf("int64_t constant #%d is out of range\n", id);
           exit(1);
@@ -336,11 +343,14 @@ void init_patch_64(void *fn, size_t len, patch_descr *patch_tab) {
             printf("int64_t constant #%d appears more than once in machine code\n", id);
             exit(1);
           }
-          printf("found int64_t constant #%d at %p with mult=%d and offset=%d\n", id, probe, mult, offs, mult);
+          printf("found int64_t constant #%d at %p with mult=%d and offset=%d\n", id, probe, mult, offs);
           patch->addr = (void*)probe;
           patch->mult = mult;
           patch->offs = offs;
           probe += sizeof (val);
+
+	  count--;
+	  
           goto done;
         }
       }
@@ -427,6 +437,9 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
 }
 
 void patch_64(patch_descr *patch, patch_64_type val_64) {
+   // fprintf( stderr, "############ patch64 addr=%p\n", (patch_64_type*)patch->addr );
+   // asm( "lea 0(%%rip),%0" : "=r" (pc));
+   // fprintf( stderr, "<<< PC.1=%p\n", pc );
   *(patch_64_type*)patch->addr = val_64 * (patch_64_type)patch->mult + (patch_64_type)patch->offs;
 }
 

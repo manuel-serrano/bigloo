@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Thu Jun  1 08:45:53 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 18:15:37 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the occurrences number and compute the read/write        */
 ;*    property of local variables. The read/write property is          */
@@ -73,7 +73,13 @@
 ;*    occur-node! ::patch ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (occur-node! node::patch)
-   (with-access::patch node (ref)
+   (with-access::patch node (ref value)
+      (if (isa? value var)
+	  (let ((v (var-variable value)))
+	     (variable-occurrencew-set! v (+fx (variable-occurrencew v) 1))
+	     (variable-occurrence-set! v (+fx (variable-occurrence v) 1))
+	     (variable-access-set! v 'write))
+	  (occur-node! value))
       (occur-node! ref)))
 
 ;*---------------------------------------------------------------------*/

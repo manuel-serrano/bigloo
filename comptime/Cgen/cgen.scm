@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Jun  7 08:13:02 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 15:44:36 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -257,20 +257,27 @@
    (trace (cgen 3)
       "(node->cop node::patch kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
-   (with-access::patch node (index loc type patchid)
+   (with-access::patch node (index loc type patchid value)
       (with-access::genpatchid patchid ((gindex index))
-	 (kont (instantiate::cpragma
-		  (loc loc)
-		  (format (format "BGL_PATCHABLE_CONSTANT_~a($1, $2)"
-			     (if (eq? type *obj*)
-				 (bigloo-config 'elong-size)
-				 32)))
-		  (args (list (instantiate::catom
-				 (value index)
-				 (loc loc))
-			   (instantiate::catom
-			      (value gindex)
-			      (loc loc)))))))))
+	 (with-access::var value (variable)
+	    (instantiate::csequence
+	       (loc loc)
+	       (cops (list (instantiate::cpragma
+			      (loc loc)
+			      (format (format "BGL_PATCHABLE_CONSTANT_~a($1, $2, $3)"
+					 (if (eq? type *obj*)
+					     (bigloo-config 'elong-size)
+					     32)))
+			      (args (list (instantiate::catom
+					     (value index)
+					     (loc loc))
+				       (instantiate::catom
+					  (value gindex)
+					  (loc loc))
+				       (instantiate::varc
+					  (variable variable)
+					  (loc loc)))))
+			(node->cop value kont inpushexit))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ...                                                    */

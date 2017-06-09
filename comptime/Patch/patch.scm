@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 31 10:22:17 2017                          */
-;*    Last change :  Wed Jun  7 08:04:24 2017 (serrano)                */
+;*    Last change :  Wed Jun  7 18:13:08 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Patch management                                                 */
@@ -82,11 +82,20 @@
        (let ((ref (sexp->node ref stack loc 'value)))
 	  (if (not (var? ref))
 	      (error-sexp->node "Illegal patch" exp loc)
-	      (instantiate::patch
-		 (loc loc)
-		 (ref ref)
-		 (type (get-patch-type init exp loc))
-		 (value (sexp->node init stack loc 'value))))))
+	      (let* ((typ (get-patch-type init exp loc))
+		     (aux (make-local-svar (gensym 'patch) typ))
+		     (init (sexp->node init stack loc 'value)))
+		 (variable-access-set! aux 'write)
+		 (instantiate::let-var
+		    (type typ)
+		    (bindings (list (cons aux init)))
+		    (body (instantiate::patch
+			     (loc loc)
+			     (ref ref)
+			     (type typ)
+			     (value (instantiate::var
+				       (type typ)
+				       (variable aux))))))))))
       (else
        (error-sexp->node "Illegal patch" exp loc))))
 
