@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  9 15:29:23 2000                          */
-;*    Last change :  Wed May 31 10:44:21 2017 (serrano)                */
+;*    Last change :  Fri Jun  9 10:19:08 2017 (serrano)                */
 ;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This stage implement a very straightforward beta-reduction. It   */
@@ -96,8 +96,8 @@
 ;*---------------------------------------------------------------------*/
 (define (find-actual-expression::node body::node)
    (if (sequence? body)
-       (with-access::sequence body (nodes)
-	  (if (and (pair? nodes) (null? (cdr nodes)))
+       (with-access::sequence body (nodes meta)
+	  (if (and (pair? nodes) (null? (cdr nodes)) (null? meta))
 	      (find-actual-expression (car nodes))
 	      body))
        body))
