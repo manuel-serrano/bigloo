@@ -434,13 +434,20 @@ void init_patch_fn_ptr(void *fn, size_t len, patch_descr *patch_tab) {
 
 void patch_32(patch_descr *patch, patch_32_type val_32) {
   *(patch_32_type*)patch->addr = val_32 * (patch_32_type)patch->mult + (patch_32_type)patch->offs;
+   __builtin___clear_cache( (char *)patch->addr, (char *)(patch->addr) + 4 );
 }
+
+long GLOB = 0;
+void *GLOB2 = 0;
 
 void patch_64(patch_descr *patch, patch_64_type val_64) {
    // fprintf( stderr, "############ patch64 addr=%p\n", (patch_64_type*)patch->addr );
    // asm( "lea 0(%%rip),%0" : "=r" (pc));
    // fprintf( stderr, "<<< PC.1=%p\n", pc );
-  *(patch_64_type*)patch->addr = val_64 * (patch_64_type)patch->mult + (patch_64_type)patch->offs;
+   fprintf( stderr, ">> PATCH64 addr=%p/%p val=%lld/%lld\n", (patch_64_type*)patch->addr, GLOB2, *(patch_64_type*)patch->addr, GLOB );
+   *(patch_64_type*)patch->addr = val_64 * (patch_64_type)patch->mult + (patch_64_type)patch->offs;
+   fprintf( stderr, "<< PATCH64 addr=%p val=%lld\n", (patch_64_type*)patch->addr, *(patch_64_type*)patch->addr );
+/*    __builtin___clear_cache( (char *)patch->addr, (char *)(patch->addr) + 8 ); */
 }
 
 void patch_fn_call(patch_descr *patch, void *val_fn) {

@@ -1,0 +1,19 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/pcre/configure-pcre                  */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Mon Sep  7 09:49:25 2009                          */
+#*    Last change :  Sun Jun 18 07:57:07 2017 (serrano)                */
+#*    Copyright   :  2009-17 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Ad-hoc configuration for the PCRE.                               */
+#*=====================================================================*/
+
+ROOT=$PWD
+
+(cd pcre$pcreversion && \
+ export CC=$cc && \
+ ./configure --prefix=$ROOT $pcreconfigureopt 2>&1 >> ../../configure.log || \
+ (echo "configure pcre fail, see configure.log file." && exit 1)) || exit 1
+

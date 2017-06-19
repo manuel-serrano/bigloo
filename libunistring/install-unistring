@@ -1,0 +1,50 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/libunistring/install-unistring       */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed Dec 19 07:52:02 2007                          */
+#*    Last change :  Sun Jun 18 07:57:19 2017 (serrano)                */
+#*    Copyright   :  2007-17 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    This shell script installs a new UNISTRING.                      */
+#*=====================================================================*/
+
+src=$UNISTRING
+bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
+
+tar=$TAR
+wget=$WGET
+
+if [ "$tar " = " " ]; then
+  tar=tar
+fi
+
+if [ "$wget " = " " ]; then
+  wget=wget
+fi
+
+remote=
+
+if [ -f `basename $src` ]; then
+  src=`basename $src`;
+else
+  if [ "`echo $src | grep '^http://'` " != " " \
+       -o "`echo $src | grep '^ftp://'` " != " " ]; then
+    if [ ! -f $src ]; then
+      if [ ! -f `basename $src` ]; then
+        $wget $src -O `basename $src`
+      fi
+      src=`basename $src`;
+    fi
+  fi
+fi
+
+if [ ! -f $src ]; then
+  echo "*** ERROR:configure:--unistringsrc. Cannot find unistring \"$src\" library."
+  echo "Aborting";
+  exit 1;
+fi
+
+tar xf $src || (echo "tar xf $src failed"; exit 1)
+

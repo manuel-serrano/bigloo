@@ -909,7 +909,7 @@ hits the ,(code "Enter") key.
 
 @deffn {bigloo procedure} open-pipes [name]
 Opens a bi-directional pipes. Returns two values, an @code{input-port} and
-an @code{output-port}. The optional argument @var{name} only servers
+an @code{output-port}. The optional argument @var{name} is only used for
 debugging.
 
 Example:

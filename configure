@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun  7 08:42:38 2017 (serrano)                */
+#*    Last change :  Mon Jun 19 17:16:13 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -151,6 +151,11 @@ unistringforce=no
 customunistring=no
 unistringsrc=$UNISTRINGSRC
 unistringconfigureopt=
+
+if [ "$unistringsrc " ]; then
+  unistringversion=0.9.7
+  unistringsrc=libunistring/libunistring-$unistringversion.tar.gz
+fi  
 
 #*--- socket library (left empty for automatic configuration) ---------*/
 socketlibs=
@@ -376,6 +381,13 @@ enable_bglpkg="no"
 #*--- pcre configuration ----------------------------------------------*/
 # valid values are "no", "yes"
 enable_configure_pcre="yes"
+custompcre=no
+pcresrc=$PCRESRC
+
+if [ "$pcresrc " ]; then
+  pcreversion=2-10.23
+  pcresrc=pcre/pcre$pcreversion.tar.gz
+fi  
 
 #*---------------------------------------------------------------------*/
 #*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
@@ -936,6 +948,12 @@ while : ; do
     --no-pcre|--disable-pcre)
       enable_configure_pcre="no";;
 
+    --custompcre=yes|--custompcre)
+      custompcre=yes;;
+
+    --pcresrc=*)
+      pcresrc="`echo $1 | sed 's/^[^=]*=//'`";;
+
     --sqltiny)
       sqltinyforce="yes";;
 
@@ -1095,6 +1113,8 @@ while : ; do
       echo "   --disable-revolv (see --no-resolv)" >&2;
       echo "   --disable-unistring (see --no-unistring)" >&2;
       echo "   --disable-pcre (see --no-pcre)" >&2;
+      echo "   --custompcre=yes|no [default no]" >&2;
+      echo "   --pcresrc=file [default \$PCRE\")" >&2;
       echo "   --customgmp=yes|no [default no]" >&2;
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
       echo "   --customunistring=yes|no [default yes]" >&2;
@@ -2337,16 +2357,32 @@ havemixer=`$autoconf mixer` || exit 1
 #*    Regexp                                                           */
 #*---------------------------------------------------------------------*/
 if [ "$regexp " = " " ]; then
+
   # find out the C library for pcre
-  if [ "$enable_configure_pcre " = "yes " ]; then
+  if [ "$enable_configure_pcre " = "yes " -a "$custompcre " != "yes " ]; then
     pcrelibs=`$autoconf pcre` || exit 1;
+    extrapcre=-lpcre
+  fi
+
+  if [ "$pcrelibs " = "no " -a "$custompcre " != "no " ]; then
+    custompcre=yes
+    pcreversion=`echo $pcresrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+	
+    echo "+ Installing custom pcre source code."
+    (cd pcre &&  PCRE=$pcresrc && export PCRE && ./install-pcre) || exit 1
+
+    echo "+ Configuring custom pcre..."
+    (cd pcre; . ./configure-pcre) || exit 1
+	
+    pcrelibs=yes
+    extrapcre=-lbigloopcre-$release
   else
     pcrelibs=no
   fi
 
   if [ "$pcrelibs " != "no " ]; then
     featureflags="-srfi enable-pcre $featureflags";
-    extralibs="-lpcre $extralibs"
+    extralibs="$extrapcre $extralibs"
     regexp=pcre
 
     if [ `$autoconf pcrefreestudy` = "yes" ]; then
@@ -2666,21 +2702,38 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     haveunistring=1;
     featureflags="-srfi enable-unistring $featureflags";
     extralibs="-lbigloounistring-$release $extralibs"
-  elif [ "$unistring " = " " ]; then
-    unistring=`$autoconf unistring` || exit 1
+  fi
+  
+  if [ "$unistring " = " " -a "$customunistring " = "no " ]; then
+    extraunistring=`$autoconf unistring` || exit 1
+  fi
+  
+  if [ $unistring = "no" -a "$customunistring " != "no " ]; then
+    customunistring=yes
+    unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+    
+    echo "+ Installing custom unistring source code."
+    (cd unistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
 
-    if [ $unistring = "no" ]; then
-      haveunistring=0;
-      if [ $unistringforce = "yes" ]; then
-	echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
-	echo "Aborting";
- 	exit 1;
-      fi
-    else
-      haveunistring=1;
-      featureflags="-srfi enable-unistring $featureflags";
-      extralibs="-l$unistring $extralibs"
+    echo "+ Configuring custom unistring..."
+    (cd unistring; . ./configure-unistring) || exit 1
+	
+    unistringlibs=yes
+    extraunistring=bigloounistring-$release
+  else
+    haveunistring=0;
+    extraunistring=no
+    if [ $unistringforce = "yes" ]; then
+      echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
+      echo "Aborting";
+      exit 1;
     fi
+  fi
+
+  if [ "$extraunistring " != "no " ]; then
+    haveunistring=1;
+    featureflags="-srfi enable-unistring $featureflags";
+    extralibs="-l$extraunistring $extralibs"
   else
     haveunistring=0;
   fi
@@ -3605,13 +3658,25 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "GMPCUSTOM=no" >> $makefile_cfg
   fi
 
+  # The PCRE library
+  if [ "$custompcre " = "yes " ]; then
+    echo "PCRECUSTOM=yes" >> $makefile_cfg
+    echo "PCRECUSTOMVERSION=$pcreversion" >> $makefile_cfg
+  else
+    echo "PCRECUSTOM=no" >> $makefile_cfg
+    echo "PCRECUSTOMVERSION=$pcreversion" >> $makefile_cfg
+  fi
+  echo >> $makefile_cfg
+
   # The UNISTRING library
   if [ "$customunistring " = "yes " ]; then
     echo "UNISTRINGCUSTOM=yes" >> $makefile_cfg
-    echo "CUSTOMUNISTRING=$unistring" >> $makefile_cfg
+    echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
   else
     echo "UNISTRINGCUSTOM=no" >> $makefile_cfg
+    echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
   fi
+  echo >> $makefile_cfg
 
   # additional bigloo compiler link flags (some architecture such as AIX
   # require a special to link huge executable)

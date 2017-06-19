@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Mar  7 19:43:47 2017 (serrano)                */
+#*    Last change :  Sun Jun 18 07:53:58 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -134,6 +134,8 @@ DIRECTORIES	= cigloo \
                   bglpkg \
                   gc \
                   gmp \
+                  pcre \
+                  libunistring \
                   libuv
 
 #*---------------------------------------------------------------------*/
@@ -170,6 +172,12 @@ boot-c: checkgmake
         fi
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc boot; \
+        fi
+	if [ "$(PCRECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre boot; \
+        fi
+	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libunistring boot; \
         fi
 	if [ -x $(BGLBUILBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \
@@ -265,6 +273,14 @@ dobigboot:
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
         fi
+	@ if [ "$(PCRECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre clean; \
+	  $(MAKE) -C pcre boot; \
+        fi
+	@ if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libunistring clean; \
+	  $(MAKE) -C libunistring boot; \
+        fi
 	@ mkdir -p bin
 	@ $(MAKE) -C runtime bigboot BBFLAGS="-w"
 	@ $(MAKE) -C comptime -i touchall
@@ -339,6 +355,14 @@ fullbootstrap-sans-log:
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp clean; \
 	  $(MAKE) -C gmp boot; \
+        fi
+	if [ "$(PCRECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre clean; \
+	  $(MAKE) -C pcre boot; \
+        fi
+	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libunistring clean; \
+	  $(MAKE) -C libunistring boot; \
         fi
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime EFLAGS+=-gself
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
@@ -660,6 +684,12 @@ install-libs: install-dirs
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp install; \
         fi
+	if [ "$(PCRECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre install; \
+        fi
+	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libunistring install; \
+        fi
 	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libuv install; \
         fi
@@ -741,6 +771,12 @@ uninstall: uninstall-bee
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp uninstall; \
         fi
+	if [ "$(PCRECUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C pcre uninstall; \
+        fi
+	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
+	  $(MAKE) -C libunistring uninstall; \
+        fi
 	$(MAKE) -C runtime uninstall
 	-$(MAKE) -C manuals uninstall
 	$(MAKE) -C api uninstall
@@ -788,6 +824,8 @@ clean:
 	$(RM) -f ChangeLog
 	$(MAKE) -C gc clean
 	$(MAKE) -C gmp clean
+	$(MAKE) -C pcre clean
+	$(MAKE) -C libunistring clean
 	(cd comptime && $(MAKE) clean)
 	(cd runtime && $(MAKE) clean)
 	(cd manuals && $(MAKE) clean)
@@ -813,6 +851,8 @@ cleanall:
 	$(RM) -f autoconf/runtest
 	$(MAKE) -C gc cleanall
 	$(MAKE) -C gmp cleanall
+	$(MAKE) -C pcre cleanall
+	$(MAKE) -C libunistring cleanall
 	(cd comptime && $(MAKE) cleanall)
 	(cd runtime && $(MAKE) cleanall)
 	(cd manuals && $(MAKE) cleanall)

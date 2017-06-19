@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jun  2 08:27:57 2017                          */
-/*    Last change :  Thu Jun  8 16:31:36 2017 (serrano)                */
+/*    Last change :  Mon Jun 12 13:55:14 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper to SELF-MOD                                       */
@@ -11,6 +11,9 @@
 
 #ifndef _BGL_PATCH_H
 #define _BGL_PATCH_H
+
+extern long GLOB;
+extern void * GLOB2;
 
 #if( BGL_SELF_MODIFYING_CODE )
 #  include <self-mod.h>
@@ -30,10 +33,18 @@ typedef patch_descr __bgl_patch_descr;
 extern void bgl_init_patch_32( void *, size_t, patch_descr * );
 extern void bgl_init_patch_64( void *, size_t, patch_descr * );
 
-#  define BGL_PATCHABLE_CONSTANT_32( _idx, _gidx, _var ) \
+#  define _BGL_PATCHABLE_CONSTANT_32( _idx, _gidx, _var ) \
    asm( "mov %1, %0" : "=g"( _var ) : "i"( PATCHABLE_CONSTANT_32( _idx ) ) )
-#  define BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) \
+#  define BGL_PATCHABLE_CONSTANT_32( _idx, _gidx, _var ) _var = (long)GLOB
+#  define BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) _var = GLOB
+#  define _____BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) \
    asm( "movabsq %1, %0" : "=g"( _var ) : "i"( PATCHABLE_CONSTANT_64( _idx ) ) )
+#  define ____BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) \
+   asm( "movabsq %1, %0; mov %0, GLOB(%%rip)" : "=g"( _var ) : "i"( PATCHABLE_CONSTANT_64( _idx ) ) )
+#  define ___BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) \
+   asm( "lea 0(%%rip),%0;mov %0,GLOB2(%%rip);movabsq %1, %0; mov %0, GLOB(%%rip)" : "=g"( _var ) : "i"( PATCHABLE_CONSTANT_64( _idx ) ) )
+#  define _BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) \
+   asm( "lea 0(%%rip),%0;movabsq %1, %0" : "=g"( _var ) : "i"( PATCHABLE_CONSTANT_64( _idx ) ) )
 //#  define BGL_PATCHABLE_CONSTANT_32( _idx, _gidx, _var ) (obj_t)PATCHABLE_CONSTANT_32( idx )
 //#  define BGL_PATCHABLE_CONSTANT_64( _idx, _gidx, _var ) (obj_t)PATCHABLE_CONSTANT_64( idx )
 
