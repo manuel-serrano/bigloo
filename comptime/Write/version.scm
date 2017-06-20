@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Mar 12 14:03:51 1995                          */
-;*    Last change :  Tue Jan 31 16:01:02 2006 (serrano)                */
-;*    Copyright   :  1995-2006 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Jun 20 14:16:45 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    La version de Bigloo.                                            */
 ;*=====================================================================*/
@@ -45,13 +45,6 @@
 	  *bigloo-author*
 	  (string-append "email: " *bigloo-email*)
 	  (string-append "url: " *bigloo-url*))
-   (when (>=fx *verbose* 3)
-      (display-to-column " " 78 #\-)
-      (newline)
-      (verbose 3 " Ce travail est dedié à Nelly Lebas, ma grand-mère, décédée le 10 Mars 1995," #\Newline)
-      (verbose 3 " à Marcel Lebas, mon grand-père, décédé le 29 Octobre 1998" #\Newline)
-      (verbose 3 " à Carlos, mon père décédé, le 12 Mars 2001 au matin," #\Newline)
-      (verbose 3 " et à Pierrette, ma mère, décédée le 31 Janvier 2006 à 10h30." #\Newline))
    (display-to-column "" 79 #\-)
    (newline)
    (newline))

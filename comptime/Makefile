@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed May 31 15:54:42 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 17:38:01 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -609,33 +609,10 @@ boot:
 	@ echo "$(BIGLOO_DEST)$(EXE_SUFFIX) done..."
 
 doboot.shared: $(O_OBJECTS)
-	if [ "$(GCCUSTOM)" = "no" ]; then \
-           if [ "$(GCLIBDIR) " = " " ]; then \
-             gc=-lgc; \
-           else \
-             gc="-L$(GCLIBDIR) -lgc"; \
-           fi \
-        else \
-	  gc=-l$(GCLIB)-$(RELEASE); \
-        fi; \
-	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) -L$(BOOTLIBDIR) -lbigloo_s-$(RELEASE) $$gc -lbigloo_s-$(RELEASE) $(LDCOMPLIBS) $(EXTRALIBS); \
+	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)
 
 doboot.static: $(O_OBJECTS)
-	if [ "$(GCCUSTOM)" = "no" ]; then \
-           if [ "$(GCLIBDIR) " = " " ]; then \
-             gc=-lgc; \
-           else \
-             gc="-L$(GCLIBDIR) -lgc"; \
-           fi \
-        else \
-	  gc=$(BOOTLIBDIR)/lib$(GCLIB)-$(RELEASE).a; \
-        fi; \
-	if [ "$(GMPCUSTOM)" = "no" ]; then \
-	  $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $$gmp $(LDCOMPLIBS) $(EXTRALIBS); \
-        else \
-	  gmp=; \
-	  $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(BOOTLIBDIR)/libbigloo_s-$(RELEASE).a $$gc $(LDCOMPLIBS) $(filter-out -lbigloogmp-$(RELEASE),$(EXTRALIBS)) $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).a; \
-        fi
+	 $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(LDCOMPLIBS_STATIC) $(LDCOMPLIBS)
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
