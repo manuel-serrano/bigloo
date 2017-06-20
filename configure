@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/configure                            */
+#*    /tmp/BGL/bigloo4.3b/configure                                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jun 19 17:16:13 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 13:09:23 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -154,7 +154,7 @@ unistringconfigureopt=
 
 if [ "$unistringsrc " ]; then
   unistringversion=0.9.7
-  unistringsrc=libunistring/libunistring-$unistringversion.tar.gz
+  unistringsrc=libunistring/libunistring-$unistringversion.tgz
 fi  
 
 #*--- socket library (left empty for automatic configuration) ---------*/
@@ -386,7 +386,7 @@ pcresrc=$PCRESRC
 
 if [ "$pcresrc " ]; then
   pcreversion=2-10.23
-  pcresrc=pcre/pcre$pcreversion.tar.gz
+  pcresrc=pcre/pcre$pcreversion.tgz
 fi  
 
 #*---------------------------------------------------------------------*/
@@ -2357,7 +2357,8 @@ havemixer=`$autoconf mixer` || exit 1
 #*    Regexp                                                           */
 #*---------------------------------------------------------------------*/
 if [ "$regexp " = " " ]; then
-
+  pcrelibs=no
+  
   # find out the C library for pcre
   if [ "$enable_configure_pcre " = "yes " -a "$custompcre " != "yes " ]; then
     pcrelibs=`$autoconf pcre` || exit 1;
@@ -2701,25 +2702,25 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$customunistring" != "no" ]; then
     haveunistring=1;
     featureflags="-srfi enable-unistring $featureflags";
-    extralibs="-lbigloounistring-$release $extralibs"
+    extralibs="-lbigloounistring-$release"
+    extraunistring=bigloounistring-$release
   fi
   
   if [ "$unistring " = " " -a "$customunistring " = "no " ]; then
     extraunistring=`$autoconf unistring` || exit 1
   fi
   
-  if [ $unistring = "no" -a "$customunistring " != "no " ]; then
+  if [ "$extraunistring " != "no " -a "$customunistring " != "no " ]; then
     customunistring=yes
     unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
     
     echo "+ Installing custom unistring source code."
-    (cd unistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
+    (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
 
     echo "+ Configuring custom unistring..."
-    (cd unistring; . ./configure-unistring) || exit 1
+    (cd libunistring; . ./configure-unistring) || exit 1
 	
     unistringlibs=yes
-    extraunistring=bigloounistring-$release
   else
     haveunistring=0;
     extraunistring=no

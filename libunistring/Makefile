@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Mon Jun 19 17:15:11 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 13:22:50 2017 (serrano)                */
 #*    Copyright   :  2014-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom UNISTRING library.             */
@@ -32,8 +32,8 @@ boot: boot-unistring
 boot-unistring: 
 	$(MAKE) -C $(UNISTRING)
 	$(MAKE) -C $(UNISTRING) install
-	cp lib/libunistring2-8.a $(BOOTLIBDIR)/libunistring.a
-	cp lib/libunistring2-8.so.0.5.0 $(BOOTLIBDIR)/libunistring.so
+	cp lib/libunistring2-8.a $(BOOTLIBDIR)/libbigloounistring-$(RELEASE).a
+	cp lib/libunistring2-8.so.0.5.0 $(BOOTLIBDIR)/libbigloounistring-$(RELEASE).so
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */

@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gc/Makefile-gc-7.5.0-27may2016       */
+#*    /tmp/BGL/bigloo4.3b/gc/Makefile-gc-7.5.0-27may2016               */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Fri May 27 09:33:02 2016 (serrano)                */
-#*    Copyright   :  2009-16 Manuel Serrano                            */
+#*    Last change :  Tue Jun 20 13:12:15 2017 (serrano)                */
+#*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.5.0 specific entries                                        */
 #*=====================================================================*/
@@ -44,7 +44,8 @@ $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
              GCCLOSELIB= \
              CLOSELIBS= \
              LDLIBS=$(EXTRAGCLIBS) \
-             OBJECTS="$(OUTDIR)/*.o $(ATOMICOBJ)"
+             OBJECTS="$(OUTDIR)/*.o $(ATOMICOBJ)" \
+             EXTRALIBS=$(EXTRAGCLIBS)
 
 $(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a:
 	cp $(OUTDIR)/libgc.a $@

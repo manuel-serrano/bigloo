@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Thu Jun 15 15:45:42 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 13:22:23 2017 (serrano)                */
 #*    Copyright   :  2014-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom PCRE library.                  */
@@ -32,8 +32,8 @@ boot: boot-pcre
 boot-pcre: 
 	$(MAKE) -C $(PCRE)
 	$(MAKE) -C $(PCRE) install
-	cp lib/libpcre2-8.a $(BOOTLIBDIR)/libpcre.a
-	cp lib/libpcre2-8.so.0.5.0 $(BOOTLIBDIR)/libpcre.so
+	cp lib/libpcre2-8.a $(BOOTLIBDIR)/libbigloopcre-$(RELEASE).a
+	cp lib/libpcre2-8.so.0.5.0 $(BOOTLIBDIR)/libbigloopcre-$(RELEASE).so
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */
