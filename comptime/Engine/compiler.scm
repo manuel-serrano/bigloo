@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Wed May 31 16:16:07 2017 (serrano)                */
+;*    Last change :  Tue Jun 20 18:48:00 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -262,7 +262,8 @@
 	    (set! units (cons (make-gc-roots-unit) units)))
 
 	 ;; patch support
-	 (set! units (cons (make-patch-unit) units))
+	 (when *patch-support*
+	    (set! units (cons (make-patch-unit) units)))
 
 	 ;; ok, now we build the ast
 	 (let ((ast (profile ast (build-ast units))))

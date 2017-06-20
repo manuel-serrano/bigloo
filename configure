@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 20 17:37:43 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 20:57:58 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -81,7 +81,7 @@ ldstyle=gcc
 ldflags=
 ld=
 ldlibs=-lc
-ldcomplibs=-lc
+ldcomplibs="-lc -lm"
 strip=       # left blank for autoconfiguration
 longlong=    # The C type to represent long long integers
 havelonglong=
@@ -385,8 +385,8 @@ custompcre=no
 pcresrc=$PCRESRC
 
 if [ "$pcresrc " ]; then
-  pcreversion=2-10.23
-  pcresrc=pcre/pcre$pcreversion.tgz
+  pcreversion=8.39
+  pcresrc=pcre/pcre-$pcreversion.tgz
 fi  
 
 #*---------------------------------------------------------------------*/
@@ -1698,11 +1698,11 @@ case $hostos in
         if [ "$threadsupport " = "no " ]; then
           threadsupport=no;
           pthreadlibs=no;
-          ldcomplibs="\$(GCCLOSELIB) -lc";
+          ldcomplibs="\$(GCCLOSELIB) -lc -lm";
         else
           customgclib=bigloogc_fth;
           extralibs="$extralibs $pthreadlibs";
-          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc";
+          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm";
         fi
       fi
       if [ `dirname $bindir` != `dirname $libdir` ]; then
@@ -2365,8 +2365,6 @@ if [ "$regexp " = " " ]; then
     extrapcre=-lpcre
   fi
 
-  echo "PCRE.0=$regexp $pcrelibs"
-  
   if [ "$pcrelibs " = "no " ]; then
     if [ "$custompcre " != "no " ]; then
       custompcre=yes
@@ -2973,6 +2971,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
        havedlopen=1
        dlopen=$dlopen
        extralibs="$dlopen $extralibs"
+       ldcomplibs="$ldcomplibs -ldl"
      else
        havedlopen=0
        dlopen=""
@@ -3730,7 +3729,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     echo "LDRPATHOPT=$ldrpath" >> $makefile_cfg
     echo "LDFLAGS=$ldflags" >> $makefile_cfg
     echo "LDLIBS=$ldlibs" >> $makefile_cfg
-    echo "LDCOMPLIBS=$ldcomplibs" >> $makefile_cfg
     echo "LDPRELOADSUPPORT=$ldpreload" >> $makefile_cfg
 
     echo "LDSONAME=$ldsoname" >> $makefile_cfg
@@ -3745,8 +3743,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   # the compiler shared libraries
   # (i.e., the shared libraries linked against the compiler)
-  ldcompstatic="\$(BOOTLIBDIR)/libbigloo_s-\$(RELEASE).a"
-  ldcompshared="-lbigloo_s-\$(RELEASE)"
+  ldcompstatic=""
+  ldcompshared=""
 
   if [ "$customgc " = "yes " ]; then
     ldcompshared="-l\$(GCLIB)-\$(RELEASE) $ldcompshared"
@@ -3762,35 +3760,39 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$havegmp " = "1 " ]; then
     if [ "$customgmp " = "yes " ]; then
       ldcompshared="-lbigloogmp_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/lib\bigloogmp-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompstatic="\$(BOOTLIBDIR)/libbigloogmp-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lgmp $ldcompshared" >> $makefile_cfg
-      ldcompstatic="-lgmp $ldcompshared" >> $makefile_cfg
+      ldcompstatic="-lgmp $ldcompstatic" >> $makefile_cfg
     fi
   fi
   
   if [ "$pcrelibs " != "no " ]; then
-    if [ "$customgmp " = "yes " ]; then
+    if [ "$custompcre " = "yes " ]; then
       ldcompshared="-lbigloopcre_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/lib\bigloopcre-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompstatic="\$(BOOTLIBDIR)/libbigloopcre-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lpcre $ldcompshared" >> $makefile_cfg
-      ldcompstatic="-lpcre $ldcompshared" >> $makefile_cfg
+      ldcompstatic="-lpcre $ldcompstatic" >> $makefile_cfg
     fi
   fi
   
   if [ "$unistringlibs " != "no " ]; then
-    if [ "$customgmp " = "yes " ]; then
+    if [ "$customunistring " = "yes " ]; then
       ldcompshared="-lbigloounistring_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/lib\bigloounistring-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompstatic="\$(BOOTLIBDIR)/libbigloounistring-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lunistring $ldcompshared" >> $makefile_cfg
-      ldcompstatic="-lunistring $ldcompshared" >> $makefile_cfg
+      ldcompstatic="-lunistring $ldcompstatic" >> $makefile_cfg
     fi
   fi
   
+  ldcompstatic="\$(BOOTLIBDIR)/libbigloo_s-\$(RELEASE).a $ldcompstatic"
+  ldcompshared="-lbigloo_s-\$(RELEASE) $ldcompshared"
+
   echo "LDCOMPLIBS_SHARED=$ldcompshared" >> $makefile_cfg
   echo "LDCOMPLIBS_STATIC=$ldcompstatic" >> $makefile_cfg
+  echo "LDCOMPLIBS=$ldcomplibs" >> $makefile_cfg
   echo >> $makefile_cfg
   
   # The dlopen facility

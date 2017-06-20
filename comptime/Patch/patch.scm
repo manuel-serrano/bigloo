@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 31 10:22:17 2017                          */
-;*    Last change :  Wed Jun  7 18:13:08 2017 (serrano)                */
+;*    Last change :  Tue Jun 20 18:46:49 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Patch management                                                 */
@@ -123,6 +123,34 @@
 ;*    patch-initialization! ...                                        */
 ;*---------------------------------------------------------------------*/
 (define (patch-initialization! ast backend)
+   (let ((glo (find-global 'patch-init)))
+      (when (global? glo)
+	 (let ((fun (variable-value glo)))
+	    (sfun-side-effect-set! fun #t)
+	    (sfun-body-set! fun
+	       (instantiate::sequence
+		  (type *obj*)
+		  (nodes (list
+			    (when *main*
+			       (instantiate::pragma
+				  (type *void*)
+				  (format "bgl_init_patch( bgl_patch_descrs )")))
+			    (instantiate::literal
+			       (type *obj*)
+			       (value #unspecified)))))))
+   
+	 (let ((pvector (def-global-svar! 'bgl_patch_descrs
+			   *module*
+			   'bgl_patch_descr_t
+			   'never))
+	       (typ (declare-type! '__bgl_patch_descr_t "bgl_patch_descr_t" 'C)))
+	    (global-user?-set! pvector #f)
+	    (global-import-set! pvector 'static)
+	    (global-type-set! pvector typ)
+	    (global-name-set! pvector
+	       "bgl_patch_descrs[ 2 ] = { { NULL, 0, 0, 0 } , { NULL, 0, 0, 0 } }")))))
+
+(define (patch-initialization!to-be-removed-2017-06-20 ast backend)
    
    (define global-patch-index 0)
    
