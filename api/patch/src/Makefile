@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Jun  7 08:34:38 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 21:23:22 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -29,16 +29,16 @@ BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-#BAPISAFE	= -unsafe -safee
+BAPISAFE	= -unsafe -safee
 BAPISAFE	= -safee -cg
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
                   -srfi $(API) -copt "$(PATCHCFLAGS)"
-CAPIFLAGS       = $(PATCHCFLAGS) $(CGCTHREADFLAGS)
+CAPIFLAGS       = $(PATCHCFLAGS)
 # Flags to build a heap
 BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
                   -heap-library $(API) -srfi $(API)
 # C flags
-CEFLAGS		= $(PATCHCFLAGS) -g
+CEFLAGS		= $(PATCHCFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(PATCHLIBS) " " "

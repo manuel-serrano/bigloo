@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 20 20:57:58 2017 (serrano)                */
+#*    Last change :  Tue Jun 20 21:14:09 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2691,6 +2691,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       haveresolv=1;
       featureflags="-srfi enable-resolv $featureflags";
       extralibs="-l$resolv $extralibs"
+      ldcomplibs="$ldcomplibs -l$resolv"
       haveresolvapl=`$autoconf resolvsym --sym=apl --lib=$resolv` || exit 1
       haveresolvzxfr=`$autoconf resolvsym --sym=zxfr --lib=$resolv` || exit 1
     fi
@@ -2711,15 +2712,17 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     extraunistring=`$autoconf unistring` || exit 1
   fi
   
-  if [ "$extraunistring " != "no " -a "$customunistring " != "no " ]; then
-    customunistring=yes
-    unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+  if [ "$extraunistring " != "no " ]; then
+    if [ "$customunistring " != "no " ]; then
+      customunistring=yes
+      unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
     
-    echo "+ Installing custom unistring source code."
-    (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
+      echo "+ Installing custom unistring source code."
+      (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
 
-    echo "+ Configuring custom unistring..."
-    (cd libunistring; . ./configure-unistring) || exit 1
+      echo "+ Configuring custom unistring..."
+      (cd libunistring; . ./configure-unistring) || exit 1
+    fi
 	
     unistringlibs=yes
   else
@@ -4605,7 +4608,7 @@ echo "  shared library builder................ $ld" >> $configurelog
 echo "  options for building static libs...... $arflags" >> $configurelog
 echo "  socket libraries...................... $socketlibs" >> $configurelog
 echo "  gmp version........................... $gmpversion" >> $configurelog
-echo "  unistring version..................... $unistring" >> $configurelog
+echo "  unistring library..................... $extraunistring" >> $configurelog
 echo "  pthread libraries..................... $pthreadlibs" >> $configurelog
 echo "  openssl libraries..................... $openssllibs" >> $configurelog
 echo "  sqlite libraries...................... $sqlitelibs" >> $configurelog
@@ -4735,7 +4738,7 @@ if [ "$summary" = "yes" ]; then
   if [ "$unistring" = "no" ]; then
     echo "  unistring support........... minimal"
   else
-    echo "  unistring support........... lib$unistring"
+    echo "  unistring support........... $extraunistring"
   fi
   echo
   echo "Directories where Bigloo will be installed:"
