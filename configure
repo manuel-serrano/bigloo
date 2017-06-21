@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jun 20 21:14:09 2017 (serrano)                */
+#*    Last change :  Wed Jun 21 09:03:12 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2362,7 +2362,7 @@ if [ "$regexp " = " " ]; then
   # find out the C library for pcre
   if [ "$enable_configure_pcre " = "yes " -a "$custompcre " != "yes " ]; then
     pcrelibs=`$autoconf pcre` || exit 1;
-    extrapcre=-lpcre
+    extrapcre=pcre
   fi
 
   if [ "$pcrelibs " = "no " ]; then
@@ -2377,7 +2377,7 @@ if [ "$regexp " = " " ]; then
       (cd pcre; . ./configure-pcre) || exit 1
 	
       pcrelibs=yes
-      extrapcre=-lbigloopcre-$release
+      extrapcre=pcre
     else
       pcrelibs=no
     fi
@@ -2385,7 +2385,7 @@ if [ "$regexp " = " " ]; then
 
   if [ "$pcrelibs " != "no " ]; then
     featureflags="-srfi enable-pcre $featureflags";
-    extralibs="$extrapcre $extralibs"
+    extralibs="-l$extrapcre $extralibs"
     regexp=pcre
 
     if [ `$autoconf pcrefreestudy` = "yes" ]; then
@@ -2705,7 +2705,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$customunistring" != "no" ]; then
     haveunistring=1;
     featureflags="-srfi enable-unistring $featureflags";
-    extraunistring=bigloounistring-$release
+    extraunistring=unistring
   fi
   
   if [ "$unistring " = " " -a "$customunistring " = "no " ]; then
@@ -3633,13 +3633,15 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
   echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
-  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
+  
+  # Close and extra libs
   echo "EXTRALIBS=$extralibs" >> $makefile_cfg
-  echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   echo "CLOSELIBS= # always empty, does not contain GC, override by makefiles" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The GC library
+  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
+  echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   echo "GCLIB=$gclib" >> $makefile_cfg
   if [ $customgc = "yes" ]; then

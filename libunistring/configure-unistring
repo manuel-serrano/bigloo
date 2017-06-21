@@ -4,16 +4,16 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Sun Jun 18 07:56:56 2017 (serrano)                */
+#*    Last change :  Wed Jun 21 08:57:47 2017 (serrano)                */
 #*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the unistring.                          */
 #*=====================================================================*/
 
-ROOT=$PWD
+echo "configure unistring with \"./configure --libdir=$bootdir/$fildir --includedir=$bootdir/$fildir $libunistringconfigureopt\"" >> ../configure.log
 
 (cd libunistring-$unistringversion && \
  export CC=$cc && \
- ./configure --prefix=$ROOT $unistringconfigureopt 2>&1 >> ../../configure.log || \
+ ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $unistringconfigureopt 2>&1 >> ../../configure.log || \
  (echo "configure unistring fail, see configure.log file." && exit 1)) || exit 1
 

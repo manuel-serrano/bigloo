@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Tue Jun 20 14:14:50 2017 (serrano)                */
+#*    Last change :  Wed Jun 21 09:01:17 2017 (serrano)                */
 #*    Copyright   :  2014-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom UNISTRING library.             */
@@ -70,9 +70,6 @@ distrib:
 
 install:
 	$(MAKE) -C $(UNISTRING) install
-	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
-	  $(MAKE) install-lib LIB=libbigloounistring-$(RELEASE); \
-	fi
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */
