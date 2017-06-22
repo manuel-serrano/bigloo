@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Thu Jun 22 09:04:54 2017 (serrano)                */
+#*    Last change :  Thu Jun 22 09:28:12 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -261,7 +261,7 @@ distrib:
              exit 1; \
           fi
 	$(MAKE) -C bmem .afile
-	$(MAKE) -C jas .afile
+	$(MAKE) $(JAS_AFILE)
 
 #*---------------------------------------------------------------------*/
 #*    jvm                                                              */

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Oct 14 07:20:29 2015 (serrano)                */
+#*    Last change :  Thu Jun 22 09:27:09 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the bdb library.                           */
 #*=====================================================================*/
@@ -178,7 +178,7 @@ ude:
 	@ $(BGLJFILE) -o .jfile -pbase $(PBASE) $(SOURCES) 
 
 .etags: $(SOURCES)
-	@ $(BGLBTAGS) -o .etags $(_BGL_SOURCES)
+	@ $(BGLTAGS) -o .etags $(_BGL_SOURCES)
 
 #*---------------------------------------------------------------------*/
 #*    stdclean                                                         */

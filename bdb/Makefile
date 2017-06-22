@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  4 20:11:07 1999                          */
-#*    Last change :  Wed Nov 28 17:05:40 2012 (serrano)                */
-#*    Copyright   :  1999-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Jun 22 09:25:46 2017 (serrano)                */
+#*    Copyright   :  1999-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The bdb Makefile                                                 */
 #*=====================================================================*/
@@ -69,7 +69,7 @@ distrib:
              exit 1; \
           fi
 	@ for d in $(DIRECTORIES) ; do \
-             (cd $$d; $(MAKE) ude); \
+             $(MAKE) -C $$d ude; \
           done;
 	@ $(RM) -f bdb/Makefile~
 
