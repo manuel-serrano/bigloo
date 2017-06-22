@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul  5 10:55:55 2002                          */
-#*    Last change :  Thu Mar  3 12:28:10 2016 (serrano)                */
-#*    Copyright   :  2002-16 Manuel Serrano                            */
+#*    Last change :  Thu Jun 22 15:43:19 2017 (serrano)                */
+#*    Copyright   :  2002-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Various misc rules for Bigloo Makefiles.                         */
 #*=====================================================================*/
@@ -85,7 +85,7 @@ shared-install-name:
                  $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
-                 $(LDFLAGS) \
+                 $(LDFLAGS) $(EXTRA_LD_OPT) \
                  $(EXTRALIBS) $(CLOSELIBS) \
                  $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
@@ -98,7 +98,7 @@ MS-CARE-shared-install-name:
                  $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
-                 $(LDFLAGS) \
+                 $(LDFLAGS) $(EXTRA_LD_OPT) \
                  $(EXTRALIBS) $(CLOSELIBS) \
                  $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
@@ -112,7 +112,7 @@ shared-sans-soname:
                  $(GCSTDOBJECTS) \
                  $(LDFLAGS) \
                  $(EXTRALIBS) $(CLOSELIBS) \
-                 $(LDLIBS) $(LDOPTS) $(LDEXTRA) && \
+                 $(LDLIBS) $(LDOPTS) $(EXTRA_LD_OPT) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \
            mv $(notdir $(LIBDEST)) $(LIBDEST); \
          fi
@@ -123,7 +123,7 @@ shared-soname:
                  $(LDRPATH) \
                  $(OBJECTS) \
                  $(GCSTDOBJECTS) \
-                 $(LDOPTS) \
+                 $(LDOPTS) $(EXTRA_LD_OPT) \
                  $(EXTRALIBS) $(CLOSELIBS) \
                  $(LDLIBS) $(LDFLAGS) $(LDEXTRA) && \
          if [ "$(notdir $(LIBDEST))" != "$(LIBDEST)" ]; then \

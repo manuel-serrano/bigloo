@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jun 22 08:31:57 2017 (serrano)                */
+#*    Last change :  Thu Jun 22 18:47:47 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2417,7 +2417,7 @@ if [ "$customunistring" != "no" ]; then
   featureflags="-srfi enable-unistring $featureflags";
   extraunistring=unistring
   libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-  lcustomflags="-L$bootdir/libunistringlibdir/$fildir $lcustomflags"
+  lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
 fi
   
 if [ "$unistring " = " " -a "$customunistring " = "no " ]; then
@@ -3850,16 +3850,19 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
         | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
         >  api/fthread/src/Misc/fthread.init
+    touch api/fthread/src/.afile
     cat api/srfi18/src/Misc/srfi18.init.in \
         | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
         >  api/srfi18/src/Misc/srfi18.init
+    touch api/srfi18/src/.afile
     cat api/pthread/src/Misc/pthread.init.in \
         | sed -e "s|@BIGLOOGC_PTH@|$gclibth|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
         | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
         | sed -e "s|@PTHREAD_TIMEDJOIN@|$srfitimedjoin|g" \
         >  api/pthread/src/Misc/pthread.init
+    touch api/pthread/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -3883,6 +3886,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
         | sed -e "s|@OPENSSLLIBS@|$openssllibs|g" \
               -e "s|@OPENSSLCFLAGS@|$opensslcflags|g" \
         >>  api/ssl/src/Misc/ssl.init
+    touch api/ssl/src/.afile
 
     tls1=1
     tls11=1
@@ -3937,7 +3941,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
             -e "s|@HAVERANDPOLL@|$randpoll|g" \
             -e "s|@HAVEGETTER@|$getter|g" \
             >>  api/ssl/src/C/bglssl.h
-
   else
     napis=;
     for a in $apis; do
@@ -3968,6 +3971,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
       | sed -e "s|@SQLITESRFI@|$sqlitesrfi|g" \
       >>  api/sqlite/src/Misc/sqlite.init
+    touch api/sqlite/src/.afile
+
 
   # GSTREAMER
   if [ "$gstreamer " != " " ]; then
@@ -3982,6 +3987,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
             -e "s|@GSTREAMERCFLAGS@|$gstreamercflags|g" \
             -e "s|@GSTREAMERAUDIO@|$gstaudio|g" \
       >>  api/gstreamer/src/Misc/gstreamer.init
+    touch api/gstreamer/src/.afile
 
     # Produce the bglgst_config.h file
     cat api/gstreamer/src/Clib/bglgst_config.h.in \
@@ -4020,6 +4026,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@ALSALIBS@|$alsalibs|g" \
             -e "s|@ALSACFLAGS@|$alsacflags|g" \
       >>  api/alsa/src/Misc/alsa.init
+    touch api/alsa/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4049,6 +4056,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@PULSEAUDIOLIBS@|$pulseaudiolibs|g" \
             -e "s|@PULSEAUDIOCFLAGS@|$pulseaudiocflags|g" \
       >>  api/pulseaudio/src/Misc/pulseaudio.init
+    touch api/pulseaudio/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4078,6 +4086,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@MPG123LIBS@|$mpg123libs|g" \
             -e "s|@MPG123CFLAGS@|$mpg123cflags|g" \
       >>  api/mpg123/src/Misc/mpg123.init
+    touch api/mpg123/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4106,6 +4115,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@FLACLIBS@|$flaclibs|g" \
             -e "s|@FLACCFLAGS@|$flaccflags|g" \
       >>  api/flac/src/Misc/flac.init
+    touch api/flac/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4127,6 +4137,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo ";; automatically generated. Don't edit" >  api/wav/src/Misc/wav.init
   cat api/wav/src/Misc/wav.init.in \
     >>  api/wav/src/Misc/wav.init
+  touch api/wav/src/.afile
 
   # AVAHI
   echo "AVAHI=$avahi" >> $makefile_cfg
@@ -4140,6 +4151,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@AVAHILIBS@|$avahilibs|g" \
             -e "s|@AVAHICFLAGS@|$avahicflags|g" \
       >>  api/avahi/src/Misc/avahi.init
+  touch api/avahi/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4176,6 +4188,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@LIBUVLIBS@|$libuvlibs|g" \
             -e "s|@LIBUVCFLAGS@|$libuvcflags|g" \
       >>  api/libuv/src/Misc/libuv.init
+  touch api/libuv/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4201,6 +4214,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       | sed -e "s|@PATCHLIBS@|$patchlibs|g" \
             -e "s|@PATCHCFLAGS@|$patchcflags|g" \
       >>  api/patch/src/Misc/patch.init
+  touch api/patch/src/.afile
   else
     napis=;
     for a in $apis; do
@@ -4233,6 +4247,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
             -e "s|@PHIDGETVERSION@|$phidgetversion|g" \
             -e "s|@PHIDGETLIBDIR@|$phidgetlibdir|g" \
       >>  api/phidget/src/Misc/phidget.init
+  touch api/phidget/src/.afile
 
     # Patch the code of the bgphidget_config.h file
     echo "/* automatically generated. Don't edit */" >  api/phidget/src/Clib/bglphidget_config.h
@@ -4287,6 +4302,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
       >>  api/csv/src/Misc/csv.init
   cat api/csv/src/Llib/csv.sch \
       >>  api/csv/src/Misc/csv.init
+  touch api/csv/src/.afile
 
   # SCMPKG
   configure=api/pkgcomp/src/Llib/configure.scm
@@ -4296,6 +4312,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
     >>  $configure
   chmod a-w $configure
+  touch api/pkgcomp/src/.afile
 
   # pkgcomp.init
   pkgcomp_init=api/pkgcomp/src/Misc/pkgcomp.init

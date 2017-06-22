@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Wed Nov 16 09:55:43 2011 (serrano)                */
-#*    Copyright   :  2001-11 Manuel Serrano                            */
+#*    Last change :  Thu Jun 22 15:13:13 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -71,7 +71,7 @@ distclean: clean
 
 cleanall: distclean
 	(cd src && $(MAKE) cleanall)
-	$(RM) -f lib/*calendar* >/dev/null 2>&1
+	$(RM) -f lib/*pkgcomp* >/dev/null 2>&1
 	$(RM) -f *~ >/dev/null 2>&1
 
 #*---------------------------------------------------------------------*/
