@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Thu Jun 22 08:50:03 2017 (serrano)                */
+#*    Last change :  Thu Jun 22 09:04:54 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -261,6 +261,7 @@ distrib:
              exit 1; \
           fi
 	$(MAKE) -C bmem .afile
+	$(MAKE) -C jas .afile
 
 #*---------------------------------------------------------------------*/
 #*    jvm                                                              */
@@ -321,7 +322,9 @@ jas/classfile.sch: ../comptime/Jas/classfile.sch
 #*    Jas afile                                                        */
 #*---------------------------------------------------------------------*/
 $(JAS_AFILE): $(BGLBUILDBINDIR)/bglafile $(JAS_LINKSRC)
-	(cd jas; $(BGLAFILE) *.scm -o ../$(JAS_AFILE))
+	if [ ! -f jas/$(JAS_AFILE) ]; then \
+	  (cd jas; $(BGLAFILE) *.scm -o ../$(JAS_AFILE)); \
+	fi
 
 #*---------------------------------------------------------------------*/
 #*    bmake dependencies                                               */

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Wed Jan 25 18:41:38 2017 (serrano)                */
+#*    Last change :  Thu Jun 22 09:12:09 2017 (serrano)                */
 #*    Copyright   :  2003-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -66,7 +66,10 @@ $(BOOTLIBDIR)/bmem/bmem.css: $(BOOTLIBDIR)/bmem
 
 #*--- bmem ------------------------------------------------------------*/
 bmem:
-	$(MAKE) .afile && $(MAKE) $(BOOTBINDIR)/$(BMEM_EXE)
+	if [ ! -f .afile ]; then \
+	  $(MAKE) .afile || exit 1; \
+	fi
+	$(MAKE) $(BOOTBINDIR)/$(BMEM_EXE)
 
 $(BOOTBINDIR)/$(BMEM_EXE): $(OBJECT)
 	$(BIGLOO) $(BMEMFLAGS) -o $@ $^
