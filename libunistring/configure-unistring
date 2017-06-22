@@ -4,16 +4,16 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Wed Jun 21 08:57:47 2017 (serrano)                */
+#*    Last change :  Thu Jun 22 08:36:10 2017 (serrano)                */
 #*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    Ad-hoc configuration for the unistring.                          */
+#*    Ad-hoc configuration for the unistring library.                  */
 #*=====================================================================*/
 
-echo "configure unistring with \"./configure --libdir=$bootdir/$fildir --includedir=$bootdir/$fildir $libunistringconfigureopt\"" >> ../configure.log
+echo "configure unistring with \"./configure --libdir=$libdir/$fildir --includedir=$libdir/fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP $libunistringconfigureopt\"" >> ../configure.log
 
 (cd libunistring-$unistringversion && \
  export CC=$cc && \
- ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $unistringconfigureopt 2>&1 >> ../../configure.log || \
+ ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir  --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP $unistringconfigureopt 2>&1 >> ../../configure.log || \
  (echo "configure unistring fail, see configure.log file." && exit 1)) || exit 1
 

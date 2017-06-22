@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun 21 09:03:12 2017 (serrano)                */
+#*    Last change :  Wed Jun 21 10:29:50 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3774,8 +3774,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   
   if [ "$pcrelibs " != "no " ]; then
     if [ "$custompcre " = "yes " ]; then
-      ldcompshared="-lbigloopcre_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/libbigloopcre-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompshared="-lpcre $ldcompshared" >> $makefile_cfg
+      ldcompstatic="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)/libpcre.a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lpcre $ldcompshared" >> $makefile_cfg
       ldcompstatic="-lpcre $ldcompstatic" >> $makefile_cfg
@@ -3784,8 +3784,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   
   if [ "$unistringlibs " != "no " ]; then
     if [ "$customunistring " = "yes " ]; then
-      ldcompshared="-lbigloounistring_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/libbigloounistring-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompshared="-lunistring $ldcompshared" >> $makefile_cfg
+      ldcompstatic="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)/libunistring.a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lunistring $ldcompshared" >> $makefile_cfg
       ldcompstatic="-lunistring $ldcompstatic" >> $makefile_cfg

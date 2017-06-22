@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Wed Jun 21 09:01:04 2017 (serrano)                */
+#*    Last change :  Wed Jun 21 10:14:15 2017 (serrano)                */
 #*    Copyright   :  2014-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom PCRE library.                  */
@@ -31,10 +31,7 @@ boot: boot-pcre
 
 boot-pcre: 
 	$(MAKE) -C $(PCRE)
-	$(MAKE) -C $(PCRE) install
-	cp lib/libpcre.a $(BOOTLIBDIR)/libcre.a
-	cp lib/libpcre.so.1.2.7 $(BOOTLIBDIR)/libpcre.so.1.2.7
-	cp lib/libpcre.so.1.2.7 $(BOOTLIBDIR)/libpcre.so
+	$(MAKE) -C $(PCRE) install DESTDIR=$(BOOTDIR)/pcre
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */
@@ -79,5 +76,3 @@ install:
 
 uninstall:
 	$(MAKE) -C $(PCRE) uninstall
-
-

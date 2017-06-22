@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Wed Jun 21 09:01:17 2017 (serrano)                */
+#*    Last change :  Wed Jun 21 10:07:05 2017 (serrano)                */
 #*    Copyright   :  2014-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom UNISTRING library.             */
@@ -31,9 +31,7 @@ boot: boot-unistring
 
 boot-unistring: 
 	$(MAKE) -C $(UNISTRING)
-	$(MAKE) -C $(UNISTRING) install
-	cp lib/libunistring.a $(BOOTLIBDIR)/libbigloounistring-$(RELEASE).a
-	cp lib/libunistring.so.2.0.0 $(BOOTLIBDIR)/libbigloounistring-$(RELEASE).so
+	$(MAKE) -C $(UNISTRING) install DESTDIR=$(BOOTDIR)/unistring
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */

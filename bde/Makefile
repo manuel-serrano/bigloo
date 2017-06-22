@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Wed Nov  4 11:58:58 2015 (serrano)                */
-#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Jun 22 08:50:03 2017 (serrano)                */
+#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -260,6 +260,7 @@ distrib:
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
           fi
+	$(MAKE) -C bmem .afile
 
 #*---------------------------------------------------------------------*/
 #*    jvm                                                              */
