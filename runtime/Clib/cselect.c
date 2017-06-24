@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Apr 21 16:02:12 2017                          */
-/*    Last change :  Sat Apr 22 07:13:47 2017 (serrano)                */
+/*    Last change :  Sat Jun 24 09:37:05 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo select                                                    */
@@ -132,7 +132,12 @@ bgl_select( long timeo, obj_t readfs, obj_t writefs, obj_t exceptfs ) {
    }
 
    if( res == -1 ) {
-      C_SYSTEM_FAILURE( BGL_ERROR, "select", strerror( errno ), BINT( timeo ) );
+      obj_t errobj = BNIL;
+      errobj = MAKE_PAIR( exceptfs, errobj );
+      errobj = MAKE_PAIR( writefs, errobj );
+      errobj = MAKE_PAIR( readfs, errobj );
+      errobj = MAKE_PAIR( BINT( timeo ), errobj );
+      C_SYSTEM_FAILURE( BGL_ERROR, "select", strerror( errno ), errobj );
    } else if( res == 0 ) {
       BGL_ENV_MVALUES_NUMBER_SET( env, 3 );
       BGL_ENV_MVALUES_VAL_SET( env, 1, BNIL );

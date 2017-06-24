@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 29 21:10:13 2016                          */
-;*    Last change :  Fri Nov 11 09:41:33 2016 (serrano)                */
-;*    Copyright   :  2016 Manuel Serrano                               */
+;*    Last change :  Sat Jun 24 09:49:18 2017 (serrano)                */
+;*    Copyright   :  2016-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Flac utils                                                       */
 ;*=====================================================================*/
@@ -28,5 +28,7 @@
 		    (msg "cannot open file for input")
 		    (obj file)))
 	  (let ((kt (bm-table "fLaC")))
-	     (bm-mmap kt mm 0)))))
+	     (unwind-protect
+		(bm-mmap kt mm 0)
+		(close-mmap mm))))))
 			   
