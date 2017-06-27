@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Thu Jun  1 18:02:16 2017 (serrano)                */
+;*    Last change :  Tue Jun 27 08:52:26 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -44,7 +44,7 @@
 	    ast_private
 	    ast_object
 	    ast_dump
-	    patch_patch
+;* 	    patch_patch                                                */
 	    effect_feffect)
    
    (export  (if-sym)
@@ -218,15 +218,15 @@
 		  (error-sexp->node "Illegal `quote' expression" exp loc)))))
           (else
 	   (error-sexp->node "Illegal `quote' expression" exp loc))))
-;*--- patch -----------------------------------------------------------*/
-      ((patch . ?-)
-       (if *patch-support*
-	   (patch->sexp exp stack (find-location/loc exp loc) site)
-	   (call->node exp stack loc site)))
-      ((patch-index . ?-)
-       (if *patch-support*
-	   (patch-index->sexp exp stack (find-location/loc exp loc) site)
-	   (call->node exp stack loc site)))
+;* {*--- patch -----------------------------------------------------------*} */
+;*       ((patch . ?-)                                                 */
+;*        (if *patch-support*                                          */
+;* 	   (patch->sexp exp stack (find-location/loc exp loc) site)    */
+;* 	   (call->node exp stack loc site)))                           */
+;*       ((patch-index . ?-)                                           */
+;*        (if *patch-support*                                          */
+;* 	   (patch-index->sexp exp stack (find-location/loc exp loc) site) */
+;* 	   (call->node exp stack loc site)))                           */
 ;*--- begin -----------------------------------------------------------*/
       ((begin)
        (sexp->node #unspecified stack (find-location/loc exp loc) site))

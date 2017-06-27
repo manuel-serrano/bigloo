@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  2 08:12:54 2017                          */
-;*    Last change :  Tue Jun 20 18:31:27 2017 (serrano)                */
+;*    Last change :  Tue Jun 27 08:47:25 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PATCH object wrapper                                             */
@@ -14,7 +14,36 @@
 ;*---------------------------------------------------------------------*/
 (module __patch_patch
 
-   (extern (include "../Clib/bglpatch.h")))
+   (extern (include "../Clib/bglpatch.h"))
+
+   (extern (type $patch_descr_t* void* "bgl_patch_descr_t *")
+	   (macro $patch-descr-nil::$patch_descr_t* "0L")
+	   (infix macro $patch-descr-nil?::bool (::$patch_descr_t*) " == 0L")
+	   (macro $patch-descr::$patch_descr_t* (::int) "BGL_PATCH_DESCR"))
+
+   (export (class PatchDescr
+	      ($descr::$patch_descr_t* read-only)))
+	   
+   (export (inline patch-bound? ::PatchDescr)
+	   (inline patch-set! ::PatchDescr ::obj)))
+
+;*---------------------------------------------------------------------*/
+;*    patch-bound? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (patch-bound? obj)
+   (with-access::PatchDescr obj ($descr)
+      ($patch-descr-nil? $descr)))
+
+;*---------------------------------------------------------------------*/
+;*    patch-set! ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-inline (patch-set! descr val)
+   (with-access::PatchDescr descr ($descr)
+      #f))
+
+   
+   
+
 
 ;*    (option (set! *optim-patch?* #t))                                */
 ;*                                                                     */

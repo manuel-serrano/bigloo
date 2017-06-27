@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Fri Jun  2 09:28:31 2017 (serrano)                */
+;*    Last change :  Tue Jun 27 08:52:05 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -506,10 +506,10 @@
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
        (set! *optim-return-goto?* #f))
-      (("-fruntime-code-patching" (help "Optimize self-modifying code"))
-       (set! *optim-patch?* #t))
-      (("-fno-runtime-code-paching" (help "Disable self-modifying code optimization"))
-       (set! *optim-patch?* #f))
+;*       (("-fruntime-code-patching" (help "Optimize self-modifying code")) */
+;*        (set! *optim-patch?* #t))                                    */
+;*       (("-fno-runtime-code-paching" (help "Disable self-modifying code optimization")) */
+;*        (set! *optim-patch?* #f))                                    */
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))

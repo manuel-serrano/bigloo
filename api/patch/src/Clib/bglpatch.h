@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jun  2 08:27:57 2017                          */
-/*    Last change :  Tue Jun 20 18:32:14 2017 (serrano)                */
+/*    Last change :  Tue Jun 27 08:47:21 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper to SELF-MOD                                       */
@@ -19,6 +19,8 @@ typedef struct bgl_patch_descr {
    int kind;
 } bgl_patch_descr_t;
 
+
+#define BGL_PATCH_DESCR( i ) (&(bgl_patch_descrs[ i ]))
 
 extern void bgl_init_patch( bgl_patch_descr_t * );
 

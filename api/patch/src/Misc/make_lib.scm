@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Fri Jun  2 08:23:45 2017 (serrano)                */
+;*    Last change :  Mon Jun 26 19:11:45 2017 (serrano)                */
 ;*    Copyright   :  2001-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -14,5 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __patch_makelib
 
-   (import  __patch_patch))
+   (import  __patch_patch)
+
+   (eval    (export-all)
+            (class PatchDescr)))
 

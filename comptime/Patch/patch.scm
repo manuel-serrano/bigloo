@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 31 10:22:17 2017                          */
-;*    Last change :  Tue Jun 20 18:46:49 2017 (serrano)                */
+;*    Last change :  Tue Jun 27 10:01:41 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Patch management                                                 */
@@ -130,14 +130,18 @@
 	    (sfun-body-set! fun
 	       (instantiate::sequence
 		  (type *obj*)
-		  (nodes (list
-			    (when *main*
-			       (instantiate::pragma
-				  (type *void*)
-				  (format "bgl_init_patch( bgl_patch_descrs )")))
-			    (instantiate::literal
-			       (type *obj*)
-			       (value #unspecified)))))))
+		  (nodes (if *main*
+			     (list *main*
+				(instantiate::pragma
+				   (type *void*)
+				   (format "bgl_init_patch( bgl_patch_descrs )"))
+				(instantiate::literal
+				   (type *obj*)
+				   (value #unspecified)))
+			     (list
+				(instantiate::literal
+				   (type *obj*)
+				   (value #unspecified))))))))
    
 	 (let ((pvector (def-global-svar! 'bgl_patch_descrs
 			   *module*
