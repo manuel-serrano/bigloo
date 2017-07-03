@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jul  3 16:24:04 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 17:29:43 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -151,12 +151,14 @@ include ../../Makefile.api
 #*    install-c-include                                                */
 #*---------------------------------------------------------------------*/
 install-c-include:
-	cp Clib/bglpatch.h $(LIBDIR)/$(FILDIR)/bglpatch.h
-	cp Clib/self-mod.h $(LIBDIR)/$(FILDIR)/self-mod.h
+	cp Clib/bglpatch.h $(LIBDIR)/$(FILDIR)/bglpatch.h \
+          && chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bglpatch.h
+	cp Clib/cpatch.h $(LIBDIR)/$(FILDIR)/cpatch.h \
+          && chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/cpatch.h
 
 uninstall-c-include:
 	$(RM) $(LIBDIR)/$(FILDIR)/bglpatch.h
-	$(RM) $(LIBDIR)/$(FILDIR)/self-mod.h
+	$(RM) $(LIBDIR)/$(FILDIR)/cpatch.h
 
 
 #bdepend start (don't edit)

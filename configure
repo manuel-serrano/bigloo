@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul  3 16:37:01 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 17:39:57 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2422,21 +2422,19 @@ if [ "$customunistring" != "no" ]; then
   cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
 fi
   
-if [ "$unistring " = " " -a "$customunistring " = "no " ]; then
+if [ "$unistring " = " " -a "$customunistring " != "yes " ]; then
   extraunistring=`$autoconf unistring` || exit 1
 fi
   
-if [ "$extraunistring " != "no " ]; then
-  if [ "$customunistring " != "no " ]; then
-    customunistring=yes
-    unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
+  customunistring=yes
+  unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
     
-    echo "+ Installing custom unistring source code."
-    (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
+  echo "+ Installing custom unistring source code."
+  (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
 
-    echo "+ Configuring custom unistring..."
-    (cd libunistring; . ./configure-unistring) || exit 1
-  fi
+  echo "+ Configuring custom unistring..."
+  (cd libunistring; . ./configure-unistring) || exit 1
   
   unistringlibs=yes
 else
