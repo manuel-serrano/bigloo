@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 31 10:22:17 2017                          */
-;*    Last change :  Tue Jun 27 10:01:41 2017 (serrano)                */
+;*    Last change :  Tue Jun 27 15:40:50 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Patch management                                                 */
@@ -125,23 +125,23 @@
 (define (patch-initialization! ast backend)
    (let ((glo (find-global 'patch-init)))
       (when (global? glo)
-	 (let ((fun (variable-value glo)))
-	    (sfun-side-effect-set! fun #t)
-	    (sfun-body-set! fun
-	       (instantiate::sequence
-		  (type *obj*)
-		  (nodes (if *main*
-			     (list *main*
-				(instantiate::pragma
-				   (type *void*)
-				   (format "bgl_init_patch( bgl_patch_descrs )"))
-				(instantiate::literal
-				   (type *obj*)
-				   (value #unspecified)))
-			     (list
-				(instantiate::literal
-				   (type *obj*)
-				   (value #unspecified))))))))
+	 '(let ((fun (variable-value glo)))
+	   (sfun-side-effect-set! fun #t)
+	   (sfun-body-set! fun
+	      (instantiate::sequence
+		 (type *obj*)
+		 (nodes (if *main*
+			    (list *main*
+			       (instantiate::pragma
+				  (type *void*)
+				  (format "bgl_init_patch( bgl_patch_descrs )"))
+			       (instantiate::literal
+				  (type *obj*)
+				  (value #unspecified)))
+			    (list
+			       (instantiate::literal
+				  (type *obj*)
+				  (value #unspecified))))))))
    
 	 (let ((pvector (def-global-svar! 'bgl_patch_descrs
 			   *module*
@@ -152,7 +152,8 @@
 	    (global-import-set! pvector 'static)
 	    (global-type-set! pvector typ)
 	    (global-name-set! pvector
-	       "bgl_patch_descrs[ 2 ] = { { NULL, 0, 0, 0 } , { NULL, 0, 0, 0 } }")))))
+	       "* bgl_patch_descrs[ 2 ] = { NULL, NULL }")
+	    '()))))
 
 (define (patch-initialization!to-be-removed-2017-06-20 ast backend)
    
@@ -182,24 +183,24 @@
 	       (set! patch-init-nodes (cons init patch-init-nodes))))))
 
    (when *patch-armed*
-      (let ((env0 (patch-global-env)))
-	 (for-each (lambda (g)
-		      (let ((fun (variable-value g)))
-			 (with-access::sfun fun (body)
-			    (let ((patches (make-cell '())))
-			       (bind-patch! body env0 patches)
-			       (when (pair? (cell-ref patches))
-				  (if (eq? (bigloo-config 'elong-size) 32)
-				      (link-patches! g (cell-ref patches)
-					 (list *long* *obj*) 32)
-				      (begin
-					 (link-patches! g (cell-ref patches)
-					    (list *long*) 32)
-					 (link-patches! g (cell-ref patches)
-					    (list *obj*) 64))))))))
-	    ast))
+      '(let ((env0 (patch-global-env)))
+	(for-each (lambda (g)
+		     (let ((fun (variable-value g)))
+			(with-access::sfun fun (body)
+			   (let ((patches (make-cell '())))
+			      (bind-patch! body env0 patches)
+			      (when (pair? (cell-ref patches))
+				 (if (eq? (bigloo-config 'elong-size) 32)
+				     (link-patches! g (cell-ref patches)
+					(list *long* *obj*) 32)
+				     (begin
+					(link-patches! g (cell-ref patches)
+					   (list *long*) 32)
+					(link-patches! g (cell-ref patches)
+					   (list *obj*) 64))))))))
+	   ast))
       
-      (let* ((glo (find-global 'patch-init))
+      '(let* ((glo (find-global 'patch-init))
 	     (fun (variable-value glo)))
 	 (sfun-side-effect-set! fun #t)
 	 (sfun-body-set! fun
@@ -228,7 +229,8 @@
 	 (global-import-set! pvector 'static)
 	 (global-type-set! pvector typ)
 	 (global-name-set! pvector
-	    (format "__bgl_patches[ ~a ]" global-patch-index)))))
+	    (format "__bgl_patches[ ~a ]" global-patch-index))
+	 '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    collect-patches ...                                              */

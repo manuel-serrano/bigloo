@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jun 20 21:23:22 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 16:24:04 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -52,7 +52,8 @@ endif
 #*---------------------------------------------------------------------*/
 _BGL_OBJECTS	= patch
 
-_C_OBJECTS	= self-mod bglpatch
+#_C_OBJECTS	= self-mod bglpatch
+_C_OBJECTS	= cpatch
 
 _OBJECTS	= $(_C_OBJECTS) $(_BGL_OBJECTS)
 OBJECTS		= $(_OBJECTS:%=objs/%.o)
@@ -73,7 +74,8 @@ INCLUDES	=
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
-		  $(C_SRC_DIR)/bglpatch.h $(C_SRC_DIR)/self-mod.h \
+		  $(C_SRC_DIR)/bglpatch.h \
+                  $(C_SRC_DIR)/self-mod.h $(C_SRC_DIR)/cpatch.h \
 		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(API).init.in \
                   Makefile

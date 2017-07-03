@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  2 08:12:54 2017                          */
-;*    Last change :  Tue Jun 27 08:47:25 2017 (serrano)                */
+;*    Last change :  Tue Jun 27 18:16:10 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    PATCH object wrapper                                             */
@@ -19,30 +19,40 @@
    (extern (type $patch_descr_t* void* "bgl_patch_descr_t *")
 	   (macro $patch-descr-nil::$patch_descr_t* "0L")
 	   (infix macro $patch-descr-nil?::bool (::$patch_descr_t*) " == 0L")
-	   (macro $patch-descr::$patch_descr_t* (::int) "BGL_PATCH_DESCR"))
+	   (macro $patch-obj32!::long (::$patch_descr_t* ::obj) "BGL_PATCH_DESCR32")
+	   (macro $patch-long32!::long (::$patch_descr_t* ::long) "BGL_PATCH_DESCR32"))
 
    (export (class PatchDescr
 	      ($descr::$patch_descr_t* read-only)))
 	   
    (export (inline patch-bound? ::PatchDescr)
-	   (inline patch-set! ::PatchDescr ::obj)))
+	   (inline patch-obj! ::PatchDescr ::obj)
+	   (inline patch-long! ::PatchDescr ::long)))
 
 ;*---------------------------------------------------------------------*/
 ;*    patch-bound? ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-inline (patch-bound? obj)
    (with-access::PatchDescr obj ($descr)
-      ($patch-descr-nil? $descr)))
+      (not ($patch-descr-nil? $descr))))
 
 ;*---------------------------------------------------------------------*/
-;*    patch-set! ...                                                   */
+;*    patch-obj! ...                                                   */
 ;*---------------------------------------------------------------------*/
-(define-inline (patch-set! descr val)
+(define-inline (patch-obj! descr val)
    (with-access::PatchDescr descr ($descr)
-      #f))
+      ($patch-obj32! $descr val)
+      val))
 
-   
-   
+;*---------------------------------------------------------------------*/
+;*    patch-long! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define-inline (patch-long! descr val)
+   (with-access::PatchDescr descr ($descr)
+      ($patch-long32! $descr val)
+      val))
+
+
 
 
 ;*    (option (set! *optim-patch?* #t))                                */

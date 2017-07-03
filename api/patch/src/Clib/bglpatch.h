@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jun  2 08:27:57 2017                          */
-/*    Last change :  Tue Jun 27 08:47:21 2017 (serrano)                */
+/*    Last change :  Wed Jun 28 13:08:38 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper to SELF-MOD                                       */
@@ -12,17 +12,31 @@
 #ifndef _BGL_PATCH_H
 #define _BGL_PATCH_H
 
-typedef struct bgl_patch_descr {
-   void *addr;
-   ptrdiff_t offs;
-   int mult;
-   int kind;
-} bgl_patch_descr_t;
+/*---------------------------------------------------------------------*/
+/*    Patch initialization (mprotect setting) ...                      */
+/*---------------------------------------------------------------------*/
+#ifdef linux
+extern uint8_t __executable_start;
+extern uint8_t __etext;
+extern void bgl_patch_init( void *, void * );
 
+#  define BGL_INIT_PATCH() bgl_patch_init( &__executable_start, &__etext )
+#else
+#  define BGL_INIT_PATCH() 
+#endif
 
-#define BGL_PATCH_DESCR( i ) (&(bgl_patch_descrs[ i ]))
+/*---------------------------------------------------------------------*/
+/*    Patch types                                                      */
+/*---------------------------------------------------------------------*/
+typedef struct patch_descr bgl_patch_descr_t;
+typedef long patch_32_type;
 
-extern void bgl_init_patch( bgl_patch_descr_t * );
+/*---------------------------------------------------------------------*/
+/*    Patch imports & macros                                           */
+/*---------------------------------------------------------------------*/
+extern void patch_32( bgl_patch_descr_t *patch, patch_32_type val_32 );
+
+#define BGL_PATCH_DESCR32( d, v ) patch_32( d, (patch_32_type)v )
 
 
 /* extern long GLOB;                                                   */

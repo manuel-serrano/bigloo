@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jun 22 18:47:47 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 15:00:36 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2382,6 +2382,7 @@ if [ "$regexp " = " " ]; then
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
       lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
+      cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
     else
       pcrelibs=no
     fi
@@ -2418,6 +2419,7 @@ if [ "$customunistring" != "no" ]; then
   extraunistring=unistring
   libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
   lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+  cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
 fi
   
 if [ "$unistring " = " " -a "$customunistring " = "no " ]; then

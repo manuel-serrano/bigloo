@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 15:12:37 1999                          */
-#*    Last change :  Tue Mar  7 19:21:53 2017 (serrano)                */
+#*    Last change :  Sat Jul  1 07:50:46 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the info setting.                                          */
 #*=====================================================================*/
@@ -170,6 +170,7 @@ EOF
       rm -f $file.html 
       rm -f $file.info 
       rm -f $file.log 
+      rm -f $file.aux
       echo ""
       exit 0
    fi
@@ -178,6 +179,7 @@ EOF
    rm -f $file.html 
    rm -f $file.info 
    rm -f $file.log 
+   rm -f $file.aux
    echo "makeinfover=old texi2dvi= texi2dviopt= texi2pdf= texi2html="
    exit 0
 fi
