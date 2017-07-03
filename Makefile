@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Jun 18 07:53:58 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 18:15:10 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -98,7 +98,7 @@ GZIP		= gzip -9
 # zip
 ZIP		= zip
 # The revision system, either prcs, or mercurial
-REVISIONSYSTEM	= mercurial
+REVISIONSYSTEM	= git
 # The message to log the revision
 LOGMSG		= ""
 # Sudo command
@@ -904,7 +904,9 @@ pop:
                configure INSTALL INSTALL.jvm README \
                Makefile Makefile.misc \
                Makefile.mercurial \
+               Makefile.git \
                .hgignore \
+               .gitignore \
                tutorial
 	@ for d in $(DIRECTORIES); do \
              (cd $$d && $(MAKE) -s pop); \

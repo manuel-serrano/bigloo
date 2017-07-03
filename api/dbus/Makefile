@@ -1,50 +1,49 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/pulseaudio/Makefile              */
+#*    serrano/prgm/project/bigloo/api/dbus/Makefile                    */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Mon Jul  3 18:42:28 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Sun Jun 20 09:42:50 2010 (serrano)                */
+#*    Copyright   :  2001-10 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
-#*    The Makefile for pulseaudio                                      */
+#*    The Makefile for dbus                                            */
 #*=====================================================================*/
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
-#*    The name of the API (used by Makefile.api)                       */
+#*    The name of the API (used by Makefile.api).                      */
 #*---------------------------------------------------------------------*/
-API = pulseaudio
+API = dbus
 
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
-POPDIR = src recette
+POPDIR = src
 
 POPULATION = Makefile README
 
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-.PHONY: build build build-c build-jvm
+.PHONY: build build build-c
 
 all: build
 boot: build
 
-build: build-c
+build:
+	@ $(MAKE) build-c
 
 c: build-c
-jvm: build-jvm
 
 build-c:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-            echo "[0m[1;32m>>> C[0m"; \
-	    (cd src && $(MAKE) c); \
+            if [ "$(OPENSSLIBS)" != "no" ]; then \
+	      echo "[0m[1;32m>>> C[0m"; \
+	      (cd src && $(MAKE) build-c); \
+            fi \
           fi
-
-build-jvm:
-	@ echo "PULSEAUDIO .jvm: Not implemented";
 
 #*---------------------------------------------------------------------*/
 #*    pop                                                              */
@@ -54,7 +53,7 @@ build-jvm:
 #*---------------------------------------------------------------------*/
 .PHONY: pop
 pop:
-	@ echo $(POPULATION:%=pulseaudio/%)
+	@ echo $(POPULATION:%=dbus/%)
 	@ for d in $(POPDIR); do \
             (cd $$d && $(MAKE) -s pop) \
           done;
@@ -70,18 +69,29 @@ distclean: clean
 
 cleanall: distclean
 	(cd src && $(MAKE) cleanall)
-	$(RM) -f lib/*fth* >/dev/null 2>&1
+	$(RM) -f lib/*dbus* >/dev/null 2>&1
 	$(RM) -f *~ >/dev/null 2>&1
 
 #*---------------------------------------------------------------------*/
 #*    Installation                                                     */
 #*---------------------------------------------------------------------*/
-.PHONY: install
+.PHONY: install install-c
 
 install: api-install-init
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
-	    $(MAKE) api-install-c; \
+	    $(MAKE) install-c; \
           fi
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+            $(MAKE) install-jvm; \
+          fi
+	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
+            $(MAKE) api-install-dotnet; \
+          fi
+
+install-c:
+	if [ "$(OPENSSLIBS)" != "no" ]; then \
+	  $(MAKE) api-install-c; \
+        fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c
@@ -97,3 +107,4 @@ distrib:
 #*---------------------------------------------------------------------*/
 include ../../Makefile.misc
 include ../Makefile.api
+

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Jan 29 16:02:02 2015 (serrano)                */
-#*    Copyright   :  2001-15 Manuel Serrano                            */
+#*    Last change :  Mon Jul  3 18:41:02 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -20,7 +20,7 @@ API = libuv
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
-POPDIR = src recette examples
+POPDIR = src recette
 
 POPULATION = Makefile README
 

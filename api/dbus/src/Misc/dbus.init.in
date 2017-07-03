@@ -1,0 +1,33 @@
+;; -*- mode: bee -*-
+;*=====================================================================*/
+;*    serrano/prgm/project/bigloo/api/dbus/src/Misc/dbus.init.in       */
+;*    -------------------------------------------------------------    */
+;*    Author      :  Manuel Serrano                                    */
+;*    Creation    :  Tue Nov  3 16:22:10 2009                          */
+;*    Last change :  Mon Jul 28 09:17:35 2014 (serrano)                */
+;*    Copyright   :  2009-14 Manuel Serrano                            */
+;*    -------------------------------------------------------------    */
+;*    Dbug init file.                                                  */
+;*=====================================================================*/
+
+;*---------------------------------------------------------------------*/
+;*    The library                                                      */
+;*---------------------------------------------------------------------*/
+(declare-library! 'dbus
+		  :basename "bigloodbus"
+		  :srfi '(dbus)
+		  :module-init '__dbus
+		  :module-eval '__dbus)
+
+;*---------------------------------------------------------------------*/
+;*    Compilation flags                                                */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    ;; dbus includes
+    (set! *additional-include-foreign*
+       (cons "dbus/dbus.h" *additional-include-foreign*))
+    ;; dbus library
+    (set! *ld-post-options* (cons "@DBUSLIBS@" *ld-post-options*))
+    ;; dbus compilation flags
+    (set! *cc-options* (cons "@DBUSCFLAGS@" *cc-options*))))

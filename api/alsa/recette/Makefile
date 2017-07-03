@@ -1,12 +1,12 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/libuv/examples/Makefile          */
+#*    serrano/prgm/project/bigloo/api/alsa/recette/Makefile            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Jul  3 18:22:41 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 18:13:29 2017 (serrano)                */
 #*    Copyright   :  2002-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    The Makefile to build the LIBUV examples                         */
+#*    The Makefile to build alsa tests                                 */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -17,71 +17,85 @@ include ../../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Bigloo                                                           */
 #*---------------------------------------------------------------------*/
-BCFLAGS = 
+BCFLAGS		= 
 
 #*---------------------------------------------------------------------*/
-#*    Sources                                                          */
+#*    Objects and sources                                              */
 #*---------------------------------------------------------------------*/
-SOURCES = hello async async2 timer idle atimer fs io serv loops queue
+SCM_FILE	= recette
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
 #*---------------------------------------------------------------------*/
-POPULATION = $(SOURCES:%=%.scm) Makefile
+POPULATION	= recette.scm Makefile
 
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: $(SOURCES)
+all: c # jvm dotnet
 
-hello: hello.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+c: recette$(EXE_SUFFIX)
+recette$(EXE_SUFFIX): recette.o
+	$(BIGLOO) $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
 
-async: async.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+jvm: 
 
-async2: async2.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+jvm.not-implemented:
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+             $(MAKE) recette-jvm$(SCRIPTEXTENSION); \
+	  fi
 
-timer: timer.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+recette-jvm$(SCRIPTEXTENSION): recette.class
+	$(BIGLOO) -jvm $(EFLAGS) $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
-idle: idle.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+dotnet: 
 
-atimer: atimer.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+dotnet.not-implemented:
+	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
+             $(MAKE) recette-dotnet$(SCRIPTEXTENSION); \
+	  fi
 
-fs: fs.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-io: io.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-serv: serv.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-loops: loops.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-queue: queue.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+recette-dotnet$(SCRIPTEXTENSION): recette.obj
+	$(BIGLOO) -v -dotnet -dotnet-managed $(EFLAGS) $(BFLAGS) recette.obj -o recette-dotnet$(SCRIPTEXTENSION)
 
 pop:
-	@ echo $(POPULATION:%=libuv/examples/%)
+	@ echo $(POPULATION:%=alsa/recette/%)
 
 clean:
 	@- $(RM) -f *~ '#*#' core
 	@- $(RM) -f *.escm *.ast recette.c recette$(EXE_SUFFIX)
-	@- $(RM) -f $(SOURCES:%=%$(EXE_SUFFIX)) $(SOURCES:%=%.o)
+	@- $(RM) -f recette.o
+	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
+	@- $(RM) -f recette.obj recette.il
+	@- $(RM) -f recette-dotnet.exe recette-dotnet$(SCRIPTEXTENSION)
 
 distclean: clean
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+test: test-c # test-jvm test-dotnet
+
+test-c:
+	(export LD_LIBRARY_PATH=../lib:$$LD_LIBRARY_PATH; \
+	 export DYLD_LIBRARY_PATH=../lib:$$DYLD_LIBRARY_PATH; \
+         ./recette.out)
+
+test-jvm:
+
+test-jvm.not-implemented:
+	./recette-jvm$(SCRIPTEXTENSION)
+
+test-dotnet:
+
+test-dotnet.not-implemented:
+	./recette-dotnet$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .bgl .scm .o .class
+.SUFFIXES: .bgl .scm .o .class .obj
 
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */
@@ -91,3 +105,6 @@ distclean: clean
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
+
+.scm.obj: $*.scm
+	$(BIGLOO) -c -dotnet -dotnet-managed $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.obj

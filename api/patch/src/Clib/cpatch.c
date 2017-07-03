@@ -39,7 +39,7 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
     if ((patch->kind & 0x100) == 0) {
 
       switch (patch->kind & 0xff) {
-      case 6:
+      case 10:
         {
           /* patch a function call */
 

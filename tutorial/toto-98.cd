@@ -1,0 +1,31 @@
+(define-cd
+   (kind   jazz)
+   (id     "")
+   (author "Jo Toto")
+   (title  "The art of programming, Volume 1")
+   (editor "Bigloo Bros")
+   (date   "1999")
+   (musicians ("Bdb" debugger)
+	      ("Bprof" profiler)
+	      ("Xemacs" ide))
+   (record "A dummy example")
+   (songs ("It's Alright With Me"
+	   (author "C. Porter")
+	   (duration 12:39))
+	  ("Young and Foolish"
+	   (author "Hague, Horwitt")
+	   (duration 13:07))
+	  ("Monk's Dream"
+	   (author "T. Monk")
+	   (duration 11:09))
+	  ("The Way You Look Tonight"
+	   (author "Kern, Fields")
+	   (duration 12:33))
+	  ("Moon River"
+	   (author "Mercer, Mancini")
+	   (duration 10:52))
+	  ("Countdown"
+	   (author "J. Coltrane")
+	   (duration 12:40))))
+
+

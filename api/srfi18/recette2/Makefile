@@ -1,12 +1,12 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/libuv/examples/Makefile          */
+#*    serrano/prgm/project/bigloo/api/srfi18/recette2/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Jul  3 18:22:41 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 18:38:00 2017 (serrano)                */
 #*    Copyright   :  2002-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
-#*    The Makefile to build the LIBUV examples                         */
+#*    The Makefile to build the Fair threads tests                     */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
@@ -17,71 +17,62 @@ include ../../../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Bigloo                                                           */
 #*---------------------------------------------------------------------*/
-BCFLAGS = 
+BCFLAGS		= 
 
 #*---------------------------------------------------------------------*/
-#*    Sources                                                          */
+#*    Objects and sources                                              */
 #*---------------------------------------------------------------------*/
-SOURCES = hello async async2 timer idle atimer fs io serv loops queue
+SCM_FILE	= recette
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
 #*---------------------------------------------------------------------*/
-POPULATION = $(SOURCES:%=%.scm) Makefile
+POPULATION	= recette.scm Makefile
 
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: $(SOURCES)
+all: c jvm
 
-hello: hello.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+c: recette$(EXE_SUFFIX)
+recette$(EXE_SUFFIX): recette.o
+	$(BIGLOO) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
 
-async: async.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+jvm: 
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+             $(MAKE) recette-jvm$(SCRIPTEXTENSION); \
+	  fi
 
-async2: async2.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-timer: timer.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-idle: idle.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-atimer: atimer.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-fs: fs.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-io: io.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-serv: serv.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-loops: loops.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
-
-queue: queue.o
-	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
+recette-jvm$(SCRIPTEXTENSION): recette.class
+	$(BIGLOO) -jvm $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
 pop:
-	@ echo $(POPULATION:%=libuv/examples/%)
+	@ echo $(POPULATION:%=recette2/recette2/%)
 
 clean:
 	@- $(RM) -f *~ '#*#' core
 	@- $(RM) -f *.escm *.ast recette.c recette$(EXE_SUFFIX)
-	@- $(RM) -f $(SOURCES:%=%$(EXE_SUFFIX)) $(SOURCES:%=%.o)
+	@- $(RM) -f recette.o
+	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
 
-distclean: clean
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+test: test-c test-jvm
+
+test-c:
+	(export LD_LIBRARY_PATH=../lib:$$LD_LIBRARY_PATH; \
+	 export DYLD_LIBRARY_PATH=../lib:$$DYLD_LIBRARY_PATH; \
+         ./recette.out)
+
+test-jvm:
+	./recette-jvm$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .bgl .scm .o .class
+.SUFFIXES: .bgl .scm .o .class .obj
 
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */

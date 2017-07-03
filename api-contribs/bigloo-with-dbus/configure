@@ -1,0 +1,3019 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/configure                            */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Jan 25 16:05:10 1994                          */
+#*    Last change :  Mon Jul 16 17:40:41 2007 (serrano)                */
+#*    Copyright   :  1994-2007 Manuel Serrano, see LICENSE file        */
+#*    -------------------------------------------------------------    */
+#*    The Bigloo configuration file                                    */
+#*    -------------------------------------------------------------    */
+#*    Please, dont talk to me about autoconf. I simply dont want       */
+#*    to hear about it...                                              */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Bigloo revision number                                           */
+#*---------------------------------------------------------------------*/
+release=3.0b
+
+#*---------------------------------------------------------------------*/
+#*    User variables                                                   */
+#*---------------------------------------------------------------------*/
+#*--- paths -----------------------------------------------------------*/
+prefix=/usr/local
+bindir=$prefix/bin
+libdir=$prefix/lib
+fildir=bigloo/$release
+zipdir=$libdir/$fildir
+dlldir=$libdir/$fildir
+mandir=$prefix/man/man1
+infodir=$prefix/info
+docdir=$prefix/doc/bigloo-$release
+tmpdir=/tmp
+lispdir=
+bee=partial
+configurelog=configure.log
+
+tmp=$TMPDIR
+
+if [ "$tmp " = " " ]; then
+  tmp=/tmp
+fi
+
+#*--- C back-end user configure ---------------------------------------*/
+nativebackend=yes # set to "no" not to install the native (C) back-end
+ccstyle=gcc
+cc=$CC  # left blank for default automatic configuration
+cflags=$CFLAGS
+lflags=$LDFLAGS
+bigloo=$BIGLOO # used only for cross compiling
+bflags="-O3 -q"
+bootflags=""
+coflags="-O3"
+cstrip="-s"
+cpicflags="demanded" # Possible values for cpicflags are:
+             #  - "no" not to use position independent code (recommended)
+             #  - "demanded" auto configuration but with a preference to "no"
+             #  - any legal C compiler option that enable PIC code.
+             #  - blank (uninitalized) for automatic configuration of the
+             #    position independent code compiler option
+as=as
+ar=ar
+arflags=qc
+ldstyle=gcc
+ldflags=
+ld=gcc
+ldlibs=-lc
+ldcomplibs=-lc
+strip=strip
+longlong=    # The C type to represent long long integers
+stringsplit="0"
+
+#*--- Java back-end user configuration --------------------------------*/
+jvmbackend=no # set to "no" not to install the Jvm back-end
+zip=zip
+jar="jar cmf"
+zflags=
+javac=javac
+jcflags=-O
+java=java
+jflags=
+jvflags=-noverify
+jshell=sh
+
+#*--- .NET back-end user configuration --------------------------------*/
+dotnetbackend=no  # set to "yes" to install the .NET back-end
+dotnetclrstyle=pnet
+dotnetcsccstyle=pnet
+dotnetldstyle=pnet
+dotnetcscc=cscc
+dotnetld=cscc
+dotnetclr=ilrun
+dotnetclropt="-S 4000 -C 256"
+dotnetshell=sh
+dotnetasm=ilasm
+
+#*--- Misc user configuration -----------------------------------------*/
+shell=/bin/sh
+emacs=
+makeinfo=makeinfo
+makeinfoopt="-U oldinfo"
+texi2dvi=texi2dvi
+texi2dviopt=-b
+texi2html=texi2html
+texi2htmlopt="-menu -monolithic -number"
+texi2pdf=texi2pdf
+iinfo=install-info
+dlopenopt=-ldl
+dirname=dirname
+defaultbackend="native"
+aout=""
+abat=""
+exe=""
+cobj=o
+specific=""
+
+#*--- socket library (left empty for automatic configuration) ---------*/
+socketlibs=
+
+#*--- posix threads library (left blank for autoconfiguration) --------*/
+threadsupport=
+pthreadlibs=
+pthreadtimedlock=1
+
+#*--- openssl library (left blank for autoconfiguration) --------------*/
+openssllibs=
+openssldtls=
+
+#*--- sqlite library (left blank for autoconfiguration) ---------------*/
+sqlitelibs=
+
+#*--- dbus library (left blank for autoconfiguration) -----------------*/
+dbuslibs=
+
+
+#*--- gc source directory (left blank for default configuration) ------*/
+customgc=yes
+gcversion=
+# the following two variables are relevant only when using 
+# standard (i.e. already existing and operational) Boehm's GC
+# and when customgc=no
+stdgclib=gc
+stdgcincdir=/usr/include/gc
+stdint=
+stdlibint=0
+unistdint=
+
+#*--- indent ----------------------------------------------------------*/
+indent="indent -npro -bap -bad -nbc -bl -ncdb -nce -nfc1 -ip0 -nlp -npcs -nsc -nsob -cli0.5 -di0 -l80 -d1 -c0 -ts2 -st"
+
+#*--- mask of Bigloo intalled files -----------------------------------*/
+bmask=755
+
+#*--- ld shared library option ----------------------------------------*/
+# set this variable to `no-share' if you don't want shared library
+ldopt=
+ldsoname=
+ldinstallname=
+sharedsuffix=so
+sharedlibraryclosed=no
+
+#*--- should the compiler be dynamically linked?  ---------------------*/
+# the legal value for that variable is `yes' or `no'
+sharedcompiler=no
+sharedbde=no
+
+#*--- forced OS -------------------------------------------------------*/
+posixos=
+jvmrecettebootpath=
+jvmapibootpath=
+macosx=auto
+
+#*--- cygwin specific configuration -----------------------------------*/
+# The location where cygwin is installed
+cygwindospath=
+cygwindosjvm="yes"
+cygwindosdotnet="yes"
+
+#*--- migw specific configuration -------------------------------------*/
+mingw="no"
+
+#*--- api -------------------------------------------------------------*/
+apis="fthread pthread ssl sqlite dbus web multimedia mail calendar pkgcomp pkglib"
+
+#*---------------------------------------------------------------------*/
+#*    Hacker variables                                                 */
+#*    -------------------------------------------------------------    */
+#*    Dont modifiy these variables unless you know what you are        */
+#*    doing.                                                           */
+#*---------------------------------------------------------------------*/
+#*--- The basename of the compiler and tools --------------------------*/
+afile=bglafile
+jfile=bgljfile
+btags=bgltags
+bdepend=bgldepend
+bmake=bglmake
+bpp=bglpp
+bprof=bglprof
+mco=bglmco
+jas=bgljas
+bmem=bglmem
+bmemrun=bglmemrun
+bdb=bgldb
+bglpkg=bglpkg
+
+#*--- libraries -------------------------------------------------------*/
+libraryname=bigloo
+
+#--- additional user library used to link bigloo applications ---------*/
+extralibs="-lm"
+extragclibs="-lc"
+
+#*--- custom GC configuration -----------------------------------------*/
+gcincdir=
+gclibdir=
+customgclib=bigloogc
+gchaveblocking=0
+gchavedoblocking=0
+gcfinalizer=0
+
+#*---------------------------------------------------------------------*/
+#*                 !!! DONT EDIT AFTER THIS LINE !!!                   */
+#*---------------------------------------------------------------------*/
+action=all
+mode=standard
+tuning=
+makefile_cfg=Makefile.config
+autoconfdir=`dirname $0 2> /dev/null`/autoconf
+pwd=`pwd`
+bootdir=$pwd
+cgcflags=""
+cgcfinalflags="-DFINALIZE_ON_DEMAND"
+bigloo_h=
+bigloo_gc_h=
+bigloo_config_h=
+bigloo_config_jvm=
+bigloo_config_dotnet=
+bigloo_config_el=
+summary=yes
+java_configured=no
+dotnet_configured=no
+os=posix
+gcspecial=
+gcthread=
+hardtune=
+emacswarning=
+stacksizerequired=2
+configureinfo="no"
+dnscache=1
+scmpkgversion=0.0.1
+
+if [ $? != "0" ]; then
+   autoconfdir="autoconf"
+fi
+
+# Argument parsing
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --bootconfig)
+      bindir=$PWD/bin;
+      libdir=$PWD/lib;
+      fildir=$release;
+      zipdir=$libdir/$fildir;
+      dlldir=$libdir/$fildir;
+      bootdir=$PWD;
+      mandir=$HOME/house/man
+      lispdir=$HOME/emacs/site-lisp/bigloo;
+      docdir=$PWD/manuals;
+      sharedcompiler=no;
+      sharedbde=yes;
+      infodir=$HOME/house/info;
+      java=java;
+      javac=javac;
+      ld=gcc;
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      bootflags="-cg";
+      cpicflags="no";
+      jvmbackend="force";
+      dotnetbackend="force";
+      dotnetclr=mono;
+      dotnetclropt="";
+      dotnetcscc=cscc;
+      dotnetld=cscc;
+      dotnetasm=ilasm.pnet;
+      dotnetclrstyle=mono;
+      dotnetcsccstyle=mono;
+      dotnetldstyle=mono;
+      mode=standard;
+      configureinfo="yes";
+      bee="full";
+      havebdb=1;
+      action="all";;
+
+    --bootdir=*)
+      bootdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_config.h)
+      action="bigloo_config";;
+    
+    --bigloo.h=*)
+      action="bigloo_config";
+      bigloo_h="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_gc.h=*)
+      action="bigloo_config";
+      bigloo_gc_h="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_config.h=*)
+      action="bigloo_config";
+      bigloo_config_h="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_config.jvm=*)
+      action="bigloo_config";
+      bigloo_config_jvm="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_config.dotnet=*)
+      action="bigloo_config";
+      bigloo_config_dotnet="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bigloo_config.el=*)
+      action="bigloo_config_el";
+      bigloo_config_el="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --Makefile.config)
+      action="Makefile.config";;
+
+    --configure.log=*)
+      configurelog="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bindir=*)
+      bindir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --libdir=*)
+      libdir="`echo $1 | sed 's/^[^=]*=//'`";
+      zipdir=$libdir/$fildir;
+      dlldir=$libdir/$fildir;;
+
+    --gcdir=*)
+      gclibdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --fildir=*)
+      fildir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --zipdir=*)
+      zipdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dlldir=*)
+      dlldir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --mandir=*)
+      mandir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --infodir=*)
+      infodir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --docdir=*)
+      docdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --tmpdir=*)
+      tmpdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --tmp=*)
+      tmp="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --emacs=*)
+      emacs="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --xemacs=*)
+      emacs="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --indent=*)
+      indent="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dirname=*)
+      dirname="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --lispdir=*)
+      lispdir="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --prefix=*)
+      prefix="`echo $1 | sed 's/^[^=]*=//'`";
+      bindir=$prefix/bin;
+      libdir=$prefix/lib;
+      fildir=bigloo/$release;
+      zipdir=$libdir/$fildir;
+      dlldir=$libdir/$fildir;
+      mandir=$prefix/man/man1;
+      infodir=$prefix/info;
+      docdir=$prefix/doc/bigloo-$release;;
+
+    --bigloo=*)
+      bigloo="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --cc=*)
+      cc="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --as=*)
+      as="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --ld=*)
+      ld="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --cflags=*)
+      cflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --lflags=*)
+      lflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --coflags=*)
+      coflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --ldlibs=*)
+      ldlibs="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --ldcomplibs=*)
+      ldcomplibs="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --ldflags=*)
+      ldflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --stringsplit=*)
+      stringsplit="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --native=*)
+      nativebackend="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --sharedcompiler=*)
+      sharedcompiler="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --sharedbde=*)
+      sharedbde="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --bee=partial)
+      bee="partial";;
+
+    --bee=full)
+      bee="full";;
+
+    --a.out=*)
+      aout="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --a.bat=*)
+      abat="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --jvm=*)
+      jvmbackend="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --java=*)
+      java="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --javac=*)
+      javac="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --javaprefix=*)
+      java="`echo $1 | sed 's/^[^=]*=//'`"/java;
+      javac="`echo $1 | sed 's/^[^=]*=//'`"/javac;
+      jar="`echo $1 | sed 's/^[^=]*=//'`/jar cmf";;
+
+    --javashell=sh)
+      jshell="sh";;
+
+    --javashell=msdos)
+      jshell="msdos";;
+
+    --native-default-backend)
+      defaultbackend="native";;
+
+    --jvm-default-backend)
+      defaultbackend="jvm";;
+
+    --dotnet=*)
+      dotnetbackend="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetld=*)
+      dotnetld="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetldlibopt=*)
+      dotnetldlibopt="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetldlibdiropt=*)
+      dotnetldlibdiropt="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetclr=*)
+      dotnetclr="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetclropt=*)
+      dotnetclropt="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetshell=sh)
+      jshell="sh";;
+
+    --dotnetshell=msdos)
+      jshell="msdos";;
+
+    --dotnetasm=*)
+      dotnetasm="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --no-share)
+      ldopt="no-share";;
+
+    --no-ldpreload)
+      ldpreload="no";;
+
+    --force-posixos=*)
+      posixos="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --os-win32)
+      os="win32";;
+
+    --os-macosx)
+      tuning="MacOS X";
+      threadsupport=no;
+      ldlibs="-lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
+      ldcomplibs="-lc \$(GCCLOSELIB) -lc";
+      ldinstallname="-install_name";
+      ld=gcc;
+      ldopt="";
+      sharedsuffix="dylib";
+      sharedcompiler=yes;
+      sharedbde=yes;
+      ldflags="$ldflags -dynamiclib -single_module";
+            napis=;
+      for a in $apis; do
+         if [ $a != "fthread" -a $a != "pthread" ]; then
+           if [ "$napis " = " " ]; then
+             napis="$a";
+           else
+             napis="$napis $a";
+           fi
+         fi
+      done
+      apis=$napis;;
+
+    --no-os-macosx)
+      macosx=false;;
+
+    --cygwin-dos-path=*)
+      cygwindospath="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --cygwin-dos-jvm=yes)
+      cygwindosjvm="yes";;
+
+    --cygwin-dos-jvm=no)
+      cygwindosjvm="no";;
+
+    --cygwin-dos-dotnet=yes)
+      cygwindosdotnet="yes";;
+
+    --cygwin-dos-dotnet=no)
+      cygwindosdotnet="no";;
+
+    --arch=athlon)
+      hardtune="athlon";
+      gcspecial=-DUSE_3DNOW_PREFETCH;;
+
+    --arch=athlon-tbird)
+      hardtune="athlon-tbird";
+      gcspecial=-DUSE_3DNOW_PREFETCH;;
+
+    --arch=athlon-xp)
+      hardtune="athlon-xp";
+      gcspecial=-DUSE_3DNOW_PREFETCH;;
+
+    --arch=athlon-mp)
+      hardtune="athlon-mp";
+      gcspecial=-DUSE_3DNOW_PREFETCH;;
+
+    --arch=k6-2)
+      hardtune="k6-2";
+      gcspecial=-DUSE_3DNOW_PREFETCH;;
+
+    --arch=k6-3)
+      hardtune="k6-3";
+      gcspecial=-DUSE_3DNOW_PREFETCH;;
+
+    --arch=pentium3)
+      hardtune="pentium3";
+      gcspecial=-DUSE_I686_PREFETCH;;
+
+    --arch=pentium4)
+      hardtune="pentium4";
+      gcspecial=-DUSE_I686_PREFETCH;;
+
+    --arch=i586)
+      hardtune="i586";;
+
+    --arch=i686)
+      hardtune="i686";;
+
+    --no-summary)
+      summary=no;;
+
+    --icc)
+      cc=icc;
+      as=icc;
+      ldopt="no-share";
+      coflags="$coflags -O3 -ip";
+      extralibs="";
+      cstrip="no";;
+
+    --pnet)
+      dotnetclrstyle=pnet;
+      dotnetcsccstyle=pnet;
+      dotnetldstyle=pnet;
+      dotnetclr=ilrun;
+      dotnetclropt="-S 4000 -C 256";
+      dotnetcscc=cscc;
+      dotnetld=cscc;
+      dotnetasm=ilasm;;
+
+    --mono)
+      dotnetclrstyle=mono;
+      dotnetcsccstyle=mono;
+      dotnetldstyle=mono;
+      dotnetclr=mono;
+      dotnetclropt="";
+      dotnetcscc=cscc;
+      dotnetld=cscc;
+      dotnetasm=ilasm;;
+
+    --dotnetldstyle=*)
+      dotnetldstyle="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetcsccstyle=*)
+      dotnetcsccstyle="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --dotnetclrstyle=*)
+      dotnetclrstyle="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --customgc=yes)
+      customgc=yes;;
+
+    --customgc=no)
+      customgc=no;;
+
+    --finalization=yes)
+      gcfinalizer=1;
+      cgcfinalflags=;;
+
+    --finalization=no)
+      cgcfinalflags=-DFINALIZE_ON_DEMAND;;
+
+    --stack-check=no)
+      stacksizerequired=0;;
+
+    --benchmark=no)
+      mode=standard;;
+
+    --benchmark=yes)
+      if [ "$tuning " = "MacOS X " ]; then
+        echo "*** ERROR: --benchmark is incompatible with --os-macosx";
+        exit 1;
+      fi;
+      mode=benchmark;;
+
+    --cpicflags=*)
+      cpicflags="`echo $1 | sed 's/^[^=]*=//'`";;
+
+    --configureinfo=no)
+      configureinfo="no";;
+
+    --configureinfo=yes)
+      configureinfo="yes";;
+
+    --mingw=yes)
+      mingw="yes";;
+
+    --enable-thread)
+      threadsupport=yes;
+      apis="fthread pthread $apis";;
+
+    --disable-thread)
+      threadsupport=no;
+      napis=;
+      for a in $apis; do
+         if [ $a != "fthread" -a $a != "pthread" ]; then
+           if [ "$napis " = " " ]; then
+             napis="$a";
+           else
+             napis="$napis $a";
+           fi
+         fi
+      done
+      apis=$napis;;
+
+    --enable-*)
+      api="`echo $1 | sed 's/--[^-]*-//'`";
+      apis="$api $apis";;
+
+    --disable-*)
+      api="`echo $1 | sed 's/--[^-]*-//'`";
+      napis=;
+      for a in $apis; do
+         if [ $a != $api ]; then
+           if [ "$napis " = " " ]; then
+             napis="$a";
+           else
+             napis="$napis $a";
+           fi
+         fi
+      done
+      apis=$napis;;
+
+    -*)
+      if [ "$1" != "-h" -a "$1" != "-help" -a "$1" != "--help" ]; then
+        echo "*** ERROR: Illegal option \"$1\""
+        echo ""
+        echo ""
+        echo "Usage: configure [options]" >&2;
+        echo "" >&2;
+      fi
+      # Existing apis
+      eapis=
+      cd $bootdir/api;
+      for p in *; do
+        if [ -d $p ]; then
+          if [ "$eapis " = " " ]; then
+            eapis="$p";
+          else
+            eapis="$eapis|$p";
+          fi
+        fi
+      done;
+      cd $bootdir;
+      echo "Bigloo compiler:"  >&2;
+      echo "   --native=yes|no [default yes]" >&2;
+      echo "   --jvm=yes|no|force [default no]" >&2;
+      echo "   --dotnet=yes|no|force [default no]" >&2;
+      echo "   --customgc=yes|no [default yes]" >&2;
+      echo "   --bee=partial|full [default partial]" >&2;
+      echo "" >&2;
+      echo "API:" >&2;
+      echo "   --enable-[$eapis]" >&2;
+      echo "   --disable-[$eapis]" >&2;
+      echo "" >&2;
+      echo "Path:"  >&2;
+      echo "   --prefix=dir (sets bin, lib, zip, man, info and doc dirs)" >&2;
+      echo "   --bindir=file" >&2;
+      echo "   --libdir=file" >&2;
+      echo "   --gcdir=dir (directory for non custom gc library)" >&2;
+      echo "   --fildir=file" >&2;
+      echo "   --zipdir=file" >&2;
+      echo "   --dlldir=file" >&2;
+      echo "   --mandir=file" >&2;
+      echo "   --infodir=file" >&2;
+      echo "   --docdir=file" >&2;
+      echo "   --tmpdir=file (Bigloo tmp dir)" >&2;
+      echo "   --tmp=file (Installation tmp dir)" >&2;
+      echo "   --lispdir=file" >&2;
+      echo "" >&2;
+      echo "Tools and compilers:"  >&2;
+      echo "   --bigloo=comp [default bigloo]" >&2;
+      echo "   --cc=comp [default gcc]" >&2;
+      echo "   --ld=comp [default gcc]" >&2;
+      echo "   --as=asm" >&2;
+      echo "   --cflags=compilation flags" >&2;
+      echo "   --lflags=compiler link flags" >&2;
+      echo "   --coflags=optimization_flags" >&2;
+      echo "   --cpicflags=pic_flags" >&2;
+      echo "   --ldlibs=ld_libs" >&2;
+      echo "   --ldcomplibs=ld_compiler_libs" >&2;
+      echo "   --ldflags=ld_flags" >&2;
+      echo "   --emacs=file" >&2;
+      echo "   --xemacs=file (deprecated, use \"--emacs\" option)" >&2;
+      echo "   --indent=file" >&2;
+      echo "   --icc (configure for icc)"  >&2;
+      echo "" >&2;
+      echo "Host configuration:"  >&2;
+      echo "   --arch=[i586|i686|athlon|athlon-tbird|athlon-mp|athlon-xp|k6-2|k6-3|pentium3|pentium4] (configure for specified hardware)"  >&2;
+      echo "   --a.out=file" >&2;
+      echo "   --a.bat=file" >&2;
+      echo "   --dirname=file-or-command" >&2;
+      echo "   --force-posixos=operating-system" >&2;
+      echo "   --os-win32" >&2;
+      echo "   --os-macosx (tune for MacOSX)"  >&2;
+      echo "   --no-os-macosx (disable MacOSX auto configuration)"  >&2;
+      echo "   --cygwin-dos-path=[dos path]" >&2;
+      echo "   --cygwin-dos-jvm=yes|no [default yes]" >&2;
+      echo "   --no-share (disable shared libraries support)" >&2;
+      echo "   --no-ldpreload" >&2;
+      echo "   --sharedbde=yes|no [default no] (link Bde tools against shared libraries)" >&2;
+      echo "   --sharedcompiler=yes|no [default no] (link Bigloo against shared libraries)" >&2;
+      echo "" >&2;
+      echo "JVM configuration:"  >&2;
+      echo "   --java=file" >&2;
+      echo "   --javac=file" >&2;
+      echo "   --javaprefix=dir" >&2;
+      echo "   --javashell=shell [should be sh or msdos (default sh)]" >&2;
+      echo "   --native-default-backend" >&2;
+      echo "   --jvm-default-backend" >&2;
+      echo "" >&2;
+      echo ".NET configuration:"  >&2;
+      echo "   --pnet (configure for GNU pnet)"  >&2;
+      echo "   --mono (configure for Ximian Mono)"  >&2;
+      echo "   --dotnetldstyle=style [should be pnet, mono]" >&2;
+      echo "   --dotnetcsccstyle=style [should be pnet, mono]" >&2;
+      echo "   --dotnetclrstyle=style [should be pnet, mono]" >&2;
+      echo "   --dotnetcscc=file" >&2;
+      echo "   --dotnetld=file" >&2;
+      echo "   --dotnetclr=file" >&2;
+      echo "   --dotnetclropt=options" >&2;
+      echo "   --dotnetshell=shell [should be sh or msdos (default sh)]" >&2;
+      echo "   --dotnetasm=asm [optional]" >&2;
+      echo "" >&2;
+      echo "Misc:"  >&2;
+      echo "   --finalization=yes|no [default no]" >&2;
+      echo "   --benchmark=yes|no [default no] (must use --arch too)" >&2;
+      echo "   --stack-check=no" >&2;
+      echo "" >&2;
+      echo "Configuration settings:"  >&2;
+      echo "   --bigloo.h[=file]" >&2;
+      echo "   --bigloo_gc.h[=file]" >&2;
+      echo "   --bigloo_config.h[=file]" >&2;
+      echo "   --bigloo_config.jvm[=file]" >&2;
+      echo "   --Makefile.config=file" >&2;
+      echo "   --$configurelog=file" >&2;
+      echo "   --no-summary" >&2;
+      echo "   --bootconfig" >&2;
+      echo "   --bootdir=dir" >&2;
+      echo "   --configureinfo=yes|no [default no]" >&2;
+      echo "" >&2;
+      echo "Environment variables:" >&2;
+      echo "CC          C compiler command" >&2;
+      echo "CFLAGS      C compiler flags" >&2;
+      echo "LDFLAGS     linker flags, e.g. -L<lib dir> -static" >&2;
+      exit 3;
+  esac
+  shift
+done
+
+# The bigloo.h file
+if [ "$bigloo_h " = " " ]; then
+  bigloo_h=lib/$release/bigloo.h
+fi
+
+# The bigloo_gc.h file
+if [ "$bigloo_gc_h " = " " ]; then
+  bigloo_gc_h=lib/$release/bigloo_gc.h
+fi
+
+# The bigloo_config.h file
+if [ "$bigloo_config_h " = " " ]; then
+  bigloo_config_h=lib/$release/bigloo_config.h
+fi
+
+# The bigloo_config.jvm file
+if [ "$bigloo_config_jvm " = " " ]; then
+  bigloo_config_jvm=runtime/Jlib/configure.java
+fi
+
+# The bigloo_config.dotnet file
+if [ "$bigloo_config_dotnet " = " " ]; then
+  bigloo_config_dotnet=runtime/CSlib/configure.cs
+fi
+
+# The bigloo_bmacs.el file
+if [ "$bigloo_config_el " = " " ]; then
+  bigloo_config_el=bmacs/bmacs-config.el
+fi
+
+# The gc directory
+if [ "$gcincdir " = " " ]; then
+   gcincdir=../gc-boehm
+fi
+
+# Start configuring
+if [ "$summary" = "yes" ]; then
+  echo "** Configure **"
+  echo 
+fi
+
+# Cleaning
+/bin/rm -f $configurelog
+
+#*---------------------------------------------------------------------*/
+#*    Testing the Posix OS                                             */
+#*---------------------------------------------------------------------*/
+if [ "$posixos " = " " ]; then
+  posixos=`$autoconfdir/os`
+fi
+
+# Setting the default a.out production according to the OS
+if [ "$aout " = " " ]; then
+  case $posixos in
+    cygwin|mingw)
+      aout=a.exe;;
+    *)
+      aout=a.out;;
+  esac
+fi
+
+if [ "$abat " = " " ]; then
+  case $posixos in
+    cygwin|mingw)
+      abat=a.bat;;
+    *)
+      abat=a.out;;
+  esac
+fi
+
+if [ $posixos = "cygwin" ]; then
+  exe=".exe";
+  jshell="msdos";
+
+  if [ "$cygwindospath " = " " ]; then
+    cygwindospath=`$autoconfdir/cygwindospath`
+  fi
+
+  if [ "$cygwindospath " = " " ]; then
+    echo "*** ERROR:Can't find out where cygwin is installed."
+    echo "Run configure with the --cygwin-dos-path option."
+    exit 1
+  else
+    cygwindospath=`echo "$cygwindospath" | sed -e 's|/$||g'`
+    if [ ! -d $cygwindospath ]; then
+      echo "*** WARNING:Can't find cygwindospath \"$cygwindospath\""
+    fi
+    cygwindospath=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'`
+
+    zipdir=`echo $zipdir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
+    zipdir=`echo $zipdir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
+    zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g'`
+    zipdir=`echo $zipdir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
+    syszipdir=$zipdir
+    syszipdirstr=`echo $syszipdir | sed -e 's|\\\\|\\\\\\\\|g'`
+
+    dlldir=`echo $dlldir | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`
+    dlldir=`echo $dlldir | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`
+    dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g'`
+    dlldir=`echo $dlldir | sed -e 's/\([^\\\\]\)\\\\\([^\\\\]\)/\1\\\\\\\\\2/g'`
+    sysdlldir=$dlldir
+    sysdlldirstr=`echo $sysdlldir | sed -e 's|\\\\|\\\\\\\\|g'`
+  fi
+elif [ "$posixos" = "mingw" ]; then
+  exe=".exe"
+  os="win32"
+  ld="gcc"
+  ldlibs=""
+  ldcomplibs=""
+  ldflags="$ldflags -Wl,--enable-runtime-pseudo-reloc"  
+  havedlopen=1
+  dlopen=""
+  cflags="$cflags -mthreads -D_MINGW_VER"
+  sharedsuffix="dll"
+  sharedlibraryclosed=yes
+  extralibs="$extralibs -Wl,--stack,8000000"
+  extragclibs=""
+else
+  case `uname -s` in
+    Darwin*|darwin*)
+      sharedlibraryclosed=yes;;
+    *)
+      ;;
+  esac;
+
+  syszipdir=$zipdir
+  syszipdirstr=$zipdir
+  sysdlldir=$dlldir
+  sysdlldirstr=$dlldir
+fi
+
+#*---------------------------------------------------------------------*/
+#*    all action                                                       */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" ]; then
+  if [ ! -d bin ]; then
+     mkdir bin || exit 3
+  fi
+  if [ ! -d lib ]; then
+     mkdir lib || exit 3
+  fi
+  if [ ! -d lib/$release ]; then
+     mkdir lib/$release || exit 3
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Finding a user name                                              */
+#*---------------------------------------------------------------------*/
+user=`$autoconfdir/user --posixos=$posixos`
+
+#*---------------------------------------------------------------------*/
+#*    Testing C compiler                                               */
+#*---------------------------------------------------------------------*/
+if [ "$cc " = " " ]; then
+   $autoconfdir/cctest --cc="gcc" --user=$user --tmp=$tmp
+   if [ $? != "0" ]; then
+     $autoconfdir/cctest --cc="cc" --user=$user --tmp=$tmp
+     if [ $? != "0" ]; then
+       echo "*** ERROR:configure:Can't configure a C compiler. Aborting";
+     else
+       cc=cc;
+     fi
+   else
+     cc=gcc
+   fi
+else  
+  $autoconfdir/cctest --cc="$cc" --user=$user --tmp=$tmp
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:the C compiler ($cc) does not seem to work. Aborting";
+    exit 1;
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Multi-threading                                                  */
+#*---------------------------------------------------------------------*/
+if [ "$threadsupport " = "no " ]; then
+   pthreadlibs=no;
+fi
+
+# Does the system supports threads
+if [ "$gcthread " = " " ]; then
+   gcthread=`$autoconfdir/thread --user=$user --tmp=$tmp --cc="$cc" --cflags="$cgcfinalflags" --posixos="$posixos"`;
+fi
+
+# find out the C library for posix threads
+if [ "$pthreadlibs " = " " ]; then
+   pthreadlibs=`$autoconfdir/pthread --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos"`;
+fi
+
+# pthread_mutex_timedlock
+if [ "$pthreadlibs" != "no" ]; then
+   pthreadtimedlock=`$autoconfdir/pthreadlock --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib="$pthreadlibs"`;
+fi
+
+#*---------------------------------------------------------------------*/
+#*    MacOSX auto-detection                                            */
+#*---------------------------------------------------------------------*/
+if [ "$macosx " = "auto " ]; then
+  autoconf/macosx --cc="$cc" --posixos="$posixos"
+  macosx=$?
+
+  if [ "$macosx" = "0" ]; then
+    if [ "$ld" = "ld" \
+       -a "$ldopt " = " " \
+       -a "$sharedsuffix" = "so" \
+       -a "$ldlibs" = "-lc" \
+       -a "$ldflags " = " " ]; then
+      echo "MacOS X tuning enabled";
+      if [ $mode != benchmark -a $pthreadlibs != "no" ]; then
+        if [ "$threadsupport " = "yes " ]; then
+          echo "*** WARNING: multi-threading is lame on MacOS X"
+          echo "You have however, enabled multi-threading support."
+          echo "If you experience problems, please re-configure without"
+          echo "multi-threading support and re-install Bigloo."
+          customgclib=bigloogc_fth;
+          extralibs="$extralibs $pthreadlibs";
+          ldcomplibs="-lc \$(GCCLOSELIB) $pthreadlibs -lc";
+        else
+          threadsupport=no;
+          pthreadlibs=no;
+          ldcomplibs="-lc \$(GCCLOSELIB) -lc";
+        fi
+      fi
+      if [ `dirname $bindir` != `dirname $libdir` ]; then
+          echo "*** ERROR: on MacOS X, bindir and libdir must have a";
+          echo "common parent directory. Please re-configure accordingly";
+          exit 1;
+      fi
+      
+      ld=gcc;
+      ldopt="";
+      ldinstallname="-install_name";
+      sharedsuffix="dylib";
+      ldlibs="-lc \$(GCCLOSELIB) -lbigloo_s-$release -lc";
+      sharedcompiler=yes;
+      sharedbde=yes;
+      ldflags="$ldflags -dynamiclib -single_module";
+      tuning="MacOS X"
+    fi
+  fi
+fi
+
+if [ "$tuning " = "MacOS X " ]; then
+  if [ ! -d lib/bigloo ]; then
+    (cd lib && ln -s . bigloo) || exit 3
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    cgcflags                                                         */
+#*---------------------------------------------------------------------*/
+cgcflags=`$autoconfdir/gcflags --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --posixos="$posixos"`;
+
+#*---------------------------------------------------------------------*/
+#*    If the operating system is win32 we have to turn the / into \ in */
+#*    path names                                                       */
+#*---------------------------------------------------------------------*/
+dirsep="/"
+if [ $os = "win32" ]; then
+  if [ "$posixos" != "mingw" ]; then
+      dirsep="\\"
+      bindir=`echo $bindir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      libdir=`echo $libdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      fildir=`echo $fildir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      zipdir=`echo $zipdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      dlldir=`echo $dlldir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      mandir=`echo $mandir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      infodir=`echo $infodir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      docdir=`echo $docdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+      lispdir=`echo $lispdir | sed -e 's/\//\\\\\\\\/g' | sed -e 's/[.]//g'`
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    We don't support shared libraries on cygwin yet.                 */
+#*---------------------------------------------------------------------*/
+if [ $posixos = "cygwin" ]; then
+  jvmrecettebootpath="-classpath \".;../lib/$release/bigloo_s.zip;objs_jvm\""
+  jvmapibootpath="\".;../../../../../lib/$release/bigloo_s.zip\""
+
+  gchaveblocking=0
+  ldopt="no-share"
+
+  if [ "$cygwindosjvm" = "yes" ]; then
+    jshell="msdos"
+  fi 
+  if [ "$cygwindosdotnet" = "yes" ]; then
+    dotnetshell="msdos"
+  fi
+elif [ $posixos = "mingw" ]; then
+    ldopt=-shared
+    gchaveblocking=0
+else
+  jvmrecettebootpath="-classpath \".:../lib/$release/bigloo_s.zip:objs_jvm\""
+  jvmapibootpath="\".:../../../../../lib/$release/bigloo_s.zip\""
+
+  case $dotnetldstyle in
+    pnet|mono) 
+      ;;      
+    *)
+      echo "*** Don't know how to link .NET application [" $dotnetldstyl "]";
+      exit 3;;
+  esac
+fi
+
+#*---------------------------------------------------------------------*/
+#*    gc custom                                                        */
+#*---------------------------------------------------------------------*/
+# We check the standard GC if we have to use one
+if [ "$customgc" = "no" ]; then
+   if [ "$gclibdir " = " " ]; then
+     gclibdir=/usr/lib;
+   fi
+   gclib=`$autoconfdir/gcstd --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags $lflags" --gcincdir="$stdgcincdir" --gclib="$stdgclib" --gclibdir="$gclibdir" --dlopen=$dlopen`
+   if [ $? != "0" ]; then
+      echo "*** ERROR:configure:Standard GC. Aborting";
+      echo "You are trying to configure Bigloo so that it uses an existing"
+      echo "GC library. The configuration script is enable to make this"
+      echo "library working properly."
+      echo "Try to configure Bigloo with \"--customgc=yes\"."
+      exit 1;
+   fi
+   gcincdir=$stdgcincdir
+   gcversionincdir=stdgcincdir
+else
+   gclib=$customgclib;
+   gcversionincdir=gc-boehm
+
+   # detect if we are using maemo for an ARM emulation
+   $autoconfdir/maemo.arm --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags"
+
+   if [ $? == "1" ]; then
+     cgcflags="$cgcflags -DQEMU"
+   fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    gc version detection                                             */
+#*---------------------------------------------------------------------*/
+if [ "$gcversion " = " " ]; then
+  gcversion=`$autoconfdir/gcversion --cc="$cc" --gcincdir=$gcversionincdir --cflags="$lflags"`
+
+  if [ "$gcversion" -le "000" ]; then
+    if [ `$autoconfdir/gchavedoblocking --gclib="$stdgclib" --gclibdir="$gclibdir" --cflags="$lflags"` = "yes" ]; then
+      gchavedoblocking=1
+    elif [ `$autoconfdir/gchavestartblocking --gclib="$stdgclib" --gclibdir="$gclibdir" --cflags="$lflags"` = "yes" ]; then
+      gchaveblocking=1
+    fi
+  else
+    if [ "$os " != "win32" -a $posixos != "cygwin" ]; then
+      if [ "$gcversion" -lt "700" ]; then
+        gchaveblocking=1
+      fi
+      if [ "$gcversion" -ge "700" ]; then
+        gchavedoblocking=1
+      fi
+    fi
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Benchmark mode                                                   */
+#*---------------------------------------------------------------------*/
+if [ "$mode" = "benchmark" ]; then
+  ccprefix="`echo $cc | sed 's/[0-9]*//g'`"  # remove version numbers
+  case $hardtune in
+    i586|i686)
+      if [ "$ccprefix" = "gcc" ]; then
+        coflags="$coflags -march=$hardtune -mcpu=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
+      fi
+      gcspecial=-DDONT_ADD_BYTE_AT_END;;
+        
+    pentium3|pentium4)
+      if [ "$ccprefix" = "gcc" ]; then
+        coflags="$coflags -march=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
+      fi 
+      gcspecial="-DUSE_I686_PREFETCH -DDONT_ADD_BYTE_AT_END";;
+        
+    athlon|athlon-mp|athlon-tbird|athlon-xp)
+      if [ "$ccprefix" = "gcc" ]; then
+        coflags="$coflags -march=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
+      fi
+      gcspecial="-DUSE_3DNOW_PREFETCH -DDONT_ADD_BYTE_AT_END";;
+
+    k6-2|k6-3)
+      if [ "$ccprefix" = "gcc" ]; then
+        coflags="$coflags -march=$hardtune -mpreferred-stack-boundary=2 -fomit-frame-pointer -fschedule-insns2 -ffast-math";
+      fi
+      gcspecial="-DUSE_3DNOW_PREFETCH -DDONT_ADD_BYTE_AT_END";;
+  esac
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Testing stack size                                               */
+#*---------------------------------------------------------------------*/
+if [ $posixos != "cygwin" ]; then
+  if [ "$posixos" != "mingw" ]; then
+    if [ ! "$stacksizerequired" = "0" ]; then
+      $autoconfdir/stacksize --cc="$cc" --user=$user --tmp=$tmp --stacksize=$stacksizerequired 2> /dev/null
+      if [ $? != "0" ]; then
+        echo "*** ERROR:configure:the execution stack is too small.";
+        echo ""
+        echo "Bigloo REQUIRES a larger stack (it needs a stack of about $stacksizerequired MB to compile).";
+        echo "In general, it is possible to adjust the stack size by the means of";
+        echo "a shell command.";
+        echo "On most Unix systems, it is frequently called \"ulimit\" or \"unlimit\".";
+        echo "For instance, with Bash you should try \"ulimit -s 4096\"."
+        echo "With Zsh, try \"unlimit\"."
+        echo ""
+        echo "Another solution, if you know what you are doing,";
+        echo "is to use the configure option \"--stack-check=no\". This will";
+        echo "simply, disable stack size checking.";
+        exit 1;
+      fi
+    fi
+  fi
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Emacs configuration                                              */
+#*---------------------------------------------------------------------*/
+if [ "$emacs " = " " ]; then
+  emacs=emacs
+  emacsversion=`$autoconfdir/emacsbrand --emacs=emacs 2> /dev/null`
+  if [ "$emacsversion" = "false" ]; then
+    emacs=xemacs
+    emacsversion=`$autoconfdir/emacsbrand --emacs=xemacs 2> /dev/null`
+  fi
+else
+  emacsversion=`$autoconfdir/emacsbrand --emacs=$emacs 2> /dev/null`
+fi
+
+if [ "$emacsversion" != "false" ]; then
+  if [ "$lispdir " = " " ]; then
+    emacslisppath=`$autoconfdir/emacslisppath --emacs=$emacs 2> /dev/null`
+  else
+    emacslisppath=`$autoconfdir/emacslisppath --emacs=$emacs --path=$lispdir 2> /dev/null`
+  fi
+  if [ "$emacslisppath" = "" ]; then
+    emacsversion="false";
+  fi
+else
+  emacslisppath=""
+fi
+
+#*---------------------------------------------------------------------*/
+#*    OpenSSL                                                          */
+#*---------------------------------------------------------------------*/
+# find out the C library for openssl
+if [ "$openssllibs " = " " ]; then
+   openssllibs=`$autoconfdir/openssl --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos"`;
+else
+   openssllibs=`$autoconfdir/openssl --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib=$openssllibs`;
+fi
+
+if [ "$openssllibs" != "no" ]; then
+  openssldtls=`$autoconfdir/openssl-dtls --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lib="$openssllibs"`;
+fi
+
+#*---------------------------------------------------------------------*/
+#*    sqlite                                                           */
+#*---------------------------------------------------------------------*/
+# find out the C library for sqlite
+if [ "$sqlitelibs " = " " ]; then
+   sqlitelibs=`$autoconfdir/sqlite --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --posixos="$posixos"`;
+fi
+
+#*---------------------------------------------------------------------*/
+#*    dbus                                                             */
+#*---------------------------------------------------------------------*/
+# find out the C library for dbus
+if [ "$dbuslibs " = " " ]; then
+   dbuslibs=`$autoconfdir/dbus --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos"`;
+fi
+
+#*---------------------------------------------------------------------*/
+#*    bigloo_config.h / configure.java / configure.cs / ...            */
+#*    -------------------------------------------------------------    */
+#*    This part of the configure script produces the files             */
+#*    runtime/Include/bigloo_config.h, runtime/Jlib/configure.java and */
+#*    runtime/CSlib/configure.cs. These files contain all the machine- */
+#*    dependant information used by Bigloo.                            */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" -o $action = "bigloo_config" ]; then
+
+  # Tell what we are doing
+  echo "Configuring $bigloo_config_h, $bigloo_config_jvm, $bigloo_config_dotnet:"
+
+  # The pointer alignment
+  alignment=`$autoconfdir/alignment --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:alignment. Aborting";
+    exit 1;
+  else
+    echo "   log2 ptr alignment: " $alignment
+  fi
+
+  # The -O C compiler options
+  coflags=`$autoconfdir/ccoptim --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags" --posixos="$posixos"`
+
+  # The -s C linker options
+  if [ "$cstrip" != "no" ]; then
+    csflags=`$autoconfdir/ccstrip --user=$user --tmp=$tmp --cc="$cc" --cflags="$cstrip"`;
+  else
+    csflags="";
+  fi
+
+  # The -p C compiler options
+  cpflags=`$autoconfdir/ccprof --user=$user --tmp=$tmp --cc="$cc"`
+
+  # The stack direction
+  stackgrows=`$autoconfdir/stackdown --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:stack. Aborting";
+    exit 1;
+  else
+    if [ "$stackgrows" = "1" ]; then
+      echo "   stack grows: down"
+    else
+      echo "   stack grows: up"
+    fi
+  fi
+
+  # stdint
+  stdint=`$autoconfdir/stdint --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$stdint" = "1" ]; then
+    echo "   stdint: yes"
+  else
+    echo "   stdint: no"
+    stdlibint=`$autoconfdir/stdlibint --user=$user --tmp=$tmp --cc="$cc"`
+    if [ "$stdlibint" = "1" ]; then
+      echo "   stdlibint: yes"
+    else
+      echo "   stdlibint: no"
+    fi
+  fi
+
+  # unistdint
+  if [ "$unistding " = " " ]; then
+    unistdint=`$autoconfdir/unistdint --user=$user --tmp=$tmp --cc="$cc"`
+    if [ "$unistdint" = "1" ]; then
+      echo "   unistdint: yes"
+    else
+      echo "   unistdint: no"
+    fi
+  fi
+
+  # setjmp/longjmp
+  if [ "$posixos" = "cygwin" ]; then
+    prefix="_";
+  else
+    prefix=`$autoconfdir/setjmp --user=$user --tmp=$tmp --cc="$cc"`
+    if [ $? != "0" ]; then
+      echo "*** ERROR:configure:setjmp. Aborting";
+      exit 1;
+    fi
+  fi
+
+  setjmp="$prefix"setjmp
+  longjmp="$prefix"longjmp
+
+  echo "   setjmp: $setjmp longjmp: $longjmp"
+
+  if [ "$prefix" = "sig" ]; then
+    setjmp="sigsetjmp(__jb,1)";
+    jmpbuf=sigjmp_buf
+  else
+    setjmp="$setjmp(__jb)";
+    jmpbuf=jmp_buf
+  fi
+
+  # Does the system have bcopy?
+  bcopy=`$autoconfdir/bcopy --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:bcopy. Aborting";
+    exit 1;
+  else
+    if [ "$bcopy" = "1" ]; then
+      echo "   bcopy: yes"
+      havebcopy=1
+    else
+      echo "   bcopy: no"
+      havebcopy=0
+    fi
+  fi
+
+  # The number of window register
+  window=`$autoconfdir/winreg --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:winreg. Aborting";
+    exit 1;
+  else
+    echo "   nb register windows: " $window
+  fi
+
+  # Does the system have sigpipe?
+  sigpipe=`$autoconfdir/sigpipe --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:sigpipe. Aborting";
+    exit 1;
+  else
+    if [ "$sigpipe" = "0" ]; then
+      echo "   sigpipe: no"
+    else
+      echo "   sigpipe: yes"
+    fi
+  fi
+
+  # Does the system have sigsetmask?
+  sigsetmask=`$autoconfdir/sigsetmask --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:sigsetmask. Aborting";
+    exit 1;
+  else
+    if [ "$sigsetmask" = "0" ]; then
+      echo "   sigsetmask: no"
+    else
+      echo "   sigsetmask: yes"
+    fi
+  fi
+
+  # Does the system have sigprocmask?
+  sigprocmask=`$autoconfdir/sigprocmask --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:sigprocmask. Aborting";
+    exit 1;
+  else
+    if [ $sigprocmask = "0" ]; then
+      echo "   sigprocmask: no"
+    else
+      echo "   sigprocmask: yes"
+    fi
+  fi
+
+  # A warning if neither sigsetmask nor sigprocmask is defined
+  if( test $sigsetmask = "0" -a $sigprocmask = "0"); then
+    echo "*** WARNING:sigsetmask nor sigprocmask available"
+    echo "(^C disabled in the interpreter)."
+  fi
+
+  # Does the system have alloca?
+  alloca=`$autoconfdir/alloca --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:alloca. Aborting";
+    exit 1;
+  else
+    if [ $alloca = "1" ]; then
+      echo "   alloca: yes"
+    else
+      echo "   alloca: no"
+    fi
+  fi
+
+  # Does the system have mmap?
+  mmap=`$autoconfdir/mmap --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:mmap. Aborting";
+    exit 1;
+  else
+    if [ $mmap = "1" ]; then
+      echo "   mmap: yes"
+    else
+      echo "   mmap: no"
+    fi
+  fi
+
+  # Does the system have getcwd?
+  getcwd=`$autoconfdir/getcwd --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:getcwd. Aborting";
+     exit 1;
+  else
+    if [ $getcwd = "0" ]; then
+      echo "   getcwd: no"
+    else
+      echo "   getcwd: yes"
+    fi
+  fi
+
+  # Does the system have getwd?
+  getwd=`$autoconfdir/getwd --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:getwd. Aborting";
+    exit 1;
+  else
+    if [ $getwd = "0" ]; then
+      echo "   getwd: no"
+    else
+      echo "   getwd: yes"
+    fi
+  fi
+
+  # Where to find the socket api
+  socket=`$autoconfdir/socket --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:socket. Aborting";
+     exit 1;
+  fi
+
+  socklen=`$autoconfdir/socklen --user=$user --tmp=$tmp --cc="$cc" --lib="$socketlibs"`
+
+  if [ "$socket " = " " ]; then
+    echo "   socket: yes"
+  else
+    echo "   socket: $socket"
+    extralibs="$socket $extralibs"
+  fi
+
+  # Are the static constants aligned?
+  cnstalign=`$autoconfdir/cnstalign --user=$user --tmp=$tmp --cc="$cc" --alignment=$alignment`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:cnstalign. Aborting";
+     exit 1;
+  fi
+
+  enforcedcnstalign=`$autoconfdir/enforcedcnstalign --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:enforcedcnstalign. Aborting";
+     exit 1;
+  else
+    if [ "$cnstalign" = "1" ]; then
+      echo "   constant alignment: ok"
+    elif [ "$enforcedcnstalign" = "1" ]; then
+      echo "   constant alignment: enforced"
+    else
+      echo "*** ERROR:configure:illegal alignment."
+      echo "It is then impossible install Bigloo on this architecture, sorry."
+      exit 1
+    fi
+  fi
+
+  # Endianness
+  endian=`$autoconfdir/bigendian --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$endian" = "1" ]; then
+    echo "   Endianness: big"
+  else
+    echo "   Endianness: little"
+  fi
+
+  # Does this system implements pipe?
+  pipe=`$autoconfdir/pipe --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:pipe. Aborting";
+    exit 1;
+  else
+    if [ "$pipe" = "0" ]; then
+      echo "   popen/pclose: no"
+    else
+      echo "   popen/pclose: yes"
+    fi
+  fi
+
+  # Does this compiler implements labs? 
+  # llabs=`$autoconfdir/labs --user=$user --tmp=$tmp --cc="$cc"`
+  # SE: fix, 27 oct 2006
+  labs=`$autoconfdir/labs --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$labs " != " " ]; then
+    echo "   labs: yes [$labs]"
+    have_labs=1
+  else
+    echo "   labs: no"
+    have_labs=0
+    labs=abs
+  fi
+
+  # Does this compiler implements longlong?
+  longlong=`$autoconfdir/longlong --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
+
+  echo "#undef BGL_LONGLONG_T" >> $bigloo_config_h
+  if [ "$longlong " = " " ]; then
+    echo "   long long: no"
+    longlong=long
+    have_llabs=0
+    llabs=abs
+    have_strtoll=0
+    strtoll=strtol
+    have_strtoull=0
+    strtoull=0
+  else
+    llabs=`$autoconfdir/llabs --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
+    strtoll=`$autoconfdir/strtoll --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
+    strtoull=`$autoconfdir/strtoull --user=$user --tmp=$tmp --cc="$cc" --longlong="$longlong"`
+    echo "   long long: yes [$longlong]"
+    if [ "$llabs " != " " ]; then
+      echo "   llabs: yes [$llabs]"
+      have_llabs=1
+    else
+      echo "   llabs: no"
+      have_llabs=0
+      llabs=abs
+    fi
+    if [ "$strtoll " != " " ]; then
+      echo "   strtoll: yes [$strtoll]"
+      have_strtoll=1
+    else
+      echo "   strtoll: no"
+      have_strtoll=0
+      strtoll="bgl_strtoll"
+    fi
+    if [ "$strtoull " != " " ]; then
+      echo "   strtoull: yes [$strtoull]"
+      have_strtoull=1
+    else
+      echo "   strtoull: no"
+      have_strtoull=0
+      strtoull="bgl_strtoull"
+    fi
+  fi
+
+  # Is sigchld available for us
+  sigchld=`$autoconfdir/sigchld --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:sigchld. Aborting";
+     exit 1;
+  else
+    if [ "$sigchld" = "1" ]; then
+      echo "   sigchld: yes"
+    else
+      sigchld=0
+      echo "   sigchld: no"
+    fi
+  fi
+  
+  # Is sigaction available
+  sigaction=`$autoconfdir/sigaction --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:sigaction. Aborting";
+    exit 1;
+  else
+    if [ "$sigaction" = "1" ]; then
+      echo "   sigaction: yes"
+    else
+      echo "   sigaction: no"
+    fi
+  fi
+  
+  # Is select available
+  select=`$autoconfdir/select --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$select" = "1" ]; then
+    echo "   select: yes"
+  else
+    echo "   select: no"
+  fi
+  
+  # Is fcntl available
+  fcntl=`$autoconfdir/fcntl --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$fcntl" = "1" ]; then
+    echo "   fcntl: yes"
+  else
+    echo "   fcntl: no"
+  fi
+  
+  # Is termio available
+  termio=`$autoconfdir/termio --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:termio. Aborting";
+     exit 1;
+  else
+    if [ "$termio" = "1" ]; then
+      echo "   termio: yes"
+    else
+      echo "   termio: no"
+    fi
+  fi
+  
+  # Is termio available
+  termios=`$autoconfdir/termios --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:termios. Aborting";
+     exit 1;
+  else
+    if [ "$termios" = "1" ]; then
+      echo "   termios: yes"
+    else
+      echo "   termios: no"
+    fi
+  fi
+  
+  # Does the system support posix-file-ops
+  posixfileops=`$autoconfdir/posixfileops --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$posixfileops" = "1" ]; then
+    echo "   posix file operations: yes"
+  else
+    echo "   posix file operations: no"
+  fi
+
+  # Does the system support sendfile
+  sendfile=`$autoconfdir/sendfile --user=$user --tmp=$tmp --cc="$cc"`
+  if [ "$sendfile" = "1" ]; then
+    echo "   sendfile: yes"
+    sendfile_rif=1;
+    sendfile_ros=1;
+  else
+    echo "   sendfile: no"
+    sendfile_rif=0;
+    sendfile_ros=0;
+  fi
+
+  # Does the system support nanosleep
+  nanosleep=`$autoconfdir/sleep --user=$user --tmp=$tmp --cc="$cc" --cflags="-DBGL_NANOSLEEP"`
+  if [ "$nanosleep" = "1" ]; then
+    echo "   nanosleep: yes"
+  else
+    echo "   nanosleep: no"
+  fi
+
+  # Does the system support normalsleep
+  normalsleep=`$autoconfdir/sleep --user=$user --tmp=$tmp --cc="$cc" --cflags="-DBGL_SLEEP"`
+  if [ "$normalSleep" = "1" ]; then
+    echo "   normal sleep: yes"
+  else
+    echo "   normal sleep: no"
+  fi
+
+  # The timezone variable
+  timezone=`$autoconfdir/timezone --user=$user --tmp=$tmp --cc="$cc" --cflags="$coflags"`
+
+  # The -pic C compiler options
+  if [ "$cpicflags" = "no" ]; then
+    cpicflags=""
+  else
+    if [ "$ldopt" != "no-share" ]; then
+      if [ "$cpicflags" = "demanded" -o "$cpicflags " = " " ]; then
+        if [ "$cpicflags" = "demanded" ]; then
+          cpicflags=`$autoconfdir/ccpic --user=$user --tmp=$tmp --cc="$cc" --cflags="$cpicflags"`; 
+        else
+          cpicflags=`$autoconfdir/ccpic --user=$user --tmp=$tmp --cc="$cc" --cflags="$cpicflags"`
+        fi
+      fi
+    else
+      cpicflags=""
+    fi
+  fi
+
+  if [ "$cpicflags " = " " ]; then
+    cpicflags=-DBGL_NO_PIC;
+  fi
+
+  # The shared libraries
+  if [ "$ldopt" = "no-share" ]; then
+    echo "   shared library: no"
+    haveshlib=0
+  else
+    ldopt=`$autoconfdir/ldshare --user=$user --tmp=$tmp --cc="$cc" --ld="$ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"`
+    if [ "$ldopt" = "no-share" ]; then
+      ldopt=`$autoconfdir/ldshare --user=$user --tmp=$tmp --cc="$cc" --ld="ld" --ldopt="$ldopt" --ldlibs="$ldlibs" --cflags="$cpicflags" --sharedsuffix="$sharedsuffix"`
+    fi
+    if [ "$ldopt" = "no-share" ]; then
+      echo "   shared library: no (because I don't know ld option)"
+      haveshlib=0
+      cpicflags="-DBGL_NO_PIC"
+    else
+      echo "   shared library: yes"
+      haveshlib=1
+
+      ldpreload=`$autoconfdir/ldpreload --user=$user --tmp=$tmp --cc="$cc" --ld="$ld" --ldlibs="$ldlibs" --ldopt="$ldopt"`
+      echo "   ld preload: $ldpreload"
+    fi
+  fi
+
+  # Does the system have dlopen?
+  if [ "$ldopt " != "no-share" ]; then
+    if [ "$posixos" = "mingw" ]; then
+      echo  "   dlopen: yes (mingw)"
+      havedlopen=1
+      dlopen=""
+    else
+     dlopen=`$autoconfdir/dlopen --user=$user --tmp=$tmp --cc="$cc" --dlopt="$dlopenopt"`
+     if [ "$dlopen" != "0" ]; then
+       echo "   dlopen: yes [$dlopen]"
+       havedlopen=1
+       dlopen=$dlopen
+       extralibs="$dlopen $extralibs"
+     else
+       echo "   dlopen: no"
+       havedlopen=0
+       dlopen=""
+     fi
+    fi
+  else
+    echo "   dlopen: no"
+    havedlopen=0
+    dlopen=""
+  fi
+
+  # for now only the port is Unix
+  echo "   operating system: unix"
+  if [ "$posixos" = "mingw" ]; then
+     echo "     (well actually it's a win32 MinGW System ;-)"
+  fi
+  $autoconfdir/unix --user=$user --tmpdir=$tmpdir --posixos="$posixos" >> $bigloo_config_h
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:os. Aborting";
+    exit 1;
+  fi
+
+  # which shell to use
+  `$shell -c "ls -l > /dev/null 2> /dev/null"`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:$shell. Aborting";
+     exit 1;
+  fi
+
+  # the C compiler style
+  echo "   c compiler style: $ccstyle"
+  echo "   c compiler: $cc"
+  echo "   c flags: $cflags"
+  echo "   c compiler optimization: $coflags"
+  echo "   c linker strip: $csflags"
+
+  # the library files directory
+  echo "   library directory: $libdir"
+  echo "   files directory: $fildir"
+  echo "   GC library: $gclib"
+  if [ $customgc = "yes" ]; then
+    echo "   custom GC: yes"
+    isgccustom=1
+  else
+    echo "   custom GC: no"
+    isgccustom=0
+  fi
+
+  # the zip directory
+  echo "   zip directory: $syszipdir"
+
+  # the dll directory
+  echo "   dll directory: $sysdlldir"
+
+  # additionals non bigloo library
+  echo "   additional libraries: $extralibs"
+
+  # the C beautifier
+  if [ `$autoconfdir/indent --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --indent="$indent"` != "1" ]; then
+    echo "   c beautifier: no"
+    indent=
+  else
+    echo "   c beautifier: $indent"
+  fi
+
+  # the dirname command
+  dirname=`$autoconfdir/dirname --user=$user --tmp=$tmp --cc="$cc" --cflags="$cflags" --dirname="$dirname"`
+  echo "   dirname: $dirname"
+
+  # library basename
+  echo "   library basename: $libraryname"
+
+  # double precision
+  prec=`$autoconfdir/doubleprec --user=$user --tmp=$tmp --cc="$cc"`
+  if [ $? != "0" ]; then
+    echo "*** ERROR:configure:doubleprec. Aborting";
+    exit 1;
+  else
+    echo "   double precision: $prec"
+  fi
+
+  # static link additional option
+  ldstaticopt=`$autoconfdir/ldstaticopt --user=$user --tmp=$tmp --posixos="$posixos"`
+
+  # shared link additional option
+  ldsharedopt=`$autoconfdir/ldsharedopt --user=$user --tmp=$tmp $libdir  --cc="$cc" --posixos="$posixos"`
+
+  # bdb configuration
+  if [ "$bee" = "partial" ]; then
+    echo "   bdb library installation: no"
+    havebdb=0
+  else
+    echo "   bdb library installation: yes"
+    havebdb=1
+  fi
+
+  # Java configuration
+  if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
+    if [ "$jshell" != "sh" ]; then
+       if [ "$jshell" != "msdos" ]; then
+          echo "*** ERROR:configure:Illegal Java shell \"$jshell\" (should be either \"sh\" or \"msdos\")";
+          exit 3
+       fi
+    fi
+
+    if [ "$jvmbackend" = "yes" ]; then
+      if [ "$posixos" = "cygwin" -a "$cygwindosjvm" = "yes" ]; then
+        cpsep=";";
+      else
+        cpsep=":";
+      fi
+      $autoconfdir/javatest --java=$java \
+                            --jflags=$jflags \
+                            --jvflags=$jvflags \
+                            --javac=$javac \
+                            --jcflags=$jcflags \
+                            --user=$user \
+                            --tmp=$tmp \
+                            --cpsep="$cpsep"
+
+      if [ $? = 0 ]; then
+        echo "   java: yes"
+      else
+        echo "   java: no"
+        echo "*** ERROR:configure:Can't configure Java."
+        echo "Command:"
+        echo "$autoconfdir/javatest --java=$java --jflags=$jflags --jvflags=$jvflags --javac=$javac --jcflags=$jcflags --user=$user --tmp=$tmp --cpsep=\"$cpsep\""
+        echo "failed unexpectedly (see $configurelog for details)."
+        echo ""
+        echo "To give up with the JVM backend, use:"
+        echo "  ./configure --jvm=no"
+        exit 3
+      fi
+    fi
+    java_configured=yes
+    java_version=`$javac -version 2>&1 | head -n 1`
+    if echo "$java_version" | grep "1.6" > /dev/null
+        then java_version=1.6
+    elif echo "$java_version" | grep "1.5" > /dev/null
+        then java_version=1.5
+    elif echo "$java_version" | grep "1.4" > /dev/null
+        then java_version=1.4
+    else
+        java_version=1.3
+    fi
+  else
+    java=java
+    jflags=
+    jvflags=
+    jshell=sh
+    jar=
+  fi
+
+  # .NET configuration
+  if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
+    echo "   dotnet: yes"
+    if [ "$dotnetshell" != "sh" ]; then
+       if [ "$dotnetshell" != "msdos" ]; then
+          echo "*** ERROR:configure:Illegal .NET shell \"$dotnetshell\" (should be either \"sh\" or \"msdos\")";
+          exit 3
+       fi
+    fi
+
+    if [ "$dotnetbackend" = "yes" ]; then
+      if [ "$posixos" = "cygwin" -a "$cygwindosdotnet" = "yes" ]; then
+        cpsep=";";
+      else
+        cpsep=":";
+      fi
+      $autoconfdir/dotnettest --clr=$dotnetclr \
+                              --clropt="$dotnetclropt" \
+                              --clrld=$dotnetclrld \
+                              --cscc=$dotnetcscc \
+                              --user=$user \
+                              --tmp=$tmp \
+                              --cpsep="$cpsep"
+
+      if [ $? = 0 ]; then
+        echo "   .NET: yes"
+      else
+        echo "   .NET: no"
+        echo "*** ERROR:configure:Can't configure .NET. Command:"
+        echo "$autoconfdir/dotnettest --clr=$dotnetclr --clropt=$dotnetclropt --clrld=$dotnetclrld --cscc=$dotnetcscc --user=$user --tmp=$tmp --cpsep=\"$cpsep\""
+        echo "failed unexpectedly (see $configurelog for details)."
+        echo ""
+        echo "To give up with the .NET backend, use:"
+        echo "  ./configure --dotnet=no"
+        exit 3
+      fi
+    fi
+    dotnet_configured=yes
+
+  else
+    echo "   dotnet: no"
+    dotnetld=""
+    dotnetldstyle=""
+    dotnetclr=""
+    dotnetclrstyle=""
+    dotnetclropt=""
+    dotnetshell=""
+    dotnetasm=""
+  fi
+
+
+  # Posix Os
+  if eval uname > /dev/null 2> /dev/null; then
+    osname=`uname -s`
+    osarch=`uname -m`
+    osversion=`uname -r`
+
+    if [ "$posixos" = "mingw" ]; then
+      osclass="mingw"
+    else 
+      osclass="unix"
+    fi
+    
+    ostmp="$tmpdir"
+    
+    fileseparator="/"
+    
+    if [ "$posixos" = "mingw" ]; then
+      pathseparator=";"
+    else 
+      pathseparator=":"
+    fi
+
+    staticlibsuf="a"    
+    
+    ucs2displayable=0
+  else
+    osname="unknown"
+    osarch="unknown"
+    osversion="unknown"
+    ostmp="/tmp"
+    fileseparator="/"
+    pathseparator=":"
+    staticlibsuf="a"    
+    ucs2displayable=0
+  fi
+  
+  echo 
+
+  # bigloo_config_h, bigloo_config_jvm, bigloo_config_dotnet
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_dotnet; do
+    if [ "$p " != " " ]; then
+      rm -f $p 2> /dev/null
+      rel=`echo $release | sed -e "s|[.]|_|"`;
+      cat autoconf/`basename $p`.in \
+        | sed -e "s|@CONFIGURE@|Automatically generated file (don't edit), `date`|" \
+              -e "s|@BGL_RELEASE@|BGL_$rel|" \
+              -e "s|@BGL_RELEASE_NUMBER@|$release|" \
+              -e "s|@BGL_SPECIFIC_VERSION@|$specific|" \
+              -e "s|@BGL_DEFAULT_BACK_END@|$defaultbackend|" \
+              -e "s|@BGL_DEFAULT_A_OUT@|$aout|" \
+              -e "s|@BGL_DEFAULT_A_BAT@|$abat|" \
+              -e "s|@STACK_GROWS_DOWN@|$stackgrows|" \
+              -e "s|@PTR_ALIGNMENT@|$alignment|" \
+              -e "s|@HAVE_STDINT@|$stdint|" \
+              -e "s|@HAVE_STDLIBINT@|$stdlibint|" \
+              -e "s|@HAVE_UNISTDINT@|$unistdint|" \
+              -e "s|@SETJMP@|$setjmp|" \
+              -e "s|@JMP_BUF@|$jmpbuf|" \
+              -e "s|@LONGJMP@|$longjmp|" \
+              -e "s|@HAVE_BCOPY@|$havebcopy|" \
+              -e "s|@NB_WINDOW_REGISTER@|$window|" \
+              -e "s|@HAVE_SIGPIPE@|$sigpipe|" \
+              -e "s|@HAVE_SIGSETMASK@|$sigsetmask|" \
+              -e "s|@HAVE_SIGPROCMASK@|$sigprocmask|" \
+              -e "s|@HAVE_ALLOCA@|$alloca|" \
+              -e "s|@HAVE_MMAP@|$mmap|" \
+              -e "s|@HAVE_GETCWD@|$getcwd|" \
+              -e "s|@HAVE_GETWD@|$getwd|" \
+              -e "s|@CONSTANT_ALIGNED@|$cnstalign|" \
+              -e "s|@BGL_BIG_ENDIAN@|$endian|" \
+              -e "s|@HAVE_PIPE@|$pipe|" \
+              -e "s|@BGL_LONGLONG_T@|$longlong|" \
+              -e "s|@BGL_HAVE_LABS@|$have_labs|" \
+              -e "s|@BGL_LABS@|$labs|" \
+              -e "s|@BGL_HAVE_LLABS@|$have_llabs|" \
+              -e "s|@BGL_LLABS@|$llabs|" \
+              -e "s|@BGL_HAVE_STRTOLL@|$have_strtoll|" \
+              -e "s|@BGL_STRTOLL@|$strtoll|" \
+              -e "s|@BGL_HAVE_STRTOULL@|$have_strtoull|" \
+              -e "s|@BGL_STRTOULL@|$strtoull|" \
+              -e "s|@HAVE_SIGCHLD@|$sigchld|" \
+              -e "s|@HAVE_SIGACTION@|$sigaction|" \
+              -e "s|@BGL_HAVE_SELECT@|$select|" \
+              -e "s|@BGL_HAVE_FCNTL@|$fcntl|" \
+              -e "s|@HAVE_TERMIO@|$termio|" \
+              -e "s|@HAVE_TERMIOS@|$termios|" \
+              -e "s|@POSIX_FILE_OPS@|$posixfileops|" \
+              -e "s|@BGL_HAVE_SENDFILE@|$sendfile|" \
+              -e "s|@BGL_SENDFILE_REQUIRE_INPUT_FILE@|$sendfile_rif|" \
+              -e "s|@BGL_SENDFILE_REQUIRE_OUTPUT_SOCKET@|$sendfile_ros|" \
+              -e "s|@BGL_NANOSLEEP@|$nanosleep|" \
+              -e "s|@BGL_SLEEP@|$normalsleep|" \
+              -e "s|@BGL_TIMEZONE@|$timezone|" \
+              -e "s|@HAVE_SHARED_LIBRARY@|$haveshlib|" \
+              -e "s|@HAVE_DLOPEN@|$havedlopen|" \
+              -e "s|@DLOPEN_LD_OPT@|$dlopen|" \
+              -e "s|@HAVE_SOCKLEN@|$socklen|" \
+              -e "s|@BGL_HAVE_FINALIZER@|$gcfinalizer|" \
+              -e "s|@SHELL@|$shell|" \
+              -e "s|@C_COMPILER_STYLE@|$ccstyle|" \
+              -e "s|@C_COMPILER@|$cc|" \
+              -e "s|@C_FLAGS@|$cflags|" \
+              -e "s|@C_COMPILER_O_OPTION@|-o |" \
+              -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
+              -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
+              -e "s|@C_COMPILER_OPTIM_FLAGS@|$coflags $cflags|" \
+              -e "s|@C_STRIP_FLAGS@|$csflags|" \
+              -e "s|@C_LINKER_STYLE@|$ldstyle|" \
+              -e "s|@C_LINKER_O_OPTION@|-o |" \
+              -e "s|@C_LINKER_DEBUG_OPTION@|-g |" \
+              -e "s|@C_LINKER_OPTIM_FLAGS@||" \
+              -e "s|@C_PROFILE_FLAGS@|$cpflags $cflags|" \
+              -e "s|@C_STRING_SPLIT@|$stringsplit|" \
+              -e "s|@BGL_LD_LIBRARY_DIR@|$libdir|" \
+              -e "s|@BGL_NON_CUSTOM_GC_DIR@|$gclibdir|" \
+              -e "s|@LIBRARY_DIRECTORY@|$libdir$dirsep$fildir|" \
+              -e "s|@BGL_GC_LIBRARY@|$gclib|" \
+              -e "s|@BGL_GC_CUSTOM@|$isgccustom|" \
+              -e "s|@ZIP_DIRECTORY@|$syszipdirstr|" \
+              -e "s|@DLL_DIRECTORY@|$sysdlldirstr|" \
+              -e "s|@DNS_CACHE@|$dnscache|" \
+          | sed \
+              -e "s|@USER_LIBRARIES@|$extralibs|" \
+              -e "s|@C_BEAUTIFIER@|$indent|" \
+              -e "s|@DIRNAME_CMD@|$dirname|" \
+              -e "s|@LIBRARY_BASE_NAME@|$libraryname|" \
+              -e "s|@DOUBLE_PRECISION@|$prec|" \
+              -e "s|@ADDITIONAL_STATIC_LINK_OPTION@|$ldstaticopt|" \
+              -e "s|@ADDITIONAL_SHARED_LINK_OPTION@|$ldsharedopt|" \
+              -e "s|@BGL_HAVE_BIGLOO_ABORT@|0|" \
+              -e "s|@BGL_HAVE_BDB@|$havebdb|" \
+              -e "s|@BGL_JAVA@|$java|" \
+              -e "s|@BGL_JAVA_OPT@|$jflags|" \
+              -e "s|@BGL_JAVA_VOPT@|$jvflags|" \
+              -e "s|@BGL_JAR@|$jar|" \
+              -e "s|@BGL_JAVA_SHELL@|$jshell|" \
+              -e "s|@BGL_DOTNET_LD@|$dotnetld|" \
+              -e "s|@BGL_DOTNET_LD_STYLE@|$dotnetldstyle|" \
+              -e "s|@BGL_DOTNET_CLR@|$dotnetclr|" \
+              -e "s|@BGL_DOTNET_CLR_STYLE@|$dotnetclrstyle|" \
+              -e "s|@BGL_DOTNET_CLR_OPT@|$dotnetclropt|" \
+              -e "s|@BGL_DOTNET_SHELL@|$dotnetshell|" \
+              -e "s|@BGL_DOTNET_ASM@|$dotnetasm|" \
+              -e "s|@BGL_IMPORT@|extern|" \
+              -e "s|@BGL_EXPORTED_DECL@|extern|" \
+              -e "s|@BGL_EXPORTED_DEF@||" \
+              -e "s|@BGL_RUNTIME_DECL@|extern|" \
+              -e "s|@BGL_RUNTIME_DEF@||" \
+              -e "s|@OS_CLASS@|$osclass|" \
+              -e "s|@OS_NAME@|$osname|" \
+              -e "s|@OS_ARCH@|$osarch|" \
+              -e "s|@OS_VERSION@|$osversion|" \
+              -e "s|@OS_TMP@|$ostmp|" \
+              -e "s|@FILE_SEPARATOR@|$fileseparator|" \
+              -e "s|@PATH_SEPARATOR@|$pathseparator|" \
+              -e "s|@STATIC_LIB_SUFFIX@|$staticlibsuf|" \
+              -e "s|@SHARED_LIB_SUFFIX@|$sharedsuffix|" \
+              -e "s|@UCS2_DISPLAYABLE@|$ucs2displayable|" \
+              -e "s|@GC_HAVE_BLOCKING@|$gchaveblocking|" \
+              -e "s|@GC_HAVE_DO_BLOCKING@|$gchavedoblocking|" \
+              -e "s|@PTHREAD_HAVE_TIMEDLOCK@|$pthreadtimedlock|" \
+              -e "s|@BGL_HEAP_DEBUG_COPT@||" \
+        > $p
+    fi
+  done
+
+  # bigloo_h
+  cp runtime/Include/`basename $bigloo_h` $bigloo_h
+fi
+
+#*---------------------------------------------------------------------*/
+#*    bigloo_gc.h                                                      */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" -o $action = "bigloo_gc" ]; then
+  echo "Configuring $bigloo_gc_h"
+  echo "/* Generated file, don't edit */" > $bigloo_gc_h
+  cat autoconf/bigloo_gc.h.in \
+     | sed -e "s|@GC_VERSION@|$gcversion|" >> $bigloo_gc_h
+fi
+
+#*---------------------------------------------------------------------*/
+#*    bigloo_config.el                                                 */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" -o $action = "bigloo_config_el" ]; then
+  # Tell what we are doning
+  echo "Configuring $bigloo_config_el:"
+
+  rm -f $bigloo_config_el 2> /dev/null
+  echo ";; Automatically generated file (don't edit) */" > $bigloo_config_el
+  echo ";; `date`" >> $bigloo_config_el
+  echo "" >> $bigloo_config_el
+  echo "(provide 'bmacs-config)" >> $bigloo_config_el
+  echo "(defvar bmacs-docdir \"$docdir\")" >> $bigloo_config_el
+  echo "(defvar bmacs-lispdir \"$emacslisppath\")" >> $bigloo_config_el
+  echo ""
+fi
+  
+#*---------------------------------------------------------------------*/
+#*    Makefile.config                                                  */
+#*    -------------------------------------------------------------    */
+#*    This part of the configure script produces the file              */
+#*    Makefile.config. This file contains machine dependant            */
+#*    informations and location where Bigloo is to be installed.       */
+#*---------------------------------------------------------------------*/
+if [ $action = "all" -o $action = "Makefile.config" ]; then
+
+  # Tell what we are doning
+  echo "Configuring $makefile_cfg":
+
+  # We create an unexisting temporary file name
+  name=$tmp/foo
+  while( test -f "$name.s" -o -f "$name.o" ); do
+    name="$name"x;
+  done
+
+  # We first cleanup the file
+  rm -f $makefile_cfg 2> /dev/null
+  echo "# automatically generated, don't edit" > $makefile_cfg
+  echo "# `date`" >> $makefile_cfg
+  echo "" >> $makefile_cfg
+
+  # The Bigloo release number
+  echo "RELEASE=$release" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The tools
+  echo "AFILE_EXE=$afile" >> $makefile_cfg
+  echo "JFILE_EXE=$jfile" >> $makefile_cfg
+  echo "BTAGS_EXE=$btags" >> $makefile_cfg
+  echo "BDEPEND_EXE=$bdepend" >> $makefile_cfg
+  echo "BMAKE_EXE=$bmake" >> $makefile_cfg
+  echo "BPP_EXE=$bpp" >> $makefile_cfg
+  echo "BPROF_EXE=$bprof" >> $makefile_cfg
+  echo "MCO_EXE=$mco" >> $makefile_cfg
+  echo "JAS_EXE=$jas" >> $makefile_cfg
+  echo "BMEM_EXE=$bmem" >> $makefile_cfg
+  echo "BMEMRUN_EXE=$bmemrun" >> $makefile_cfg
+  echo "BDB_EXE=$bdb" >> $makefile_cfg
+  echo "BGLPKG_EXE=$bglpkg" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The OS
+  echo "POSIXOS=$posixos" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The rm command
+  echo "RM=/bin/rm" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The bee support
+  echo "INSTALLBEE=$bee" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The Boot directory
+  echo "BOOTDIR=$bootdir" >> $makefile_cfg
+  echo "BOOTBINDIR=$bootdir/bin" >> $makefile_cfg
+  echo "BOOTLIBDIR=$bootdir/lib/$release" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # Directories
+  echo "DESTDIR=" >> $makefile_cfg
+  echo "BINDIR=$bindir" >> $makefile_cfg
+  echo 'LIBDIR=$(DESTDIR)'"$libdir" >> $makefile_cfg
+  echo "FILDIR=$fildir" >> $makefile_cfg
+  echo 'ZIPDIR=$(DESTDIR)'"$zipdir" >> $makefile_cfg
+  echo 'SYSZIPDIR=$(DESTDIR)'"$syszipdir" >> $makefile_cfg
+  echo 'DLLDIR=$(DESTDIR)'"$dlldir" >> $makefile_cfg
+  echo 'SYSDLLDIR=$(DESTDIR)'"$sysdlldir" >> $makefile_cfg
+  echo 'MANDIR=$(DESTDIR)'"$mandir" >> $makefile_cfg
+  echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg
+  echo 'DOCDIR=$(DESTDIR)'"$docdir" >> $makefile_cfg
+  echo "TMP=$tmp" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # Native backend
+  echo "NATIVEBACKEND=$nativebackend" >> $makefile_cfg
+
+  # The basename
+  echo "LIBRARYNAME=$libraryname" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The C compiler
+  if [ "$bigloo " = " " ]; then
+    echo "BIGLOO=$""(BOOTBINDIR)/bigloo" >> $makefile_cfg
+  else
+    echo "BIGLOO=$bigloo" >> $makefile_cfg
+  fi
+  echo "CC=$cc" >> $makefile_cfg
+  echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
+  echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
+  echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
+  echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
+  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial" >> $makefile_cfg
+  echo "EXTRALIBS=$extralibs" >> $makefile_cfg
+  echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
+  echo "CLOSELIBS= # always empty, does not contain GC, override by makefiles" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The GC library
+  echo "   GC dir: $gcincdir"
+  echo "GCLIB=$gclib" >> $makefile_cfg
+  if [ $customgc = "yes" ]; then
+     echo "GCCUSTOM=yes" >> $makefile_cfg
+     echo 'GCDIR=$(BOOTDIR)/gc-boehm' >> $makefile_cfg
+     echo 'GCINCLUDE=-I$(GCDIR) -I$(GCDIR)/include -I$(GCDIR)/include/private' >> $makefile_cfg
+     echo 'GCCLOSELIB=-l$(GCLIB)-$(RELEASE)' >> $makefile_cfg
+     echo "C_GCSTD=" >> $makefile_cfg
+  else
+     echo "GCCUSTOM=no" >> $makefile_cfg
+     echo "GCDIR=$gcincdir" >> $makefile_cfg
+     echo 'GCINCLUDE=-I$(GCDIR) -I$(GCDIR)/private' >> $makefile_cfg
+     echo 'GCCLOSELIB=-l$(GCLIB)' >> $makefile_cfg
+     echo "C_GCSTD=Clib/non-inline-alloc.c" >> $makefile_cfg
+     echo "GCLIBDIR=$gclibdir" >>  $makefile_cfg
+  fi
+  echo >> $makefile_cfg
+
+  # additional bigloo compiler link flags (some architecture such as AIX
+  # require a special to link huge executable)
+  lflags=`$autoconfdir/ldextraopt --user=$user --tmp=$tmp --cc="$cc" --posixos="$posixos" --lflags="$lflags"`
+  rflags=`$autoconfdir/rdynamic --user=$user --tmp=$tmp --cc="$cc" --rflags="-rdynamic"`
+
+  echo "EXTRA_LD_OPT=$lflags $rflags" >> $makefile_cfg
+  if [ $sharedcompiler = "yes" ]; then
+     echo "SHRD_COMP=yes" >> $makefile_cfg;
+  else
+     echo "SHRD_COMP=no" >> $makefile_cfg;
+  fi
+
+  if [ $sharedbde = "yes" ]; then
+     echo "SHRD_BDE_OPT=" >> $makefile_cfg;
+  else
+     echo "SHRD_BDE_OPT=-static-bigloo" >> $makefile_cfg;
+  fi
+
+  # Executable suffix
+  echo "EXE_SUFFIX=$exe" >> $makefile_cfg;
+
+  # The assembler
+  echo "   checking $as"
+  as=`$autoconfdir/ascpp --user=$user --tmp=$tmp -as="$as" -cc="$cc" --name=$name`
+  if [ $? != "0" ]; then
+     echo "*** ERROR:configure:as. Aborting";
+     exit 1;
+  fi
+
+  if [ "$as " = " " ]; then
+    echo "*** ERROR:configure:$as:can't find as that invokes cpp,";
+    echo "set as variable."
+    rm -f $name.s $name.o
+    exit 1;
+  else
+    echo "AS=$as" >> $makefile_cfg
+  fi
+  echo >> $makefile_cfg
+
+  # Ar checking
+  echo "   checking $ar $arflags"
+
+  (cd $tmp;
+   compile="$ar $arflags $name.a $name.o > /dev/null 2> /dev/null";
+   if eval $compile; then
+     /bin/rm -f $name.s $name.o $name.a
+   else
+      arflags="-q -c";
+      compile="$ar $arflags $name.a $name.o > /dev/null 2> /dev/null";
+      if eval $compile; then
+        /bin/rm -f $name.s $name.o $name.a
+      else
+        echo "*** ERROR:configure:ar:Can't automatically setup ar flags";
+        echo "Please, set ar flags up inside ./configure";
+        /bin/rm -f $name.s $name.o $name.a;
+        exit 1
+      fi
+   fi) || exit $*
+  echo "AR=$ar" >> $makefile_cfg
+  echo "ARFLAGS=$arflags" >> $makefile_cfg
+
+  # Does the system require ranlib?
+  if( test `$autoconfdir/ranlib --user=$user --tmp=$tmp --cc="$cc"` = "0" ); then
+     echo "   ranlib: no"
+     echo "RANLIB=true" >> $makefile_cfg
+  else
+     echo "   ranlib: yes"
+     echo "RANLIB=ranlib" >> $makefile_cfg
+  fi
+
+  # The shared libraries
+  if [ "$ldopt" = "no-share" ]; then
+    echo "SHAREDLIBRARYSUPPORT=no" >> $makefile_cfg
+    echo "LD=true# (true means no dynamic library)" >> $makefile_cfg
+    echo "LDPRELOADSUPPORT=no" >> $makefile_cfg
+
+    echo "LDSONAME=" >> $makefile_cfg
+    echo "LDINSTALLNAME=$ldinstallname" >> $makefile_cfg
+  else
+    echo "SHAREDLIBRARYSUPPORT=yes" >> $makefile_cfg
+    echo "SHAREDLIBRARYCLOSED=$sharedlibraryclosed" >> $makefile_cfg
+    echo "LD=$ld $ldopt" >> $makefile_cfg
+    echo "LDFLAGS=$ldflags" >> $makefile_cfg
+    echo "LDLIBS=$ldlibs" >> $makefile_cfg
+    echo "LDCOMPLIBS=$ldcomplibs" >> $makefile_cfg
+    echo "LDPRELOADSUPPORT=$ldpreload" >> $makefile_cfg
+
+    # shared link additional soname option
+    ldsoname=`$autoconfdir/ldsoname --user=$user --tmp=$tmp $libdir --cc="$cc" --ld="$ld" --posixos="$posixos" --soname="$ldsoname"`
+    echo "LDSONAME=$ldsoname" >> $makefile_cfg
+    echo "LDINSTALLNAME=$ldinstallname" >> $makefile_cfg
+  fi
+  echo >> $makefile_cfg
+
+  # The suffix of shared library
+  echo "SHAREDSUFFIX=$sharedsuffix" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The dlopen facility
+  if [ "$dlopen" != "0" ]; then
+    echo "DLOPENSUPPORT=yes" >> $makefile_cfg
+  else
+    echo "DLOPENSUPPORT=no" >> $makefile_cfg
+  fi
+
+  echo >> $makefile_cfg
+  # Does the system supports threads
+  echo "   gcthread: $gcthread"
+  if [ "$gcthread" != "no" ]; then
+    echo "CGCTHREADFLAGS=$gcthread" >> $makefile_cfg
+  else
+    echo "CGCTHREADFLAGS=" >> $makefile_cfg
+  fi
+
+  # find out the C library for posix threads
+  echo "   pthreadlibs: $pthreadlibs"
+  echo "PTHREADLIBS=$pthreadlibs" >> $makefile_cfg
+
+  # Patch the code of the thread when using non custom GC
+  if [ "$pthreadlibs" != "no" ]; then
+    # the default gc on mingw is built with thread support.
+    # there is no need to link with a special version of gc library  
+    if [ $customgc != "yes" ]; then
+      gclibth=$stdgclib
+    else
+      if [ "$posixos" = "mingw" ]; then
+        gclibth=bigloogc	
+      else
+        gclibth=bigloogc_fth
+      fi
+    fi
+
+    cat api/fthread/src/Misc/fthread.init.in \
+        | sed -e "s|@BIGLOOGC_FTH@|$gclibth|g" \
+        | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
+        >  lib/$release/fthread.init
+    cat api/pthread/src/Misc/pthread.init.in \
+        | sed -e "s|@BIGLOOGC_PTH@|$gclibth|g" \
+        | sed -e "s|@PTHREADLIBS@|$pthreadlibs|g" \
+        >  lib/$release/pthread.init
+  else
+    napis=;
+    for a in $apis; do
+      if [ "pthread" != "$a" -a "fthread" != "$a" ]; then
+        if [ "$napis " = " " ]; then
+          napis="$a";
+        else
+          napis="$napis $a";
+        fi
+      fi
+    done
+    apis=$napis;
+    if [ "$pthreadtimedlock" = "1" ]; then
+      echo "   pthread_mutex_timedlock: yes"
+    else
+      echo "   pthread_mutex_timedlock: no"
+    fi
+  fi
+
+  # SSL
+  echo "   openssllibs: $openssllibs"
+
+  # Patch the code of the SSL
+  if [ "$openssllibs" != "no" ]; then
+    echo "OPENSSLLIBS=$openssllibs" >> $makefile_cfg
+    echo ";; automatically generated. Don't edit" >  lib/$release/ssl.init
+    cat api/ssl/src/Misc/ssl.init.in \
+        | sed -e "s|@OPENSSLLIBS@|$openssllibs|g" \
+        >>  lib/$release/ssl.init
+ 
+    dtls=1
+    if [ "$openssldtls" = "no" ]; then
+      dtls=0;
+    fi
+
+    echo "/* automatically generated, Don't edit" >  api/ssl/src/C/bglssl.h
+    cat api/ssl/src/C/bglssl.h.in | sed -e "s|@HAVEDTLS@|$dtls|g" \
+        >>  api/ssl/src/C/bglssl.h
+  else
+    napis=;
+    for a in $apis; do
+       if [ "ssl" != $a ]; then
+         if [ "$napis " = " " ]; then
+           napis="$a";
+         else
+           napis="$napis $a";
+         fi
+       fi
+    done
+    apis=$napis;
+    echo "OPENSSLLIBS=" >> $makefile_cfg
+  fi
+
+  # SQLITE
+  echo "   sqlitelibs: $sqlitelibs"
+  echo "SQLITELIBS=$sqlitelibs" >> $makefile_cfg
+  if [ "$sqlitelibs " = " " ]; then
+    echo "SQLITESRFI=sqltiny" >> $makefile_cfg
+  else
+    echo "SQLITESRFI=sqlite" >> $makefile_cfg
+  fi
+
+  # DBUS
+  echo "   dbuslibs: $dbuslibs"
+  echo $dbuslibs | awk -F "@" '{ print "DBUSLIBS=" $1 }' >> $makefile_cfg
+  if [ "$dbuslibs " != "no" ]; then
+    echo $dbuslibs | awk -F "@" '{ print "CFLAGS_DBUS=" $2 }' >> $makefile_cfg
+  fi
+
+  # Patch the code of the SQLITE
+  echo ";; automatically generated. Don't edit" >  lib/$release/sqlite.init
+  cat api/sqlite/src/Misc/sqlite.init.in \
+      | sed -e "s|@SQLITELIBS@|$sqlitelibs|g" \
+      >>  lib/$release/sqlite.init
+
+  # SCMPKG
+  configure=api/pkgcomp/src/Llib/configure.scm
+  /bin/rm -f $configure
+  echo ";; automatically generated. Don't edit" >  $configure
+  cat $configure.in \
+    | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
+    >>  $configure
+  chmod a-w $configure
+
+  # pkgcomp.init
+  pkgcomp_init=lib/$release/pkgcomp.init
+  /bin/rm -f $pkgcomp_init
+  echo ";; automatically generated. Don't edit" >  $pkgcomp_init
+  cat api/pkgcomp/src/Misc/pkgcomp.init.in \
+      | sed -e "s|@PKGCOMPVERSION@|$scmpkgversion|g" \
+      >>  $pkgcomp_init
+  echo "" >> $pkgcomp_init
+
+  for p in srfi89.sch interface.sch expanders.sch class.sch configure.sch; do
+    cat api/pkgcomp/src/Llib/$p >> $pkgcomp_init
+    echo "" >> $pkgcomp_init
+  done
+
+  # pkgcomp startup
+  echo "(cond-expand ((not bigloo-@expanders) (@install-expanders!)))" \
+     >> $pkgcomp_init
+
+  chmod a-w $pkgcomp_init
+
+  # bglpkg
+  configure=bglpkg/configure.scm
+  /bin/rm -f $configure
+  echo ";; automatically generated. Don't edit" >  $configure
+  cat $configure.in \
+       | sed -e "s|@BGLPKGVERSION@|$release|g" \
+             -e "s|@BGLPKGNAME@|$bglpkg|g" \
+       >>  $configure
+  chmod a-w $configure
+
+  # Does the system supports strip
+  if( `$autoconfdir/strip --strip=$strip --user=$user --tmp=$tmp --cc="$cc"` ); then
+     echo "   strip: $strip"
+     echo "STRIP=$strip" >> $makefile_cfg
+     echo "" >> $makefile_cfg
+  else
+     echo "   strip: no"
+     echo "STRIP=true" >> $makefile_cfg
+     echo "" >> $makefile_cfg
+  fi
+
+  # Display emacs
+  echo "   emacs: $emacsversion"
+  echo "   emacslisppath: $emacslisppath"
+  echo "EMACS=$emacs" >> $makefile_cfg
+  echo "EMACSDIR=$emacslisppath" >>  $makefile_cfg
+  echo "EMACSBRAND=$emacsversion" >> $makefile_cfg
+  echo "EWARN=$emacswarning" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # bmask
+  echo "BMASK=$bmask" >> $makefile_cfg
+  echo >> $makefile_cfg
+
+  # The info version
+  if [ "$configureinfo" = "yes" ]; then
+    infoinfo=`$autoconfdir/info --user=$user \
+                                --tmp=$tmp \
+                                --makeinfo="$makeinfo" \
+                                --texi2dvi="$texi2dvi" \
+                                --texi2dviopt="$texi2dviopt" \
+                                --texi2pdf="$texi2pdf" \
+                                --texi2html="$texi2html" \
+                                --texi2htmlopt="$texi2htmlopt"`
+
+    if [ "$?" = "0" ]; then
+       for p in $infoinfo; do
+          case $p in
+            "")
+               break;;
+            makeinfover=*)
+               makeinfover="`echo $p | sed 's/^[-a-z_.]*=//'`";;
+            texi2dvi=*)
+               texi2dvi="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+            texi2dviopt=*)
+               texi2dviopt="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+            texi2pdf=*)
+               texi2pdf="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+            texi2html=*)
+               texi2html="`echo $p | sed 's/^[-a-z0-9_.]*=//'`";;
+            texi2htmlopt=*)
+               texi2htmlopt="`echo $p | sed 's/^[^=]*=//'`";;
+          esac
+       done
+       if [ "$makeinfover" = "old" ]; then
+           makeinfoopt="-D oldinfo"
+       fi
+
+       echo "MAKEINFO=$makeinfo" >> $makefile_cfg
+       echo "MAKEINFOOPT=$makeinfoopt" >> $makefile_cfg
+       echo "TEXI2DVI=$texi2dvi" >> $makefile_cfg
+       echo "TEXI2DVIOPT=$texi2dviopt" >> $makefile_cfg
+       echo "TEXI2HTML=$texi2html" >> $makefile_cfg
+       echo "TEXI2HTMLOPT=$texi2htmlopt" >> $makefile_cfg
+       echo "TEXI2PDF=$texi2pdf" >> $makefile_cfg
+    else
+       echo "   makeinfo: no"
+       makeinfo=no
+       makeinfoopt=
+       texi2dvi=
+       texi2dviopt=
+       texi2html=
+       texi2htmlopt=
+       texi2pdf=
+
+       echo "MAKEINFO=" >> $makefile_cfg
+    fi
+  fi
+
+  # The info installation
+  echo "   checking install-info"
+  if [ "$iinfo " = " " ]; then
+    installinfo=`$autoconfdir/installinfo --user=$user --tmp=$tmp --cc=$cc --exe=$exe`
+  else
+    installinfo=`$autoconfdir/installinfo --user=$user --tmp=$tmp --cc=$cc --installinfo=$iinfo --exe=$exe`
+  fi
+
+  if [ "installinfo " = " " ]; then
+     echo "   install-info: no"
+     echo "INSTALLINFO=\"\"" >> $makefile_cfg
+  else
+     installinfodir=`$autoconfdir/installinfodir --user=$user --tmp=$tmp --cc=$cc --installinfo=$installinfo --exe=$exe`
+     echo "   install-info: $installinfo"
+     echo "   install-info dir opt: $installinfodir"
+     echo "INSTALLINFO=$installinfo" >> $makefile_cfg
+     echo "INSTALLINFODIROPT=$installinfodir" >> $makefile_cfg
+  fi
+
+  # The java configuration
+  if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
+
+    if [ "$jvmbackend" = "yes" ]; then
+      $autoconfdir/ziptest --zip=$zip --zflags=$zflags --user=$user --tmp=$tmp
+
+      if [ $? = 0 ]; then
+         echo "   zip: yes"
+      else
+         echo "   zip: no"
+         echo "*** ERROR:configure:Can't configure JVM back-end"
+         exit 3
+      fi
+
+      $autoconfdir/jartest --jar=$jar --user=$user --tmp=$tmp
+
+      if [ $? = 0 ]; then
+         echo "   jar: yes"
+      else
+         echo "   jar: no"
+         echo "*** ERROR:configure:Can't configure JVM back-end"
+         exit 3
+      fi
+
+      if [ "$java_configured" = "no" ]; then
+        $autoconfdir/javatest --java=$java --jflags=$jflags --jvflags=$jvflags \
+                              --javac=$javac --jcflags=$jcflags --user=$user --tmp=$tmp
+
+        if [ $? = 0 ]; then
+           echo "   java: yes"
+        else
+           echo "   java: no"
+           echo "*** ERROR:configure:Can't configure JVM back-end"
+           exit 3
+        fi
+        java_configured=yes
+      fi
+    else
+        java_configured=yes
+    fi
+
+    echo "" >> $makefile_cfg
+    echo "JVMBACKEND=yes" >> $makefile_cfg
+    echo "JAVA=$java" >> $makefile_cfg
+    echo "JAVA_VERSION=$java_version" >> $makefile_cfg
+    echo "JFLAGS=$jflags" >> $makefile_cfg
+    echo "JVFLAGS=$jvflags" >> $makefile_cfg
+    echo "JAVAC=$javac" >> $makefile_cfg
+    echo "JCFLAGS=$jcflags" >> $makefile_cfg
+    echo "ZIP=$zip" >> $makefile_cfg
+    echo "ZFLAGS=$zflags" >> $makefile_cfg
+    echo "JAR=$jar" >> $makefile_cfg
+    echo "JSHELL=$jshell" >> $makefile_cfg
+
+    echo "JVMRECETTEBOOTPATH=$jvmrecettebootpath" >> $makefile_cfg
+    echo "JVMAPIBOOTPATH=$jvmapibootpath" >> $makefile_cfg
+
+    # Cygwin prefix
+    if [ "$posixos" = "cygwin" ]; then
+      echo "" >> $makefile_cfg
+      echo CYGWINPREFIX=`echo "$cygwindospath" | sed -e 's/\\\\/\\\\\\\\/g'` >> $makefile_cfg
+      bigloozip=$bootdir/lib/$release
+      bigloozip=`echo $bigloozip | sed -e 's/\/cygdrive\/\([a-z]\)\//\1:\//'`        # corrects pathes like /cygdrive/...
+      bigloozip=`echo $bigloozip | sed -e "s/^\//$cygwindospath\\\\\\\\\\\\\\\\/"`   # corrects pathes like /usr...
+      echo "CYGWINJVMPATH=-classpath \".;"`echo $bigloozip | sed -e 's/\//\\\\\\\\/g'`"\\\\bigloo_s.zip\"" >> $makefile_cfg
+    else
+      echo "CYGWINJVMPATH=" >> $makefile_cfg
+    fi
+
+    echo "JVMCLASSPATHSEP=\"$cpsep\"" >> $makefile_cfg
+  else
+    echo "" >> $makefile_cfg
+    echo "JVMBACKEND=no" >> $makefile_cfg
+  fi
+
+  # The dotnet configuration
+  if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
+
+    # Dotnet configuration
+    echo "" >> $makefile_cfg
+    echo "DOTNETBACKEND=yes" >> $makefile_cfg
+    echo "DOTNETCSCC=$dotnetcscc" >> $makefile_cfg
+    echo "DOTNETCSCCSTYLE=$dotnetcsccstyle" >> $makefile_cfg
+    echo "DOTNETASM=$dotnetasm" >> $makefile_cfg
+    echo "DOTNETLD=$dotnetld" >> $makefile_cfg
+    echo "DOTNETLDSTYLE=$dotnetldstyle" >> $makefile_cfg
+    echo "DOTNETCLRSTYLE=$dotnetclrstyle" >> $makefile_cfg
+    echo "DOTNETCLROPT=$dotnetclropt" >> $makefile_cfg
+    echo "DOTNETCLR=$dotnetclr" >> $makefile_cfg
+    echo "" >> $makefile_cfg
+    echo "DOTNETFTDLLPATH=-L../../../../../lib/$release" >> $makefile_cfg
+    echo "DOTNETLINKBIGLOODLL=-lbigloo_s-$release.dll" >> $makefile_cfg
+  else
+    echo "" >> $makefile_cfg
+    echo "DOTNETBACKEND=no" >> $makefile_cfg
+  fi
+fi
+
+# Bigloo compilation flags
+echo "" >> $makefile_cfg
+echo "BFLAGS=$bflags" >> $makefile_cfg
+echo "BOOTFLAGS=$bootflags" >> $makefile_cfg
+
+# script extension
+echo "" >> $makefile_cfg
+case $posixos in
+  cygwin)
+    echo "SCRIPTEXTENSION=.bat" >> $makefile_cfg;;
+  *)
+   echo "SCRIPTEXTENSION=" >> $makefile_cfg;;
+esac
+
+# C Object suffix
+echo "C_OBJ_EXTENSION=$cobj" >> $makefile_cfg
+echo >> $makefile_cfg
+
+# APIs
+echo "APIS=$apis" >> $makefile_cfg
+echo >> $makefile_cfg
+
+#*---------------------------------------------------------------------*/
+#*    Ok, we are done now                                              */
+#*---------------------------------------------------------------------*/
+bcke="native:yes"
+if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
+  bcke="$bcke JVM:yes"
+else
+  bcke="$bcke JVM:no"
+fi
+if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
+  bcke="$bcke .NET:yes"
+else
+  bcke="$bcke .NET:no"
+fi
+echo  >> $configurelog
+echo  >> $configurelog
+echo "** Configuration summary **" >> $configurelog
+echo  >> $configurelog
+echo "Release features:" >> $configurelog
+echo "  Bigloo release number................. $release" >> $configurelog
+echo "  Bigloo supported backends............. $bcke" >> $configurelog
+echo "  Bigloo default backend................ $defaultbackend" >> $configurelog
+if [ $customgc = "yes" ];then
+   echo "  Bigloo gc............................. custom ($gclib-$release)" >> $configurelog
+else
+   echo "  Bigloo gc............................. standard ($gclib, $stdgcincdir, $gclibdir)" >> $configurelog
+fi
+if [ "$pthreadlibs" = "no" ]; then
+  echo "  support for native threads............ no" >> $configurelog
+else
+  echo "  support for native threads............ yes" >> $configurelog
+fi
+if [ "$openssllibs" = "no" ]; then
+  echo "  Open SSL support...................... no" >> $configurelog
+else
+  echo "  Open SSL support...................... yes (dtls $openssldtls)" >> $configurelog
+fi
+if [ "$sqlitelibs " = " " ]; then
+  echo "  Sqlite ............................... sqltiny" >> $configurelog
+else
+  echo "  Sqlite ............................... sqltiny + sqlite" >> $configurelog
+fi
+if [ "$ldopt" = "no-share" ]; then
+  echo "  support for dynamic libraries......... no" >> $configurelog
+else
+  echo "  support for dynamic libraries......... yes" >> $configurelog
+fi
+echo "  Bee support........................... $bee" >> $configurelog
+echo >> $configurelog
+echo "Directories where Bigloo will be installed:" >> $configurelog
+echo "  binaries.............................. $bindir" >> $configurelog
+echo "  libraries............................. $libdir" >> $configurelog
+echo "  files directory....................... $fildir" >> $configurelog
+echo "  standard zip.......................... $zipdir" >> $configurelog
+if [ "$syszipdir " != "$zipdir " ]; then
+  echo "  standard zip (os dependent)........... $syszipdir" >> $configurelog
+fi
+echo "  standard dll.......................... $dlldir" >> $configurelog
+if [ "$sysdlldir " != "$dlldir " ]; then
+  echo "  standard dll (os dependent)........... $sysdlldir" >> $configurelog
+fi
+echo "  manual pages.......................... $mandir" >> $configurelog
+echo "  info documentation.................... $infodir" >> $configurelog
+echo "  lisp files............................ $lispdir" >> $configurelog
+echo "  temporary dir......................... $tmp" >> $configurelog
+echo >> $configurelog
+echo "Compilers and linkers:" >> $configurelog
+echo "  C compiler used....................... $cc" >> $configurelog
+echo "  options for compiling................. $cflags" >> $configurelog
+echo "  options for optimizing................ $coflags" >> $configurelog
+echo "  options for stripping................. $csflags" >> $configurelog
+echo "  options for PIC code.................. $cpicflags" >> $configurelog
+echo "  options for profiling................. $cpflags" >> $configurelog
+echo "  options for linking................... $extralibs" >> $configurelog
+echo "  assembly.............................. $as" >> $configurelog
+echo "  static library builder................ $ar" >> $configurelog
+echo "  shared library builder................ $ld" >> $configurelog
+echo "  options for building static libs...... $arflags" >> $configurelog
+echo "  socket libraries...................... $socketlibs" >> $configurelog
+echo "  pthread libraries..................... $pthreadlibs" >> $configurelog
+echo "  openssl libraries..................... $openssllibs" >> $configurelog
+echo "  sqlite libraries...................... $sqlitelibs" >> $configurelog
+if [ "$ldopt" != "no-share" ]; then
+  echo "  suffix of shared libraries............ $sharedsuffix" >> $configurelog
+  echo "  options for linking with shared libs.. $ldopt" >> $configurelog
+fi
+echo "  dynamically linked compiler........... $sharedcompiler" >> $configurelog
+echo "  dynamically linked bde tools.......... $sharedbde" >> $configurelog
+echo >> $configurelog
+if [ "$jvmbackend" = "yes" -o "$jvmbackend" = "force" ]; then
+  echo "JVM:" >> $configurelog
+  if [ "$posixos" = "cygwin" ]; then
+    echo "  Cygwin dos path....................... $cygwindospath" >> $configurelog
+  fi
+  echo "  java default shell.................... $jshell" >> $configurelog
+  echo "  javac................................. $javac" >> $configurelog
+  echo "  options for compiling java............ $jcflags" >> $configurelog
+  echo "  java.................................. $java" >> $configurelog
+  echo "  options for running java.............. $jflags" >> $configurelog
+  echo "  options no byte code verification..... $jvflags" >> $configurelog
+  echo "  zip................................... $zip" >> $configurelog
+  echo "  zip flags............................. $zflags" >> $configurelog
+  echo "  jar................................... $jar" >> $configurelog
+fi
+echo >> $configurelog
+if [ "$dotnetbackend" = "yes" -o "$dotnetbackend" = "force" ]; then
+  echo ".NET:" >> $configurelog
+  if [ "$posixos" = "cygwin" ]; then
+    echo "  Cygwin dos path....................... $cygwindospath" >> $configurelog
+  fi
+  echo "  .NET default shell.................... $dotnetshell" >> $configurelog
+  echo "  .NET linker........................... $dotnetld (style=$dotnetldstyle)" >> $configurelog
+  echo "  .C# compiler.......................... $dotnetcscc (style=$dotnetcsccstyle)" >> $configurelog
+  echo "  clr................................... $dotnetclr (style=$dotnetclrstyle)" >> $configurelog
+  echo "  options to run the clr................ $dotnetclropt" >> $configurelog
+fi
+echo >> $configurelog
+echo "GC configuration:" >> $configurelog
+if [ $customgc = "yes" ]; then
+  echo "  options for compiling the collector... $cgcflags $cgcfinalflags $gcspecial" >> $configurelog
+  echo "  options for compiling with threads.... $gcthread" >> $configurelog
+else
+  echo "  pre-installed standard GC............. $gclib" >> $configurelog
+fi
+echo >> $configurelog
+echo "Emacs configuration:" >> $configurelog
+echo "  emacs................................. $emacs" >> $configurelog
+echo "  emacs brand........................... $emacsversion" >> $configurelog
+if [ $emacsversion = "generic" ]; then
+  echo "  lisp directory........................ no support (update emacs)" >> $configurelog
+else
+  echo "  lisp directory........................ $emacslisppath" >> $configurelog
+fi
+echo >> $configurelog
+echo "Misc configuration:" >> $configurelog
+echo "  mask for installed files.............. $bmask" >> $configurelog
+echo  >> $configurelog
+echo "System configuration:" >> $configurelog
+echo "  hardware tuning....................... $hardtune" >> $configurelog
+echo "  operating system...................... $posixos" >> $configurelog
+echo "  default executable name............... $aout" >> $configurelog
+echo  >> $configurelog
+
+#*---------------------------------------------------------------------*/
+#*    Ok, we are done now                                              */
+#*---------------------------------------------------------------------*/
+if [ "$summary" = "yes" ]; then
+  echo 
+  echo 
+  echo "** Configuration summary **"
+  echo 
+  echo "Release features:"
+  echo "  Bigloo release number................. $release"
+  echo "  Bigloo supported backends............. $bcke"
+  echo "  Bigloo default backend................ $defaultbackend"
+  echo "  Bigloo additional APIs................ $apis"
+  if [ $customgc = "yes" ];then
+     echo "  Bigloo gc............................. custom ($gclib-$release, v$gcversion)"
+  else
+     echo "  Bigloo gc............................. standard ($gclib, $stdgcincdir, v$gcversion)"
+  fi
+  echo "  Bigloo tuning......................... $mode $tuning"
+  if [ "$pthreadlibs" = "no" ]; then
+    echo "  support for native threads............ no"
+  else
+    echo "  support for native threads............ yes"
+  fi
+  if [ "$openssllibs" = "no" ]; then
+    echo "  Open SSL support...................... no"
+  else
+    echo "  Open SSL support...................... yes (dtls $openssldtls)"
+  fi
+  if [ "$sqlitelibs " = " " ]; then
+    echo "  Sqlite support ....................... sqltiny"
+  else
+    echo "  Sqlite support........................ sqltiny + sqlite"
+  fi
+  if [ "$dbuslibs " = "no" ]; then
+    echo "  Dbus support ......................... no"
+  else
+    echo "  Dbus support ......................... yes"
+  fi
+  if [ "$ldopt" = "no-share" ]; then
+    echo "  support for dynamic libraries......... no"
+  else
+    echo "  support for dynamic libraries......... yes"
+  fi
+  echo "  Bee support........................... $bee"
+  echo
+  echo "Directories where Bigloo will be installed:"
+  echo "  binaries.............................. $bindir"
+  echo "  libraries............................. $libdir"
+  echo "  files directory....................... $fildir"
+  echo "  standard zip.......................... $zipdir"
+  if [ "$syszipdir " != "$zipdir " ]; then
+    echo "  standard zip (os dependent)........... $syszipdir"
+  fi
+  echo "  standard dll.......................... $dlldir"
+  if [ "$sysdlldir " != "$dlldir " ]; then
+    echo "  standard dll (os dependent)........... $sysdlldir"
+  fi
+  echo "  manual pages.......................... $mandir"
+  echo "  info documentation.................... $infodir"
+  echo "  lisp files............................ $lispdir"
+  echo "  temporary dir......................... $tmp"
+  echo
+  echo "Emacs configuration:"
+  echo "  emacs................................. $emacs"
+  echo "  emacs brand........................... $emacsversion"
+  if [ $emacsversion = "generic" ]; then
+    echo "  lisp directory........................ no support (update emacs)"
+  else
+    echo "  lisp directory........................ $emacslisppath"
+  fi
+  echo 
+fi

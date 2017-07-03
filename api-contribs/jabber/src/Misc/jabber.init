@@ -1,0 +1,24 @@
+;*---------------------------------------------------------------------*/
+;*    Link option                                                      */
+;*---------------------------------------------------------------------*/
+(cond-expand
+   (bigloo-compile
+    (set! *additional-bigloo-libraries*
+          (cons* 'biglooweb
+		 'bigloossl
+		 'bigloopth
+		 *additional-bigloo-libraries*))
+    ))
+
+
+(cond-expand	
+ (bigloo-c	
+  (library-translation-table-add! 'jabber "bigloojabber"))
+ (bigloo-jvm
+  (library-translation-table-add! 'jabber "bigloojabber"))
+ (else
+  #unspecified))
+
+
+
+

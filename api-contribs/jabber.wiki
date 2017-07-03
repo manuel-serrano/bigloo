@@ -1,0 +1,366 @@
+<doc> JABBER library
+<library> Jabber
+
+== Description ==
+
+This document describes the HOP supports for Jabber protocol
+
+== Synopsis ==
+
+=== Server ===
+
+
+  (open-connection server ...)
+  (identification login password connection)
+  (register login password server connection)
+  (add jid connection ...)
+  (get-contacts connection)
+  (sendMessage text to connection ...)
+  (authorize jid authorize? connection)
+  (change-state status connection ...)
+  (remove jid connection)
+  (subscribe jid connection)
+  (verify-ident jid connection)
+  (close-connection connection)
+  (accept from id accept? connection)
+  (send-file-to path to connection)
+  (get-jid connection)
+
+=== Requirements ===
+The server functions described in this page are defined in the 
+++jabber++ library. That is, server codes using them must include a 
+statement such as:
+
+  (module a-module-name
+     ...
+     (library jabber)
+     ...)
+
+== Example ==
+
+  (module jabber-connect
+	  (main main)
+	  (library jabber))
+
+  (define (main argv)
+    (if (< (length argv)  4)
+        (print "Use: " (car argv) " login password server")
+        (let ((connection (open-connection "jabber.org" :message (lambda (from text html conn) (print from " : " text)))))
+	  (if connection
+	      (let ((ident (identification (cadr argv) (caddr argv) connection)))
+	        (if ident
+		    (begin (print "connection ok")
+			   (let loop  ((line (read-line)))
+			     (sendMessage line "bigloo@jabber.org" connection)
+			     (loop (read-line))))
+		    (print "identification error")))
+	      (print "connection error")))))
+
+== Server Definitions ==
+<server>
+
+=== ++(open-connection server [:register?] [:message] [:error] [:subscribe] [:presence] [:rcv-file?] [:file-rcv] [:file-send])++ ===
+<function> open-connection
+
+<arguments>
+^ arguments       ^  type       ^     default        ^ short description                        ^
+| server          |  string     |                    | a jabber server.                          |
+| register?       |  boolean    |     false          | is true if connection for register user   |
+| message         |  procedure  |     print          | function call for new message             |
+| error           |  procedure  |     print          | call for error                            |
+| subscribe       |  procedure  |     print          | call when new contact subscribe           |
+| presence        |  procedure  |     print          | call when contact change status           |
+| rcv-file?       |  procedure  |     print          | call when a contact you send file         |
+| file-rcv        |  procedure  |     print          | call when file is received                |
+| file-send       |  procedure  |     print          | call when file has been send              |
+</arguments>
+
+This function open the connection with the jabber server and initializes the 
+event handlers. If the connection fails, it returns false else true.
+
+</function>
+
+=== ++ (identification login password connection)===
+<function>identification
+<arguments>
+^ arguments           ^  type           ^ short description              ^
+| login               |  string         | login                           |
+| password            |  string         | the user password               |
+| conection           |  integer        | the connection used             |
+</arguments>
+
+This procedure identifies the user on the server.
+If the jid of user is "user@jabber.org", login must be "user".
+Returns true on success else false.
+</function>
+
+=== ++ (register login password server connection)===
+<function>register
+<arguments>
+^ arguments           ^  type            ^ short description      ^
+| login               |  string          | login                   |
+| password            |  string          | the user password       |
+| server              |  string          | the server              |
+| connection          |  integer         | the connection used     |
+</arguments>
+
+This procedure register the user on the server.
+If the jid of user is "user@jabber.org", his login is "user".
+If the count is created with success true is returned, else false.
+</function>
+
+=== ++ (add jid connection [:name] [:group])===
+<function>add
+<arguments>
+^ arguments         ^  type        ^  default     ^  short description              ^
+| jid               |  string      |              |  the jid of new contact         |
+| connection        |  integer     |              |  the connection used            |
+| name              |  string      |  false       |  the user password              |
+| group             |  string      |  false       |  the server                     |
+
+</arguments>
+
+This procedure adds a new contact, if contact is succsessfully added true is returned, else false.
+</function>
+
+=== ++ (get-contacts connection)===
+<function>get-contacts
+<arguments>
+^ arguments           ^  type        ^  short description              ^
+| connection          |  integer     |  the connection used            |
+
+</arguments>
+
+This procedure returns a list of a-list with informations of contacts, else return false.
+
+~~Example : 
+
+  '(
+    (('jid "user@jabber.org") ('group "friends") ('name "martin") ('subscription "both"))
+    (('jid "user2@jabber.org") ('subscription "to"))
+   )
+
+</function>
+
+=== ++ (sendMessage text to connection [:xhtml])===
+<function>sendMessage
+<arguments>
+^ arguments        ^  type       ^  default      ^  short description              ^
+| text             |  string     |               |  the text sent                  |
+| to               |  string     |               |  the jid of contact             |
+| connection       |  integer    |               |  the connection used            |
+| xhtml            |  string     |  false        |  the message in xhtml           |
+
+</arguments>
+This procedure sends a message.
+</function>
+
+=== ++ (authorize jid authorize? connection)===
+<function>authorize
+<arguments>
+^ arguments        ^  type      ^  short description                                      ^
+| jid              |  string    |  the jid of contact                                     |
+| authorize?       |  boolean   |  is true if authorize contact to see your presence     |
+| connection       |  integer   |  the connection used                                    |
+
+</arguments>
+</function>
+
+=== ++ (change-state status connection [:message])===
+<function>change-state
+<arguments>
+^ arguments        ^  type        ^ default   ^  short description              ^
+| status           |  integer     |           |  your presence                  |
+| connection       |  integer     |           |  the connection used            |
+| message          |  string      | false     |  the away message               |
+</arguments>
+This procedure modifies your presence.
+The possibles values for status are :
+
+^  status    ^  presence       ^
+|    3       |  chat, online   |
+|    2       |  dnd            | 
+|    1       |  away           |
+|    0       |  offline        |
+
+</function>
+
+=== ++ (remove jid connection)===
+<function>remove
+<arguments>
+^ arguments        ^  type      ^  short description              ^
+| jid              |  string    |  the jid of contact             |
+| connection       |  integer   |  the connection used            |
+
+</arguments>
+This procedure removes a contact. On success, returns true else false.
+</function>
+
+=== ++ (subscribe jid connection)===
+<function>subscribe
+<arguments>
+^ arguments        ^  type      ^  short description              ^
+| jid              |  string    |  the jid of contact             |
+| connection       |  integer   |  the connection used            |
+
+</arguments>
+This procedure asks the permission to see the contact.
+</function>
+
+=== ++ (verify-ident jid connection)===
+<function>verify-ident
+<arguments>
+^ arguments        ^   type      ^  short description              ^
+| jid              |  string     |  jid                           |
+| connection       |  integer    |  the connection used           |
+
+</arguments>
+This procedure checks if connection belongs jid.
+</function>
+
+=== ++ (close-connection connection)===
+<function>close-connection
+<arguments>
+^ arguments         ^   type      ^  short description              ^
+| connection        |  integer    |  the connection used            |
+
+</arguments>
+This procedure closes the connection.
+</function>
+
+=== ++ (accept from id accept? connection)===
+<function>accept
+<arguments>
+^ arguments        ^   type     ^  short description              ^
+| from             |  string    |  the jid of contact             |
+| id               |  string    |  the request identifier         |
+| accept?          |  boolean   |  is true if you accept file     |
+| connection       |  integer   |  the connection used            |
+</arguments>
+This functions accepts or not the sent file by **from**.
+</function>
+
+=== ++ (send-file-to path to connection)===
+<function>send-file-to
+<arguments>
+^ arguments        ^   type      ^  short description              ^
+| path             |  string     |  the path of file               |
+| to               |  string     |  the contact jid                |
+| connection       |  integer    |  the connection used            |
+</arguments>
+This procedure sends a file. Returns true if the sends successes else false. 
+</function>
+
+=== ++ (get-jid connection)===
+<function>get-jid
+<arguments>
+^ arguments         ^   type      ^  short description         ^
+| connection        |  integer    |  the connection used       |
+</arguments>
+This procedure return the jid of the connection.
+</function>
+</server>
+
+== Event handlers ==
+
+=== ++(message from text html connection) ===
+<function> message
+<arguments>
+^ arguments         ^   type               ^ short description                          ^
+| from              |   string             | jid of contact                             |
+| text              |   string             | the content of message                     |
+| html              |   string or false    | false if the message is not in html       |
+| connection        |    integer           | the connection used                        |
+</arguments>
+This procedure is called when a new message arrives.
+</function>
+
+=== ++(error connection) ===
+<function> error
+<arguments>
+^ arguments                ^   type          ^ short description              ^
+| connection               |  integer        | the connection used            |
+</arguments>
+This procedure is called when an error arrives (like a disconnection).
+
+</function>
+
+=== ++(subscribe contact connection) ===
+<function> subscribe
+<arguments>
+^ arguments             ^   type              ^ short description                      ^
+| contact               |  a-list             | al-ist with contact information        |
+| connection            |  integer            | the connection used                    |
+</arguments>
+
+This procedure is called when a contact wants to see your presence.
+
+~~The argument contact is an a-list with contact jid :
+
+  '(('jid . "user@jabber.org"))
+
+</function>
+
+=== ++(presence contact connection) ===
+<function> presence
+<arguments>
+^ arguments             ^   type          ^ short description                        ^
+| contact               |  a-list         | a-list with contact information          |
+| connection            |  integer        | the connection used                      |
+</arguments>
+
+This procedure is called when a contact changes his presence
+The argument contact is a a-list with the jid of contact :
+
+~~Example :
+
+  '(('jid . "user@jabber.org"))
+
+
+This argument can contain the attributes 'show or 'status
+
+~~Example :
+
+  '(('jid . "user@jabber.org") ('status "sorry, i am busy right now") ('show "dnd"))
+
+</function>
+
+=== ++(rcv-file? from id filename size connection) ===
+<function> rcv-file?
+<arguments>
+^ arguments          ^  type              ^ short description              ^
+| from               |  string            | jid of contact                 |
+| id                 |  string            | request identifier             |
+| filename           |  string            | the name of file sent          |
+| size               |  string            | the size of file               |
+| connection         |  integer           | the connection used            |
+</arguments>
+
+This procedure is called when a contact wants send you a file.
+</function>
+
+=== ++(file-rcv filename connection) ===
+<function>file-rcv
+<arguments>
+^ arguments              ^   type        ^ short description                 ^
+| filename               |  string       | the name of file received         |
+| connection             |  integer      | the connection used               |
+</arguments>
+
+This procedure is called when the file transfer is finished.
+</function>
+
+=== ++(file-send path connection) ===
+<function>file-send
+<arguments>
+^ arguments          ^  type           ^ short description                 ^
+| path               |  string         | the name of file received         |
+| connection         |  integer        | the connection used               |
+</arguments>
+
+This procedure is called when the transfer is finished.
+</function>
+
+
+</library>
+</doc>

@@ -1,0 +1,17 @@
+(library-translation-table-add! 'dbus "bigloodbus")
+
+(cond-expand
+ (bigloo-compile
+  (set! *ld-options*
+        (string-append "-L/usr/lib/ " *ld-options*))
+
+  (set! *additional-include-foreign*
+        (cons "bglservice.h" *additional-include-foreign*))
+
+  (set! *bigloo-user-lib*
+        (cons "-ldbus-1" *bigloo-user-lib*))
+
+  (set! *cc-options*
+        (string-append "-I/usr/include/dbus-1.0/ -I/usr/lib/dbus-1.0/include/ " 
+*cc-options*)))
+ (else #f))

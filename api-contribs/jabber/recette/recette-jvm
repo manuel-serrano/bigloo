@@ -1,0 +1,6 @@
+#!/bin/sh
+
+CLASSPATH=.:$BIGLOOCLASSPATH:$BUGLOOCLASSPATH:'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloo_s.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/biglooweb_s-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/biglooweb_e-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloossl_s-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloossl_e-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloopth_s-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloopth_e-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloojabber_s-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloojabber_e-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloopth_s-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloopth_e-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloossl_s-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/bigloossl_e-3.0b.zip':'/users/serrano/prgm/project/bigloo/lib/3.0b/commons-ssl.jar'
+export CLASSPATH
+
+exec java  $BIGLOOJAVAOPT $BUGLOOJAVAOPT   recette $*

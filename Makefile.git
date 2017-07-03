@@ -1,0 +1,74 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/Makefile.git                         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Fri Jan 20 14:43:37 2006                          */
+#*    Last change :  Sat Jul  1 07:21:19 2017 (serrano)                */
+#*    Copyright   :  2006-17 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Git config                                                       */
+#*=====================================================================*/
+
+VM		= git
+VM-POPULATE	= git add
+VM-VERIFY	= git fsck
+VM-COMMIT	= git commit -a
+VM-PUSH		= git push
+VM-PULL		= git pull
+VM-CLONE	= git clone
+VM-TAG		= git tag
+VM-BRANCH	= git checkout
+VM-PUSH-BRANCH	= -r
+VM-LOG          = git log --date=short --pretty=format:"(\"%cd\" \"%cn <%ce>\" \"b\" \"%f\"  \"%h\" \"%T\")"
+
+#*---------------------------------------------------------------------*/
+#*    push/pull                                                        */
+#*---------------------------------------------------------------------*/
+git-push:
+	$(VM-PUSH)
+	tar cvfz git.`date +'%F'`.tgz .git
+
+git-pull:
+	$(VM-PULL)
+
+#*---------------------------------------------------------------------*/
+#*    populate ...                                                     */
+#*---------------------------------------------------------------------*/
+populate:
+	find . -name '*~' -exec $(RM) {} \;
+	$(VM-POPULATE) `$(MAKE) popfilelist`
+
+#*---------------------------------------------------------------------*/
+#*    revision ...                                                     */
+#*---------------------------------------------------------------------*/
+revision: populate
+	if [ "$(LOGMSG) " != " " ]; then \
+	   $(VM-COMMIT) $(OPT) -m "$(LOGMSG)"; \
+        else \
+	   $(VM-COMMIT) $(OPT); \
+        fi
+	if [ -f .bigloorelease ]; then \
+          release=`cat .bigloorelease`; \
+          if [ "$(RELEASE) " != "$$release " ]; then \
+            echo $(RELEASE) > .bigloorelease; \
+            $(VM-TAG) $(RELEASE); \
+          fi \
+        else \
+          echo $(RELEASE) > .bigloorelease; \
+          $(VM-TAG) $(RELEASE); \
+        fi
+
+#*---------------------------------------------------------------------*/
+#*    checkout ...                                                     */
+#*---------------------------------------------------------------------*/
+checkout:
+	@ $(VM-CLONE) $(BOOTDIR) \
+           && $(RM) -rf bigloo/.hg \
+           && $(RM) -rf bigloo/.hgignore \
+           && $(RM) -rf bigloo/.hgtags
+
+#*---------------------------------------------------------------------*/
+#*    push                                                             */
+#*---------------------------------------------------------------------*/
+push:
+	@ $(VM-PUSH) $(BIGLOOSVN)

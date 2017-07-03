@@ -1,0 +1,319 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/tutorial/README                      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Aug 20 16:54:07 1998                          */
+#*    Last change :  Mon Oct  4 18:13:09 1999 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    The Bee tutorial                                                 */
+#*=====================================================================*/
+
+This directory implements a TUTORIAL for the Bigloo IDE, the BEE. This
+tutorial require xemacs, prcs and gprof to be installed. If some are
+missing, you will have to skip some part. This directory contains the
+following files:
+
+        README        cdfile.scm    tex.sch       tutorial.scm
+        args.sch      front.scm     tex.scm       xmcd.scm
+        back.scm      makedir.c     toto-98.cd
+
+Process STRICTLY as described:
+
+1.  Copy the present directory to a fresh destination. e.g.
+       $ cp -r tutorial /tmp/tutorial
+
+
+2.  Go to the directory you have copied the tutorial and edit with Xemacs 
+    (if you don't have xemacs installed do even think to run that tutorial) 
+    the tutorial.scm file. e.g
+
+       $ cd /tmp/tutorial
+       $ emacs tutorial.scm
+
+
+3.  The first step is to set the `Bee Root Directory'. This will tell the Bee
+    where to store its administration file. It is likely that the default
+    `Bee Root Directory' is the current directory. This may be seen in the
+    left-most part of the mode-line. Anyhow, click on the `Root' icon of the
+    tool bar. You will be prompted a message like:
+
+       Root directory: /tmp/tutorial/
+
+    accept that choice, xemacs will print out the message
+
+       Setting bee-root-directory to "/tmp/tutorial/".
+
+    You are now all set. 
+
+
+4.  The first action will be to create a Makefile for that project. This
+    is done clicking the `Mkmf' tool bar icon. This assume that the 
+    current emacs buffer is visiting the Bigloo file containing the
+    main module.
+
+    A window will appears that prints out the command executed. After a while,
+    the command will complete and the message
+
+       compilation completed...
+
+    will be print in the mini-buffer.
+
+
+5.  Before anything else, we will register a revision for our project (this
+    require prcs to be available). Click on the `version' menu bar with 
+    [button-3] and select [Checkin project version]. A new version has been 
+    checked in.
+
+
+6.  It is now time to compile. This is done clicking on the `Compile' icon
+    of the tool bar. The compilation fails, raising a window a displaying
+    an error message. Click [button-2] on the error line:
+
+   File "tutorial.scm", line 109, character 5005:
+       #	     (add-xmcd-db id kind title author songs))
+       #	     ^
+       # *** ERROR:bigloo:LAMBDA1062
+       # Unbound variable -- ADD-XMCD-DB
+       
+    click on the first line of the error message with [button-2]:
+    The error is that the binding ADD-XMCD-DB is undefined. It is actually
+    defined in the XMCD module. To automatically import that binding, bring
+    the cursor on the identifier ADD-XMCD-DB of the "tutorial.scm" buffer
+    and then click with [button-1] on the tool bar icon `Import'. This will 
+    add the importation for that binding. Save the buffer.
+
+
+7.  If you want to check the documentation for module extern clause, bring
+    the cursor on the identifier EXTERN (of the module declaration) and click
+    one the tool bar icon `Info'. This will pop up an info window documenting
+    the Bigloo foreign interface. Bee on-line documentation is context 
+    sensitive. If no region is active it tries to document the identifier the
+    cursor is in. If a region is active it tries to document that region. For
+    instance, mark the whole comment
+
+       ;; beginning of /tmp/tutorial/makedir.c
+  
+    and click `Info'. This will present the documentation for comments.
+
+
+8.  Re-compile (click on the `Compile' tool bar icon). This will raise 
+    another error:
+
+       File "xmcd.scm", line 36, character 1775:
+
+    This will pop a window up and the cursor will be located on the source
+    error line. The problem here is that the function MAKEDIR is 
+    undefined. It is actually defined in the C file `makedir.c'. To be able
+    to use it, you have to import that extern file. For that, click on the
+    `Extern' icon of the tool bar of the "xmcd.scm" Xemacs' buffer. You are 
+    prompted for:
+
+       Import C file: /tmp/tutorial
+
+    select the makedir.c file.
+
+    This will automatically insert an extern close in the xmcd module file and
+    will add an entry to the Makefile. In addition your file will be saved.
+
+
+9.  You may now click one more time on the `Compile' icon. This time 
+    it will build the binary file called bin/tutorial. If want to read the 
+    compilation message pop up the BEE menu [button-3] and select the menu 
+    [Compilation] and the sub-menu [View last messages]. This will pop up 
+    a window containing the previous compilation messages.
+
+
+10. The binary file is called `bin/tutorial'. If you run it with no argument
+    that program will read data on the current input port. Try 
+
+       $ bin/tutorial -help
+
+    This program, draws compact disc cover and add compact disc songs to a 
+    CDDB data base. For instance, try:
+
+       $ bin/tutorial toto-98.cd > toto-98.tex
+       $ latex toto-98.tex
+       $ dvips -o toto-98.ps toto-98.dvi
+       $ gv toto-98.ps
+
+
+11.  Try touching some .sch file. For instance, try
+
+       $ touch tex.sch 
+
+    and then recompile. As you may see, files depending from tex.sch 
+    are recompiled..
+
+
+12. Try something more complex. Open the front.scm (for instance, using the
+    module browser) file and turn the export clause to:
+
+       (export (front-cover ::bstring author editor notes musicians songs)))
+
+    This will enforce the first argument of FRONT-COVER to be a string. 
+    Recompile the program now. As you may see, "front.scm" is recompiled but
+    tutorial.scm is recompiled too. This is mandatory because TUTORIAL imports
+    FRONT. Since a prototype of an exported function from FRONT has 
+    changed, it may happen that the compilation of TUTORIAL will change too. 
+    That's why it is recompiled. Now touch "front.scm"
+
+       $ touch front.scm
+
+    Recompile, and you will see that only "front.scm" is recompiled. There 
+    is no need to recompile "tutorial.scm" because the module clause of 
+    FRONT dit not change.
+
+    To add a CD to the database, try
+
+       $ bin/tutorial toto-98.cd -adddb
+
+    This will fail raising:
+
+       toto-98.cd:
+
+       *** ERROR:bigloo:make-xmcd-name:
+       Can't create directory -- cddb/scheme
+
+
+13. It is time to inspect the program with Bdb, the Bigloo debugger. Edit
+    the "tutorial.scm" file. Start Bdb with a button-1 click on the tool bar 
+    icon labelled `Bdb'. A new window is popped up. You will see something 
+    like:
+
+       -----------------------------------------------------------------------
+       Bdb (v1.0)                                      ("`-/")_.-'"``-._
+       the Bigloo debugger                              . . `; -._    )-;-,_`)
+       Sun Aug 15 08:24:45 CEST 1999                    v   '  _  )`-.\  ``-'
+       Manuel Serrano                                 _.- _..-_/ / ((.'
+       email:                                       ((,.-'   ((,/
+       Manuel.Serrano@unice.fr                      
+       -----------------------------------------------------------------------
+                      *** THIS IS AN ALPHA RELEASE ***
+       If it fails, ...
+       -----------------------------------------------------------------------
+
+       (bdb) 
+
+    This is the debugger. Try
+
+       (bdb) run toto-98.cd -adddb
+
+    The program will stop prompting the same error as before. Click [button-3]
+    of your mouse and select `Show stack'. This will pop up a new window 
+    display the execution stack. Click with [button-2] on the first line of 
+    that window. A window prompting the source line where the error has been 
+    raised will appear. Bring the mouse on the identifier PATHNAME after a 
+    while, the value of that variable will appears in the minibuffer. Click 
+    on the `Show' icon of the Bdb window. Now click with [button-2] on the line
+
+       #3    MAKE-XMCD-NAME(...) at xmcd.scm:44
+
+    of the frame window. The debugger will print the values of the local 
+    variable just before the call to MAKE-XMCD-NAME in the function 
+    ADD-XMCD-DB-ENTRY. Let's suppose that we are not able to understand the 
+    problem yet. Raise the popup menu of the stack frame window and choose 
+    to close that window.
+
+
+14. It is time to set a breakpoint in the MAKE-XMCD-NAME function. For that 
+    bring the mouse in the left margin of a buffer visiting the module xmcd. 
+    Then, click [button-3] on the definition source line of MAKE-XMCD-NAME:
+
+       (define (make-xmcd-name title id kind)
+
+    This will make an icon for that breakpoint to be printed in the left
+    margin. The icon, won't appear on the line you have clicked to but on 
+    the line containing the first instruction of the make-xmcd-name function.
+    At that time, re-try 
+
+       (bdb:MAKE-XMCD-NAME) run
+
+    on the Bdb window. The execution stops at the beginning of MAKE-XMCD-NAME
+    Type
+
+       (bdb:MAKE-XMCD-NAME) next 3
+
+    to skip 3 lines. Brings the mouse on the PATHNAME identifier to check
+    the value of that variable. For that click twice with [button-1], in the
+    highlighted region, click [button-3] and select "bprint".  You may also 
+    inspect the value of the function parameters TITLE, ID and KIND. Now try
+
+       (bdb:MAKE-XMCD-NAME) step
+
+    You will enter the C function MAKEDIR of the file `makedir.c'. Re-open
+    the stack frame window of Bdb ([button-3], then select show stack). As you
+    may see the C function is not printed. This is because the normal behavior
+    of the frame stack display is to hidden extern functions. To make it 
+    appears, click [button-3] on the frame window a select `Show C stack'. 
+    Now both Bigloo functions and C functions will be printed. 
+
+
+15. Bring the mouse on the C identifier PATHNAME. Click [button-1] twide, then
+    [button-3] and print the variable's value. You will see that PATHNAME 
+    is bound to `cddb/jazz'. The C function MKDIR fails at creating nested 
+    directories. That why the execution fails. Try in your shell
+
+       $ mkdir cddb
+
+    and then, whitin the debugger, re-start a new execution
+
+       (bdb:makedir) run
+
+    The execution will stops on the breakpoint we have previously setup.
+    Bring the mouse of that breakpoint and click [button-2]. Select 
+    [Disable breakpoint] and then continue the execution
+
+       (bdb:MAKE-XMCD-NAME) c
+
+    That time the execution will complete.
+
+
+16. It is time to check in a new revision of our project. Proceed as step 5.
+
+
+17. Makes any change to the file tutorial.scm and select 
+
+       [Compare to file version]
+
+    of the `version' menu bar. A window will be popped up. You may select
+    the version of the file you want to compare the current buffer with. 
+    Select the first one, that is click [button-2] on the first line. Emacs
+    will display two buffers an runs ediff on it. Type `q' when done with the
+    differences editor.
+
+
+18. It is time now for profiling. Edit the Makefile file [button-3], select
+    the [Makefile] then [Edit Makefile] entry. Removes the `-farithmetic' 
+    option from the BFGLAGS_O option. The pop the Bee menu one more time 
+    [button-3] of the tutorial.scm buffer and select in the [Profile] menu:
+
+       [Compile for profiling]
+
+    This will force a new compilation of the whole source file in profile mode.
+    Now, select from the Bee menu:
+
+       [Run for profile]
+
+    You will be prompted:
+
+       Run argument: []
+   
+    Set the run argument as for instance:
+
+       Run argument: [] toto-98.cd -adddb
+   
+    As soon as the execution will be completed a window will be popped up 
+    printing the result of the profile. Bigloo function and printed with
+    a different color as C functions. Bigloo module initialization functions
+    are also print with a different colors. You may click on each Bigloo
+    line to edit the definition of the function of the line. For instance,
+    click on the line:
+
+       0.00      0.00     0.00       11     0.00     0.00  STRING-GOOD-CASE
+
+    It may happens that some Bigloo functions cannot be edited. This is true
+    for function that are generated by the compiler, such as error handlers.
+
+
+19. It is time now for cleaning. Select from the Bee menu the entry 
+    [Compilation], select the sub-menu [make] and then select [clean].
