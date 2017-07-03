@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul  3 15:00:36 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 16:37:01 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -150,7 +150,7 @@ resolvforce=no
 #*--- unistring version (left blank for autoconfiguration)    ---------*/
 unistring=
 unistringforce=no
-customunistring=no
+customunistring=
 unistringsrc=$UNISTRINGSRC
 unistringconfigureopt=
 
@@ -383,7 +383,7 @@ enable_bglpkg="no"
 #*--- pcre configuration ----------------------------------------------*/
 # valid values are "no", "yes"
 enable_configure_pcre="yes"
-custompcre=no
+custompcre=
 pcresrc=$PCRESRC
 
 if [ "$pcresrc " ]; then
