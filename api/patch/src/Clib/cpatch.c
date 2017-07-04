@@ -35,7 +35,6 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
 
     patch_32_type *addr = (patch_32_type*)patch->addr;
 
-    fprintf( stderr, "patch_32 kind=%d\n", patch->kind );
     if ((patch->kind & 0x100) == 0) {
 
       switch (patch->kind & 0xff) {
@@ -60,7 +59,7 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
           patch_32_type val = val_32 * (patch_32_type)patch->mult + (patch_32_type)patch->offs;
 
 #ifdef PATCH_DEBUG
-          fprintf(stderr, "patch_32 patching value %d at address %p\n", val, addr);
+          fprintf(stderr, "patch_32 patching value %d (%p) at address %p\n", val, (void*)val, addr);
 #endif
 
           *addr = val;

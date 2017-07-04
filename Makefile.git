@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 20 14:43:37 2006                          */
-#*    Last change :  Tue Jul  4 10:10:22 2017 (serrano)                */
+#*    Last change :  Tue Jul  4 13:30:26 2017 (serrano)                */
 #*    Copyright   :  2006-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Git config                                                       */
@@ -63,9 +63,8 @@ revision: populate
 #*---------------------------------------------------------------------*/
 checkout:
 	@ $(VM-CLONE) $(BOOTDIR) \
-           && $(RM) -rf bigloo/.hg \
-           && $(RM) -rf bigloo/.hgignore \
-           && $(RM) -rf bigloo/.hgtags
+           && $(RM) -rf bigloo/.git \
+           && $(RM) -rf bigloo/.gitignore
 
 #*---------------------------------------------------------------------*/
 #*    push                                                             */
