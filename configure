@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Jul  3 17:39:57 2017 (serrano)                */
+#*    Last change :  Tue Jul  4 06:53:24 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2360,11 +2360,15 @@ havemixer=`$autoconf mixer` || exit 1
 #*---------------------------------------------------------------------*/
 if [ "$regexp " = " " ]; then
   pcrelibs=no
-  
+    
   # find out the C library for pcre
-  if [ "$enable_configure_pcre " = "yes " -a "$custompcre " != "yes " ]; then
-    pcrelibs=`$autoconf pcre` || exit 1;
-    extrapcre=pcre
+  if [ "$enable_configure_pcre " = "yes " ]; then
+    if [ "$custompcre " != "yes " ]; then
+      pcrelibs=`$autoconf pcre` || exit 1;
+      extrapcre=pcre
+    fi
+  else
+    custompcre=no
   fi
 
   if [ "$pcrelibs " = "no " ]; then

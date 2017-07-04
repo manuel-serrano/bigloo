@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Mon Jul  3 18:42:28 2017 (serrano)                */
+#*    Last change :  Mon Jul  3 19:58:58 2017 (serrano)                */
 #*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -54,7 +54,7 @@ build-jvm:
 #*---------------------------------------------------------------------*/
 .PHONY: pop
 pop:
-	@ echo $(POPULATION:%=pulseaudio/%)
+	@ echo $(POPULATION:%=$(API)/%)
 	@ for d in $(POPDIR); do \
             (cd $$d && $(MAKE) -s pop) \
           done;

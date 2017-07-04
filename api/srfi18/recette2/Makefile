@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Mon Jul  3 18:38:00 2017 (serrano)                */
+#*    Last change :  Tue Jul  4 07:10:25 2017 (serrano)                */
 #*    Copyright   :  2002-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
@@ -47,7 +47,7 @@ recette-jvm$(SCRIPTEXTENSION): recette.class
 	$(BIGLOO) -jvm $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
 pop:
-	@ echo $(POPULATION:%=recette2/recette2/%)
+	@ echo $(POPULATION:%=srfi18/recette2/%)
 
 clean:
 	@- $(RM) -f *~ '#*#' core
