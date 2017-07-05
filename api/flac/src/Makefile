@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Wed Sep 28 03:56:08 2016 (serrano)                */
+#*    Last change :  Thu Jul  6 15:57:30 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,6 +53,11 @@ ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
 else
 EXTRALIBS	= $(FLACLIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+endif
+ifeq "$(PULSEAUDIOLIBS) " " "
+EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
+else
+EXTRALIBS	= $(FLACLIBS) $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
 endif
 endif
 

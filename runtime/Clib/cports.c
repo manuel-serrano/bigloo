@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Mon May 22 13:59:18 2017 (serrano)                */
+/*    Last change :  Thu Jul  6 10:36:20 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -488,6 +488,7 @@ loop:
 	 OUTPUT_PORT( port ).err = BGL_IO_TIMEOUT_ERROR;
 	 C_OUTPUT_PORT_SYSTEM_FAILURE(
 	    BGL_IO_TIMEOUT_ERROR, "write/timeout", buf, port );
+	 return 0;
       } else {
 	 if( errno == EINTR ) {
 	    goto loop;
@@ -496,6 +497,7 @@ loop:
 	 OUTPUT_PORT( port ).err = BGL_IO_WRITE_ERROR;
 	 C_OUTPUT_PORT_SYSTEM_FAILURE(
 	    BGL_IO_WRITE_ERROR, "write/timeout", strerror( errno ), port );
+	 return 0;
       }
    } else {
       // fprintf( stderr, "<<< posix_timed_write fd=%d n=%d\n", fd, n );
@@ -582,6 +584,7 @@ loop:
 		  tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
 	 
 	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "read/timeout", buf, port );
+	 return 0;
       } else {
 	 if( errno == EINTR ) {
 	    goto loop;
@@ -599,6 +602,7 @@ loop:
 	 C_SYSTEM_FAILURE(
 	    BGL_IO_READ_ERROR,
 	    "read/timeout", strerror( errno ), port );
+	 return 0;
       }
    } else {
 #if( defined( DEBUG_TIMED_READ ) )    
@@ -1736,6 +1740,7 @@ bgl_open_input_procedure( obj_t fun, obj_t buffer ) {
 			"open-input-procedure",
 			"Illegal procedure arity",
 			fun );
+      return 0;
    }
 }
 
@@ -1763,6 +1768,7 @@ bgl_open_input_gzip_port( obj_t fun, obj_t in, obj_t buffer ) {
 			"open-input-gzip-port",
 			"Illegal procedure arity",
 			fun );
+      return 0;
    }
 }
 
@@ -2241,6 +2247,7 @@ bgl_file_to_string( char *path ) {
 			"file->string",
 			strerror( errno ),
 			string_to_bstring( path ) );
+      return 0L;
    } else {
       struct stat sin;
       
@@ -2250,6 +2257,7 @@ bgl_file_to_string( char *path ) {
 			   "file->string",
 			   strerror( errno ),
 			   string_to_bstring( path ) );
+	 return 0L;
       } else {
 	 obj_t res = make_string_sans_fill( sin.st_size );
 	 int n = read( fd, BSTRING_TO_STRING( res ), sin.st_size );
@@ -2261,6 +2269,7 @@ bgl_file_to_string( char *path ) {
 			      "file->string",
 			      strerror( errno ),
 			      string_to_bstring( path ) );
+	    return 0L;
 	 } else {
 	    close( fd );
 	    return res;
@@ -2867,11 +2876,14 @@ bgl_port_isatty( obj_t port ) {
       switch( OUTPUT_PORT( port ).stream_type ) {
 	 case BGL_STREAM_TYPE_FD:
 	    return isatty( PORT_FD( port ) );
-	    break;
+
 	 case BGL_STREAM_TYPE_FILE:
 	    return isatty( fileno( PORT_FILE( port ) ) );
-	    break;
+
 	 case BGL_STREAM_TYPE_CHANNEL: 
+	    return 0;
+
+	 default:
 	    return 0;
       }
    } else {
@@ -2907,6 +2919,7 @@ bgl_open_pipes( obj_t name ) {
       return in;
    } else {
       C_SYSTEM_FAILURE( BGL_ERROR, "open-pipes", strerror( errno ), BFALSE );
+      return 0L;
    }
 }
 

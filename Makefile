@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Jul  3 18:15:10 2017 (serrano)                */
+#*    Last change :  Fri Jul  7 19:11:16 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -618,7 +618,7 @@ ftp:
 #*---------------------------------------------------------------------*/
 #*    test                                                             */
 #*---------------------------------------------------------------------*/
-.PHONY: test c-test jvm-test
+.PHONY: test c-test jvm-test c-api-test
 
 test:
 	@if [ "$(NATIVEBACKEND)" = "yes" ]; then \
@@ -631,8 +631,13 @@ test:
 c-test: 
 	(cd recette && \
          $(MAKE) recette-static && \
-         ./recette-static $(RECETTEFLAGS)); \
-        for p in $(APIS); do \
+         $(BGLBUILDBINDIR)/bglrun.sh ./recette-static $(RECETTEFLAGS))
+	if [ "$(SHAREDCOMPILER) " = "no " -o "$(HOSTOS) " = "linux " ]; then \
+           $(MAKE) c-api-test; \
+         fi
+
+c-api-test:
+	for p in $(APIS); do \
           if [ -d api/$$p/recette ]; then \
             echo "*** $$p ********** "; \
             (cd api/$$p/recette && \

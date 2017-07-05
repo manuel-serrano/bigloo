@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jul  4 11:00:47 2017 (serrano)                */
+#*    Last change :  Fri Jul  7 18:36:10 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2417,40 +2417,40 @@ featureflags="-srfi enable-$regexp"
 #*---------------------------------------------------------------------*/
 #*    unistring                                                        */
 #*---------------------------------------------------------------------*/
-if [ "$customunistring" != "no" ]; then
+if [ "$customunistring " = "yes " ]; then
   haveunistring=1;
   featureflags="-srfi enable-unistring $featureflags";
   extraunistring=unistring
   libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
   lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
   cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-fi
-  
-if [ "$unistring " = " " -a "$customunistring " != "yes " ]; then
+elif [ "$unistring " = " " ]; then
   extraunistring=`$autoconf unistring` || exit 1
 fi
   
-if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
-  customunistring=yes
-  unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+if [ "$extraunistring " = "no " ]; then
+  if [ "$customunistring " != "no " ]; then
+    customunistring=yes
+    unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
     
-  echo "+ Installing custom unistring source code."
-  (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
+    echo "+ Installing custom unistring source code."
+    (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
 
-  echo "+ Configuring custom unistring..."
-  (cd libunistring; . ./configure-unistring) || exit 1
+    echo "+ Configuring custom unistring..."
+    (cd libunistring; . ./configure-unistring) || exit 1
   
-  unistringlibs=yes
-  extraunistring=unistring
-else
-  haveunistring=0;
-  extraunistring=no
-  if [ $unistringforce = "yes" ]; then
-    echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
-    echo "Aborting";
-    exit 1;
+    unistringlibs=yes
+    extraunistring=unistring
+  else
+    haveunistring=0;
+    extraunistring=no
+    if [ $unistringforce = "yes" ]; then
+      echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
+      echo "Aborting";
+      exit 1;
+    fi
   fi
-fi
+fi  
 
 if [ "$extraunistring " != "no " ]; then
   haveunistring=1;
@@ -2480,9 +2480,11 @@ if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
      libuvlibs="-luv"
      libuv="yes"
      libuvcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
+     buildibuvlibdir=$buildir/libuv/libuv-$libuvversion/.libs
    else
      libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
      libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
+     buildibuvlibdir=$buildir # dummy existing path
 
      libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
   fi
@@ -3328,6 +3330,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
 	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
+	      -e "s|@BGLBUILDLIBUVLIBDIR@|$buildibuvlibdir|" \
 	      -e "s|@SHELL@|$shell|" \
 	      -e "s|@BIGLOO@|$bigloo|" \
 	      -e "s|@AFILE@|$buildbindir/$afile|" \
@@ -3634,6 +3637,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # Native backend
   echo "NATIVEBACKEND=$nativebackend" >> $makefile_cfg
   echo "NATIVE_MACHDEP=$nativemachdep" >> $makefile_cfg
+  echo "SHAREDCOMPILER=$sharedcompiler" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The basename
@@ -4178,7 +4182,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
     echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
-    echo "LIBUV_LD_LIBRARY_PATH=$buildir/libuv/libuv-$libuvversion/.libs" >> $makefile_cfg
+    echo "LIBUV_LD_LIBRARY_PATH=$buildibuvlibdir" >> $makefile_cfg
 
     if [ "$customlibuv " = "yes " ]; then
       echo "LIBUVCUSTOM=yes" >> $makefile_cfg

@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Thu Jan 28 14:56:01 2016 (serrano)                */
+#*    Last change :  Thu Jul  6 15:59:15 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -49,6 +49,9 @@ CEFLAGS		= $(WAVCFLAGS)
 EXTRALIBS	= $(WAVLIBS) -lbigloomultimedia_u-$(RELEASE)
 ifneq "$(ALSALIBS) " " "
 EXTRALIBS	+= $(ALSALIBS) -lbiglooalsa_u-$(RELEASE)
+endif
+ifneq "$(PULSEAUDIOLIBS) " " "
+EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloopulseaudio_u-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

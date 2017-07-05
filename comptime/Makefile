@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Jun 20 17:38:01 2017 (serrano)                */
+#*    Last change :  Wed Jul  5 20:00:22 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -609,7 +609,7 @@ boot:
 	@ echo "$(BIGLOO_DEST)$(EXE_SUFFIX) done..."
 
 doboot.shared: $(O_OBJECTS)
-	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)
+	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) -L$(BOOTLIBDIR) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)
 
 doboot.static: $(O_OBJECTS)
 	 $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(LDCOMPLIBS_STATIC) $(LDCOMPLIBS)
