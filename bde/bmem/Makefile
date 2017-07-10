@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Thu Jun 22 09:12:09 2017 (serrano)                */
+#*    Last change :  Sun Jul  9 10:20:16 2017 (serrano)                */
 #*    Copyright   :  2003-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 include ../../Makefile.misc
 

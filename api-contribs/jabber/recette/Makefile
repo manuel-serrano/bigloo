@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/sqlite/recette/Makefile          */
+#*    .../prgm/project/bigloo/api-contribs/jabber/recette/Makefile     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Tue Mar 13 14:25:26 2007 (serrano)                */
-#*    Copyright   :  2002-07 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 09:58:21 2017 (serrano)                */
+#*    Copyright   :  2002-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the tests                                  */
 #*=====================================================================*/
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    Standard path                                                    */
 #*---------------------------------------------------------------------*/
+include ../../../Makefile.buildconfig 
 include ../../../Makefile.config 
 
 #*---------------------------------------------------------------------*/

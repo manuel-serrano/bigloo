@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Jun  2 08:07:05 2017 (serrano)                */
+#*    Last change :  Sun Jul  9 09:54:08 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    Default configuration                                            */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 include ../Makefile.misc
 

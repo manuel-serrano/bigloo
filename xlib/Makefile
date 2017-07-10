@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Dec  4 10:25:59 1995                          */
-#*    Last change :  Wed Oct 14 07:15:56 2015 (serrano)                */
-#*    Copyright   :  1995-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:28:20 2017 (serrano)                */
+#*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This makefile build the X11 Bigloo declaration and the examples  */
 #*    using the Xlib with Bigloo.                                      */
@@ -13,6 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Thu Aug 12 11:35:27 2010 (serrano)                */
-#*    Copyright   :  1996-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:25:01 2017 (serrano)                */
+#*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build sqltiny                                   */
 #*=====================================================================*/
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

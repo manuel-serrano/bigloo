@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Jun  2 08:35:53 2017 (serrano)                */
+#*    Last change :  Sun Jul  9 10:19:50 2017 (serrano)                */
 #*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    Default configuration                                            */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 include ../Makefile.misc
 

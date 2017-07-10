@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 30 15:19:19 1996                          */
-#*    Last change :  Mon Oct 30 17:25:20 2006 (serrano)                */
-#*    Copyright   :  1996-2006 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:23:49 2017 (serrano)                */
+#*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build socket                                     */
 #*=====================================================================*/
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

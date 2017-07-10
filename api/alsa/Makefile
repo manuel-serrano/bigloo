@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Jan 29 16:02:11 2015 (serrano)                */
-#*    Copyright   :  2001-15 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 09:59:16 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for alsa                                            */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

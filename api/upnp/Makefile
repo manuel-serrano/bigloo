@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Apr  7 07:17:36 2013 (serrano)                */
-#*    Copyright   :  2001-13 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 10:18:26 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the UPNP library                                */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

@@ -3,11 +3,12 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Tue Apr 18 14:18:13 2017 (serrano)                */
+#*    Last change :  Sun Jul  9 10:27:43 2017 (serrano)                */
 #*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
 #*=====================================================================*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 
 #*---------------------------------------------------------------------*/

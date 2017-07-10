@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan  2 08:48:29 2007                          */
-#*    Last change :  Wed Oct 14 07:33:15 2015 (serrano)                */
-#*    Copyright   :  2007-15 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 10:21:41 2017 (serrano)                */
+#*    Copyright   :  2007-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile for building Bigloo ScmPkg packages.        */
 #*    -------------------------------------------------------------    */

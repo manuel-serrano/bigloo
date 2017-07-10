@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Wed Nov 16 10:23:11 2011 (serrano)                */
-#*    Copyright   :  2001-11 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 10:16:53 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for SRFI                                            */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

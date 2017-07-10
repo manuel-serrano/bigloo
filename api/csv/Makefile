@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Thu Feb 23 10:25:03 2012 (serrano)                */
-#*    Copyright   :  2001-12 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 10:07:01 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for csv                                             */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jun 20 09:42:50 2010 (serrano)                */
-#*    Copyright   :  2001-10 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 10:07:47 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for dbus                                            */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

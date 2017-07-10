@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Thu Mar  3 14:36:40 2016 (serrano)                */
-#*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 09:54:18 2017 (serrano)                */
+#*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
 #*=====================================================================*/
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    Default configuration                                            */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 
 #*---------------------------------------------------------------------*/

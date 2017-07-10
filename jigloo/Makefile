@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 14:46:31 1998                          */
-#*    Last change :  Thu Aug 12 11:35:45 2010 (serrano)                */
-#*    Copyright   :  1998-2010 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:26:28 2017 (serrano)                */
+#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build Jigloo. This makefile has to be processed  */
 #*    either by Gnu make or Sun make.                                  */
@@ -13,6 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    Default configuration                                            */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 
 #*---------------------------------------------------------------------*/

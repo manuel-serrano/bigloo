@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Fri May 27 10:42:25 2016 (serrano)                */
-#*    Copyright   :  1998-2016 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:25:22 2017 (serrano)                */
+#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -13,6 +13,7 @@ do: boot
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 include ../Makefile.misc
 

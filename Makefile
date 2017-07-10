@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Jul  7 19:11:16 2017 (serrano)                */
+#*    Last change :  Mon Jul 10 09:52:57 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -60,6 +60,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+-include Makefile.buildconfig
 -include Makefile.config
 
 #*---------------------------------------------------------------------*/
@@ -445,8 +446,9 @@ distrib:
 	   $(RM) -rf bigloo$(RELEASE) && $(RM) -rf bigloo && \
            $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
            cd bigloo && \
-           cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config && \
-           $(MAKE) true-distrib)
+           cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config \
+           && cp $(BOOTDIR)/Makefile.buildconfig Makefile.buildconfig \
+           && $(MAKE) true-distrib)
 	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo$(RELEASE)
 
 true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
@@ -464,6 +466,7 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
           done
 	@ $(MAKE) -C $(BOOTDIR) log > $$PWD/ChangeLog
 	@ $(RM) -f Makefile.config;
+	@ $(RM) -f Makefile.buildconfig;
 	@ (cd .. && \
            mv bigloo bigloo$(RELEASE)$(VERSION) && \
            tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE)$(VERSION))

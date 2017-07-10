@@ -14,6 +14,7 @@
 **/o/
 **/.libs/
 **/objs/.*
+**/objs/
 
 # Env dev
 *.afile
@@ -72,6 +73,7 @@ manuals/version.texi
 # Configure generated files
 config.status
 Makefile.config
+Makefile.buildconfig
 .bigloorelease
 autoconf/runtest
 

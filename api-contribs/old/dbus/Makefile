@@ -1,15 +1,16 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api-contribs/dbus/Makefile           */
+#*    serrano/prgm/project/bigloo/api-contribs/old/dbus/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Fri Aug 10 13:51:58 2007 (serrano)                */
-#*    Copyright   :  2001-07 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 09:58:42 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for dbus                                            */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

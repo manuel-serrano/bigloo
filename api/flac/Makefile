@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Tue Nov 15 10:38:36 2011 (serrano)                */
-#*    Copyright   :  2001-11 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 11:52:18 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for flac                                            */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/
@@ -64,7 +65,6 @@ pop:
 #*---------------------------------------------------------------------*/
 clean:
 	(cd src && $(MAKE) clean)
-	(cd recette && $(MAKE) clean)
 	(cd examples && $(MAKE) clean)
 
 distclean: clean

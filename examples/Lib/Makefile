@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sat Dec 19 12:58:58 1998                          */
-#*    Last change :  Thu Nov 22 17:21:43 2012 (serrano)                */
-#*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:23:54 2017 (serrano)                */
+#*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the point library                          */
 #*=====================================================================*/
@@ -13,6 +13,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

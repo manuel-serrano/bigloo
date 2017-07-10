@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jul  7 18:36:10 2017 (serrano)                */
+#*    Last change :  Sun Jul  9 15:27:12 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -400,6 +400,7 @@ branch="`echo $release | sed 's/[.a-z]*//g'`0";
 mode=standard
 tuning=
 makefile_cfg=Makefile.config
+makefile_build=Makefile.buildconfig
 pwd=`pwd`
 bootdir=$pwd
 buildbindir=
@@ -3544,6 +3545,36 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     name="$name"x;
   done
 
+  @ Makefile.buildconfig
+  rm -f $makefile_build 2> /dev/null
+  echo "# automatically generated, don't edit" > $makefile_build
+  echo "# `date`" >> $makefile_build
+  echo "" >> $makefile_build
+  # The Buildbin directory
+  echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_build
+  echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_build
+  echo >> $makefile_build
+
+  # The cmopilers and tools
+  if [  "$buildbindir" = "$bootdir/bin" ]; then
+    echo 'BIGLOO=$'"(BGLBUILDBINDIR)/bigloo.sh" >> $makefile_build
+    echo 'BGLAFILE=$'"(BGLBUILDBINDIR)/bglafile.sh" >> $makefile_build
+    echo 'BGLJFILE=$'"(BGLBUILDBINDIR)/bgljfile.sh" >> $makefile_build
+    echo 'BGLTAGS=$'"(BGLBUILDBINDIR)/bgltags.sh" >> $makefile_build
+    echo 'BGLDEPEND=$'"(BGLBUILDBINDIR)/bgldepend.sh" >> $makefile_build
+    echo 'BGLMCO=$'"(BGLBUILDBINDIR)/bglmco.sh" >> $makefile_build
+    echo 'CIGLOO=$'"(BGLBUILDBINDIR)/cigloo" >> $makefile_build
+  else
+    echo 'BIGLOO=$'"(BGLBUILDBINDIR)/bigloo" >> $makefile_build
+    echo 'BGLAFILE=$'"(BGLBUILDBINDIR)/bglafile" >> $makefile_build
+    echo 'BGLJFILE=$'"(BGLBUILDBINDIR)/bgljfile" >> $makefile_build
+    echo 'BGLTAGS=$'"(BGLBUILDBINDIR)/bgltags" >> $makefile_build
+    echo 'BGLDEPEND=$'"(BGLBUILDBINDIR)/bgldepend" >> $makefile_build
+    echo 'BGLMCO=$'"(BGLBUILDBINDIR)/bglmco" >> $makefile_build
+    echo 'CIGLOO=$'"(BGLBUILDBINDIR)/cigloo" >> $makefile_build
+  fi
+  echo >> $makefile_build
+
   # We first cleanup the file
   rm -f $makefile_cfg 2> /dev/null
   echo "# automatically generated, don't edit" > $makefile_cfg
@@ -3582,28 +3613,23 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "BOOTLIBDIR=$bootdir/lib/bigloo/$release" >> $makefile_cfg
   echo >> $makefile_cfg
 
-  # The Buildbin directory
-  echo "BGLBUILDBINDIR=$buildbindir" >> $makefile_cfg
-  echo "BGLBUILDLIBDIR=$buildlibdir" >> $makefile_cfg
-  echo >> $makefile_cfg
-
   # The cmopilers and tools
   if [  "$buildbindir" = "$bootdir/bin" ]; then
-    echo 'BIGLOO=$'"(BGLBUILDBINDIR)/bigloo.sh" >> $makefile_cfg
-    echo 'BGLAFILE=$'"(BGLBUILDBINDIR)/bglafile.sh" >> $makefile_cfg
-    echo 'BGLJFILE=$'"(BGLBUILDBINDIR)/bgljfile.sh" >> $makefile_cfg
-    echo 'BGLTAGS=$'"(BGLBUILDBINDIR)/bgltags.sh" >> $makefile_cfg
-    echo 'BGLDEPEND=$'"(BGLBUILDBINDIR)/bgldepend.sh" >> $makefile_cfg
-    echo 'BGLMCO=$'"(BGLBUILDBINDIR)/bglmco.sh" >> $makefile_cfg
-    echo 'CIGLOO=$'"(BGLBUILDBINDIR)/cigloo" >> $makefile_cfg
+    echo 'BIGLOO?=$'"(BINDIR)/bigloo.sh" >> $makefile_cfg
+    echo 'BGLAFILE?=$'"(BINDIR)/bglafile.sh" >> $makefile_cfg
+    echo 'BGLJFILE?=$'"(BINDIR)/bgljfile.sh" >> $makefile_cfg
+    echo 'BGLTAGS?=$'"(BINDIR)/bgltags.sh" >> $makefile_cfg
+    echo 'BGLDEPEND?=$'"(BINDIR)/bgldepend.sh" >> $makefile_cfg
+    echo 'BGLMCO?=$'"(BINDIR)/bglmco.sh" >> $makefile_cfg
+    echo 'CIGLOO?=$'"(BINDIR)/cigloo" >> $makefile_cfg
   else
-    echo 'BIGLOO=$'"(BGLBUILDBINDIR)/bigloo" >> $makefile_cfg
-    echo 'BGLAFILE=$'"(BGLBUILDBINDIR)/bglafile" >> $makefile_cfg
-    echo 'BGLJFILE=$'"(BGLBUILDBINDIR)/bgljfile" >> $makefile_cfg
-    echo 'BGLTAGS=$'"(BGLBUILDBINDIR)/bgltags" >> $makefile_cfg
-    echo 'BGLDEPEND=$'"(BGLBUILDBINDIR)/bgldepend" >> $makefile_cfg
-    echo 'BGLMCO=$'"(BGLBUILDBINDIR)/bglmco" >> $makefile_cfg
-    echo 'CIGLOO=$'"(BGLBUILDBINDIR)/cigloo" >> $makefile_cfg
+    echo 'BIGLOO?=$'"(BINDIR)/bigloo" >> $makefile_cfg
+    echo 'BGLAFILE?=$'"(BINDIR)/bglafile" >> $makefile_cfg
+    echo 'BGLJFILE?=$'"(BINDIR)/bgljfile" >> $makefile_cfg
+    echo 'BGLTAGS?=$'"(BINDIR)/bgltags" >> $makefile_cfg
+    echo 'BGLDEPEND?=$'"(BINDIR)/bgldepend" >> $makefile_cfg
+    echo 'BGLMCO?=$'"(BINDIR)/bglmco" >> $makefile_cfg
+    echo 'CIGLOO?=$'"(BINDIR)/cigloo" >> $makefile_cfg
   fi
   echo >> $makefile_cfg
 

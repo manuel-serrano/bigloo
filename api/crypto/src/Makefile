@@ -1,13 +1,18 @@
 #*=====================================================================*/
-#*    Author      :  Manuel Serrano                                    */
-#*        adapted :  Florian Loitsch                                   */
+#*    serrano/prgm/project/bigloo/api/crypto/src/Makefile              */
 #*    -------------------------------------------------------------    */
-#*    The makefile to build the library.                               */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Sun Jul  9 10:01:24 2017                          */
+#*    Last change :  Sun Jul  9 10:06:30 2017 (serrano)                */
+#*    Copyright   :  2017 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    The Makefile to build the library                                */
 #*=====================================================================*/
 
 #*---------------------------------------------------------------------*/
 #*    Standard Makefile configuration                                  */
 #*---------------------------------------------------------------------*/
+include ../../../Makefile.buildconfig
 include ../../../Makefile.config
 include ../../../Makefile.misc
 

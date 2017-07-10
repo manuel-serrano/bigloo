@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    /tmp/BGL/bigloo4.3b/gc/Makefile-gc-7.5.0-27may2016               */
+#*    serrano/prgm/project/bigloo/gc/Makefile-gc-7.5.0-27may2016       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep  3 17:41:09 2009                          */
-#*    Last change :  Tue Jun 20 13:12:15 2017 (serrano)                */
+#*    Last change :  Sun Jul  9 10:25:39 2017 (serrano)                */
 #*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    gc-7.5.0 specific entries                                        */
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    Default configuration                                            */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 
 boot-gc:

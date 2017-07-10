@@ -3,13 +3,14 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Jun 20 08:48:58 2010                          */
-#*    Last change :  Tue Nov 15 10:27:20 2011 (serrano)                */
-#*    Copyright   :  2010-11 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 10:00:24 2017 (serrano)                */
+#*    Copyright   :  2010-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Mafile for the CRYPTO library                                */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

@@ -128,6 +128,10 @@ Testing BIGLOO
        Postscript and HTML version of the Bigloo documentation can be found at:
           http://www.inria.fr/indes/fp/Bigloo
 
+       On MacOSX not all tests can be executed before Bigloo is fully
+       install. Once installed, the extra tests can be executed with:
+          `make c-api-test'
+	  
 
 Compiling BIGLOO DEVELOPMENT ENVIRONMENT (BEE)
 **********************************************

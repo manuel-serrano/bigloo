@@ -1,15 +1,16 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/calendar/Makefile                */
+#*    serrano/prgm/project/bigloo/api-contribs/jabber/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul 15 14:42:52 2007 (serrano)                */
-#*    Copyright   :  2001-07 Manuel Serrano                            */
+#*    Last change :  Sun Jul  9 09:58:01 2017 (serrano)                */
+#*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for CALENDAR                                        */
 #*=====================================================================*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Wed Oct  7 08:36:57 2015 (serrano)                */
-#*    Copyright   :  1998-2015 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:26:23 2017 (serrano)                */
+#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
 #*=====================================================================*/
@@ -13,6 +13,7 @@ do: boot
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 include ../Makefile.misc
 

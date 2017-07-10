@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 16 15:05:03 1993                          */
-#*    Last change :  Fri Dec  5 10:44:46 2003 (serrano)                */
-#*    Copyright   :  1993-2003 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jul  9 10:23:22 2017 (serrano)                */
+#*    Copyright   :  1993-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the foreign example.                       */
 #*=====================================================================*/
@@ -12,6 +12,7 @@
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../../Makefile.buildconfig
 include ../../Makefile.config
 
 #*---------------------------------------------------------------------*/

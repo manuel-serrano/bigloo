@@ -1,6 +1,7 @@
 #*---------------------------------------------------------------------*/
 #*    Standard configuration                                           */
 #*---------------------------------------------------------------------*/
+include ../../../Makefile.buildconfig
 include ../../../Makefile.config
 include ../../../Makefile.misc
 
