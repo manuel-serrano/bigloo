@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Sat Oct 13 07:37:51 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Fri Jul 14 10:44:18 2017 (serrano)                */
+;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
 ;*=====================================================================*/
@@ -28,29 +28,20 @@
 	    saw_lib
 	    saw_defs
 	    saw_node2rtl
-	    saw_regset)
+	    saw_regset
+	    saw_regutils)
    
    (static  (wide-class block/ra::block
-	       trsif::pair-nil)
+	       last::pair-nil)
 	    
 	    (wide-class rtl_ins/ra::rtl_ins
 	       (def (default #unspecified))
 	       (out (default #unspecified))
 	       (in (default #unspecified))
 	       (spill (default #unspecified))))
-
-   (export  (wide-class rtl_reg/ra::rtl_reg
-	       (num::int read-only)
-	       (color (default #f))
-	       (coalesce (default #f))
-	       (occurrences::int (default 0))
-	       (interfere (default #unspecified))
-	       (interfere2 (default #unspecified))))
    
    (export  (register-allocation::pair-nil ::backend
-					   ::global
-					   ::pair-nil
-					   ::pair-nil)
+	       ::global ::pair-nil ::pair-nil)
 	    (interfere-reg! r1 r2)
 	    (generic type-interference! ::backend ::pair-nil)))
 
@@ -78,11 +69,10 @@
 ;*---------------------------------------------------------------------*/
 (define (%register-allocation back global params blocks)
    (verbose 2 "        reg. alloc. "
-	    (shape global) " [size=" (rtl-size blocks) " instrs]:\n")
+      (shape global) " [size=" (rtl-size blocks) " instrs]:\n")
    ;; cleanup the tree to remove useless dest registers
    (cleanup-move-tree! blocks)
    ;; compute the set of temporaries of blocks
-   (set! *register-count* -1)
    (let* ((cregs (collect-registers! blocks))
 	  (hregs (append-map! collect-register! (backend-registers back)))
 	  (pregs (filter rtl_reg/ra? params))
@@ -92,7 +82,7 @@
 	 (for-each (lambda (r)
 		      (with-access::rtl_reg/ra r (interfere)
 			 (set! interfere (make-empty-regset regs))))
-		   regs)
+	    regs)
 	 (verbose 3  "          number of registers... " (length hregs) "\n")
 	 (verbose 3  "          number of parameters... " (length pregs) "\n")
 	 (verbose 3  "          number of temporaries... " (length cregs) "\n")
@@ -103,7 +93,7 @@
 	 ;; temporaries liveness
 	 (liveness! blocks pregs)
 	 (on-trace (jvmas 3)
-		   (dump-basic-blocks liveness: global pregs blocks))
+	    (dump-basic-blocks liveness: global pregs blocks))
 	 ;; add the interference in between hardware registers and temporaries
 	 (hardware-mutual-interference! hregs)
 	 (hardware-parameters-interference! back pregs)
@@ -120,54 +110,17 @@
 	 (funcall-spill! hregs blocks)
 	 ;; register allocation
 	 (on-trace (jvmas 4)
-		   (dump-basic-blocks before-mapping: global pregs blocks))
+	    (dump-basic-blocks before-mapping: global pregs blocks))
 	 (rtl-map-registers! pregs cregs blocks)
 	 ;; remove useless move
 	 (when (>fx *optim* 1)
 	    (remove-nop-move! blocks)))
       (on-trace (jvmas 2)
-		(dump-basic-blocks reg-alloc: global pregs blocks))
+	 (dump-basic-blocks reg-alloc: global pregs blocks))
       ;; shrink the hardware registers
-      (for-each (lambda (r) (shrink! r)) hregs)))
+      (for-each shrink! regs)
+      (for-each (lambda (r) (when (isa? r rtl_reg/ra) (shrink! r))) pregs)))
 
-;*---------------------------------------------------------------------*/
-;*    collect-register! ...                                            */
-;*---------------------------------------------------------------------*/
-(define (collect-register!::pair-nil o::rtl_reg)
-   (if (or (rtl_reg/ra? o) (rtl_reg-onexpr? o))
-       '()
-       (begin
-	  (set! *register-count* (+fx 1 *register-count*))
-	  (list (widen!::rtl_reg/ra o (num *register-count*))))))
-
-;*---------------------------------------------------------------------*/
-;*    *register-count* ...                                             */
-;*---------------------------------------------------------------------*/
-(define *register-count* -1)
-
-;*---------------------------------------------------------------------*/
-;*    collect-registers!::pair-nil ...                                 */
-;*    -------------------------------------------------------------    */
-;*    Collect all the register from a list of blocks.                  */
-;*---------------------------------------------------------------------*/
-(define (collect-registers!::pair-nil o)
-   (define (args-collect-registers! o)
-      (cond
-	 ((rtl_reg? o)
-	  (collect-register! o))
-	 ((rtl_ins? o)
-	  (with-access::rtl_ins o (args)
-	     (append-map! args-collect-registers! args)))
-	 (else
-	  '())))
-   (define (ins-collect-registers! o)
-      (with-access::rtl_ins o (dest args)
-	 (append! (args-collect-registers! dest)
-		  (append-map! args-collect-registers! args))))
-   (define (block-collect-registers! o)
-      (append-map! ins-collect-registers! (block-first o)))
-   (append-map! block-collect-registers! o))
-   
 ;*---------------------------------------------------------------------*/
 ;*    widen-ra! ...                                                    */
 ;*    -------------------------------------------------------------    */
@@ -176,7 +129,7 @@
 ;*---------------------------------------------------------------------*/
 (define (widen-ra! o regs::pair-nil)
    (define (get-args o)
-      (filter rtl_reg/ra? (ins-args* o)))
+      (filter rtl_reg/ra? (rtl_ins-args* o)))
    (define (args-widen-ra! o)
       (when (rtl_ins? o)
 	 (with-access::rtl_ins o (args fun)
@@ -198,10 +151,10 @@
 	 (for-each args-widen-ra! args)))
    (define (block-widen-ra! o)
       (with-access::block o (first)
-	 (let ((trsif (reverse first)))
+	 (let ((last (reverse first)))
 	    (for-each ins-widen-ra! first)
 	    (widen!::block/ra o
-	       (trsif trsif)))))
+	       (last last)))))
    (for-each block-widen-ra! o))
 
 ;*---------------------------------------------------------------------*/
@@ -232,10 +185,12 @@
 	     (liip (cdr bs) (or (liveness-block! (car bs)) t)))))
    (verbose 3 " done\n"))
 
-;; liveness-block!
+;*---------------------------------------------------------------------*/
+;*    liveness-block! ...                                              */
+;*---------------------------------------------------------------------*/
 (define (liveness-block! block)
-   (with-access::block/ra block (succs trsif)
-      (let loop ((inss trsif)
+   (with-access::block/ra block (succs last)
+      (let loop ((inss last)
 		 (succ (map (lambda (b) (car (block-first b))) succs))
 		 (t #f))
 	 (if (pair? inss)
@@ -250,7 +205,7 @@
 		   (regset-for-each (lambda (r)
 				       (if (not (regset-member? r def))
 					   (set! u (or (regset-add! in r) u))))
-				    out)
+		      out)
 		   (loop (cdr inss) (car inss) (or t u))))
 	     t))))
 
@@ -840,30 +795,4 @@
 		      (for-each (lambda (r) (display " " p) (dump r p 0))
 				spill)
 		      (display "]" p))))))
-
-;*---------------------------------------------------------------------*/
-;*    shape ::rtl_reg/ra ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (shape o::rtl_reg/ra)
-   (with-access::rtl_reg/ra o (color)
-      (let ((s (call-next-method)))
-	 (let ((p (open-output-string)))
-	    (cond
-	       ((fixnum? color)
-		(display s p)
-		(display "=" p)
-		(display color p))
-	       ((rtl_reg? color)
-		(display s p)
-		(display ":=" p)
-		(display (shape color) p))
-	       (else
-		(display s p)))
-	    (close-output-port p)))))
-
-;*---------------------------------------------------------------------*/
-;*    dump ::rtl_reg/ra ...                                            */
-;*---------------------------------------------------------------------*/
-(define-method (dump o::rtl_reg/ra p m)
-   (display (shape o) p))
 

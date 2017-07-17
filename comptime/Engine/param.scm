@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Jun  1 18:31:25 2017 (serrano)                */
+;*    Last change :  Tue Jul 11 10:09:01 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -228,6 +228,7 @@
 	    *saw-register-allocation-functions*
 	    *saw-no-register-allocation-functions*
 	    *saw-spill*
+	    *saw-bbv?*
 	    *global-tail-call?*
 	    *builtin-allocators*
 	    *eval-options*
@@ -1108,6 +1109,13 @@
 ;*---------------------------------------------------------------------*/
 (param-define *saw-spill*
    "Enable saw spill optimization"
+   #f)
+
+;*---------------------------------------------------------------------*/
+;*    *saw-bbv?* ...                                                   */
+;*---------------------------------------------------------------------*/
+(param-define *saw-bbv?*
+   "Enable/disable saw basic-blocks versionning"
    #f)
 
 ;*---------------------------------------------------------------------*/

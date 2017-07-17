@@ -1,42 +1,19 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.3a)
-;; Inria -- Sophia Antipolis     Sun Jun 19 18:47:59 CEST 2016 
-;; (bigloo -classgen SawC/code.scm)
+;; Bigloo (4.2c)
+;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
+;; (bigloo.new -classgen SawC/code.scm)
 ;; ==========================================================
 
 ;; The directives
 (directives
 
-;; gen-info
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-gen-info::gen-info maxlabel1311::obj params1312::obj locals1313::obj frame-size1314::obj comment-body1315::obj comment-label1316::obj comment1317::obj)
-    (inline gen-info?::bool ::obj)
-    (gen-info-nil::gen-info)
-    (inline gen-info-comment::obj ::gen-info)
-    (inline gen-info-comment-set! ::gen-info ::obj)
-    (inline gen-info-comment-label::obj ::gen-info)
-    (inline gen-info-comment-label-set! ::gen-info ::obj)
-    (inline gen-info-comment-body::obj ::gen-info)
-    (inline gen-info-comment-body-set! ::gen-info ::obj)
-    (inline gen-info-frame-size::obj ::gen-info)
-    (inline gen-info-frame-size-set! ::gen-info ::obj)
-    (inline gen-info-locals::obj ::gen-info)
-    (inline gen-info-locals-set! ::gen-info ::obj)
-    (inline gen-info-params::obj ::gen-info)
-    (inline gen-info-params-set! ::gen-info ::obj)
-    (inline gen-info-maxlabel::obj ::gen-info)
-    (inline gen-info-maxlabel-set! ::gen-info ::obj))))
-
 ;; SawCIreg
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-SawCIreg::SawCIreg type1302::type var1303::obj onexpr?1304::obj name1305::obj key1306::obj hardware1307::obj index1308::obj findex1309::obj)
+    (inline make-SawCIreg::SawCIreg type1159::type var1160::obj onexpr?1161::obj name1162::obj key1163::obj hardware1164::obj index1165::obj)
     (inline SawCIreg?::bool ::obj)
     (SawCIreg-nil::SawCIreg)
-    (inline SawCIreg-findex::obj ::SawCIreg)
-    (inline SawCIreg-findex-set! ::SawCIreg ::obj)
     (inline SawCIreg-index::obj ::SawCIreg)
     (inline SawCIreg-index-set! ::SawCIreg ::obj)
     (inline SawCIreg-hardware::obj ::SawCIreg)
@@ -47,192 +24,14 @@
     (inline SawCIreg-var::obj ::SawCIreg)
     (inline SawCIreg-var-set! ::SawCIreg ::obj)
     (inline SawCIreg-type::type ::SawCIreg)
-    (inline SawCIreg-type-set! ::SawCIreg ::type))))
-
-;; liveblk
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-liveblk::liveblk label1282::int preds1283::pair-nil succs1284::pair-nil first1285::pair mark1286::obj annots1287::obj index1288::obj lowlink1289::obj onStack1290::obj in1291::obj out1292::obj in_onf1293::obj in_onr1294::obj out_onf1295::obj out_onr1296::obj wsuccs1297::obj frame1298::obj room1299::obj onvisit1300::obj)
-    (inline liveblk?::bool ::obj)
-    (liveblk-nil::liveblk)
-    (inline liveblk-onvisit::obj ::liveblk)
-    (inline liveblk-onvisit-set! ::liveblk ::obj)
-    (inline liveblk-room::obj ::liveblk)
-    (inline liveblk-room-set! ::liveblk ::obj)
-    (inline liveblk-frame::obj ::liveblk)
-    (inline liveblk-frame-set! ::liveblk ::obj)
-    (inline liveblk-wsuccs::obj ::liveblk)
-    (inline liveblk-wsuccs-set! ::liveblk ::obj)
-    (inline liveblk-out_onr::obj ::liveblk)
-    (inline liveblk-out_onr-set! ::liveblk ::obj)
-    (inline liveblk-out_onf::obj ::liveblk)
-    (inline liveblk-out_onf-set! ::liveblk ::obj)
-    (inline liveblk-in_onr::obj ::liveblk)
-    (inline liveblk-in_onr-set! ::liveblk ::obj)
-    (inline liveblk-in_onf::obj ::liveblk)
-    (inline liveblk-in_onf-set! ::liveblk ::obj)
-    (inline liveblk-out::obj ::liveblk)
-    (inline liveblk-out-set! ::liveblk ::obj)
-    (inline liveblk-in::obj ::liveblk)
-    (inline liveblk-in-set! ::liveblk ::obj)
-    (inline liveblk-onStack::obj ::liveblk)
-    (inline liveblk-onStack-set! ::liveblk ::obj)
-    (inline liveblk-lowlink::obj ::liveblk)
-    (inline liveblk-lowlink-set! ::liveblk ::obj)
-    (inline liveblk-index::obj ::liveblk)
-    (inline liveblk-index-set! ::liveblk ::obj)
-    (inline liveblk-annots::obj ::liveblk)
-    (inline liveblk-annots-set! ::liveblk ::obj)
-    (inline liveblk-mark::obj ::liveblk)
-    (inline liveblk-mark-set! ::liveblk ::obj)
-    (inline liveblk-first::pair ::liveblk)
-    (inline liveblk-first-set! ::liveblk ::pair)
-    (inline liveblk-succs::pair-nil ::liveblk)
-    (inline liveblk-succs-set! ::liveblk ::pair-nil)
-    (inline liveblk-preds::pair-nil ::liveblk)
-    (inline liveblk-preds-set! ::liveblk ::pair-nil)
-    (inline liveblk-label::int ::liveblk)
-    (inline liveblk-label-set! ::liveblk ::int))))
-
-;; room
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-room::room in1277::obj sons1278::obj up1279::obj dframe1280::obj)
-    (inline room?::bool ::obj)
-    (room-nil::room)
-    (inline room-dframe::obj ::room)
-    (inline room-dframe-set! ::room ::obj)
-    (inline room-up::obj ::room)
-    (inline room-up-set! ::room ::obj)
-    (inline room-sons::obj ::room)
-    (inline room-sons-set! ::room ::obj)
-    (inline room-in::obj ::room)
-    (inline room-in-set! ::room ::obj))))
-
-;; annot
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-annot::annot)
-    (inline annot?::bool ::obj)
-    (annot-nil::annot))))
-
-;; spill
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-spill::spill r1273::SawCIreg at1274::obj)
-    (inline spill?::bool ::obj)
-    (spill-nil::spill)
-    (inline spill-at::obj ::spill)
-    (inline spill-at-set! ::spill ::obj)
-    (inline spill-r::SawCIreg ::spill)
-    (inline spill-r-set! ::spill ::SawCIreg))))
-
-;; spill0
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-spill0::spill0 at1271::obj)
-    (inline spill0?::bool ::obj)
-    (spill0-nil::spill0)
-    (inline spill0-at::obj ::spill0)
-    (inline spill0-at-set! ::spill0 ::obj))))
-
-;; fill
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-fill::fill r1268::SawCIreg at1269::obj)
-    (inline fill?::bool ::obj)
-    (fill-nil::fill)
-    (inline fill-at::obj ::fill)
-    (inline fill-at-set! ::fill ::obj)
-    (inline fill-r::SawCIreg ::fill)
-    (inline fill-r-set! ::fill ::SawCIreg))))
-
-;; flink
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-flink::flink)
-    (inline flink?::bool ::obj)
-    (flink-nil::flink))))
-
-;; funlink
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-funlink::funlink)
-    (inline funlink?::bool ::obj)
-    (funlink-nil::funlink))))
-
-;; fsize
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-fsize::fsize size1264::obj)
-    (inline fsize?::bool ::obj)
-    (fsize-nil::fsize)
-    (inline fsize-size::obj ::fsize)
-    (inline fsize-size-set! ::fsize ::obj))))
-
-;; liveins
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-liveins::liveins loc1255::obj %spill1256::pair-nil dest1257::obj fun1258::rtl_fun args1259::pair-nil annots1260::obj postannots1261::obj after1262::obj)
-    (inline liveins?::bool ::obj)
-    (liveins-nil::liveins)
-    (inline liveins-after::obj ::liveins)
-    (inline liveins-after-set! ::liveins ::obj)
-    (inline liveins-postannots::obj ::liveins)
-    (inline liveins-postannots-set! ::liveins ::obj)
-    (inline liveins-annots::obj ::liveins)
-    (inline liveins-annots-set! ::liveins ::obj)
-    (inline liveins-args::pair-nil ::liveins)
-    (inline liveins-args-set! ::liveins ::pair-nil)
-    (inline liveins-fun::rtl_fun ::liveins)
-    (inline liveins-fun-set! ::liveins ::rtl_fun)
-    (inline liveins-dest::obj ::liveins)
-    (inline liveins-dest-set! ::liveins ::obj)
-    (inline liveins-%spill::pair-nil ::liveins)
-    (inline liveins-%spill-set! ::liveins ::pair-nil)
-    (inline liveins-loc::obj ::liveins)
-    (inline liveins-loc-set! ::liveins ::obj))))
-
-;; vertex
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (static
-    (inline make-vertex::vertex label1251::obj succs1252::obj mark1253::obj)
-    (inline vertex?::bool ::obj)
-    (vertex-nil::vertex)
-    (inline vertex-mark::obj ::vertex)
-    (inline vertex-mark-set! ::vertex ::obj)
-    (inline vertex-succs::obj ::vertex)
-    (inline vertex-succs-set! ::vertex ::obj)
-    (inline vertex-label::obj ::vertex)
-    (inline vertex-label-set! ::vertex ::obj)))))
+    (inline SawCIreg-type-set! ::SawCIreg ::type)))))
 
 ;; The definitions
 (cond-expand (bigloo-class-sans
-;; gen-info
-(define-inline (make-gen-info::gen-info maxlabel1311::obj params1312::obj locals1313::obj frame-size1314::obj comment-body1315::obj comment-label1316::obj comment1317::obj) (instantiate::gen-info (maxlabel maxlabel1311) (params params1312) (locals locals1313) (frame-size frame-size1314) (comment-body comment-body1315) (comment-label comment-label1316) (comment comment1317)))
-(define-inline (gen-info?::bool obj::obj) ((@ isa? __object) obj (@ gen-info saw_c_code)))
-(define (gen-info-nil::gen-info) (class-nil (@ gen-info saw_c_code)))
-(define-inline (gen-info-comment::obj o::gen-info) (-> |#!bigloo_wallow| o comment))
-(define-inline (gen-info-comment-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o comment) v))
-(define-inline (gen-info-comment-label::obj o::gen-info) (-> |#!bigloo_wallow| o comment-label))
-(define-inline (gen-info-comment-label-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o comment-label) v))
-(define-inline (gen-info-comment-body::obj o::gen-info) (-> |#!bigloo_wallow| o comment-body))
-(define-inline (gen-info-comment-body-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o comment-body) v))
-(define-inline (gen-info-frame-size::obj o::gen-info) (-> |#!bigloo_wallow| o frame-size))
-(define-inline (gen-info-frame-size-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o frame-size) v))
-(define-inline (gen-info-locals::obj o::gen-info) (-> |#!bigloo_wallow| o locals))
-(define-inline (gen-info-locals-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o locals) v))
-(define-inline (gen-info-params::obj o::gen-info) (-> |#!bigloo_wallow| o params))
-(define-inline (gen-info-params-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o params) v))
-(define-inline (gen-info-maxlabel::obj o::gen-info) (-> |#!bigloo_wallow| o maxlabel))
-(define-inline (gen-info-maxlabel-set! o::gen-info v::obj) (set! (-> |#!bigloo_wallow| o maxlabel) v))
-
 ;; SawCIreg
-(define-inline (make-SawCIreg::SawCIreg type1302::type var1303::obj onexpr?1304::obj name1305::obj key1306::obj hardware1307::obj index1308::obj findex1309::obj) (instantiate::SawCIreg (type type1302) (var var1303) (onexpr? onexpr?1304) (name name1305) (key key1306) (hardware hardware1307) (index index1308) (findex findex1309)))
+(define-inline (make-SawCIreg::SawCIreg type1159::type var1160::obj onexpr?1161::obj name1162::obj key1163::obj hardware1164::obj index1165::obj) (instantiate::SawCIreg (type type1159) (var var1160) (onexpr? onexpr?1161) (name name1162) (key key1163) (hardware hardware1164) (index index1165)))
 (define-inline (SawCIreg?::bool obj::obj) ((@ isa? __object) obj (@ SawCIreg saw_c_code)))
 (define (SawCIreg-nil::SawCIreg) (class-nil (@ SawCIreg saw_c_code)))
-(define-inline (SawCIreg-findex::obj o::SawCIreg) (-> |#!bigloo_wallow| o findex))
-(define-inline (SawCIreg-findex-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o findex) v))
 (define-inline (SawCIreg-index::obj o::SawCIreg) (-> |#!bigloo_wallow| o index))
 (define-inline (SawCIreg-index-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o index) v))
 (define-inline (SawCIreg-hardware::obj o::SawCIreg) (-> |#!bigloo_wallow| o hardware))
@@ -247,139 +46,4 @@
 (define-inline (SawCIreg-var-set! o::SawCIreg v::obj) (set! (-> |#!bigloo_wallow| o var) v))
 (define-inline (SawCIreg-type::type o::SawCIreg) (-> |#!bigloo_wallow| o type))
 (define-inline (SawCIreg-type-set! o::SawCIreg v::type) (set! (-> |#!bigloo_wallow| o type) v))
-
-;; liveblk
-(define-inline (make-liveblk::liveblk label1282::int preds1283::pair-nil succs1284::pair-nil first1285::pair mark1286::obj annots1287::obj index1288::obj lowlink1289::obj onStack1290::obj in1291::obj out1292::obj in_onf1293::obj in_onr1294::obj out_onf1295::obj out_onr1296::obj wsuccs1297::obj frame1298::obj room1299::obj onvisit1300::obj) (instantiate::liveblk (label label1282) (preds preds1283) (succs succs1284) (first first1285) (mark mark1286) (annots annots1287) (index index1288) (lowlink lowlink1289) (onStack onStack1290) (in in1291) (out out1292) (in_onf in_onf1293) (in_onr in_onr1294) (out_onf out_onf1295) (out_onr out_onr1296) (wsuccs wsuccs1297) (frame frame1298) (room room1299) (onvisit onvisit1300)))
-(define-inline (liveblk?::bool obj::obj) ((@ isa? __object) obj (@ liveblk saw_c_code)))
-(define (liveblk-nil::liveblk) (class-nil (@ liveblk saw_c_code)))
-(define-inline (liveblk-onvisit::obj o::liveblk) (-> |#!bigloo_wallow| o onvisit))
-(define-inline (liveblk-onvisit-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o onvisit) v))
-(define-inline (liveblk-room::obj o::liveblk) (-> |#!bigloo_wallow| o room))
-(define-inline (liveblk-room-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o room) v))
-(define-inline (liveblk-frame::obj o::liveblk) (-> |#!bigloo_wallow| o frame))
-(define-inline (liveblk-frame-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o frame) v))
-(define-inline (liveblk-wsuccs::obj o::liveblk) (-> |#!bigloo_wallow| o wsuccs))
-(define-inline (liveblk-wsuccs-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o wsuccs) v))
-(define-inline (liveblk-out_onr::obj o::liveblk) (-> |#!bigloo_wallow| o out_onr))
-(define-inline (liveblk-out_onr-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o out_onr) v))
-(define-inline (liveblk-out_onf::obj o::liveblk) (-> |#!bigloo_wallow| o out_onf))
-(define-inline (liveblk-out_onf-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o out_onf) v))
-(define-inline (liveblk-in_onr::obj o::liveblk) (-> |#!bigloo_wallow| o in_onr))
-(define-inline (liveblk-in_onr-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o in_onr) v))
-(define-inline (liveblk-in_onf::obj o::liveblk) (-> |#!bigloo_wallow| o in_onf))
-(define-inline (liveblk-in_onf-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o in_onf) v))
-(define-inline (liveblk-out::obj o::liveblk) (-> |#!bigloo_wallow| o out))
-(define-inline (liveblk-out-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o out) v))
-(define-inline (liveblk-in::obj o::liveblk) (-> |#!bigloo_wallow| o in))
-(define-inline (liveblk-in-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o in) v))
-(define-inline (liveblk-onStack::obj o::liveblk) (-> |#!bigloo_wallow| o onStack))
-(define-inline (liveblk-onStack-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o onStack) v))
-(define-inline (liveblk-lowlink::obj o::liveblk) (-> |#!bigloo_wallow| o lowlink))
-(define-inline (liveblk-lowlink-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o lowlink) v))
-(define-inline (liveblk-index::obj o::liveblk) (-> |#!bigloo_wallow| o index))
-(define-inline (liveblk-index-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o index) v))
-(define-inline (liveblk-annots::obj o::liveblk) (-> |#!bigloo_wallow| o annots))
-(define-inline (liveblk-annots-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o annots) v))
-(define-inline (liveblk-mark::obj o::liveblk) (-> |#!bigloo_wallow| o mark))
-(define-inline (liveblk-mark-set! o::liveblk v::obj) (set! (-> |#!bigloo_wallow| o mark) v))
-(define-inline (liveblk-first::pair o::liveblk) (-> |#!bigloo_wallow| o first))
-(define-inline (liveblk-first-set! o::liveblk v::pair) (set! (-> |#!bigloo_wallow| o first) v))
-(define-inline (liveblk-succs::pair-nil o::liveblk) (-> |#!bigloo_wallow| o succs))
-(define-inline (liveblk-succs-set! o::liveblk v::pair-nil) (set! (-> |#!bigloo_wallow| o succs) v))
-(define-inline (liveblk-preds::pair-nil o::liveblk) (-> |#!bigloo_wallow| o preds))
-(define-inline (liveblk-preds-set! o::liveblk v::pair-nil) (set! (-> |#!bigloo_wallow| o preds) v))
-(define-inline (liveblk-label::int o::liveblk) (-> |#!bigloo_wallow| o label))
-(define-inline (liveblk-label-set! o::liveblk v::int) (set! (-> |#!bigloo_wallow| o label) v))
-
-;; room
-(define-inline (make-room::room in1277::obj sons1278::obj up1279::obj dframe1280::obj) (instantiate::room (in in1277) (sons sons1278) (up up1279) (dframe dframe1280)))
-(define-inline (room?::bool obj::obj) ((@ isa? __object) obj (@ room saw_c_code)))
-(define (room-nil::room) (class-nil (@ room saw_c_code)))
-(define-inline (room-dframe::obj o::room) (-> |#!bigloo_wallow| o dframe))
-(define-inline (room-dframe-set! o::room v::obj) (set! (-> |#!bigloo_wallow| o dframe) v))
-(define-inline (room-up::obj o::room) (-> |#!bigloo_wallow| o up))
-(define-inline (room-up-set! o::room v::obj) (set! (-> |#!bigloo_wallow| o up) v))
-(define-inline (room-sons::obj o::room) (-> |#!bigloo_wallow| o sons))
-(define-inline (room-sons-set! o::room v::obj) (set! (-> |#!bigloo_wallow| o sons) v))
-(define-inline (room-in::obj o::room) (-> |#!bigloo_wallow| o in))
-(define-inline (room-in-set! o::room v::obj) (set! (-> |#!bigloo_wallow| o in) v))
-
-;; annot
-(define-inline (make-annot::annot) (instantiate::annot))
-(define-inline (annot?::bool obj::obj) ((@ isa? __object) obj (@ annot saw_c_code)))
-(define (annot-nil::annot) (class-nil (@ annot saw_c_code)))
-
-;; spill
-(define-inline (make-spill::spill r1273::SawCIreg at1274::obj) (instantiate::spill (r r1273) (at at1274)))
-(define-inline (spill?::bool obj::obj) ((@ isa? __object) obj (@ spill saw_c_code)))
-(define (spill-nil::spill) (class-nil (@ spill saw_c_code)))
-(define-inline (spill-at::obj o::spill) (-> |#!bigloo_wallow| o at))
-(define-inline (spill-at-set! o::spill v::obj) (set! (-> |#!bigloo_wallow| o at) v))
-(define-inline (spill-r::SawCIreg o::spill) (-> |#!bigloo_wallow| o r))
-(define-inline (spill-r-set! o::spill v::SawCIreg) (set! (-> |#!bigloo_wallow| o r) v))
-
-;; spill0
-(define-inline (make-spill0::spill0 at1271::obj) (instantiate::spill0 (at at1271)))
-(define-inline (spill0?::bool obj::obj) ((@ isa? __object) obj (@ spill0 saw_c_code)))
-(define (spill0-nil::spill0) (class-nil (@ spill0 saw_c_code)))
-(define-inline (spill0-at::obj o::spill0) (-> |#!bigloo_wallow| o at))
-(define-inline (spill0-at-set! o::spill0 v::obj) (set! (-> |#!bigloo_wallow| o at) v))
-
-;; fill
-(define-inline (make-fill::fill r1268::SawCIreg at1269::obj) (instantiate::fill (r r1268) (at at1269)))
-(define-inline (fill?::bool obj::obj) ((@ isa? __object) obj (@ fill saw_c_code)))
-(define (fill-nil::fill) (class-nil (@ fill saw_c_code)))
-(define-inline (fill-at::obj o::fill) (-> |#!bigloo_wallow| o at))
-(define-inline (fill-at-set! o::fill v::obj) (set! (-> |#!bigloo_wallow| o at) v))
-(define-inline (fill-r::SawCIreg o::fill) (-> |#!bigloo_wallow| o r))
-(define-inline (fill-r-set! o::fill v::SawCIreg) (set! (-> |#!bigloo_wallow| o r) v))
-
-;; flink
-(define-inline (make-flink::flink) (instantiate::flink))
-(define-inline (flink?::bool obj::obj) ((@ isa? __object) obj (@ flink saw_c_code)))
-(define (flink-nil::flink) (class-nil (@ flink saw_c_code)))
-
-;; funlink
-(define-inline (make-funlink::funlink) (instantiate::funlink))
-(define-inline (funlink?::bool obj::obj) ((@ isa? __object) obj (@ funlink saw_c_code)))
-(define (funlink-nil::funlink) (class-nil (@ funlink saw_c_code)))
-
-;; fsize
-(define-inline (make-fsize::fsize size1264::obj) (instantiate::fsize (size size1264)))
-(define-inline (fsize?::bool obj::obj) ((@ isa? __object) obj (@ fsize saw_c_code)))
-(define (fsize-nil::fsize) (class-nil (@ fsize saw_c_code)))
-(define-inline (fsize-size::obj o::fsize) (-> |#!bigloo_wallow| o size))
-(define-inline (fsize-size-set! o::fsize v::obj) (set! (-> |#!bigloo_wallow| o size) v))
-
-;; liveins
-(define-inline (make-liveins::liveins loc1255::obj %spill1256::pair-nil dest1257::obj fun1258::rtl_fun args1259::pair-nil annots1260::obj postannots1261::obj after1262::obj) (instantiate::liveins (loc loc1255) (%spill %spill1256) (dest dest1257) (fun fun1258) (args args1259) (annots annots1260) (postannots postannots1261) (after after1262)))
-(define-inline (liveins?::bool obj::obj) ((@ isa? __object) obj (@ liveins saw_c_code)))
-(define (liveins-nil::liveins) (class-nil (@ liveins saw_c_code)))
-(define-inline (liveins-after::obj o::liveins) (-> |#!bigloo_wallow| o after))
-(define-inline (liveins-after-set! o::liveins v::obj) (set! (-> |#!bigloo_wallow| o after) v))
-(define-inline (liveins-postannots::obj o::liveins) (-> |#!bigloo_wallow| o postannots))
-(define-inline (liveins-postannots-set! o::liveins v::obj) (set! (-> |#!bigloo_wallow| o postannots) v))
-(define-inline (liveins-annots::obj o::liveins) (-> |#!bigloo_wallow| o annots))
-(define-inline (liveins-annots-set! o::liveins v::obj) (set! (-> |#!bigloo_wallow| o annots) v))
-(define-inline (liveins-args::pair-nil o::liveins) (-> |#!bigloo_wallow| o args))
-(define-inline (liveins-args-set! o::liveins v::pair-nil) (set! (-> |#!bigloo_wallow| o args) v))
-(define-inline (liveins-fun::rtl_fun o::liveins) (-> |#!bigloo_wallow| o fun))
-(define-inline (liveins-fun-set! o::liveins v::rtl_fun) (set! (-> |#!bigloo_wallow| o fun) v))
-(define-inline (liveins-dest::obj o::liveins) (-> |#!bigloo_wallow| o dest))
-(define-inline (liveins-dest-set! o::liveins v::obj) (set! (-> |#!bigloo_wallow| o dest) v))
-(define-inline (liveins-%spill::pair-nil o::liveins) (-> |#!bigloo_wallow| o %spill))
-(define-inline (liveins-%spill-set! o::liveins v::pair-nil) (set! (-> |#!bigloo_wallow| o %spill) v))
-(define-inline (liveins-loc::obj o::liveins) (-> |#!bigloo_wallow| o loc))
-(define-inline (liveins-loc-set! o::liveins v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
-
-;; vertex
-(define-inline (make-vertex::vertex label1251::obj succs1252::obj mark1253::obj) (instantiate::vertex (label label1251) (succs succs1252) (mark mark1253)))
-(define-inline (vertex?::bool obj::obj) ((@ isa? __object) obj (@ vertex saw_c_code)))
-(define (vertex-nil::vertex) (class-nil (@ vertex saw_c_code)))
-(define-inline (vertex-mark::obj o::vertex) (-> |#!bigloo_wallow| o mark))
-(define-inline (vertex-mark-set! o::vertex v::obj) (set! (-> |#!bigloo_wallow| o mark) v))
-(define-inline (vertex-succs::obj o::vertex) (-> |#!bigloo_wallow| o succs))
-(define-inline (vertex-succs-set! o::vertex v::obj) (set! (-> |#!bigloo_wallow| o succs) v))
-(define-inline (vertex-label::obj o::vertex) (-> |#!bigloo_wallow| o label))
-(define-inline (vertex-label-set! o::vertex v::obj) (set! (-> |#!bigloo_wallow| o label) v))
 ))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Tue Jun 27 08:52:05 2017 (serrano)                */
+;*    Last change :  Wed Jul 12 11:46:53 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -517,6 +517,10 @@
        (set! *saw-register-allocation?* #t))
       (("-fno-saw-regalloc" (help "Disable saw register allocation"))
        (set! *saw-register-allocation?* #f))
+      (("-fsaw-bbv" (help "Enable saw basic-blocks versionning"))
+       (set! *saw-bbv?* #t))
+      (("-fno-saw-bbv" (help "Disable saw basic-blocks versionning"))
+       (set! *saw-bbv?* #f))
       (("-fsaw-regalloc-msize" ?size (help "Set the register allocation body size limit"))
        (set! *saw-register-allocation?* #t)
        (set! *saw-register-allocation-max-size* (string->integer size)))
@@ -553,6 +557,7 @@
       (("-gbdb?opt" (help "-gbdb[23]" "Compile with bdb debug informations"))
        (parse-bdb-args opt))
       (("-gself" (help "Enables self compiler debug options"))
+       (bigloo-debug-set! 1)
        (set! *compiler-stack-debug?* #t)
        (set! *compiler-sharing-debug?* #t)
        (set! *compiler-type-debug?* #t))

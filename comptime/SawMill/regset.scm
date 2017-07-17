@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 16 15:37:03 2005                          */
-;*    Last change :  Mon Nov 14 19:13:17 2011 (serrano)                */
-;*    Copyright   :  2005-11 Manuel Serrano                            */
+;*    Last change :  Fri Jul 14 10:39:31 2017 (serrano)                */
+;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Register sets for regiter allocation                             */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
 (module saw_regset
    
    (import  engine_param
+	    tools_shape
 	    type_type
 	    ast_var
 	    ast_node
@@ -26,13 +27,22 @@
 
    (include "SawMill/regset.sch")
    
-   (export  (class regset
+   (export  (wide-class rtl_reg/ra::rtl_reg
+	       (num::int read-only)
+	       (color (default #f))
+	       (coalesce (default #f))
+	       (occurrences::int (default 0))
+	       (interfere (default #unspecified))
+	       (interfere2 (default #unspecified)))
+	    
+	    (class regset
 	       (length::int (default 0))
 	       (msize::int read-only)
 	       (regv::vector read-only)
 	       (regl::pair-nil read-only)
-	       (string::bstring (default '#())))
-	    (make-empty-regset::regset ::pair-nil)
+	       (string::bstring (default '#()))))
+
+   (export  (make-empty-regset::regset ::pair-nil)
 	    (list->regset::regset ::pair-nil ::pair-nil)
 	    (regset->list::pair-nil ::regset)
 	    (duplicate-regset::regset ::regset)
@@ -102,7 +112,7 @@
 (define (regset->list::pair-nil s::regset)
    (let ((r '()))
       (regset-for-each (lambda (e) (set! r (cons e r))) s)
-      (reverse! r) ))
+      (reverse! r)))
 
 ;*---------------------------------------------------------------------*/
 ;*    duplicate-regset ...                                             */
@@ -257,5 +267,28 @@
 		       s)
       (display "}" p)))
 		       
+;*---------------------------------------------------------------------*/
+;*    shape ::rtl_reg/ra ...                                           */
+;*---------------------------------------------------------------------*/
+(define-method (shape o::rtl_reg/ra)
+   (with-access::rtl_reg/ra o (color)
+      (let ((s (call-next-method)))
+	 (let ((p (open-output-string)))
+	    (cond
+	       ((fixnum? color)
+		(display s p)
+		(display "=" p)
+		(display color p))
+	       ((rtl_reg? color)
+		(display s p)
+		(display ":=" p)
+		(display (shape color) p))
+	       (else
+		(display s p)))
+	    (close-output-port p)))))
 
-   
+;*---------------------------------------------------------------------*/
+;*    dump ::rtl_reg/ra ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (dump o::rtl_reg/ra p m)
+   (display (shape o) p))

@@ -25,6 +25,7 @@
 	    saw_node2rtl
 	    saw_woodcutter
 	    saw_expr
+	    saw_regset
 	    saw_register-allocation
 	    saw_jvm_names
 	    saw_jvm_out

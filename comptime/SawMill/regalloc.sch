@@ -1,8 +1,8 @@
 ;; ==========================================================
 ;; Class accessors
-;; Bigloo (4.2c)
-;; Inria -- Sophia Antipolis     Fri Nov 6 10:55:25 CET 2015 
-;; (bigloo.new -classgen SawMill/regalloc.scm)
+;; Bigloo (4.3b)
+;; Inria -- Sophia Antipolis     Wed Jul 12 09:01:32 CEST 2017 
+;; (bigloo -classgen SawMill/regalloc.scm)
 ;; ==========================================================
 
 ;; The directives
@@ -11,11 +11,11 @@
 ;; block/ra
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-block/ra::block/ra label1209::int preds1210::pair-nil succs1211::pair-nil first1212::pair trsif1213::pair-nil)
+    (inline make-block/ra::block/ra label1185::int preds1186::pair-nil succs1187::pair-nil first1188::pair last1189::pair-nil)
     (inline block/ra?::bool ::obj)
     (block/ra-nil::block/ra)
-    (inline block/ra-trsif::pair-nil ::block/ra)
-    (inline block/ra-trsif-set! ::block/ra ::pair-nil)
+    (inline block/ra-last::pair-nil ::block/ra)
+    (inline block/ra-last-set! ::block/ra ::pair-nil)
     (inline block/ra-first::pair ::block/ra)
     (inline block/ra-first-set! ::block/ra ::pair)
     (inline block/ra-succs::pair-nil ::block/ra)
@@ -28,7 +28,7 @@
 ;; rtl_ins/ra
 (cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
   (static
-    (inline make-rtl_ins/ra::rtl_ins/ra loc1199::obj %spill1200::pair-nil dest1201::obj fun1202::rtl_fun args1203::pair-nil def1204::obj out1205::obj in1206::obj spill1207::obj)
+    (inline make-rtl_ins/ra::rtl_ins/ra loc1174::obj %spill1175::pair-nil dest1176::obj fun1177::rtl_fun args1178::pair-nil def1179::obj out1180::obj in1181::obj spill1182::obj)
     (inline rtl_ins/ra?::bool ::obj)
     (rtl_ins/ra-nil::rtl_ins/ra)
     (inline rtl_ins/ra-spill::obj ::rtl_ins/ra)
@@ -48,43 +48,16 @@
     (inline rtl_ins/ra-%spill::pair-nil ::rtl_ins/ra)
     (inline rtl_ins/ra-%spill-set! ::rtl_ins/ra ::pair-nil)
     (inline rtl_ins/ra-loc::obj ::rtl_ins/ra)
-    (inline rtl_ins/ra-loc-set! ::rtl_ins/ra ::obj))))
-
-;; rtl_reg/ra
-(cond-expand ((and bigloo-class-sans (not bigloo-class-generate))
-  (export
-    (inline make-rtl_reg/ra::rtl_reg/ra type1186::type var1187::obj onexpr?1188::obj name1189::obj key1190::obj hardware1191::obj num1192::int color1193::obj coalesce1194::obj occurrences1195::int interfere1196::obj interfere21197::obj)
-    (inline rtl_reg/ra?::bool ::obj)
-    (rtl_reg/ra-nil::rtl_reg/ra)
-    (inline rtl_reg/ra-interfere2::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-interfere2-set! ::rtl_reg/ra ::obj)
-    (inline rtl_reg/ra-interfere::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-interfere-set! ::rtl_reg/ra ::obj)
-    (inline rtl_reg/ra-occurrences::int ::rtl_reg/ra)
-    (inline rtl_reg/ra-occurrences-set! ::rtl_reg/ra ::int)
-    (inline rtl_reg/ra-coalesce::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-coalesce-set! ::rtl_reg/ra ::obj)
-    (inline rtl_reg/ra-color::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-color-set! ::rtl_reg/ra ::obj)
-    (inline rtl_reg/ra-num::int ::rtl_reg/ra)
-    (inline rtl_reg/ra-hardware::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-key::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-name::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-onexpr?::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-onexpr?-set! ::rtl_reg/ra ::obj)
-    (inline rtl_reg/ra-var::obj ::rtl_reg/ra)
-    (inline rtl_reg/ra-var-set! ::rtl_reg/ra ::obj)
-    (inline rtl_reg/ra-type::type ::rtl_reg/ra)
-    (inline rtl_reg/ra-type-set! ::rtl_reg/ra ::type)))))
+    (inline rtl_ins/ra-loc-set! ::rtl_ins/ra ::obj)))))
 
 ;; The definitions
 (cond-expand (bigloo-class-sans
 ;; block/ra
-(define-inline (make-block/ra::block/ra label1209::int preds1210::pair-nil succs1211::pair-nil first1212::pair trsif1213::pair-nil) (instantiate::block/ra (label label1209) (preds preds1210) (succs succs1211) (first first1212) (trsif trsif1213)))
+(define-inline (make-block/ra::block/ra label1185::int preds1186::pair-nil succs1187::pair-nil first1188::pair last1189::pair-nil) (instantiate::block/ra (label label1185) (preds preds1186) (succs succs1187) (first first1188) (last last1189)))
 (define-inline (block/ra?::bool obj::obj) ((@ isa? __object) obj (@ block/ra saw_register-allocation)))
 (define (block/ra-nil::block/ra) (class-nil (@ block/ra saw_register-allocation)))
-(define-inline (block/ra-trsif::pair-nil o::block/ra) (-> |#!bigloo_wallow| o trsif))
-(define-inline (block/ra-trsif-set! o::block/ra v::pair-nil) (set! (-> |#!bigloo_wallow| o trsif) v))
+(define-inline (block/ra-last::pair-nil o::block/ra) (-> |#!bigloo_wallow| o last))
+(define-inline (block/ra-last-set! o::block/ra v::pair-nil) (set! (-> |#!bigloo_wallow| o last) v))
 (define-inline (block/ra-first::pair o::block/ra) (-> |#!bigloo_wallow| o first))
 (define-inline (block/ra-first-set! o::block/ra v::pair) (set! (-> |#!bigloo_wallow| o first) v))
 (define-inline (block/ra-succs::pair-nil o::block/ra) (-> |#!bigloo_wallow| o succs))
@@ -95,7 +68,7 @@
 (define-inline (block/ra-label-set! o::block/ra v::int) (set! (-> |#!bigloo_wallow| o label) v))
 
 ;; rtl_ins/ra
-(define-inline (make-rtl_ins/ra::rtl_ins/ra loc1199::obj %spill1200::pair-nil dest1201::obj fun1202::rtl_fun args1203::pair-nil def1204::obj out1205::obj in1206::obj spill1207::obj) (instantiate::rtl_ins/ra (loc loc1199) (%spill %spill1200) (dest dest1201) (fun fun1202) (args args1203) (def def1204) (out out1205) (in in1206) (spill spill1207)))
+(define-inline (make-rtl_ins/ra::rtl_ins/ra loc1174::obj %spill1175::pair-nil dest1176::obj fun1177::rtl_fun args1178::pair-nil def1179::obj out1180::obj in1181::obj spill1182::obj) (instantiate::rtl_ins/ra (loc loc1174) (%spill %spill1175) (dest dest1176) (fun fun1177) (args args1178) (def def1179) (out out1180) (in in1181) (spill spill1182)))
 (define-inline (rtl_ins/ra?::bool obj::obj) ((@ isa? __object) obj (@ rtl_ins/ra saw_register-allocation)))
 (define (rtl_ins/ra-nil::rtl_ins/ra) (class-nil (@ rtl_ins/ra saw_register-allocation)))
 (define-inline (rtl_ins/ra-spill::obj o::rtl_ins/ra) (-> |#!bigloo_wallow| o spill))
@@ -116,33 +89,4 @@
 (define-inline (rtl_ins/ra-%spill-set! o::rtl_ins/ra v::pair-nil) (set! (-> |#!bigloo_wallow| o %spill) v))
 (define-inline (rtl_ins/ra-loc::obj o::rtl_ins/ra) (-> |#!bigloo_wallow| o loc))
 (define-inline (rtl_ins/ra-loc-set! o::rtl_ins/ra v::obj) (set! (-> |#!bigloo_wallow| o loc) v))
-
-;; rtl_reg/ra
-(define-inline (make-rtl_reg/ra::rtl_reg/ra type1186::type var1187::obj onexpr?1188::obj name1189::obj key1190::obj hardware1191::obj num1192::int color1193::obj coalesce1194::obj occurrences1195::int interfere1196::obj interfere21197::obj) (instantiate::rtl_reg/ra (type type1186) (var var1187) (onexpr? onexpr?1188) (name name1189) (key key1190) (hardware hardware1191) (num num1192) (color color1193) (coalesce coalesce1194) (occurrences occurrences1195) (interfere interfere1196) (interfere2 interfere21197)))
-(define-inline (rtl_reg/ra?::bool obj::obj) ((@ isa? __object) obj (@ rtl_reg/ra saw_register-allocation)))
-(define (rtl_reg/ra-nil::rtl_reg/ra) (class-nil (@ rtl_reg/ra saw_register-allocation)))
-(define-inline (rtl_reg/ra-interfere2::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o interfere2))
-(define-inline (rtl_reg/ra-interfere2-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o interfere2) v))
-(define-inline (rtl_reg/ra-interfere::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o interfere))
-(define-inline (rtl_reg/ra-interfere-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o interfere) v))
-(define-inline (rtl_reg/ra-occurrences::int o::rtl_reg/ra) (-> |#!bigloo_wallow| o occurrences))
-(define-inline (rtl_reg/ra-occurrences-set! o::rtl_reg/ra v::int) (set! (-> |#!bigloo_wallow| o occurrences) v))
-(define-inline (rtl_reg/ra-coalesce::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o coalesce))
-(define-inline (rtl_reg/ra-coalesce-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o coalesce) v))
-(define-inline (rtl_reg/ra-color::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o color))
-(define-inline (rtl_reg/ra-color-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o color) v))
-(define-inline (rtl_reg/ra-num::int o::rtl_reg/ra) (-> |#!bigloo_wallow| o num))
-(define-inline (rtl_reg/ra-num-set! o::rtl_reg/ra v::int) (set! (-> |#!bigloo_wallow| o num) v))
-(define-inline (rtl_reg/ra-hardware::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o hardware))
-(define-inline (rtl_reg/ra-hardware-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o hardware) v))
-(define-inline (rtl_reg/ra-key::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o key))
-(define-inline (rtl_reg/ra-key-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o key) v))
-(define-inline (rtl_reg/ra-name::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o name))
-(define-inline (rtl_reg/ra-name-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o name) v))
-(define-inline (rtl_reg/ra-onexpr?::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o onexpr?))
-(define-inline (rtl_reg/ra-onexpr?-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o onexpr?) v))
-(define-inline (rtl_reg/ra-var::obj o::rtl_reg/ra) (-> |#!bigloo_wallow| o var))
-(define-inline (rtl_reg/ra-var-set! o::rtl_reg/ra v::obj) (set! (-> |#!bigloo_wallow| o var) v))
-(define-inline (rtl_reg/ra-type::type o::rtl_reg/ra) (-> |#!bigloo_wallow| o type))
-(define-inline (rtl_reg/ra-type-set! o::rtl_reg/ra v::type) (set! (-> |#!bigloo_wallow| o type) v))
 ))

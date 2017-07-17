@@ -20,7 +20,7 @@
 ;*    gflu-base-url ...                                                */
 ;*---------------------------------------------------------------------*/
 (define gflu-base-url 
-   "http://www.google.org/flutrends")
+   "http://www.google.org/flutrends/about/data/flu")
 
 ;*---------------------------------------------------------------------*/
 ;*    main ...                                                         */
