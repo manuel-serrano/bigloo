@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Sun Jul 16 11:37:14 2017 (serrano)                */
+;*    Last change :  Mon Jul 17 08:29:15 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -51,9 +51,9 @@
 ;*    bbv ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (bbv back global params blocks)
-   (dump-blocks global params blocks ".plain.bb")
    (if *saw-bbv?*
        (with-trace 'bbv (global-id global)
+	  (dump-blocks global params blocks ".plain.bb")
 	  (set-max-label! blocks)
 	  (let ((regs (liveness! back blocks params)))
 	     (unwind-protect
@@ -91,6 +91,7 @@
    
    (define (dump-blocks port)
       (let* ((id (global-id global)))
+	 (fprint port ";; -*- mode: bee -*-")
 	 (fprint port ";; *** " id ":")
 	 (fprint port ";; " (map shape params))
 	 (for-each (lambda (b)
@@ -770,17 +771,13 @@
    (with-access::rtl_ins/bbv o (%spill fun dest args def in out)
       (with-output-to-port p
 	 (lambda ()
+	    (display #\" p)
 	    (when dest
 	       (dump dest p m)
 	       (display " <- " p))
 	    (dump-ins-rhs o p m)
-	    (display " {" p)
-	    (for-each (lambda (r)
-			 (display (shape r) p)
-			 (display " " p))
-	       %spill)
-	    (display "}" p)
-	    (display* " [def=" (map shape (regset->list def)))
+	    (display #\" p)
+	    (display* " #|def=" (map shape (regset->list def)))
 	    (display* " in=" (map shape (regset->list in)))
 	    (display* " out=" (map shape (regset->list out)))
-	    (display "]")))))
+	    (display "|#")))))

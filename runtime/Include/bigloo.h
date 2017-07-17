@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu May  4 07:37:41 2017 (serrano)                */
+/*    Last change :  Mon Jul 17 10:28:38 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -250,13 +250,14 @@ error "Unknown garbage collector type"
 #define BREF( r ) ((obj_t)((long)r + TAG_STRUCT))
 #define CREF( r ) ((obj_t)((unsigned long)r & ~(TAG_MASK)))
 
-#define BYOUNG( r ) ((obj_t)((long)r + TAG_YOUNG))
+#if( TAG_YOUNG )
+#  define BYOUNG( r ) ((obj_t)((long)r + TAG_YOUNG))
 
-#define BYOUNGP( r ) ((((long)r) & TAG_MASK) == TAG_YOUNG)
-#define BOLDP( r ) ((((long)r) & TAG_MASK) == TAG_STRUCT)
+#  define BYOUNGP( r ) ((((long)r) & TAG_MASK) == TAG_YOUNG)
+#  define BOLDP( r ) ((((long)r) & TAG_MASK) == TAG_STRUCT)
+#endif
 
 #if( BGL_GC == BGL_SAW_GC )
-/* #  define BASSIGN( field, value, obj ) BGL_SAW_OLDYOUNG( obj, value, &(field) ) */
 #  define BASSIGN( field, value, obj ) (bps_bassign( &(field), value, obj), BUNSPEC)
 #  define BMASSIGN( field, value ) bps_bmassign( &(field), value)
 #  define BBACKPTR( field, value ) BYOUNGP( value ) ? bps_dobackptr( &(field), value ) : 0

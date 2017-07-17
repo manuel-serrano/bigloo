@@ -3,14 +3,16 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Wed Mar 16 12:56:05 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Mon Jul 17 10:31:03 2017 (serrano)                */
+/*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
 /*=====================================================================*/
-#if( BGL_SAW == 1 ) 
+#if( BGL_SAW == 1 )
 
 #include <bigloo.h>
+
+#if( BGL_GC == BGL_SAW_GC )
 
 /*---------------------------------------------------------------------*/
 /*    constants                                                        */
@@ -462,4 +464,5 @@ bgl_saw_cell_copy( obj_t cell ) {
    return BCELL( an_object );
 }
 
+#endif
 #endif

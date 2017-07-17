@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Sun Jul  9 09:54:08 2017 (serrano)                */
+#*    Last change :  Mon Jul 17 10:23:37 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -22,7 +22,8 @@ include ../Makefile.misc
 # The Bigloo used to bootstrap the library and to produce the heap file
 EFLAGS		=
 SAWFLAGS	= -saw
-CSAWFLAGS	= -DBGL_SAW=1 -DBGL_GC=BGL_SAW_GC
+#CSAWFLAGS	= -DBGL_SAW=1 -DBGL_GC=BGL_SAW_GC
+CSAWFLAGS	= -DBGL_SAW=1
 # the shell to be used
 SHELL           = /bin/sh
 # configure

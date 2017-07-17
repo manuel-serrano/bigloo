@@ -94,7 +94,7 @@
 	       (gen-type type)
 	       (display* " " (gname v))
 	       (gen-type-regs params)
-	       (display " {AN_OBJECT\n")
+	       (display " {BGL_FUNCTION_BEGIN;\n")
 	       (if *hasprotect* (display " jmp_buf_t jmpbuf;\n"))
 	       (if *haspushexit* (display " struct exitd exitd;\n"))
 	       (if *haspushbefore* (display " struct befored befored;\n"))
@@ -102,7 +102,7 @@
 	       (if *trace* (display* "printf(\"" id "=" name "\\n\");\n")) ))))
    (genbody l)
    (display (make-string *pushtraceemmited* #\}))
-   (display "}\n") )
+   (display "\nBGL_FUNCTION_END;}\n") )
 
 (define (get-locals params l) ;()
    ;; update all reg to ireg and  return all regs not in params.
@@ -315,7 +315,25 @@
 
 ;;
 (define-method (gen-expr fun::rtl_call args);
-   (let ( (name (gname (rtl_call-var fun))) )
+
+   (define (rtl-reserved? var name)
+      (not (eq? (global-name var) name)) )
+   
+   (define (gen-expr-infix name args)
+      (if (null? args)
+	  (display* "(" name ")")
+	  (begin
+	     (display "(")
+	     (gen-reg (car args))
+	     (display name)
+	     (let loop ( (args (cdr args)) )
+		(when (pair? args)
+		   (gen-reg (car args))
+		   (display name)
+		   (loop (cdr args)) ))
+	     (display ")") )))
+   
+   (define (gen-expr-prefix name args)
       (display* name "(")
       (if (or (string=? name "make_fx_procedure")
 	      (string=? name "MAKE_FX_PROCEDURE")
@@ -324,7 +342,16 @@
 	      (string=? name "MAKE_L_PROCEDURE") )
 	  (display "(function_t) ") )
       (gen-args args)
-      (display ")") ))
+      (display ")") )
+   
+   (let* ( (var (rtl_call-var fun))
+	   (name (gname var)) )
+      (if (and (global? var)
+	       (isa? (global-value var) cfun)
+	       (cfun-infix? (global-value var))
+	       (not (rtl-reserved? var name)) )
+	  (gen-expr-infix name args)
+	  (gen-expr-prefix name args) )))
 
 ;;
 ;; Name of operators.
