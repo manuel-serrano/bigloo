@@ -85,6 +85,8 @@
       (rtl-dump ::obj ::output-port)
       (generic dump ::obj ::output-port ::int)
       (generic dump-fun o::rtl_fun dest args p m)
+      (dump* o ::output-port ::int)
+      (dump-margin ::output-port ::int)
       (dump-ins-rhs o::rtl_ins p m)
       ))
 
@@ -166,7 +168,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    dump-margin ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (dump-margin m p)
+(define (dump-margin p m)
    (let ((mgs '#("" " " "  " "   " "    " "     " "      " "       ")))
       (if (<fx m (vector-length mgs))
 	  (display (vector-ref mgs m) p)
@@ -184,7 +186,7 @@
 		    (dump o p m)
 		    (newline p)
 		    (if (>fx m 0)
-			(dump-margin m p)
+			(dump-margin p m)
 			(newline p)))
 		 o))
       (else
@@ -204,7 +206,7 @@
 	  (dump (car o) p m)
 	  (when (pair? (cdr o))
 	     (newline p)
-	     (dump-margin m p)
+	     (dump-margin p m)
 	     (loop (cdr o)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -232,7 +234,12 @@
 (define-method (dump o::block p m)
    (with-access::block o (label first)
       (fprint p "(block " label)
-      (dump-margin (+fx m 1) p)
+      (with-access::block o (preds succs)
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":preds " (map block-label preds))
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":succs " (map block-label succs)))
+      (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
       (display ")" p)))
 

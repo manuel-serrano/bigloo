@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Mon Jul 17 08:29:15 2017 (serrano)                */
+;*    Last change :  Tue Jul 18 12:44:11 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -45,7 +45,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    basic-block versionning configuration                            */
 ;*---------------------------------------------------------------------*/
-(define *type-call* #f)
+(define *type-call* #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv ...                                                          */
@@ -53,22 +53,39 @@
 (define (bbv back global params blocks)
    (if *saw-bbv?*
        (with-trace 'bbv (global-id global)
-	  (dump-blocks global params blocks ".plain.bb")
+	  (verbose 2 "        bbv " (global-id global))
+	  (when (>=fx (bigloo-debug) 1)
+	     (dump-blocks global params blocks ".plain.bb"))
 	  (set-max-label! blocks)
-	  (let ((regs (liveness! back blocks params)))
-	     (unwind-protect
-		(if (null? blocks)
-		    '()
-		    (let ((b (block->block-list
-				(simplify-block!
-				   (get-specialize-block (car blocks)
-				      (params->ctx params))))))
-		       (dump-blocks global params b ".bb")
-		       (map! (lambda (b) (shrink! b)) b)
-		       b))
-		(begin
-		   (for-each shrink! regs)))))
+	  (let ((blocks (append-map normalize-goto! blocks)))
+	     (let ((regs (liveness! back blocks params)))
+		(unwind-protect
+		   (if (null? blocks)
+		       '()
+		       (let ((b (block->block-list regs
+				   (remove-nop!
+				      (simplify-branch!
+					 (get-specialize-block (car blocks)
+					    (params->ctx params)))))))
+			  (verbose 3 " " (length blocks) " -> " (length b))
+			  (verbose 2 "\n")
+			  (when (>=fx (bigloo-debug) 1)
+			     (dump-blocks global params b ".bb"))
+			  (map! (lambda (b) (shrink! b)) b)
+			  b))
+		   (begin
+		      (for-each shrink! regs))))))
        blocks))
+
+;*---------------------------------------------------------------------*/
+;*    replace ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (replace lst old new)
+   (let loop ((l lst))
+      (cond
+	 ((null? l) lst)
+	 ((eq? (car l) old) (cons new (cdr l)))
+	 (else (cons (car l) (loop (cdr l)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ctx->string ...                                                  */
@@ -96,17 +113,6 @@
 	 (fprint port ";; " (map shape params))
 	 (for-each (lambda (b)
 		      (dump b port 0)
-		      (newline port)
-		      (with-access::block b (preds succs)
-			 (fprint port " ;; preds=" (map block-label preds))
-			 (fprint port " ;; succs=" (map block-label succs)))
-		      (when (isa? b blockS)
-			 (with-access::blockS b (ictx octxs)
-			    (fprint port " ;; ictx=" (ctx->string ictx))
-			    (for-each (lambda (ctx)
-					 (fprint port " ;; octx="
-					    (ctx->string ctx)))
-			       octxs)))
 		      (newline port))
 	    blocks)
 	 id))
@@ -146,42 +152,6 @@
 ;*    Widen the blocks and instructions for preparing the register     */
 ;*    allocation.                                                      */
 ;*---------------------------------------------------------------------*/
-(define (widen-bbv-predicate-only! o regs::pair-nil)
-   
-   (define (get-args o)
-      (filter rtl_reg/ra? (rtl_ins-args* o)))
-
-   (define (ins-in o regs)
-      (if (rtl_ins-typecheck? o)
-	  (list->regset (get-args o) regs)
-	  (make-empty-regset regs)))
-   
-   (define (args-widen-bbv! o)
-      (when (rtl_ins? o)
-	 (with-access::rtl_ins o (args fun)
-	    (widen!::rtl_ins/bbv o
-	       (def (make-empty-regset regs))
-	       (in (ins-in o regs))
-	       (out (make-empty-regset regs)))
-	    (for-each args-widen-bbv! args))))
-   
-   (define (ins-widen-bbv! o)
-      (with-access::rtl_ins o (dest args fun)
-	 (widen!::rtl_ins/bbv o
-	    (def (if (or (not dest) (rtl_reg-onexpr? dest))
-		     (make-empty-regset regs)
-		     (list->regset (list dest) regs)))
-	    (in (ins-in o regs))
-	    (out (make-empty-regset regs)))
-	 (for-each args-widen-bbv! args)))
-   
-   (define (block-widen-bbv! o)
-      (widen!::blockV o)
-      (with-access::block o (first)
-	 (for-each ins-widen-bbv! first)))
-
-   (for-each block-widen-bbv! o))
-
 (define (widen-bbv! o regs::pair-nil)
    
    (define (get-args o)
@@ -212,6 +182,42 @@
 	 (for-each ins-widen-bbv! first)))
 
    (for-each block-widen-bbv! o))
+
+;* (define (widen-bbv-predicate-only! o regs::pair-nil)                */
+;*                                                                     */
+;*    (define (get-args o)                                             */
+;*       (filter rtl_reg/ra? (rtl_ins-args* o)))                       */
+;*                                                                     */
+;*    (define (ins-in o regs)                                          */
+;*       (if (rtl_ins-typecheck? o)                                    */
+;* 	  (list->regset (get-args o) regs)                             */
+;* 	  (make-empty-regset regs)))                                   */
+;*                                                                     */
+;*    (define (args-widen-bbv! o)                                      */
+;*       (when (rtl_ins? o)                                            */
+;* 	 (with-access::rtl_ins o (args fun)                            */
+;* 	    (widen!::rtl_ins/bbv o                                     */
+;* 	       (def (make-empty-regset regs))                          */
+;* 	       (in (ins-in o regs))                                    */
+;* 	       (out (make-empty-regset regs)))                         */
+;* 	    (for-each args-widen-bbv! args))))                         */
+;*                                                                     */
+;*    (define (ins-widen-bbv! o)                                       */
+;*       (with-access::rtl_ins o (dest args fun)                       */
+;* 	 (widen!::rtl_ins/bbv o                                        */
+;* 	    (def (if (or (not dest) (rtl_reg-onexpr? dest))            */
+;* 		     (make-empty-regset regs)                          */
+;* 		     (list->regset (list dest) regs)))                 */
+;* 	    (in (ins-in o regs))                                       */
+;* 	    (out (make-empty-regset regs)))                            */
+;* 	 (for-each args-widen-bbv! args)))                             */
+;*                                                                     */
+;*    (define (block-widen-bbv! o)                                     */
+;*       (widen!::blockV o)                                            */
+;*       (with-access::block o (first)                                 */
+;* 	 (for-each ins-widen-bbv! first)))                             */
+;*                                                                     */
+;*    (for-each block-widen-bbv! o))                                   */
 
 ;*---------------------------------------------------------------------*/
 ;*    liveness! ...                                                    */
@@ -275,7 +281,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    block->block-list ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (block->block-list b::block)
+(define (block->block-list regs b::block)
    
    (define (swap-succ? b)
       (with-access::block b (first)
@@ -304,14 +310,17 @@
       (duplicate::blockS bs
 	 (label (genlabel))
 	 (first (list
-		   (instantiate::rtl_ins
+		   (instantiate::rtl_ins/bbv
 		      (fun (instantiate::rtl_go
 			      (to to)))
 		      (dest #f)
-		      (args '()))))
+		      (args '())
+		      (def (make-empty-regset regs))
+		      (in (make-empty-regset regs))
+		      (out (make-empty-regset regs)))))
 	 (succs (list to))
 	 (preds (list bs))))
-   
+
    (let loop ((bs (list b))
 	      (acc '()))
       (cond
@@ -325,24 +334,37 @@
 		((null? succs)
 		 (loop (cdr bs) (cons (car bs) acc)))
 		((fallthru-block? (car bs))
-		 (let ((last (car (last-pair (block-first (car bs)))))
-		       (succs (block-succs (car bs))))
+		 (let* ((lp (last-pair (block-first (car bs))))
+			(last (car lp))
+			(succs (block-succs (car bs))))
 		    (cond
 		       ((rtl_ins-ifne? last)
-			(if (memq (cadr succs) acc)
+			(cond
+			   ((and (rtl_ins-typecheck? last)
+				 (not (memq (car succs) acc)))
+			    ;; change the ifne for an ifeq
+			    (with-access::rtl_ins last (fun)
+			       (set! fun
+				  (instantiate::rtl_ifeq
+				     (then (cadr succs)))))
+			    (loop bs acc))
+			   ((memq (cadr succs) acc)
 			    (let ((hop (make-go-block (car bs) (car succs))))
 			       (with-access::block (car succs) (preds)
-				  (set-car! (cdr preds) hop)
+				  (set! preds
+				     (replace preds (car bs) hop))
 				  (set-car! (cdr succs) hop))
 			       (loop (cons (car succs) (cdr bs))
-				  (cons* hop (car bs) acc)))
+				  (cons* hop (car bs) acc))))
+			   (else
 			    (loop (append (reverse succs) (cdr bs))
-			       (cons (car bs) acc))))
+			       (cons (car bs) acc)))))
 		       ((rtl_ins-ifeq? last)
 			(if (memq (car succs) acc)
 			    (let ((hop (make-go-block (car bs) (car succs))))
 			       (with-access::block (car succs) (preds)
-				  (set-car! (cdr preds) hop)
+				  (set! preds
+				     (replace preds (car bs) hop))
 				  (set-car! succs hop))
 			       (loop (cons (cadr succs) (cdr bs))
 				  (cons* hop (car bs) acc)))
@@ -351,11 +373,14 @@
 		       ((memq (car succs) acc)
 			(with-access::block (car bs) (first)
 			   (set-cdr! (last-pair first)
-			      (list (instantiate::rtl_ins
+			      (list (instantiate::rtl_ins/bbv
 				       (fun (instantiate::rtl_go
 					       (to (car succs))))
 				       (dest #f)
-				       (args '()))))
+				       (args '())
+				       (def (make-empty-regset regs))
+				       (in (make-empty-regset regs))
+				       (out (make-empty-regset regs))))) 
 			   (loop (cdr bs) (cons (car bs) acc))))
 		       (else
 			(loop (append succs (cdr bs))
@@ -364,10 +389,13 @@
 		 (with-access::block (car bs) (first)
 		    (set! first
 		       (if (null? (cdr first))
-			   (list (instantiate::rtl_ins
+			   (list (instantiate::rtl_ins/bbv
 				    (fun (instantiate::rtl_nop))
 				    (dest #f)
-				    (args '())))
+				    (args '())
+				    (def (make-empty-regset regs))
+				    (in (make-empty-regset regs))
+				    (out (make-empty-regset regs))))
 			   (reverse (cdr (reverse first)))))
 		    (loop (append succs (cdr bs))
 		       (cons (car bs) acc))))
@@ -376,9 +404,60 @@
 		    (cons (car bs) acc)))))))))
 
 ;*---------------------------------------------------------------------*/
-;*    simplify-block! ...                                              */
+;*    normalize-goto! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (simplify-block! b::block)
+(define (normalize-goto! b::block)
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  (reverse acc))
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (with-access::block b (succs preds first)
+	     (let liip ((first first))
+		(cond
+		   ((or (null? first) (null? (cdr first)))
+		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
+		   ((rtl_ins-ifeq? (car first))
+		    [assert (first) (rtl_ins-go? (cadr first))]
+		    (with-access::rtl_ins (car first) (fun)
+		       (with-access::rtl_ifeq fun (then)
+			  (let ((nb (instantiate::block
+				       (label (genlabel))
+				       (first (cdr first))
+				       (preds (list (car bs)))
+				       (succs (list then)))))
+			     (set-car! succs nb)
+			     (set-cdr! first '())
+			     (with-access::block then (preds)
+				(set! preds (replace preds (car bs) nb)))
+			     (loop (append (reverse succs) (cdr bs))
+				(cons (car bs) acc))))))
+		   ((rtl_ins-ifne? (car first))
+		    [assert (first) (rtl_ins-go? (cadr first))]
+		    (with-access::rtl_ins (car first) (fun)
+		       (with-access::rtl_ifne fun (then)
+			  (let ((nb (instantiate::block
+				       (label (genlabel))
+				       (first (cdr first))
+				       (preds (list (car bs)))
+				       (succs (list then)))))
+			     (set-car! (cdr succs) nb)
+			     (set-cdr! first '())
+			     (with-access::block then (preds)
+				(set! preds (replace preds (car bs) nb)))
+			     (loop (append (reverse succs) (cdr bs))
+				(cons (car bs) acc))))))
+		   (else
+		    (loop (append (reverse succs) (cdr bs))
+		       (cons (car bs) acc))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    simplify-branch! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (simplify-branch! b::block)
    
    (define (goto-block? b)
       ;; is a block explicitly jumping to its successor
@@ -386,7 +465,7 @@
 	 (when (and (pair? first) (null? (cdr first)))
 	    (let ((i (car first)))
 	       (rtl_ins-go? i)))))
-
+   
    (define (nop-block? b)
       ;; is a block explicitly jumping to its successor
       (with-access::block b (first)
@@ -403,34 +482,66 @@
 	  (loop (cdr bs) acc))
 	 (else
 	  (with-access::block (car bs) (succs first)
-	     (set! succs
-		(map! (lambda (s)
-			 (if (or (goto-block? s) (nop-block? s))
-			     (with-access::block s (preds succs)
-				(let ((t (car succs)))
-				   (set! preds (remq! (car bs) preds))
-				   (with-access::block t (preds)
-				      (set! preds
-					 (cons (car bs) (remq! s preds))))
-				   (let ((last (car (last-pair first))))
-				      (cond
-					 ((rtl_ins-ifeq? last)
-					  (with-access::rtl_ins last (fun)
-					     (with-access::rtl_ifeq fun (then)
-						(when (eq? then s)
-						   (set! then t)))))
-					 ((rtl_ins-ifne? last)
-					  (with-access::rtl_ins last (fun)
-					     (with-access::rtl_ifne fun (then)
-						(when (eq? then s)
-						   (set! then t)))))
-					 ((rtl_ins-go? last)
-					  (with-access::rtl_ins last (fun)
-					     (with-access::rtl_go fun (to)
-						(set! to t))))))
-				   t))
-			     s))
-		   succs))
+	     ;; remove useless nop instructions
+	     (if (and (=fx (length succs) 1)
+		      (=fx (length (block-succs (car succs))) 1))
+		 ;; collapse the two blocks
+		 (let* ((s (car succs))
+			(ns (car (block-succs s))))
+		    (block-preds-set! ns (list (car bs)))
+		    (set! succs (list ns))
+		    (let ((lp (last-pair first)))
+		       (if (rtl_ins-go? (car lp))
+			   (begin
+			      (set-car! lp (car (block-first s)))
+			      (set-cdr! lp (cdr (block-first s))))
+			   (set! first (append! first (block-first s))))))
+		 (set! succs
+		    (map! (lambda (s)
+			     (if (or (goto-block? s) (nop-block? s))
+				 (with-access::block s (preds succs)
+				    (let ((t (car succs)))
+				       (set! preds (remq! (car bs) preds))
+				       (with-access::block t (preds)
+					  (set! preds
+					     (cons (car bs) (remq! s preds))))
+				       (let ((last (car (last-pair first))))
+					  (cond
+					     ((rtl_ins-ifeq? last)
+					      (with-access::rtl_ins last (fun)
+						 (with-access::rtl_ifeq fun (then)
+						    (when (eq? then s)
+						       (set! then t)))))
+					     ((rtl_ins-ifne? last)
+					      (with-access::rtl_ins last (fun)
+						 (with-access::rtl_ifne fun (then)
+						    (when (eq? then s)
+						       (set! then t)))))
+					     ((rtl_ins-go? last)
+					      (with-access::rtl_ins last (fun)
+						 (with-access::rtl_go fun (to)
+						    (set! to t))))))
+				       t))
+				 s))
+		       succs)))
+	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+
+;*---------------------------------------------------------------------*/
+;*    remove-nop! ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (remove-nop! b::block)
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  b)
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (with-access::block (car bs) (first succs)
+	     (when (and (pair? first) (pair? (cdr first)))
+		(set! first
+		   (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
 	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -515,6 +626,8 @@
 					 (set! octxs (list (car octxs)))
 					 (set! to bs)))))
 			       ((rtl_ins-nop? last)
+				(unless (null? (cdr first))
+				   (set! first (remq! last first)))
 				(set! ssuccs (list (car ssuccs)))
 				(set! octxs (list (car octxs))))
 			       ((rtl_ins-ifeq? last)
@@ -771,13 +884,37 @@
    (with-access::rtl_ins/bbv o (%spill fun dest args def in out)
       (with-output-to-port p
 	 (lambda ()
-	    (display #\" p)
 	    (when dest
+	       (display "[" p)
 	       (dump dest p m)
 	       (display " <- " p))
 	    (dump-ins-rhs o p m)
-	    (display #\" p)
-	    (display* " #|def=" (map shape (regset->list def)))
+	    (when dest (display "]" p))
+	    (display* " #|fun=" (typeof fun))
+	    (display* " def=" (map shape (regset->list def)))
 	    (display* " in=" (map shape (regset->list in)))
 	    (display* " out=" (map shape (regset->list out)))
 	    (display "|#")))))
+
+;*---------------------------------------------------------------------*/
+;*    dump ::blockS ...                                                */
+;*---------------------------------------------------------------------*/
+(define-method (dump o::blockS p m)
+   (with-access::block o (label first)
+      (fprint p "(block " label)
+      (with-access::blockS o (ictx octxs)
+	 (fprint p " ;; ictx=" (ctx->string ictx))
+	 (for-each (lambda (ctx)
+		      (fprint p " ;; octx="
+			 (ctx->string ctx)))
+	    octxs))
+      (with-access::block o (preds succs)
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":preds " (map block-label preds))
+	 (dump-margin p (+fx m 1))
+	 (fprint p ":succs " (map block-label succs)))
+      (dump-margin p (+fx m 1))
+      (dump* first p (+fx m 1))
+      (display ")\n" p)))
+
+

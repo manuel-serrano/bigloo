@@ -27,6 +27,7 @@
 	    saw_expr
 	    saw_regset
 	    saw_register-allocation
+	    saw_bbv
 	    saw_jvm_names
 	    saw_jvm_out
 	    saw_jvm_funcall
@@ -265,5 +266,6 @@
 	 (open-global-method me v)
 	 (build-tree me params code)
 	 (set! code (register-allocation me v params code))
+	 (set! code (bbv me v params code))
 	 (module-code me params code)
 	 (close-method me) )))

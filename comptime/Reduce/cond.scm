@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Wed May 31 10:43:57 2017 (serrano)                */
+;*    Last change :  Tue Jul 18 08:21:30 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The conditional reduction                                        */
@@ -19,9 +19,11 @@
 	    tools_error
 	    type_type
 	    type_cache
+	    type_typeof
 	    ast_var
 	    ast_env
 	    ast_node
+	    ast_dump
 	    effect_effect)
    (export  (reduce-conditional! globals)))
 
@@ -209,6 +211,11 @@
 	       (not (with-access::atom true (value) (flonum? value))))
 	  ;; this help improve static resolution of multiple type tests
 	  true)
+	 ((and (atom? true) (atom? false)
+	       (eq? (atom-value true) #t)
+	       (eq? (atom-value false) #f)
+	       (eq? (get-type test #t) *bool*))
+	  test)
 	 ((atom? test)
 	  (set! *cond-reduced* (+fx 1 *cond-reduced*))
 	  (trace (reduce 2) "Je reduis le cond: " (shape node) #\Newline)
