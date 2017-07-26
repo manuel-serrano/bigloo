@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Fri Apr 22 17:06:25 2016 (serrano)                */
-/*    Copyright   :  2011-16 Manuel Serrano                            */
+/*    Last change :  Wed Jul 26 13:54:43 2017 (serrano)                */
+/*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/
@@ -39,7 +39,7 @@ bgl_regcomp( obj_t pat, obj_t _ ) {
    if( !(err = regcomp( &(BGL_REGEXP_PREG( re )),
 			BSTRING_TO_STRING( pat ),
 			REG_EXTENDED )) ) {
-      return BREF( re );
+      return re;
    } else {
       char *buf;
       int n;
@@ -243,7 +243,7 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
 
       GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
 			     0, 0L, 0L );
-      return BREF( re );
+      return re;
    } else {
       char *buf = alloca( 50 + strlen( error ) );
 
