@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 12:49:30 2017                          */
-;*    Last change :  Tue Jul 25 08:25:07 2017 (serrano)                */
+;*    Last change :  Wed Jul 26 10:12:18 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    bbv-cache                                                        */
@@ -15,6 +15,7 @@
 (module saw_bbv-cache
    
    (import  type_type
+	    type_cache
 	    ast_var
 	    ast_env)
    
@@ -27,7 +28,8 @@
 	    *=fx*
 	    *int->long*
 	    *bint->long*
-	    *vector-bound-check*))
+	    *vector-bound-check*
+	    *type-norms*))
 
 ;*---------------------------------------------------------------------*/
 ;*    The cache registers definition                                   */
@@ -42,6 +44,7 @@
 (define *int->long* #f)
 (define *bint->long* #f)
 (define *vector-bound-check* #f)
+(define *type-norms* #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    start-bbv-cache! ...                                             */
@@ -56,7 +59,9 @@
       (set! *=fx* (get-global/module 'c-=fx 'foreign))
       (set! *int->long* (get-global/module '$int->long 'foreign))
       (set! *bint->long* (get-global/module '$bint->long 'foreign))
-      (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))))
+      (set! *vector-bound-check* (get-global/module '$vector-bound-check? 'foreign))
+      (set! *type-norms*
+	 (list (cons *int* *bint*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    stop-bbv-cache! ...                                              */
@@ -70,4 +75,5 @@
    (set! *=fx* #f)
    (set! *int->long* #f)
    (set! *bint->long* #f)
-   (set! *vector-bound-check* #f))
+   (set! *vector-bound-check* #f)
+   (set! *type-norms* #f))

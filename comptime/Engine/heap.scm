@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug 14 09:36:34 2007                          */
-;*    Last change :  Sun Feb 14 07:40:11 2016 (serrano)                */
-;*    Copyright   :  2007-16 Manuel Serrano                            */
+;*    Last change :  Wed Jul 26 10:18:31 2017 (serrano)                */
+;*    Copyright   :  2007-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Dump heaps for debugging                                         */
 ;*=====================================================================*/
@@ -49,15 +49,15 @@
       (if (string? fname)
 	  (let ((port (open-input-binary-file fname)))
 	     (if (not (binary-port? port))
-		 (error 'dump-heap
-			(format "Cannot open heap file ~s" fname)
-			*lib-dir*)
+		 (error "dump-heap"
+		    (format "Cannot open heap file ~s" fname)
+		    *lib-dir*)
 		 (unwind-protect
 		    (let* ((Envs (input-obj port))
 			   (_ (if (not (and (vector Envs)
 					    (or (=fx (vector-length Envs) 5)
 						(=fx (vector-length Envs) 7))))
-				  (error 'dump-heap "Corrupted heap" heap)))
+				  (error "dump-heap" "Corrupted heap" heap)))
 			   (target (vector-ref Envs 0))
 			   (version (vector-ref Envs 1))
 			   (specific (vector-ref Envs 2))
@@ -114,7 +114,7 @@
 			     (print ")\n"))))
 		    (close-binary-port port))))
 	  (let ((m (format "Cannot open heap file ~s" heap)))
-	     (error 'dump-heap m *lib-dir*)
+	     (error "dump-heap" m *lib-dir*)
 	     #f))))
 
 ;*---------------------------------------------------------------------*/

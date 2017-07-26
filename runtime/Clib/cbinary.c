@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Thu Jul 16 07:57:39 2015 (serrano)                */
+/*    Last change :  Wed Jul 26 10:21:29 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -142,10 +142,9 @@ open_input_binary_file( obj_t name ) {
    if( !(file = fopen( BSTRING_TO_STRING( name ), "rb" )) )
       return BFALSE;
    else {
-      binary_port = bgl_make_binary_port( BSTRING_TO_STRING( name ),
-					  file,
-					  BINARY_PORT_IN );
-      return BREF( binary_port );
+      return bgl_make_binary_port( BSTRING_TO_STRING( name ),
+				   file,
+				   BINARY_PORT_IN );
    }
 }
 

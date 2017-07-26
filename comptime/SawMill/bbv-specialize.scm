@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 26 09:38:52 2017 (serrano)                */
+;*    Last change :  Wed Jul 26 10:03:18 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -124,7 +124,7 @@
 		 (with-access::rtl_ins (car args) (fun)
 		    (with-access::rtl_call fun (var)
 		       (with-access::global var (value type)
-			  (values i (extend-ctx ctx dest type #t))))))
+			  (values i (extend-normalize-ctx ctx dest type #t))))))
 		(else
 		 (values i (extend-ctx ctx dest *obj* #t))))))
 	 ((and *type-call* (rtl_ins-call? i))
@@ -132,7 +132,7 @@
 	     (with-access::rtl_call fun (var)
 		(with-access::global var (value type)
 		   (if (fun? value)
-		       (values i (extend-ctx ctx dest type #t))
+		       (values i (extend-normalize-ctx ctx dest type #t))
 		       (values i (extend-ctx ctx dest *obj* #t)))))))
 	 ((rtl_ins-vlen? i)
 	  (rtl_ins-specialize-vlength i ctx))

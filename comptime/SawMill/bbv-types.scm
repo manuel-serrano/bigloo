@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jul 26 09:38:32 2017 (serrano)                */
+;*    Last change :  Wed Jul 26 10:11:55 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -29,7 +29,8 @@
 	    saw_lib
 	    saw_defs
 	    saw_regset
-	    saw_regutils)
+	    saw_regutils
+	    saw_bbv-cache)
 
    (export  (wide-class blockV::block
 	       (versions::pair-nil (default '()))
@@ -65,6 +66,8 @@
 	    (params->ctx ::pair-nil)
 	    (ctx-get ::pair-nil ::rtl_reg)
 	    (extend-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
+	       #!optional (value '_))
+	    (extend-normalize-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
 	       #!optional (value '_))
 	    (refine-ctx::pair-nil ::pair-nil ::obj ::obj ::obj
 	       #!optional (value '_))
@@ -222,6 +225,15 @@
 		       (cons n (cdr ctx)))))
 		(else
 		 (cons (car ctx) (loop (cdr ctx)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    extend-normalize-ctx ...                                         */
+;*---------------------------------------------------------------------*/
+(define (extend-normalize-ctx ctx reg type flag #!optional (value '_))
+   (let ((tynorm (assq type *type-norms*)))
+      (if (pair? tynorm)
+	  (extend-ctx ctx reg (cdr tynorm) flag value)
+	  (extend-ctx ctx reg type flag value))))
 
 ;*---------------------------------------------------------------------*/
 ;*    refine-ctx ...                                                   */

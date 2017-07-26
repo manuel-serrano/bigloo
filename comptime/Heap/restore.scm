@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:53:23 1994                          */
-;*    Last change :  Sat Feb 13 10:33:55 2016 (serrano)                */
-;*    Copyright   :  1994-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jul 26 10:18:56 2017 (serrano)                */
+;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We restore a heap                                                */
 ;*=====================================================================*/
@@ -49,7 +49,7 @@
 	     (let ((port (open-input-binary-file fname)))
 		(if (not (binary-port? port))
 		    (let ((m (format "Cannot open heap file ~s" fname)))
-		       (error 'restore-heap m *lib-dir*)
+		       (error "restore-heap" m *lib-dir*)
 		       (compiler-exit 5))
 		    (begin
 		       (verbose 2 "      [reading " fname "]" #\Newline)
@@ -109,7 +109,7 @@
 			     #t)
 			  (close-binary-port port)))))
 	     (let ((m (format "Cannot open heap file ~s" *heap-name*)))
-		(error 'restore-heap m *lib-dir*)
+		(error "restore-heap" m *lib-dir*)
 		(compiler-exit 5))))))
 
 ;*---------------------------------------------------------------------*/
