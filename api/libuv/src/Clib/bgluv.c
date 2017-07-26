@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Mar  1 12:24:22 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 15:30:39 2017 (serrano)                */
 /*    Copyright   :  2014-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -33,6 +33,14 @@ typedef BgL_uvpollz00_bglt bgl_uv_poll_t;
 
 extern obj_t bgl_uv_handle_type_symbol( long );
 extern obj_t bgl_uv_events_to_list( int );
+
+/*---------------------------------------------------------------------*/
+/*    Accessors                                                        */
+/*---------------------------------------------------------------------*/
+#define LOOP_BUILTIN( o ) \
+   ((uv_loop_t *)(((bgl_uv_loop_t)(CREF( (obj_t)o )))->BgL_z42builtinz42))
+#define STREAM_BUILTIN( o ) \
+   ((uv_stream_t *)(((bgl_uv_stream_t)(CREF( (obj_t)o )))->BgL_z42builtinz42))
 
 /*---------------------------------------------------------------------*/
 /*    bgl_uv_mutex                                                     */
@@ -93,7 +101,7 @@ void
 bgl_uv_close_cb( uv_handle_t *handle ) {
    obj_t o = (obj_t)handle->data;
    bgl_uv_handle_t h = (bgl_uv_handle_t)(PAIRP( o ) ? CAR( o ) : o);
-   obj_t p = h->BgL_z52onclosez52;
+   obj_t p = ((bgl_uv_handle_t)CREF( h ))->BgL_z52onclosez52;
 
    if( PROCEDUREP( p ) ) PROCEDURE_ENTRY( p )( p, BEOA );
 }
@@ -105,7 +113,7 @@ bgl_uv_close_cb( uv_handle_t *handle ) {
 void
 bgl_uv_handle_cb( uv_handle_t *handle, int status ) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
-   obj_t p = o->BgL_cbz00;
+   obj_t p = ((bgl_uv_watcher_t)CREF( o ))->BgL_cbz00;
 
    if( PROCEDUREP( p ) ) PROCEDURE_ENTRY( p )( p, o, BINT( status ), BEOA );
 }
@@ -120,7 +128,7 @@ bgl_uv_timer_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_timer_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   uv_timer_init( LOOP_BUILTIN( loop ), new );
    return new;
 }
 
@@ -131,7 +139,7 @@ bgl_uv_timer_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
 void
 bgl_uv_fs_event_cb( uv_handle_t *handle, char *path, int events, int status ) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
-   obj_t p = o->BgL_cbz00;
+   obj_t p = ((bgl_uv_watcher_t)CREF( o ))->BgL_cbz00;
 
    if( PROCEDUREP( p ) ) {
       PROCEDURE_ENTRY( p )( p, o, string_to_bstring( path ), BINT( events ), BINT( status ), BEOA );
@@ -148,7 +156,7 @@ bgl_uv_fs_event_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_fs_event_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   uv_fs_event_init( LOOP_BUILTIN( loop ), new );
    return new;
 }
 
@@ -159,7 +167,7 @@ bgl_uv_fs_event_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
 void
 bgl_uv_fs_poll_cb( uv_handle_t *handle, int status, const uv_stat_t* prev, const uv_stat_t* curr ) {
    bgl_uv_fs_poll_t o = (bgl_uv_fs_poll_t)handle->data;
-   obj_t p = o->BgL_cbz00;
+   obj_t p = ((bgl_uv_fs_poll_t)CREF( o ))->BgL_cbz00;
 
    /* some libuv versions uses -2 instead of -1 for error, fix this! */
    if( status < 0 ) { status = -1; }
@@ -181,7 +189,7 @@ bgl_uv_fs_poll_new( bgl_uv_fs_poll_t o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_fs_poll_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   uv_fs_poll_init( LOOP_BUILTIN( loop ), new );
    return new;
 }
 
@@ -231,8 +239,7 @@ bgl_uv_poll_new( obj_t o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_poll_init( (uv_loop_t *)loop->BgL_z42builtinz42, new,
-		 ((bgl_uv_poll_t)o)->BgL_fdz00 );
+   uv_poll_init( LOOP_BUILTIN( loop ), new, ((bgl_uv_poll_t)o)->BgL_fdz00 );
    return new;
 }
 
@@ -246,7 +253,7 @@ bgl_uv_idle_new( BgL_uvidlez00_bglt o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_idle_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   uv_idle_init( LOOP_BUILTIN( loop ), new );
    return new;
 }
 
@@ -260,7 +267,7 @@ bgl_uv_check_new( BgL_uvcheckz00_bglt o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_check_init( (uv_loop_t *)loop->BgL_z42builtinz42, new );
+   uv_check_init( LOOP_BUILTIN( loop ), new );
    return new;
 }
 
@@ -271,7 +278,7 @@ bgl_uv_check_new( BgL_uvcheckz00_bglt o, bgl_uv_loop_t loop ) {
 static void
 bgl_uv_async_cb( uv_async_t *handle ) {
    bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
-   obj_t p = o->BgL_cbz00;
+   obj_t p = ((bgl_uv_watcher_t)CREF( o ))->BgL_cbz00;
 
    if( PROCEDUREP( p ) ) {
       PROCEDURE_ENTRY( p )( p, o, BEOA );
@@ -287,7 +294,7 @@ bgl_uv_async_new( bgl_uv_async_t o, bgl_uv_loop_t loop ) {
    uv_async_t *new = (uv_async_t *)GC_MALLOC( sizeof( uv_async_t ) );
    new->data = o;
 
-   uv_async_init( (uv_loop_t *)loop->BgL_z42builtinz42, new, &bgl_uv_async_cb );
+   uv_async_init( LOOP_BUILTIN( loop ), new, &bgl_uv_async_cb );
    return new;
 }
 
@@ -407,7 +414,7 @@ bgl_uv_exepath() {
 /*    BGL_UV_FS_WRAPPER ...                                            */
 /*---------------------------------------------------------------------*/
 #define BGL_UV_FS_WRAPPER0( name, obj ) { \
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   uv_loop_t *loop = LOOP_BUILTIN( bloop ); \
    int r; \
    if( bgl_check_fs_cb( proc, 1, #name ) ) { \
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
@@ -429,7 +436,7 @@ bgl_uv_exepath() {
 }
 
 #define BGL_UV_FS_WRAPPER1( name, obj, arg ) { \
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   uv_loop_t *loop = LOOP_BUILTIN( bloop ); \
    int r; \
    if( bgl_check_fs_cb( proc, 1, #name ) ) { \
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
@@ -451,7 +458,7 @@ bgl_uv_exepath() {
 }
 
 #define BGL_UV_FS_WRAPPER2( name, obj, arg0, arg1 ) {	\
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42; \
+   uv_loop_t *loop = LOOP_BUILTIN( bloop ); \
    int r; \
    if( bgl_check_fs_cb( proc, 1, #name ) ) { \
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) ); \
@@ -524,7 +531,7 @@ bgl_uv_fs_rename( char *oldp, char *newp, obj_t proc, bgl_uv_loop_t bloop ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_ftruncate( obj_t obj, int64_t offset, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( obj ))->BgL_fdz00;
 
    BGL_UV_FS_WRAPPER1( uv_fs_ftruncate, fd, offset )
 }
@@ -535,7 +542,7 @@ bgl_uv_fs_ftruncate( obj_t obj, int64_t offset, obj_t proc, bgl_uv_loop_t bloop 
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_fchown( obj_t obj, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( obj ))->BgL_fdz00;
    
    BGL_UV_FS_WRAPPER2( uv_fs_fchown, fd, uid, gid )
 }
@@ -565,7 +572,7 @@ bgl_uv_fs_chown( char *path, int uid, int gid, obj_t proc, bgl_uv_loop_t bloop )
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_fchmod( obj_t obj, int mod, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)obj)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( obj ))->BgL_fdz00;
    
    BGL_UV_FS_WRAPPER1( uv_fs_fchmod, fd, mod )
 }
@@ -609,7 +616,7 @@ bgl_uv_fs_open_cb( uv_fs_t* req ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
    char *path = BSTRING_TO_STRING( bpath );
 
    if( bgl_check_fs_cb( proc, 1, "uv-fs-open" ) ) {
@@ -646,7 +653,7 @@ bgl_uv_fs_open( obj_t bpath, int flags, int mode, obj_t proc, bgl_uv_loop_t bloo
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_close( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( port ))->BgL_fdz00;
 
    BGL_UV_FS_WRAPPER0( uv_fs_close, fd )
 }
@@ -767,8 +774,8 @@ bgl_uv_fs_fstat_cb( uv_fs_t *req ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fs_fstat( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
+   int fd = ((bgl_uv_file_t)CREF( port ))->BgL_fdz00;
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_fstat" ) ) {
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
@@ -800,7 +807,7 @@ bgl_uv_fs_fstat( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fs_lstat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_lstat" ) ) {
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
@@ -832,7 +839,7 @@ bgl_uv_fs_lstat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fs_stat( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_lstat" ) ) {
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
@@ -902,7 +909,7 @@ bgl_uv_fs_readlink_cb( uv_fs_t *req ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_uv_fs_readlink( char *path, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
 
    if( bgl_check_fs_cb( proc, 1, "uv_fs_readlink" ) ) {
       uv_fs_t *req = (uv_fs_t *)malloc( sizeof( uv_fs_t ) );
@@ -962,7 +969,7 @@ bgl_uv_fs_mkdir( char *path, int mod, obj_t proc, bgl_uv_loop_t bloop ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_fsync( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( port ))->BgL_fdz00;
 
    BGL_UV_FS_WRAPPER0( uv_fs_fsync, fd )
 }
@@ -973,7 +980,7 @@ bgl_uv_fs_fsync( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_fdatasync( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( port ))->BgL_fdz00;
 
    BGL_UV_FS_WRAPPER0( uv_fs_fdatasync, fd )
 }
@@ -984,7 +991,7 @@ bgl_uv_fs_fdatasync( obj_t port, obj_t proc, bgl_uv_loop_t bloop ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_futime( obj_t port, double atime, double mtime, obj_t proc, bgl_uv_loop_t bloop ) {
-   int fd = ((bgl_uv_file_t)port)->BgL_fdz00;
+   int fd = ((bgl_uv_file_t)CREF( port ))->BgL_fdz00;
 
    BGL_UV_FS_WRAPPER2( uv_fs_futime, fd, atime, mtime )
 }
@@ -1020,9 +1027,8 @@ bgl_uv_fs_rw_cb( uv_fs_t *req ) {
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_write( obj_t obj, obj_t buffer, long offset, long length, int64_t position, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-   bgl_uv_file_t file = (bgl_uv_file_t)obj;
-   int fd = file->BgL_fdz00;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
+   int fd = ((bgl_uv_file_t)CREF( obj ))->BgL_fdz00;
 
    if( length + offset > STRING_LENGTH( buffer ) ) {
       C_SYSTEM_FAILURE( BGL_INDEX_OUT_OF_BOUND_ERROR, "uv-fs-write",
@@ -1058,9 +1064,8 @@ bgl_uv_fs_write( obj_t obj, obj_t buffer, long offset, long length, int64_t posi
 /*---------------------------------------------------------------------*/
 int
 bgl_uv_fs_read( obj_t obj, obj_t buffer, long offset, long length, int64_t position, obj_t proc, bgl_uv_loop_t bloop ) {
-   uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-   bgl_uv_file_t file = (bgl_uv_file_t)obj;
-   int fd = file->BgL_fdz00;
+   uv_loop_t *loop = LOOP_BUILTIN( bloop );
+   int fd = ((bgl_uv_file_t)CREF( obj ))->BgL_fdz00;
    int len = 0;
 
    if( length + offset > STRING_LENGTH( buffer ) ) {
@@ -1309,7 +1314,7 @@ bgl_uv_getaddrinfo( char *node, char *service, int family, obj_t proc, bgl_uv_lo
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-getaddrinfo",
 			"wrong callback", proc );
    } else {
-      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
+      uv_loop_t *loop = LOOP_BUILTIN( bloop );
       uv_getaddrinfo_t *resolver =
 	 (uv_getaddrinfo_t *)malloc( sizeof( uv_getaddrinfo_t ) );
       struct addrinfo hints;
@@ -1373,10 +1378,9 @@ bgl_uv_write( obj_t obj, char *buffer, long offset, long length, obj_t proc, bgl
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
 			"wrong callback", proc );
    } else {
-      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+      uv_loop_t *loop = LOOP_BUILTIN( bloop );
+      uv_stream_t *handle = STREAM_BUILTIN( obj );
       uv_write_t *req = malloc( sizeof( uv_write_t ) );
-      uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
       uv_buf_t iov;
       int r;
 
@@ -1402,12 +1406,11 @@ bgl_uv_write2( obj_t obj, char *buffer, long offset, long length, obj_t sendhand
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-stream-write",
 			"wrong callback", proc );
    } else {
-      uv_loop_t *loop = (uv_loop_t *)bloop->BgL_z42builtinz42;
-      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-      uv_write_t *req = malloc( sizeof( uv_write_t ) );
-      uv_stream_t *handle = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      uv_loop_t *loop = LOOP_BUILTIN( bloop );
+      uv_stream_t *handle = STREAM_BUILTIN( obj );
       uv_stream_t *sendhdl =
-	 (sendhandle == BFALSE ? 0L : (uv_stream_t *)(((bgl_uv_stream_t)sendhandle)->BgL_z42builtinz42));
+	 (sendhandle == BFALSE ? 0L : STREAM_BUILTIN( sendhandle ));
+      uv_write_t *req = malloc( sizeof( uv_write_t ) );
       uv_buf_t iov;
       int r;
 
@@ -1430,7 +1433,7 @@ bgl_uv_write2( obj_t obj, char *buffer, long offset, long length, obj_t sendhand
 static void
 bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
    obj_t obj = (obj_t)stream->data;
-   bgl_uv_stream_t sobj = (bgl_uv_stream_t)obj;
+   bgl_uv_stream_t sobj = (bgl_uv_stream_t)CREF( obj );
    obj_t p = sobj->BgL_z52proccz52;
    obj_t allocobj = sobj->BgL_z52allocz52;
    obj_t offset = sobj->BgL_z52offsetz52;
@@ -1464,7 +1467,7 @@ bgl_uv_read_cb( uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf ) {
 static void
 bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
    bgl_uv_stream_t stream = (bgl_uv_stream_t)hdl->data;
-   obj_t p = stream->BgL_z52procaz52;
+   obj_t p = ((bgl_uv_stream_t)CREF( stream ))->BgL_z52procaz52;
    obj_t allocobj = PROCEDURE_ENTRY( p )( p, stream, BINT( ssize ) );
    obj_t chunk = BGL_MVALUES_VAL( 1 );
    obj_t offset = BGL_MVALUES_VAL( 2 );
@@ -1474,8 +1477,8 @@ bgl_uv_alloc_cb( uv_handle_t *hdl, size_t ssize, uv_buf_t *buf ) {
 			"string",
 			chunk );
    }
-   stream->BgL_z52allocz52 = allocobj;
-   stream->BgL_z52offsetz52 = offset;
+   ((bgl_uv_stream_t)CREF( stream ))->BgL_z52allocz52 = allocobj;
+   ((bgl_uv_stream_t)CREF( stream ))->BgL_z52offsetz52 = offset;
 
    *buf = uv_buf_init( &(STRING_REF( chunk, CINT( offset ) )), ssize );
 }
@@ -1494,7 +1497,7 @@ bgl_uv_read_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop ) {
 	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-read-start",
 			   "wrong callback", procc );
       } else {
-	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+	 bgl_uv_stream_t stream = (bgl_uv_stream_t)CREF( obj );
 	 uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
 	 int r;
 
@@ -1617,8 +1620,7 @@ bgl_uv_listen( obj_t obj, int backlog, obj_t proc, bgl_uv_loop_t bloop ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-tcp-listen",
 			"wrong callback", proc );
    } else {
-      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-      uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      uv_stream_t *s = STREAM_BUILTIN( obj );
 
       s->data = MAKE_PAIR( obj, proc );
 
@@ -1917,7 +1919,7 @@ bgl_uv_udp_recv_start( obj_t obj, obj_t proca, obj_t procc, bgl_uv_loop_t bloop 
 	 C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-udp_recv-start",
 			   "wrong callback", procc );
       } else {
-	 bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
+	 bgl_uv_stream_t stream = (bgl_uv_stream_t)CREF( obj );
 	 uv_udp_t *s = (uv_udp_t *)(stream->BgL_z42builtinz42);
 	 int r;
 
@@ -1970,8 +1972,7 @@ bgl_uv_shutdown( obj_t obj, obj_t proc, bgl_uv_loop_t bloop ) {
       C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "uv-shutdown",
 			"wrong callback", proc );
    } else {
-      bgl_uv_stream_t stream = (bgl_uv_stream_t)obj;
-      uv_stream_t *s = (uv_stream_t *)(stream->BgL_z42builtinz42);
+      uv_stream_t *s = STREAM_BUILTIN( obj );
       uv_shutdown_t *req = malloc( sizeof( uv_shutdown_t ) );
       int r;
 
@@ -2098,7 +2099,7 @@ int bgl_uv_spawn( bgl_uv_loop_t loop,
 
    process->BgL_z42builtinz42->data = process;
 
-   return uv_spawn( (uv_loop_t *)loop->BgL_z42builtinz42,
+   return uv_spawn( LOOP_BUILTIN( loop ),
 		    (uv_process_t *)process->BgL_z42builtinz42,
 		    options );
 }
@@ -2175,7 +2176,7 @@ bgl_uv_queue_work( bgl_uv_work_t w, bgl_uv_loop_t bloop ) {
    w->BgL_z42builtinz42 = (uv_work_t *)GC_MALLOC( sizeof( uv_work_t ) );
    w->BgL_z42builtinz42->data = w;
 
-   uv_queue_work( (uv_loop_t *)bloop->BgL_z42builtinz42,
+   uv_queue_work( LOOP_BUILTIN( bloop ),
 		  w->BgL_z42builtinz42,
 		  bgl_work_queue_cb,
 		  bgl_after_queue_cb );
