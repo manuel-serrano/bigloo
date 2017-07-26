@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Jul 26 09:09:23 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 14:23:53 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -203,7 +203,7 @@ bgl_flonum_to_bignum( double r ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_bignum_to_long( obj_t x ) {
-   return mpz_get_si( &(x->bignum_t.mpz) );
+   return mpz_get_si( &(BIGNUM( x ).mpz) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ bgl_bignum_to_long( obj_t x ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF BGL_LONGLONG_T
 bgl_bignum_to_llong( obj_t x ) {
-   return (BGL_LONGLONG_T)mpz_get_ui( &(x->bignum_t.mpz) );
+   return (BGL_LONGLONG_T)mpz_get_ui( &(BIGNUM( x ).mpz) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -221,7 +221,7 @@ bgl_bignum_to_llong( obj_t x ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF double
 bgl_bignum_to_flonum( obj_t x ) {
-   return mpz_get_d( &(x->bignum_t.mpz) );
+   return mpz_get_d( &(BIGNUM( x ).mpz) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -327,7 +327,7 @@ bgl_bignum_cmp( obj_t x, obj_t y ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_bignum_even( obj_t x ) {
-   return mpz_even_p( &(x->bignum_t.mpz) );
+   return mpz_even_p( &(BIGNUM( x ).mpz) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -336,7 +336,7 @@ bgl_bignum_even( obj_t x ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_bignum_odd( obj_t x ) {
-   return mpz_odd_p( &(x->bignum_t.mpz) );
+   return mpz_odd_p( &(BIGNUM( x ).mpz) );
 }
 
 /*---------------------------------------------------------------------*/
@@ -695,8 +695,8 @@ bgl_bignum_gcd( obj_t x, obj_t y ) {
    obj_t z;
    mpz_t x1, y1, z1;
    
-   mpz_init_set( x1, &(x->bignum_t.mpz) );
-   mpz_init_set( y1, &(y->bignum_t.mpz) );
+   mpz_init_set( x1, &(BIGNUM( x ).mpz) );
+   mpz_init_set( y1, &(BIGNUM( y ).mpz) );
    mpz_init( z1 );
    
    mpz_gcd( z1, x1, y1 );
@@ -718,8 +718,8 @@ bgl_bignum_lcm( obj_t x, obj_t y ) {
    obj_t z;
    mpz_t x1, y1, z1;
    
-   mpz_init_set( x1, &(x->bignum_t.mpz) );
-   mpz_init_set( y1, &(y->bignum_t.mpz) );
+   mpz_init_set( x1, &(BIGNUM( x ).mpz) );
+   mpz_init_set( y1, &(BIGNUM( y ).mpz) );
    mpz_init( z1 );
    
    mpz_lcm( z1, x1, y1 );
