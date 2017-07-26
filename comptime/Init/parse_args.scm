@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 12 11:46:53 2017 (serrano)                */
+;*    Last change :  Wed Jul 26 12:55:28 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -385,6 +385,11 @@
        (set! *arithmetic-overflow* #f))
       (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
        (set! *arithmetic-overflow* #t))
+      ;; fix arithmetic tagging
+      (("-ftagged-fxop" (help "Enable tagged fix-ops optimization"))
+       (set! *optim-tagged-fxop?* #t))
+      (("-fno-tagged-fxop" (help "Disable tagged fix-ops optimization"))
+       (set! *optim-tagged-fxop?* #f))
       ;; case sensitivity
       (("-fcase-sensitive" (help "Case sensitive reader (default)"))
        (bigloo-case-sensitivity-set! 'sensitive))
@@ -896,6 +901,8 @@
        (set! *pass* 'fuse)) 
       (("-user" (help "Stop after the user pass"))
        (set! *pass* 'user))
+      (("-fxop" (help "Stop after the fx-ops optimization"))
+       (set! *pass* 'fxop))
       (("-coerce" (help "Stop after the type coercing stage"))
        (set! *pass* 'coerce))
       (("-effect" (help "Stop after the effect stage"))
@@ -1220,6 +1227,7 @@
       (set! *optim-cfa-flonum-arithmetic?* #t)
       (set! *optim-dataflow-types?* #t)
       (set! *optim-initflow?* #t)
+      (set! *optim-tagged-fxop?* #t)
       ;; (set! *optim-narrow?* #t)
       ;; (set! *optim-return?* #t)
       (set! *optim-cfa-free-var-tracking?* #t)

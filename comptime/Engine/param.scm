@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Tue Jul 11 10:09:01 2017 (serrano)                */
+;*    Last change :  Wed Jul 26 11:25:00 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -90,6 +90,7 @@
 	    *optim-symbol-case*
 	    *optim-return?*
 	    *optim-return-goto?*
+	    *optim-tagged-fxop?*
 	    *optim-patch?*
 	    *purify*
 	    *jvm-env*
@@ -949,6 +950,9 @@
    #f)
 (param-define *optim-return-goto?*
    "Optimize set-exit by enabling local return"
+   #f)
+(param-define *optim-tagged-fxop?*
+   "Optimize tagged fixnum operations"
    #f)
 (param-define *optim-patch?*
    "Optimize self modifying code"

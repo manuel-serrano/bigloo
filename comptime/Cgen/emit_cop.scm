@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 14:39:37 1996                          */
-;*    Last change :  Fri Dec 23 06:36:18 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jul 26 10:45:24 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of cop code.                                        */
 ;*=====================================================================*/
@@ -409,6 +409,7 @@
 ;*    emit-cop ::capp ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (emit-cop cop::capp)
+   
    (define (emit-infix-capp)
       (let ((actuals (capp-args cop)))
 	 (write-char #\( *c-port*)
@@ -423,10 +424,11 @@
 	     (emit-cop (capp-fun cop))
 	     (emit-cop (cadr actuals)))
 	    (else
-	     (error 'emit-cop "Illegal infix macro"
-		    (shape (varc-variable (capp-fun cop))))))
+	     (error "emit-cop" "Illegal infix macro"
+		(shape (varc-variable (capp-fun cop))))))
 	 (write-char #\) *c-port*)
 	 #t))
+   
    (define (emit-prefix-capp)
       (let ((actuals (capp-args cop)))
 	 (emit-cop (capp-fun cop))
@@ -445,6 +447,7 @@
 		       (emit-cop (car actuals))
 		       (display ", " *c-port*)
 		       (loop (cdr actuals))))))))
+   
    (define (emit-prefix-capp-sans-bdb-loc)
       (let ((o *bdb-debug-no-line-directives?*))
 	 (set! *bdb-debug-no-line-directives?* #t)

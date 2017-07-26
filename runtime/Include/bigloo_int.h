@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Wed Mar  8 17:38:32 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 10:55:19 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -31,6 +31,15 @@ extern "C" {
 
 #define ODDP_FX( i )  ((i) & 0x1 )
 #define EVENP_FX( i ) (!ODDP_FX( i ))
+
+#define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
+#define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
+
+#define LTFX( x, y ) ((long)(x) < (long)(y))
+#define LEFX( x, y ) ((long)(x) <= (long)(y))
+#define GTFX( x, y ) ((long)(x) > (long)(y))
+#define GEFX( x, y ) ((long)(x) >= (long)(y))
+#define EGFX( x, y ) ((long)(x) == (long)(y))
 
 /*---------------------------------------------------------------------*/
 /*    Long long                                                        */

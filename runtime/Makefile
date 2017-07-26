@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Wed Jul 26 08:58:55 2017 (serrano)                */
+#*    Last change :  Wed Jul 26 10:29:57 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -655,6 +655,18 @@ install-c:
 	fi
 	$(MAKE) install-lib LIB=libbigloo_s-$(RELEASE)
 	$(MAKE) install-lib LIB=libbigloo_u-$(RELEASE)
+
+install-saw-c:
+	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+           for i in $(INCLUDE_FILE:Include/%=%) bigloo_gc.h bigloo_config.h; do \
+	      cp $(BOOTLIBDIR)/$$i $(LIBDIR)/$(FILDIR)/$$i && \
+              chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/$$i; \
+           done; \
+	   cp $(BOOTLIBDIR)/bigloo.heap $(LIBDIR)/$(FILDIR)/bigloo.heap && \
+           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo.heap; \
+	fi
+	$(MAKE) install-lib LIB=libbigloo_saw_s-$(RELEASE)
+	$(MAKE) install-lib LIB=libbigloo_saw_u-$(RELEASE)
 
 install-jvm:
 	if [ $(ZIPDIR) != $(BOOTLIBDIR) ]; then \

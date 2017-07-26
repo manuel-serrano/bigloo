@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Tue Jun 27 18:05:10 2017 (serrano)                */
+;*    Last change :  Wed Jul 26 11:29:53 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -67,6 +67,7 @@
 	    cfa_pair
 	    integrate_walk
 	    tailc_walk
+	    fxop_walk
 	    coerce_walk
 	    reduce_walk
 	    cnst_walk
@@ -420,13 +421,21 @@
 	    (stop-on-pass 'abound (lambda () (write-ast ast)))
 	    (check-sharing "abound" ast)
 	    (check-type "abound" ast #t #f)
-	    
+
 	    ;; we introduce type coercion and checking
 	    (set! ast (profile coerce (coerce-walk! ast)))
 	    (stop-on-pass 'coerce (lambda () (write-ast ast)))
 	    (check-sharing "coerce" ast)
 	    (check-type "coerce" ast #t #t)
 
+	    ;; C tagged arithmetic operations
+	    (when (and *optim-tagged-fxop?*
+		       (memq (backend-language (the-backend)) '(c c-saw)))
+	       (set! ast (profile fxop (fxop-walk! ast)))
+	       (stop-on-pass 'fxop (lambda () (write-ast ast)))
+	       (check-sharing "fxop" ast)
+	       (check-type "fxop" ast #t #f))
+		       
 	    ;; now that type checks have been introduced, we recompute
 	    ;; the type dataflow analysis
 	    (when *optim-dataflow-types?*
