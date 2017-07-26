@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Thu Jan 28 16:38:11 2016 (serrano)                */
-/*    Copyright   :  2011-16 Manuel Serrano                            */
+/*    Last change :  Wed Jul 26 18:21:27 2017 (serrano)                */
+/*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
 /*=====================================================================*/
@@ -19,39 +19,39 @@
 /*    OBJ_TO_SND_PCM                                                   */
 /*---------------------------------------------------------------------*/
 #define OBJ_TO_SND_PCM( o ) \
-   (((BgL_alsazd2sndzd2pcmz00_bglt)o)->BgL_z42builtinz42)
+   (((BgL_alsazd2sndzd2pcmz00_bglt)CREF(o))->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
 /*    OBJ_TO_SND_CTL                                                   */
 /*---------------------------------------------------------------------*/
 #define OBJ_TO_SND_CTL( o ) \
-   (((BgL_alsazd2sndzd2ctlz00_bglt)o)->BgL_z42builtinz42)
+   (((BgL_alsazd2sndzd2ctlz00_bglt)CREF(o))->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
 /*    OBJ_TO_SND_MIXER                                                 */
 /*---------------------------------------------------------------------*/
 #define OBJ_TO_SND_MIXER( o ) \
-   (((BgL_alsazd2sndzd2mixerz00_bglt)o)->BgL_z42builtinz42)
+   (((BgL_alsazd2sndzd2mixerz00_bglt)CREF(o))->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
 /*    alsa-snd-card-info bigloo object                                 */
 /*---------------------------------------------------------------------*/
 #define BGL_SND_CTL_CARD_INFO_CTL( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_ctlz00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_ctlz00
 #define BGL_SND_CTL_CARD_INFO_CARD( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_cardz00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_cardz00
 #define BGL_SND_CTL_CARD_INFO_ID( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_idz00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_idz00
 #define BGL_SND_CTL_CARD_INFO_DRIVER( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_driverz00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_driverz00
 #define BGL_SND_CTL_CARD_INFO_NAME( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_namez00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_namez00
 #define BGL_SND_CTL_CARD_INFO_LONGNAME( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_longnamez00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_longnamez00
 #define BGL_SND_CTL_CARD_INFO_MIXERNAME( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_mixernamez00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_mixernamez00
 #define BGL_SND_CTL_CARD_INFO_COMPONENTS( o ) \
-   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)o)->BgL_componentsz00
+   ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_componentsz00
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
