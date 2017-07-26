@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Mon Feb 20 18:06:55 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 17:01:52 2017 (serrano)                */
 /*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    avahi Bigloo binding                                             */
@@ -32,6 +32,7 @@ extern obj_t bgl_avahi_entry_group_state_to_symbol( AvahiEntryGroupState );
 extern obj_t bgl_avahi_protocol_to_symbol( AvahiProtocol );
 extern obj_t bgl_avahi_browser_event_to_symbol( AvahiBrowserEvent );
 extern obj_t bgl_avahi_resolver_event_to_symbol( AvahiResolverEvent );
+extern AvahiProtocol bgl_avahi_symbol_to_protocol();
 extern obj_t bgl_avahi_lock();
 extern obj_t bgl_avahi_unlock();
 extern obj_t bgl_avahi_signal();
@@ -47,18 +48,18 @@ extern obj_t bgl_avahi_signal();
 /*---------------------------------------------------------------------*/
 #define bgl_avahi_poll_t BgL_avahizd2pollzd2_bglt
 #define BGL_AVAHI_POLL_BUILTIN( o )		\
-   (((bgl_avahi_poll_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_poll_t)CREF(o))->BgL_z42builtinz42)
 
 #define BGL_AVAHI_POLL_CTYPE( o ) \
-   (((bgl_avahi_poll_t)o)->BgL_z42ctypez42)
+   (((bgl_avahi_poll_t)CREF(o))->BgL_z42ctypez42)
 
 #define bgl_avahi_simple_poll_t BgL_avahizd2simplezd2pollz00_bglt
 #define BGL_AVAHI_SIMPLE_POLL_BUILTIN( o ) \
-   (((bgl_avahi_simple_poll_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_simple_poll_t)CREF(o))->BgL_z42builtinz42)
 
 #define bgl_avahi_threaded_poll_t BgL_avahizd2threadedzd2pollz00_bglt
 #define BGL_AVAHI_THREADED_POLL_BUILTIN( o ) \
-   (((bgl_avahi_threaded_poll_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_threaded_poll_t)CREF(o))->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_client                                                     */
@@ -66,11 +67,11 @@ extern obj_t bgl_avahi_signal();
 #define bgl_avahi_client_t BgL_avahizd2clientzd2_bglt
 
 #define BGL_AVAHI_CLIENT_BUILTIN( o ) \
-   (((bgl_avahi_client_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_client_t)CREF(o))->BgL_z42builtinz42)
 #define BGL_AVAHI_CLIENT_PROC( o ) \
-   (((bgl_avahi_client_t)o)->BgL_procz00)
+   (((bgl_avahi_client_t)CREF(o))->BgL_procz00)
 #define BGL_AVAHI_CLIENT_POLL( o ) \
-   (((bgl_avahi_client_t)o)->BgL_pollz00)
+   (((bgl_avahi_client_t)CREF(o))->BgL_pollz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_entry_group                                                */
@@ -78,11 +79,11 @@ extern obj_t bgl_avahi_signal();
 #define bgl_avahi_entry_group_t BgL_avahizd2entryzd2groupz00_bglt
 
 #define BGL_AVAHI_ENTRY_GROUP_BUILTIN( o ) \
-   (((bgl_avahi_entry_group_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_entry_group_t)CREF(o))->BgL_z42builtinz42)
 #define BGL_AVAHI_ENTRY_GROUP_CLIENT( o ) \
-   (((bgl_avahi_entry_group_t)o)->BgL_clientz00)
+   (((bgl_avahi_entry_group_t)CREF(o))->BgL_clientz00)
 #define BGL_AVAHI_ENTRY_GROUP_PROC( o ) \
-   (((bgl_avahi_entry_group_t)o)->BgL_procz00)
+   (((bgl_avahi_entry_group_t)CREF(o))->BgL_procz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_service_browser                                            */
@@ -90,15 +91,15 @@ extern obj_t bgl_avahi_signal();
 #define bgl_avahi_service_browser_t BgL_avahizd2servicezd2browserz00_bglt
 
 #define BGL_AVAHI_SERVICE_BROWSER_BUILTIN( o ) \
-   (((bgl_avahi_service_browser_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_z42builtinz42)
 #define BGL_AVAHI_SERVICE_BROWSER_CLIENT( o ) \
-   (((bgl_avahi_service_browser_t)o)->BgL_clientz00)
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_clientz00)
 #define BGL_AVAHI_SERVICE_BROWSER_PROC( o ) \
-   (((bgl_avahi_service_browser_t)o)->BgL_procz00)
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_procz00)
 #define BGL_AVAHI_SERVICE_BROWSER_TYPE( o ) \
-   (((bgl_avahi_service_browser_t)o)->BgL_typez00)
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_typez00)
 #define BGL_AVAHI_SERVICE_BROWSER_DOMAIN( o ) \
-   (((bgl_avahi_service_browser_t)o)->BgL_domainz00)
+   (((bgl_avahi_service_browser_t)CREF(o))->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_service_type_browser                                       */
@@ -106,15 +107,15 @@ extern obj_t bgl_avahi_signal();
 #define bgl_avahi_service_type_browser_t BgL_avahizd2servicezd2typezd2browserzd2_bglt
 
 #define BGL_AVAHI_SERVICE_TYPE_BROWSER_BUILTIN( o ) \
-   (((bgl_avahi_service_type_browser_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_z42builtinz42)
 #define BGL_AVAHI_SERVICE_TYPE_BROWSER_CLIENT( o ) \
-   (((bgl_avahi_service_type_browser_t)o)->BgL_clientz00)
+   (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_clientz00)
 #define BGL_AVAHI_SERVICE_TYPE_BROWSER_PROC( o ) \
-   (((bgl_avahi_service_type_browser_t)o)->BgL_procz00)
+   (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_procz00)
 #define BGL_AVAHI_SERVICE_TYPE_BROWSER_TYPE( o ) \
-   (((bgl_avahi_service_type_browser_t)o)->BgL_typez00)
+   (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_typez00)
 #define BGL_AVAHI_SERVICE_TYPE_BROWSER_DOMAIN( o ) \
-   (((bgl_avahi_service_type_browser_t)o)->BgL_domainz00)
+   (((bgl_avahi_service_type_browser_t)CREF(o))->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_domain_browser                                             */
@@ -122,13 +123,13 @@ extern obj_t bgl_avahi_signal();
 #define bgl_avahi_domain_browser_t BgL_avahizd2domainzd2browserz00_bglt
 
 #define BGL_AVAHI_DOMAIN_BROWSER_BUILTIN( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_domain_browser_t)CREF(o))->BgL_z42builtinz42)
 #define BGL_AVAHI_DOMAIN_BROWSER_CLIENT( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_clientz00)
+   (((bgl_avahi_domain_browser_t)CREF(o))->BgL_clientz00)
 #define BGL_AVAHI_DOMAIN_BROWSER_PROC( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_procz00)
+   (((bgl_avahi_domain_browser_t)CREF(o))->BgL_procz00)
 #define BGL_AVAHI_DOMAIN_BROWSER_DOMAIN( o ) \
-   (((bgl_avahi_domain_browser_t)o)->BgL_domainz00)
+   (((bgl_avahi_domain_browser_t)CREF(o))->BgL_domainz00)
 
 /*---------------------------------------------------------------------*/
 /*    avahi_service_resolver                                           */
@@ -136,21 +137,21 @@ extern obj_t bgl_avahi_signal();
 #define bgl_avahi_service_resolver_t BgL_avahizd2servicezd2resolverz00_bglt
 
 #define BGL_AVAHI_SERVICE_RESOLVER_BUILTIN( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_z42builtinz42)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_z42builtinz42)
 #define BGL_AVAHI_SERVICE_RESOLVER_CLIENT( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_clientz00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_clientz00)
 #define BGL_AVAHI_SERVICE_RESOLVER_PROC( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_procz00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_procz00)
 #define BGL_AVAHI_SERVICE_RESOLVER_TYPE( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_typez00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_typez00)
 #define BGL_AVAHI_SERVICE_RESOLVER_NAME( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_namez00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_namez00)
 #define BGL_AVAHI_SERVICE_RESOLVER_DOMAIN( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_domainz00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_domainz00)
 #define BGL_AVAHI_SERVICE_RESOLVER_INTERFACE( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_interfacez00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_interfacez00)
 #define BGL_AVAHI_SERVICE_RESOLVER_PROTOCOL( o ) \
-   (((bgl_avahi_service_resolver_t)o)->BgL_protocolz00)
+   (((bgl_avahi_service_resolver_t)CREF(o))->BgL_protocolz00)
 
 /*---------------------------------------------------------------------*/
 /*    static bool_t                                                    */

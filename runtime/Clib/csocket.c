@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Sat Jun 17 11:54:57 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 17:58:06 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1309,9 +1309,9 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
 
    /* Create input port */
    SOCKET( sock ).input = bgl_make_input_port( name, fs, KINDOF_SOCKET, inb );
-   SOCKET( sock ).input->input_port_t.sysread = &bgl_read;
-   SOCKET( sock ).input->input_port_t.sysseek = &bgl_input_socket_seek;
-   SOCKET( sock ).input->port_t.sysclose = &bgl_sclose_rd;
+   INPUT_PORT( SOCKET( sock ).input ).sysread = &bgl_read;
+   INPUT_PORT( SOCKET( sock ).input ).sysseek = &bgl_input_socket_seek;
+   PORT( SOCKET( sock ).input ).sysclose = &bgl_sclose_rd;
 
    /* Create output port */
    SOCKET( sock ).output = bgl_make_output_port( sock,
@@ -1322,7 +1322,7 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
 						 bgl_syswrite,
 						 (long (*)())&lseek,
 						 &bgl_sclose_wd );
-   SOCKET( sock ).output->output_port_t.sysflush = &bgl_socket_flush;
+   OUTPUT_PORT( SOCKET( sock ).output ).sysflush = &bgl_socket_flush;
       
    if( STRING_LENGTH( outb ) <= 1 )
       OUTPUT_PORT( SOCKET( sock ).output ).bufmode = BGL_IONB;
@@ -2613,8 +2613,8 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
 			    &datagram_socket_write,
 			    0L,
 			    &bgl_sclose_wd );
-   a_socket->datagram_socket_t.port->output_port_t.sysflush = &bgl_socket_flush;
-   a_socket->datagram_socket_t.port->output_port_t.bufmode = BGL_IONB;
+   OUTPUT_PORT( a_socket->datagram_socket_t.port ).sysflush = &bgl_socket_flush;
+   OUTPUT_PORT( a_socket->datagram_socket_t.port ).bufmode = BGL_IONB;
    
    return BREF( a_socket );
 }
@@ -2711,9 +2711,9 @@ bgl_make_datagram_server_socket( int portnum ) {
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
-   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysread = bgl_read;
-   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysseek = bgl_input_socket_seek;
-   BGL_DATAGRAM_SOCKET( sock ).port->port_t.sysclose = bgl_sclose_rd;
+   INPUT_PORT( sock->datagram_socket_t.port ).sysread = bgl_read;
+   INPUT_PORT( sock->datagram_socket_t.port ).sysseek = bgl_input_socket_seek;
+   PORT( sock->datagram_socket_t.port ).sysclose = bgl_sclose_rd;
 
    return BREF( sock );
 #endif
@@ -2772,9 +2772,9 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
-   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysread = bgl_read;
-   BGL_DATAGRAM_SOCKET( sock ).port->input_port_t.sysseek = bgl_input_socket_seek;
-   BGL_DATAGRAM_SOCKET( sock ).port->port_t.sysclose = bgl_sclose_rd;
+   INPUT_PORT( sock->datagram_socket_t.port ).sysread = bgl_read;
+   INPUT_PORT( sock->datagram_socket_t.port ).sysseek = bgl_input_socket_seek;
+   PORT( sock->datagram_socket_t.port ).sysclose = bgl_sclose_rd;
 
    return BREF( sock );
 }
