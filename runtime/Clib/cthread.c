@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Sun Mar  6 09:15:35 2016 (serrano)                */
-/*    Copyright   :  2004-16 Manuel Serrano                            */
+/*    Last change :  Wed Jul 26 16:09:35 2017 (serrano)                */
+/*    Copyright   :  2004-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
 /*    -------------------------------------------------------------    */
@@ -310,27 +310,28 @@ bgl_dup_dynamic_env( obj_t o ) {
    int i;
    
    obj_t env = make_dynamic_env();
-   struct bgl_dynamic_env *dst = (struct bgl_dynamic_env *)CREF( env );
-   struct bgl_dynamic_env *src = (struct bgl_dynamic_env *)CREF( o );
+   struct bgl_dynamic_env *dst =
+      (struct bgl_dynamic_env *)&(CREF( env )->dynamic_env_t);
+   struct bgl_dynamic_env *src =
+      (struct bgl_dynamic_env *)&(CREF( o )->dynamic_env_t);
 
-   env->dynamic_env_t.current_output_port = o->dynamic_env_t.current_output_port;
-   env->dynamic_env_t.current_error_port = o->dynamic_env_t.current_error_port;
-   env->dynamic_env_t.current_input_port = o->dynamic_env_t.current_input_port;
+   dst->current_output_port = src->current_output_port;
+   dst->current_error_port = src->current_error_port;
+   dst->current_input_port = src->current_input_port;
 
-   env->dynamic_env_t.current_display = o->dynamic_env_t.current_display;
+   dst->current_display = src->current_display;
 
-   env->dynamic_env_t.interrupt_notifier = o->dynamic_env_t.interrupt_notifier;
+   dst->interrupt_notifier = src->interrupt_notifier;
    
-   env->dynamic_env_t.thread_backend = o->dynamic_env_t.thread_backend;
-   env->dynamic_env_t.current_thread = o->dynamic_env_t.current_thread;
+   dst->thread_backend = src->thread_backend;
+   dst->current_thread = src->current_thread;
    
-   env->dynamic_env_t.module = o->dynamic_env_t.module;
-   env->dynamic_env_t.abase = o->dynamic_env_t.abase;
+   dst->module = src->module;
+   dst->abase = src->abase;
 
    for( i = 0; i < 32; i++ ) {
-      env->dynamic_env_t.sig_handlers[ i ] = o->dynamic_env_t.sig_handlers[ i ];
+      dst->sig_handlers[ i ] = src->sig_handlers[ i ];
    }
-
    return env;
 }
 
