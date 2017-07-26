@@ -175,7 +175,7 @@
 	  (display (make-string m #\space) p))))
 
 ;*---------------------------------------------------------------------*/
-;*    dump :: ...                                                      */
+;*    dump ::obj ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-generic (dump o p m)
    (cond
@@ -241,7 +241,7 @@
 	 (fprint p ":succs " (map block-label succs)))
       (dump-margin p (+fx m 1))
       (dump* first p (+fx m 1))
-      (display ")" p)))
+      (display ")\n" p)))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins ...                                               */
@@ -249,15 +249,18 @@
 (define-method (dump o::rtl_ins p m)
    (with-access::rtl_ins o (%spill fun dest args)
       (when dest
+	 (display "[" p)
 	 (dump dest p m)
 	 (display " <- " p))
       (dump-ins-rhs o p m)
-      (display " {" p)
-      (for-each (lambda (r)
-		   (display (shape r) p)
-		   (display " " p))
-	 %spill)
-      (display "}" p)))
+      (when (pair? %spill)
+	 (display " (" p)
+	 (for-each (lambda (r)
+		      (display (shape r) p)
+		      (display " " p))
+	    %spill)
+	 (display ")" p))
+      (when dest (display "]" p))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-ins-rhs ...                                                 */

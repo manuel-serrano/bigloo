@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Jul 12 16:57:10 2017 (serrano)                */
+#*    Last change :  Wed Jul 26 09:35:13 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -224,7 +224,8 @@ BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 #*--- SawMill ---------------------------------------------------------*/
 SAW_FILE        = lib defs rtl node2rtl collapse remove InlineReturn \
 		  blockorder gotos cast expr woodcutter \
-		  procedures elsewhere regalloc regset regutils bbv
+		  procedures elsewhere regalloc regset regutils \
+                  bbv bbv-types bbv-specialize bbv-cache
 
 SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
 
@@ -383,8 +384,8 @@ POPULATION	= $(SOURCE_FILES) \
                   SawMill/defs.sch SawMill/regalloc.sch SawMill/node2rtl.sch \
                   SawMill/collapse.sch SawMill/remove.sch \
                   SawMill/InlineReturn.sch SawMill/blockorder.sch \
-                  SawMill/expr.sch SawMill/regset.sch \
-                  SawC/code.sch \
+                  SawMill/expr.sch SawMill/regset.sch SawMill/bbv-types.sch \
+                  SawMill/bbv-interval.sch SawC/code.sch \
                   SawJvm/funcall.sch SawJvm/code.sch SawJvm/names.sch \
                   Makefile
 

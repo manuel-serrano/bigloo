@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Aug 26 19:06:19 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Wed Jul 26 09:13:28 2017 (serrano)                */
+/*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
 /*=====================================================================*/
@@ -26,6 +26,13 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t make_pair( obj_t , obj_t );
 BGL_RUNTIME_DECL obj_t make_epair( obj_t , obj_t, obj_t );
+
+BGL_RUNTIME_DECL obj_t bgl_reverse( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_reverse_bang( obj_t );
+   
+BGL_RUNTIME_DECL long bgl_list_length( obj_t );
+BGL_RUNTIME_DECL obj_t bgl_remq( obj_t, obj_t );
+BGL_RUNTIME_DECL obj_t bgl_remq_bang( obj_t, obj_t );
 
 #if( BGL_SAW == 1 ) 
 BGL_RUNTIME_DECL obj_t bgl_saw_make_pair( obj_t, obj_t );

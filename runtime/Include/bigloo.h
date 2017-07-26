@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jul 17 10:28:38 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 09:13:30 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -354,6 +354,7 @@ typedef union scmobj *obj_t;
 #include <bigloo_semaphore.h>
 #include <bigloo_int.h>
 #include <bigloo_real.h>
+#include <bigloo_bignum.h>
 #include <bigloo_vector.h>
 #include <bigloo_string.h>
 #include <bigloo_struct.h>
@@ -628,15 +629,7 @@ union scmobj {
    } uint64_t;
    
    /* arbitrary precision integers */
-   struct bignum {
-      header_t header;
-#if( BGL_HAVE_GMP )
-      /* from gmp.h */
-      __mpz_struct mpz;
-#else
-      union scmobj *u16vect;
-#endif
-   } bignum_t;
+   struct bgl_bignum bignum_t;
 
    /* processes */
    struct process { 
@@ -1226,75 +1219,6 @@ typedef obj_t (*function_t)();
 
 #define SET_KEYWORD_PLIST( o, v ) BASSIGN( GET_KEYWORD_PLIST( o ), v, o )
 
-/*---------------------------------------------------------------------*/
-/*    Bignum                                                           */
-/*---------------------------------------------------------------------*/
-#  define BIGNUM_SIZE (sizeof( struct bignum ))
-
-#  define BIGNUMP( o ) (POINTERP( o ) && (TYPE( o ) == BIGNUM_TYPE))
-
-#  define BIGNUM( o ) (CREF( o )->bignum_t)
-
-#if( BGL_HAVE_GMP )   
-#  define BXSIZ( x ) ((x)->bignum_t.mpz._mp_size)
-   
-#  define BXZERO( x ) (BXSIZ( x ) == 0)
-#  define BXPOSITIVE( x ) (BXSIZ( x ) > 0)
-#  define BXNEGATIVE( x ) (BXSIZ( x ) < 0)
-
-#  define BGL_SAFE_BX_TO_FX( x ) bgl_safe_bignum_to_fixnum( x )
-#  define BGL_SAFE_PLUS_FX( x, y ) bgl_safe_plus_fx( x, y )
-#  define BGL_SAFE_MINUS_FX( x, y ) bgl_safe_minus_fx( x, y )
-#  define BGL_SAFE_MUL_FX( x, y ) bgl_safe_mul_fx( x, y )
-#  define BGL_SAFE_QUOTIENT_FX( x, y ) bgl_safe_quotient_fx( x, y )
-#  define BGL_SAFE_PLUS_ELONG( x, y ) bgl_safe_plus_elong( x, y )
-#  define BGL_SAFE_MINUS_ELONG( x, y ) bgl_safe_minus_elong( x, y )
-#  define BGL_SAFE_MUL_ELONG( x, y ) bgl_safe_mul_elong( x, y )
-#  define BGL_SAFE_QUOTIENT_ELONG( x, y ) bgl_safe_quotient_elong( x, y )
-#  define BGL_SAFE_PLUS_LLONG( x, y ) bgl_safe_plus_llong( x, y )
-#  define BGL_SAFE_MINUS_LLONG( x, y ) bgl_safe_minus_llong( x, y )
-#  define BGL_SAFE_MUL_LLONG( x, y ) bgl_safe_mul_llong( x, y )
-#  define BGL_SAFE_QUOTIENT_LLONG( x, y ) bgl_safe_quotient_llong( x, y )
-   
-extern gmp_randstate_t gmp_random_state;
-   
-extern obj_t bgl_safe_bignum_to_fixnum( obj_t );
-extern obj_t bgl_safe_plus_fx( long, long );
-extern obj_t bgl_safe_minus_fx( long, long );
-extern obj_t bgl_safe_mul_fx( long, long );
-extern obj_t bgl_safe_quotient_fx( long, long );
-   
-extern obj_t bgl_safe_plus_elong( long, long );
-extern obj_t bgl_safe_minus_elong( long, long );
-extern obj_t bgl_safe_mul_elong( long, long );
-extern obj_t bgl_safe_quotient_elong( long, long );
-   
-extern obj_t bgl_safe_plus_llong( BGL_LONGLONG_T, BGL_LONGLONG_T );
-extern obj_t bgl_safe_minus_llong( BGL_LONGLONG_T, BGL_LONGLONG_T );
-extern obj_t bgl_safe_mul_llong( BGL_LONGLONG_T, BGL_LONGLONG_T );
-extern obj_t bgl_safe_quotient_llong( BGL_LONGLONG_T, BGL_LONGLONG_T );
-#else
-#  define BGL_BIGNUM_U16VECT( bx ) (BIGNUM( bx ).u16vect)
-
-#  define BGL_SAFE_BX_TO_FX( x ) (x)
-#  define BGL_SAFE_PLUS_FX( x, y ) BINT( (x) + (y) )
-#  define BGL_SAFE_MINUS_FX( x, y ) BINT( (x) - (y) )
-#  define BGL_SAFE_MUL_FX( x, y ) BINT( (x) * (y) )
-#  define BGL_SAFE_QUOTIENT_FX( x, y ) BINT( (x) / (y) )
-#  define BGL_SAFE_PLUS_ELONG( x, y ) ELONG_TO_BELONG( (x) + (y) )
-#  define BGL_SAFE_MINUS_ELONG( x, y ) ELONG_TO_BELONG( (x) - (y) )
-#  define BGL_SAFE_MUL_ELONG( x, y ) ELONG_TO_BELONG( (x) * (y) )
-#  define BGL_SAFE_QUOTIENT_ELONG( x, y ) ELONG_TO_BELONG( (x) / (y) )
-#  define BGL_SAFE_PLUS_LLONG( x, y ) LLONG_TO_BLLONG( (x) + (y) )
-#  define BGL_SAFE_MINUS_LLONG( x, y ) LLONG_TO_BLLONG( (x) - (y) )
-#  define BGL_SAFE_MUL_LLONG( x, y ) LLONG_TO_BLLONG( (x) * (y) )
-#  define BGL_SAFE_QUOTIENT_LLONG( x, y ) LLONG_TO_BLLONG( (x) / (y) )
-   
-extern bool_t BXZERO( obj_t );
-extern bool_t BXPOSITIVE( obj_t );
-extern bool_t BXNEGATIVE( obj_t );
-#endif
-   
 /*---------------------------------------------------------------------*/
 /*    Array bound checking                                             */
 /*---------------------------------------------------------------------*/
@@ -2451,7 +2375,6 @@ BGL_RUNTIME_DECL obj_t bgl_time( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_procedure_entry_to_string( obj_t ); 
 BGL_RUNTIME_DECL obj_t bgl_string_to_procedure_entry( obj_t );
 
-BGL_RUNTIME_DECL obj_t make_real( double );
 BGL_RUNTIME_DECL obj_t make_belong( long );
 BGL_RUNTIME_DECL obj_t make_bllong( BGL_LONGLONG_T );
 
@@ -2463,14 +2386,6 @@ BGL_RUNTIME_DECL obj_t bgl_make_buint32( uint32_t );
 BGL_RUNTIME_DECL obj_t bgl_make_bint64( int64_t );
 BGL_RUNTIME_DECL obj_t bgl_make_buint64( uint64_t );
 
-BGL_RUNTIME_DECL obj_t bgl_string_to_bignum( char *, int );
-
-BGL_RUNTIME_DECL obj_t bgl_reverse( obj_t );
-BGL_RUNTIME_DECL obj_t bgl_reverse_bang( obj_t );
-   
-BGL_RUNTIME_DECL long bgl_list_length( obj_t );
-BGL_RUNTIME_DECL obj_t bgl_remq( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t bgl_remq_bang( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_output_port( obj_t, bgl_stream_t, int, obj_t, obj_t, ssize_t (*)(), long (*)(), int (*)() );
 BGL_RUNTIME_DECL void bgl_output_port_buffer_set( obj_t, obj_t );   
 BGL_RUNTIME_DECL obj_t bgl_close_output_port( obj_t );

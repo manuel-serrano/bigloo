@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Fri Jul 14 10:30:40 2017 (serrano)                */
+;*    Last change :  Mon Jul 24 12:45:43 2017 (serrano)                */
 ;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
@@ -60,8 +60,9 @@
 	 ((rtl_reg? o)
 	  (collect-register! o))
 	 ((rtl_ins? o)
-	  (with-access::rtl_ins o (args)
-	     (append-map! args-collect-registers! args)))
+	  (with-access::rtl_ins o (dest args)
+	     (append! (args-collect-registers! dest)
+		(append-map! args-collect-registers! args))))
 	 (else
 	  '())))
    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan 31 09:56:21 2005                          */
-;*    Last change :  Fri Jul 14 10:44:18 2017 (serrano)                */
+;*    Last change :  Fri Jul 21 09:29:33 2017 (serrano)                */
 ;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compute the liveness analysis of the rtl instructions            */
@@ -42,7 +42,6 @@
    
    (export  (register-allocation::pair-nil ::backend
 	       ::global ::pair-nil ::pair-nil)
-	    (interfere-reg! r1 r2)
 	    (generic type-interference! ::backend ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
@@ -327,9 +326,13 @@
                (when (type? t1)
                   (for-each (lambda (r2)
                                (let ((t2 (rtl_reg-type r2)))
-                                  (unless (eq? t1 t2)
+                                  (unless (or (eq? t1 t2)
+					      (and (eq? t1 *obj*)
+						   (bigloo-type? t2))
+					      (and (eq? t2 *obj*)
+						   (bigloo-type? t1)))
                                      (interfere-reg! r1 r2))))
-                            (cdr regs)))
+		     (cdr regs)))
                (loop (cdr regs)))))))
 
 ;*---------------------------------------------------------------------*/
@@ -343,22 +346,32 @@
    ;; fill the interference graph with liveness information
    (for-each (lambda (b)
 		(for-each (lambda (i) (interfere-ins! i)) (block-first b)))
-	     blocks)
+      blocks)
    (verbose 3  "done\n"))
 
-;; interfere-ins!
+;*---------------------------------------------------------------------*/
+;*    interfere-ins! ...                                               */
+;*---------------------------------------------------------------------*/
 (define (interfere-ins! i::rtl_ins/ra)
    (with-access::rtl_ins/ra i (in out)
-      (regset-for-each (lambda (r1)
-			  (regset-for-each (lambda (r2) (interfere-reg! r1 r2))
-					   in))
-		       in)
-      (regset-for-each (lambda (r1)
-			  (regset-for-each (lambda (r2) (interfere-reg! r1 r2))
-					   out))
-		       out)))
+      (regset-for-each
+	 (lambda (r1)
+	    (regset-for-each
+	       (lambda (r2)
+		  (interfere-reg! r1 r2))
+	       in))
+	 in)
+      (regset-for-each
+	 (lambda (r1)
+	    (regset-for-each
+	       (lambda (r2)
+		  (interfere-reg! r1 r2))
+	       out))
+	 out)))
 
-;; interfere-reg!
+;*---------------------------------------------------------------------*/
+;*    interfere-reg! ...                                               */
+;*---------------------------------------------------------------------*/
 (define (interfere-reg! r1 r2)
    (unless (or (eq? r1 r2) (regset-member? r2 (rtl_reg/ra-interfere r1)))
       (regset-add! (rtl_reg/ra-interfere r1) r2)
@@ -722,6 +735,11 @@
 ;*    Remove the useless move registers inside a tree.                 */
 ;*---------------------------------------------------------------------*/
 (define (cleanup-move-tree! blocks::pair-nil)
+
+   (define (is-mov? i)
+      (when (isa? i rtl_ins)
+	 (isa? (rtl_ins-fun i) rtl_mov)))
+   
    (define (args-cleanup-move-tree! a)
       (if (rtl_ins? a)
 	  (with-access::rtl_ins a (fun dest args)
@@ -730,12 +748,16 @@
 		 (car args)
 		 a))
 	  a))
+   
    (define (ins-cleanup-move-tree! i)
       (with-access::rtl_ins i (fun dest args)
-	 (set! args (map args-cleanup-move-tree! args))))
+	 (set! args (map args-cleanup-move-tree! args))
+	 i))
+   
    (define (block-cleanup-move-tree! b)
       (with-access::block b (first)
-	 (for-each (lambda (i) (ins-cleanup-move-tree! i)) first)))
+	 (for-each ins-cleanup-move-tree! first)))
+   
    (for-each block-cleanup-move-tree! blocks))
 
 ;*---------------------------------------------------------------------*/

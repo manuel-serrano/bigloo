@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Apr 21 18:42:53 2017 (serrano)                */
+;*    Last change :  Sun Jul 23 08:46:11 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The removal of the local variables appearing just once.          */
@@ -324,13 +324,9 @@
 		      (set-cdr! binding nval)
 		      (cond
 			 ((or reset reset')
-			  (loop (cdr obindings)
-			     #t
-			     '()))
+			  (loop (cdr obindings) #t '()))
 			 ((not (eq? (local-access var) 'read))
-			  (loop (cdr obindings)
-			     #f
-			     extend))
+			  (loop (cdr obindings) #f extend))
 			 ((and (=fx (local-occurrence var) 1)
 			       (eq? (local-access var) 'read)
 			       (not (side-effect? val))
@@ -338,13 +334,9 @@
 				  (get-type val #f)))
 			  (trace (reduce 3) "***1occ: apply: "
 			     (shape var) " " (shape val) #\Newline)
-			  (loop (cdr obindings)
-			     #f
-			     (cons binding extend)))
+			  (loop (cdr obindings) #f (cons binding extend)))
 			 (else
-			  (loop (cdr obindings)
-			     #f
-			     extend))))))))))
+			  (loop (cdr obindings) #f extend))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-1occ! ::set-ex-it ...                                       */

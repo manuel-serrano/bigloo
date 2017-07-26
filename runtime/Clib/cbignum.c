@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Mar  7 20:09:45 2017 (serrano)                */
+/*    Last change :  Wed Jul 26 09:09:23 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -35,8 +35,8 @@ bgl_init_bignum() {
 
 #define BXABS( x ) ((x) >= 0 ? (x) : -(x))
 #define BXABSIZ( x ) BXABS( BXSIZ ( x ) )
-#define BXALLOC( x ) ((x)->bignum_t.mpz._mp_alloc)
-#define BXLIMBS( x ) ((x)->bignum_t.mpz._mp_d)
+#define BXALLOC( x ) (BIGNUM( x ).mpz._mp_alloc)
+#define BXLIMBS( x ) (BIGNUM( x ).mpz._mp_d)
 
 #define ZERO( x ) (SIZ( x ) == 0)
 #define POSITIVE( x ) (SIZ( x ) > 0)

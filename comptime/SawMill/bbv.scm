@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Tue Jul 18 12:44:11 2017 (serrano)                */
+;*    Last change :  Tue Jul 25 14:59:31 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -28,24 +28,81 @@
 	    saw_lib
 	    saw_defs
 	    saw_regset
-	    saw_regutils)
+	    saw_regutils
+	    saw_bbv-types
+	    saw_bbv-specialize
+	    saw_bbv-cache)
 
-   (static  (wide-class blockV::block
-	       (versions::pair-nil (default '())))
-	    (wide-class blockS::block
-	       (ictx::pair-nil (default '()))
-	       (octxs::pair-nil (default '())))
-	    (wide-class rtl_ins/bbv::rtl_ins
-	       (def (default #unspecified))
-	       (out (default #unspecified))
-	       (in (default #unspecified))))
-   
    (export  (bbv::pair-nil ::backend ::global ::pair-nil ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
-;*    basic-block versionning configuration                            */
+;*    *cleanup* ...                                                    */
 ;*---------------------------------------------------------------------*/
-(define *type-call* #t)
+(define *cleanup* #t)
+
+;*---------------------------------------------------------------------*/
+;*    *bb-mark* ...                                                    */
+;*---------------------------------------------------------------------*/
+(define *bb-mark* -1)
+
+;*---------------------------------------------------------------------*/
+;*    get-bb-mark ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (get-bb-mark)
+   (set! *bb-mark* (+fx 1 *bb-mark*))
+   *bb-mark*)
+
+;*---------------------------------------------------------------------*/
+;*    bbset ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-struct bbset mark list)
+
+;*---------------------------------------------------------------------*/
+;*    make-empty-bbset ...                                             */
+;*---------------------------------------------------------------------*/
+(define (make-empty-bbset::struct)
+   (bbset (get-bb-mark) '()))
+
+;*---------------------------------------------------------------------*/
+;*    bbset-in? ...                                                    */
+;*---------------------------------------------------------------------*/
+(define (bbset-in?::bool block::blockS set::struct)
+   (with-access::blockS block (%mark)
+      (eq? %mark (bbset-mark set))))
+
+;*---------------------------------------------------------------------*/
+;*    bbset-cons ...                                                   */
+;*---------------------------------------------------------------------*/
+(define (bbset-cons::struct b::blockS set::struct)
+   (let ((m (bbset-mark set)))
+      (with-access::blockS b (%mark)
+	 (set! %mark m))
+      (bbset-list-set! set (cons b (bbset-list set)))
+      set))
+
+;*---------------------------------------------------------------------*/
+;*    bbset-cons* ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (bbset-cons*::struct b::blockS . rest)
+   (cond
+      ((null? (cdr rest))
+       (bbset-cons b (car rest)))
+      ((null? (cddr rest))
+       (bbset-cons b (bbset-cons (car rest) (cadr rest))))
+      (else
+       (bbset-cons b (apply bbset-cons* rest)))))
+
+;*---------------------------------------------------------------------*/
+;*    bbset-append ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (bbset-append::struct blocks::pair-nil set::struct)
+   (let ((m (bbset-mark set)))
+      (for-each (lambda (b)
+		   (with-access::blockS b (%mark)
+		      (set! %mark m)))
+	 blocks)
+      (bbset-list-set! set (append blocks (bbset-list set)))
+      set))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv ...                                                          */
@@ -53,28 +110,45 @@
 (define (bbv back global params blocks)
    (if *saw-bbv?*
        (with-trace 'bbv (global-id global)
+	  (start-bbv-cache!)
 	  (verbose 2 "        bbv " (global-id global))
 	  (when (>=fx (bigloo-debug) 1)
 	     (dump-blocks global params blocks ".plain.bb"))
 	  (set-max-label! blocks)
-	  (let ((blocks (append-map normalize-goto! blocks)))
+	  (let ((blocks (normalize-goto! (car blocks))))
+	     (when (>=fx (bigloo-debug) 1)
+		(dump-blocks global params blocks ".norm.bb"))
 	     (let ((regs (liveness! back blocks params)))
+		(tprint ">>> " (global-id global))
 		(unwind-protect
 		   (if (null? blocks)
 		       '()
-		       (let ((b (block->block-list regs
-				   (remove-nop!
-				      (simplify-branch!
-					 (get-specialize-block (car blocks)
-					    (params->ctx params)))))))
+		       (let* ((s (get-specialize-block (car blocks)
+				    (params->ctx params)))
+;* 			      (b (block->block-list regs               */
+;* 				    (remove-nop!                       */
+;* 				       (simplify-branch!               */
+;* 					  (merge! (get-bb-mark)        */
+;* 					     s)))))                    */
+			      (b (block->block-list regs
+				    (if *cleanup*
+					(remove-nop!
+					   (simplify-branch!
+					      (merge! (get-bb-mark)
+						 s)))
+					s))))
+			  (tprint "<<< " (global-id global))
 			  (verbose 3 " " (length blocks) " -> " (length b))
 			  (verbose 2 "\n")
 			  (when (>=fx (bigloo-debug) 1)
-			     (dump-blocks global params b ".bb"))
+			     (dump-blocks global params
+				(block->block-list regs s) ".spec.bb")
+			     (dump-blocks global params
+				b ".bb"))
 			  (map! (lambda (b) (shrink! b)) b)
 			  b))
 		   (begin
-		      (for-each shrink! regs))))))
+		      (for-each (lambda (r) (shrink! r)) regs))))))
        blocks))
 
 ;*---------------------------------------------------------------------*/
@@ -83,23 +157,9 @@
 (define (replace lst old new)
    (let loop ((l lst))
       (cond
-	 ((null? l) lst)
+	 ((null? l) l)
 	 ((eq? (car l) old) (cons new (cdr l)))
 	 (else (cons (car l) (loop (cdr l)))))))
-
-;*---------------------------------------------------------------------*/
-;*    ctx->string ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (ctx->string ctx)
-   (call-with-output-string
-      (lambda (op)
-	 (fprintf op "~s"
-	    (map (lambda (e)
-		    (vector (shape (car e))
-		       (if (cddr e)
-			   (shape (cadr e))
-			   (string-append "no-" (shape (cadr e))))))
-	       ctx)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-blocks ...                                                  */
@@ -183,42 +243,6 @@
 
    (for-each block-widen-bbv! o))
 
-;* (define (widen-bbv-predicate-only! o regs::pair-nil)                */
-;*                                                                     */
-;*    (define (get-args o)                                             */
-;*       (filter rtl_reg/ra? (rtl_ins-args* o)))                       */
-;*                                                                     */
-;*    (define (ins-in o regs)                                          */
-;*       (if (rtl_ins-typecheck? o)                                    */
-;* 	  (list->regset (get-args o) regs)                             */
-;* 	  (make-empty-regset regs)))                                   */
-;*                                                                     */
-;*    (define (args-widen-bbv! o)                                      */
-;*       (when (rtl_ins? o)                                            */
-;* 	 (with-access::rtl_ins o (args fun)                            */
-;* 	    (widen!::rtl_ins/bbv o                                     */
-;* 	       (def (make-empty-regset regs))                          */
-;* 	       (in (ins-in o regs))                                    */
-;* 	       (out (make-empty-regset regs)))                         */
-;* 	    (for-each args-widen-bbv! args))))                         */
-;*                                                                     */
-;*    (define (ins-widen-bbv! o)                                       */
-;*       (with-access::rtl_ins o (dest args fun)                       */
-;* 	 (widen!::rtl_ins/bbv o                                        */
-;* 	    (def (if (or (not dest) (rtl_reg-onexpr? dest))            */
-;* 		     (make-empty-regset regs)                          */
-;* 		     (list->regset (list dest) regs)))                 */
-;* 	    (in (ins-in o regs))                                       */
-;* 	    (out (make-empty-regset regs)))                            */
-;* 	 (for-each args-widen-bbv! args)))                             */
-;*                                                                     */
-;*    (define (block-widen-bbv! o)                                     */
-;*       (widen!::blockV o)                                            */
-;*       (with-access::block o (first)                                 */
-;* 	 (for-each ins-widen-bbv! first)))                             */
-;*                                                                     */
-;*    (for-each block-widen-bbv! o))                                   */
-
 ;*---------------------------------------------------------------------*/
 ;*    liveness! ...                                                    */
 ;*    -------------------------------------------------------------    */
@@ -267,7 +291,7 @@
 	    (when (pair? inss)
 	       (let ((ins (car inss)))
 		  (with-access::rtl_ins/bbv ins (in)
-		     (for-each (lambda (a) (regset-add! in a)) regs))))))
+		     (for-each (lambda (a) (regset-add! in a)) pregs))))))
       ;; fix-point iteration
       (let loop ((i 0))
 	 (let liip ((bs blocks)
@@ -305,7 +329,7 @@
 	 (when (pair? first)
 	    (let ((i (car (last-pair first))))
 	       (or (rtl_ins-ifeq? i) (rtl_ins-ifne? i))))))
-
+   
    (define (make-go-block bs to)
       (duplicate::blockS bs
 	 (label (genlabel))
@@ -320,19 +344,19 @@
 		      (out (make-empty-regset regs)))))
 	 (succs (list to))
 	 (preds (list bs))))
-
+   
    (let loop ((bs (list b))
-	      (acc '()))
+	      (acc (make-empty-bbset)))
       (cond
 	 ((null? bs)
-	  (reverse! acc))
-	 ((memq (car bs) acc)
+	  (reverse! (bbset-list acc)))
+	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
 	  (with-access::block (car bs) (succs)
 	     (cond
 		((null? succs)
-		 (loop (cdr bs) (cons (car bs) acc)))
+		 (loop (cdr bs) (bbset-cons (car bs) acc)))
 		((fallthru-block? (car bs))
 		 (let* ((lp (last-pair (block-first (car bs))))
 			(last (car lp))
@@ -341,51 +365,54 @@
 		       ((rtl_ins-ifne? last)
 			(cond
 			   ((and (rtl_ins-typecheck? last)
-				 (not (memq (car succs) acc)))
+				 (not (bbset-in? (car succs) acc)))
 			    ;; change the ifne for an ifeq
 			    (with-access::rtl_ins last (fun)
 			       (set! fun
 				  (instantiate::rtl_ifeq
 				     (then (cadr succs)))))
 			    (loop bs acc))
-			   ((memq (cadr succs) acc)
-			    (let ((hop (make-go-block (car bs) (car succs))))
+			   ((bbset-in? (cadr succs) acc)
+			    (let ((hop (make-go-block (car bs) (cadr succs))))
 			       (with-access::block (car succs) (preds)
 				  (set! preds
 				     (replace preds (car bs) hop))
 				  (set-car! (cdr succs) hop))
 			       (loop (cons (car succs) (cdr bs))
-				  (cons* hop (car bs) acc))))
+				  (bbset-cons* hop (car bs) acc))))
 			   (else
 			    (loop (append (reverse succs) (cdr bs))
-			       (cons (car bs) acc)))))
+			       (bbset-cons (car bs) acc)))))
 		       ((rtl_ins-ifeq? last)
-			(if (memq (car succs) acc)
+			(if (bbset-in? (car succs) acc)
 			    (let ((hop (make-go-block (car bs) (car succs))))
 			       (with-access::block (car succs) (preds)
 				  (set! preds
 				     (replace preds (car bs) hop))
 				  (set-car! succs hop))
 			       (loop (cons (cadr succs) (cdr bs))
-				  (cons* hop (car bs) acc)))
+				  (bbset-cons* hop (car bs) acc)))
 			    (loop (append succs (cdr bs))
-			       (cons (car bs) acc))))
-		       ((memq (car succs) acc)
+			       (bbset-cons (car bs) acc))))
+		       ((bbset-in? (car succs) acc)
 			(with-access::block (car bs) (first)
-			   (set-cdr! (last-pair first)
-			      (list (instantiate::rtl_ins/bbv
-				       (fun (instantiate::rtl_go
-					       (to (car succs))))
-				       (dest #f)
-				       (args '())
-				       (def (make-empty-regset regs))
-				       (in (make-empty-regset regs))
-				       (out (make-empty-regset regs))))) 
-			   (loop (cdr bs) (cons (car bs) acc))))
+			   (let ((lp (last-pair first))
+				 (go (instantiate::rtl_ins/bbv
+					(fun (instantiate::rtl_go
+						(to (car succs))))
+					(dest #f)
+					(args '())
+					(def (make-empty-regset regs))
+					(in (make-empty-regset regs))
+					(out (make-empty-regset regs)))))
+			      (if (rtl_ins-nop? (car lp))
+				  (set-car! lp go)
+				  (set-cdr! lp (list go))))
+			   (loop (cdr bs) (bbset-cons (car bs) acc))))
 		       (else
 			(loop (append succs (cdr bs))
-			   (cons (car bs) acc))))))
-		((and (goto-block? (car bs)) (not (memq (car succs) acc)))
+			   (bbset-cons (car bs) acc))))))
+		((and (goto-block? (car bs)) (not (bbset-in? (car succs) acc)))
 		 (with-access::block (car bs) (first)
 		    (set! first
 		       (if (null? (cdr first))
@@ -398,15 +425,31 @@
 				    (out (make-empty-regset regs))))
 			   (reverse (cdr (reverse first)))))
 		    (loop (append succs (cdr bs))
-		       (cons (car bs) acc))))
+		       (bbset-cons (car bs) acc))))
 		(else
 		 (loop (append succs (cdr bs))
-		    (cons (car bs) acc)))))))))
+		    (bbset-cons (car bs) acc)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    normalize-goto! ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (normalize-goto! b::block)
+
+   (define (collapse-branch b first)
+      (let ((next (car (block-succs b))))
+	 (when (and (rtl_ins-branch? (car (block-first next)))
+		    (null? (cdr (block-first next))))
+	    (let ((nsuccs (block-succs next)))
+	       (if (rtl_ins-go? (car first))
+		   (set-car! first (car (block-first next)))
+		   (set-cdr! first (block-first next)))
+	       (block-preds-set! next (remq! b (block-preds next)))
+	       (block-succs-set! b nsuccs)
+	       (for-each (lambda (ns)
+			    (block-preds-set! ns
+			       (replace (block-preds ns) next b)))
+		  nsuccs)))))
+
    (let loop ((bs (list b))
 	      (acc '()))
       (cond
@@ -415,10 +458,18 @@
 	 ((memq (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::block b (succs preds first)
+	  (with-access::block (car bs) (succs preds first)
 	     (let liip ((first first))
 		(cond
-		   ((or (null? first) (null? (cdr first)))
+		   ((null? first)
+		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
+		   ((rtl_ins-go? (car first))
+		    (collapse-branch (car bs) first)
+		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
+		   ((null? (cdr first))
+		    (when (and (not (rtl_ins-branch? (car first)))
+			       (pair? (block-succs (car bs))))
+		       (collapse-branch (car bs) first))
 		    (loop (append succs (cdr bs)) (cons (car bs) acc)))
 		   ((rtl_ins-ifeq? (car first))
 		    [assert (first) (rtl_ins-go? (cadr first))]
@@ -451,8 +502,7 @@
 			     (loop (append (reverse succs) (cdr bs))
 				(cons (car bs) acc))))))
 		   (else
-		    (loop (append (reverse succs) (cdr bs))
-		       (cons (car bs) acc))))))))))
+		    (liip (cdr first))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    simplify-branch! ...                                             */
@@ -462,139 +512,237 @@
    (define (goto-block? b)
       ;; is a block explicitly jumping to its successor
       (with-access::block b (first)
-	 (when (and (pair? first) (null? (cdr first)))
-	    (let ((i (car first)))
-	       (rtl_ins-go? i)))))
+	 (every (lambda (i) (or (rtl_ins-nop? i) (rtl_ins-go? i))) first)))
    
-   (define (nop-block? b)
-      ;; is a block explicitly jumping to its successor
-      (with-access::block b (first)
-	 (when (and (pair? first) (null? (cdr first)))
-	    (let ((i (car first)))
-	       (rtl_ins-nop? i)))))
-
    (let loop ((bs (list b))
-	      (acc '()))
+	      (acc (make-empty-bbset)))
       (cond
 	 ((null? bs)
 	  b)
-	 ((memq (car bs) acc)
+	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
-	  (with-access::block (car bs) (succs first)
+	  (with-access::blockS (car bs) (succs first octxs)
 	     ;; remove useless nop instructions
-	     (if (and (=fx (length succs) 1)
-		      (=fx (length (block-succs (car succs))) 1))
-		 ;; collapse the two blocks
-		 (let* ((s (car succs))
-			(ns (car (block-succs s))))
-		    (block-preds-set! ns (list (car bs)))
-		    (set! succs (list ns))
-		    (let ((lp (last-pair first)))
-		       (if (rtl_ins-go? (car lp))
-			   (begin
-			      (set-car! lp (car (block-first s)))
-			      (set-cdr! lp (cdr (block-first s))))
-			   (set! first (append! first (block-first s))))))
-		 (set! succs
-		    (map! (lambda (s)
-			     (if (or (goto-block? s) (nop-block? s))
-				 (with-access::block s (preds succs)
-				    (let ((t (car succs)))
-				       (set! preds (remq! (car bs) preds))
-				       (with-access::block t (preds)
-					  (set! preds
-					     (cons (car bs) (remq! s preds))))
-				       (let ((last (car (last-pair first))))
-					  (cond
-					     ((rtl_ins-ifeq? last)
-					      (with-access::rtl_ins last (fun)
-						 (with-access::rtl_ifeq fun (then)
-						    (when (eq? then s)
-						       (set! then t)))))
-					     ((rtl_ins-ifne? last)
-					      (with-access::rtl_ins last (fun)
-						 (with-access::rtl_ifne fun (then)
-						    (when (eq? then s)
-						       (set! then t)))))
-					     ((rtl_ins-go? last)
-					      (with-access::rtl_ins last (fun)
-						 (with-access::rtl_go fun (to)
-						    (set! to t))))))
-				       t))
-				 s))
-		       succs)))
-	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+	     (if (=fx (length succs) 1)
+		 (if (=fx (length (block-preds (car succs))) 1)
+		     ;; collapse the two blocks
+		     (let ((s (car succs)))
+			(for-each (lambda (ns)
+				     (block-preds-set! ns
+					(replace (block-preds ns) s (car bs))))
+			   (block-succs s))
+			(set! succs (block-succs s))
+			(let ((lp (last-pair first)))
+			   (if (rtl_ins-go? (car lp))
+			       (begin
+				  (set-car! lp (car (block-first s)))
+				  (set-cdr! lp (cdr (block-first s))))
+			       (set! first (append! first (block-first s)))))
+			(set! octxs (blockS-octxs s))
+			(loop bs acc))
+		     (loop (cons (car succs) (cdr bs))
+			(bbset-cons (car bs) acc)))
+		 (let liip ((ss succs)
+			    (nsuccs '()))
+		    (if (null? ss)
+			(loop (append (reverse succs) (cdr bs))
+			   (bbset-cons (car bs) acc))
+			(let ((s (car ss)))
+			   (if (goto-block? s)
+			       (let ((t (car (block-succs s))))
+				  (if (=fx (length (block-preds s)) 1)
+				      (begin
+					 (block-preds-set! t
+					    (remq s (block-preds t)))
+					 (redirect-block! (car bs) s t)
+					 (block-preds-set! s '())
+					 (liip (cdr ss) (cons t nsuccs)))
+				      (begin
+					 (block-succs-set! (car bs)
+					    (cons t
+					       (remq s (block-succs (car bs)))))
+					 (block-preds-set! s
+					    (remq (car bs) (block-preds s)))
+					 (block-preds-set! t
+					    (cons (car bs)
+					       (block-preds t)))
+					 (liip (cdr ss) (cons s nsuccs)))))
+			       (liip (cdr ss) (cons s nsuccs))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    remove-nop! ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (remove-nop! b::block)
    (let loop ((bs (list b))
-	      (acc '()))
+	      (acc (make-empty-bbset)))
       (cond
 	 ((null? bs)
 	  b)
-	 ((memq (car bs) acc)
+	 ((bbset-in? (car bs) acc)
 	  (loop (cdr bs) acc))
 	 (else
 	  (with-access::block (car bs) (first succs)
 	     (when (and (pair? first) (pair? (cdr first)))
-		(set! first
-		   (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
-	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
+		(let ((f (filter! (lambda (i) (not (rtl_ins-nop? i))) first)))
+		   (set! first
+		      (if (null? f)
+			  (list (car first))
+			  f))))
+	     (loop (append succs (cdr bs)) (bbset-cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/
-;*    params->ctx ...                                                  */
+;*    merge! ...                                                       */
+;*    -------------------------------------------------------------    */
+;*    Merge equivalent basic blocks subgraphs                          */
 ;*---------------------------------------------------------------------*/
-(define (params->ctx params)
-   ;; a context is an alist of:
-   ;;   (reg . (type . #t|#f))
-   (sort (lambda (left right)
-	    (<=fx (rtl_reg/ra-num (car left)) (rtl_reg/ra-num (car right))))
-      (filter-map (lambda (p)
-		     (when (isa? p rtl_reg/ra)
-			(with-access::rtl_reg p (type)
-			   (unless (eq? type *obj*)
-			      (cons p (cons type #t))))))
-	 params)))
+(define (merge! mark b::blockS)
+   (with-access::blockS b (%parent succs)
+      (with-access::blockV %parent (versions %mark)
+	 (unless (=fx mark %mark)
+	    (set! %mark mark)
+	    (with-trace 'bbv "merge"
+	       (trace-item "b=" (block-label b))
+	       (if (or (null? versions) (null? (cdr versions)))
+		   (for-each (lambda (s) (merge! mark s)) succs)
+		   (let ((ks (sort (lambda (v1 v2)
+				      (<=fx (car v1) (car v2)))
+				(map (lambda (v)
+					(cons (bbv-hash (cdr v)) (cdr v)))
+				   versions))))
+		      (trace-item "merge "
+			 (map (lambda (k)
+				 (cons (block-label (cdr k)) (car k)))
+			    ks))
+		      (let loop ((ks ks))
+			 (cond
+			    ((null? (cdr ks))
+			     (for-each (lambda (s) (merge! mark s)) succs))
+			    ((>=fx (blockS-%mark (cdar ks)) mark)
+			     (loop (cdr ks)))
+			    (else
+			     (let ((k (car ks)))
+				(let liip ((ls (cdr ks)))
+				   (cond
+				      ((null? ls)
+				       (loop (cdr ks)))
+				      ((and (=fx (car k) (caar ls))
+					    (not (eq? (cdr k) (cdar ls)))
+					    (merge? (cdr k) (cdar ls) '()))
+				       (merge-block! mark (cdr k) (cdar ls))
+				       (liip (cdr ls)))
+				      (else
+				       (liip (cdr ls)))))))))))))))
+   b)
 
 ;*---------------------------------------------------------------------*/
-;*    extend-ctx ...                                                   */
+;*    merge-block! ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx ctx reg typ flag)
-   (cond
-      ((not (isa? reg rtl_reg/ra))
-       ctx)
-      ((eq? typ *obj*)
-       ;; simply remove the reg from the context
-       (let ((rnum (rtl_reg/ra-num reg)))
-	  (let loop ((ctx ctx))
-	     (cond
-		((null? ctx) ctx)
-		((>fx (rtl_reg/ra-num (caar ctx)) rnum) ctx)
-		((eq? (caar ctx) reg) (cdr ctx))
-		(else (cons (car ctx) (loop (cdr ctx))))))))
-      (else
-       (let ((rnum (rtl_reg/ra-num reg)))
-	  (let loop ((ctx ctx))
-	     (cond
-		((null? ctx)
-		 (list (cons reg (cons typ flag))))
-		((>fx (rtl_reg/ra-num (caar ctx)) rnum)
-		 (cons (cons reg (cons typ flag)) ctx))
-		((eq? (caar ctx) reg)
-		 (let ((c (car ctx)))
-		    (if (and (eq? (cadr c) typ) (eq? (cddr c) flag))
-			ctx
-			(cons (cons reg (cons typ flag)) (cdr ctx)))))
-		(else
-		 (cons (car ctx) (loop (cdr ctx))))))))))
-   
+(define (merge-block! mark b by)
+   (with-trace 'bbv "merge-block!"
+      (trace-item "b=" (block-label b) " <- " (block-label by))
+      ;; merge by into bx
+      (let loop ((by (list by))
+		 (bx (list b)))
+	 (cond
+	    ((null? by)
+	     b)
+	    ((=fx (blockS-%mark (car by)) mark)
+	     b)
+	    ((eq? (car by) (car bx))
+	     b)
+	    (else
+	     (with-access::blockS (car by) (preds (ysuccs succs) first %mark)
+		(set! %mark mark)
+		(for-each (lambda (d)
+			     (with-access::blockS d (%mark)
+				(unless (=fx mark %mark)
+				   (redirect-block! d (car by) (car bx)))))
+		   preds)
+		(with-access::blockS (car bx) ((xsuccs succs))
+		   (loop ysuccs xsuccs))))))))
+
+;*---------------------------------------------------------------------*/
+;*    redirect-block! ...                                              */
+;*---------------------------------------------------------------------*/
+(define (redirect-block! b::blockS old::blockS new::blockS)
+   (with-trace 'bbv "redirect-block"
+      (trace-item "b=" (block-label b))
+      (trace-item "old=" (block-label old) " "
+	 (map block-label (block-succs old)))
+      (trace-item "new="(block-label new) " "
+	 (map block-label (block-succs new)))
+      (with-access::blockS b (succs first)
+	 (set! succs (replace succs old new))
+	 (with-access::block old (preds)
+	    (set! preds (remq! b preds)))
+	 (with-access::block new (preds)
+	    (set! preds (cons b preds)))
+	 (let ((last (car (last-pair first))))
+	    (cond
+	       ((rtl_ins-ifeq? last)
+		(with-access::rtl_ins last (fun)
+		   (with-access::rtl_ifeq fun (then)
+		      (when (eq? then old)
+			 (set! then new)))))
+	       ((rtl_ins-ifne? last)
+		(with-access::rtl_ins last (fun)
+		   (with-access::rtl_ifne fun (then)
+		      (when (eq? then old)
+			 (set! then new)))))
+	       ((rtl_ins-go? last)
+		(with-access::rtl_ins last (fun)
+		   (with-access::rtl_go fun (to)
+		      (set! to new))))))))
+   b)
+
+;*---------------------------------------------------------------------*/
+;*    merge? ...                                                       */
+;*    -------------------------------------------------------------    */
+;*    Is it possible to merge two blocks with the hash?                */
+;*---------------------------------------------------------------------*/
+(define (merge? bx::blockS by::blockS stack)
+   (with-access::blockS bx ((xbl %blacklist) (xsuccs succs))
+      (with-access::blockS by ((ybl %blacklist) (ysuccs succs) first)
+	 (cond
+	    ((eq? bx by)
+	     #t)
+	    ((and (memq bx stack) (memq by stack))
+	     #t)
+	    ((not (=fx (bbv-hash bx) (bbv-hash by)))
+	     #f)
+	    ((not (bbv-equal? bx by))
+	     #f)
+	    ((or (eq? xbl '*) (eq? ybl '*))
+	     #f)
+	    ((or (memq bx ybl) (memq by xbl))
+	     #f)
+	    ((and (=fx (length ysuccs) 0) (=fx (length first) 1))
+	     #f)
+	    ((=fx (length ysuccs) (length xsuccs))
+	     (let ((ns (cons* bx by stack)))
+		(or (every (lambda (x y) (merge? x y ns)) xsuccs ysuccs)
+		    (begin
+		       (set! xbl (cons by xbl))
+		       (set! ybl (cons bx ybl))
+		       #f))))
+	    (else
+	     (begin
+		(set! xbl (cons by xbl))
+		(set! ybl (cons bx ybl))
+		#f))))))
+
 ;*---------------------------------------------------------------------*/
 ;*    get-specialize-block ::blockV ...                                */
 ;*---------------------------------------------------------------------*/
 (define (get-specialize-block::blockS b::blockV ctx::pair-nil)
+   
+   (define (get-specialize-succ! b s ctx)
+      (let ((n (get-specialize-block s ctx)))
+	 (block-succs-set! b (cons n (block-succs b)))
+	 (block-preds-set! n (cons b (block-preds n)))
+	 n))
+   
    (with-access::blockV b (label versions succs)
       (with-trace 'bbv (format "get-specialize block ~a" label)
 	 (trace-item "ctx=" (ctx->string ctx))
@@ -607,55 +755,85 @@
 		   (trace-item "succs=" (map block-label succs))
 		   (set! versions (cons (cons ctx s) versions))
 		   (with-access::blockS s ((ssuccs succs) ictx octxs first)
-		      (set! ssuccs
-			 (map (lambda (b o)
-				 (let ((n (get-specialize-block b o)))
-				    (with-access::block n (preds)
-				       (set! preds (cons s preds)))
-				    n))
-			    succs octxs))
 		      (when (pair? first)
 			 (let ((last (car (last-pair first))))
 			    (cond
 			       ((rtl_ins-go? last)
 				(with-access::rtl_ins last (fun)
 				   (with-access::rtl_go fun (to)
-				      (let ((bs (get-specialize-block to
-						   (car octxs))))
-					 (set! ssuccs (list bs))
-					 (set! octxs (list (car octxs)))
-					 (set! to bs)))))
+				      (let ((n (get-specialize-succ!
+						  s to (car octxs))))
+					 (set! to n)
+					 (set! octxs (list (car octxs)))))))
 			       ((rtl_ins-nop? last)
 				(unless (null? (cdr first))
 				   (set! first (remq! last first)))
-				(set! ssuccs (list (car ssuccs)))
-				(set! octxs (list (car octxs))))
+				(let ((n (get-specialize-succ!
+					    s (car succs) (car octxs))))
+				   (set! octxs (list (car octxs)))))
 			       ((rtl_ins-ifeq? last)
-				(with-access::rtl_ins last (fun)
-				   (with-access::rtl_ifeq fun (then)
-				      (set! then (cadr ssuccs)))))
+				(let* ((n2 (get-specialize-succ!
+					      s (cadr succs) (cadr octxs)))
+				       (n1 (get-specialize-succ!
+					      s (car succs) (car octxs))))
+				   (with-access::rtl_ins last (fun)
+				      (with-access::rtl_ifeq fun (then)
+					 (set! then n2)))))
 			       ((rtl_ins-ifne? last)
-				(with-access::rtl_ins last (fun)
-				   (with-access::rtl_ifne fun (then)
-				      (set! then (car ssuccs))))))))
+				(let* ((n2 (get-specialize-succ!
+					      s (cadr succs) (cadr octxs)))
+				       (n1 (get-specialize-succ!
+					      s (car succs) (car octxs))))
+				   (with-access::rtl_ins last (fun)
+				      (with-access::rtl_ifne fun (then)
+					 (set! then n1)))))
+			       (else
+				(set! ssuccs
+				   (map (lambda (u c)
+					   (get-specialize-succ! s u c))
+				      (reverse succs)
+				      (reverse octxs)))))))
 		      s)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    specialize-block! ...                                            */
 ;*---------------------------------------------------------------------*/
 (define (specialize-block!::blockS b::block ctx0)
+
+   (define (resolve-intcmp b sin next sis sctx gettrue getfalse)
+      (with-access::block b (succs)
+	 (let ((ni (duplicate::rtl_ins/bbv next
+		      (fun (instantiate::rtl_go 
+			      (to (gettrue succs)))))))
+	    (block-preds-set! (getfalse succs)
+	       (remq! b (block-preds (getfalse succs))))
+	    (instantiate::blockS
+	       (%parent b)
+	       (label (genlabel))
+	       (first (reverse! (cons* ni sin sis)))
+	       (ictx ctx0)
+	       (octxs (list sctx))
+	       (succs (list (gettrue succs)))))))
+   
+   (define (resolve-intcmp-nop b sin next sis sctx gettrue getfalse)
+      (let ((nsin (duplicate::rtl_ins/bbv next
+		     (fun (instantiate::rtl_nop)))))
+	 (resolve-intcmp b nsin next sis sctx gettrue getfalse)))
+   
    [assert (b) (not (isa? b blockS))]
    (with-access::block b (first label succs)
       (with-trace 'bbv-block (format "specialize block ~a" label)
 	 (let loop ((ois first)
 		    (sis '())
 		    (ctx ctx0))
-	    (if (null? (cdr ois))
+	    (cond
+	       ((null? (cdr ois))
 		(multiple-value-bind (sin sctx)
 		   (rtl_ins-specialize (car ois) ctx)
 		   (cond
 		      ((rtl_ins-last? sin)
-		       (instantiate::blockS 
+		       (instantiate::blockS
+			  (%parent b)
 			  (label (genlabel))
 			  (first (reverse! (cons sin sis)))
 			  (ictx ctx0)))
@@ -666,255 +844,90 @@
 			     (trace-item "reg=" (shape reg))
 			     (trace-item "typ=" (shape type))
 			     (instantiate::blockS 
+				(%parent b)
 				(label (genlabel))
 				(first (reverse! (cons sin sis)))
 				(ictx ctx0)
 				(octxs (list
 					  (filter-live-regs sin
-					     (extend-ctx sctx reg type #t))
+					     (refine-ctx sctx reg type #t))
 					  (filter-live-regs sin
-					     (extend-ctx sctx reg type #f))))))))
+					     (refine-ctx sctx reg type #f))))))))
 		      (else
 		       (instantiate::blockS
+			  (%parent b)
 			  (label (genlabel))
 			  (first (reverse! (cons sin sis)))
 			  (ictx ctx0)
 			  (octxs (map (lambda (_) (filter-live-regs sin sctx))
-				    succs))))))
+				    succs)))))))
+	       ((and #f (rtl_ins-intcmp? (car ois)) (rtl_ins-branch? (cadr ois)))
+		;; tmp <- arg0 BINOP arg1
+		;; ifeq tmp
+		(tprint ">>> GOTONE.1.." (shape (car ois)))
+		(tprint "              " (ctx->string ctx))
+		(multiple-value-bind (sin sctx ctxt ctxo)
+		   (rtl_ins-specialize-intcmp (car ois) ctx)
+		   (cond
+		      ((or (rtl_ins-true? sin) (rtl_ins-false? sin))
+		       (let ((tmp (rtl_ins-dest (car ois))))
+			  (if (regset-member? (rtl_ins-dest (car ois))
+				 (rtl_ins/bbv-out (cadr ois)))
+			      ;; the temp is live after the test, keep
+			      ;; the constant load
+			      (if (rtl_ins-true? sin)
+				  (resolve-intcmp b sin (cadr ois) sis sctx
+				     car cadr)
+				  (resolve-intcmp b sin (cadr ois) sis sctx
+				     cadr car))
+			      ;; temp dead after testing
+			      (if (rtl_ins-true? sin)
+				  (resolve-intcmp-nop b sin (cadr ois) sis sctx
+				     car cadr)
+				  (resolve-intcmp-nop b sin (cadr ois) sis sctx
+				     cadr car)))))
+		      ((not ctxt)
+		       (tprint "<<< GOTONE.3..")
+		       (loop (cdr ois) (cons sin sis) sctx))
+		      (else
+		       (tprint "<<< GOTONE.4a."
+			  (ctx->string (filter-live-regs (cadr ois) ctxt)))
+		       (tprint "<<< GOTONE.4b."
+			  (ctx->string (filter-live-regs (cadr ois) ctxo)))
+		       (instantiate::blockS
+			  (%parent b)
+			  (label (genlabel))
+			  (first (reverse! (cons* (cadr ois) sin sis)))
+			  (ictx ctx0)
+			  (octxs (list
+				    (filter-live-regs (cadr ois) ctxt)
+				    (filter-live-regs (cadr ois) ctxo))))))))
+	       (else
 		(let ((ins (car ois)))
 		   [assert (ins) (not (rtl_notseq? ins))]
 		   (multiple-value-bind (sin sctx)
 		      (rtl_ins-specialize (car ois) ctx)
-		      (loop (cdr ois) (cons sin sis) sctx))))))))
+		      (loop (cdr ois) (cons sin sis) sctx)))))))))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-branch? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-branch? i)
+   (with-access::rtl_ins i (fun)
+      (or (isa? fun rtl_ifne) (isa? fun rtl_ifeq))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filter-live-regs ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (filter-live-regs ins::rtl_ins/bbv ctx)
    (with-access::rtl_ins/bbv ins (out)
-      (filter (lambda (ctx)
-		 (or (not (isa? (car ctx) rtl_reg/ra))
-		     (regset-member? (car ctx) out)))
+      (filter (lambda (e)
+		 (let ((reg (bbv-ctxentry-reg e)))
+		    (when (or (not (isa? reg rtl_reg/ra))
+			      (regset-member? reg out))
+		       (bbv-ctxentry-aliases-set! e
+			  (filter (lambda (reg)
+				     (regset-member? reg out))
+			     (bbv-ctxentry-aliases e))))))
 	 ctx)))
    
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-typecheck? ...                                           */
-;*    -------------------------------------------------------------    */
-;*    Returns the type checked by the instruction or false.            */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-typecheck? i::rtl_ins)
-   (when (or (rtl_ins-ifeq? i) (rtl_ins-ifne? i))
-      (with-access::rtl_ins i (args)
-	 (when (and (isa? (car args) rtl_ins) (rtl_ins-call? (car args)))
-	    (let ((typ (rtl_call-predicate (car args))))
-	       (when typ
-		  (let ((args (rtl_ins-args* i)))
-		     (and (pair? args) (null? (cdr args)) (rtl_reg? (car args))))))))))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-typecheck ...                                            */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-typecheck i::rtl_ins)
-   (with-access::rtl_ins i (args)
-      (let ((typ (rtl_call-predicate (car args))))
-	 (let ((args (rtl_ins-args* i)))
-	    (values (car args) typ (rtl_ins-ifeq? i))))))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-last? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-last? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_last)))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-nop? ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-nop? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_nop)))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-mov? ...                                                 */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-mov? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_mov)))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-go? ...                                                  */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-go? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_go)))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-ifeq? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-ifeq? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_ifeq)))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-ifne? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-ifne? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_ifne)))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-call? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-call? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_call)))
-   
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-vlen? ...                                                */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-vlen? i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (isa? fun rtl_vlength)))
-   
-;*---------------------------------------------------------------------*/
-;*    rtl_call-predicate ...                                           */
-;*---------------------------------------------------------------------*/
-(define (rtl_call-predicate i::rtl_ins)
-   (with-access::rtl_ins i (fun)
-      (with-access::rtl_call fun (var)
-	 (let ((val (variable-value var)))
-	    (fun-predicate-of val)))))
-
-;*---------------------------------------------------------------------*/
-;*    rtl_ins-specialize ...                                           */
-;*    -------------------------------------------------------------    */
-;*    Specialize a instruction according to the typing context.        */
-;*    Returns the new instruction and the new context.                 */
-;*---------------------------------------------------------------------*/
-(define (rtl_ins-specialize i::rtl_ins ctx::pair-nil)
-   
-   (with-trace 'bbv-ins "ins"
-      (trace-item "ins=" (shape i))
-      (trace-item "ctx=" (ctx->string ctx))
-      (cond
-	 ((rtl_ins-typecheck? i)
-	  (multiple-value-bind (reg type flag)
-	     (rtl_ins-typecheck i)
-	     (trace-item "typ=" (shape type) " flag=" flag)
-	     (let ((c (assq reg ctx)))
-		(cond
-		   ((not c)
-		    (with-access::rtl_ins i (fun)
-		       (let ((s (duplicate::rtl_ins/bbv i
-				   (fun (if (isa? fun rtl_ifeq)
-					    (duplicate::rtl_ifeq fun)
-					    (duplicate::rtl_ifne fun))))))
-			  (values s ctx))))
-		   ((and (eq? (cadr c) type) (eq? flag (cddr c)))
-		    ;;(tprint "NOPING " (shape i) " " (ctx->string ctx))
-		    (with-access::rtl_ins/bbv i (fun args dest)
-		       (let ((s (duplicate::rtl_ins/bbv i
-				   (fun (instantiate::rtl_nop))
-				   (dest #f)
-				   (args '()))))
-			  (values s ctx))))
-		   (else
-		    ;;(tprint "GOING " (shape i) " " (ctx->string ctx))
-		    (with-access::rtl_ins i (fun args dest)
-		       (let* ((then (if (isa? fun rtl_ifeq)
-					(rtl_ifeq-then fun)
-					(rtl_ifne-then fun)))
-			      (s (duplicate::rtl_ins/bbv i
-				    (fun (instantiate::rtl_go (to then)))
-				    (dest #f)
-				    (args '()))))
-			  (values s ctx))))))))
-	 ((rtl_ins-go? i)
-	  ;; have to duplicate the instruction to break "to" sharing
-	  (with-access::rtl_ins i (fun)
-	     (let ((s (duplicate::rtl_ins/bbv i
-			 (fun (duplicate::rtl_go fun)))))
-		(values s ctx))))
-	 ((rtl_ins-ifeq? i)
-	  ;; have to duplicate the instruction to break "to" sharing
-	  (with-access::rtl_ins i (fun)
-	     (let ((s (duplicate::rtl_ins/bbv i
-			 (fun (duplicate::rtl_ifeq fun)))))
-		(values s ctx))))
-	 ((rtl_ins-ifne? i)
-	  ;; have to duplicate the instruction to break "to" sharing
-	  (with-access::rtl_ins i (fun)
-	     (let ((s (duplicate::rtl_ins/bbv i
-			 (fun (duplicate::rtl_ifne fun)))))
-		(values s ctx))))
-	 ((not (rtl_reg? (rtl_ins-dest i)))
-	  (values i ctx))
-	 ((rtl_ins-mov? i)
-	  (with-access::rtl_ins i (dest args fun)
-	     (cond
-		((and (pair? args) (null? (cdr args)) (rtl_reg/ra? (car args)))
-		 (let ((c (assq (car args) ctx)))
-		    (if c
-			(values i (extend-ctx ctx dest (cadr c) (cddr c)))
-			(values i ctx))))
-		((and *type-call* (pair? args) (rtl_ins-call? (car args)))
-		 (with-access::rtl_ins (car args) (fun)
-		    (with-access::rtl_call fun (var)
-		       (with-access::global var (value type)
-			  (values i (extend-ctx ctx dest type #t))))))
-		(else
-		 (values i (extend-ctx ctx dest *obj* #t))))))
-	 ((and *type-call* (rtl_ins-call? i))
-	  (with-access::rtl_ins i (dest fun)
-	     (with-access::rtl_call fun (var)
-		(with-access::global var (value type)
-		   (if (fun? value)
-		       (values i (extend-ctx ctx dest type #t))
-		       (values i (extend-ctx ctx dest *obj* #t)))))))
-	 ((rtl_ins-vlen? i)
-	  (with-access::rtl_ins i (dest)
-	     (values i (extend-ctx ctx dest *int* #t))))
-	 (else
-	  (values i (extend-ctx ctx (rtl_ins-dest i) *obj* #t))))))
-
-;*---------------------------------------------------------------------*/
-;*    dump ::rtl_ins/bbv ...                                           */
-;*---------------------------------------------------------------------*/
-(define-method (dump o::rtl_ins/bbv p m)
-   (with-access::rtl_ins/bbv o (%spill fun dest args def in out)
-      (with-output-to-port p
-	 (lambda ()
-	    (when dest
-	       (display "[" p)
-	       (dump dest p m)
-	       (display " <- " p))
-	    (dump-ins-rhs o p m)
-	    (when dest (display "]" p))
-	    (display* " #|fun=" (typeof fun))
-	    (display* " def=" (map shape (regset->list def)))
-	    (display* " in=" (map shape (regset->list in)))
-	    (display* " out=" (map shape (regset->list out)))
-	    (display "|#")))))
-
-;*---------------------------------------------------------------------*/
-;*    dump ::blockS ...                                                */
-;*---------------------------------------------------------------------*/
-(define-method (dump o::blockS p m)
-   (with-access::block o (label first)
-      (fprint p "(block " label)
-      (with-access::blockS o (ictx octxs)
-	 (fprint p " ;; ictx=" (ctx->string ictx))
-	 (for-each (lambda (ctx)
-		      (fprint p " ;; octx="
-			 (ctx->string ctx)))
-	    octxs))
-      (with-access::block o (preds succs)
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":preds " (map block-label preds))
-	 (dump-margin p (+fx m 1))
-	 (fprint p ":succs " (map block-label succs)))
-      (dump-margin p (+fx m 1))
-      (dump* first p (+fx m 1))
-      (display ")\n" p)))
-
-

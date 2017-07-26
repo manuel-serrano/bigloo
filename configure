@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Jul  9 15:27:12 2017 (serrano)                */
+#*    Last change :  Wed Jul 26 09:20:19 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1174,6 +1174,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_saw_h=lib/bigloo/$release/bigloo_saw.h
   bigloo_pair_h=lib/bigloo/$release/bigloo_pair.h
   bigloo_real_h=lib/bigloo/$release/bigloo_real.h
+  bigloo_bignum_h=lib/bigloo/$release/bigloo_bignum.h
   bigloo_int_h=lib/bigloo/$release/bigloo_int.h
   bigloo_vector_h=lib/bigloo/$release/bigloo_vector.h
   bigloo_string_h=lib/bigloo/$release/bigloo_string.h
@@ -3362,6 +3363,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_saw_h` $bigloo_saw_h
   cp runtime/Include/`basename $bigloo_pair_h` $bigloo_pair_h
   cp runtime/Include/`basename $bigloo_real_h` $bigloo_real_h
+  cp runtime/Include/`basename $bigloo_bignum_h` $bigloo_bignum_h
   cp runtime/Include/`basename $bigloo_int_h` $bigloo_int_h
   cp runtime/Include/`basename $bigloo_vector_h` $bigloo_vector_h
   cp runtime/Include/`basename $bigloo_string_h` $bigloo_string_h
@@ -3545,7 +3547,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     name="$name"x;
   done
 
-  @ Makefile.buildconfig
+  # Makefile.buildconfig
   rm -f $makefile_build 2> /dev/null
   echo "# automatically generated, don't edit" > $makefile_build
   echo "# `date`" >> $makefile_build
