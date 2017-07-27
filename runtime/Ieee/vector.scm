@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Thu Feb  9 10:04:02 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 08:01:00 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -37,17 +37,17 @@
    
    (extern  (macro $vector?::bool (::obj) "VECTORP")
 	    (macro $free-vector-uncollectable::void (::vector) "FREE_VECTOR_UNCOLLECTABLE")
-	    ($make-vector::vector (::int ::obj) "make_vector")
-	    ($make-vector-uncollectable::vector (::int ::obj) "make_vector_uncollectable")
-	    ($create-vector::vector (::int) "create_vector")
-	    ($create-vector-uncollectable::vector (::int) "create_vector_uncollectable")
+	    ($make-vector::vector (::long ::obj) "make_vector")
+	    ($make-vector-uncollectable::vector (::long ::obj) "make_vector_uncollectable")
+	    ($create-vector::vector (::long) "create_vector")
+	    ($create-vector-uncollectable::vector (::long) "create_vector_uncollectable")
 	    ($vector-fill!::obj (::vector ::long ::long ::obj) "bgl_fill_vector")
-	    (macro $vector-length::int (::vector) "VECTOR_LENGTH")
-	    (macro $vector-ref::obj (::vector ::int) "VECTOR_REF")
-	    (macro $vector-ref-ur::obj (::vector ::int) "VECTOR_REF")
-	    (macro $vector-set!::obj (::vector ::int ::obj) "VECTOR_SET")
-	    (macro $vector-set-ur!::obj (::vector ::int ::obj) "VECTOR_SET")
-	    (macro $vector-bound-check?::bool (::int ::int) "BOUND_CHECK")
+	    (macro $vector-length::long (::vector) "VECTOR_LENGTH")
+	    (macro $vector-ref::obj (::vector ::long) "VECTOR_REF")
+	    (macro $vector-ref-ur::obj (::vector ::long) "VECTOR_REF")
+	    (macro $vector-set!::obj (::vector ::long ::obj) "VECTOR_SET")
+	    (macro $vector-set-ur!::obj (::vector ::long ::obj) "VECTOR_SET")
+	    (macro $vector-bound-check?::bool (::long ::long) "BOUND_CHECK")
 	    (macro $vector-tag-set!::obj (::vector ::int) "VECTOR_TAG_SET")
 	    (macro $vector-tag::int (::vector) "VECTOR_TAG")
 	    ($sort-vector::vector (::vector ::procedure) "sort_vector")
@@ -90,20 +90,20 @@
 		  "BGL_VECTOR_SHRINK")))
    
    (export  (inline vector?::bool obj)
-	    (inline make-vector::vector ::int #!optional (fill #unspecified))
+	    (inline make-vector::vector ::long #!optional (fill #unspecified))
 	    (inline vector::vector . args)
-	    (inline vector-length::int ::vector)
-	    (inline vector-ref ::vector ::int)
-	    (inline vector-set! ::vector ::int ::obj) 
-	    (inline vector-ref-ur ::vector ::int) 
-	    (inline vector-set-ur! ::vector ::int ::obj)
+	    (inline vector-length::long ::vector)
+	    (inline vector-ref ::vector ::long)
+	    (inline vector-set! ::vector ::long ::obj) 
+	    (inline vector-ref-ur ::vector ::long) 
+	    (inline vector-set-ur! ::vector ::long ::obj)
 	    (vector->list::pair-nil ::vector)
 	    (list->vector::vector ::pair-nil)
 	    (vector-fill! vec::vector fill
 	       #!optional (start::long 0) (end::long (vector-length vec)))
 	    (inline vector-tag::int ::vector)
 	    (inline vector-tag-set! ::vector ::int)
-	    (copy-vector::vector ::vector ::int)
+	    (copy-vector::vector ::vector ::long)
 	    (vector-copy::vector ::vector . args)
 	    (vector-copy! ::vector ::long source
 	       #!optional (sstart 0) (send (vector-length source)))
@@ -230,7 +230,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    copy-vector ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (copy-vector::vector old-vec::vector new-len::int)
+(define (copy-vector::vector old-vec::vector new-len::long)
    (let* ((old-len (vector-length old-vec))
 	  (new-vec (make-vector new-len))
 	  (min     (if (<fx new-len old-len)

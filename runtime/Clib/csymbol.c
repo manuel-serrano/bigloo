@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Wed Apr 26 07:58:29 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 08:07:52 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -13,7 +13,6 @@
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
 /*---------------------------------------------------------------------*/
-extern obj_t make_vector( int, obj_t );
 extern long get_hash_power_number( char *, unsigned long );
 extern long get_hash_power_number_len( char *, unsigned long, long );
 extern bool_t bigloo_strcmp( obj_t, obj_t );

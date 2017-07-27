@@ -267,6 +267,7 @@
      (f64vector (class () "bigloo.f64vector"))
 ;*      (condvar (class () "bigloo.condvar"))                          */
      (mutex (class () "bigloo.mutex"))
+     (semaphore (class () "bigloo.semaphore"))
      ;; Fields/Methods of bigloo.class
 ;*      (class (class () "bigloo.bclass"))                             */
      (class (class () "java.lang.Object"))

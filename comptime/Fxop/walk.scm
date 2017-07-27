@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Wed Jul 26 12:48:50 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 07:50:49 2017 (serrano)                */
 ;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize tagged binary operators by avoid useless tagging        */
@@ -119,7 +119,7 @@
 	    (let ((c (assq v *fxops*)))
 	       (when c (cdr c))))))
    
-   (define (fxop-int-letvar? bindings body)
+   (define (fxop-double-int-letvar? bindings body)
       ;; true iff:
       ;;   - there are two arguments
       ;;   - at least one is a conversion bint->long
@@ -135,6 +135,17 @@
 	   (long->bint? body)
 	   (find-fxop (car (app-args body)))))
 
+   (define (fxop-simple-int-letvar? bindings body)
+      ;; true iff:
+      ;;   - there is only one variable
+      ;;   - at least one is a conversion bint->long
+      ;;   - the return is a known fxop converted to bint
+      (and (=fx (length bindings) 1)
+	   (bint->long? (cdar bindings))
+	   (isa? body app)
+	   (long->bint? body)
+	   (find-fxop (car (app-args body)))))
+
    (define (fxop-bool-letvar? bindings body)
       ;; true iff:
       ;;   - there are two arguments
@@ -145,7 +156,7 @@
 		(bint->long? (cdadr bindings)))
 	   (find-fxop (car (app-args body)))))
 
-   (define (tag::node expr::node)
+   (define (bint::node expr::node)
       (with-access::node expr (type)
 	 (cond
 	    ((eq? type *bint*)
@@ -160,7 +171,7 @@
 			(type (variable-type *long->bint*))))
 		(args (list expr)))))))
 		
-   (define (tag-int-fxop op node)
+   (define (tag-double-int-fxop op node)
       (with-access::let-var node (loc type bindings)
 	 (instantiate::app
 	    (type *bint*)
@@ -168,8 +179,29 @@
 		    (variable op)
 		    (type (variable-type op))))
 	    (args (list
-		     (tag (cdar bindings))
-		     (tag (cdadr bindings)))))))
+		     (bint (cdar bindings))
+		     (bint (cdadr bindings)))))))
+
+   (define (tag-simple-int-fxop op node)
+      (with-access::let-var node (loc type bindings)
+	 (let ((call (car (app-args (let-var-body node)))))
+	    (with-access::app call (fun args)
+	       (instantiate::app
+		  (type *bint*)
+		  (fun (instantiate::var
+			  (variable op)
+			  (type (variable-type op))))
+		  (args (list
+			   (if (and (var? (car args))
+				    (eq? (var-variable (car args))
+				       (caar bindings)))
+			       (bint (cdar bindings))
+			       (bint (car args)))
+			   (if (and (var? (cadr args))
+				    (eq? (var-variable (cadr args))
+				       (caar bindings)))
+			       (bint (cdar bindings))
+			       (bint (cadr args))))))))))
 
    (define (tag-bool-fxop op node)
       (with-access::let-var node (loc type bindings)
@@ -179,15 +211,19 @@
 		    (variable op)
 		    (type (variable-type op))))
 	    (args (list
-		     (tag (cdar bindings))
-		     (tag (cdadr bindings)))))))
+		     (bint (cdar bindings))
+		     (bint (cdadr bindings)))))))
 
    (with-access::let-var node (bindings body type)
       (cond
-	 ((and (eq? type *bint*) (fxop-int-letvar? bindings body))
+	 ((and (eq? type *bint*) (fxop-double-int-letvar? bindings body))
 	  =>
 	  (lambda (op)
-	     (tag-int-fxop op node)))
+	     (tag-double-int-fxop op node)))
+	 ((and (eq? type *bint*) (fxop-simple-int-letvar? bindings body))
+	  =>
+	  (lambda (op)
+	     (tag-simple-int-fxop op node)))
 	 ((and (eq? type *bool*) (fxop-bool-letvar? bindings body))
 	  =>
 	  (lambda (op)

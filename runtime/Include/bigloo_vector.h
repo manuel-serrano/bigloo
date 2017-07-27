@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Nov 21 16:10:41 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Thu Jul 27 08:43:03 2017 (serrano)                */
+/*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -24,10 +24,10 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t create_vector( int );
-BGL_RUNTIME_DECL obj_t create_vector_uncollectable( int );
-BGL_RUNTIME_DECL obj_t make_vector( int len, obj_t );
-BGL_RUNTIME_DECL obj_t make_vector_uncollectable( int, obj_t );
+BGL_RUNTIME_DECL obj_t create_vector( long );
+BGL_RUNTIME_DECL obj_t create_vector_uncollectable( long );
+BGL_RUNTIME_DECL obj_t make_vector( long len, obj_t );
+BGL_RUNTIME_DECL obj_t make_vector_uncollectable( long, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_fill_vector( obj_t, long, long, obj_t );
 BGL_RUNTIME_DECL obj_t fill_vector( obj_t, long, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_saw_vector_copy( obj_t );
@@ -39,7 +39,7 @@ struct bgl_vector {
 #if( !defined( TAG_VECTOR ) )
    header_t header;
 #endif
-   /* 24 bit long length (see VECTOR_LENGTH) */
+   /* XXX-VECTOR_SIZE_TAG_NB_BIT bit long length (see VECTOR_LENGTH) */
    unsigned long length;
    obj_t obj0;
 };             
@@ -82,13 +82,16 @@ struct bgl_hvector {
      && (TYPE( v ) >= S8VECTOR_TYPE) \
      && (TYPE( v ) <= F64VECTOR_TYPE))
 
-#define VECTOR_TAG_NB_BIT 8
-#define VECTOR_TAG_SIZE ((unsigned long)( 1<< VECTOR_TAG_NB_BIT))
+/* VECTOR_SIZE_TAG is used by the Camloo compiler for representing */
+/* structures. For Camloo it must be set to 8.                     */
+//#define VECTOR_SIZE_TAG_NB_BIT 8
+#define VECTOR_SIZE_TAG_NB_BIT 0
+#define VECTOR_SIZE_TAG ((unsigned long)( 1 << VECTOR_SIZE_TAG_NB_BIT))
 
-#define VECTOR_LENGTH_SHIFT ((sizeof( long ) << 3) - VECTOR_TAG_NB_BIT)
+#define VECTOR_LENGTH_SHIFT ((sizeof( long ) << 3) - VECTOR_SIZE_TAG_NB_BIT)
 
 #define VECTOR_LENGTH_MASK \
-   (~(unsigned long)((VECTOR_TAG_SIZE -1) << VECTOR_LENGTH_SHIFT))
+   (~(unsigned long)((VECTOR_SIZE_TAG -1) << VECTOR_LENGTH_SHIFT))
 
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */
@@ -101,24 +104,36 @@ struct bgl_hvector {
 #define VECTOR_REF( v, i ) ((&(VECTOR( v ).obj0))[ i ])
 #define VECTOR_SET( v, i, o ) BASSIGN( VECTOR_REF( v, i ), o, v)
 
-#define BGL_VLENGTH( v ) \
-   (VECTOR( v ).length & VECTOR_LENGTH_MASK)
+#if( VECTOR_SIZE_TAG_NB_BIT != 0 )
+#   define BGL_VLENGTH( v ) (VECTOR( v ).length & VECTOR_LENGTH_MASK)
+#else
+#   define BGL_VLENGTH( v ) (VECTOR( v ).length)
+#endif
 
 #define VECTOR_LENGTH( v ) \
    BGL_VLENGTH( v )
 
-#define VECTOR_TAG_SET( v, tag ) \
+#if( VECTOR_SIZE_TAG_NB_BIT != 0 )
+#  define VECTOR_TAG_SET( v, tag ) \
     (VECTOR( v ).length = \
      (BGL_VLENGTH( v ) | (((unsigned long) tag) << VECTOR_LENGTH_SHIFT)), \
      BUNSPEC)
-
-#define VECTOR_TAG( v ) \
+#  define VECTOR_TAG( v ) \
    ((VECTOR( v ).length & ~VECTOR_LENGTH_MASK) >> VECTOR_LENGTH_SHIFT)
+#else
+#  define VECTOR_TAG_SET( v, tag ) (BUNSPEC)
+#  define VECTOR_TAG( v ) (0)
+#endif
 
-#define BGL_VECTOR_SHRINK( v, l ) \
+#if( VECTOR_SIZE_TAG_NB_BIT != 0 )
+#   define BGL_VECTOR_SHRINK( v, l ) \
    ((l >= 0 && l < BGL_VLENGTH( v )) ? \
     VECTOR( v ).length = (l | (VECTOR( v ).length & ~VECTOR_LENGTH_MASK)), v : v)
-      
+#else
+#   define BGL_VECTOR_SHRINK( v, l ) \
+   ((l >= 0 && l < BGL_VLENGTH( v )) ? \
+    VECTOR( v ).length = (l | (VECTOR( v ).length)), v : v)
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Typed vectors                                                    */

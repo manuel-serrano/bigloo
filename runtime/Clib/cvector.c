@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Mon Jul 17 10:23:16 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 08:29:40 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -68,14 +68,17 @@ fill_vector( obj_t bvector, long len, obj_t init ) {
 /*    ccontrol.c:opt_generic_entry                                     */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-create_vector( int len ) {
+create_vector( long len ) {
    obj_t vector;
 
+#if(  VECTOR_SIZE_TAG_NB_BIT != 0 )  
    if( len & ~(VECTOR_LENGTH_MASK) ) { 
       C_FAILURE( "create_vector", "vector too large", BINT( len ) );
       return BUNSPEC;
-   } else {
-      int byte_size;
+   } else
+#endif
+   {
+      long byte_size;
 
       byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
 
@@ -96,14 +99,17 @@ create_vector( int len ) {
 /*    same as create_vector but the allocated vector is uncollectable  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-create_vector_uncollectable( int len ) {
+create_vector_uncollectable( long len ) {
    obj_t vector;
    
+#if(  VECTOR_SIZE_TAG_NB_BIT != 0 )  
    if( len & ~(VECTOR_LENGTH_MASK) ) { 
       C_FAILURE( "create_vector", "vector too large", BINT( len ) );
       return BUNSPEC;
-   } else {
-      int byte_size;
+   } else
+#endif
+   {
+      long byte_size;
 
       byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
       
@@ -124,7 +130,7 @@ create_vector_uncollectable( int len ) {
 /*    same as create_vector but the allocated vector is uncollectable  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-make_vector_uncollectable( int len, obj_t init ) {
+make_vector_uncollectable( long len, obj_t init ) {
    obj_t vector;
 
    vector = create_vector_uncollectable( len );
@@ -137,7 +143,7 @@ make_vector_uncollectable( int len, obj_t init ) {
 /*    make_vector_uncollectable ...                                    */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-make_vector( int len, obj_t init ) {
+make_vector( long len, obj_t init ) {
    obj_t vector;
 
    vector = create_vector( len );
@@ -152,7 +158,7 @@ make_vector( int len, obj_t init ) {
 /*---------------------------------------------------------------------*/
 obj_t
 sort_vector( obj_t obj, obj_t proc ) {
-   int i, j, incr, n;
+   long i, j, incr, n;
    obj_t (*cb)();
 
    n = VECTOR_LENGTH( obj );

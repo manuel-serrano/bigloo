@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Wed Jul 26 15:30:39 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 08:21:34 2017 (serrano)                */
 /*    Copyright   :  2014-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -48,7 +48,6 @@ extern obj_t bgl_uv_events_to_list( int );
 extern obj_t bgl_uv_mutex;
 extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t bgl_uv_new_file( int, obj_t );
-extern obj_t create_vector( int );
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

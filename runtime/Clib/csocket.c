@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Wed Jul 26 17:58:06 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 08:08:21 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -144,7 +144,6 @@ extern obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t bgl_close_input_port( obj_t );
 extern obj_t bgl_close_output_port( obj_t );
 extern long bgl_read( obj_t, char *, long );
-extern obj_t make_vector( int, obj_t );
 extern unsigned char get_hash_number( char * );
 extern unsigned char bgl_get_hash_number_len( char *, int, int );
 extern bool_t bigloo_strcmp( obj_t o1, obj_t o2 );

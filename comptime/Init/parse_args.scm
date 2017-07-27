@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jul 26 12:55:28 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 07:43:10 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -385,11 +385,6 @@
        (set! *arithmetic-overflow* #f))
       (("-fno-arithmetic-overflow" (help "Enable arithmetic overflow checks"))
        (set! *arithmetic-overflow* #t))
-      ;; fix arithmetic tagging
-      (("-ftagged-fxop" (help "Enable tagged fix-ops optimization"))
-       (set! *optim-tagged-fxop?* #t))
-      (("-fno-tagged-fxop" (help "Disable tagged fix-ops optimization"))
-       (set! *optim-tagged-fxop?* #f))
       ;; case sensitivity
       (("-fcase-sensitive" (help "Case sensitive reader (default)"))
        (bigloo-case-sensitivity-set! 'sensitive))
@@ -413,6 +408,11 @@
       ;; optimization
       (("-O?opt" (help "-O[0..6]" "Optimization modes"))
        (parse-optim-args opt))
+      ;; fix arithmetic tagging
+      (("-ftagged-fxop" (help "Enable tagged fix-ops optimization"))
+       (set! *optim-tagged-fxop?* #t))
+      (("-fno-tagged-fxop" (help "Disable tagged fix-ops optimization"))
+       (set! *optim-tagged-fxop?* #f))
       ;; cfa optimizations
       (("-fcfa" (help "Enable CFA"))
        (set! *optim-cfa?* #t))
