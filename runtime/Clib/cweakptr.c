@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Wed Apr 26 07:58:03 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 12:48:16 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C weak pointer management                                        */
 /*=====================================================================*/
@@ -28,13 +28,13 @@ make_weakptr( obj_t data ) {
 
    // check if data has been allocated by the GC.
    // constants and ints are not pointers
-   if( POINTERP( data ) && GC_base( data ) != NULL ) {
+   if( POINTERP( data ) && GC_base( CREF( data ) ) != NULL ) {
       // make a real weak pointer
       ptr = GC_MALLOC_ATOMIC( WEAKPTR_SIZE );
       ptr->weakptr_t.header = MAKE_HEADER( WEAKPTR_TYPE, 0 );
       ptr->weakptr_t.data = data;
       GC_general_register_disappearing_link( &(ptr->weakptr_t.data), 
-					     GC_base( data ) );
+					     GC_base( CREF( data ) ) );
    } else {
       // If not, we need to not tell the GC about the
       // disappearing link, and our
@@ -44,7 +44,7 @@ make_weakptr( obj_t data ) {
       ptr->weakptr_t.data = data;
    }
    
-   return BREF(ptr);
+   return BREF( ptr );
 }
 
 /*---------------------------------------------------------------------*/
@@ -58,27 +58,27 @@ weakptr_data_set( obj_t ptr, obj_t data ) {
   // first unset it
   
   // FIXME: for strong pointers we could do without the lock
-  old_data = GC_call_with_alloc_lock( data_getter, ptr );
+  old_data = GC_call_with_alloc_lock( data_getter, CREF( ptr ) );
 
   // check if data has been allocated by the GC.
   // constants and ints are not pointers
   // in theory if old_data is NULL the link was already unregistered by the GC
   if( POINTERP( old_data ) && GC_base( old_data ) != NULL ) {
-     GC_unregister_disappearing_link( &(ptr->weakptr_t.data) );
+      GC_unregister_disappearing_link( &( WEAKPTR( ptr ).data) );
   }
 
   // then set it
   // check if data has been allocated by the GC.
   // constants and ints are not pointers
-  if( POINTERP( data ) && GC_base( data ) != NULL ) {
+  if( POINTERP( data ) && GC_base( CREF( data ) ) != NULL ) {
      // it's a real weak pointer
-     ptr->weakptr_t.data = data;
-     GC_general_register_disappearing_link( &(ptr->weakptr_t.data), 
-					    GC_base( data ) );
+     WEAKPTR( ptr ).data = data;
+     GC_general_register_disappearing_link( &(WEAKPTR( ptr ).data), 
+					    GC_base( CREF( data ) ) );
   } else {
      // If not, we need to not tell the GC about the disappearing link, and our
      // weak pointer will just be a regular hard pointer.
-     ptr->weakptr_t.data = data;
+     WEAKPTR( ptr ).data = data;
   }
 }
 
@@ -92,7 +92,7 @@ weakptr_data( obj_t ptr ) {
    obj_t data;
 
    // FIXME: for strong pointers we could do without the lock
-   data = GC_call_with_alloc_lock( data_getter, ptr );
+   data = GC_call_with_alloc_lock( data_getter, CREF( ptr ) );
    return data == NULL ? BUNSPEC : data;
 }
 

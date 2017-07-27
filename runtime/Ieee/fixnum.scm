@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Jul 26 13:20:18 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 13:10:08 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -226,13 +226,13 @@
 	   (macro $rand::int () "rand"))
 
    ;; tagged fixnum operation, for the C backend only
-   (extern  (macro $addfx::obj (::obj ::obj) "ADDFX")
-	    (macro $subfx::obj (::obj ::obj) "SUBFX")
-	    (macro $ltfx::obj (::obj ::obj) "LTFX")
-	    (macro $lefx::obj (::obj ::obj) "LEFX")
-	    (macro $gtfx::obj (::obj ::obj) "GTFX")
-	    (macro $gefx::obj (::obj ::obj) "GEFX")
-	    (macro $egfx::obj (::obj ::obj) "EGFX"))
+   (extern  (macro $addfx::bint (::bint ::bint) "ADDFX")
+	    (macro $subfx::bint (::bint ::bint) "SUBFX")
+	    (macro $ltfx::bint (::bint ::bint) "LTFX")
+	    (macro $lefx::bint (::bint ::bint) "LEFX")
+	    (macro $gtfx::bint (::bint ::bint) "GTFX")
+	    (macro $gefx::bint (::bint ::bint) "GEFX")
+	    (macro $egfx::bint (::bint ::bint) "EGFX"))
 
    (java    (class foreign
 	       (field static $minvalfx::long "MIN_VALUE_FX")

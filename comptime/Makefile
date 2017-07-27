@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Jul 26 11:24:28 2017 (serrano)                */
+#*    Last change :  Thu Jul 27 08:58:09 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -230,7 +230,7 @@ BACKEND_OBJ	= $(BACKEND_FILE:%=BackEnd/%.o)
 SAW_FILE        = lib defs rtl node2rtl collapse remove InlineReturn \
 		  blockorder gotos cast expr woodcutter \
 		  procedures elsewhere regalloc regset regutils \
-                  bbv bbv-types bbv-specialize bbv-cache
+                  bbv bbv-types bbv-specialize bbv-cache bbv-utils
 
 SAW_OBJ		= $(SAW_FILE:%=SawMill/%.o)
 

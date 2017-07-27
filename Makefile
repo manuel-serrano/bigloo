@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Jul 10 09:52:57 2017 (serrano)                */
+#*    Last change :  Thu Jul 27 11:24:20 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -269,6 +269,7 @@ bigboot:
 
 dobigboot:
 	@ $(MAKE) -C gc clean
+	@ $(MAKE) -C gc uninstall
 	@ $(MAKE) -C gc boot
 	@ if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gmp clean; \

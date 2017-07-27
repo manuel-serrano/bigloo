@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Wed Jul 26 14:23:53 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 12:55:05 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -738,7 +738,7 @@ bgl_bignum_lcm( obj_t x, obj_t y ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_safe_bignum_to_fixnum( obj_t bx ) {
-   size_t bs = mpz_sizeinbase( &((bx)->bignum_t.mpz), 2 );
+   size_t bs = mpz_sizeinbase( &(BIGNUM(bx).mpz), 2 );
 
    if( bs < ((sizeof( long ) * 8) - TAG_SHIFT) )
       return BINT( bgl_bignum_to_long( bx ) );
@@ -946,7 +946,7 @@ bgl_rand_bignum( obj_t n ) {
    obj_t y;
    
    mpz_init( x );
-   mpz_urandomm( x, gmp_random_state, &(n->bignum_t.mpz) );
+   mpz_urandomm( x, gmp_random_state, &(BIGNUM( n ).mpz) );
    y = mpz_to_bignum( x );
    mpz_clear( x );
    

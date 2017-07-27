@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Sep  7 05:11:17 2010                          */
-;*    Last change :  Thu Jul 27 07:50:49 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 13:08:26 2017 (serrano)                */
 ;*    Copyright   :  2010-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Optimize tagged binary operators by avoid useless tagging        */
@@ -168,7 +168,7 @@
 		(type *bint*)
 		(fun (instantiate::var
 			(variable *long->bint*)
-			(type (variable-type *long->bint*))))
+			(type *bint*)))
 		(args (list expr)))))))
 		
    (define (tag-double-int-fxop op node)
@@ -177,7 +177,7 @@
 	    (type *bint*)
 	    (fun (instantiate::var
 		    (variable op)
-		    (type (variable-type op))))
+		    (type *bint*)))
 	    (args (list
 		     (bint (cdar bindings))
 		     (bint (cdadr bindings)))))))
@@ -190,7 +190,7 @@
 		  (type *bint*)
 		  (fun (instantiate::var
 			  (variable op)
-			  (type (variable-type op))))
+			  (type *bint*)))
 		  (args (list
 			   (if (and (var? (car args))
 				    (eq? (var-variable (car args))

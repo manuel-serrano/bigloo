@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Wed Jul 26 10:11:55 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 11:22:26 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -88,7 +88,8 @@
 	    (rtl_ins-bool?::bool i::rtl_ins)
 	    (rtl_ins-true?::bool i::rtl_ins)
 	    (rtl_ins-false?::bool i::rtl_ins)
-
+	    (rtl_ins-branch? i::rtl_ins)
+	    
 	    (rtl_ins-typecheck i::rtl_ins)
 	    (rtl_call-predicate i::rtl_ins)))
 
@@ -180,6 +181,26 @@
 	     (loop (cdr ctx))))))
 
 ;*---------------------------------------------------------------------*/
+;*    extend-ctx/entry ...                                             */
+;*    -------------------------------------------------------------    */
+;*    Extend CTX with ENTRY. If the register of ENTRY is already in    */
+;*    the CTX, the former entry is replaced with the new one.          */
+;*---------------------------------------------------------------------*/
+(define (extend-ctx/entry ctx::pair-nil entry::bbv-ctxentry)
+   (let* ((reg (bbv-ctxentry-reg entry))
+	  (rnum (rtl_reg/ra-num reg)))
+      (let loop ((ctx ctx))
+	 (cond
+	    ((null? ctx)
+	     (list entry))
+	    ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
+	     (cons entry ctx))
+	    ((eq? (bbv-ctxentry-reg (car ctx)) reg)
+	     (cons entry (cdr ctx)))
+	    (else
+	     (cons (car ctx) (loop (cdr ctx))))))))
+	  
+;*---------------------------------------------------------------------*/
 ;*    extend-ctx ...                                                   */
 ;*    -------------------------------------------------------------    */
 ;*    Extend the context with a new register assignement. This         */
@@ -194,19 +215,10 @@
 	 (flag flag)
 	 (value value)))
 
-   (define (unalias-entry! reg::rtl_reg e::bbv-ctxentry)
-      (for-each (lambda (alias)
-		   (let ((ea (ctx-get ctx alias)))
-		      (when ea
-			 (with-access::bbv-ctxentry ea (aliases)
-			    (set! aliases (remq! reg aliases))))))
-	 (with-access::bbv-ctxentry e (aliases)
-	    aliases)))
-
    (if (not (isa? reg rtl_reg/ra))
        ctx
        (let ((rnum (rtl_reg/ra-num reg)))
-	  (let loop ((ctx ctx))
+	  (let loop ((ctx (unalias-ctx ctx reg)))
 	     (cond
 		((null? ctx)
 		 (let ((n (new-ctxentry reg type flag value)))
@@ -215,7 +227,6 @@
 		 (let ((n (new-ctxentry reg type flag value)))
 		    (cons n ctx)))
 		((eq? (bbv-ctxentry-reg (car ctx)) reg)
-		 (unalias-entry! reg (car ctx))
 		 (let ((n (duplicate::bbv-ctxentry (car ctx)
 			     (typ type)
 			     (flag flag)
@@ -290,25 +301,30 @@
 		(cons (car worklist) stack) nctx))))))
 
 ;*---------------------------------------------------------------------*/
-;*    extend-ctx/entry ...                                             */
-;*    -------------------------------------------------------------    */
-;*    Extend CTX with ENTRY. If the register of ENTRY is already in    */
-;*    the CTX, the former entry is replaced with the new one.          */
+;*    unalias-ctx ...                                                  */
 ;*---------------------------------------------------------------------*/
-(define (extend-ctx/entry ctx::pair-nil entry::bbv-ctxentry)
-   (let* ((reg (bbv-ctxentry-reg entry))
-	  (rnum (rtl_reg/ra-num reg)))
-      (let loop ((ctx ctx))
-	 (cond
-	    ((null? ctx)
-	     (list entry))
-	    ((>fx (rtl_reg/ra-num (bbv-ctxentry-reg (car ctx))) rnum)
-	     (cons entry ctx))
-	    ((eq? (bbv-ctxentry-reg (car ctx)) reg)
-	     (cons entry (cdr ctx)))
-	    (else
-	     (cons (car ctx) (loop (cdr ctx))))))))
-	  
+(define (unalias-ctx ctx::pair-nil reg::rtl_reg)
+   
+   (define (unalias ctx::pair-nil reg::rtl_reg alias::rtl_reg)
+      (let ((ae (ctx-get ctx alias)))
+	 (if ae
+	     (with-access::bbv-ctxentry ae (aliases)
+		(extend-ctx/entry ctx
+		   (duplicate::bbv-ctxentry ae
+		      (aliases (remq reg aliases)))))
+	     ctx)))
+   
+   (let ((re (ctx-get ctx reg)))
+      (if re
+	  (with-access::bbv-ctxentry re (aliases)
+	     (let loop ((aliases aliases)
+			(ctx ctx))
+		(if (null? aliases)
+		    ctx
+		    (loop (cdr aliases)
+		       (unalias ctx reg (car aliases))))))
+	  ctx)))
+
 ;*---------------------------------------------------------------------*/
 ;*    alias-ctx ...                                                    */
 ;*    -------------------------------------------------------------    */
@@ -316,8 +332,9 @@
 ;*    added to CTX if not already there.                               */
 ;*---------------------------------------------------------------------*/
 (define (alias-ctx ctx::pair-nil reg::rtl_reg alias::rtl_reg)
-   (let ((re (ctx-get ctx reg))
-	 (ae (ctx-get ctx alias)))
+   (let* ((re (ctx-get ctx reg))
+	  (ae (ctx-get ctx alias))
+	  (ctx (unalias-ctx ctx reg)))
       (if (not ae)
 	  (let ((nre (instantiate::bbv-ctxentry
 			(reg reg)
@@ -328,9 +345,23 @@
 	     (let ((nre (duplicate::bbv-ctxentry ae
 			   (reg reg)
 			   (aliases (cons alias aliases)))))
-		(unless (memq reg aliases)
-		   (set! aliases (cons reg aliases)))
-		(extend-ctx/entry ctx nre))))))
+		(let loop ((as (cons alias aliases))
+			   (ctx (extend-ctx/entry ctx nre)))
+		   (cond
+		      ((null? as)
+		       ctx)
+		      ((ctx-get ctx (car as))
+		       =>
+		       (lambda (e)
+			  (with-access::bbv-ctxentry e (aliases)
+			     (if (memq reg aliases)
+				 (loop (cdr as) ctx)
+				 (let ((n (duplicate::bbv-ctxentry e
+					     (aliases (cons reg aliases)))))
+				    (extend-ctx/entry ctx n)
+				    (loop (cdr as) ctx))))))
+		      (else
+		       (loop (cdr as) ctx)))))))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    dump ::rtl_ins/bbv ...                                           */
@@ -452,6 +483,13 @@
 (define (rtl_ins-false? i::rtl_ins)
    (when (rtl_ins-loadi? i)
       (eq? (rtl_ins-loadi-value i) #f)))
+
+;*---------------------------------------------------------------------*/
+;*    rtl_ins-branch? ...                                              */
+;*---------------------------------------------------------------------*/
+(define (rtl_ins-branch? i::rtl_ins)
+   (with-access::rtl_ins i (fun)
+      (or (isa? fun rtl_ifne) (isa? fun rtl_ifeq))))
 
 ;*---------------------------------------------------------------------*/
 ;*    rtl_ins-bool? ...                                                */
@@ -865,6 +903,4 @@
    (when (isa? y rtl_cast_null)
       (bbv-equal? (rtl_cast_null-type x) (rtl_cast_null-type y))))
 
-   
 
-      

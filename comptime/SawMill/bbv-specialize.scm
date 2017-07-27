@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Wed Jul 26 10:03:18 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 13:08:54 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -161,18 +161,16 @@
       (rtl_ins-typecheck i)
       (trace-item "typ=" (shape type) " flag=" flag)
       (let ((e (ctx-get ctx reg)))
-	 (tprint ">>> TC " (shape i) " " (ctx->string ctx) " type=" (shape type))
 	 (cond
 	    ((or (not e) (eq? (bbv-ctxentry-typ e) *obj*))
+	     (tprint "JE LAISSE " (shape i) " " (ctx->string ctx))
 	     (with-access::rtl_ins i (fun)
-	 (tprint "<<< TC.1 " (shape i))
 		(let ((s (duplicate::rtl_ins/bbv i
 			    (fun (if (isa? fun rtl_ifeq)
 				     (duplicate::rtl_ifeq fun)
 				     (duplicate::rtl_ifne fun))))))
 		   (values s ctx))))
 	    ((and (eq? (bbv-ctxentry-typ e) type) (bbv-ctxentry-flag e))
-	 (tprint "<<< TC.2 " (shape i))
 	     (with-access::rtl_ins/bbv i (fun)
 		(let ((s (if (isa? fun rtl_ifeq)
 			     (duplicate::rtl_ins/bbv i
@@ -180,14 +178,12 @@
 				(dest #f)
 				(args '()))
 			     (with-access::rtl_ifne fun (then)
-	 (tprint "<<< TC.2b " (shape i))
 				(duplicate::rtl_ins/bbv i
 				   (fun (instantiate::rtl_go (to then)))
 				   (dest #f)
 				   (args '()))))))
 		   (values s ctx))))
 	    ((and (eq? (bbv-ctxentry-typ e) type) (not (bbv-ctxentry-flag e)))
-	 (tprint "<<< TC.3 " (shape i))
 	     (with-access::rtl_ins/bbv i (fun)
 		(let ((s (if (isa? fun rtl_ifeq)
 			     (with-access::rtl_ifeq fun (then)
@@ -201,7 +197,6 @@
 				(args '())))))
 		   (values s ctx))))
 	    ((and (not (eq? (bbv-ctxentry-typ e) type)) (bbv-ctxentry-flag e))
-	 (tprint "<<< TC.4 " (shape i))
 	     (with-access::rtl_ins/bbv i (fun)
 		(let ((s (if (isa? fun rtl_ifne)
 			     (duplicate::rtl_ins/bbv i
@@ -215,7 +210,6 @@
 				   (args '()))))))
 		   (values s ctx))))
 	    (else
-	 (tprint "<<< TC.5 " (shape i))
 	     ;; branch used the the flag differs, might be improved
 	     ;; in the future
 	     (with-access::rtl_ins i (fun)
