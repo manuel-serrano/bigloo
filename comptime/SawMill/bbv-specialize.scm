@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:42:00 2017                          */
-;*    Last change :  Thu Jul 27 13:08:54 2017 (serrano)                */
+;*    Last change :  Thu Jul 27 13:25:59 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV instruction specialization                                   */
@@ -163,7 +163,6 @@
       (let ((e (ctx-get ctx reg)))
 	 (cond
 	    ((or (not e) (eq? (bbv-ctxentry-typ e) *obj*))
-	     (tprint "JE LAISSE " (shape i) " " (ctx->string ctx))
 	     (with-access::rtl_ins i (fun)
 		(let ((s (duplicate::rtl_ins/bbv i
 			    (fun (if (isa? fun rtl_ifeq)

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed Jul 26 09:13:30 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 13:52:53 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -174,20 +174,20 @@ extern "C" {
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_GC == BGL_SAW_GC )    
-#   define TAG_STRUCT 0        /*  Pointers tagging         ....00     */
+#   define TAG_STRUCT 1        /*  Pointers tagging         ....01     */
 #   define TAG_YOUNG 2         /*  Pointers tagging         ....10     */
-#   define TAG_INT 1           /*  Integers tagging         ....01     */
+#   define TAG_INT 0           /*  Integers tagging         ....00     */
 #   define TAG_CNST 3          /*  Constants tagging        ....11     */
 #else   
 #  if( BGL_GC == BGL_BOEHM_GC ) 
-#     define TAG_STRUCT 0      /*  Pointers tagging         ....00     */
-#     define TAG_INT 1         /*  Integers tagging         ....01     */
+#     define TAG_STRUCT 1      /*  Pointers tagging         ....01     */
+#     define TAG_INT 0         /*  Integers tagging         ....00     */
 #     define TAG_CNST 2        /*  Constants tagging        ....10     */
 #     define TAG_PAIR 3        /*  Pairs tagging            ....11     */
 #  else
 #     if( BGL_GC == BGL_NO_GC )
-#        define TAG_STRUCT 0   /*  Pointers tagging         ....00     */
-#        define TAG_INT 1      /*  Integers tagging         ....01     */
+#        define TAG_STRUCT 1   /*  Pointers tagging         ....01     */
+#        define TAG_INT 0      /*  Integers tagging         ....00     */
 #        define TAG_CNST 2     /*  Constants tagging        ....10     */
 #        define TAG_PAIR 3     /*  Pairs tagging            ....11     */
 #     else
