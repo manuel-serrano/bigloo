@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Wed Nov 30 07:40:42 2016 (serrano)                */
-/*    Copyright   :  2005-16 Manuel Serrano                            */
+/*    Last change :  Thu Jul 27 18:03:18 2017 (serrano)                */
+/*    Copyright   :  2005-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -116,6 +116,14 @@ typedef BgL_sslzd2hmaczd2_bglt ssl_hmac;
 typedef BgL_sslzd2signzd2_bglt ssl_sign;
 typedef BgL_sslzd2verifyzd2_bglt ssl_verify;
 typedef BgL_sslzd2cipherzd2_bglt ssl_cipher;
+
+#define CCON( o ) ((ssl_connection)CREF( o))
+#define CSC( o ) ((secure_context)CREF( o))
+#define CHASH( o ) ((ssl_hash)CREF( o))
+#define CHMAC( o ) ((ssl_hmac)CREF( o))
+#define CSIGN( o ) ((ssl_sign)CREF( o))
+#define CVERIFY( o ) ((ssl_verify)CREF( o))
+#define CCIPHER( o ) ((ssl_cipher)CREF( o))
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */
@@ -960,7 +968,7 @@ end:
 /*    bgl_ssl_ctx_add_root_certs ...                                   */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
-bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
+bgl_ssl_ctx_add_root_certs( secure_context sc ) {
    static X509_STORE *root_cert_store = 0L;
 
    if ( !root_cert_store ) {
@@ -995,8 +1003,8 @@ bgl_ssl_ctx_add_root_certs( BgL_securezd2contextzd2_bglt sc ) {
       BGL_MUTEX_UNLOCK( bigloo_mutex );
    }
 
-   sc->BgL_z42cazd2storez90 = root_cert_store;
-   SSL_CTX_set_cert_store( sc->BgL_z42nativez42, root_cert_store );
+   CSC( sc )->BgL_z42cazd2storez90 = root_cert_store;
+   SSL_CTX_set_cert_store( CSC( sc )->BgL_z42nativez42, root_cert_store );
    
    return 1;
 }
@@ -1011,8 +1019,8 @@ bgl_ssl_ctx_add_ca_cert( secure_context sc, obj_t cert, long offset, long len ) 
    BIO *bio;
    X509 *x509;
    
-   if( sc->BgL_z42cazd2storez90 == 0L ) {
-      sc->BgL_z42cazd2storez90 = X509_STORE_new();
+   if( CSC( sc )->BgL_z42cazd2storez90 == 0L ) {
+      CSC( sc )->BgL_z42cazd2storez90 = X509_STORE_new();
       newCAStore = 1;
    }
    
@@ -1029,13 +1037,14 @@ bgl_ssl_ctx_add_ca_cert( secure_context sc, obj_t cert, long offset, long len ) 
       return 0;
    }
 
-   X509_STORE_add_cert( sc->BgL_z42cazd2storez90, x509 );
-   SSL_CTX_add_client_CA( sc->BgL_z42nativez42, x509 );
+   X509_STORE_add_cert( CSC( sc )->BgL_z42cazd2storez90, x509 );
+   SSL_CTX_add_client_CA( CSC( sc )->BgL_z42nativez42, x509 );
 
    X509_free( x509 );
 
    if( newCAStore ) {
-      SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
+      SSL_CTX_set_cert_store( CSC( sc )->BgL_z42nativez42,
+			      CSC( sc )->BgL_z42cazd2storez90 );
    }
 
    return 1;
@@ -1059,10 +1068,10 @@ bgl_ssl_ctx_add_crl( secure_context sc, obj_t cert, long offset, long len ) {
       return 0;
   }
 
-  X509_STORE_add_crl( sc->BgL_z42cazd2storez90, x509 );
+   X509_STORE_add_crl( CSC( sc )->BgL_z42cazd2storez90, x509 );
 
-  X509_STORE_set_flags( sc->BgL_z42cazd2storez90,
-			X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL );
+   X509_STORE_set_flags( CSC( sc )->BgL_z42cazd2storez90,
+			 X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL );
 
   BIO_free( bio );
   X509_CRL_free( x509 );
@@ -1080,7 +1089,7 @@ bgl_tlsext_servername_callback( SSL *ssl, int *ad, void* arg ) {
    const char *servername = SSL_get_servername( ssl, TLSEXT_NAMETYPE_host_name );
 
    if( servername ) {
-      c->BgL_serverzd2namezd2 = string_to_bstring( (char *)servername );
+      CCON( c )->BgL_serverzd2namezd2 = string_to_bstring( (char *)servername );
    }
 
    return SSL_TLSEXT_ERR_OK;
@@ -1097,13 +1106,13 @@ bgl_advertise_next_proto_callback( SSL *ssl,
 				   void *arg ) {
    ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
 
-   if( !STRINGP( c->BgL_npnzd2protoszd2 ) ) {
+   if( !STRINGP( CCON( c )->BgL_npnzd2protoszd2 ) ) {
       // No initialization - no NPN protocols
       *data = "";
       *len = 0;
    } else {
-      *data = BSTRING_TO_STRING( c->BgL_npnzd2protoszd2 );
-      *len = STRING_LENGTH( c->BgL_npnzd2protoszd2 );
+      *data = BSTRING_TO_STRING( CCON( c )->BgL_npnzd2protoszd2 );
+      *len = STRING_LENGTH( CCON( c )->BgL_npnzd2protoszd2 );
    }
 
    return SSL_TLSEXT_ERR_OK;
@@ -1120,27 +1129,27 @@ bgl_select_next_proto_callback( SSL *ssl,
 				unsigned int inlen, void *arg ) {
    ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
 
-   if( !STRINGP( c->BgL_npnzd2protoszd2 ) ) {
+   if( !STRINGP( CCON( c )->BgL_npnzd2protoszd2 ) ) {
       *out = "http/1.1";
       *outlen = 8;
-      c->BgL_selectedzd2npnzd2protosz00 = BFALSE;
+      CCON( c )->BgL_selectedzd2npnzd2protosz00 = BFALSE;
       return SSL_TLSEXT_ERR_OK;
    } else {
       int status = SSL_select_next_proto
 	 ( out, outlen, in, inlen,
-	   BSTRING_TO_STRING( c->BgL_npnzd2protoszd2 ),
-	   STRING_LENGTH( c->BgL_npnzd2protoszd2 ) );
+	   BSTRING_TO_STRING( CCON( c )->BgL_npnzd2protoszd2 ),
+	   STRING_LENGTH( CCON( c )->BgL_npnzd2protoszd2 ) );
 
       switch( status ) {
 	 case OPENSSL_NPN_UNSUPPORTED:
-	    c->BgL_selectedzd2npnzd2protosz00 = BUNSPEC;
+	    CCON( c )->BgL_selectedzd2npnzd2protosz00 = BUNSPEC;
 	    break;
 	 case OPENSSL_NPN_NEGOTIATED:
-	    c->BgL_selectedzd2npnzd2protosz00 =
+	    CCON( c )->BgL_selectedzd2npnzd2protosz00 =
 	       string_to_bstring_len( *out, *outlen );
 	    break;
 	 case OPENSSL_NPN_NO_OVERLAP:
-	    c->BgL_selectedzd2npnzd2protosz00 = BFALSE;
+	    CCON( c )->BgL_selectedzd2npnzd2protosz00 = BFALSE;
 	    break;
 	 default:
 	    break;
@@ -1162,12 +1171,12 @@ bgl_init_npm( secure_context sc, int is_server ) {
    if( is_server ) {
       // Server should advertise NPN protocols
       SSL_CTX_set_next_protos_advertised_cb(
-	 sc->BgL_z42nativez42, bgl_advertise_next_proto_callback, NULL );
+	 CSC( sc )->BgL_z42nativez42, bgl_advertise_next_proto_callback, NULL );
    } else {
       // Client should select protocol from advertised
       // If server supports NPN
       SSL_CTX_set_next_proto_select_cb(
-	 sc->BgL_z42nativez42, bgl_select_next_proto_callback, NULL );
+	 CSC( sc )->BgL_z42nativez42, bgl_select_next_proto_callback, NULL );
    }
 }
 
@@ -1178,7 +1187,7 @@ bgl_init_npm( secure_context sc, int is_server ) {
 static void
 bgl_info_callback( const SSL *ssl, int where, int ret ) {
    ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
-   obj_t cb = c->BgL_infozd2callbackzd2;
+   obj_t cb = CCON( c )->BgL_infozd2callbackzd2;
 
    if( PROCEDUREP( cb ) ) {
       if( where & SSL_CB_HANDSHAKE_START ) {
@@ -1203,10 +1212,10 @@ bgl_select_sni_context_callback( SSL *ssl, int *ad, void* arg ) {
    const char* servername = SSL_get_servername( ssl, TLSEXT_NAMETYPE_host_name );
 
    if( servername ) {
-      obj_t proc = c->BgL_snizd2contextzd2callbackz00;
+      obj_t proc = CCON( c )->BgL_snizd2contextzd2callbackz00;
       obj_t bsrv = string_to_bstring( (char *)servername );
 
-      c->BgL_serverzd2namezd2 = bsrv;
+      CCON( c )->BgL_serverzd2namezd2 = bsrv;
       
       // Call the SNI callback and use its return value as context
       if( proc ) {
@@ -1220,7 +1229,7 @@ bgl_select_sni_context_callback( SSL *ssl, int *ad, void* arg ) {
 	       secure_context sc = (secure_context)ret;
 
 	       bgl_init_npm( sc, 1 );
-	       SSL_set_SSL_CTX( ssl, sc->BgL_z42nativez42 );
+	       SSL_set_SSL_CTX( ssl, CSC( sc )->BgL_z42nativez42 );
 	    } else {
 	       return SSL_TLSEXT_ERR_NOACK;
 	    }
@@ -1287,49 +1296,51 @@ bgl_verify_callback( int preverify_ok, X509_STORE_CTX *ctx ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
-   secure_context bctx = ssl->BgL_ctxz00;
+   secure_context bctx = CCON( ssl )->BgL_ctxz00;
    int verify_mode;
-   SSL *_ssl = SSL_new( bctx->BgL_z42nativez42 );
+   SSL *_ssl = SSL_new( CSC( bctx )->BgL_z42nativez42 );
    long mode;
 
-   ssl->BgL_z42nativez42 = _ssl;
-   ssl->BgL_z42biozd2readz90 = BIO_new( BIO_s_mem() );
-   ssl->BgL_z42biozd2writez90 = BIO_new( BIO_s_mem() );
+   CCON( ssl )->BgL_z42nativez42 = _ssl;
+   CCON( ssl )->BgL_z42biozd2readz90 = BIO_new( BIO_s_mem() );
+   CCON( ssl )->BgL_z42biozd2writez90 = BIO_new( BIO_s_mem() );
 
    SSL_set_app_data( _ssl, ssl );
 
-   if( ssl->BgL_isserverz00 ) {
+   if( CCON( ssl )->BgL_isserverz00 ) {
       SSL_set_info_callback( _ssl, bgl_info_callback );
    }
 
-   bgl_init_npm( bctx, ssl->BgL_isserverz00 );
+   bgl_init_npm( bctx, CCON( ssl )->BgL_isserverz00 );
    
-   if( ssl->BgL_isserverz00 ) {
-      SSL_CTX_set_tlsext_servername_callback( bctx->BgL_z42nativez42,
+   if( CCON( ssl )->BgL_isserverz00 ) {
+      SSL_CTX_set_tlsext_servername_callback( CSC( bctx )->BgL_z42nativez42,
 					      bgl_select_sni_context_callback );
    } else {
-      if( STRINGP( ssl->BgL_serverzd2namezd2 ) ) {
+      if( STRINGP( CCON( ssl )->BgL_serverzd2namezd2 ) ) {
 #if( SSL_DEBUG )
 	 fprintf( stderr, "%s,%d SSL_set_tlsext_host_name %s\n",
-		  __FILE__, __LINE__, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
+		  __FILE__, __LINE__, BSTRING_TO_STRING( CCON( ssl )->BgL_serverzd2namezd2 ) );
 #endif	 
-	 SSL_set_tlsext_host_name( _ssl, BSTRING_TO_STRING( ssl->BgL_serverzd2namezd2 ) );
+	 SSL_set_tlsext_host_name( _ssl, BSTRING_TO_STRING( CCON( ssl )->BgL_serverzd2namezd2 ) );
       }
    }
 
-   SSL_set_bio( _ssl, ssl->BgL_z42biozd2readz90, ssl->BgL_z42biozd2writez90 );
+   SSL_set_bio( _ssl,
+		CCON( ssl )->BgL_z42biozd2readz90,
+		CCON( ssl )->BgL_z42biozd2writez90 );
 
 #if( defined( SSL_MODE_RELEASE_BUFFERS ) )
    mode = SSL_get_mode( _ssl );
    SSL_set_mode( _ssl, mode | SSL_MODE_RELEASE_BUFFERS );
 #endif
    
-   if( ssl->BgL_isserverz00 ) {
-      if( !(ssl->BgL_requestzd2certzd2) ) {
+   if( CCON( ssl )->BgL_isserverz00 ) {
+      if( !(CCON( ssl )->BgL_requestzd2certzd2) ) {
 	 verify_mode = SSL_VERIFY_NONE;
       } else {
 	 verify_mode = SSL_VERIFY_PEER;
-	 if( ssl->BgL_rejectzd2unauthoriza7edz75 ) {
+	 if( CCON( ssl )->BgL_rejectzd2unauthoriza7edz75 ) {
 	    verify_mode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 	 }
       }
@@ -1339,7 +1350,7 @@ bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
 
    SSL_set_verify( _ssl, verify_mode, bgl_verify_callback );
    
-   if( ssl->BgL_isserverz00 ) {
+   if( CCON( ssl )->BgL_isserverz00 ) {
       SSL_set_accept_state( _ssl );
    } else {
       SSL_set_connect_state( _ssl );
@@ -1365,7 +1376,7 @@ handle_bio_error( ssl_connection ssl, BIO *bio, int n, char *fun ) {
       static char ssl_error_buf[ 512 ];
       ERR_error_string_n( n, ssl_error_buf, sizeof( ssl_error_buf ) );
 
-      ssl->BgL_errz00 = string_to_bstring( ssl_error_buf );
+      CCON( ssl )->BgL_errz00 = string_to_bstring( ssl_error_buf );
 
       return;
    }
@@ -1377,7 +1388,7 @@ handle_bio_error( ssl_connection ssl, BIO *bio, int n, char *fun ) {
 /*---------------------------------------------------------------------*/
 static void
 handle_ssl_error( ssl_connection ssl, int n, char *fun, int ignsys ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    int err = SSL_get_error( _ssl, n );
    int res = 0;
 
@@ -1388,7 +1399,7 @@ handle_ssl_error( ssl_connection ssl, int n, char *fun, int ignsys ) {
    } else if( err == SSL_ERROR_WANT_READ ) {
       goto ret;
    } else if( err == SSL_ERROR_ZERO_RETURN ) {
-      ssl->BgL_errz00 = string_to_bstring( "ZERO_RETURN" );
+      CCON( ssl )->BgL_errz00 = string_to_bstring( "ZERO_RETURN" );
       res = n;
       goto ret;
    } else if( (err == SSL_ERROR_SYSCALL) && ignsys ) {
@@ -1400,7 +1411,8 @@ handle_ssl_error( ssl_connection ssl, int n, char *fun, int ignsys ) {
       if( (bio = BIO_new( BIO_s_mem() )) ) {
 	 ERR_print_errors( bio );
 	 BIO_get_mem_ptr( bio, &mem );
-	 ssl->BgL_errz00 = string_to_bstring_len( mem->data, mem->length );
+	 CCON( ssl )->BgL_errz00 =
+	    string_to_bstring_len( mem->data, mem->length );
 	 BIO_free( bio );
       }
 
@@ -1419,15 +1431,15 @@ ret:
 /*---------------------------------------------------------------------*/
 static void
 set_shutdown_flags( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    int flags = SSL_get_shutdown( _ssl );
 
    if( flags & SSL_SENT_SHUTDOWN ) {
-      ssl->BgL_sentzd2shutdownzd2 = 1;
+      CCON( ssl )->BgL_sentzd2shutdownzd2 = 1;
    }
 
    if( flags & SSL_RECEIVED_SHUTDOWN ) {
-      ssl->BgL_receivedzd2shutdownzd2 = 1;
+      CCON( ssl )->BgL_receivedzd2shutdownzd2 = 1;
    }
 }
 
@@ -1438,15 +1450,15 @@ set_shutdown_flags( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 static void
 set_shutdown_flags2( char *name, ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    int flags = SSL_get_shutdown2( name, _ssl );
 
    if( flags & SSL_SENT_SHUTDOWN ) {
-      ssl->BgL_sentzd2shutdownzd2 = 1;
+      CCON( ssl )->BgL_sentzd2shutdownzd2 = 1;
    }
 
    if( flags & SSL_RECEIVED_SHUTDOWN ) {
-      ssl->BgL_receivedzd2shutdownzd2 = 1;
+      CCON( ssl )->BgL_receivedzd2shutdownzd2 = 1;
    }
 }
 #endif
@@ -1457,11 +1469,11 @@ set_shutdown_flags2( char *name, ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_start( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    int n;
 
    if( !SSL_is_init_finished( _ssl ) ) {
-      if( ssl->BgL_isserverz00 ) {
+      if( CCON( ssl )->BgL_isserverz00 ) {
 	 if( (n = SSL_accept( _ssl )) <= 0 ) {
 	    handle_ssl_error( ssl, n, "ssl-connection-start", 0 );
 	 }
@@ -1488,7 +1500,7 @@ bgl_ssl_connection_start( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_close( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
 
    SSL_free( _ssl );
 }
@@ -1499,7 +1511,7 @@ bgl_ssl_connection_close( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_shutdown( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    int rv;
    
    if( !_ssl ) return BFALSE;
@@ -1523,10 +1535,10 @@ bgl_ssl_connection_shutdown( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
-   long int n = BIO_read( ssl->BgL_z42biozd2writez90, buf + off, len );
+   long int n = BIO_read( CCON( ssl )->BgL_z42biozd2writez90, buf + off, len );
 
    if( n < 0 ) {
-      handle_bio_error( ssl, ssl->BgL_z42biozd2writez90, n, "connection_read" );
+      handle_bio_error( ssl, CCON( ssl )->BgL_z42biozd2writez90, n, "connection_read" );
    }
 #if( SSL_DEBUG )	 
    else {
@@ -1572,10 +1584,10 @@ bgl_ssl_connection_read( ssl_connection ssl, char *buf, long off, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF long
 bgl_ssl_connection_write( ssl_connection ssl, char *buf, long off, long len ) {
-   long int n = BIO_write( ssl->BgL_z42biozd2readz90, buf + off, len );
+   long int n = BIO_write( CCON( ssl )->BgL_z42biozd2readz90, buf + off, len );
 
    if( n < 0 ) {
-      handle_bio_error( ssl, ssl->BgL_z42biozd2readz90, n, "connection_write" );
+      handle_bio_error( ssl, CCON( ssl )->BgL_z42biozd2readz90, n, "connection_write" );
    }
 
 #if( SSL_DEBUG )    
@@ -1595,11 +1607,11 @@ static long
 bgl_ssl_connection_clear( ssl_connection ssl, char *buf, long off, long len,
 			  int (*SSL_fun)( SSL *, void *, int ),
 			  char *name ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    long n;
 
    if( !SSL_is_init_finished( _ssl ) ) {
-      if( ssl->BgL_isserverz00 ) {
+      if( CCON( ssl )->BgL_isserverz00 ) {
 	 long m;
 	 if( (m = SSL_accept( _ssl )) <= 0 ) {
 	    handle_ssl_error( ssl, m, "ssl-connection-clear (accept)", 0 );
@@ -1683,7 +1695,7 @@ bgl_ssl_connection_clear_out( ssl_connection ssl, char *buf, long off, long len 
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_init_finishedp( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
 
    return (_ssl != NULL && SSL_is_init_finished( _ssl ));
 }
@@ -1694,7 +1706,7 @@ bgl_ssl_connection_init_finishedp( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_enc_pending( ssl_connection ssl ) {
-   return BIO_pending( ssl->BgL_z42biozd2writez90 );
+   return BIO_pending( CCON( ssl )->BgL_z42biozd2writez90 );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1703,7 +1715,7 @@ bgl_ssl_connection_enc_pending( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF int
 bgl_ssl_connection_clear_pending( ssl_connection ssl ) {
-   return BIO_pending( ssl->BgL_z42biozd2readz90 );
+   return BIO_pending( CCON( ssl )->BgL_z42biozd2readz90 );
 }
 
 /*---------------------------------------------------------------------*/
@@ -1713,11 +1725,11 @@ bgl_ssl_connection_clear_pending( ssl_connection ssl ) {
 static SSL_SESSION *
 bgl_get_session_callback( SSL *ssl, unsigned char *key, int len, int *copy ) {
    ssl_connection c = (ssl_connection)(SSL_get_app_data( ssl ));
-   SSL_SESSION *sess = c->BgL_z42nextzd2sessionz90;
+   SSL_SESSION *sess = CCON( c )->BgL_z42nextzd2sessionz90;
    
    *copy = 0;
 
-   c->BgL_z42nextzd2sessionz90 = 0L;
+   CCON( c )->BgL_z42nextzd2sessionz90 = 0L;
    
    return sess;
 }
@@ -1736,7 +1748,7 @@ bgl_new_session_callback( SSL *ssl, SSL_SESSION *sess ) {
    } else {
       obj_t serialized = make_string( size, 0 );
       unsigned char *pserialized = BSTRING_TO_STRING( serialized );
-      obj_t cb = c->BgL_newsessionzd2callbackzd2;
+      obj_t cb = CCON( c )->BgL_newsessionzd2callbackzd2;
    
       i2d_SSL_SESSION( sess, &pserialized );
 
@@ -1765,7 +1777,7 @@ BGL_RUNTIME_DEF bool_t
 bgl_ssl_connection_set_session( ssl_connection ssl, obj_t buf ) {
    int wlen = STRING_LENGTH( buf );
    char *sbuf = BSTRING_TO_STRING( buf );
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    SSL_SESSION *sess;
    
    sess = d2i_SSL_SESSION( NULL, (const unsigned char **)&sbuf, wlen );
@@ -1794,7 +1806,7 @@ bgl_ssl_connection_set_session( ssl_connection ssl, obj_t buf ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_get_session( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    SSL_SESSION *sess;
    
    sess = SSL_get_session( _ssl );
@@ -1822,7 +1834,7 @@ bgl_ssl_connection_get_session( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_get_current_cipher( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
 
    if( !_ssl ) {
       return BUNSPEC;
@@ -1843,17 +1855,17 @@ bgl_ssl_connection_get_current_cipher( ssl_connection ssl ) {
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_connection_load_session( ssl_connection ssl, obj_t buf ) {
    int wlen = STRING_LENGTH( buf );
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    SSL_SESSION *sess;
    char *sbuf = BSTRING_TO_STRING( buf );
    
    sess = d2i_SSL_SESSION( NULL, (const unsigned char **)&sbuf, wlen );
 
-   if( ssl->BgL_z42nextzd2sessionz90 != 0L ) {
-      SSL_SESSION_free( ssl->BgL_z42nextzd2sessionz90 );
+   if( CCON( ssl )->BgL_z42nextzd2sessionz90 != 0L ) {
+      SSL_SESSION_free( CCON( ssl )->BgL_z42nextzd2sessionz90 );
    }
 
-   ssl->BgL_z42nextzd2sessionz90 = sess;
+   CCON( ssl )->BgL_z42nextzd2sessionz90 = sess;
 
    return 1;
 }
@@ -1864,7 +1876,7 @@ bgl_ssl_connection_load_session( ssl_connection ssl, obj_t buf ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_verify_error( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    long x509_verify_error;
    
    if( !_ssl ) {
@@ -2030,7 +2042,7 @@ bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t
 			   (obj_t)sc );
       }
 
-      SSL_CTX_use_PrivateKey( sc->BgL_z42nativez42, key );
+      SSL_CTX_use_PrivateKey( CSC( sc )->BgL_z42nativez42, key );
 
       EVP_PKEY_free( key );
 
@@ -2057,7 +2069,7 @@ bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_
 	 
       if( !bio ) return BFALSE;
 
-      rv = SSL_CTX_use_certificate_chain( sc->BgL_z42nativez42, bio );
+      rv = SSL_CTX_use_certificate_chain( CSC( sc )->BgL_z42nativez42, bio );
 
       BIO_free( bio );
 
@@ -2079,7 +2091,7 @@ bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_set_session_id_context( secure_context sc, obj_t sic, long offset, long len ) {
    int r = SSL_CTX_set_session_id_context
-      ( sc->BgL_z42nativez42, &(STRING_REF( sic, offset)), len );
+      ( CSC( sc )->BgL_z42nativez42, &(STRING_REF( sic, offset)), len );
 
    if( r != 1 ) {
       BIO *bio;
@@ -2127,17 +2139,18 @@ bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
       
       if( d2i_PKCS12_bio( in, &p12 ) &&
 	  PKCS12_parse( p12, strpass, &pkey, &cert, &extraCerts ) &&
-	  SSL_CTX_use_certificate( sc->BgL_z42nativez42, cert ) &&
-	  SSL_CTX_use_PrivateKey( sc->BgL_z42nativez42, pkey ) ) {
+	  SSL_CTX_use_certificate( CSC( sc )->BgL_z42nativez42, cert ) &&
+	  SSL_CTX_use_PrivateKey( CSC( sc )->BgL_z42nativez42, pkey ) ) {
 	 // set extra certs
 	 while( x509 = sk_X509_pop( extraCerts ) ) {
-	    if( !sc->BgL_z42cazd2storez90 ) {
-	       sc->BgL_z42cazd2storez90 = X509_STORE_new();
-	       SSL_CTX_set_cert_store( sc->BgL_z42nativez42, sc->BgL_z42cazd2storez90 );
+	    if( !(CSC( sc )->BgL_z42cazd2storez90 ) ) {
+	       CSC( sc )->BgL_z42cazd2storez90 = X509_STORE_new();
+	       SSL_CTX_set_cert_store( CSC( sc )->BgL_z42nativez42,
+				       CSC( sc )->BgL_z42cazd2storez90 );
 	    }
-
-	    X509_STORE_add_cert( sc->BgL_z42cazd2storez90, x509 );
-	    SSL_CTX_add_client_CA( sc->BgL_z42nativez42, x509 );
+	    
+	    X509_STORE_add_cert( CSC( sc )->BgL_z42cazd2storez90, x509 );
+	    SSL_CTX_add_client_CA( CSC( sc )->BgL_z42nativez42, x509 );
 	    X509_free( x509 );
 	 }
 
@@ -2180,7 +2193,7 @@ cons( char *sym, BUF_MEM *mem ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_get_peer_certificate( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
    X509 *peer_cert = SSL_get_peer_certificate( _ssl );
    
    if( peer_cert ) {
@@ -2311,9 +2324,9 @@ bgl_ssl_connection_get_peer_certificate( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_connection_get_negotiated_protocol( ssl_connection ssl ) {
-   SSL *_ssl = ssl->BgL_z42nativez42;
+   SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
 
-   if( ssl->BgL_isserverz00 ) {
+   if( CCON( ssl )->BgL_isserverz00 ) {
       const unsigned char *npn_proto;
       unsigned int npn_proto_len;
 
@@ -2330,7 +2343,7 @@ bgl_ssl_connection_get_negotiated_protocol( ssl_connection ssl ) {
 
       return string_to_bstring_len( (char *)npn_proto, npn_proto_len );
    } else {
-      return ssl->BgL_selectedzd2npnzd2protosz00;
+      return CCON( ssl )->BgL_selectedzd2npnzd2protosz00;
    }
 }
 
@@ -2343,7 +2356,7 @@ bgl_ssl_connection_get_negotiated_protocol( ssl_connection ssl ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_init( secure_context sc ) {
-   char *sslmethod = BSTRING_TO_STRING( sc->BgL_methodz00 );
+   char *sslmethod = BSTRING_TO_STRING( CSC( sc )->BgL_methodz00 );
    const SSL_METHOD *method;
    
 #if( SSL_DEBUG )
@@ -2364,85 +2377,85 @@ bgl_ssl_ctx_init( secure_context sc ) {
    method = SSLv23_method();
 
    if( !strcmp( sslmethod, "default" ) ) {
-      sc->BgL_z42nativez42 = SSL_CTX_new( method );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( method );
    } else if( !strcmp( sslmethod, "SSLv2_method" ) ) {
 #if( BGLSSL_HAVE_SSLV2 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv2_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv2_server_method" ) ) {
 #if( BGLSSL_HAVE_SSLV2 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_server_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv2_server_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv2_client_method" ) ) {
 #if( BGLSSL_HAVE_SSLV2 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv2_client_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv2_client_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv3_method" ) ) {
 #if( BGLSSL_HAVE_SSLV3 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv3_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv3_server_method" ) ) {
 #if( BGLSSL_HAVE_SSLV3 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_server_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv3_server_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv3_client_method" ) ) {
 #if( BGLSSL_HAVE_SSLV3 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv3_client_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv3_client_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv23_method" ) ) {
 #if( BGLSSL_HAVE_SSLV23 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv23_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv23_server_method" ) ) {
 #if( BGLSSL_HAVE_SSLV23 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_server_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv23_server_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "SSLv23_client_method" ) ) {
 #if( BGLSSL_HAVE_SSLV23 )
-      sc->BgL_z42nativez42 = SSL_CTX_new( SSLv23_client_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( SSLv23_client_method() );
 #else
       goto unsupported;
 #endif
    } else if( !strcmp( sslmethod, "TLSv1_method" ) ) {
 #if( BGLSSL_HAVE_TLSV1 )      
-      sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( TLSv1_method() );
 #else      
-      sc->BgL_z42nativez42 = SSL_CTX_new( TLS_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( TLS_method() );
 #endif      
    } else if( !strcmp( sslmethod, "TLSv1_server_method" ) ) {
 #if( BGLSSL_HAVE_TLSV1 )      
-      sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_server_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( TLSv1_server_method() );
 #else      
-      sc->BgL_z42nativez42 = SSL_CTX_new( TLS_server_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( TLS_server_method() );
 #endif      
    } else if( !strcmp( sslmethod, "TLSv1_client_method" ) ) {
 #if( BGLSSL_HAVE_TLSV1 )      
-      sc->BgL_z42nativez42 = SSL_CTX_new( TLSv1_client_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( TLSv1_client_method() );
 #else      
-      sc->BgL_z42nativez42 = SSL_CTX_new( TLS_client_method() );
+      CSC( sc )->BgL_z42nativez42 = SSL_CTX_new( TLS_client_method() );
 #endif      
    } else {
       goto unsupported;
    }
 
    // SSL session cache configuration
-   if( !(sc->BgL_z42nativez42) ) {
+   if( !(CSC( sc )->BgL_z42nativez42) ) {
       char errbuf[ 121 ];
       
       C_SYSTEM_FAILURE( BGL_IO_ERROR, "secure-context-init",
@@ -2451,20 +2464,20 @@ bgl_ssl_ctx_init( secure_context sc ) {
       return (obj_t)sc;
    }
    
-   SSL_CTX_set_session_cache_mode( sc->BgL_z42nativez42,
+   SSL_CTX_set_session_cache_mode( CSC( sc )->BgL_z42nativez42,
 				   SSL_SESS_CACHE_SERVER
 				   | SSL_SESS_CACHE_NO_INTERNAL
 				   | SSL_SESS_CACHE_NO_AUTO_CLEAR );
    
-   SSL_CTX_sess_set_get_cb( sc->BgL_z42nativez42, bgl_get_session_callback );
-   SSL_CTX_sess_set_new_cb( sc->BgL_z42nativez42, bgl_new_session_callback );
+   SSL_CTX_sess_set_get_cb( CSC( sc )->BgL_z42nativez42, bgl_get_session_callback );
+   SSL_CTX_sess_set_new_cb( CSC( sc )->BgL_z42nativez42, bgl_new_session_callback );
 
    return (obj_t)sc;
   
 unsupported:
    C_SYSTEM_FAILURE( BGL_ERROR, "secure-context",
 	 "method not supported", 
-	 sc->BgL_methodz00 );
+	 CSC( sc )->BgL_methodz00 );
    return (obj_t)sc;
 }
 
@@ -2474,7 +2487,7 @@ unsupported:
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_close( secure_context sc ) {
-   SSL_CTX_free( sc->BgL_z42nativez42 );
+   SSL_CTX_free( CSC( sc )->BgL_z42nativez42 );
 }
    
 /*---------------------------------------------------------------------*/
@@ -2792,15 +2805,16 @@ bgl_ssl_hash_init( ssl_hash hash ) {
    bgl_ssl_init();
 #endif
    
-   hash->BgL_z42mdz42 =
-      (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( hash->BgL_typez00 ) );
-   if( !(hash->BgL_z42mdz42) ) return 0;
+   CHASH( hash )->BgL_z42mdz42 =
+      (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( CHASH( hash )->BgL_typez00 ) );
+   if( !(CHASH( hash )->BgL_z42mdz42) ) return 0;
 
-   hash->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
+   CHASH( hash )->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
    
-   EVP_MD_CTX_init( hash->BgL_z42mdzd2ctxz90 );
+   EVP_MD_CTX_init( CHASH( hash )->BgL_z42mdzd2ctxz90 );
    
-   EVP_DigestInit_ex( hash->BgL_z42mdzd2ctxz90, hash->BgL_z42mdz42, NULL );
+   EVP_DigestInit_ex( CHASH( hash )->BgL_z42mdzd2ctxz90,
+		      CHASH( hash )->BgL_z42mdz42, NULL );
    return 1;
 }
    
@@ -2810,10 +2824,10 @@ bgl_ssl_hash_init( ssl_hash hash ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_hash_update( ssl_hash hash, obj_t data, long offset, long len ) {
-   if( hash->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CHASH( hash )->BgL_z42mdzd2ctxz90 == 0L ) {
       return 0;
    } else {
-      EVP_DigestUpdate( hash->BgL_z42mdzd2ctxz90,
+      EVP_DigestUpdate( CHASH( hash )->BgL_z42mdzd2ctxz90,
 			&(STRING_REF( data, offset )),
 			len );
       return 1;
@@ -2826,16 +2840,16 @@ bgl_ssl_hash_update( ssl_hash hash, obj_t data, long offset, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_hash_digest( ssl_hash hash ) {
-   if( hash->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CHASH( hash )->BgL_z42mdzd2ctxz90 == 0L ) {
       return 0;
    } else {
       unsigned char md_value[ EVP_MAX_MD_SIZE ];
       unsigned int md_len;
 
-      EVP_DigestFinal_ex( hash->BgL_z42mdzd2ctxz90, md_value, &md_len );
-      BGL_EVP_MD_CTX_reset( hash->BgL_z42mdzd2ctxz90 );
-      BGL_EVP_MD_CTX_free( hash->BgL_z42mdzd2ctxz90 );
-      hash->BgL_z42mdzd2ctxz90 = 0L;
+      EVP_DigestFinal_ex( CHASH( hash )->BgL_z42mdzd2ctxz90, md_value, &md_len );
+      BGL_EVP_MD_CTX_reset( CHASH( hash )->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_free( CHASH( hash )->BgL_z42mdzd2ctxz90 );
+      CHASH( hash )->BgL_z42mdzd2ctxz90 = 0L;
 
       return string_to_bstring_len( md_value, md_len );
    }
@@ -2861,23 +2875,23 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
    bgl_ssl_init();
 #endif
 
-   hmac->BgL_z42mdz42 =
+   CHMAC( hmac )->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
-   if( !(hmac->BgL_z42mdz42) ) return BFALSE;
+   if( !(CHMAC( hmac )->BgL_z42mdz42) ) return BFALSE;
 
-   hmac->BgL_z42mdzd2ctxz90 = BGL_HMAC_CTX_new();
-   BGL_HMAC_CTX_init( hmac->BgL_z42mdzd2ctxz90 );
+   CHMAC( hmac )->BgL_z42mdzd2ctxz90 = BGL_HMAC_CTX_new();
+   BGL_HMAC_CTX_init( CHMAC( hmac )->BgL_z42mdzd2ctxz90 );
 
    if( !STRINGP( key ) ) {
-      BGL_HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
+      BGL_HMAC_Init( CHMAC( hmac )->BgL_z42mdzd2ctxz90,
 		     "",
 		     0,
-		     hmac->BgL_z42mdz42 );
+		     CHMAC( hmac )->BgL_z42mdz42 );
    } else {
-      BGL_HMAC_Init( hmac->BgL_z42mdzd2ctxz90,
+      BGL_HMAC_Init( CHMAC( hmac )->BgL_z42mdzd2ctxz90,
 		     BSTRING_TO_STRING( key ),
 		     STRING_LENGTH( key ),
-		     hmac->BgL_z42mdz42 );
+		     CHMAC( hmac )->BgL_z42mdz42 );
    }
    return BTRUE;
 }
@@ -2888,10 +2902,10 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_hmac_update( ssl_hmac hmac, obj_t data, long offset, long len ) {
-   if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CHMAC( hmac )->BgL_z42mdzd2ctxz90 == 0L ) {
       return 0;
    } else {
-      HMAC_Update( hmac->BgL_z42mdzd2ctxz90,
+      HMAC_Update( CHMAC( hmac )->BgL_z42mdzd2ctxz90,
 		   &(STRING_REF( data, offset )),
 		   len );
       return 1;
@@ -2904,16 +2918,16 @@ bgl_ssl_hmac_update( ssl_hmac hmac, obj_t data, long offset, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_hmac_digest( ssl_hmac hmac ) {
-   if( hmac->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CHMAC( hmac )->BgL_z42mdzd2ctxz90 == 0L ) {
       return BFALSE;
    } else {
       unsigned char md_value[ EVP_MAX_MD_SIZE ];
       unsigned int md_len;
 
-      HMAC_Final( hmac->BgL_z42mdzd2ctxz90, md_value, &md_len );
-      BGL_HMAC_CTX_reset( hmac->BgL_z42mdzd2ctxz90 );
-      BGL_HMAC_CTX_free( hmac->BgL_z42mdzd2ctxz90 );
-      hmac->BgL_z42mdzd2ctxz90 = 0L;
+      HMAC_Final( CHMAC( hmac )->BgL_z42mdzd2ctxz90, md_value, &md_len );
+      BGL_HMAC_CTX_reset( CHMAC( hmac )->BgL_z42mdzd2ctxz90 );
+      BGL_HMAC_CTX_free( CHMAC( hmac )->BgL_z42mdzd2ctxz90 );
+      CHMAC( hmac )->BgL_z42mdzd2ctxz90 = 0L;
 
       return string_to_bstring_len( md_value, md_len );
    }
@@ -2939,14 +2953,15 @@ bgl_ssl_sign_init( ssl_sign sign, obj_t type ) {
    bgl_ssl_init();
 #endif
 
-   sign->BgL_z42mdz42 =
+   CSIGN( sign )->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
-   if( !(sign->BgL_z42mdz42) ) return 0;
+   if( !(CSIGN( sign )->BgL_z42mdz42) ) return 0;
 
-   sign->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
-   EVP_MD_CTX_init( sign->BgL_z42mdzd2ctxz90 );
+   CSIGN( sign )->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
+   EVP_MD_CTX_init( CSIGN( sign )->BgL_z42mdzd2ctxz90 );
    
-   EVP_SignInit_ex( sign->BgL_z42mdzd2ctxz90, sign->BgL_z42mdz42, NULL );
+   EVP_SignInit_ex( CSIGN( sign )->BgL_z42mdzd2ctxz90,
+		    CSIGN( sign )->BgL_z42mdz42, NULL );
    return 1;
 }
    
@@ -2956,10 +2971,10 @@ bgl_ssl_sign_init( ssl_sign sign, obj_t type ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_sign_update( ssl_sign sign, obj_t data, long offset, long len ) {
-   if( sign->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CSIGN( sign )->BgL_z42mdzd2ctxz90 == 0L ) {
       return 0;
    } else {
-      EVP_SignUpdate( sign->BgL_z42mdzd2ctxz90,
+      EVP_SignUpdate( CSIGN( sign )->BgL_z42mdzd2ctxz90,
 		      &(STRING_REF( data, offset )),
 		      len );
       return 1;
@@ -2972,7 +2987,7 @@ bgl_ssl_sign_update( ssl_sign sign, obj_t data, long offset, long len ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_sign_sign( ssl_sign sign, obj_t key_pem, long offset, long kplen ) {
-   if( sign->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CSIGN( sign )->BgL_z42mdzd2ctxz90 == 0L ) {
       return BFALSE;
    } else {
 #define MAX_KEY_SIZE 8192      
@@ -2991,14 +3006,14 @@ bgl_ssl_sign_sign( ssl_sign sign, obj_t key_pem, long offset, long kplen ) {
 	 return BFALSE;
       }
 
-      if( !EVP_SignFinal( sign->BgL_z42mdzd2ctxz90, md_value, &md_len, pkey ) ) {
+      if( !EVP_SignFinal( CSIGN( sign )->BgL_z42mdzd2ctxz90, md_value, &md_len, pkey ) ) {
 	 ERR_print_errors_fp( stderr );
 	 return BFALSE;
       }
 
-      BGL_EVP_MD_CTX_reset( sign->BgL_z42mdzd2ctxz90 );
-      BGL_EVP_MD_CTX_free( sign->BgL_z42mdzd2ctxz90 );
-      sign->BgL_z42mdzd2ctxz90 = 0L;
+      BGL_EVP_MD_CTX_reset( CSIGN( sign )->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_free( CSIGN( sign )->BgL_z42mdzd2ctxz90 );
+      CSIGN( sign )->BgL_z42mdzd2ctxz90 = 0L;
 
       EVP_PKEY_free( pkey );
       BIO_free( bp );
@@ -3027,14 +3042,15 @@ bgl_ssl_verify_init( ssl_verify verify, obj_t type ) {
    bgl_ssl_init();
 #endif
    
-   verify->BgL_z42mdz42 =
+   CVERIFY( verify )->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
-   if( !(verify->BgL_z42mdz42) ) return 0;
+   if( !(CVERIFY( verify )->BgL_z42mdz42) ) return 0;
 
-   verify->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
-   EVP_MD_CTX_init( verify->BgL_z42mdzd2ctxz90 );
+   CVERIFY( verify )->BgL_z42mdzd2ctxz90 = BGL_EVP_MD_CTX_new();
+   EVP_MD_CTX_init( CVERIFY( verify )->BgL_z42mdzd2ctxz90 );
    
-   EVP_VerifyInit_ex( verify->BgL_z42mdzd2ctxz90, verify->BgL_z42mdz42, NULL );
+   EVP_VerifyInit_ex( CVERIFY( verify )->BgL_z42mdzd2ctxz90,
+		      CVERIFY( verify )->BgL_z42mdz42, NULL );
    return 1;
 }
    
@@ -3044,10 +3060,10 @@ bgl_ssl_verify_init( ssl_verify verify, obj_t type ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF bool_t
 bgl_ssl_verify_update( ssl_verify verify, obj_t data, long offset, long len ) {
-   if( verify->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CVERIFY( verify )->BgL_z42mdzd2ctxz90 == 0L ) {
       return 0;
    } else {
-      EVP_VerifyUpdate( verify->BgL_z42mdzd2ctxz90,
+      EVP_VerifyUpdate( CVERIFY( verify )->BgL_z42mdzd2ctxz90,
 			&(STRING_REF( data, offset )),
 			len );
       return 1;
@@ -3072,7 +3088,7 @@ bgl_ssl_verify_final( ssl_verify verify,
       | XN_FLAG_SEP_MULTILINE
       | XN_FLAG_FN_SN;
    
-   if( verify->BgL_z42mdzd2ctxz90 == 0L ) {
+   if( CVERIFY( verify )->BgL_z42mdzd2ctxz90 == 0L ) {
       ERR_clear_error();
       return 0;
    } else {
@@ -3134,7 +3150,7 @@ bgl_ssl_verify_final( ssl_verify verify,
 	 }
       }
 
-      r = EVP_VerifyFinal( verify->BgL_z42mdzd2ctxz90, sig, slen, pkey );
+      r = EVP_VerifyFinal( CVERIFY( verify )->BgL_z42mdzd2ctxz90, sig, slen, pkey );
 
       if( !r ) {
 	 ERR_clear_error();
@@ -3143,9 +3159,9 @@ bgl_ssl_verify_final( ssl_verify verify,
       if( pkey ) EVP_PKEY_free( pkey );
       if( x509 ) X509_free( x509 );
       if( bp ) BIO_free( bp );
-      BGL_EVP_MD_CTX_reset( verify->BgL_z42mdzd2ctxz90 );
-      BGL_EVP_MD_CTX_free( verify->BgL_z42mdzd2ctxz90 );
-      verify->BgL_z42mdzd2ctxz90 = 0;
+      BGL_EVP_MD_CTX_reset( CVERIFY( verify )->BgL_z42mdzd2ctxz90 );
+      BGL_EVP_MD_CTX_free( CVERIFY( verify )->BgL_z42mdzd2ctxz90 );
+      CVERIFY( verify )->BgL_z42mdzd2ctxz90 = 0;
 
       return r && (r != -1);
    }
@@ -3172,22 +3188,22 @@ bgl_ssl_cipher_init( ssl_cipher cipher, obj_t type,
    bgl_ssl_init();
 #endif
    
-   cipher->BgL_z42cipherz42 =
+   CCIPHER( cipher )->BgL_z42cipherz42 =
       (void *)EVP_get_cipherbyname( (const char *)BSTRING_TO_STRING( type ) );
    
-   if( !(cipher->BgL_z42cipherz42) ) {
+   if( !(CCIPHER( cipher )->BgL_z42cipherz42) ) {
       return 0;
    } else {
       unsigned char key[ EVP_MAX_KEY_LENGTH ], iv[ EVP_MAX_IV_LENGTH ];
-      int key_len = EVP_BytesToKey( cipher->BgL_z42cipherz42,
+      int key_len = EVP_BytesToKey( CCIPHER( cipher )->BgL_z42cipherz42,
 				    EVP_md5(), NULL,
 				    &(STRING_REF( keybuf, koffset )), klen,
 				    1, key, iv );
       EVP_CIPHER_CTX *ctx = BGL_EVP_CIPHER_CTX_new();
-      cipher->BgL_z42cipherzd2ctxz90 = ctx;
+      CCIPHER( cipher )->BgL_z42cipherzd2ctxz90 = ctx;
 
       EVP_CIPHER_CTX_init( ctx );
-      EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42,
+      EVP_CipherInit_ex( ctx, CCIPHER( cipher )->BgL_z42cipherz42,
 			 NULL, NULL, NULL, 0 );
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, key_len )) {
@@ -3226,10 +3242,10 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
    bgl_ssl_init();
 #endif
     
-   cipher->BgL_z42cipherz42 =
+   CCIPHER( cipher )->BgL_z42cipherz42 =
       (void *)EVP_get_cipherbyname( (const char *)BSTRING_TO_STRING( type ) );
 
-   if( !cipher->BgL_z42cipherz42 ) {
+   if( !CCIPHER( cipher )->BgL_z42cipherz42 ) {
       fprintf( stderr, "node-crypto : Unknown cipher %s\n",
 	       (const char *)BSTRING_TO_STRING( type ));
       return 0;
@@ -3237,17 +3253,17 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
    
    /* OpenSSL versions up to 0.9.8l failed to return the correct */
    /* iv_length (0) for ECB ciphers */
-   if( EVP_CIPHER_iv_length( cipher->BgL_z42cipherz42 ) != ivlen &&
-       !(EVP_CIPHER_mode( cipher->BgL_z42cipherz42) == EVP_CIPH_ECB_MODE &&
+   if( EVP_CIPHER_iv_length( CCIPHER( cipher )->BgL_z42cipherz42 ) != ivlen &&
+       !(EVP_CIPHER_mode( CCIPHER( cipher )->BgL_z42cipherz42) == EVP_CIPH_ECB_MODE &&
 	 ivlen == 0) ) {
       fprintf( stderr, "node-crypto : Invalid IV length %ld\n", ivlen );
       return 0;
    } else {
       EVP_CIPHER_CTX *ctx = BGL_EVP_CIPHER_CTX_new();
-      cipher->BgL_z42cipherzd2ctxz90 = ctx;
+      CCIPHER( cipher )->BgL_z42cipherzd2ctxz90 = ctx;
 
       EVP_CIPHER_CTX_init( ctx );
-      EVP_CipherInit_ex( ctx, cipher->BgL_z42cipherz42, NULL, NULL, NULL, enc );
+      EVP_CipherInit_ex( ctx, CCIPHER( cipher )->BgL_z42cipherz42, NULL, NULL, NULL, enc );
       
       if( !EVP_CIPHER_CTX_set_key_length( ctx, klen ) ) {
 	 fprintf( stderr, "node-crypto : Invalid key length %ld\n", klen );
@@ -3271,10 +3287,10 @@ bgl_ssl_cipher_initiv( ssl_cipher cipher,
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_cipher_update( ssl_cipher cipher, obj_t data, long offset, long len ) {
-   if( cipher->BgL_z42cipherzd2ctxz90 == 0L ) {
+   if( CCIPHER( cipher )->BgL_z42cipherzd2ctxz90 == 0L ) {
       return BFALSE;
    } else {
-      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
+      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)CCIPHER( cipher )->BgL_z42cipherzd2ctxz90;
       int olen = len + EVP_CIPHER_CTX_block_size( ctx );
       obj_t str = make_string( olen, ' ' );
       
@@ -3291,10 +3307,10 @@ bgl_cipher_update( ssl_cipher cipher, obj_t data, long offset, long len ) {
 /*---------------------------------------------------------------------*/
 bool_t
 bgl_cipher_set_auto_padding( ssl_cipher cipher, bool_t auto_padding ) {
-   if( cipher->BgL_z42cipherzd2ctxz90 == 0L ) {
+   if( CCIPHER( cipher )->BgL_z42cipherzd2ctxz90 == 0L ) {
       return 0;
    } else {
-      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
+      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)CCIPHER( cipher )->BgL_z42cipherzd2ctxz90;
       return EVP_CIPHER_CTX_set_padding( ctx, auto_padding );
    }
 }
@@ -3307,12 +3323,12 @@ obj_t
 bgl_cipher_final( ssl_cipher cipher ) {
    char errbuf[ 121 ];
 
-   if( cipher->BgL_z42cipherzd2ctxz90 == 0L ) {
+   if( CCIPHER( cipher )->BgL_z42cipherzd2ctxz90 == 0L ) {
       C_SYSTEM_FAILURE( BGL_IO_ERROR, "cipher-final",
 			"uninitialized cipher",
 			(obj_t)cipher );
    } else {
-      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)cipher->BgL_z42cipherzd2ctxz90;
+      EVP_CIPHER_CTX *ctx = (EVP_CIPHER_CTX *)CCIPHER( cipher )->BgL_z42cipherzd2ctxz90;
       int size = EVP_CIPHER_CTX_block_size( ctx );
       obj_t obj = make_string( size, ' ' );
       int r;
@@ -3321,7 +3337,7 @@ bgl_cipher_final( ssl_cipher cipher ) {
 
       BGL_EVP_CIPHER_CTX_reset( ctx );
       BGL_EVP_CIPHER_CTX_free( ctx );
-      cipher->BgL_z42cipherzd2ctxz90 = 0L;
+      CCIPHER( cipher )->BgL_z42cipherzd2ctxz90 = 0L;
 
       if( r ) {
 	 return bgl_string_shrink( obj, size );

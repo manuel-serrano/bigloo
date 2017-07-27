@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Thu Jul 27 08:21:34 2017 (serrano)                */
+/*    Last change :  Thu Jul 27 15:10:13 2017 (serrano)                */
 /*    Copyright   :  2014-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -1552,7 +1552,7 @@ bgl_uv_tcp_connectX( obj_t obj, struct sockaddr *address, obj_t proc, bgl_uv_loo
    } else {
       uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
       uv_tcp_t *handle =
-	 (uv_tcp_t *)(((bgl_uv_handle_t)obj)->BgL_z42builtinz42);
+	 (uv_tcp_t *)(((bgl_uv_handle_t)CREF( obj ))->BgL_z42builtinz42);
       int r;
 
       req->data = proc;
@@ -2088,7 +2088,8 @@ int bgl_uv_spawn( bgl_uv_loop_t loop,
 		  bgl_uv_process_t process,
 		  bgl_uv_process_options_t opts,
 		  obj_t callback ) {
-   uv_process_options_t *options = opts->BgL_z42builtinz42;
+   uv_process_options_t *options =
+      ((bgl_uv_process_options_t)CREF( opts ))->BgL_z42builtinz42;
 
    if( PROCEDUREP( callback ) ) {
       bgl_check_fs_cb( callback, 3, "uv_spawn" );
@@ -2099,7 +2100,7 @@ int bgl_uv_spawn( bgl_uv_loop_t loop,
    process->BgL_z42builtinz42->data = process;
 
    return uv_spawn( LOOP_BUILTIN( loop ),
-		    (uv_process_t *)process->BgL_z42builtinz42,
+		    (uv_process_t *)(((bgl_uv_process_t)(CREF( process )))->BgL_z42builtinz42),
 		    options );
 }
 
@@ -2129,7 +2130,7 @@ bgl_uv_pipe_connect( obj_t obj, char *name, obj_t proc, bgl_uv_loop_t bloop ) {
    } else {
       uv_connect_t *req = malloc( sizeof( uv_connect_t ) );
       uv_pipe_t *handle =
-	 (uv_pipe_t *)(((bgl_uv_handle_t)obj)->BgL_z42builtinz42);
+	 (uv_pipe_t *)(((bgl_uv_handle_t)CREF( obj ))->BgL_z42builtinz42);
       int r;
 
       req->data = proc;
@@ -2172,8 +2173,8 @@ void
 bgl_uv_queue_work( bgl_uv_work_t w, bgl_uv_loop_t bloop ) {
    fprintf( stderr, "(%s:%d) BROKEN as libuv uses its own threads\n",
 	    __FILE__, __LINE__ );
-   w->BgL_z42builtinz42 = (uv_work_t *)GC_MALLOC( sizeof( uv_work_t ) );
-   w->BgL_z42builtinz42->data = w;
+   ((bgl_uv_work_t)CREF( w ))->BgL_z42builtinz42 = (uv_work_t *)GC_MALLOC( sizeof( uv_work_t ) );
+   ((bgl_uv_work_t)CREF( w ))->BgL_z42builtinz42->data = w;
 
    uv_queue_work( LOOP_BUILTIN( bloop ),
 		  w->BgL_z42builtinz42,
