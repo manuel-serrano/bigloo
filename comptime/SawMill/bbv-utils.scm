@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 27 08:57:51 2017                          */
-;*    Last change :  Thu Jul 27 09:03:52 2017 (serrano)                */
+;*    Last change :  Fri Jul 28 09:56:27 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BB manipulations                                                 */
@@ -37,6 +37,7 @@
 	    (set-max-label! blocks::pair-nil)
 	    (genlabel)
 	    (block->block-list regs b::block)
+	    (remove-temps! b::block)
 	    (normalize-goto! b::block)
 	    (simplify-branch! b::block)
 	    (remove-nop! b::block)
@@ -336,6 +337,44 @@
 				(cons (car bs) acc))))))
 		   (else
 		    (liip (cdr first))))))))))
+
+;*---------------------------------------------------------------------*/
+;*    remove-temps! ...                                                */
+;*---------------------------------------------------------------------*/
+(define (remove-temps! b::block)
+
+   (define (remove-ins-temps! i)
+      (with-access::rtl_ins i (args)
+	 (let loop ((args args))
+	    (if (null? args)
+		i
+		(let liip ((arg (car args)))
+		   (if (isa? arg rtl_ins)
+		       (if (rtl_ins-mov? arg)
+			   (with-access::rtl_ins arg ((inner args))
+			      (liip (car inner)))
+			   (begin
+			      (remove-ins-temps! arg)
+			      (loop (cdr args))))
+		       (begin
+			  (set-car! args arg)
+			  (loop (cdr args)))))))))
+   
+   (define (remove-block-temps! b::block)
+      (with-access::block b (first)
+	 (set! first (map! remove-ins-temps! first))))
+   
+   (let loop ((bs (list b))
+	      (acc '()))
+      (cond
+	 ((null? bs)
+	  b)
+	 ((memq (car bs) acc)
+	  (loop (cdr bs) acc))
+	 (else
+	  (with-access::block (car bs) (succs)
+	     (remove-block-temps! (car bs))
+	     (loop (append succs (cdr bs)) (cons (car bs) acc)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    simplify-branch! ...                                             */

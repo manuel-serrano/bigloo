@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul 11 10:05:41 2017                          */
-;*    Last change :  Thu Jul 27 11:23:09 2017 (serrano)                */
+;*    Last change :  Fri Jul 28 09:40:11 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Basic Blocks versioning experiment.                              */
@@ -62,7 +62,7 @@
 	  (when (>=fx (bigloo-debug) 1)
 	     (dump-blocks global params blocks ".plain.bb"))
 	  (set-max-label! blocks)
-	  (let ((blocks (normalize-goto! (car blocks))))
+	  (let ((blocks (normalize-goto! (remove-temps! (car blocks)))))
 	     (when (>=fx (bigloo-debug) 1)
 		(dump-blocks global params blocks ".norm.bb"))
 	     (let ((regs (liveness! back blocks params)))

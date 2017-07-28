@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Fri Feb 24 08:46:16 2017 (serrano)                */
+;*    Last change :  Fri Jul 28 13:53:58 2017 (serrano)                */
 ;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -97,6 +97,7 @@
 	   (macro $configure-default-back-end::string "BGL_DEFAULT_BACK_END")
 	   (macro $configure-gc-lib::string "BGL_GC_LIBRARY")
 	   (macro $configure-gc-custom::bool "BGL_GC_CUSTOM")
+	   (macro $configure-gc::int "BGL_GC")
 	   (macro $configure-have-bdb::bool "BGL_HAVE_BDB")
 	   (macro $configure-dns-cache-enabled::bool "BGL_DNS_CACHE")
 	   (macro $configure-big-endian::bool "BGL_BIG_ENDIAN")
@@ -106,7 +107,10 @@
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
 	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
 	   (macro $configure-have-overflow::bool "BGL_HAVE_OVERFLOW")
-	   (macro $configure-class-display-min-size::long "BGL_CLASS_DISPLAY_MIN_SIZE"))
+	   (macro $configure-class-display-min-size::long "BGL_CLASS_DISPLAY_MIN_SIZE")
+	   (macro $cfg-no-gc::long "BGL_NO_GC")
+	   (macro $cfg-boehm-gc::long "BGL_BOEHM_GC")
+	   (macro $cfg-saw-gc::long "BGL_SAW_GC"))
    
    (java   (class $configure
 	      (field static release-number::string "BGL_RELEASE_NUMBER")
@@ -242,6 +246,7 @@
      (default-back-end . ,$configure-default-back-end)
      (gc-lib . ,$configure-gc-lib)
      (gc-custom . ,$configure-gc-custom)
+     (gc . ,(cond-expand (bigloo-c (gc-name $configure-gc)) (else "java")))
      (have-bdb . ,$configure-have-bdb)
      (dns-cache-enabled . ,$configure-dns-cache-enabled)
      (shell-mv . ,$configure-shell-mv)
@@ -277,3 +282,18 @@
 ;*---------------------------------------------------------------------*/
 (define (bigloo-configuration-add-entry! key val)
    (set! *bigloo-configuration* (cons (cons key val) *bigloo-configuration*)))
+
+;*---------------------------------------------------------------------*/
+;*    gc-name ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (gc-name::bstring num)
+   (cond-expand
+      (bigloo-c
+       (cond
+	  ((=fx num $cfg-no-gc) "no")
+	  ((=fx num $cfg-boehm-gc) "boehm")
+	  ((=fx num $cfg-saw-gc) "saw")
+	  (else "unknown")))
+      (else
+       "unknown")))
+   

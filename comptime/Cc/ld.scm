@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Sun Jun 19 18:41:52 2016 (serrano)                */
-;*    Copyright   :  1992-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Jul 28 14:17:27 2017 (serrano)                */
+;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
 ;*=====================================================================*/
@@ -43,10 +43,24 @@
 ;*---------------------------------------------------------------------*/
 (define (library-suffixes)
    (cond
-      (*profile-library* (if *saw* '("_saw_p" "_saw_s") '("_p" "_s")))
-      (*unsafe-library* (if *saw* '("_saw_u" "_saw_s") '("_u" "_s")))
-      (*saw* '("_saw_s"))
-      (else '("_s"))))
+      (*profile-library*
+       (if *saw*
+	   (if (string=? (bigloo-config 'gc) "saw")
+	       '("_saw_p" "_saw_s")
+	       '("_saw_p" "_p" "_saw_s" "_s"))
+	   '("_p" "_s")))
+      (*unsafe-library*
+       (if *saw*
+	   (if (string=? (bigloo-config 'gc) "saw")
+	       '("_saw_u" "_saw_s")
+	       '("_saw_u" "_u" "_saw_s"))
+	   '("_u" "_s")))
+      (*saw*
+       (if (string=? (bigloo-config 'gc) "saw")
+	   '("_saw_s")
+	   '("_saw_s" "_s")))
+      (else
+       '("_s"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    library-eval-suffix ...                                          */
@@ -75,45 +89,46 @@
 ;*    library->os-file ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (library->os-file library suffixes staticp forcep foreignp)
+   
+   (define (dynamic-lib library::bstring backend)
+      (string-append (cond
+			((or (string=? (os-class) "unix")
+			     (string=? (os-class) "mingw"))
+			 "-l")
+			((string=? (os-class) "win32")
+			 "")
+			(else
+			 (user-error "ld" "Unknown os" (os-class))))
+	 library))
+   
    (let ((backend (backend-srfi0 (the-backend))))
-      (if (or foreignp
-	      (and *ld-relative*
-		   (not *profile-library*)
-		   (not (or staticp *static-all-bigloo?* *static-bigloo?*))))
-	  (string-append (cond
-			    ((or (string=? (os-class) "unix")
-				 (string=? (os-class) "mingw"))
-			     "-l")
-			    ((string=? (os-class) "win32")
-			     "")
-			    (else
-			     (user-error "ld" "Unknown os" (os-class))))
-			 (if foreignp
-			     (symbol->string library)
-			     (library-file-name library (car suffixes) backend)))
+      (if foreignp
+	  (dynamic-lib (symbol->string library) backend)
 	  (let loop ((ss suffixes))
 	     (if (null? ss)
 		 (if staticp
 		     (error "bigloo"
-			    (string-append "Can't find any `"
-					   (symbol->string library)
-					   "' library")
-			    *lib-dir*)
+			(format "Can't find any `~a'" library)
+			*lib-dir*)
 		     (library->os-file library suffixes #t forcep foreignp))
-		 (let* ((fname ((if staticp
+		 (let* ((lname (library-file-name library (car ss) backend))
+			(fname ((if staticp
 				    make-static-lib-name
 				    make-shared-lib-name)
-				(library-file-name library (car ss) backend)
-				backend))
+				lname backend))
 			(name (find-file/path fname *lib-dir*)))
 		    (if (string? name)
-			name
+			(if (and *ld-relative*
+				 (not *profile-library*)
+				 (not (or staticp
+					  *static-all-bigloo?*
+					  *static-bigloo?*)))
+			    (dynamic-lib lname backend)
+			    name)
 			(begin
-			   (warning "bigloo"
-				    (string-append "Can't find library \""
-						   fname
-						   "\"")
-				    " in path \"" *lib-dir* "\"")
+			   (user-warning "ld"
+			      (format "Can't find library \"~a\" in path" fname)
+			      *lib-dir*)
 			   (loop (cdr ss))))))))))
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 20 07:05:22 2017                          */
-;*    Last change :  Thu Jul 27 11:22:26 2017 (serrano)                */
+;*    Last change :  Fri Jul 28 14:34:49 2017 (serrano)                */
 ;*    Copyright   :  2017 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    BBV specific types                                               */
@@ -630,7 +630,10 @@
 ;*    bbv-hash ::rtl_getfield ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-hash o::rtl_getfield)
-   (error "bbv-hash" "not implemented yet" o))
+   (bit-xor (call-next-method)
+      (with-access::rtl_getfield o (name objtype type)
+	 (bit-xor (bbv-hash name)
+	    (bit-xor (bbv-hash objtype) (bbv-hash type))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-hash ::rtl_valloc ...                                        */
@@ -664,13 +667,19 @@
 ;*    bbv-hash ::rtl_storeg ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-hash o::rtl_storeg)
-   (error "bbv-hash" "not implemented yet" o))
+   (bit-xor (call-next-method)
+      (with-access::rtl_storeg o (var)
+	 (with-access::global var (id module)
+	    (bit-xor (bbv-hash module) (bbv-hash id))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-hash ::rtl_setfield ...                                      */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-hash o::rtl_setfield)
-   (error "bbv-hash" "not implemented yet" o))
+   (bit-xor (call-next-method)
+      (with-access::rtl_setfield o (name objtype type)
+	 (bit-xor (bbv-hash name)
+	    (bit-xor (bbv-hash objtype) (bbv-hash type))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-hash ::rtl_vset ...                                          */
@@ -683,7 +692,10 @@
 ;*    bbv-hash ::rtl_new ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-hash o::rtl_new)
-   (error "bbv-hash" "not implemented yet" o))
+   (bit-xor (call-next-method)
+      (with-access::rtl_new o (constr type)
+	 (bit-xor (bbv-hash type)
+	    (bit-xor* (map bbv-hash constr))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-hash ::rtl_call ...                                          */
@@ -696,13 +708,18 @@
 ;*    bbv-hash ::rtl_lightfuncall ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-hash o::rtl_lightfuncall)
-   (error "bbv-hash" "not implemented yet" o))
+   (bit-xor (call-next-method)
+      (with-access::rtl_lightfuncall o (name funs rettype)
+	 (bit-xor (bbv-hash name)
+	    (bit-xor (bbv-hash rettype)
+	       (bit-xor* (map bbv-hash funs)))))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-hash ::rtl_pragma ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-hash o::rtl_pragma)
-   (error "bbv-hash" "not implemented yet" o))
+   (bit-xor (call-next-method)
+      (bbv-hash (rtl_pragma-format o))))
    
 ;*---------------------------------------------------------------------*/
 ;*    bbv-hash ::rtl_cast ...                                          */
@@ -810,7 +827,10 @@
 ;*    bbv-equal? ::rtl_getfield ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_getfield y)
-   (error "bbv-equal?" "not implemented" x))
+   (when (isa? y rtl_getfield)
+      (and (string=? (rtl_getfield-name x) (rtl_getfield-name y))
+	   (bbv-equal? (rtl_getfield-objtype x) (rtl_getfield-objtype y))
+	   (bbv-equal? (rtl_getfield-type x) (rtl_getfield-type y)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-equal? ::valloc ...                                          */
@@ -854,13 +874,18 @@
 ;*    bbv-equal? ::rtl_setfield ...                                    */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_setfield y)
-   (error "bbv-equal?" "not implemented" x))
+   (when (isa? y rtl_setfield)
+      (and (string=? (rtl_setfield-name x) (rtl_setfield-name y))
+	   (bbv-equal? (rtl_setfield-objtype x) (rtl_setfield-objtype y))
+	   (bbv-equal? (rtl_setfield-type x) (rtl_setfield-type y)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-equal? ::rtl_vset ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (bbv-equal? x::rtl_vset y)
-   (error "bbv-equal?" "not implemented" x))
+   (when (isa? y rtl_vset)
+      (and (bbv-equal? (rtl_vset-type x) (rtl_vset-type y))
+	   (bbv-equal? (rtl_vset-vtype x) (rtl_vset-vtype y)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bbv-equal? ::rtl_new ...                                         */
