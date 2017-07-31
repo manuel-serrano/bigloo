@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Thu Jul 27 18:03:18 2017 (serrano)                */
+/*    Last change :  Mon Jul 31 07:31:27 2017 (serrano)                */
 /*    Copyright   :  2005-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
@@ -117,13 +117,13 @@ typedef BgL_sslzd2signzd2_bglt ssl_sign;
 typedef BgL_sslzd2verifyzd2_bglt ssl_verify;
 typedef BgL_sslzd2cipherzd2_bglt ssl_cipher;
 
-#define CCON( o ) ((ssl_connection)CREF( o))
-#define CSC( o ) ((secure_context)CREF( o))
-#define CHASH( o ) ((ssl_hash)CREF( o))
-#define CHMAC( o ) ((ssl_hmac)CREF( o))
-#define CSIGN( o ) ((ssl_sign)CREF( o))
-#define CVERIFY( o ) ((ssl_verify)CREF( o))
-#define CCIPHER( o ) ((ssl_cipher)CREF( o))
+#define CCON( o ) ((ssl_connection)COBJECT( o))
+#define CSC( o ) ((secure_context)COBJECT( o))
+#define CHASH( o ) ((ssl_hash)COBJECT( o))
+#define CHMAC( o ) ((ssl_hmac)COBJECT( o))
+#define CSIGN( o ) ((ssl_sign)COBJECT( o))
+#define CVERIFY( o ) ((ssl_verify)COBJECT( o))
+#define CCIPHER( o ) ((ssl_cipher)COBJECT( o))
 
 /*---------------------------------------------------------------------*/
 /*    Imports                                                          */

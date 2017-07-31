@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Jul 26 18:19:59 2017 (serrano)                */
+/*    Last change :  Mon Jul 31 07:40:10 2017 (serrano)                */
 /*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    mpg123 Bigloo binding                                            */
@@ -17,10 +17,10 @@
 /*    decoder bigloo object                                            */
 /*---------------------------------------------------------------------*/
 #define BGL_HANDLE_BUILTIN( o ) \
-   (((BgL_mpg123zd2handlezd2_bglt)CREF(o))->BgL_z42builtinz42)
+   (((BgL_mpg123zd2handlezd2_bglt)COBJECT(o))->BgL_z42builtinz42)
 
 #define BGL_HANDLE_SIZE( o ) \
-   (((BgL_mpg123zd2handlezd2_bglt)CREF(o))->BgL_siza7eza7)
+   (((BgL_mpg123zd2handlezd2_bglt)COBJECT(o))->BgL_siza7eza7)
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

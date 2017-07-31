@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Oct 28 08:08:56 2012                          */
-/*    Last change :  Tue Dec  6 19:42:07 2016 (serrano)                */
-/*    Copyright   :  2012-16 Manuel Serrano                            */
+/*    Last change :  Mon Jul 31 07:21:28 2017 (serrano)                */
+/*    Copyright   :  2012-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Bigloo object management.                                      */
 /*=====================================================================*/
@@ -61,5 +61,5 @@ bgl_make_class( obj_t name, obj_t module, long num,
       }
    }
 
-   return BREF( klass );
+   return BOBJECT( klass );
 }

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 20 14:50:56 2011                          */
-/*    Last change :  Wed Jul 26 18:18:00 2017 (serrano)                */
+/*    Last change :  Mon Jul 31 07:39:46 2017 (serrano)                */
 /*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    flac Bigloo binding                                              */
@@ -30,21 +30,21 @@ extern int bgl_flac_debug();
 /*    decoder bigloo object                                            */
 /*---------------------------------------------------------------------*/
 #define BGL_DECODER_PORT( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_portdz00)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_portdz00)
 #define BGL_DECODER_EOF( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_z52eofz52)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_z52eofz52)
 #define BGL_DECODER_FLACBUF( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_z52flacbufz52)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_z52flacbufz52)
 #define BGL_DECODER_OUTBUF( o ) \
-   (BSTRING_TO_STRING( (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_outbufz00) ))
+   (BSTRING_TO_STRING( (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_outbufz00) ))
 #define BGL_DECODER_SAMPLE( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_z52samplez52)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_z52samplez52)
 #define BGL_DECODER_VOLUME( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_z52volumez52)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_z52volumez52)
 #define BGL_DECODER_RCHECKSUM( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_z52rchecksumz52)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_z52rchecksumz52)
 #define BGL_DECODER_BCHECKSUM( o ) \
-   (((BgL_flaczd2decoderzd2_bglt)CREF(o))->BgL_z52bchecksumz52)
+   (((BgL_flaczd2decoderzd2_bglt)COBJECT(o))->BgL_z52bchecksumz52)
 
 /*---------------------------------------------------------------------*/
 /*    Local declarations                                               */

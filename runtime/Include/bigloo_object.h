@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu May  4 07:45:53 2017 (serrano)                */
+/*    Last change :  Mon Jul 31 07:29:19 2017 (serrano)                */
 /*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -47,15 +47,19 @@ typedef struct BgL_objectz00_bgl {
    obj_t widening;
 } *BgL_objectz00_bglt;
 
-#define BOBJECT( r ) ((obj_t)((long)r + TAG_STRUCT))
-#define COBJECT( r ) ((obj_t)((long)r - TAG_STRUCT))
+#if( defined( TAG_OBJECT ) )
+#   define OBJECTP( o ) ((c && ((((long)o)&TAG_MASK) == TAG_OBJECT)))
+#   define BOBJECT( o ) ((obj_t)((long)o + TAG_OBJECT))
+#   define COBJECT( o ) ((obj_t)((long)o - TAG_OBJECT))
+#else
+#   define BGL_OBJECTP( o ) ((POINTERP( o ) && (TYPE( o ) >= OBJECT_TYPE)))
+#   define BOBJECT( o ) BREF( o )
+#   define COBJECT( o ) CREF( o )
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Object macros                                                    */
 /*---------------------------------------------------------------------*/
-#define BGL_OBJECTP( _obj ) \
-   ((POINTERP( _obj ) && (TYPE( _obj ) >= OBJECT_TYPE)))
-
 #define BGL_OBJECT_MIN_DISPLAY_SIZE 6
 
 #define BGL_OBJECT_CLASS_NUM( _obj ) \
