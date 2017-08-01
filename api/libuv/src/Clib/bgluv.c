@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Mon Jul 31 08:39:41 2017 (serrano)                */
+/*    Last change :  Tue Aug  1 16:54:16 2017 (serrano)                */
 /*    Copyright   :  2014-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
@@ -217,7 +217,7 @@ bgl_uv_fs_poll_getpath( uv_fs_poll_t *o ) {
 void
 bgl_uv_poll_cb( uv_handle_t *handle, int status, int state ) {
    bgl_uv_poll_t o = (bgl_uv_poll_t)handle->data;
-   obj_t p = o->BgL_cbz00;
+   obj_t p = ((bgl_uv_poll_t)COBJECT( o ))->BgL_cbz00;
 
    /* some libuv versions uses -2 instead of -1 for error, fix this! */
    if( status < 0 ) { status = -1; }
@@ -238,7 +238,8 @@ bgl_uv_poll_new( obj_t o, bgl_uv_loop_t loop ) {
    new->data = o;
    new->close_cb = &bgl_uv_close_cb;
 
-   uv_poll_init( LOOP_BUILTIN( loop ), new, ((bgl_uv_poll_t)o)->BgL_fdz00 );
+   uv_poll_init( LOOP_BUILTIN( loop ), new,
+		 ((bgl_uv_poll_t)COBJECT(o))->BgL_fdz00 );
    return new;
 }
 
@@ -1886,7 +1887,7 @@ bgl_uv_udp_recv_cb( uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf,
 		    const struct sockaddr* addr,
 		    unsigned flags ) {
    obj_t obj = (obj_t)handle->data;
-   bgl_uv_udp_t sobj = (bgl_uv_udp_t)obj;
+   bgl_uv_udp_t sobj = (bgl_uv_udp_t)COBJECT( obj );
    obj_t p = sobj->BgL_z52proccz52;
    obj_t allocobj = sobj->BgL_z52allocz52;
    obj_t offset = sobj->BgL_z52offsetz52;
@@ -2073,7 +2074,7 @@ bgl_uv_process_new( bgl_uv_process_t o ) {
 /*---------------------------------------------------------------------*/
 static void process_exit_cb( uv_process_t *handle, int64_t status, int term ) {
    bgl_uv_process_t o = handle->data;
-   obj_t p = o->BgL_z42onexitz42;
+   obj_t p = ((bgl_uv_process_t)COBJECT( o ))->BgL_z42onexitz42;
 
    if( PROCEDUREP( p ) ) {
       PROCEDURE_ENTRY( p )( p, o, BGL_INT64_TO_BINT64( status ), BINT( term ) );
@@ -2094,7 +2095,7 @@ int bgl_uv_spawn( bgl_uv_loop_t loop,
    if( PROCEDUREP( callback ) ) {
       bgl_check_fs_cb( callback, 3, "uv_spawn" );
       options->exit_cb = &process_exit_cb;
-      process->BgL_z42onexitz42 = callback;
+      ((bgl_uv_process_t)COBJECT( process ))->BgL_z42onexitz42 = callback;
    }
 
    ((bgl_uv_process_t)COBJECT( process ))->BgL_z42builtinz42->data = process;
@@ -2148,7 +2149,7 @@ bgl_uv_pipe_connect( obj_t obj, char *name, obj_t proc, bgl_uv_loop_t bloop ) {
 static void
 bgl_work_queue_cb( uv_work_t *req ) {
    bgl_uv_work_t w = (bgl_uv_work_t)req->data;
-   obj_t p = w->BgL_z52workzd2cbz80;
+   obj_t p = ((bgl_uv_work_t)COBJECT( w ))->BgL_z52workzd2cbz80;
 
    PROCEDURE_ENTRY( p )( p, BEOA );
 }
@@ -2160,7 +2161,7 @@ bgl_work_queue_cb( uv_work_t *req ) {
 static void
 bgl_after_queue_cb( uv_work_t *req, int status ) {
    bgl_uv_work_t w = (bgl_uv_work_t)req->data;
-   obj_t p = w->BgL_z52afterzd2cbz80;
+   obj_t p = ((bgl_uv_work_t)COBJECT( w ))->BgL_z52afterzd2cbz80;
 
    PROCEDURE_ENTRY( p )( p, BINT( status ), BEOA );
 }
@@ -2177,7 +2178,7 @@ bgl_uv_queue_work( bgl_uv_work_t w, bgl_uv_loop_t bloop ) {
    ((bgl_uv_work_t)COBJECT( w ))->BgL_z42builtinz42->data = w;
 
    uv_queue_work( LOOP_BUILTIN( bloop ),
-		  w->BgL_z42builtinz42,
+		  ((bgl_uv_work_t)COBJECT( w ))->BgL_z42builtinz42,
 		  bgl_work_queue_cb,
 		  bgl_after_queue_cb );
 }
