@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Thu Mar  3 14:30:41 2016 (serrano)                */
-/*    Copyright   :  2002-16 Manuel Serrano                            */
+/*    Last change :  Thu Aug  3 13:10:18 2017 (serrano)                */
+/*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -92,6 +92,9 @@ bgl_debug_header( obj_t obj ) {
 #  if defined( TAG_STRING )
       case TAG_STRING: fprintf( stderr, "(TAG_STRING)\n" ); break;
 #  endif	 
+#  if defined( TAG_OBJECT )
+      case TAG_OBJECT: fprintf( stderr, "(TAG_OBJECT)\n" ); break;
+#  endif	 
 #endif
       default: fprintf( stderr, "(unknown tag)\n" ); break;
    }
@@ -131,7 +134,7 @@ bgl_debug_header( obj_t obj ) {
 	 case 45: fprintf( stderr, "(REGEXP_TYPE) " ); break;
 	 default:
 	    if( TYPE( obj ) > OBJECT_TYPE )
-	       fprintf( stderr, "(a CLASS) " );
+	       fprintf( stderr, "(AN OBJECT) " );
 	    else
 	       fprintf( stderr, "(unknown type) " );
       }

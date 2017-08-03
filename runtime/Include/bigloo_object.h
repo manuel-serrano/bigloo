@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Jul 31 07:29:19 2017 (serrano)                */
+/*    Last change :  Thu Aug  3 12:25:02 2017 (serrano)                */
 /*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -48,7 +48,7 @@ typedef struct BgL_objectz00_bgl {
 } *BgL_objectz00_bglt;
 
 #if( defined( TAG_OBJECT ) )
-#   define OBJECTP( o ) ((c && ((((long)o)&TAG_MASK) == TAG_OBJECT)))
+#   define BGL_OBJECTP( o ) ((o && ((((long)o) & TAG_MASK) == TAG_OBJECT)))
 #   define BOBJECT( o ) ((obj_t)((long)o + TAG_OBJECT))
 #   define COBJECT( o ) ((obj_t)((long)o - TAG_OBJECT))
 #else
@@ -63,13 +63,13 @@ typedef struct BgL_objectz00_bgl {
 #define BGL_OBJECT_MIN_DISPLAY_SIZE 6
 
 #define BGL_OBJECT_CLASS_NUM( _obj ) \
-   (TYPE( _obj ))
+   (HEADER_TYPE( COBJECT( _obj )->header ))
 
 #define BGL_OBJECT_CLASS_NUM_SET( _1, _2 ) \
-   (((obj_t)COBJECT(_1))->header = MAKE_HEADER( _2, 0 ), BUNSPEC)
+   (((obj_t)COBJECT( _1 ))->header = MAKE_HEADER( _2, 0 ), BUNSPEC)
    
 #define BGL_OBJECT_WIDENING( _obj ) \
-   (((object_bglt)(COBJECT(_obj)))->widening)
+   (((object_bglt)(COBJECT( _obj )))->widening)
 
 #define BGL_OBJECT_WIDENING_SET( _obj, _wdn ) \
    BASSIGN( BGL_OBJECT_WIDENING( _obj ), _wdn, (obj_t)_obj )

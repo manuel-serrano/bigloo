@@ -141,6 +141,11 @@
 #  else
 #    define REAL_DISPLACEMENT() 0
 #  endif
+#  if( defined( TAG_OBJECT ) && ( TAG_OBJECT != 0) )
+#    define OBJECT_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_OBJECT ) 
+#  else
+#    define OBJECT_DISPLACEMENT() 0
+#  endif
 
 #  define INIT_ALLOCATION( size ) \
      ( GC_NO_INTERIOR_POINTERS(), \
@@ -154,6 +159,7 @@
        STRING_DISPLACEMENT(), \
        SYMBOL_DISPLACEMENT(), \
        REAL_DISPLACEMENT(), \
+       OBJECT_DISPLACEMENT(), \
        1 )
 #  define FREE_ALLOCATION() \
      ( GC_invoke_finalizers() )

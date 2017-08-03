@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Mon Jul 17 10:30:21 2017 (serrano)                */
+/*    Last change :  Thu Aug  3 13:11:40 2017 (serrano)                */
 /*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
@@ -250,6 +250,8 @@ __debug( char *lbl, obj_t o ) {
       fprintf( stderr, "   int=%ld\n",CINT( o ) );
    } else if( REALP( o ) ) {
       fprintf( stderr, "   real=%f\n",REAL_TO_DOUBLE( o ) );
+   } else if( BGL_OBJECTP( o ) ) {
+      fprintf( stderr, "   object=%ld\n", BGL_OBJECT_CLASS_NUM( o ) );
    } else if( POINTERP( o ) ) {
       fprintf( stderr, "   PTRP=%d TYPE=%ld\n", POINTERP( o ), TYPE( o ) );
    }
