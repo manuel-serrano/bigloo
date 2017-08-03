@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 11:49:11 2002                          */
-;*    Last change :  Thu Mar  5 09:08:56 2015 (serrano)                */
-;*    Copyright   :  2002-15 Manuel Serrano                            */
+;*    Last change :  Thu Aug  3 08:52:55 2017 (serrano)                */
+;*    Copyright   :  2002-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The public Posix Thread implementation.                          */
 ;*=====================================================================*/
@@ -41,7 +41,9 @@
 
 	   (class terminated-thread-exception::&exception)
 
-	   ($pthread-nil::$pthread)))
+	   ($pthread-nil::$pthread))
+
+   (pragma ($pthread-nil side-effect-free)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pthread-timedjoin property                                       */

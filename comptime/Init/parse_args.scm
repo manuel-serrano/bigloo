@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jul 27 07:43:10 2017 (serrano)                */
+;*    Last change :  Thu Aug  3 08:12:21 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -664,9 +664,12 @@
        (set! *warning-overriden-variables* #t))
       (("-Wtypes" (help "Enable type check warning messages"))
        (set! *warning-types* #t))
+      (("-Wslot" (help "Enable default slot value warning messages"))
+       (set! *warning-default-slot-value* #t))
       (("-Wall" (help "warn about all possible type errors"))
        (set! *warning-overriden-slots* #t)
        (set! *warning-overriden-variables* #t)
+       (set! *warning-default-slot-value* #t)
        #;(set! *warning-types* #t)
        (bigloo-warning-set! 2))
       (("-Werror=type" (help "Treat type warnings as error"))

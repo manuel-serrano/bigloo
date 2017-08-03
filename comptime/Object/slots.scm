@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 18 12:48:07 1996                          */
-;*    Last change :  Mon Oct 14 14:12:11 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug  2 17:16:26 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We build the class slots                                         */
 ;*=====================================================================*/
@@ -60,6 +60,8 @@
 
 	    (slot-default?::bool ::slot)
 	    (slot-virtual?::bool ::slot)
+	    (slot-inline-default?::bool ::slot)
+	    (slot-default-inline-value::obj ::slot)
 	    (make-class-slots ::tclass ::obj ::obj ::int ::obj)
 	    (make-java-class-slots ::jclass ::obj ::obj ::obj)
 	    (get-local-virtual-slots-number ::tclass ::pair-nil)
@@ -71,6 +73,12 @@
 ;*---------------------------------------------------------------------*/
 (define (slot-no-default-value)
    (cons 1 2))
+
+;*---------------------------------------------------------------------*/
+;*    slot-inline-mark ...                                             */
+;*---------------------------------------------------------------------*/
+(define slot-inline-mark
+   (cons 3 4))
 
 ;*---------------------------------------------------------------------*/
 ;*    shape ::slot ...                                                 */
@@ -95,6 +103,19 @@
    (>=fx (slot-virtual-num slot) 0))
 
 ;*---------------------------------------------------------------------*/
+;*    slot-inline-default? ...                                         */
+;*---------------------------------------------------------------------*/
+(define (slot-inline-default? slot)
+   (and (pair? (slot-default-value slot))
+	(eq? (car (slot-default-value slot)) slot-inline-mark)))
+
+;*---------------------------------------------------------------------*/
+;*    slot-default-inline-value ...                                    */
+;*---------------------------------------------------------------------*/
+(define (slot-default-inline-value slot)
+   (cdr (slot-default-value slot)))
+
+;*---------------------------------------------------------------------*/
 ;*    ensure-type-defined! ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (ensure-type-defined! type::type src)
@@ -113,6 +134,8 @@
 	  (match-case (car attr)
 	     ((default ?value)
 	      value)
+	     ((inline-default ?value)
+	      (cons slot-inline-mark value))
 	     (else
 	      (find-default-attr (cdr attr))))))
    

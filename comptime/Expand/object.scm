@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May  3 10:13:58 1996                          */
-;*    Last change :  Tue Nov 15 10:40:09 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Aug  3 08:51:40 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The Object expanders                                             */
 ;*=====================================================================*/
@@ -17,6 +17,7 @@
 	    tools_misc
 	    tools_location
 	    tools_shape
+	    tools_error
 	    type_type
 	    type_env
 	    type_cache
@@ -27,6 +28,8 @@
 	    ast_private
 	    ast_object
 	    ast_node
+	    ast_env
+	    read_inline
 	    object_class
 	    object_slots
 	    object_tools
@@ -174,29 +177,104 @@
 ;*---------------------------------------------------------------------*/
 (define (instantiate-fill op provided class slots init x e)
 
-   (define (literal? n)
+   (define (inlinable-call? fun module)
+      (let ((g (find-global fun module)))
+	 (when (and (global? g) (sfun? (global-value g)))
+	    (or (not (fun-side-effect (global-value g)))
+		(memq 'default-inline (global-pragma g))
+		(and (eq? (sfun-class (global-value g)) 'sifun)
+		     (inlinable? (sifun-body g) module))))))
+   
+   (define (inlinable? n module)
       (or (number? n)
 	  (string? n)
-	  (null? n)
 	  (char? n)
 	  (boolean? n)
 	  (eq? n #unspecified)
+	  (literal? n)
 	  (match-case n
 	     ((quote . ?-) #t)
+	     ((begin . ?sub) (inlinable? sub module))
+	     (((or + - bit-or bit-and bit-xor bit-lsh bit-rsh) ?n ?m)
+	      (and (inlinable? n module) (inlinable? m module)))
+	     ((lambda . ?-) #t)
+	     ((class-nil (? symbol?)) #t)
+	     (((and (? symbol?) ?fun) . ?args)
+	      (and (inlinable-call? fun module)
+		   (every (lambda (a) (inlinable? a module)) args)))
+	     (((@ (and (? symbol?) ?fun) (and (? symbol?) ?mod)) . ?args)
+	      (and (inlinable-call? fun mod)
+		   (every (lambda (a) (inlinable? a module)) args)))
 	     (else #f))))
+
+   (define (sifun-body g)
+      (if (eq? (sfun-body (global-value g)) #unspecified)
+	  (or (find-inline (global-id g) (global-module g)) 'no-literal)
+	  (sfun-body (global-value g))))
+
+   (define (find-inline fun module)
+      (any (lambda (def)
+	      (match-case def
+		 ((define-inline ((@ ?f ?m)) ?body)
+		  (when (and (eq? f fun) (eq? m module))
+		     body))))
+	 (inline-definition-queue)))
+
+   (define (default-class-slot-value g s)
+      (when *warning-default-slot-value*
+	 (user-warning/location (find-location x)
+	    op
+	    (format "Cannot inline slot \"~s\" default value" (slot-id s))
+	    (slot-default-value s))
+	 (newline (current-error-port)))
+      `(class-field-default-value
+	  (vector-ref-ur
+	     ((@ class-all-fields __object)
+	      (@ ,(global-id g) ,(global-module g)))
+	     ,(slot-index s))))
    
    (define (slot-default-expr s)
-      (let ((g (tclass-holder class)))
-	 (if (literal? (slot-default-value s))
+      (let ((g (tclass-holder class))
+	    (m (global-module (tclass-holder (slot-class-owner s)))))
+	 (if (inlinable? (slot-default-value s) m)
 	     (slot-default-value s)
-	     `(class-field-default-value
-		 (vector-ref-ur
-		    ((@ class-all-fields __object)
-		     (@ ,(global-id g) ,(global-module g)))
-		    ,(slot-index s))))))
+	     (default-class-slot-value g s))))
    
    (define (collect-slot-values slots)
-      ;; When instantiate-fill is called for widening, slots only contains
+      ;; When instantiate-fill is called for widening, slots only contain
+      ;; the wide slots. The OFFSET value adjust the indices in such a case.
+      (let ((offset (-fx (length (tclass-slots class)) (length slots)))
+	    (vargs (make-vector (length slots))))
+	 ;; collect the provided values
+	 (let loop ((provided provided))
+	    (when (pair? provided)
+	       (let ((p (car provided)))
+		  (match-case p
+		     (((and (? symbol?) ?s-name) ?value)
+		      ;; plain slot
+		      (vector-set! vargs (-fx (find-slot-offset slots s-name op p) offset)
+			 (cons #t (object-epairify value p))))
+		     (else
+		      (error op (format "Illegal argument \"~a\"" p) x)))
+		  (loop (cdr provided)))))
+	 ;; collect the default values
+	 (let loop ((i 0)
+		    (slots slots))
+	    (when (pair? slots)
+	       (let ((s (car slots)))
+		  (cond
+		     ((pair? (vector-ref vargs i))
+		      #unspecified)
+		     ((slot-default? s)
+		      (vector-set! vargs i (cons #t (slot-default-expr s))))
+		     (else
+		      (vector-set! vargs i (cons #f #unspecified))))
+		  (loop (+fx i 1) (cdr slots)))))
+	 ;; build the result
+	 (vector->list vargs)))
+
+   (define (collect-slot-values-TOBEREMOVE-3aug2017 slots)
+      ;; When instantiate-fill is called for widening, slots only contain
       ;; the wide slots. The OFFSET value adjust the indices in such a case.
       (let ((offset (-fx (length (tclass-slots class)) (length slots)))
 	    (vargs (make-vector (length slots))))

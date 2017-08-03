@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Fri Mar 11 17:17:48 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Aug  3 08:40:42 2017 (serrano)                */
+;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -166,6 +166,14 @@
 		  (global-pragma-set! global
 		     (cons 'no-alloc
 			(global-pragma global))))))
+	  ((default-inline)
+	   ;; inline when used in class field default value
+	   ;; see (@ instantiate-fill expand_object)
+	   (let ((val (global-value global)))
+	      (when (or (sfun? val) (cfun? val))
+		 (global-pragma-set! global
+		    (cons 'default-inline
+		       (global-pragma global))))))
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" clause '()))))
       (((and (? symbol?) ?key) . ?val)

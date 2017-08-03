@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Wed Jul 26 11:25:00 2017 (serrano)                */
+;*    Last change :  Thu Aug  3 07:10:14 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -52,6 +52,7 @@
 	    *warning-overriden-variables*
 	    *warning-types*
 	    *warning-type-error*
+	    *warning-default-slot-value*
 	    *profile-library*
 	    *trace-name*
 	    *trace-write-length*
@@ -787,6 +788,9 @@
    #f)
 (param-define *warning-type-error*
    "Set to #t to treat type warnigns as error"
+   #f)
+(param-define *warning-default-slot-value*
+   "Set to #t to warn about non-inlinable default slot values"
    #f)
 (param-define *profile-library*
    "Use the profiled library version"

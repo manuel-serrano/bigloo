@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 29 10:30:51 1994                          */
-;*    Last change :  Wed Nov 21 07:03:50 2012 (serrano)                */
-;*    Copyright   :  1994-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Aug  2 16:04:54 2017 (serrano)                */
+;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We scan files in order to find `inline' definitions.             */
 ;*=====================================================================*/
@@ -26,7 +26,8 @@
 	    ast_var
 	    (find-location tools_location))
    (export  (look-for-inlines-and-macros inline macro syntax expander
-					 code exps fnames module)
+	       code exps fnames module)
+	    (inline-definition-queue::pair-nil)
 	    (inline-finalizer)
 	    (import-macro-finalizer)))
 
@@ -210,6 +211,12 @@
 ;*    *inline-definitions* ...                                         */
 ;*---------------------------------------------------------------------*/
 (define *inline-definitions* '())
+
+;*---------------------------------------------------------------------*/
+;*    inline-definition-queue ...                                      */
+;*---------------------------------------------------------------------*/
+(define (inline-definition-queue)
+   *inline-definitions*)
 
 ;*---------------------------------------------------------------------*/
 ;*    inline-finalizer ...                                             */
