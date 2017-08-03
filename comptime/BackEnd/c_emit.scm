@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Mon Jul 17 09:36:12 2017 (serrano)                */
+;*    Last change :  Thu Aug  3 15:01:55 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -354,9 +354,21 @@
       ((llong? value)
        (display (llong->c-iso value) *c-port*))
       ((cnst? value)
-       (display "BCNST(" *c-port*)
-       (display (cnst->integer value) *c-port*)
-       (display #\) *c-port*))
+       (cond
+	  ((eof-object? value)
+	   (display "(BEOF)" *c-port*))
+	  ((eq? value boptional)
+	   (display "(BOPTIONAL)" *c-port*))
+	  ((eq? value bkey)
+	   (display "(BKEY)" *c-port*))
+	  ((eq? value brest)
+	   (display "(BREST)" *c-port*))
+	  ((eq? value __eoa__)
+	   (display "(BEOA)" *c-port*))
+	  (else
+	   (display "BCNST(" *c-port*)
+	   (display (cnst->integer value) *c-port*)
+	   (display #\) *c-port*))))
       ((bignum? value)
        (display "(bgl_string_to_bignum( \"" *c-port*)
        (display (number->string value 16) *c-port*)
