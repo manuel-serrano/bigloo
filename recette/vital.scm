@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Thu May  4 08:25:14 2017 (serrano)                */
+;*    Last change :  Mon Aug  7 06:38:36 2017 (serrano)                */
 ;*    Copyright   :  2002-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
@@ -923,5 +923,14 @@
    (test "bug-jvm" (procedure? bug-jvm) #t)
    (test "dataflow-lub.1" (bug-dataflow-lub "foo") 111)
    (test "dataflow-lub.2" (bug-dataflow-lub #f) #f)
-   (test "dataflow-lub.3" (bug-dataflow-lub "/foo") 222))
+   (test "dataflow-lub.3" (bug-dataflow-lub "/foo") 222)
+   (test "cnst.1" (int8? #!key) #f)
+   (test "cnst.2" (int8? (car (list '#!key))) #f)
+   (test "cnst.3" (int8? #!optional) #f)
+   (test "cnst.4" (int8? (car (list '#!optional))) #f)
+   (test "cnst.5" (int8? #!rest) #f)
+   (test "cnst.6" (int8? (car (list '#!rest))) #f)
+   (test "cnst.7" (int8? #s8:1) #t)
+   (test "cnst.8" (int8? (car (list #s8:1))) #t)
+   (test "cnst.9" (eq? (car (list #!optional)) #!optional) #t))
      
