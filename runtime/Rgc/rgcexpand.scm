@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Mon Oct 24 20:38:30 2016 (serrano)                */
+;*    Last change :  Fri Aug 18 16:42:52 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -269,7 +269,7 @@
 	  (define (the-failure)
 	     (if (=fx (rgc-buffer-length iport) 0)
 		 ;; this is the end-of-file object
-		 #<0100>
+		 (eof-object)
 		 (rgc-buffer-character iport)))
 	  ;; @deffn the-context@
 	  (define (the-context)

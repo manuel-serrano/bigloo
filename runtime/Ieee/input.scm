@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Wed Feb 10 11:28:44 2016 (serrano)                */
+;*    Last change :  Fri Aug 18 16:43:25 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -64,6 +64,7 @@
 	    (peek-char #!optional (ip (current-input-port)))
 	    (read-byte #!optional (ip (current-input-port)))
 	    (peek-byte #!optional (ip (current-input-port)))
+	    (inline eof-object::obj)
 	    (inline eof-object?::bool ::obj)
 	    (inline char-ready?::bool #!optional (ip (current-input-port)))
 	    (read-line::obj #!optional (ip (current-input-port)))
@@ -157,6 +158,12 @@
 			 (rgc-buffer-unget-char (the-port) c)
 			 c)))))
       (read/rp grammar ip)))
+
+;*---------------------------------------------------------------------*/
+;*    eof-object ...                                                   */
+;*---------------------------------------------------------------------*/
+(define-inline (eof-object)
+   beof)
 
 ;*---------------------------------------------------------------------*/
 ;*    eof-object? ...                                                  */
