@@ -127,6 +127,12 @@
 #undef HAVE_GETWD
 #define HAVE_GETWD @HAVE_GETWD@
 
+#undef BGL_HAVE_LIKELY
+#define BGL_HAVE_LIKELY @BGL_HAVE_LIKELY@
+
+#undef BGL_HAVE_GCCATTRS
+#define BGL_HAVE_GCCATTRS @BGL_HAVE_GCCATTRS@
+
 #undef CONSTANT_ALIGNED
 #define CONSTANT_ALIGNED @CONSTANT_ALIGNED@
 
@@ -552,6 +558,17 @@ BGL_RUNTIME_DECL int bgl_sigsetmask( int );
 #  else
 #    define getcwd( _path_, _int_ ) ((char *)getenv( "PWD" ))
 #  endif
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    likely                                                           */
+/*---------------------------------------------------------------------*/
+#if( !BGL_HAVE_LIKELY )
+#  define BGL_LIKELY(x) (x)
+#  define BGL_UNLIKELY(x) (x)
+#else
+#  define BGL_LIKELY(x) __builtin_expect( x, 1 )
+#  define BGL_UNLIKELY(x) __builtin_expect( x, 0 )
 #endif
 
 /*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Aug  7 06:51:39 2017 (serrano)                */
+/*    Last change :  Fri Aug 18 07:34:01 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -996,6 +996,8 @@ typedef obj_t (*function_t)();
    
 #define BEOF BCNST( 0x100 )
 #define BEOA BCNST( 0x101 )
+/* #define BEOF BCNST( 12 )                                            */
+/* #define BEOA BCNST( 13 )                                            */
 
 #define BOPTIONAL BCNST( 0x102 )
 #define BREST BCNST( 0x103 )
