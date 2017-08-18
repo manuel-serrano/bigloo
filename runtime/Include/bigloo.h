@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Aug 18 17:27:13 2017 (serrano)                */
+/*    Last change :  Sat Aug 19 10:39:31 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -203,9 +203,14 @@ error "Unknown garbage collector type"
 #   define TAG_SYMBOL 7        /*  Symbols tagging          ...111     */
 #endif
 
-/* #if( PTR_ALIGNMENT = 2 && defined( BGL_TAG_CNST32 ) )               */
-/* #   define TAG_OBJECT TAG_CNST                                      */
-/* #endif                                                              */
+#if( PTR_ALIGNMENT == 2 && defined( BGL_TAG_CNST32 ) )
+#   define TAG_OBJECT TAG_CNST
+
+#   undef BGL_CNST_SHIFT_INT16
+#   undef BGL_CNST_SHIFT_UCS2
+#   define BGL_CNST_SHIFT_INT16 8
+#   define BGL_CNST_SHIFT_UCS2 8
+#endif
 
 #if( TAG_YOUNG )
 #   define POINTERP( o ) (((((long)o) & 1) == 0) && o)
@@ -955,29 +960,15 @@ typedef obj_t (*function_t)();
 #define BGL_TAG_BCNST( c ) (obj_t)TAG( c, TAG_SHIFT, TAG_CNST )
 #define BGL_TAG_CCNST( c ) (long)UNTAG( c, TAG_SHIFT, TAG_CNST )
 
-#define BCHARH ((long)BGL_TAG_BCNST( 4 ))
-#define BUCS2H ((long)BGL_TAG_BCNST( 5 ))
-
-#define BINT8H ((long)BGL_TAG_BCNST( 6 ))
-#define BUINT8H ((long)BGL_TAG_BCNST( 7 ))
-
-#define BINT16H ((long)BGL_TAG_BCNST( 8 ))
-#define BUINT16H ((long)BGL_TAG_BCNST( 9 ))
-
-#if( PTR_ALIGNMENT >= 3 )
-#  define BINT32H ((long)BGL_TAG_BCNST( 10 ))
-#  define BUINT32H ((long)BGL_TAG_BCNST( 11 ))
-#endif
-
 #if( defined( BGL_TAG_CNST32 ) )
 #  define CNSTP( o ) \
     (BGL_TAG_CNSTP( o ) && ((((unsigned long)o) >> 24) == 0xff))
 #  define CNST32P( o ) \
     ((((unsigned long)o) >> 24) == 0xff)
 #  define BCNST( o ) \
-    ((obj_t)(((unsigned long)BGL_TAG_BCNST( o )) & 0xffff))
+    ((obj_t)(((unsigned long)BGL_TAG_BCNST( o )) + ((unsigned long)0xff << 24)))
 #  define CCNST( o ) \
-    ((obj_t)(((unsigned long)BGL_TAG_CCNST( o )) + ((unsigned long)0xff << 24)))
+    ((long)(((unsigned long)BGL_TAG_CCNST( o )) & 0xffff))
 #  define CCNST_MASK( o ) \
     (o & 0xffff)
 #else
@@ -994,17 +985,31 @@ typedef obj_t (*function_t)();
 #define BFALSE BCNST( 1 )
 #define BTRUE BCNST( 2 )
    
+#define BCHARH ((unsigned long)BCNST( 4 ))
+#define BUCS2H ((unsigned long)BCNST( 5 ))
+
+#define BINT8H ((unsigned long)BCNST( 6 ))
+#define BUINT8H ((unsigned long)BCNST( 7 ))
+
+#define BINT16H ((unsigned long)BCNST( 8 ))
+#define BUINT16H ((unsigned long)BCNST( 9 ))
+
+#if( PTR_ALIGNMENT >= 3 )
+#  define BINT32H ((unsigned long)BCNST( 10 ))
+#  define BUINT32H ((unsigned long)BCNST( 11 ))
+#endif
+
 /* #define BEOF BCNST( 0x100 )                                         */
 /* #define BEOA BCNST( 0x101 )                                         */
 #define BEOF BCNST( 12 )
 #define BEOA BCNST( 13 )
 
-#define BOPTIONAL BCNST( 0x102 )
-#define BREST BCNST( 0x103 )
-#define BKEY BCNST( 0x106 )
-/* #define BOPTIONAL BCNST( 14 )                                    */
-/* #define BREST BCNST( 15 )                                        */
-/* #define BKEY BCNST( 16 )                                         */
+/* #define BOPTIONAL BCNST( 0x102 )                                    */
+/* #define BREST BCNST( 0x103 )                                        */
+/* #define BKEY BCNST( 0x106 )                                         */
+#define BOPTIONAL BCNST( 14 )
+#define BREST BCNST( 15 )
+#define BKEY BCNST( 16 )
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */
@@ -1022,7 +1027,7 @@ typedef obj_t (*function_t)();
 /*    Characters (bytes)                                               */
 /*---------------------------------------------------------------------*/
 #define CHARP( o ) \
-   (CNST32P( o ) && (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_CHAR)) -1)) == (long)BCHARH))
+   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_CHAR)) -1)) == CCNST_MASK((long)BCHARH)) )
 
 #define BCHAR( c ) \
    ((obj_t)(BCHARH + ((unsigned char)(c) << BGL_CNST_SHIFT_CHAR)))
@@ -1033,10 +1038,10 @@ typedef obj_t (*function_t)();
 /*    UCS2/UTF16 characters                                            */
 /*---------------------------------------------------------------------*/
 #define UCS2P( o ) \
-   (CNST32P( o ) && (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_UCS2)) -1)) == (long)BUCS2H))
+   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_UCS2)) -1)) == CCNST_MASK((long)BUCS2H)) )
 
 #define BUCS2( u ) \
-   ((obj_t)(BUCS2H + ((long)((ucs2_t)(u) << BGL_CNST_SHIFT_UCS2))))
+   ((obj_t)(BUCS2H + ((unsigned long)((ucs2_t)(u) << BGL_CNST_SHIFT_UCS2))))
 #define CUCS2( o ) \
    ((ucs2_t)CCNST_MASK((unsigned long)(o) >> BGL_CNST_SHIFT_UCS2))
 

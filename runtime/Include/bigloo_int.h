@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sun Aug  6 20:40:01 2017 (serrano)                */
+/*    Last change :  Sat Aug 19 10:30:16 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -86,20 +86,20 @@ extern "C" {
 /*    Stdint                                                           */
 /*---------------------------------------------------------------------*/
 #define BGL_INT8P( o ) \
-   (CNST32P( o ) && (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BINT8H))
+   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == CCNST_MASK((long)BINT8H)) )
 #define BGL_UINT8P( o ) \
-   (CNST32P( o ) && (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BUINT8H))
+   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == CCNST_MASK((long)BUINT8H)) )
 
 #define BGL_INT16P( o ) \
-   (CNST32P( o ) && (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BINT16H))
+   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == CCNST_MASK((long)BINT16H)) )
 #define BGL_UINT16P( o ) \
-   (CNST32P( o ) && (((long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == (long)BUINT16H))
+   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_INT16)) -1)) == CCNST_MASK((long)BUINT16H)) )
 
 #if( defined( BGL_CNST_SHIFT_INT32 ) )   
 #  define BGL_INT32P( o ) \
-   (((long)(o) & (((long)1 << (BGL_CNST_SHIFT_INT32)) -1)) == (long)BINT32H)
+   (((long)(o) & (((long)1 << (BGL_CNST_SHIFT_INT32)) -1)) == CCNST_MASK((long)BINT32H) )
 #  define BGL_UINT32P( o ) \
-   (((long)(o) & (((long)1 << (BGL_CNST_SHIFT_INT32)) -1)) == (long)BUINT32H)
+   (((long)(o) & (((long)1 << (BGL_CNST_SHIFT_INT32)) -1)) == CCNST_MASK((long)BUINT32H) )
 #else
 #  define BGL_INT32P( o ) (POINTERP( o ) && (TYPE( o ) == INT32_TYPE))
 #  define BGL_UINT32P( o ) (POINTERP( o ) && (TYPE( o ) == UINT32_TYPE))

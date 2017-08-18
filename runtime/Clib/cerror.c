@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Thu Aug  3 13:10:18 2017 (serrano)                */
+/*    Last change :  Sat Aug 19 09:15:50 2017 (serrano)                */
 /*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
@@ -46,7 +46,7 @@ c_error( char *mes1, char *mes2, int err_no ) {
 
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
-/*    bgl_typeof ...                                                   */
+/*    bgl_debug_typeof ...                                             */
 /*    -------------------------------------------------------------    */
 /*    This function is only used for debugging purposes. It takes      */
 /*    a Bigloo object as argument and try to find out a C string       */
