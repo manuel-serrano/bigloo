@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Mon Aug  7 06:36:34 2017 (serrano)                */
+;*    Last change :  Fri Aug 18 18:41:57 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -75,15 +75,16 @@
 	  body)
 	 ((and (not (symbol? (car args))) (not (pair? (car args))))
 	  ;; either it is a DSSSL named constant or an error.
-	  (case (car args)
-	     ((#!optional)
+	  ;; (for bootstrapping ease, don't use CASE that uses the cnst index)
+	  (cond 
+	     ((eq? (car args) #!optional)
 	      (enter-dsssl-state (cdr args) optional-state))
-	     ((#!rest)
+	     ((eq? (car args) #!rest)
 	      (enter-dsssl-state (cdr args) rest-state))
-	     ((#!key)
+	     ((eq? (car args) #!key)
 	      (enter-dsssl-state (cdr args) no-rest-key-state))
 	     (else
-	      (err where "Illegal formal list" formals))))
+	      (err where "Illegal formal list.1" (cons (car args) formals)))))
 	 (else
 	  ;; regular Scheme formal, we simply skip
 	  (scheme-state (cdr args)))))
@@ -92,7 +93,7 @@
       (let loop ((as args))
 	 (cond
 	    ((not (pair? as))
-	     (err where "Illegal formal list" formals))
+	     (err where "Illegal formal list.2" (cons as formals)))
 	    (else
 	     (match-case (car as)
 		((? symbol?)
@@ -104,7 +105,7 @@
 		    `(let ((,dsssl-arg ,(car (car as))))
 			,(next-state args dsssl-arg))))
 		(else
-		 (err where "Illegal formal list" formals)))))))
+		 (err where "Illegal formal list.3" (cons (car as) formals))))))))
 
    (define (optional-state args dsssl-arg)
       
@@ -160,10 +161,11 @@
 	     (err where "Illegal DSSSL formal list (#!optional)" formals))
 	    ((and (not (symbol? (car args))) (not (pair? (car args))))
 	     ;; either it is a DSSSL named constant or an error.
-	     (case (car args)
-		((#!rest)
+	     ;; (for bootstrapping ease, don't use CASE but COND)
+	     (cond
+		((eq? (car args) #!rest)
 		 (rest-state (cdr args) dsssl-arg))
-		((#!key)
+		((eq? (car args) #!key)
 		 (no-rest-key-state (cdr args) dsssl-arg))
 		(else
 		 (err where "Illegal DSSSL formal list (#!optional)" formals))))

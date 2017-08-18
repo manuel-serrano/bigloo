@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Tue Aug 31 14:08:58 2010 (serrano)                */
-;*    Copyright   :  2002-10 Manuel Serrano                            */
+;*    Last change :  Fri Aug 18 18:44:42 2017 (serrano)                */
+;*    Copyright   :  2002-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    A test module that deploys the examples of Text.                 */
 ;*=====================================================================*/
@@ -93,17 +93,26 @@
    :result #t)
 
 ;*---------------------------------------------------------------------*/
+;*    en-hyphens-path ...                                              */
+;*---------------------------------------------------------------------*/
+(define (en-hyphens-path)
+   (unless (file-exists? "../data/en-hyphens.sch")
+      (error "text" "wrong execution path, hyphen file does not exists"
+	 "../data/en-hyphens.sch"))
+   "../data/en-hyphens.sch")
+
+;*---------------------------------------------------------------------*/
 ;*    hyphens ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define-test hyphens
-   (begin (load-hyphens 'en) #t)
+   (begin (load-hyphens (en-hyphens-path)) #t)
    :result #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    hyphenate-english ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-test hyphenate-english
-   (let ((h (load-hyphens 'en)))
+   (let ((h (load-hyphens (en-hyphens-path))))
       (map (lambda (w)
 	      (hyphenate w h))
 	   '("This" "program" "is" "free" "software" "you" "can"
