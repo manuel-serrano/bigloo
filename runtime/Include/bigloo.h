@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Aug 18 07:34:01 2017 (serrano)                */
+/*    Last change :  Fri Aug 18 17:27:13 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -994,14 +994,17 @@ typedef obj_t (*function_t)();
 #define BFALSE BCNST( 1 )
 #define BTRUE BCNST( 2 )
    
-#define BEOF BCNST( 0x100 )
-#define BEOA BCNST( 0x101 )
-/* #define BEOF BCNST( 12 )                                            */
-/* #define BEOA BCNST( 13 )                                            */
+/* #define BEOF BCNST( 0x100 )                                         */
+/* #define BEOA BCNST( 0x101 )                                         */
+#define BEOF BCNST( 12 )
+#define BEOA BCNST( 13 )
 
 #define BOPTIONAL BCNST( 0x102 )
 #define BREST BCNST( 0x103 )
 #define BKEY BCNST( 0x106 )
+/* #define BOPTIONAL BCNST( 14 )                                    */
+/* #define BREST BCNST( 15 )                                        */
+/* #define BKEY BCNST( 16 )                                         */
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */

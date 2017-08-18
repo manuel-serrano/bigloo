@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 09:59:46 2017 (serrano)                */
+#*    Last change :  Fri Aug 18 17:24:10 2017 (serrano)                */
 #*    Copyright   :  2001-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -21,7 +21,7 @@ API = avahi
 #*---------------------------------------------------------------------*/
 #*    Directories where to find the files composing a revision         */
 #*---------------------------------------------------------------------*/
-POPDIR = src recette examples
+POPDIR = src examples
 
 POPULATION = Makefile README
 
@@ -65,7 +65,6 @@ pop:
 #*---------------------------------------------------------------------*/
 clean:
 	(cd src && $(MAKE) clean)
-	(cd recette && $(MAKE) clean)
 	(cd examples && $(MAKE) clean)
 
 distclean: clean
