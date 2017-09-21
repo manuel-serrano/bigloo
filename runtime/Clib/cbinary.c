@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Wed Jul 26 10:21:29 2017 (serrano)                */
+/*    Last change :  Thu Sep 21 06:48:02 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -50,8 +50,8 @@
 extern obj_t obj_to_string( obj_t, obj_t );
 extern obj_t string_to_obj( obj_t, obj_t, obj_t );
 extern obj_t c_constant_string_to_string( char * );
-extern obj_t make_string_sans_fill( int );
-extern obj_t bgl_string_shrink();
+extern obj_t make_string_sans_fill( long );
+extern obj_t bgl_string_shrink( obj_t, long );
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */

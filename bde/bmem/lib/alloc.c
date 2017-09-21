@@ -758,7 +758,7 @@ obj_t ident proto { \
 WRAPPER( string_to_bstring_len, STRING_TYPE_NUM, (char *s, int l), (s ,l) )
 WRAPPER( string_to_bstring, STRING_TYPE_NUM, (char *s), (s) )
 WRAPPER( make_string, STRING_TYPE_NUM, (int l, char c), (l,c)  )
-WRAPPER( make_string_sans_fill, STRING_TYPE_NUM, (int l), (l) )
+WRAPPER( make_string_sans_fill, STRING_TYPE_NUM, (long l), (l) )
 WRAPPER( string_append, STRING_TYPE_NUM, (void *s1, void *s2), (s1, s2) )
 WRAPPER( string_append_3, STRING_TYPE_NUM, (void *s1, void *s2, void *s3), (s1, s2, s3) )
 WRAPPER( c_substring, STRING_TYPE_NUM, (void *s, int l1, int l2), (s, l1, l2) )
@@ -812,7 +812,7 @@ WRAPPER( bgl_host, HOSTENT_TYPE_NUM, (obj_t s), (s) )
 /* date */
 WRAPPER( bgl_seconds_to_date, DATE_TYPE_NUM, (long s), (s) )
 WRAPPER( bgl_nanoseconds_to_date, DATE_TYPE_NUM, (long s), (s) )
-WRAPPER( bgl_make_date, DATE_TYPE_NUM, (int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst), (s, m, hr, mday, mon, year, tz, istz, isdst) )
+WRAPPER( bgl_make_date, DATE_TYPE_NUM, (BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst), (ns, s, m, hr, mday, mon, year, tz, istz, isdst) )
 WRAPPER( bgl_seconds_format, STRING_TYPE_NUM, (long s, obj_t f), (s, f) )
 
 /* dynamic environment */

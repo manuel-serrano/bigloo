@@ -211,7 +211,7 @@ BGL_RUNTIME_DEF long default_io_bufsiz;
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t bgl_make_input_port( obj_t, FILE *, obj_t, obj_t );
 extern obj_t make_string( int, unsigned char );
-extern obj_t make_string_sans_fill( int );
+extern obj_t make_string_sans_fill( long );
 
 /*---------------------------------------------------------------------*/
 /*    Prototypes                                                       */

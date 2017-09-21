@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Sep 13 11:58:32 1998                          */
-/*    Last change :  Wed Mar  8 12:13:20 2017 (serrano)                */
+/*    Last change :  Thu Aug 31 16:22:21 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Rgc runtime (mostly port handling).                              */
 /*=====================================================================*/
@@ -52,7 +52,7 @@
 extern obj_t bigloo_case_sensitive;
 extern obj_t bgl_string_to_keyword_len( char *, long );
 extern obj_t bgl_string_to_symbol_len( char *, long );
-extern obj_t make_string_sans_fill( int );
+extern obj_t make_string_sans_fill( long );
 extern obj_t string_to_bstring_len( char *, int );
 extern int bgl_debug();
 extern obj_t bgl_escape_C_string( unsigned char *, long, long );
@@ -369,7 +369,7 @@ rgc_buffer_insert_substring( obj_t ip, obj_t str, long from, long to ) {
    }
 
    matchstop -= len;
-   INPUT_PORT( ip ).matchstop  = matchstop;
+   INPUT_PORT( ip ).matchstop = matchstop;
    INPUT_PORT( ip ).forward = matchstop;
    INPUT_PORT( ip ).matchstart = matchstop;
 

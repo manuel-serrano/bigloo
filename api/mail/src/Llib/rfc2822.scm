@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Thu Oct  1 11:50:01 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Sun Sep 10 14:05:00 2017 (serrano)                */
+;*    Copyright   :  2007-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
 ;*    (Internet Message Format) specification.                         */
@@ -64,7 +64,13 @@
 			(string-downcase!
 			   (the-substring 0 (-fx len delta)))))
 		 (val (read/rp value-grammar (the-port))))
-	     (cons (cons id val) (ignore))))
+	     (with-handler
+		(lambda (e)
+		   (raise
+		      (with-access::&error e (obj)
+			 (duplicate::&io-parse-error e
+			    (obj (cons (cons id val) obj))))))
+		(cons (cons id val) (ignore)))))
 	 ((bol (: id ": " (= 2 #\Newline)))
 	  (let ((id (string->symbol
 		       (string-downcase!
@@ -92,12 +98,12 @@
 			(ignore))
 		       ((eof-object? line)
 			(raise (instantiate::&io-parse-error
-				  (proc "mail-header->list:field-grammar")
+				  (proc "mail-header->list")
 				  (msg "Premature end of file")
 				  (obj c))))
 		       (else
 			(raise (instantiate::&io-parse-error
-				  (proc "mail-header->list:field-grammar")
+				  (proc "mail-header->list")
 				  (msg "Illegal field character")
 				  (obj (string-append (safe-char c)
 					  line))))))))))))

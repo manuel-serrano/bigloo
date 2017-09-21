@@ -97,7 +97,7 @@ extern void (*____bgl_init_objects)();
 extern void *(*____string_to_bstring)( char * );
 extern void *(*____string_to_bstring_len)( char *, int );
 extern void *(*____make_string)( int, char );
-extern void *(*____make_string_sans_fill)( int );
+extern void *(*____make_string_sans_fill)( long );
 extern void *(*____string_append)( void *, void * );
 extern void *(*____string_append_3)( void *, void *, void * );
 extern void *(*____c_substring)( void *, int, int );
@@ -153,7 +153,7 @@ extern void *(*____bgl_host )( void * );
 
 extern void *(*____bgl_seconds_to_date )( long );
 extern void *(*____bgl_nanoseconds_to_date )( long );
-extern void *(*____bgl_make_date )( int, int, int, int, int, int, long, int, int );
+extern void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
 extern void *(*____bgl_seconds_format )( long, void * );
 
 extern void *(*____scheduler_start)( void * );

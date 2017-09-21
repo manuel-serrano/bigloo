@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Tue Sep 20 23:54:45 2016 (serrano)                */
-;*    Copyright   :  2007-16 Manuel Serrano                            */
+;*    Last change :  Sun Sep 10 23:18:12 2017 (serrano)                */
+;*    Copyright   :  2007-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
 ;*=====================================================================*/
@@ -909,7 +909,10 @@
 			(obj m))))
 	       (let* ((uid (get-nextuid! dinfo))
 		      (file (genfilename uid message-base))
+		      (tmp (make-file-path dir "tmp" file))
 		      (dest (make-file-path dir "cur" file)))
-		  (with-output-to-file dest (lambda () (display txt)))
+		  (with-output-to-file tmp (lambda () (display txt)))
+		  (rename-file tmp dest)
+		  (delete-file tmp)
 		  (update-folderinfo! dir dinfo uid file)
 		  uid))))))

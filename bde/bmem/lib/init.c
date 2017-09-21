@@ -63,7 +63,7 @@ void *(*____make_bllong)( BGL_LONGLONG_T ) = 0;
 void *(*____string_to_bstring)( char * ) = 0;
 void *(*____string_to_bstring_len)( char *, int ) = 0;
 void *(*____make_string)( int, char ) = 0;
-void *(*____make_string_sans_fill)( int ) = 0;
+void *(*____make_string_sans_fill)( long ) = 0;
 void *(*____string_append)( void *, void * ) = 0;
 void *(*____string_append_3)( void *, void *, void * ) = 0;
 void *(*____c_substring)( void *, int, int ) = 0;
@@ -138,7 +138,7 @@ void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 /* date */
 void *(*____bgl_seconds_to_date )( long );
 void *(*____bgl_nanoseconds_to_date )( long );
-void *(*____bgl_make_date )( int, int, int, int, int, int, long, bool_t, int );
+void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
 void *(*____bgl_seconds_format )( long, void * );
 					   
 /* classes */
@@ -421,7 +421,7 @@ bmem_init_inner() {
    /* date */
    ____bgl_seconds_to_date = (void *(*)( long ))get_function( hdl, "bgl_seconds_to_date" );
    ____bgl_nanoseconds_to_date = (void *(*)( long ))get_function( hdl, "bgl_nanoseconds_to_date" );
-   ____bgl_make_date = (void *(*)( int, int, int, int, int, int, long, bool_t, int ))get_function( hdl, "bgl_make_date" );
+   ____bgl_make_date = (void *(*)( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int ))get_function( hdl, "bgl_make_date" );
    ____bgl_seconds_format = (void *(*)( long, void * ))get_function( hdl, "bgl_seconds_format" );
 
    /* class */

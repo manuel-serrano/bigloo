@@ -98,7 +98,7 @@ make_string( int len, unsigned char c ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-make_string_sans_fill( int len ) {
+make_string_sans_fill( long len ) {
    obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )

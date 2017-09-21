@@ -1053,7 +1053,7 @@ bgl_gsttag_value_to_obj( const GstTagList *list, const gchar *tag ) {
 	    GDate *date;
 
 	    if( gst_tag_list_get_date( list, tag, &date ) )
-	       return bgl_make_date( 1, 1, 1,
+	       return bgl_make_date( 0, 1, 1, 1,
 				     date->day, date->month, date->year,
 				     0, 0, 0 );
 	    else

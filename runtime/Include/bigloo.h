@@ -2472,7 +2472,7 @@ BGL_RUNTIME_DECL obj_t bgl_display_char( char, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_flush_output_port( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_write( obj_t, unsigned char *, size_t );
    
-BGL_RUNTIME_DECL obj_t bgl_make_date();
+BGL_RUNTIME_DECL obj_t bgl_make_date( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
    
 BGL_RUNTIME_DECL obj_t bgl_make_condvar( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_make_mutex( obj_t );
@@ -2499,7 +2499,7 @@ BGL_RUNTIME_DECL obj_t bgl_make_class( obj_t, obj_t, long,
 				       obj_t, obj_t, obj_t, obj_t, obj_t,
 				       long, obj_t );
 
-BGL_RUNTIME_DECL obj_t bgl_getgroups();
+BGL_RUNTIME_DECL obj_t bgl_getgroups( void );
    
 #if !HAVE_MMAP   
 BGL_RUNTIME_DECL unsigned char bgl_mmap_nommap_ref( obj_t, long );
@@ -2527,7 +2527,7 @@ BGL_RUNTIME_DECL obj_t bgl_make_server_socket( obj_t, int, int, bool_t );
 BGL_RUNTIME_DECL obj_t bgl_socket_accept( obj_t, bool_t, obj_t, obj_t );
 BGL_RUNTIME_DECL long bgl_socket_accept_many( obj_t, bool_t, obj_t, obj_t, obj_t );
    
-BGL_RUNTIME_DECL obj_t bgl_gethostname();
+BGL_RUNTIME_DECL obj_t bgl_gethostname( void );
 BGL_RUNTIME_DECL obj_t bgl_socket_hostname( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_datagram_socket_hostname( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_getsockopt( obj_t, obj_t );
@@ -2543,7 +2543,7 @@ BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
 
-BGL_RUNTIME_DECL void bgl_restore_signal_handlers();
+BGL_RUNTIME_DECL void bgl_restore_signal_handlers( void );
 extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);
 extern void bps_bmassign(obj_t *field, obj_t value);
 

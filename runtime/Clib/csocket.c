@@ -150,7 +150,7 @@ extern bool_t bigloo_strcmp( obj_t o1, obj_t o2 );
 extern bool_t bgl_dns_enable_cache();
 extern long bgl_dns_cache_validity_timeout();
 extern ssize_t bgl_syswrite( obj_t, char *, size_t );
-extern obj_t make_string_sans_fill( int );
+extern obj_t make_string_sans_fill( long );
 
 #ifndef _BGL_WIN32_VER
 extern int dup( int );

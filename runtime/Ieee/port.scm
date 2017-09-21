@@ -117,7 +117,7 @@
 		   "BGL_INPUT_PORT_LENGTH_SET")
 	    (macro c-input-port-last-token-position::elong (::input-port)
 		   "INPUT_PORT_TOKENPOS")
-	    (macro c-input-port-bufsiz::int (::input-port)
+	    (macro c-input-port-bufsiz::long (::input-port)
 		   "BGL_INPUT_PORT_BUFSIZ")
 	    (macro c-closed-input-port?::bool (::obj)
 		   "INPUT_PORT_CLOSEP")
@@ -130,7 +130,7 @@
 	    
 	    ($close-output-port::obj (::output-port) "bgl_close_output_port")
 	    (c-get-output-string::bstring (::output-port)"get_output_string")
-	    (c-default-io-bufsiz::int "default_io_bufsiz")
+	    (c-default-io-bufsiz::long "default_io_bufsiz")
 	    (c-reset-eof::bool (::obj) "reset_eof")
 	    (macro c-flush-output-port::obj (::output-port)
 		   "bgl_flush_output_port")

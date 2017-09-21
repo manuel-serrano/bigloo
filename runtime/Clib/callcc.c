@@ -24,7 +24,7 @@ extern int flush_regs_in_stack();
 /*---------------------------------------------------------------------*/
 extern long glob_dummy;
 
-extern obj_t make_fx_procedure();
+extern obj_t make_fx_procedure( obj_t (*)(), int, int );
 extern obj_t c_constant_string_to_string( char * );
 
 static obj_t callcc_restore_stack();

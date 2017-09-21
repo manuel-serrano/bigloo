@@ -27,9 +27,9 @@ allocate the processor to another waiting thread. Fair threads have two
 drawbacks over preemptive threads:
 
 @itemize @bullet
-@item Cooperative threads are not skilled to benefit of multi processors
+@item Cooperative threads are not able to benefit of multi-processors
       platforms.
-@item Single threads programs must be adapted in order to be ran 
+@item Single threads programs must be adapted in order to be run 
       concurrently. 
 @end itemize
 

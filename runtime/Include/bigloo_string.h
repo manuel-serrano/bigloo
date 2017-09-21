@@ -24,7 +24,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t make_string_sans_fill();
+BGL_RUNTIME_DECL obj_t make_string_sans_fill( long );
 BGL_RUNTIME_DECL obj_t string_to_bstring( char * );
 BGL_RUNTIME_DECL obj_t string_to_bstring_len( char *, int );
 BGL_RUNTIME_DECL obj_t close_init_string();
