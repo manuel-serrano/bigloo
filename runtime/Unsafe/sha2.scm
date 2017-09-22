@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Wayne Richards and Manuel Serrano                 */
 ;*    Creation    :  Mon May 26 08:40:27 2008                          */
-;*    Last change :  Mon Apr  4 17:52:42 2016 (serrano)                */
-;*    Copyright   :  2008-16 Wayne Richards, Manuel Serrano            */
+;*    Last change :  Fri Sep 22 08:32:56 2017 (serrano)                */
+;*    Copyright   :  2008-17 Wayne Richards, Manuel Serrano            */
 ;*    -------------------------------------------------------------    */
 ;*    SHA-256 Bigloo implementation                                    */
 ;*=====================================================================*/
@@ -417,6 +417,12 @@
 	 (if (<fx j 16)
 	     (loop (+fx j 1) (+fx i 4) (+ n (fill-word! buffer j o i)))
 	     n)))
+
+   (define (u32vector-fill! v len val)
+      (let loop ((i 0))
+	 (when (<fx i len)
+	    (u32vector-set! v i val)
+	    (loop (+fx i 1)))))
    
    (let loop ((i 0)
 	      (l 0))
@@ -428,14 +434,17 @@
 	     (loop (+fx i 64) (+fx l 64)))
 	    ((>=fx (-fx 64 bytes) 8)
 	     ;; we have room for the length of the message. The length is
-		;; a 64 bits integer but we are using here 32bits values
+	     ;; a 64 bits integer but we are using here 32bits values
 	     (let ((ulen::uint32 (*fx 8 (+fx (-fx l 1) bytes))))
 		(u32vector-set! buffer 15 ulen))
 	     (sha256-internal-transform state buffer))
 	    (else
 	     ;; we don't have space for the length
 	     (sha256-internal-transform state buffer)
-	     (loop (+fx 64 bytes) (+fx l bytes)))))))
+	     (u32vector-fill! buffer 15 #u32:0)
+	     (let ((ulen::uint32 (*fx 8 (+fx (-fx l 1) bytes))))
+		(u32vector-set! buffer 15 ulen))
+	     (sha256-internal-transform state buffer))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sha256sum-mmap ...                                               */
