@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Aug 18 07:01:22 2017 (serrano)                */
+#*    Last change :  Fri Sep 22 08:46:34 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -921,7 +921,7 @@ while : ; do
       unistring=""
       unistringforce="yes";;
 
-    --customunistring=yes|--customunistring)
+    --customunistring=yes)
       customunistring=yes;;
 
     --customunistring=no)
@@ -1120,7 +1120,7 @@ while : ; do
       echo "   --pcresrc=file [default \$PCRE\")" >&2;
       echo "   --customgmp=yes|no [default no]" >&2;
       echo "   --gmpsrc=file [default \$GMP\")" >&2;
-      echo "   --customunistring=yes|no [default yes]" >&2;
+      echo "   --customunistring=yes|no [default no]" >&2;
       echo "   --unistringsrc=file [default \$UNISTRING\")" >&2;
       echo "   --customlibuv=yes|no [default yes]" >&2;
       echo "   --sqltiny [force sqltiny backend]" >&2;
@@ -2419,47 +2419,52 @@ featureflags="-srfi enable-$regexp"
 #*---------------------------------------------------------------------*/
 #*    unistring                                                        */
 #*---------------------------------------------------------------------*/
-if [ "$customunistring " = "yes " ]; then
-  haveunistring=1;
-  featureflags="-srfi enable-unistring $featureflags";
-  extraunistring=unistring
-  libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-  lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
-  cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-elif [ "$unistring " = " " ]; then
-  extraunistring=`$autoconf unistring` || exit 1
-fi
-  
-if [ "$extraunistring " = "no " ]; then
-  if [ "$customunistring " != "no " ]; then
-    customunistring=yes
-    unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
-    
-    echo "+ Installing custom unistring source code."
-    (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
-
-    echo "+ Configuring custom unistring..."
-    (cd libunistring; . ./configure-unistring) || exit 1
-  
-    unistringlibs=yes
+if [ "$unistring " != "no " ]; then
+  if [ "$customunistring " = "yes " ]; then
+    haveunistring=1;
+    featureflags="-srfi enable-unistring $featureflags";
     extraunistring=unistring
+    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
+    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+  elif [ "$unistring " = " " ]; then
+    extraunistring=`$autoconf unistring` || exit 1
+  fi
+    
+  if [ "$extraunistring " = "no " ]; then
+    if [ "$customunistring " != "no " ]; then
+      customunistring=yes
+      unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+      
+      echo "+ Installing custom unistring source code."
+      (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
+  
+      echo "+ Configuring custom unistring..."
+      (cd libunistring; . ./configure-unistring) || exit 1
+    
+      unistringlibs=yes
+      extraunistring=unistring
+    else
+      haveunistring=0;
+      extraunistring=no
+      if [ $unistringforce = "yes" ]; then
+        echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
+        echo "Aborting";
+        exit 1;
+      fi
+    fi
+  fi  
+  
+  if [ "$extraunistring " != "no " ]; then
+    haveunistring=1;
+    featureflags="-srfi enable-unistring $featureflags";
+    extralibs="-l$extraunistring $extralibs"
   else
     haveunistring=0;
-    extraunistring=no
-    if [ $unistringforce = "yes" ]; then
-      echo "*** ERROR:configure:--enable-unistring. Cannot find UNISTRING library."
-      echo "Aborting";
-      exit 1;
-    fi
   fi
-fi  
-
-if [ "$extraunistring " != "no " ]; then
-  haveunistring=1;
-  featureflags="-srfi enable-unistring $featureflags";
-  extralibs="-l$extraunistring $extralibs"
 else
   haveunistring=0;
+  extraunistring=no;
 fi
 
 #*---------------------------------------------------------------------*/
