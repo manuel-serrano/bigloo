@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 10:18:56 1992                          */
-;*    Last change :  Sun Dec 25 07:52:31 2016 (serrano)                */
+;*    Last change :  Sat Sep 23 09:28:16 2017 (serrano)                */
 ;*                                                                     */
 ;*    On teste differentes operations sur les chaines de caracteres    */
 ;*---------------------------------------------------------------------*/
@@ -501,6 +501,27 @@
    (test-sha256 10
       (make-string 56 #\a)
       "b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a")
+   (test-sha256 11
+      (make-string 57 #\a)
+      "f13b2d724659eb3bf47f2dd6af1accc87b81f09f59f2b75e5c0bed6589dfe8c6")
+   (test-sha256 12
+      (make-string 58 #\a)
+      "d5c039b748aa64665782974ec3dc3025c042edf54dcdc2b5de31385b094cb678")
+   (test-sha256 13
+      (make-string 59 #\a)
+      "111bb261277afd65f0744b247cd3e47d386d71563d0ed995517807d5ebd4fba3")
+   (test-sha256 14
+      (make-string 60 #\a)
+      "11ee391211c6256460b6ed375957fadd8061cafbb31daf967db875aebd5aaad4")
+   (test-sha256 15
+      (make-string 1 #\a)
+      "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb")
+   (test-sha256 16
+      (make-string 16 #\a)
+      "0c0beacef8877bbf2416eb00f2b5dc96354e26dd1df5517320459b1236860f8c")
+   (test-sha256 17
+      (make-string 17 #\a)
+      "b860666ee2966dd8f903be44ee605c6e1366f926d9f17a8f49937d11624eb99d")
    (test-sha256-2)
    (test "string-prefix-length.1"
       (string-prefix-length "abcde" "abcdef") 5)

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sun Aug  6 09:42:45 2017 (serrano)                */
+;*    Last change :  Sat Sep 23 09:35:47 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -17,7 +17,6 @@
 	    __rgc
 	    __param
 	    __object
-            __hash
 	    __thread)
    
    (use     __type
@@ -25,7 +24,6 @@
 	    __param
 	    __structure
 	    __tvector
-            __hash
 	    __dsssl
 	    __ucs2
 	    __unicode
@@ -198,20 +196,10 @@
       (cond
 	 ((procedure? obj)
 	  (let* ((no (obj))
-                 (val (cond
-			 ((hashtable? cycles)
-			  (let ((val (hashtable-get cycles no)))
-			     (if (and (not val)
-				      (not (hashtable-contains? cycles no)))
-				 (read-error "no target for graph reference"
-				    no port)
-				 val)))
-			 (else
-			  (let ((cell (assq no cycles)))
-			     (if (not (pair? cell))
-				 (read-error "no target for graph reference"
-				    no port)
-				 (cdr cell)))))))
+                 (val0 (vector-ref cycles no))
+                 (val (if (not val0)
+                          (read-error "no target for graph reference" no port)
+                          val0)))
             (if (eq? val obj)
                 (read-error "Illegal cyclic reference" no port)
                 val)))
@@ -472,7 +460,6 @@
 		     posp cycles par-open bra-open par-poses bra-poses)
 
       (define resolve #t)
-      (define cycles-count 0)
       
       ;; newlines
       ((+ #\Newline)
@@ -744,24 +731,17 @@
 	     (cond
 		((eof-object? the-object)
 		 (read-error/loc pos "Illegal cyclic reference" no (the-port)))
-                ((>=fx cycles-count 64)
-                 ;; convert to hashtable
-                 (set! cycles-count -1)
-                 (let ((h (create-hashtable :eqtest eq? :bucket-expansion 2.0)))
-		    (for-each (lambda (cell)
-				 (hashtable-put! h (car cell) (cdr cell)))
-		       cycles)
-		    (set! cycles h))))
-             (cond
-                ((hashtable? cycles)
-                 (unless (eq? (hashtable-put! cycles no the-object)
-			    the-object)
-		    (read-error "Illegal duplicate declaration" no (the-port))))
-                (else
-                 (when (assq no cycles)
-		    (read-error "Illegal duplicate declaration" no (the-port)))
-                 (set! cycles (cons (cons no the-object) cycles))
-                 (set! cycles-count (+fx cycles-count 1))))
+                ((>=fx no (vector-length cycles))
+                 ;; extend vector
+		 (let* ((old-length (vector-length cycles))
+			(new-length (maxfx (+ no 1) (*fx old-length 2)))
+			(new-cycles (make-vector new-length #f)))
+		    (vector-copy! new-cycles 0 cycles 0)
+		    (set! cycles new-cycles))))
+             (when (vector-ref cycles no)
+		(read-error "Illegal duplicate declaration"
+		   (list no (vector-ref cycles no)) (the-port)))
+             (vector-set! cycles no the-object)
 	     (set! resolve rsvp)
 	     (if rsvp
 		 (unreference! the-object (the-port) cycles)
@@ -773,20 +753,12 @@
           (cond
 	     ((not resolve)
 	      (lambda () no))
-	     ((hashtable? cycles)
-	      (let ((val (hashtable-get cycles no)))
-		 (if (and (not val)
-			  (not (hashtable-contains? cycles no)))
-		     (read-error "no target for graph reference"
-			no (the-port))
-		     val)))
 	     (else
-	      (let ((cell (assq no cycles)))
-		 (if (pair? cell)
-		     (cdr cell)
-		     (read-error "no target for graph reference"
-			no (the-port))))))))
-      
+	      (let ((val (vector-ref cycles no)))
+		 (if (not val)
+		     (read-error "no target for graph reference" no (the-port))
+		     val))))))
+
       ;; special tokens
       ("#"
        (read/rp *sharp-grammar* (the-port)))
@@ -836,7 +808,7 @@
        ;; expansion of the *BIGLOO-GRAMMAR* never checks if the
        ;; input port is not already closed. In consequence, we
        ;; have to explicitly test the closeness before reading.
-       (read/rp (bigloo-regular-grammar) iport location '() 0 0 '() '())))
+       (read/rp (bigloo-regular-grammar) iport location '#() 0 0 '() '())))
 
 ;*---------------------------------------------------------------------*/
 ;*    read/case ...                                                    */
