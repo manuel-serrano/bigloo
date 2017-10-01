@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Sep 22 08:46:34 2017 (serrano)                */
+#*    Last change :  Sun Oct  1 07:46:38 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -472,6 +472,13 @@ while : ; do
     --build-bindir=*)
       buildbindir="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --thirdparty-configure-opt=*)
+      opt="`echo $1 | sed 's/^[^=]*=//'`";
+      gcconfigureopt="$gcconfigureopt $opt";
+      libuvconfigureopt="$libuvconfigureopt $opt";
+      pcreconfigureopt="$pcreconfigureopt $opt";
+      unistringconfigureopt="$unistringconfigureopt $opt";;
+      
     --bigloo_config.h)
       action="bigloo_config";;
 
@@ -791,6 +798,9 @@ while : ; do
 
     --customgc=no)
       customgc=no;;
+
+    --gcconfigureopt=*)
+      gcconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --finalization=yes)
       gcfinalizer=1;
@@ -1138,6 +1148,7 @@ while : ; do
       echo "   --bootconfig" >&2;
       echo "   --bootdir=dir" >&2;
       echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
+      echo "   --thirdparty-configure-opt=opt" >&2;
       echo "   --configureinfo=yes|no [default no]" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;

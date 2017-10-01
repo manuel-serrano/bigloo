@@ -65,13 +65,18 @@ A @emph{hostsh} script is passed to Bigloo's configuration script and
 is invoked whenever a command should be executed on the host-side.
 
 There are already three example scripts inside Bigloo's source
-tree.
+tree that are located in the @code{examples/hostsh} directory.
+
 @itemize @bullet
-@item one asks (using KDE's kdialog) to execute the command by hand on
-the host-side and to report the result.
-@item another one copies the file by @code{ssh} and executes it then
-on the other side. Note: there exists an Ipod/Iphone version that
-automatically signs on jail-broken devices.
+@item @code{by-hand/kdiallog-host.sh} asks (using KDE's kdialog) to
+execute the command by hand on the host-side and to report the result.
+@item @code{ssh/ssh-copy.sh} copies the file by @code{ssh} and executes
+it then on the other side. If you intend to use that file, you must edit
+it for setting the variables describing the remote ssh connection.
+For the variables @code{REMOTE_HOST}, @code{REMOTE_SSH_PORT}, and
+@code{REMOTE_USER} must be modified.
+Note: there exists an Ipod/Iphone version that
+automatically signs on jail-broken devices. 
 @item and finally, as last resort, there exists a @code{netcat}
 version if no @code{ssh} is available. This one can be used on devices
 that only have telnet access, and where ssh is not available. Its only
@@ -85,10 +90,23 @@ Armed with a working cross-compiler @code{CC} and a script
 the configure invocation is simple:
 
 @display
-./configure --prefix=[PREFIX_PATH_ON_TARGET] --hostsh=[HOSTSH] --cc=[CC]
+./configure \
+  --prefix=[PREFIX_PATH_ON_TARGET] \
+  --cc=[CC] \
+  --hostsh=[HOSTSH] \
+  --thirdparty-configure-opt=[options]
 @end display
 
 Other configuration options are of course possible too.
+
+For instance, for configuring Bigloo for a Raspberry model 2.
+
+@display
+./configure \
+  --cc=/usr/bin/arm-linux-gnueabi-gcc-6 \
+  --hostsh=$PWD/ssh-copy.sh \
+  --thirdparty-configure-opt=--host=arm-linux-gnueabi
+@end display
 
 Once the configuration has finished one can build Bigloo (and its
 library) simply by calling @code{make}. This will build the libraries

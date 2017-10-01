@@ -60,4 +60,5 @@
   (regexp . "@BGL_REGEXP_FAMILY@")
   (int-size . @INT_BIT_SIZE@)
   (elong-size . @ELONG_BIT_SIZE@)
-  (have-unistring . ,(=fx @BGL_HAVE_UNISTRING@ 1)))
+  (have-unistring . ,(=fx @BGL_HAVE_UNISTRING@ 1))
+  (have-overflow . ,(=fx @BGL_HAVE_OVERFLOW@ 1)))

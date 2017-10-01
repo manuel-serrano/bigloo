@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Dec  4 07:27:06 2013 (serrano)                */
+#*    Last change :  Sat Sep 30 19:20:06 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check the GC version                                             */
 #*=====================================================================*/
@@ -57,7 +57,7 @@ cat > $file.c <<EOF
 #include <gc.h>
 #include <stdio.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d%d%d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR, GC_VERSION_MICRO );
    return 0;
 }
@@ -80,7 +80,7 @@ cat > $file.c <<EOF
 #define GC_ALPHA_VERSION 0
 #endif
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d%d%d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR, GC_ALPHA_VERSION );
    return 0;
 }
@@ -104,7 +104,7 @@ cat > $file.c <<EOF
 #define GC_ALPHA_VERSION 0
 #endif
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d%d%d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR, GC_ALPHA_VERSION );
    return 0;
 }
@@ -123,7 +123,7 @@ cat > $file.c <<EOF
 #include <../version.h>
 #include <stdio.h>
 
-main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
    printf( "%d%02d\n", GC_VERSION_MAJOR, GC_VERSION_MINOR );
    return 0;
 }
