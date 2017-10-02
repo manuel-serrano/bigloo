@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Jul 27 08:58:09 2017 (serrano)                */
+#*    Last change :  Mon Oct  2 13:48:41 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -477,7 +477,7 @@ bigloo.$(SHAREDSUFFIX):
 $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
-	          -copt "$(EXTRA_LD_OPT)" \
+	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
 	          -o $(BIGLOO_DEST).aux \
 	          $(O_OBJECTS)
 	@ if [ $(HOSTOS) = "cygwin" ]; then \

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Oct  2 13:08:35 2017 (serrano)                */
+#*    Last change :  Mon Oct  2 13:47:30 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3059,13 +3059,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$xcc " = "$cc " ]; then
     ldrpath="-Wl,--enable-new-dtags,-rpath="
     crpath="$ldrpath~a"
-    rflags="$rflags $ldrpath\$(RPATH)"
   else
     xcc=`$autoconf cctest --cc=$cc --cflags="-Wl,-rpath=$libdir"`
     if [ "$xcc " = "$cc " ]; then
       ldrpath="-Wl,-rpath="
       crpath="$ldrpath~a"
-      rflags="$rflags $ldrpath\$(RPATH)"
     else
       ldrpath=""
       crpath=""
@@ -3680,12 +3678,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo 'SYSZIPDIR=$(DESTDIR)'"$syszipdir" >> $makefile_cfg
   echo 'DLLDIR=$(DESTDIR)'"$dlldir" >> $makefile_cfg
   echo 'SYSDLLDIR=$(DESTDIR)'"$sysdlldir" >> $makefile_cfg
-  echo 'RPATH=$(DESTDIR)'"$libdir/$fildir:$libdir/$fildir" >> $makefile_cfg
   echo 'LIBPATH=$(DESTDIR)'"$libdir/$fildir" >> $makefile_cfg
   echo 'MANDIR=$(DESTDIR)'"$mandir" >> $makefile_cfg
   echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg
   echo 'DOCDIR=$(DESTDIR)'"$docdir" >> $makefile_cfg
   echo "TMP=$buildtmp" >> $makefile_cfg
+  echo "RPATH=$libdir/$fildir" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # Native backend
