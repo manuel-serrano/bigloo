@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Fri Jul 28 13:53:58 2017 (serrano)                */
+;*    Last change :  Mon Oct  2 08:04:28 2017 (serrano)                */
 ;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -58,7 +58,7 @@
            (macro $configure-c-compiler-debug-option::string "C_COMPILER_DEBUG_OPTION")
 	   (macro $configure-c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	   (macro $configure-c-compiler-rpath::string "C_COMPILER_RPATH")
-	   (macro $configure-c-flag::string "C_FLAGS")
+	   (macro $configure-c-flags::string "C_FLAGS")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
@@ -126,7 +126,7 @@
               (field static c-compiler-debug-option::string "C_COMPILER_DEBUG_OPTION")
 	      (field static c-compiler-optim-flag::string "C_COMPILER_OPTIM_FLAGS")
 	      (field static c-compiler-rpath::string "C_COMPILER_RPATH")
-	      (field static c-flag::string "C_FLAGS")
+	      (field static c-flags::string "C_FLAGS")
 	      (field static c-pic-flag::string "C_PICFLAGS")
 	      (field static c-strip-flag::string "C_STRIP_FLAGS")
 	      (field static c-prof-flag::string "C_PROFILE_FLAGS")
@@ -207,7 +207,7 @@
      (c-compiler-debug-option . ,$configure-c-compiler-debug-option)
      (c-compiler-optim-flag . ,$configure-c-compiler-optim-flag)
      (c-compiler-rpath . ,$configure-c-compiler-rpath)
-     (c-flag . ,$configure-c-flag)
+     (c-flags . ,$configure-c-flags)
      (c-pic-flag . ,$configure-c-pic-flag)
      (c-strip-flag . ,$configure-c-strip-flag)
      (c-prof-flag . ,$configure-c-prof-flag)

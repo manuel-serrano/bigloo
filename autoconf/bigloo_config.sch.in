@@ -16,7 +16,7 @@
   (specific-version . "@BGL_SPECIFIC_VERSION@")
   (c-compiler-style . "@C_COMPILER_STYLE@")
   (c-compiler . "@C_COMPILER@")
-  (c-flag . "@C_FLAGS@")
+  (c-flags . "@C_FLAGS@")
   (c-compiler-o-option . "@C_COMPILER_O_OPTION@")
   (c-compiler-debug-option . "@C_COMPILER_DEBUG_OPTION@")
   (c-compiler-optim-flag . "@C_COMPILER_OPTIM_FLAGS@")
@@ -62,3 +62,4 @@
   (elong-size . @ELONG_BIT_SIZE@)
   (have-unistring . ,(=fx @BGL_HAVE_UNISTRING@ 1))
   (have-overflow . ,(=fx @BGL_HAVE_OVERFLOW@ 1)))
+  

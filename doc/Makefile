@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:08:14 2004                          */
-#*    Last change :  Thu Sep 23 15:07:54 2010 (serrano)                */
-#*    Copyright   :  2004-10 Manuel Serrano                            */
+#*    Last change :  Sun Oct  1 20:01:18 2017 (serrano)                */
+#*    Copyright   :  2004-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for managing the DOC Bigloo directory               */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ pop:
                doc/README.sparc-linux \
                doc/README.mingw \
                doc/README.macosx doc/README.solaris \
-               doc/README.android
+               doc/README.android doc/README.raspberry
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

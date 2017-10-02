@@ -73,8 +73,8 @@ execute the command by hand on the host-side and to report the result.
 @item @code{ssh/ssh-copy.sh} copies the file by @code{ssh} and executes
 it then on the other side. If you intend to use that file, you must edit
 it for setting the variables describing the remote ssh connection.
-For the variables @code{REMOTE_HOST}, @code{REMOTE_SSH_PORT}, and
-@code{REMOTE_USER} must be modified.
+For the variables @code{HOST}, @code{SSH_PORT}, and
+@code{USER} must be modified.
 Note: there exists an Ipod/Iphone version that
 automatically signs on jail-broken devices. 
 @item and finally, as last resort, there exists a @code{netcat}

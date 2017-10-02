@@ -1,0 +1,61 @@
+The document explains how to cross compile Bigloo for Raspberry, from
+a debian platform.
+
+To cross compile Bigloo for Raspberry, you need first a plain Bigloo
+sdk installed on the build machine. We assume that BGLROOT points
+to the directory where Bigloo and its libraries have been installed.
+Typically, BGLROOT should be defined as:
+
+  $ BGLROOT=/usr/local
+
+
+1. Install GCC suite for Arm
+============================
+
+  $ sudo apt install gcc-7-arm-linux-gnueabi
+
+
+2. Preparing Bigloo
+===================
+
+  % VERSION=your-bigloo-version
+  % tar xvfz bigloo$VERSION.tar.gz
+  % cd bigloo$VERSION
+  % cp examples/hostsh/ssh/ssh-copy.sh ssh-copy.sh
+  
+Edit the file file ssh-copy.sh for updating the variables
+
+  HOST     # the name of the remote host
+  SSH_PORT # the port for the ssh connection
+  USER     # the user name of the remote machine
+
+For instance, if you run a raspbian virtual machine with qemu accepting
+connections on port 2022, and assuing the remote user name is pi:
+
+  HOST=localhost
+  SSH_PORT=2022
+  USER=pi
+
+
+3. Configuring Bigloo
+=====================
+
+  % ./configure --build-bindir=$BGLROOT/bin \
+        --cc=/usr/bin/arm-linux-gnueabi-gcc-7 \
+	--cflags=-no-pie \
+        --hostsh=ssh-copy.sh \
+        --thirdparty-configure-opt="--host=arm-linux-gnueabi" \
+
+If Bigloo is to be installed elsewhere than /usr/local, use the
+--prefix option, as for a regular configuration.
+
+
+4. Compiling and installing Bigloo
+==================================
+
+The usual compilation and installation procedures are to be used
+after the cross configuration.
+
+  % make && make install
+  
+

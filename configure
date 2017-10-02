@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Oct  1 07:46:38 2017 (serrano)                */
+#*    Last change :  Sun Oct  1 10:07:39 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2455,6 +2455,9 @@ if [ "$unistring " != "no " ]; then
     
       unistringlibs=yes
       extraunistring=unistring
+      libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
+      lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+      cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
     else
       haveunistring=0;
       extraunistring=no

@@ -1,19 +1,19 @@
 #!/bin/sh
 
-REMOTE_HOST=localhost
-REMOTE_SSH_PORT=2022
-REMOTE_USER=hop
+HOST=localhost
+SSH_PORT=2022
+USER=hop
 
 FILE=$1;
 
 if [ -f $FILE ]; then
   exec=/tmp/`basename $FILE`
-  scp -P $REMOTE_SSH_PORT $FILE $REMOTE_USER@$REMOTE_HOST:$exec
-  ssh -p $REMOTE_SSH_PORT $REMOTE_USER@$REMOTE_HOST "chmod +x $exec"
+  scp -P $SSH_PORT $FILE $USER@$HOST:$exec
+  ssh -p $SSH_PORT $USER@$HOST "chmod +x $exec"
 else
   exec=$*
 fi
-ssh -p $REMOTE_SSH_PORT $REMOTE_USER@$REMOTE_HOST "$exec"
+ssh -p $SSH_PORT $USER@$HOST "$exec"
 res=$?
-ssh -p $REMOTE_SSH_PORT $REMOTE_USER@$REMOTE_HOST "rm $exec"
+ssh -p $SSH_PORT $USER@$HOST "rm $exec"
 exit $res

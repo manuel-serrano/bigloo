@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  3 12:44:17 1995                          */
-;*    Last change :  Thu Aug  3 07:10:14 2017 (serrano)                */
+;*    Last change :  Mon Oct  2 08:10:36 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Global control of the compiler                                   */
@@ -388,7 +388,7 @@
 ;; the c compiler  option
 (param-define *cflags*
    "The C compiler option"
-   (bigloo-config 'c-flag))
+   (bigloo-config 'c-flags))
 ;; the c compiler optimization option
 (param-define *cflags-optim*
    "The C compiler optimization option"
