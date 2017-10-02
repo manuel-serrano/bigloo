@@ -4,13 +4,13 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Sun Oct  1 09:45:25 2017 (serrano)                */
+#*    Last change :  Mon Oct  2 08:28:09 2017 (serrano)                */
 #*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the PCRE library.                       */
 #*=====================================================================*/
 
-echo "configure pcre with \"./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt\"" >> ../configure.log
+echo "configure pcre with \"CC=$cc ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt\"" >> ../configure.log
 
 (cd pcre-$pcreversion && \
  export CC=$cc && \

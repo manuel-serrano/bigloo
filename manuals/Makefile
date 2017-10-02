@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun 15 07:21:19 1998                          */
-#*    Last change :  Sun Jul  9 10:26:43 2017 (serrano)                */
+#*    Last change :  Mon Oct  2 08:43:50 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Bigloo documentation                   */
@@ -295,14 +295,17 @@ install-info:
                echo "* Menu: The list of major topics begins on the next line." >> $(INFODIR)/dir; \
                echo "" >> $(INFODIR)/dir; \
                echo "* bigloo: (bigloo.info). The Bigloo documentation." >> $(INFODIR)/dir; \
+               chmod $(MODFILE) $(INFODIR)/dir; \
              else \
               if [ "`grep "bigloo.info" $(INFODIR)/dir` " = " " ]; then \
                echo "* bigloo: (bigloo.info). The Bigloo documentation." >> \
                 $(INFODIR)/dir; \
+               chmod $(MODFILE) $(INFODIR)/dir; \
               fi \
              fi \
             else \
              $(INSTALLINFO) bigloo.info $(INSTALLINFODIROPT) $(INFODIR)/dir && \
+             chmod $(MODFILE) $(INFODIR)/dir && \
              echo "$(INSTALLINFO) bigloo.info $(INSTALLINFODIROPT) $(INFODIR)/dir"; \
             fi \
           fi \

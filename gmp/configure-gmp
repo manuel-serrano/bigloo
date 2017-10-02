@@ -4,11 +4,13 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Tue Oct  6 23:05:28 2015 (serrano)                */
-#*    Copyright   :  2009-15 Manuel Serrano                            */
+#*    Last change :  Mon Oct  2 08:28:03 2017 (serrano)                */
+#*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
+
+echo "configure gmp with \"CC=$cc ./configure $gmpconfigureopt\"" >> ../configure.log
 
 (cd $gmpversion && \
  export CC=$cc && \

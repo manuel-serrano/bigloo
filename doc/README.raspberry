@@ -40,11 +40,12 @@ connections on port 2022, and assuing the remote user name is pi:
 3. Configuring Bigloo
 =====================
 
+  % BGLROOT=/usr/local
   % ./configure --build-bindir=$BGLROOT/bin \
         --cc=/usr/bin/arm-linux-gnueabi-gcc-7 \
 	--cflags=-no-pie \
         --hostsh=ssh-copy.sh \
-        --thirdparty-configure-opt="--host=arm-linux-gnueabi" \
+        --thirdparty-configure-opt="--host=arm-linux-gnueabi"
 
 If Bigloo is to be installed elsewhere than /usr/local, use the
 --prefix option, as for a regular configuration.
