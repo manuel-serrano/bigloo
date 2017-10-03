@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Wed Nov 30 06:41:39 2016 (serrano)                */
-;*    Copyright   :  2005-16 Manuel Serrano                            */
+;*    Last change :  Tue Oct  3 10:43:21 2017 (serrano)                */
+;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -308,8 +308,8 @@
 	   (read-certificate::certificate ::bstring)
 	   (read-pem-file::pair-nil ::bstring)
 
-	   (inline ssl-rand-status::bool)
-	   (inline ssl-rand-poll::bool)
+	   (ssl-rand-status::bool)
+	   (ssl-rand-poll::bool)
 	   (ssl-rand-bytes ::int)
 	   (ssl-rand-pseudo-bytes ::int)
 	   
@@ -693,7 +693,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-status ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (ssl-rand-status)
+(define (ssl-rand-status)
    (cond-expand
       (bigloo-c ($ssl-rand-status))
       (else #t)))
@@ -701,7 +701,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    ssl-rand-poll ...                                                */
 ;*---------------------------------------------------------------------*/
-(define-inline (ssl-rand-poll)
+(define (ssl-rand-poll)
    (cond-expand
       (bigloo-c ($ssl-rand-poll))
       (else #t)))
