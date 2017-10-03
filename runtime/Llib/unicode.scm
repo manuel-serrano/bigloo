@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Oct 23 06:49:21 2016 (serrano)                */
+;*    Last change :  Mon Oct  2 17:47:51 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -1156,10 +1156,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append-fill! ...                                     */
 ;*    -------------------------------------------------------------    */
-;*    This function must used only in left to right string append.     */
+;*    This function must be used only in left to right string append.  */
 ;*    -------------------------------------------------------------    */
-;*    Append the LEFT and RIGHT string into the BUFFER at index        */
-;*    This function handles cases where the last char of the           */
+;*    Append the LEFT and RIGHT string into the BUFFER at position     */
+;*    INDEX. This function handles cases where the last char of the    */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append-fill! buffer index str)

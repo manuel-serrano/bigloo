@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/configure                            */
+#*    serrano/trashcan/configure                                       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Oct  2 13:47:30 2017 (serrano)                */
+#*    Last change :  Mon Oct  2 22:17:22 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2478,6 +2478,7 @@ if [ "$unistring " != "no " ]; then
 else
   haveunistring=0;
   extraunistring=no;
+  unistringlibs=no;
 fi
 
 #*---------------------------------------------------------------------*/

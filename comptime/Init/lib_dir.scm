@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Sep  4 08:39:02 2009                          */
-;*    Last change :  Tue May 24 13:49:37 2016 (serrano)                */
-;*    Copyright   :  2009-16 Manuel Serrano                            */
+;*    Last change :  Tue Oct  3 06:56:45 2017 (serrano)                */
+;*    Copyright   :  2009-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Processes the lib-dir-compilation parameter.                     */
 ;*=====================================================================*/
@@ -55,6 +55,7 @@
 	  (lib-config (eval read-config)))
       ;; override the existing config entries
       (for-each (lambda (c)
+		   (tprint "c=" c)
 		   (bigloo-configuration-add-entry! (car c) (cdr c)))
 	 lib-config)
       (reinitialize-bigloo-variables!)))
@@ -80,11 +81,12 @@
    (let ((dir (file-name-canonicalize! param))
 	 (opath (bigloo-config 'library-directory)))
       (unless (directory? dir)
-	 (error "lib-dir"  "Not a directory" dir))
+	 (error "lib-dir" "Not a directory" dir))
       (bigloo-configuration-add-entry! 'library-directory dir)
       (let ((config_sch (make-file-path dir "bigloo_config.sch")))
-	 (when (file-exists? config_sch)
-	    (read-config_sch config_sch))
+	 (if (file-exists? config_sch)
+	     (read-config_sch config_sch)
+	     (error "lib-dir" "config does not exist" config_sch))
 	 (set! *lib-dir* (cons dir *lib-dir*))
 	 (bigloo-library-path-set!
 	    (cons dir (delete! opath (bigloo-library-path)))))))
