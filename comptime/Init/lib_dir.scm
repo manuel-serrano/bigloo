@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Sep  4 08:39:02 2009                          */
-;*    Last change :  Tue Oct  3 06:56:45 2017 (serrano)                */
+;*    Last change :  Tue Oct  3 08:57:00 2017 (serrano)                */
 ;*    Copyright   :  2009-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Processes the lib-dir-compilation parameter.                     */
@@ -55,7 +55,6 @@
 	  (lib-config (eval read-config)))
       ;; override the existing config entries
       (for-each (lambda (c)
-		   (tprint "c=" c)
 		   (bigloo-configuration-add-entry! (car c) (cdr c)))
 	 lib-config)
       (reinitialize-bigloo-variables!)))
