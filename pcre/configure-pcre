@@ -4,16 +4,16 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Mon Oct  2 08:28:09 2017 (serrano)                */
+#*    Last change :  Tue Oct  3 19:09:58 2017 (serrano)                */
 #*    Copyright   :  2009-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the PCRE library.                       */
 #*=====================================================================*/
 
-echo "configure pcre with \"CC=$cc ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt\"" >> ../configure.log
+echo "configure pcre with \"CC=$cc ./configure --enable-utf --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt\"" >> ../configure.log
 
 (cd pcre-$pcreversion && \
  export CC=$cc && \
- ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt 2>&1 >> ../../configure.log || \
+ ./configure --enable-utf --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt 2>&1 >> ../../configure.log || \
  (echo "configure pcre fail, see configure.log file." && exit 1)) || exit 1
 

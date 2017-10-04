@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Mon Oct  2 08:04:28 2017 (serrano)                */
+;*    Last change :  Tue Oct  3 12:39:53 2017 (serrano)                */
 ;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -281,7 +281,11 @@
 ;*    bigloo-configuration-add-entry! ...                              */
 ;*---------------------------------------------------------------------*/
 (define (bigloo-configuration-add-entry! key val)
-   (set! *bigloo-configuration* (cons (cons key val) *bigloo-configuration*)))
+   (let ((old (assq key *bigloo-configuration*)))
+      (if (pair? old)
+	  (set-cdr! old val)
+	  (set! *bigloo-configuration*
+	     (cons (cons key val) *bigloo-configuration*)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    gc-name ...                                                      */
