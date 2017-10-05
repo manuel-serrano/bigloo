@@ -92,5 +92,9 @@ public class configure {
   public static final boolean BGL_HAVE_UNISTRING = false;
   public static final boolean BGL_HAVE_SYSLOG = false;
   public static final boolean BGL_HAVE_OVERFLOW = false;
+  public static final byte[] BGL_OS_CLASS = "@OS_CLASS@".getBytes();
+  public static final byte[] BGL_OS_NAME = "@OS_NAME@".getBytes();
+  public static final byte[] BGL_OS_ARCH = "@OS_ARCH@".getBytes();
+  public static final byte[] BGL_OS_VERSION = "@OS_VERSION@".getBytes();
   public static final int BGL_CLASS_DISPLAY_MIN_SIZE = 6;
 }

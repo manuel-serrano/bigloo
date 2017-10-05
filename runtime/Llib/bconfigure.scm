@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Tue Oct  3 12:39:53 2017 (serrano)                */
+;*    Last change :  Thu Oct  5 18:06:49 2017 (serrano)                */
 ;*    Copyright   :  2000-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -108,6 +108,10 @@
 	   (macro $configure-have-syslog::bool "BGL_HAVE_SYSLOG")
 	   (macro $configure-have-overflow::bool "BGL_HAVE_OVERFLOW")
 	   (macro $configure-class-display-min-size::long "BGL_CLASS_DISPLAY_MIN_SIZE")
+	   (macro $configure-os-class::string "OS_CLASS")
+	   (macro $configure-os-name::string "OS_NAME")
+	   (macro $configure-os-arch::string "OS_ARCH")
+	   (macro $configure-os-version::string "OS_VERSION")
 	   (macro $cfg-no-gc::long "BGL_NO_GC")
 	   (macro $cfg-boehm-gc::long "BGL_BOEHM_GC")
 	   (macro $cfg-saw-gc::long "BGL_SAW_GC"))
@@ -175,6 +179,10 @@
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
 	      (field static have-overflow::bool "BGL_HAVE_OVERFLOW")
 	      (field static class-display-min-size::int "BGL_CLASS_DISPLAY_MIN_SIZE")
+	      (field static os-class::string "BGL_OS_CLASS")
+	      (field static os-name::string "BGL_OS_NAME")
+	      (field static os-arch::string "BGL_OS_ARCH")
+	      (field static os-version::string "BGL_OS_VERSION")
 	      "bigloo.configure"))
 
    (export    (bigloo-config #!optional config)
@@ -258,7 +266,11 @@
      (have-unistring . ,$configure-have-unistring)
      (have-syslog . ,$configure-have-syslog)
      (have-overflow . ,$configure-have-overflow)
-     (class-display-min-size . ,$configure-class-display-min-size)))
+     (class-display-min-size . ,$configure-class-display-min-size)
+     (os-class . ,$configure-os-class)
+     (os-name . ,$configure-os-name)
+     (os-arch . ,$configure-os-arch)
+     (os-version . ,$configure-os-version)))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */
