@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/trashcan/configure                                       */
+#*    serrano/prgm/project/bigloo/configure                            */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Oct  2 22:17:22 2017 (serrano)                */
+#*    Last change :  Fri Oct  6 10:47:53 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -386,7 +386,7 @@ enable_configure_pcre="yes"
 custompcre=
 pcresrc=$PCRESRC
 
-if [ "$pcresrc " ]; then
+if [ "$pcresrc " = " " ]; then
   pcreversion=8.39
   pcresrc=pcre/pcre-$pcreversion.tgz
 fi  
@@ -1171,7 +1171,7 @@ if [ "$buildbindir " = " " ]; then
   fi
 else
   if [ "$buildlibdir " = " " ]; then
-    buildlibdir=`$buildbindir/bigloo -eval '(begin (print *default-lib-dir*) (exit 0))'`
+    buildlibdir=`$buildbindir/bigloo -eval '(begin (print *default-lib-dir*) (exit 0))'` || exit 1
   fi
 fi
 

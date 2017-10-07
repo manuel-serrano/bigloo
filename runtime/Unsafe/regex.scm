@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Mon Oct  5 15:08:20 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Sat Oct  7 07:00:22 2017 (serrano)                */
+;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
 ;*=====================================================================*/
@@ -58,8 +58,10 @@
    (export (inline regexp?::bool ::obj)
            (inline regexp-pattern::bstring ::regexp)
            (pregexp ::bstring . opt-args)
-           (pregexp-match-positions pat ::bstring . opt-args)
-           (pregexp-match pat ::bstring . opt-args)
+           (pregexp-match-positions pat str::bstring
+	      #!optional (beg 0) (end (string-length str)))
+           (pregexp-match pat str::bstring 
+	      #!optional (beg 0) (end (string-length str)))
            (pregexp-replace::bstring pat ::bstring ins::bstring)
            (pregexp-split::pair-nil pat ::bstring)
            (pregexp-replace*::bstring pat ::bstring ins::bstring)
@@ -160,31 +162,25 @@
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */
 ;*---------------------------------------------------------------------*/
-(define (match pat str stringp opt-args)
-   (let ((beg 0)
-	 (end -1))
-      (when (pair? opt-args)
-	 (set! beg (car opt-args))
-	 (when (pair? (cdr opt-args))
-	    (set! end (cadr opt-args))))
-      (if (regexp? pat)
-	  ($regmatch pat str stringp beg end)
-	  (let* ((rx (pregexp pat))
-		 (val ($regmatch rx str stringp beg end)))
-	     ($regfree rx)
-	     val))))
+(define (match pat str stringp beg end)
+   (if (regexp? pat)
+       ($regmatch pat str stringp beg end)
+       (let* ((rx (pregexp pat))
+	      (val ($regmatch rx str stringp beg end)))
+	  ($regfree rx)
+	  val)))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-positions ...                                      */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match-positions pat str . opt-args)
-   (match pat str #f opt-args))
+(define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str)))
+   (match pat str #f beg end))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match ...                                                */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match pat str . opt-args)
-   (match pat str #t opt-args))
+(define (pregexp-match pat str #!optional (beg 0) (end (string-length str)))
+   (match pat str #t beg end))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-read-escaped-number ...                                  */
