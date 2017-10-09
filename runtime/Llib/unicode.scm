@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Oct  2 17:47:51 2017 (serrano)                */
+;*    Last change :  Sun Oct  8 10:04:35 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -176,7 +176,7 @@
 	    (string-index->utf8-string-index::long ::bstring ::long)
 	    (utf8-string-append::bstring ::bstring ::bstring)
 	    (utf8-string-append*::bstring . strings)
-	    (utf8-string-append-fill!::long ::bstring ::long ::bstring)
+	    (utf8-string-append-fill!::long ::bstring ::long ::bstring #!optional (offset 0))
 	    (utf8-substring::bstring str::bstring ::long #!optional (end::long (utf8-string-length str)))
 	    (utf8->8bits::bstring ::bstring ::obj)
 	    (utf8->8bits!::bstring ::bstring ::obj)
@@ -1109,7 +1109,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-right-replacement? ...                               */
 ;*    -------------------------------------------------------------    */
-;*    Does the STR starts with the right-end-side of an UTF8           */
+;*    Does STR starts with the right-end-side of an UTF8               */
 ;*    replacement char?                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (utf8-string-right-replacement? str len index)
@@ -1162,24 +1162,24 @@
 ;*    INDEX. This function handles cases where the last char of the    */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
-(define (utf8-string-append-fill! buffer index str)
+(define (utf8-string-append-fill! buffer index str #!optional (offset 0))
    (let ((len (string-length str)))
       (cond
 	 ((ascii-string? str)
 	  ;; left string is ascii
-	  (blit-string! str 0 buffer index len)
-	  (+fx index len))
+	  (blit-string! str offset buffer index (-fx len offset))
+	  (+fx index (-fx len offset)))
 	 ((and (>=fx index 4)
-	       (utf8-string-right-replacement? str len 0)
+	       (utf8-string-right-replacement? str len offset)
 	       (utf8-string-left-replacement? buffer index (-fx index 4)))
 	  ;; shrink the buffer
 	  (blit-string! str 4 buffer index (-fx len 4))
-	  (utf8-collapse! buffer index str 0)
+	  (utf8-collapse! buffer index str offset)
 	  (+fx index (-fx len 4)))
 	 (else
 	  ;; an utf8 string
-	  (blit-string! str 0 buffer index len)
-	  (+fx index len)))))
+	  (blit-string! str offset buffer index (-fx len offset))
+	  (+fx index (-fx len offset))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-append ...                                           */

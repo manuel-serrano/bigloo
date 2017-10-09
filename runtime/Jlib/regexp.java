@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Dec  7 11:40:40 2011                          */
-/*    Last change :  Fri Dec  9 10:49:39 2011 (serrano)                */
-/*    Copyright   :  2011 Manuel Serrano                               */
+/*    Last change :  Mon Oct  9 07:33:42 2017 (serrano)                */
+/*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Regular Expressions                                              */
 /*=====================================================================*/
@@ -99,6 +99,31 @@ public class regexp extends obj {
 	 return foreign.CDR( r );
       }
    }
+
+   public int match_n( String cs , Object[] v, int offset ) {
+      Matcher m = reg.matcher( cs );
+
+      if( !m.find() ) {
+	 return -1;
+      } else {
+	 int c = m.groupCount();
+	 int len = v.length & ~1;
+
+	 for( int i = 0; i < c + 1 && i < len; i++ ) {
+	    pair p;
+	    if( m.group( i ) != null ) {
+	       v[ i ] = foreign.BINT( m.start( i ) + offset );
+	       v[ i + 1 ] = foreign.BINT( m.end( i ) + offset );
+	    } else {
+	       v[ i ] = foreign.BINT( -1 );
+	       v[ i + 1 ] = foreign.BINT( -1 );
+	    }
+	 }
+
+	 return c;
+      }
+   }
+   
    
    public void write( final output_port p ) {
       p.write( "#<regexp:" + pat + ">" );

@@ -5987,6 +5987,10 @@ public final class foreign
       return o.match(new String(string, beg, end-beg), stringp, beg);
    }
    
+   public static int bgl_regmatch_n(regexp o, byte[] string, Object[] v, int beg, int end) {
+      return o.match_n(new String(string, beg, end-beg), v, beg);
+   }
+   
    public static Object bgl_regfree(regexp o) {
       return o;
    }

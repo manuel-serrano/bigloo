@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Wed Jul 26 13:54:43 2017 (serrano)                */
+/*    Last change :  Mon Oct  9 08:05:03 2017 (serrano)                */
 /*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
@@ -271,7 +271,7 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
       return BFALSE;
    } else {
       int i;
-      obj_t res = MAKE_PAIR( BNIL, BNIL );
+      obj_t res = MAKE_STACK_PAIR( BNIL, BNIL );
       obj_t tail = res;
 
       for( i = 0; i < oveccount * 2; i += 2 ) {
@@ -292,6 +292,34 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
       }
 
       return CDR( res );
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bgl_regmatch_n ...                                               */
+/*---------------------------------------------------------------------*/
+long
+bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
+   int oveccount = BGL_REGEXP( re ).capturecount + 1;
+   int *ovect = alloca( sizeof( int ) * oveccount * 3 );
+   int r;
+
+   r = pcre_exec( BGL_REGEXP_PREG( re ), BGL_REGEXP( re ).study,
+		  string, len, beg, 0, ovect, oveccount * 3 );
+
+   if( r < 0 ) {
+      return -1;
+   } else {
+      long i;
+      long len = VECTOR_LENGTH( vres ) & ~1;
+
+      for( i = 0; i < oveccount * 2 && i < len; i += 2 ) {
+	 VECTOR_SET( vres, i, BINT( ovect[ i ] ) );
+	 VECTOR_SET( vres, i + 1, BINT( ovect[ i + 1 ] ) );
+      }
+      
+      return i >> 1;
    }
 }
 

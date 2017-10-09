@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Sat Oct  7 07:00:22 2017 (serrano)                */
+;*    Last change :  Mon Oct  9 08:46:04 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
@@ -25,6 +25,7 @@
             __bignum
             __object
             __thread
+	    __bit
             
             __r4_output_6_10_3
             
@@ -59,6 +60,8 @@
            (inline regexp-pattern::bstring ::regexp)
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
+	      #!optional (beg 0) (end (string-length str)))
+	   (pregexp-match-n-positions!::long ::regexp str::bstring ::vector
 	      #!optional (beg 0) (end (string-length str)))
            (pregexp-match pat str::bstring 
 	      #!optional (beg 0) (end (string-length str)))
@@ -181,6 +184,26 @@
 ;*---------------------------------------------------------------------*/
 (define (pregexp-match pat str #!optional (beg 0) (end (string-length str)))
    (match pat str #t beg end))
+
+;*---------------------------------------------------------------------*/
+;*    pregexp-match-n-positions! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (pregexp-match-n-positions! pat str vres #!optional (beg 0) (end (string-length str)))
+   (let ((pos (pregexp-match-positions pat str beg end))
+	 (len (bit-and (vector-length vres) (bit-not 1))))
+      (let loop ((i 0)
+		 (pos pos))
+	 (cond
+	    ((or (=fx i len) (null? pos))
+	     i)
+	    ((pair? (car pos))
+	     (vector-set! vres i (caar pos))
+	     (vector-set! vres (+fx i 2) (cadr pos))
+	     (loop (+fx i 2) (cdr pos)))
+	    (else
+	     (vector-set! vres i -1)
+	     (vector-set! vres (+fx i 2) -1)
+	     (loop (+fx i 2) (cdr pos)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-read-escaped-number ...                                  */

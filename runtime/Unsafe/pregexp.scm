@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Sat Oct  7 07:01:55 2017 (serrano)                */
+;*    Last change :  Mon Oct  9 08:39:31 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -28,6 +28,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __bit
 	    
 	    __r4_output_6_10_3
 	    
@@ -68,6 +69,7 @@
 	   (inline regexp-pattern::bstring ::regexp)
 	   (pregexp ::bstring . opt-args)
 	   (pregexp-match-positions pat ::bstring . opt-args)
+	   (pregexp-match-n-positions!::long pat ::bstring ::vector . opt-args)
 	   (pregexp-match pat ::bstring . opt-args)
 	   (pregexp-replace::bstring pat ::bstring ins::bstring)
 	   (pregexp-split::pair-nil pat ::bstring)
@@ -766,6 +768,25 @@
                    pat str str-len start end i)
                  (loop (+ i 1))))))))
 
+(define pregexp-match-n-positions!
+   ;; bigloo addition
+   (lambda (pat str res . opt-args)
+      (let ((pos (apply pregexp-match-positions pat str opt-args))
+	    (len (bit-and (vector-length res) (bit-not 1))))
+	 (let loop ((i 0)
+		    (pos pos))
+	    (cond
+	       ((or (=fx i len) (null? pos))
+		i)
+	       ((pair? (car pos))
+		(vector-set! res i (caar pos))
+		(vector-set! res (+fx i 2) (cadr pos))
+		(loop (+fx i 2) (cdr pos)))
+	       (else
+		(vector-set! res i -1)
+		(vector-set! res (+fx i 2) -1)
+		(loop (+fx i 2) (cdr pos))))))))
+		
 (define pregexp-match
   (lambda (pat str . opt-args)
     (let ((ix-prs (apply pregexp-match-positions pat str opt-args)))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Sat Oct  7 07:04:29 2017 (serrano)                */
+;*    Last change :  Mon Oct  9 07:38:26 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
@@ -45,6 +45,7 @@
 
    (extern ($regcomp::regexp (::bstring ::obj) "bgl_regcomp")
            ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
+	   ($regmatch-n::long (::regexp ::string ::vector ::int ::int) "bgl_regmatch_n")
            ($regfree::obj (::regexp) "bgl_regfree")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT"))
@@ -58,6 +59,8 @@
 		 "bgl_regcomp")
 	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int)
 		 "bgl_regmatch")
+	      (method static $regmatch-n::long (::regexp ::string ::vector ::int ::int)
+		 "bgl_regmatch_n")
 	      (method static $regfree::obj (::regexp)
 		 "bgl_regfree")))
  
@@ -65,6 +68,8 @@
            (inline regexp-pattern::bstring ::regexp)
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
+	      #!optional (beg 0) (end (string-length str)))
+	   (pregexp-match-n-positions!::long pat str vres
 	      #!optional (beg 0) (end (string-length str)))
            (pregexp-match pat str::bstring 
 	      #!optional (beg 0) (end (string-length str)))
@@ -119,6 +124,12 @@
 ;*---------------------------------------------------------------------*/
 (define (pregexp-match-positions pat str #!optional (beg 0) (end (string-length str)))
    (match pat str #f beg end))
+
+;*---------------------------------------------------------------------*/
+;*    pregexp-match-n-positions! ...                                   */
+;*---------------------------------------------------------------------*/
+(define (pregexp-match-n-positions! pat::regexp str vres #!optional (beg 0) (end (string-length str)))
+   ($regmatch-n pat str vres beg end))
 
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match ...                                                */
