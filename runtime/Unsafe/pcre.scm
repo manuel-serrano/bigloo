@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Mon Oct  9 07:38:26 2017 (serrano)                */
+;*    Last change :  Tue Oct 10 08:27:45 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
@@ -69,8 +69,8 @@
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
 	      #!optional (beg 0) (end (string-length str)))
-	   (pregexp-match-n-positions!::long pat str vres
-	      #!optional (beg 0) (end (string-length str)))
+	   (inline pregexp-match-n-positions!::long
+	      ::regexp ::bstring ::vector ::long ::long)
            (pregexp-match pat str::bstring 
 	      #!optional (beg 0) (end (string-length str)))
            (pregexp-replace::bstring pat ::bstring ins::bstring)
@@ -128,7 +128,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-n-positions! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match-n-positions! pat::regexp str vres #!optional (beg 0) (end (string-length str)))
+(define-inline (pregexp-match-n-positions! pat::regexp str vres beg end)
    ($regmatch-n pat str vres beg end))
 
 ;*---------------------------------------------------------------------*/

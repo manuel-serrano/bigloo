@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Mar 16 12:48:13 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Wed Oct 11 07:30:26 2017 (serrano)                */
+/*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SAW                                                       */
 /*=====================================================================*/
@@ -162,11 +162,11 @@ extern void bgl_saw_gc();
    befored.prev = BGL_BEFORED_TOP(); \
    BGL_BEFORED_TOP_SET( &befored );
 
+#endif
+#endif
 /*---------------------------------------------------------------------*/
 /*    C++                                                              */
 /*---------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
-#endif
-#endif
 #endif

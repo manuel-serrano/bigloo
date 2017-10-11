@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Dec 27 06:26:38 2007                          */
-#*    Last change :  Tue Jun 20 16:52:09 2017 (serrano)                */
+#*    Last change :  Wed Oct 11 11:49:22 2017 (serrano)                */
 #*    Copyright   :  2007-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Check if PCRE is available.                                      */
@@ -35,7 +35,6 @@ while : ; do
   esac
   shift
 done
-
 
 file=$TMP/actest$USER
 aout=$TMP/Xactest$USER

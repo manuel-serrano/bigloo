@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Mon Oct  9 08:39:31 2017 (serrano)                */
+;*    Last change :  Tue Oct 10 08:27:59 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -69,7 +69,8 @@
 	   (inline regexp-pattern::bstring ::regexp)
 	   (pregexp ::bstring . opt-args)
 	   (pregexp-match-positions pat ::bstring . opt-args)
-	   (pregexp-match-n-positions!::long pat ::bstring ::vector . opt-args)
+	   (pregexp-match-n-positions!::long
+	      ::regexp ::bstring ::vector ::long ::long)
 	   (pregexp-match pat ::bstring . opt-args)
 	   (pregexp-replace::bstring pat ::bstring ins::bstring)
 	   (pregexp-split::pair-nil pat ::bstring)
@@ -770,8 +771,8 @@
 
 (define pregexp-match-n-positions!
    ;; bigloo addition
-   (lambda (pat str res . opt-args)
-      (let ((pos (apply pregexp-match-positions pat str opt-args))
+   (lambda (pat str res beg end)
+      (let ((pos (apply pregexp-match-positions pat str beg end))
 	    (len (bit-and (vector-length res) (bit-not 1))))
 	 (let loop ((i 0)
 		    (pos pos))

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Oct  8 14:17:41 2017 (serrano)                */
+#*    Last change :  Wed Oct 11 11:59:58 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -37,6 +37,7 @@ infodir=$prefix/info
 docdir=$prefix/doc/bigloo-$release
 tmpdir=/tmp
 lispdir=
+rpath=
 
 #*--- api -------------------------------------------------------------*/
 importantapis="pthread fthread srfi18 ssl sqlite web multimedia mail calendar pkgcomp pkglib text srfi1 crypto openpgp csv upnp libuv"
@@ -284,6 +285,7 @@ modfile=644
 ldopt=
 ldbuildsharedopt=
 ldrpath=
+
 # set $ldsoname to `blank' if you want to force it empty
 ldsoname=
 ldsonameopt=
@@ -2380,6 +2382,13 @@ if [ "$regexp " = " " ]; then
     if [ "$custompcre " != "yes " ]; then
       pcrelibs=`$autoconf pcre` || exit 1;
       extrapcre=pcre
+      pcreprefix=`pcre-config --prefix`
+
+      if [ "$? " = "0 " ]; then
+	if [ "$pcreprefix" != "/usr" -a "$pcreprefix" != "/usr/local"]; then
+	  rpath="$pcreprefix/lib $rpath"
+	fi
+      fi
     fi
   else
     custompcre=no
@@ -3684,7 +3693,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo 'INFODIR=$(DESTDIR)'"$infodir" >> $makefile_cfg
   echo 'DOCDIR=$(DESTDIR)'"$docdir" >> $makefile_cfg
   echo "TMP=$buildtmp" >> $makefile_cfg
-  echo "RPATH=$libdir/$fildir" >> $makefile_cfg
+  echo "RPATH=$libdir/$fildir $rpath" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # Native backend

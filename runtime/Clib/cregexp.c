@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Mon Oct  9 08:05:03 2017 (serrano)                */
+/*    Last change :  Tue Oct 10 12:53:32 2017 (serrano)                */
 /*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
@@ -230,11 +230,17 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
       GC_invoke_finalizers();
    }
    
+#ifndef PCRE_STUDY_JIT_COMPILE
+#define PCRE_STUDY_JIT_COMPILE 0
+#endif
+   
    if( BGL_REGEXP_PREG( re ) =
        pcre_compile( BSTRING_TO_STRING( pat ), options,
 		     &error, &erroffset, NULL ) ) {
       pcre_refcount( BGL_REGEXP_PREG( re ), 1 );
-      BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PREG( re ), 0, &error );
+      BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PREG( re ),
+					   PCRE_STUDY_JIT_COMPILE,
+					   &error );
 
       pcre_fullinfo( BGL_REGEXP_PREG( re ),
 		     BGL_REGEXP( re ).study,

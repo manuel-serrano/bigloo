@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Mon Oct  9 08:46:04 2017 (serrano)                */
+;*    Last change :  Tue Oct 10 08:27:51 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
@@ -61,8 +61,8 @@
            (pregexp ::bstring . opt-args)
            (pregexp-match-positions pat str::bstring
 	      #!optional (beg 0) (end (string-length str)))
-	   (pregexp-match-n-positions!::long ::regexp str::bstring ::vector
-	      #!optional (beg 0) (end (string-length str)))
+	   (pregexp-match-n-positions!::long
+	      ::regexp ::bstring ::vector ::long ::long)
            (pregexp-match pat str::bstring 
 	      #!optional (beg 0) (end (string-length str)))
            (pregexp-replace::bstring pat ::bstring ins::bstring)
@@ -188,7 +188,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    pregexp-match-n-positions! ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (pregexp-match-n-positions! pat str vres #!optional (beg 0) (end (string-length str)))
+(define (pregexp-match-n-positions! pat str vres beg end)
    (let ((pos (pregexp-match-positions pat str beg end))
 	 (len (bit-and (vector-length vres) (bit-not 1))))
       (let loop ((i 0)
