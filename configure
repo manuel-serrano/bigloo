@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct 11 11:59:58 2017 (serrano)                */
+#*    Last change :  Wed Oct 11 22:18:04 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2374,6 +2374,8 @@ havemixer=`$autoconf mixer` || exit 1
 #*---------------------------------------------------------------------*/
 #*    Regexp                                                           */
 #*---------------------------------------------------------------------*/
+buildpcrelibdir=$buildlibdir
+
 if [ "$regexp " = " " ]; then
   pcrelibs=no
     
@@ -2383,6 +2385,7 @@ if [ "$regexp " = " " ]; then
       pcrelibs=`$autoconf pcre` || exit 1;
       extrapcre=pcre
       pcreprefix=`pcre-config --prefix`
+      buildpcrelibdir=$pcreprefix/lib
 
       if [ "$? " = "0 " ]; then
 	if [ "$pcreprefix" != "/usr" -a "$pcreprefix" != "/usr/local"]; then
@@ -2398,6 +2401,7 @@ if [ "$regexp " = " " ]; then
     if [ "$custompcre " != "no " ]; then
       custompcre=yes
       pcreversion=`echo $pcresrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+      buildpcrelibdir=$buildlibdir/pcre/pcre-$pcreversionn/.libs
 	
       echo "+ Installing custom pcre source code."
       (cd pcre &&  PCRE=$pcresrc && export PCRE && ./install-pcre) || exit 1
@@ -2448,8 +2452,10 @@ if [ "$unistring " != "no " ]; then
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
     lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
     cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+    buildlibunistringlibdir=$buildlibdir/libuv/libuv-$libuvversion/lib/.libs
   else
     extraunistring=`$autoconf unistring` || exit 1
+    buildlibunistringlibdir=$buildlibdir # dummy existing path
     if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
       customunistring=yes
     fi
@@ -2505,16 +2511,17 @@ fi
 #*    libuv                                                            */
 #*---------------------------------------------------------------------*/
 # find out the C library for libuv
+buildlibuvlibdir=$buildlibdir # dummy existing path
+
 if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
    if [ "$customlibuv " = "yes " ]; then
      libuvlibs="-luv"
      libuv="yes"
      libuvcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
-     buildibuvlibdir=$buildir/libuv/libuv-$libuvversion/.libs
+     buildlibuvlibdir=$buildlibdir/libuv/libuv-$libuvversion/.libs
    else
      libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
      libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
-     buildibuvlibdir=$buildir # dummy existing path
 
      libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
   fi
@@ -2718,10 +2725,12 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   gccattrs=`$autoconf likely`
 
   # Is gmp available?
+  buildgmplibdir=$buildlibdir
   if [ "$customgmp" != "no" ]; then
     havegmp=1;
     featureflags="-srfi enable-gmp $featureflags";
     extralibs="-lbigloogmp-$release $extralibs"
+    # buildgmplibdir=$buildlibdir/libuv/libuv-$libuvversion/lib/.libs
   elif [ "$gmpversion " = " " ]; then
     gmplib=`$autoconf bgl-pkg-config --libs gmp`;
 
@@ -3366,7 +3375,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@BOOTBINDIR@|$bootdir/bin|" \
 	      -e "s|@BGLBUILDBINDIR@|$buildbindir|" \
 	      -e "s|@BGLBUILDLIBDIR@|$buildlibdir|" \
-	      -e "s|@BGLBUILDLIBUVLIBDIR@|$buildibuvlibdir|" \
+	      -e "s|@BGLBUILDLIBUVLIBDIR@|$buildlibuvlibdir|" \
+	      -e "s|@BGLBUILDLIBUNISTRINGLIBDIR@|$buildlibunistringlibdir|" \
+	      -e "s|@BGLBUILDPCRELIBDIR@|$buildpcrelibdir|" \
+	      -e "s|@BGLBUILDGMPLIBDIR@|$buildgmplibdir|" \
 	      -e "s|@SHELL@|$shell|" \
 	      -e "s|@BIGLOO@|$bigloo|" \
 	      -e "s|@AFILE@|$buildbindir/$afile|" \
@@ -3741,6 +3753,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$customgmp " = "yes " ]; then
     echo "GMPCUSTOM=yes" >> $makefile_cfg
     echo "CUSTOMGMP=$gmpversion" >> $makefile_cfg
+    echo "GMP_LD_LIBRARY_PATH=$buildgmplibdir" >> $makefile_cfg
   else
     echo "GMPCUSTOM=no" >> $makefile_cfg
   fi
@@ -3750,6 +3763,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$custompcre " = "yes " ]; then
     echo "PCRECUSTOM=yes" >> $makefile_cfg
     echo "PCRECUSTOMVERSION=$pcreversion" >> $makefile_cfg
+    echo "PCRE_LD_LIBRARY_PATH=$buildpcrelibdir" >> $makefile_cfg
   else
     echo "PCRECUSTOM=no" >> $makefile_cfg
     echo "PCRECUSTOMVERSION=$pcreversion" >> $makefile_cfg
@@ -3760,6 +3774,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$customunistring " = "yes " ]; then
     echo "UNISTRINGCUSTOM=yes" >> $makefile_cfg
     echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
+    echo "UNISTRING_LD_LIBRARY_PATH=$buildlibunistringlibdir" >> $makefile_cfg
   else
     echo "UNISTRINGCUSTOM=no" >> $makefile_cfg
     echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
@@ -4244,7 +4259,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
     echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
-    echo "LIBUV_LD_LIBRARY_PATH=$buildibuvlibdir" >> $makefile_cfg
+    echo "LIBUV_LD_LIBRARY_PATH=$buildlibuvlibdir" >> $makefile_cfg
 
     if [ "$customlibuv " = "yes " ]; then
       echo "LIBUVCUSTOM=yes" >> $makefile_cfg
