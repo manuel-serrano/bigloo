@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Oct 11 22:18:04 2017 (serrano)                */
+#*    Last change :  Thu Oct 12 07:18:53 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2385,7 +2385,6 @@ if [ "$regexp " = " " ]; then
       pcrelibs=`$autoconf pcre` || exit 1;
       extrapcre=pcre
       pcreprefix=`pcre-config --prefix`
-      buildpcrelibdir=$pcreprefix/lib
 
       if [ "$? " = "0 " ]; then
 	if [ "$pcreprefix" != "/usr" -a "$pcreprefix" != "/usr/local"]; then
@@ -2401,7 +2400,7 @@ if [ "$regexp " = " " ]; then
     if [ "$custompcre " != "no " ]; then
       custompcre=yes
       pcreversion=`echo $pcresrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
-      buildpcrelibdir=$buildlibdir/pcre/pcre-$pcreversionn/.libs
+      buildpcrelibdir=$bootdir/pcre/pcre-$pcreversion/.libs
 	
       echo "+ Installing custom pcre source code."
       (cd pcre &&  PCRE=$pcresrc && export PCRE && ./install-pcre) || exit 1
@@ -2444,6 +2443,8 @@ featureflags="-srfi enable-$regexp"
 #*---------------------------------------------------------------------*/
 #*    unistring                                                        */
 #*---------------------------------------------------------------------*/
+buildlibunistringlibdir=$buildlibdir # dummy existing path
+
 if [ "$unistring " != "no " ]; then
   if [ "$customunistring " = "yes " ]; then
     haveunistring=1;
@@ -2452,10 +2453,9 @@ if [ "$unistring " != "no " ]; then
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
     lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
     cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-    buildlibunistringlibdir=$buildlibdir/libuv/libuv-$libuvversion/lib/.libs
   else
     extraunistring=`$autoconf unistring` || exit 1
-    buildlibunistringlibdir=$buildlibdir # dummy existing path
+    
     if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
       customunistring=yes
     fi
@@ -2475,6 +2475,7 @@ if [ "$unistring " != "no " ]; then
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
     lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
     cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+    buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
   fi
 
   if [ "$extraunistring " = "no " ]; then
@@ -2518,7 +2519,7 @@ if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
      libuvlibs="-luv"
      libuv="yes"
      libuvcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
-     buildlibuvlibdir=$buildlibdir/libuv/libuv-$libuvversion/.libs
+     buildlibuvlibdir=$bootdir/libuv/libuv-$libuvversion/.libs
    else
      libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
      libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
@@ -3763,7 +3764,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$custompcre " = "yes " ]; then
     echo "PCRECUSTOM=yes" >> $makefile_cfg
     echo "PCRECUSTOMVERSION=$pcreversion" >> $makefile_cfg
-    echo "PCRE_LD_LIBRARY_PATH=$buildpcrelibdir" >> $makefile_cfg
   else
     echo "PCRECUSTOM=no" >> $makefile_cfg
     echo "PCRECUSTOMVERSION=$pcreversion" >> $makefile_cfg
@@ -3774,7 +3774,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$customunistring " = "yes " ]; then
     echo "UNISTRINGCUSTOM=yes" >> $makefile_cfg
     echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
-    echo "UNISTRING_LD_LIBRARY_PATH=$buildlibunistringlibdir" >> $makefile_cfg
   else
     echo "UNISTRINGCUSTOM=no" >> $makefile_cfg
     echo "UNISTRINGCUSTOMVERSION=$unistringversion" >> $makefile_cfg
@@ -4259,7 +4258,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
     echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
-    echo "LIBUV_LD_LIBRARY_PATH=$buildlibuvlibdir" >> $makefile_cfg
 
     if [ "$customlibuv " = "yes " ]; then
       echo "LIBUVCUSTOM=yes" >> $makefile_cfg
