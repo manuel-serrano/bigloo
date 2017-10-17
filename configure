@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 12 07:18:53 2017 (serrano)                */
+#*    Last change :  Tue Oct 17 08:39:20 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2387,7 +2387,7 @@ if [ "$regexp " = " " ]; then
       pcreprefix=`pcre-config --prefix`
 
       if [ "$? " = "0 " ]; then
-	if [ "$pcreprefix" != "/usr" -a "$pcreprefix" != "/usr/local"]; then
+	if [ "$pcreprefix" != "/usr" -a "$pcreprefix" != "/usr/local" ]; then
 	  rpath="$pcreprefix/lib $rpath"
 	fi
       fi

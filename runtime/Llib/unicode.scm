@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun Oct  8 10:04:35 2017 (serrano)                */
+;*    Last change :  Mon Oct 16 08:49:10 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -1158,17 +1158,13 @@
 ;*    -------------------------------------------------------------    */
 ;*    This function must be used only in left to right string append.  */
 ;*    -------------------------------------------------------------    */
-;*    Append the LEFT and RIGHT string into the BUFFER at position     */
+;*    Append the LEFT and RIGHT strings into the BUFFER at position    */
 ;*    INDEX. This function handles cases where the last char of the    */
 ;*    concatanated char is a UNICODE remplacement char.                */
 ;*---------------------------------------------------------------------*/
 (define (utf8-string-append-fill! buffer index str #!optional (offset 0))
    (let ((len (string-length str)))
       (cond
-	 ((ascii-string? str)
-	  ;; left string is ascii
-	  (blit-string! str offset buffer index (-fx len offset))
-	  (+fx index (-fx len offset)))
 	 ((and (>=fx index 4)
 	       (utf8-string-right-replacement? str len offset)
 	       (utf8-string-left-replacement? buffer index (-fx index 4)))
@@ -1177,7 +1173,6 @@
 	  (utf8-collapse! buffer index str offset)
 	  (+fx index (-fx len 4)))
 	 (else
-	  ;; an utf8 string
 	  (blit-string! str offset buffer index (-fx len offset))
 	  (+fx index (-fx len offset))))))
 
