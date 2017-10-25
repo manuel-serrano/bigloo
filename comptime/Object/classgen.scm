@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Thu May  4 07:46:58 2017 (serrano)                */
+;*    Last change :  Tue Oct 24 02:46:01 2017 (serrano)                */
 ;*    Copyright   :  2011-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
@@ -271,7 +271,7 @@
       (let ((new (mark-symbol-non-user! (gensym 'new))))
 	 `(define-inline (,id)
 	     ,(unsafe
-		(if (>=fx (bigloo-compiler-debug) 1)
+		(if (>=fx *compiler-debug-trace* 1)
 		    (let* ((env (gensym 'env))
 			   (tenv (make-typed-ident env 'dynamic-env))
 			   (aid (gensym 'alloc)))
@@ -279,6 +279,9 @@
 			      (,aid ',(symbol-append '%allocate- tid)))
 			   (let ()
 			      ($env-push-trace ,env ,aid #f)
+			      (pragma::void "bmem_set_allocation_type( $1, 0 )"
+				 ((@ class-num __object)
+				  (@ ,(global-id g) ,(global-module g))))
 			      (let ((,(make-typed-ident new tid) ,(c-malloc tid)))
 				 ($env-pop-trace ,env)
 				 (object-class-num-set! ,new

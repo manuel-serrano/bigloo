@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:35:07 2003                          */
-#*    Last change :  Thu Feb  9 09:08:58 2017 (serrano)                */
+#*    Last change :  Mon Oct 23 16:47:04 2017 (serrano)                */
 #*    Copyright   :  2003-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The script shell to monitor memory allocations of Bigloo prgms   */
@@ -15,6 +15,7 @@
 #*---------------------------------------------------------------------*/
 safety=s
 lib=
+libextra=
 exe=a.out
 bmon=
 
@@ -32,6 +33,7 @@ while : ; do
       echo "  -s|-safe|--safe      -- Preload safe libraries" >&2;
       echo "  -u|-unsafe|--unsafe  -- Preload unsafe libraries" >&2;
       echo "  -t|--thread          -- Profile multithreaded program" >&2;
+      echo "  --lib-extra <lib>    -- Add an extra profiling lib" >&2;
       echo "" >&2;
       echo "To be profiled, programs have to be compiled with" >&2;
       echo "  -g [-gtraceN]" >&2;
@@ -50,6 +52,12 @@ while : ; do
     -u|-unsafe|--unsafe)
       safety=u;
       lib=<fildir>/bmem/bmem_$safety.so;;
+
+    --lib-extra)
+      shift;
+      libextra="$libextra $1";
+      shift;
+      break;;
 
     -t|--thread)
       lib=<fildir>/bmem/bmem_fth_$safety.so;;
@@ -97,4 +105,4 @@ fi
 #*    Run the program                                                  */
 #*---------------------------------------------------------------------*/
 export BMEMUNSAFE=_$safety
-LD_PRELOAD="$lib" $exe $args
+LD_PRELOAD="$lib$libextra" $exe $args

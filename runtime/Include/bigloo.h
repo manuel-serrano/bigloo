@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Aug 19 10:39:31 2017 (serrano)                */
+/*    Last change :  Mon Oct 23 19:40:08 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2547,6 +2547,8 @@ BGL_RUNTIME_DECL void bgl_restore_signal_handlers( void );
 extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);
 extern void bps_bmassign(obj_t *field, obj_t value);
 
+/* memory profiling */
+BGL_RUNTIME_DECL void bmem_set_allocation_type( long, long );
 
 #ifdef __cplusplus
 }

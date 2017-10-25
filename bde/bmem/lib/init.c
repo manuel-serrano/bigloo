@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Feb  1 17:29:29 2017 (serrano)                */
+/*    Last change :  Tue Oct 24 15:21:01 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -31,6 +31,8 @@ extern void GC_reset_statistics();
 extern void thread_dump_statistics( FILE *f );
 extern void thread_reset_statistics();
 extern void type_dump( FILE *f );
+
+extern long GC_alloc_total();
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
@@ -155,7 +157,7 @@ void *unknown_ident;
 /*    void *                                                           */
 /*    open_shared_library ...                                          */
 /*---------------------------------------------------------------------*/
-static void *open_shared_library( char *lib ) {
+void *open_shared_library( char *lib ) {
    void *handle;
    
    if( !(handle = dlopen( lib, RTLD_LAZY ) ) ) {
@@ -167,10 +169,10 @@ static void *open_shared_library( char *lib ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void *(*)()                                               */
+/*    void *(*)()                                                      */
 /*    get_function ...                                                 */
 /*---------------------------------------------------------------------*/
-static fun_t
+fun_t
 get_function( void *handle, char *id ) {
    char *err;
    fun_t fun = dlsym( handle, id );
@@ -186,10 +188,10 @@ get_function( void *handle, char *id ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void *                                                    */
+/*    void *                                                           */
 /*    get_variable ...                                                 */
 /*---------------------------------------------------------------------*/
-static void *
+void *
 get_variable( void *handle, char *id ) {
    char *err;
    fun_t fun = dlsym( handle, id );
@@ -245,8 +247,8 @@ dump_statistics() {
    }
    fprintf( f, ";; size are expressed in work (i.e. 4 bytes)\n" );
    fprintf( f, "(monitor\n" );
-   fprintf( f, "  (info (exec \"%s\")\n", e ); 
-   fprintf( f, "        (sizeof-word %d))\n", BMEMSIZEOFWORD  );
+   fprintf( f, "  (info (exec \"%s\") (sizeof-word %d))\n",
+	    e, BMEMSIZEOFWORD ); 
    GC_dump_statistics( f );
    alloc_dump_statistics( f );
    type_dump( f );
@@ -254,6 +256,8 @@ dump_statistics() {
    fprintf( f, ")\n" );
    
    fprintf( stderr, "Dump done\n" );
+   fprintf( stderr, "Total size: %ldMB\n",
+	    GC_alloc_total() / 1024 / 1024 );
    fclose( f );
 }
 

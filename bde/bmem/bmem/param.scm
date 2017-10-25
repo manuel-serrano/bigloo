@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 25 09:24:44 2003                          */
-;*    Last change :  Thu Feb  9 09:05:53 2017 (serrano)                */
+;*    Last change :  Tue Oct 24 15:57:33 2017 (serrano)                */
 ;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bmem parameters                                                  */
@@ -32,7 +32,7 @@
 ;*    Global parameters                                                */
 ;*---------------------------------------------------------------------*/
 (define *bmem* "bglmem")
-(define *bmem-version* "0.5")
+(define *bmem-version* "0.6")
 
 ;*---------------------------------------------------------------------*/
 ;*    IOs                                                              */

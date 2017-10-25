@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Wed Feb  1 17:29:46 2017 (serrano)                */
+/*    Last change :  Mon Oct 23 19:38:43 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
@@ -11,8 +11,6 @@
 #include <bigloo.h>
 #include <esymbol.h>
 #include <bmem.h>
-
-extern void set_alloc_type( int, int  );
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
@@ -25,7 +23,7 @@ extern int bmem_debug;
 static obj_t
 make_symbol( obj_t name ) {
    obj_t symbol;
-   set_alloc_type( SYMBOL_TYPE_NUM, 0 );
+   bmem_set_alloc_type( SYMBOL_TYPE_NUM, 0 );
    
    symbol = GC_MALLOC( ESYMBOL_SIZE );
 

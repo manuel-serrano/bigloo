@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Thu Feb  9 09:05:10 2017 (serrano)                */
+;*    Last change :  Tue Oct 24 15:50:58 2017 (serrano)                */
 ;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
@@ -312,10 +312,10 @@
 			(html-h2 "Contents")
 			(html-div :class "contents"
 				  (html-vbox
-				   (html-a :href "#gcs" "Garbage Collections")
 				   (html-a :href "#functions" "Functions")
 				   (html-a :href "#types" "Types")
-				   (html-a :href "#threads" "Threads")))
+				   (html-a :href "#threads" "Threads")
+				   (html-a :href "#gcs" "Garbage Collections")))
 			(html-h2 "Legends")
 			(html-legend
 			 1 "90%"
@@ -358,14 +358,17 @@
 			    (cadr c)
 			    "bglmem"))
 		     "bglmem"))
-	  (page (list (html-h1 '("Garbage collections")) (html-a :name "gcs")
-		      gctable (html-br)
-		      (html-h1 '("Functions")) (html-a :name "functions")
-		      funtable (html-br)
-		      (html-h1 '("Types")) (html-a :name "types")
-		      typetable (html-br)
-		      (html-h1 '("Threads information")) (html-a :name "threads")
-		      threadtable)))
+	  (page (list (html-h1 '("Statistics"))
+		   (make-gc-summary gcmon)
+		   (html-br)
+		   (html-h1 '("Functions")) (html-a :name "functions")
+		   funtable (html-br)
+		   (html-h1 '("Types")) (html-a :name "types")
+		   typetable (html-br)
+		   (html-h1 '("Threads information")) (html-a :name "threads")
+		   threadtable (html-br)
+		   (html-h1 '("Garbage collections")) (html-a :name "gcs")
+		   gctable)))
       (html-document :title (if (string=? title "bglmem")
 				"bglmem"
 				(string-append "bglmem: " title))

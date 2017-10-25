@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:06:40 2003                          */
-;*    Last change :  Wed Oct 24 12:01:30 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Tue Oct 24 16:02:49 2017 (serrano)                */
+;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Display function allocations                                     */
 ;*=====================================================================*/
@@ -133,9 +133,9 @@
 		   (vector-set! tvec (car t) (cadr t)))
 		(cdr types))
       (html-verticalbox
-       `(,(make-function-gc-table fun* allsize nbtypes)
-	 ,(make-function-type-mem-table fun* allsize nbtypes tvec)
-	 ,(make-function-type-occ-table fun* allsum nbtypes tvec)))))
+       `(,(make-function-type-mem-table fun* allsize nbtypes tvec)
+	 ,(make-function-type-occ-table fun* allsum nbtypes tvec)
+	 ,(make-function-gc-table fun* allsize nbtypes)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-gc-table ...                                       */
@@ -147,11 +147,10 @@
 	`(,(html-td
 	    :valign "top"
 	    (make-function-gc-chart allsize fun*
-				    (lambda (f)
-				       (with-access::funinfo f (dsize) dsize))
-				    cadr
-				    "function-gc-direct"
-				    "Direct allocations (gc)"))
+	       (lambda (f) (with-access::funinfo f (dsize) dsize))
+	       cadr
+	       "function-gc-direct"
+	       "Direct allocations (gc)"))
 	  ,(html-td
 	    :valign "top"
 	    (make-function-gc-chart allsize fun*
@@ -167,8 +166,8 @@
 ;*    make-function-gc-chart ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-function-gc-chart allsize::llong fun*::pair-nil
-				funsize::procedure fungcsize::procedure
-				class::bstring caption::bstring)
+	   funsize::procedure fungcsize::procedure
+	   class::bstring caption::bstring)
    (let* ((fun* (sort (filter (lambda (f)
 				 (let* ((size (funsize f))
 					(size% (% size allsize)))
@@ -195,7 +194,7 @@
 						rsize
 						(word->size fsize)))))
 				  gc*))))
-		      fun*))
+		    fun*))
 	  (row* (map (lambda (f cells)
 			(with-access::funinfo f (num ident)
 			   (let* ((size (funsize f))
@@ -218,11 +217,11 @@
 							(word->size size)))))))
 			      (list (html-row-gauge cells tdl tds)
 				 (html-tr (list (html-td :colspan 102 "&nbsp;")))))))
-		     fun* cell*)))
+		   fun* cell*)))
       (html-profile (apply append row*)
-		    class caption
-		    '("functions" "20%")
-		    '("memory" "15%"))))
+	 class caption
+	 '("functions" "20%")
+	 '("memory" "15%"))))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-function-type-mem-table ...                                 */

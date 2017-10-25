@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Tue Nov 18 10:48:03 2014 (serrano)                */
-;*    Copyright   :  2003-14 Manuel Serrano                            */
+;*    Last change :  Tue Oct 24 15:57:09 2017 (serrano)                */
+;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
 ;*=====================================================================*/
@@ -19,7 +19,8 @@
 	    bmem_function
 	    bmem_type)
    (include "html.sch")
-   (export  (make-gc-tables ::pair-nil ::pair-nil ::pair-nil)))
+   (export  (make-gc-tables ::pair-nil ::pair-nil ::pair-nil)
+	    (make-gc-summary ::pair-nil)))
 
 ;*---------------------------------------------------------------------*/
 ;*    make-gc-tables ...                                               */
@@ -176,3 +177,22 @@
 		    "gc-function" "Gc (types)"
 		    '("gc" "8%")
 		    '("memory" "20%"))))
+
+;*---------------------------------------------------------------------*/
+;*    make-gc-summary ...                                              */
+;*---------------------------------------------------------------------*/
+(define (make-gc-summary gcmon)
+   (html-verticalbox
+      (list
+	 (html-table :width "100%"
+	    `(,(html-tr
+		  `(,(html-th :align "left" :width "15%" "gc number:")
+		    ,(html-td :align "left" 
+			(integer->string (length (cdr gcmon))))))
+	      ,(html-tr
+		  `(,(html-th :align "left" :width "15%" "alloc. size:")
+		    ,(html-td :align "left" 
+			(format "~aMB"
+			   (round
+			      (/ (apply + (map cadr (cdr gcmon)))
+				 1024 1024)))))))))))

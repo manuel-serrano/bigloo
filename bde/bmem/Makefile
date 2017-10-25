@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Sun Jul  9 10:20:16 2017 (serrano)                */
+#*    Last change :  Mon Oct 23 19:43:06 2017 (serrano)                */
 #*    Copyright   :  2003-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -87,7 +87,7 @@ $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem.$(SHAREDSUFFIX) \
+           SONAME=bmem_u.$(SHAREDSUFFIX) \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
@@ -96,7 +96,7 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem.$(SHAREDSUFFIX) \
+           SONAME=bmem_s.$(SHAREDSUFFIX) \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
@@ -105,7 +105,7 @@ $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_fth.$(SHAREDSUFFIX) \
+           SONAME=bmem_fth_u.$(SHAREDSUFFIX) \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
@@ -114,7 +114,7 @@ $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            FORCELD=true \
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
-           SONAME=bmem_fth.$(SHAREDSUFFIX) \
+           SONAME=bmem_fth_s.$(SHAREDSUFFIX) \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 #*--- lib/bmem --------------------------------------------------------*/
@@ -158,6 +158,10 @@ install:
         fi
 	cp etc/bmem.css $(LIBDIR)/$(FILDIR)/bmem/bmem.css
 	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/bmem.css
+	cp lib/bmem.h $(LIBDIR)/$(FILDIR)/bmem/bmem.h
+	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/bmem.h
+	cp lib/esymbol.h $(LIBDIR)/$(FILDIR)/bmem/esymbol.h
+	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bmem/esymbol.h
 
 uninstall:
 	- $(RM) -f $(DESTDIR)$(BINDIR)/$(BMEM_EXE)

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Wed Feb  1 17:30:17 2017 (serrano)                */
+/*    Last change :  Mon Oct 23 19:35:12 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -70,7 +70,7 @@ extern void *unknown_ident;
 extern void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 extern void *bgl_make_input_port_symbol;
 extern unsigned long gc_number;
-extern void set_alloc_type( int, int );
+extern void bmem_set_alloc_type( long, long );
 extern unsigned long ante_bgl_init_dsz;
 
 extern pthread_key_t bmem_key;
