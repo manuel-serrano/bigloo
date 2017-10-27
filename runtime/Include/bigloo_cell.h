@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Aug 26 19:05:20 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Thu Oct 26 18:31:27 2017 (serrano)                */
+/*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
 /*=====================================================================*/
@@ -69,8 +69,9 @@ struct bgl_cell {
 #endif   
 
 #define BGL_INIT_CELL( an_object, v ) \
-   IFN_CELL_TAG( (an_object)->cell_t.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE ) ); \
-   (an_object)->cell_t.val = v; \
+   IFN_CELL_TAG( (an_object)->cell_t.header = \
+		 MAKE_HEADER( CELL_TYPE, CELL_SIZE ) ); \
+   (an_object)->cell_t.val = v;
 
 /* boehm allocation */
 #if( BGL_GC == BGL_BOEHM_GC )

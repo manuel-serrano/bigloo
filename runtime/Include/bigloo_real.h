@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Wed Jul 26 09:12:24 2017 (serrano)                */
+/*    Last change :  Fri Oct 27 17:24:54 2017 (serrano)                */
 /*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -71,6 +71,17 @@ struct bgl_real {
 /*---------------------------------------------------------------------*/
 /*    alloc                                                            */
 /*---------------------------------------------------------------------*/
+#if( !defined( TAG_REAL ) )
+#  define IFN_REAL_TAG( expr ) expr
+#else
+#  define IFN_REAL_TAG( expr )
+#endif   
+
+#define BGL_INIT_REAL( an_object, d ) \
+   IFN_REAL_TAG( (an_object)->real_t.header = \
+		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ); \
+   (an_object)->real_t.real = d;
+
 #if( BGL_GC != BGL_SAW_GC )
 #  define DOUBLE_TO_REAL( d ) (make_real( d ))
 #else					
@@ -82,15 +93,24 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
 #define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))
 
-#if( !defined( TAG_REAL ) )
-#  define IFN_REAL_TAG( expr ) expr;
-#else
-#  define IFN_REAL_TAG( expr ) 
-#endif   
+/* boehm allocation */
+#if( BGL_GC == BGL_BOEHM_GC )
+#  if( BGL_GC_CUSTOM || !defined( __GNUC__ ) )
+#     define MAKE_REAL( v ) make_real( v )
+#  else
+#     define MAKE_REAL( v ) \
+         ({ obj_t an_object = GC_MALLOC( REAL_SIZE ); \
+	    BGL_INIT_REAL( an_object, v ); \
+	    BREAL( an_object ); })
+#  endif
+
+#  define MAKE_YOUNG_REAL( v ) MAKE_REAL( v )
+#endif
 
 #define BGL_MAKE_INLINE_REAL( d ) \
    an_object = GC_MALLOC_ATOMIC( REAL_SIZE ); \
-   IFN_REAL_TAG( an_object->real_t.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ) \
+   IFN_REAL_TAG( an_object->real_t.header = \
+		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) )\
    an_object->real_t.real = d; \
    BREAL( an_object )
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Aug 19 07:39:54 2017 (serrano)                */
+/*    Last change :  Fri Oct 27 05:06:19 2017 (serrano)                */
 /*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -85,6 +85,13 @@ typedef struct BgL_objectz00_bgl {
 
 #define BGL_OBJECT_WIDENING_SET( _obj, _wdn ) \
    BASSIGN( BGL_OBJECT_WIDENING( _obj ), _wdn, (obj_t)_obj )
+
+#define BGL_OBJECT_HEADER_SIZE( _obj ) \
+   (HEADER_SIZE( COBJECT( _obj )->header ))
+
+#define BGL_OBJECT_HEADER_SIZE_SET( _o, _s ) \
+   (((obj_t)COBJECT( _o ))->header = \
+    MAKE_HEADER( BGL_OBJECT_CLASS_NUM( _o ), _s ))
 
 /*---------------------------------------------------------------------*/
 /*    Classes                                                          */

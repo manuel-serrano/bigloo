@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed Dec  7 08:27:18 2016 (serrano)                */
+;*    Last change :  Fri Oct 27 04:26:34 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -51,6 +51,12 @@
 		   "BGL_OBJECT_WIDENING")
 	    (macro object-widening-set!::obj (::object ::obj)
 		   "BGL_OBJECT_WIDENING_SET")
+	    
+	    (macro object-header-size::long (::obj)
+		   "BGL_OBJECT_HEADER_SIZE")
+	    (macro object-header-size-set!::long (::obj ::long)
+		   "BGL_OBJECT_HEADER_SIZE_SET")
+
 	    (macro %object-type-number::long
 		   "OBJECT_TYPE")
 	    (macro %object?::bool (::obj)

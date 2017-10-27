@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Jul 27 13:55:34 2017 (serrano)                */
+#*    Last change :  Thu Oct 26 16:08:55 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -341,7 +341,10 @@ POPULATION_SI	= $(SRC_FILES) \
 		  Mlib/mach_dep.c \
                   Clib/inline_alloc.c \
                   Clib/non_inline_alloc.c \
-                  Clib/gc_intf.c
+                  Clib/gc_intf.c \
+                  Clib/inline_alloc_bump.h \
+                  Clib/inline_alloc.h \
+                  Clib/inline_alloc_thead.h
 POPULATION	= $(POPULATION_SI) $(INCLUDE_FILE) \
                   Jlib/JDK13.java \
                   Jlib/JDK14.java \

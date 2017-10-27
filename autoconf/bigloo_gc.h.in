@@ -69,9 +69,17 @@
 #endif
 
 #if( BGL_GC_VERSION < 720 )
-#  define GC_NO_INTERIOR_POINTERS() 0
+#  if( BGL_GC_BUMP_ALLOC )
+#    define BGL_GC_INTERIOR_POINTERS() GC_all_interior_pointers=1
+#  else
+#    define BGL_GC_INTERIOR_POINTERS() GC_all_interior_pointers=0
+#  endif
 #else
-#  define GC_NO_INTERIOR_POINTERS() GC_set_all_interior_pointers( 0 )
+#  if( BGL_GC_BUMP_ALLOC )
+#    define BGL_GC_INTERIOR_POINTERS() GC_set_all_interior_pointers( 1 )
+#  else
+#    define BGL_GC_INTERIOR_POINTERS() GC_set_all_interior_pointers( 0 )
+#  endif
 #endif
 
 #  undef GC_MALLOC
@@ -85,15 +93,13 @@
 #  define GC_MALLOC( sz_ ) (obj_t)GC_malloc( sz_ )
 #  define GC_MALLOC_ATOMIC( sz_ ) (obj_t)GC_malloc_atomic( sz_ )
 #  define GC_MALLOC_UNCOLLECTABLE( sz_ ) (obj_t)GC_malloc_uncollectable( sz_ )
-#if( BGL_GC_VERSION < 700 )
+
+#if( BGL_GC_VERSION < 700 && THREAD_LOCAL_ALLOC )
 #  define GC_THREAD_MALLOC( sz_ ) (obj_t)GC_local_malloc( sz_ )
 #  define GC_THREAD_MALLOC_ATOMIC( sz_ ) (obj_t)GC_local_malloc_atomic( sz_ )
 #  define GC_THREAD_MALLOC_UNCOLLECTABLE( sz_ ) (obj_t)GC_local_malloc_uncollectable( sz_ )
-#else
-#  define GC_THREAD_MALLOC( sz_ ) (obj_t)GC_malloc( sz_ )
-#  define GC_THREAD_MALLOC_ATOMIC( sz_ ) (obj_t)GC_malloc_atomic( sz_ )
-#  define GC_THREAD_MALLOC_UNCOLLECTABLE( sz_ ) (obj_t)GC_malloc_uncollectable( sz_ )
 #endif
+
 #  define GC_REALLOC GC_realloc
 #  define GC_FREE GC_free
 #  define GC_COLLECT() GC_gcollect()
@@ -148,7 +154,7 @@
 #  endif
 
 #  define INIT_ALLOCATION( size ) \
-     ( GC_NO_INTERIOR_POINTERS(), \
+     ( BGL_GC_INTERIOR_POINTERS(), \
        BGL_GC_INIT(), \
        (size > 0 ? GC_expand_hp( size ) : 0), \
        STRUCT_DISPLACEMENT(), \

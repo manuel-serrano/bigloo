@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed Jul 26 09:13:28 2017 (serrano)                */
+/*    Last change :  Thu Oct 26 18:52:23 2017 (serrano)                */
 /*    Copyright   :  2016-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -106,26 +106,28 @@ struct bgl_epair {
 #if( !defined( TAG_PAIR ) )
 #  define IFN_PAIR_TAG( expr ) expr
 #else
-#  define IFN_PAIR_TAG( expr )
+#  define IFN_PAIR_TAG( expr ) 0
 #endif   
 
 #if( defined( TAG_PAIR ) && ( BGL_GC == BGL_BOEHM_GC) )
 #  define IF_EPAIR_TAG( expr ) expr
 #else
-#  define IF_EPAIR_TAG( expr )
+#  define IF_EPAIR_TAG( expr ) 
 #endif   
 
 #define BGL_INIT_PAIR( an_object, a, d ) \
-   IFN_PAIR_TAG( (an_object)->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ); \
+   IFN_PAIR_TAG( (an_object)->pair_t.header = \
+		 MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ); \
    (an_object)->pair_t.car = a; \
-   (an_object)->pair_t.cdr = d; \
+   (an_object)->pair_t.cdr = d;
 
 #define BGL_INIT_EPAIR( an_object, a, d, e ) \
-   IFN_PAIR_TAG( (an_object)->pair_t.header = MAKE_HEADER( PAIR_TYPE, EPAIR_SIZE ) ); \
+   IFN_PAIR_TAG( (an_object)->pair_t.header = \
+		 MAKE_HEADER( PAIR_TYPE, EPAIR_SIZE ) ); \
    (an_object)->pair_t.car = a; \
    (an_object)->pair_t.cdr = d;	\
    (an_object)->epair_t.cer = e; \
-   IF_EPAIR_TAG( an_object->epair_t.eheader = BINT( EPAIR_TYPE ) ); \
+   IF_EPAIR_TAG( (an_object)->epair_t.eheader = BINT( EPAIR_TYPE ) );
 
 /* boehm allocation */
 #if( BGL_GC == BGL_BOEHM_GC )
