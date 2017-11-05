@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Fri Oct 27 02:39:36 2017 (serrano)                */
+/*    Last change :  Sun Oct 29 09:00:45 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -73,9 +73,12 @@
 #endif
 
 /*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    alloc_make_pair ...                                              */
+/*    GC_API obj_t                                                     */
+/*    make_pair ...                                                    */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_PAIR
+#define BGL_MAKE_PAIR
+
 static obj_t
 alloc_make_pair( obj_t car, obj_t cdr ) {
    obj_t pair;
@@ -86,10 +89,6 @@ alloc_make_pair( obj_t car, obj_t cdr ) {
    return BPAIR( pair );
 }
 
-/*---------------------------------------------------------------------*/
-/*    GC_API obj_t                                                     */
-/*    make_pair ...                                                    */
-/*---------------------------------------------------------------------*/
 GC_API obj_t 
 make_pair( obj_t car, obj_t cdr ) {
    obj_t pair;
@@ -100,10 +99,15 @@ make_pair( obj_t car, obj_t cdr ) {
    return BPAIR( pair );
 }
 
+#endif
+
 /*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    alloc_make_epair ...                                             */
+/*    GC_API obj_t                                                     */
+/*    make_epair ...                                                   */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_EPAIR
+#define BGL_MAKE_EPAIR
+
 static obj_t 
 alloc_make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    obj_t pair;
@@ -114,10 +118,6 @@ alloc_make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    return BPAIR( pair );
 }   
 
-/*---------------------------------------------------------------------*/
-/*    GC_API obj_t                                                     */
-/*    make_epair ...                                                   */
-/*---------------------------------------------------------------------*/
 GC_API obj_t 
 make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    obj_t pair;
@@ -128,10 +128,15 @@ make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    return BPAIR( pair );
 }
 
+#endif
+
 /*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    alloc_make_cell ...                                              */
+/*    GC_API obj_t                                                     */
+/*    make_cell ...                                                    */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_CELL
+#define BGL_MAKE_CELL
+
 static obj_t
 alloc_make_cell( obj_t val ) {
    obj_t cell;
@@ -142,10 +147,6 @@ alloc_make_cell( obj_t val ) {
    return BCELL( cell );
 }
 
-/*---------------------------------------------------------------------*/
-/*    GC_API obj_t                                                     */
-/*    make_cell ...                                                    */
-/*---------------------------------------------------------------------*/
 GC_API obj_t 
 make_cell( obj_t val ) {
    obj_t cell;
@@ -156,10 +157,15 @@ make_cell( obj_t val ) {
    return BCELL( cell );
 }
 
+#endif
+
 /*---------------------------------------------------------------------*/
-/*    static obj_t                                                     */
-/*    alloc_make_real ...                                              */
+/*    GC_API obj_t                                                     */
+/*    make_real ...                                                    */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_REAL
+#define BGL_MAKE_REAL
+
 static obj_t
 alloc_make_real( double d ) {
    obj_t real;
@@ -170,10 +176,6 @@ alloc_make_real( double d ) {
    return BREAL( real );
 }
 
-/*---------------------------------------------------------------------*/
-/*    GC_API obj_t                                                     */
-/*    make_real ...                                                    */
-/*---------------------------------------------------------------------*/
 GC_API obj_t
 make_real( double d ) {
    obj_t real;
@@ -183,6 +185,8 @@ make_real( double d ) {
 
    return BREAL( real );
 }
+
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    alloc_make_belong ...                                            */

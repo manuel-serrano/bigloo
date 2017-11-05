@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 14:42:03 1992                          */
-;*    Last change :  Sun Jan 15 07:26:02 2017 (serrano)                */
+;*    Last change :  Sun Nov  5 20:43:11 2017 (serrano)                */
 ;*                                                                     */
 ;*    On fait des tests pour tester eval.                              */
 ;*---------------------------------------------------------------------*/
@@ -319,8 +319,8 @@
 				    (loop (+fx i 1))))
 			     g))
       20)
-   (test "letrec*.1" (eval '(letrec* ((x::int 1)) x)) 1)
-   (test "letrec*.2" (eval '(letrec* ((x::int 1) (y::int 2)) (+ x y))) 3)
+   (test "letrec*.1" (eval '(letrec* ((x 1)) x)) 1)
+   (test "letrec*.2" (eval '(letrec* ((x 1) (y 2)) (+ x y))) 3)
    (test "tail.0" (eval '(let ((x 100000))
 			  (letrec ((loop (lambda ()
 					    (if (= x 0)

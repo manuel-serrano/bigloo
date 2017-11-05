@@ -200,16 +200,17 @@
 ; available this is not necessary, but pseudo-randomize! is an expected
 ; to be called only occasionally so we do not provide this implementation.
 
-(define mrg32k3a-m1 4294967087) ; modulus of component 1
-(define mrg32k3a-m2 4294944443) ; modulus of component 2
+(define mrg32k3a-m1 #l4294967087) ; modulus of component 1
+(define mrg32k3a-m2 #l4294944443) ; modulus of component 2
 
 (define mrg32k3a-initial-state ; 0 3 6 9 12 15 of A^16, see below
-  '#( 1062452522
-      2961816100 
-       342112271 
-      2854655037 
-      3321940838 
-      3542344109))
+     
+  '#(#l1062452522
+     #l2961816100 
+     #l342112271 
+     #l2854655037 
+     #l3321940838 
+     #l3542344109))
 
 (define mrg32k3a-generators #f) ; computed when needed
 
@@ -288,12 +289,12 @@
         (power-power (product A A) (- b 1))))
 
   (define A                        ; the MRG32k3a recursion
-    '#(     0 1403580 4294156359
-            1       0          0
-            0       1          0
-       527612       0 4293573854
-            1       0          0
-            0       1          0))
+    '#(     #l0 #l1403580 #l4294156359
+            #l1       #l0          #l0
+            #l0       #l1          #l0
+            #l527612  #l0          #l4293573854
+            #l1       #l0          #l0
+            #l0       #l1          #l0))
 
   ; check arguments
   (if (not (and (integer? i) 

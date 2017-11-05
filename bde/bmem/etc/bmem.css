@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Apr 15 10:37:40 2003                          */
-/*    Last change :  Thu Feb  9 08:30:15 2017 (serrano)                */
+/*    Last change :  Fri Oct 27 18:40:44 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Profalloc css                                                    */
@@ -53,6 +53,11 @@ ul.verticalbox li:before {
 /*---------------------------------------------------------------------*/
 /*    Profiling tables                                                 */
 /*---------------------------------------------------------------------*/
+table.gc-summary {
+  background-color: white;
+  border: 1px black solid;
+}
+
 div.profile table {
   frame: box;
   border-collapse: separate;

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Tue Oct 24 15:57:09 2017 (serrano)                */
+;*    Last change :  Fri Oct 27 18:45:49 2017 (serrano)                */
 ;*    Copyright   :  2003-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
@@ -32,7 +32,7 @@
 	  (tvec (make-vector nbtypes)))
       (for-each (lambda (t)
 		   (vector-set! tvec (car t) (cadr t)))
-		(cdr types))
+	 (cdr types))
       (html-table
        :width "100%"
        `(,(html-tr
@@ -182,17 +182,24 @@
 ;*    make-gc-summary ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (make-gc-summary gcmon)
-   (html-verticalbox
-      (list
-	 (html-table :width "100%"
-	    `(,(html-tr
-		  `(,(html-th :align "left" :width "15%" "gc number:")
-		    ,(html-td :align "left" 
-			(integer->string (length (cdr gcmon))))))
-	      ,(html-tr
-		  `(,(html-th :align "left" :width "15%" "alloc. size:")
-		    ,(html-td :align "left" 
-			(format "~aMB"
-			   (round
-			      (/ (apply + (map cadr (cdr gcmon)))
-				 1024 1024)))))))))))
+   (let ((hz (map caddr (cdr gcmon))))
+      (html-verticalbox
+	 (list
+	    (html-table :width "100%" :class "gc-summary"
+	       `(,(html-tr
+		     `(,(html-th :align "left" :width "15%" "gc number:")
+		       ,(html-td :align "left" 
+			   (integer->string (length (cdr gcmon))))))
+		 ,(html-tr
+		     `(,(html-th :align "left" :width "15%" "alloc. size:")
+		       ,(html-td :align "left" 
+			   (format "~aMB"
+			      (round
+				 (/ (apply + (map cadr (cdr gcmon)))
+				    1024 1024))))))
+		 ,(html-tr
+		     `(,(html-th :align "left" :width "15%" "heap size:")
+		       ,(html-td :align "left" 
+			   (format "min: ~aMB, max: ~aMb"
+			      (round (/ (apply min hz) 1024 1024))
+			      (round (/ (apply max hz) 1024 1024))))))))))))

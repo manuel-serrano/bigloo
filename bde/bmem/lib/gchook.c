@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Tue Oct 24 15:18:47 2017 (serrano)                */
+/*    Last change :  Fri Oct 27 18:53:33 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -85,7 +85,7 @@ GC_dump_gc( gc_info_t *i, FILE *f ) {
    fprintf( f, "    (%lu #l%lu #l%lu #l%lu)\n",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
-	    BMEMSIZE( i->heap_size ),
+	    i->heap_size,
 	    BMEMSIZE( i->live_size ) );
 }
 

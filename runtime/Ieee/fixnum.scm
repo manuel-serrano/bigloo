@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Jul 27 13:10:08 2017 (serrano)                */
+;*    Last change :  Thu Nov  2 09:34:02 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1479,7 +1479,7 @@
 (define-inline (fixnum->int32 x) ($long->int32 x))
 (define-inline (fixnum->uint32 x) ($long->uint32 x))
 (define-inline (int32->fixnum x) (elong->fixnum ($int32->elong x)))
-(define-inline (uint32->fixnum x) (elong->fixnum ($uint32->elong x)))
+(define-inline (uint32->fixnum x) ($uint32->long x))
 
 (define-inline (fixnum->int64 x) ($long->int64 x))
 (define-inline (fixnum->uint64 x) ($long->uint64 x))

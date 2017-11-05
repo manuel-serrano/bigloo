@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Thu Apr 20 10:34:24 2017 (serrano)                */
+;*    Last change :  Thu Nov  2 09:34:34 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -994,8 +994,8 @@
     (macro $long->belong::belong (::long) "make_belong")
     (macro $long->elong::elong (::long) "(long)")
     (macro $long->uelong::uelong (::long) "(unsigned long)")
-    (macro $elong->long::elong (::long) "(long)")
-    (macro $uelong->long::elong (::long) "(long)")
+    (macro $elong->long::long (::elong) "(long)")
+    (macro $uelong->long::long (::uelong) "(long)")
     (macro $belong->elong::elong (::belong) "BELONG_TO_LONG")
     (macro $belong->uelong::elong (::belong) "BELONG_TO_LONG")
     (macro $belong->long::long (::belong) "BELONG_TO_LONG")
@@ -1046,6 +1046,7 @@
     (macro $int64->uint64::uint64 (::int64) "(uint64_t)")
 
     (macro $uint32->ulong::ulong (::uint32) "(unsigned long)")
+    (macro $uint32->long::ulong (::uint32) "(long)")
     
     (macro $obj->void*::void* (::foreign) "FOREIGN_TO_COBJ")
     ($void*->obj::foreign (::void*) "void_star_to_obj"))
@@ -1256,6 +1257,7 @@
        (method static $int64->uint64::uint64 (::int64) "BGL_INT64_ID")
 
        (method static $uint32->ulong::ulong (::uint32) "BGL_INT32_ID")
+       (method static $uint32->long::long (::uint32) "BGL_INT32_ID")
     
        (method static $obj->void*::cobj (::void*) "FOREIGN_TO_COBJ")
        (method static $void*->obj::foreign (::void*) "void_star_to_obj")))

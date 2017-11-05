@@ -441,26 +441,6 @@
 #define SHARED_LIB_SUFFIX "@SHARED_LIB_SUFFIX@"
 #define UCS2_DISPLAYABLE @UCS2_DISPLAYABLE@
 
-#define BGL_NO_GC 1
-#define BGL_BOEHM_GC 2
-#define BGL_SAW_GC 3
-
-#ifndef BGL_GC
-#  define BGL_GC BGL_BOEHM_GC
-#endif
-
-#ifndef BGL_GC_BUMP_ALLOC
-#  define BGL_GC_BUMP_ALLOC @GC_BUMP@
-#endif
-
-#if( BGL_GC_BUMP_ALLOC && defined( BGL_GC_THREADS ) && !BGL_HAS_THREAD_LOCALSTORAGE )
-#  undef BGL_GC_BUMP_ALLOC
-#  define BGL_GC_BUMP_ALLOC 0
-#endif
-
-#define BGL_GC_HAVE_BLOCKING @GC_HAVE_BLOCKING@
-#define BGL_GC_HAVE_DO_BLOCKING @GC_HAVE_DO_BLOCKING@
-
 #define BGL_INLINE_MUTEX 1
 
 #define BGL_HAVE_MUTEX_TIMEDLOCK @PTHREAD_HAVE_TIMEDLOCK@
@@ -487,6 +467,26 @@
 #define BGL_REGEXP_HAS_FREE_STUDY @BGL_REGEXP_HAS_FREE_STUDY@
 
 #define BGL_CLASS_DISPLAY_MIN_SIZE 6
+
+#define BGL_NO_GC 1
+#define BGL_BOEHM_GC 2
+#define BGL_SAW_GC 3
+
+#ifndef BGL_GC
+#  define BGL_GC BGL_BOEHM_GC
+#endif
+
+#ifndef BGL_GC_BUMP_ALLOC
+#  define BGL_GC_BUMP_ALLOC @GC_BUMP@
+#endif
+
+#define BGL_GC_HAVE_BLOCKING @GC_HAVE_BLOCKING@
+#define BGL_GC_HAVE_DO_BLOCKING @GC_HAVE_DO_BLOCKING@
+
+#if( BGL_GC_BUMP_ALLOC && defined( BGL_GC_THREADS ) && !BGL_HAS_THREAD_LOCALSTORAGE )
+#  undef BGL_GC_BUMP_ALLOC
+#  define BGL_GC_BUMP_ALLOC 0
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    DNS caching                                                      */

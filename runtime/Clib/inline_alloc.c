@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Sep 21 15:33:10 1994                          */
-/*    Last change :  Thu Oct 26 18:20:08 2017 (serrano)                */
+/*    Last change :  Sun Oct 29 09:01:10 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    On fait des fonctions d'allocations specialisees pour les cons   */
 /*    et les flottants.                                                */
@@ -56,7 +56,9 @@ bgl_gc_verbose_set( bool_t verbose ) {
 /*---------------------------------------------------------------------*/
 #if( BGL_GC_BUMP_ALLOC )
 #  include "inline_alloc_bump.h"
-#elif( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM && !defined( BGL_GC_THREADS ))
+#endif
+
+#if( (BGL_GC == BGL_BOEHM_GC) && BGL_GC_CUSTOM && !defined( BGL_GC_THREADS ))
 #  include "inline_alloc.h"
 #else
 #  include "inline_alloc_thread.h"

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Apr 21 18:46:58 2017 (serrano)                */
+;*    Last change :  Fri Nov  3 17:46:46 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The reduction of type checks.                                    */
@@ -191,69 +191,70 @@
 ;*    -------------------------------------------------------------    */
 ;*    Is an expression "copyable" in the copy optimization?            */
 ;*---------------------------------------------------------------------*/
-(define-generic (copyable? node)
+(define-generic (copyable? node v)
    #f)
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::atom ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::atom)
+(define-method (copyable? node::atom v)
    #t)
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::var ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::var)
+(define-method (copyable? node::var v)
    (eq? (variable-access (var-variable node)) 'read))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::sequence ...                                         */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::sequence)
+(define-method (copyable? node::sequence v)
    (with-access::sequence node (nodes)
-      (every copyable? nodes)))
+      (every (lambda (n) (copyable? n v)) nodes)))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::vlength ...                                          */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::vlength)
+(define-method (copyable? node::vlength v)
    (with-access::vlength node (expr*)
-      (every copyable? expr*)))
+      (every (lambda (n) (copyable? n v)) expr*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::cast ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::cast)
+(define-method (copyable? node::cast v)
    (with-access::cast node (arg)
-      (copyable? arg)))
+      (copyable? arg v)))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::cast-null ...                                        */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::cast-null)
+(define-method (copyable? node::cast-null v)
    (with-access::cast-null node (expr*)
-      (every copyable? expr*)))
+      (every (lambda (n) (copyable? n v)) expr*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::instanceof ...                                       */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::instanceof)
+(define-method (copyable? node::instanceof v)
    (with-access::instanceof node (expr*)
-      (every copyable? expr*)))
+      (every (lambda (n) (copyable? n v)) expr*)))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::conditional ...                                      */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::conditional)
+(define-method (copyable? node::conditional v)
    (with-access::conditional node (test true false)
-      (and (copyable? test) (copyable? true) (copyable? false))))
+      (when (<=fx (variable-occurrence v) 1)
+	 (and (copyable? test v) (copyable? true v) (copyable? false v)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    copyable? ::fail ...                                             */
 ;*---------------------------------------------------------------------*/
-(define-method (copyable? node::fail)
+(define-method (copyable? node::fail v)
    (with-access::fail node (proc msg obj)
-      (and (copyable? proc) (copyable? msg) (copyable? obj))))
+      (and (copyable? proc v) (copyable? msg v) (copyable? obj v))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node-copy! ::let-var ...                                         */
@@ -282,20 +283,28 @@
 		   (if (var? val) (variable-access (var-variable val)) "?")
 		   "]" #\Newline)
 		(if (and (eq? (variable-access var) 'read)
-			 (or (copyable? val)
-			     (and (var? val)
-				  (eq? (variable-access (var-variable val))
-				     'read)
-				  (type-less-specific? 
-				     (variable-type var)
-				     (variable-type (var-variable val))))))
+			 (copyable? val var)
+			 (type-less-specific?
+			    (node-type val)
+			    (variable-type var)))
+;* 			     (and (var? val)                           */
+;* 				  (eq? (variable-access (var-variable val)) */
+;* 				     'read)                            */
+;* 				  (type-less-specific?                 */
+;* 				     (variable-type var)               */
+;* 				     (variable-type (var-variable val)))))) */
  		    (begin
-;* 		       (tprint "COPY: " (shape val))                   */
 		       ;; we propagate the copy
 		       (trace (reduce 3) "copy: reducing: "
 			  (shape val) " -> " (shape var) #\Newline)
 		       (set! *copy-removed* (+fx *copy-removed* 1))
-		       (variable-fast-alpha-set! var val)
+		       (variable-fast-alpha-set! var
+			  (if (eq? (node-type val) (variable-type var))
+			      val
+			      (instantiate::cast
+				 (loc (node-loc val))
+				 (type (variable-type var))
+				 (arg val))))
 		       (loop (cdr obindings) nbindings))
 		    (loop (cdr obindings) (cons binding nbindings))))))))
  

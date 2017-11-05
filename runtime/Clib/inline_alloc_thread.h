@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Thu Oct 26 18:30:02 2017 (serrano)                */
+/*    Last change :  Sun Oct 29 09:02:15 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -13,6 +13,9 @@
 /*    GC_API obj_t                                                     */
 /*    make_pair ...                                                    */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_PAIR
+#define BGL_MAKE_PAIR
+
 GC_API obj_t
 make_pair( obj_t car, obj_t cdr ) {
    obj_t pair;
@@ -23,10 +26,15 @@ make_pair( obj_t car, obj_t cdr ) {
    return BPAIR( pair );
 }
 
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    GC_API obj_t                                                     */
 /*    make_epair ...                                                   */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_EPAIR
+#define BGL_MAKE_EPAIR
+
 GC_API obj_t
 make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    obj_t pair;
@@ -37,10 +45,15 @@ make_epair( obj_t car, obj_t cdr, obj_t cer ) {
    return BPAIR( pair );
 }
 
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    GC_API obj_t                                                     */
 /*    make_cell ...                                                    */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_CELL
+#define BGL_MAKE_CELL
+
 GC_API obj_t
 make_cell( obj_t val ) {
    obj_t cell;
@@ -51,10 +64,15 @@ make_cell( obj_t val ) {
    return BCELL( cell );
 }
 
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    GC_API obj_t                                                     */
 /*    make_real ...                                                    */
 /*---------------------------------------------------------------------*/
+#ifndef BGL_MAKE_REAL
+#define BGL_MAKE_REAL
+
 GC_API obj_t
 make_real( double real ) {
    obj_t a_real;
@@ -64,6 +82,8 @@ make_real( double real ) {
 
    return BREAL( a_real );
 }
+
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    GC_API obj_t                                                     */
