@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Nov  5 19:51:46 2017 (serrano)                */
+;*    Last change :  Thu Nov  9 17:55:26 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -217,8 +217,7 @@
 
 	 ;; we now build the module body
 	 (let* ((c0 (if (null? src-code) '(#unspecified) src-code))
-		(c1 (if (or (>=fx (bigloo-compiler-debug) 2)
-			    (>=fx *compiler-debug-trace* 1))
+		(c1 (if (>=fx *compiler-debug-trace* 1)
 			(cons `(bigloo-debug-set!
 				  ,(max (bigloo-compiler-debug)
 				      *compiler-debug-trace*))

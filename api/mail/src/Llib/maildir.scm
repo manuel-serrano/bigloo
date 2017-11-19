@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  4 18:40:47 2007                          */
-;*    Last change :  Sun Sep 10 23:18:12 2017 (serrano)                */
+;*    Last change :  Fri Nov 17 08:47:15 2017 (serrano)                */
 ;*    Copyright   :  2007-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo maildir implementation.                                   */
@@ -439,7 +439,6 @@
    (with-access::folderinfo info (time path uids)
       ;; update the validity time stamp
       (set! time (file-modification-time path))
-      #;(tprint "update-folderinfo! path=" path " time=" time)
       ;; update the hashtable
       (if (string? npath)
 	  (hashtable-update! uids uid (lambda (x) npath) npath)

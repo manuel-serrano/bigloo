@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Sun Sep 10 14:05:00 2017 (serrano)                */
+;*    Last change :  Fri Nov 17 08:44:31 2017 (serrano)                */
 ;*    Copyright   :  2007-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements parser following the RFC2822              */
@@ -53,6 +53,12 @@
 			   (msg "Illegal value character")
 			   (obj (string-append (safe-char c)
 				   (read-line (the-port)))))))))))
+
+   (define (trim s)
+      (let ((i (string-skip s #\space)))
+	 (if (or (not i) (=fx i 0))
+	     s
+	     (substring s i))))
    
    (define field-grammar
       (regular-grammar ((id (+ (out ":\n\t\r ,;"))))
@@ -63,7 +69,7 @@
 		 (id (string->symbol
 			(string-downcase!
 			   (the-substring 0 (-fx len delta)))))
-		 (val (read/rp value-grammar (the-port))))
+		 (val (trim (read/rp value-grammar (the-port)))))
 	     (with-handler
 		(lambda (e)
 		   (raise

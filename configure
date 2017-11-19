@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Oct 26 14:51:21 2017 (serrano)                */
+#*    Last change :  Fri Nov 17 07:05:05 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -459,7 +459,7 @@ while : ; do
       java=java;
       javac=javac;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG -no-pie";
       bootflags="$bootflags -cg";
       jvmbackend="force";
       mode=standard;

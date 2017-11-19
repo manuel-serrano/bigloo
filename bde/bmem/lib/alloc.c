@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Oct 30 09:36:25 2017 (serrano)                */
+/*    Last change :  Thu Nov 16 10:09:16 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -477,7 +477,7 @@ GC_malloc_find_type( int lb, int unknown ) {
       bmem_set_alloc_type( ty == -1 ? unknown : ty, to );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
-	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): %s ty=%d type=%d\n",
+	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): %s ty=%d type=%ld\n",
 		  lb,
 		  bgl_debug_trace_top_name( get_alloc_type_offset() ),
 		  ty, get_alloc_type() );
@@ -487,7 +487,7 @@ GC_malloc_find_type( int lb, int unknown ) {
       bmem_set_alloc_type( unknown, 0 );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
-	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): ???? type=%d\n",
+	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): ???? type=%ld\n",
 		  lb, get_alloc_type() );
       }
 #endif
@@ -507,7 +507,7 @@ GC_malloc( size_t lb ) {
 
 #if BMEMDEBUG
    if( bmem_debug ) {
-      fprintf( stderr, "GC_malloc(%zu): %s %d\n",
+      fprintf( stderr, "GC_malloc(%zu): %s %ld\n",
 	       lb,
 	       bgl_debug_trace_top_name( get_alloc_type_offset() ),
 	       get_alloc_type() );
@@ -536,7 +536,7 @@ GC_realloc( obj_t old, size_t lb ) {
 
 #if BMEMDEBUG
    if( bmem_debug ) {
-      fprintf( stderr, "GC_realloc(%zu): top=%s type=%d\n",
+      fprintf( stderr, "GC_realloc(%zu): top=%s type=%ld\n",
 	       lb,
 	       bgl_debug_trace_top_name( get_alloc_type_offset() ),
 	       get_alloc_type() );
@@ -566,7 +566,7 @@ GC_malloc_atomic( size_t lb ) {
 
 #if BMEMDEBUG
    if( bmem_debug ) {
-      fprintf( stderr, "GC_malloc_atomic(%zu): top=%s type=%d\n",
+      fprintf( stderr, "GC_malloc_atomic(%zu): top=%s type=%ld\n",
 	       lb,
 	       bgl_debug_trace_top_name( get_alloc_type_offset() ),
 	       get_alloc_type() );

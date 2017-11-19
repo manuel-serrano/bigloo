@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Thu Jul  6 10:36:20 2017 (serrano)                */
+/*    Last change :  Thu Nov 16 10:08:05 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -580,7 +580,7 @@ loop:
 	    }
 	 }
 #endif
-	 sprintf( buf, "Time limit (%ld us) exceeded",
+	 sprintf( buf, "Time limit (%lld us) exceeded",
 		  tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
 	 
 	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "read/timeout", buf, port );
