@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Pierre Weis                      */
 ;*    Creation    :  Tue Jan 18 08:11:58 1994                          */
-;*    Last change :  Sun Aug  6 20:56:11 2017 (serrano)                */
+;*    Last change :  Mon Nov 27 10:58:08 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The serialization process does not make hypothesis on word's     */
 ;*    size. Since 2.8b, the serialization/deserialization is thread    */
@@ -168,7 +168,8 @@
    (define (string-guard! sz)
       (when (>fx (+fx sz *pointer*) *strlen*)
 	 (error "string->obj"
-	    (format "Corrupted string at index ~a/~a" *pointer* *strlen*)
+	    (format "Corrupted string (~a) at index ~a/~a" (+fx sz *pointer*)
+	       *pointer* *strlen*)
 	    s)))
    
    ;; check-size!
