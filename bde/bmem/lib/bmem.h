@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Mon Oct 23 19:35:12 2017 (serrano)                */
+/*    Last change :  Mon Nov 20 08:27:58 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -28,8 +28,11 @@
 /*---------------------------------------------------------------------*/
 /*    MEMSIZE                                                          */
 /*---------------------------------------------------------------------*/
-#define BMEMSIZEOFWORD (4)
-#define BMEMSIZE( v )  ((v)/BMEMSIZEOFWORD)
+/* #define BMEMSIZEOFWORD (4)                                          */
+/* #define BMEMSIZE( v )  ((v)/BMEMSIZEOFWORD)                         */
+
+#define BMEMSIZEOFWORD (1)
+#define BMEMSIZE( v ) v
 
 /*---------------------------------------------------------------------*/
 /*    Various types                                                    */

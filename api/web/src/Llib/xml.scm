@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Mon Jan 11 18:13:49 2016 (serrano)                */
-;*    Copyright   :  2005-16 Manuel Serrano                            */
+;*    Last change :  Mon Nov 27 08:40:12 2017 (serrano)                */
+;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -22,7 +22,8 @@
 				(procedure list)
 				(specials '())
 				(strict #t)
-				(encoding 'UTF-8))
+				(encoding 'UTF-8)
+				(eoi #f))
 	   (xml-string-decode::bstring ::bstring)
 	   (xml-string-decode!::bstring ::bstring)
 	   (xml-string-encode::bstring ::bstring)
@@ -38,7 +39,8 @@
 			     (procedure list)
 			     (specials '())
 			     (strict #t)
-			     (encoding 'UTF-8))
+			     (encoding 'UTF-8)
+			     (eoi #f))
    (when (elong? content-length)
       (set! content-length (elong->fixnum content-length)))
    (when (and (fixnum? content-length) (>fx content-length 0))
@@ -52,8 +54,9 @@
 	 (cond
 	    ((eof-object? obj)
 	     '())
-	    ((and (>fx content-length 0)
-		  (>=fx (input-port-position port) content-length))
+	    ((or (and (procedure? eoi) (eoi obj))
+		 (and (>fx content-length 0)
+		      (>=fx (input-port-position port) content-length)))
 	     (list obj))
 	    ((and (pair? obj) (eq? 'xml-decl (car obj)))
 	     (let ((enc (assq 'encoding (cdr obj))))

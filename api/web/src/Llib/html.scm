@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:16:28 2005                          */
-;*    Last change :  Mon Oct 26 16:59:08 2015 (serrano)                */
-;*    Copyright   :  2005-15 Manuel Serrano                            */
+;*    Last change :  Mon Nov 27 08:42:47 2017 (serrano)                */
+;*    Copyright   :  2005-17 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    HTML helpers                                                     */
 ;*=====================================================================*/
@@ -20,7 +20,8 @@
 				 #!key
 				 (content-length 0)
 				 (procedure list)
-				 (encoding 'UTF-8))
+				 (encoding 'UTF-8)
+				 (eoi #f))
 	   (html-string-decode::bstring ::bstring)
 	   (html-string-encode::bstring ::bstring)
 	   
@@ -47,10 +48,12 @@
 		    #!key
 		    (content-length 0)
 		    (procedure list)
-		    (encoding 'UTF-8))
+		    (encoding 'UTF-8)
+		    (eoi #f))
    (xml-parse port
 	      :specials *html-special-elements*
 	      :strict #f
+	      :eoi eoi
 	      :content-length content-length
 	      :procedure procedure
 	      :encoding encoding))

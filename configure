@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Nov 17 07:05:05 2017 (serrano)                */
+#*    Last change :  Sat Nov 18 08:00:32 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -459,7 +459,8 @@ while : ; do
       java=java;
       javac=javac;
       ld=gcc;
-      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG -no-pie";
+      cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
+      coflags="$coflags";
       bootflags="$bootflags -cg";
       jvmbackend="force";
       mode=standard;
@@ -3324,7 +3325,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_LINKER_FLAGS@|$lflags $lcustomflags|" \
               -e "s|@C_LINKER_O_OPTION@|-o |" \
               -e "s|@C_LINKER_DEBUG_OPTION@|-g |" \
-              -e "s|@C_LINKER_OPTIM_FLAGS@||" \
+              -e "s|@C_LINKER_OPTIM_FLAGS@|$loflags|" \
               -e "s|@C_PROFILE_FLAGS@|$cpflags $cflags|" \
               -e "s|@C_STRING_SPLIT@|$stringsplit|" \
               -e "s|@BGL_LD_LIBRARY_DIR@|$libdir|" \

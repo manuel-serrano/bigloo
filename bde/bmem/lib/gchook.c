@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri Oct 27 18:53:33 2017 (serrano)                */
+/*    Last change :  Mon Nov 20 08:28:40 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -116,17 +116,17 @@ GC_reset_statistics() {
 }
 
 /*---------------------------------------------------------------------*/
-/*    long                                                             */
+/*    long long                                                        */
 /*    GC_alloc_total ...                                               */
 /*---------------------------------------------------------------------*/
-long
+long long
 GC_alloc_total() {
-   long sz= 0;
+   long long sz = 0;
    pa_pair_t *lst = gcs_info;
    
    while( PA_PAIRP( lst ) ) {
       gc_info_t *i = PA_CAR( lst );
-      sz += BMEMSIZE( i->alloc_size );
+      sz += (long long)BMEMSIZE( i->alloc_size );
       lst = PA_CDR( lst );
    }
 

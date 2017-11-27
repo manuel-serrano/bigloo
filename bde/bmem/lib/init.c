@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Tue Oct 24 15:21:01 2017 (serrano)                */
+/*    Last change :  Mon Nov 20 08:16:04 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -32,7 +32,7 @@ extern void thread_dump_statistics( FILE *f );
 extern void thread_reset_statistics();
 extern void type_dump( FILE *f );
 
-extern long GC_alloc_total();
+extern long long GC_alloc_total();
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
@@ -256,7 +256,7 @@ dump_statistics() {
    fprintf( f, ")\n" );
    
    fprintf( stderr, "Dump done\n" );
-   fprintf( stderr, "Total size: %ldMB\n",
+   fprintf( stderr, "Total size: %lldMB\n",
 	    GC_alloc_total() / 1024 / 1024 );
    fclose( f );
 }

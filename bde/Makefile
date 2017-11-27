@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Sun Jul  9 10:20:12 2017 (serrano)                */
+#*    Last change :  Sun Nov 19 08:10:22 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -186,10 +186,9 @@ install: all
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX); \
 	  cp $(BOOTBINDIR)/bgljas$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX); \
           chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX); \
-	  if [ "$(LDPRELOADSUPPORT)" = "yes" \
-               -a "$(PTHREADLIBS)" != "no" ]; then \
-	    (cd bmem; $(MAKE) install) || exit 1; \
-          fi; \
+        fi
+	if [ "$(LDPRELOADSUPPORT)" = "yes" -a "$(PTHREADLIBS)" != "no" ]; then \
+	  (cd bmem; $(MAKE) install) || exit 1; \
         fi
 
 #*---------------------------------------------------------------------*/
