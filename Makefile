@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Jul 27 11:24:20 2017 (serrano)                */
+#*    Last change :  Fri Dec  1 10:22:46 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -848,7 +848,6 @@ clean:
 	(cd recette && $(MAKE) clean)
 	(cd api && $(MAKE) clean)
 	(cd bdl && $(MAKE) clean)
-	(cd pnet2ms && $(MAKE) clean)
 	(cd bglpkg && $(MAKE) clean)
 
 cleanall: 
@@ -874,7 +873,6 @@ cleanall:
         fi
 	(cd api && $(MAKE) cleanall)
 	(cd bdl && $(MAKE) cleanall)
-	(cd pnet2ms && $(MAKE) cleanall)
 	(cd bglpkg && $(MAKE) cleanall)
 
 distclean: 

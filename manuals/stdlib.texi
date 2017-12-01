@@ -1866,7 +1866,7 @@ if the datatype TAGvector is supported, then
 @item the external representation of instances of the datatype TAGvector 
 is  #TAG( ...elements... ).
 
-For example, @code{#u8(0 #e1e2 #xff)} is an u8vector of length 3 containing 
+For example, @code{#u8(0 100 #xff)} is an u8vector of length 3 containing 
 0, 100 and 255; @code{#f64(-1.5)} is an f64vector of length 1 containing -1.5.
 
 Note that the syntax for float vectors conflicts with Standard Scheme

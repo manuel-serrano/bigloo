@@ -41,48 +41,6 @@ Bigloo produces JVM code that is not conform to the rules enforced by
 the Java byte code verifiers.
 
 @c ------------------------------------------------------------------- @c
-@c    Running .NET programs on Microsoft .NET platforms                @c
-@c ------------------------------------------------------------------- @c
-@section Running .NET programs on Microsoft .NET platforms
-@cindex .NET requirement
-
-Bigloo uses Portable.NET assembler and linker to produce .NET binaries.  As
-such, produced binaries are linked and signed against Portable.NET runtime
-libraries and are rejected by Microsoft .NET platforms.  In order to run
-Bigloo .NET binaries on Microsoft .NET platforms, binaries must first be
-disassembled and then reassembled and linked against Microsoft runtime
-libraries.
-
-The pnet2ms utility automates this process. Before the first use of
-pnet2ms, a public+private key pair must first be registered to the
-"Bigloo" container. You may either use the provided pair in the
-bigloo.dotnetkey file or generate your own using:
-@display
-          sn -k bigloo.dotnetkey
-@end display
-The pair must be registered using:
-@display
-          sn -i bigloo.dotnetkey Bigloo
-@end display
-
-The pnet2ms program can be ran with:
-@display
-  pnet2ms myprogram.exe
-@end display
-
-Additional command-line options are:
-@display
-  -initlocals     force all local variables to be initialized to their
-                  default value upon function entrance 
-                  (for PEVerify to succeed)
-  -k              Keep intermediate files
-  -register       Register DLLs in the Global Assembly Cache
-  -v              Enable verbose mode
-  -v2             Enable very verbose mode
-  -v3             Enable very very verbose mode
-@end display
-
-@c ------------------------------------------------------------------- @c
 @c    Linking                                                          @c
 @c ------------------------------------------------------------------- @c
 @section Linking

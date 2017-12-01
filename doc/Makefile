@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:08:14 2004                          */
-#*    Last change :  Sun Oct  1 20:01:18 2017 (serrano)                */
+#*    Last change :  Fri Dec  1 10:22:23 2017 (serrano)                */
 #*    Copyright   :  2004-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for managing the DOC Bigloo directory               */
@@ -28,7 +28,7 @@ pop:
                doc/README.win32 doc/README.jvm \
                doc/README.athlon doc/README.pentium \
                doc/README.icc doc/README.benchmark \
-               doc/README.net doc/README.hppa \
+               doc/README.hppa \
                doc/README.aix doc/README.aix.html \
                doc/README.sparc-linux \
                doc/README.mingw \
