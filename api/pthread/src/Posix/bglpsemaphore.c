@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Wed May 17 09:14:00 2017 (serrano)                */
+/*    Last change :  Sat Dec  2 15:53:09 2017 (serrano)                */
 /*    Copyright   :  2004-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix semaphore implementation                               */
@@ -96,7 +96,12 @@ bgl_open_semaphore( obj_t name,
 /*---------------------------------------------------------------------*/
 int
 bgl_semaphore_value( obj_t s ) {
+#if BGL_HAVE_SEMAPHORE   
    int val;
    sem_getvalue( BGL_SEMAPHORE_SEM( s ), &val );
    return val;
+#else
+   return 0;
+#endif   
+   
 }

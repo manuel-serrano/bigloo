@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Feb 22 11:01:20 2002                          */
-/*    Last change :  Thu Apr 20 11:26:24 2017 (serrano)                */
+/*    Last change :  Sat Dec  2 16:12:52 2017 (serrano)                */
 /*    Copyright   :  2002-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The C headers for Bigloo pthreads.                               */
@@ -99,37 +99,37 @@ typedef struct bglpcondvar {
 #if( BGL_HAVE_SEMAPHORE )
 #  define BGL_SEMAPHORE_CLOSE( s ) sem_close( BGL_SEMAPHORE_SEM( s ) )
 #else
-#  define BGL_SEMAPHORE_CLOSE( s ) 
+#  define BGL_SEMAPHORE_CLOSE( s ) -1
 #endif
 
 #if( BGL_HAVE_SEMAPHORE )
 #  define BGL_SEMAPHORE_DELETE( name ) sem_unlink( name )
 #else
-#  define BGL_SEMAPHORE_DELETE( name ) 
+#  define BGL_SEMAPHORE_DELETE( name ) -1
 #endif
 
 #if( BGL_HAVE_SEMAPHORE )
 #  define BGL_SEMAPHORE_WAIT( s ) sem_wait( BGL_SEMAPHORE_SEM( s ) )
 #else
-#  define BGL_SEMAPHORE_WAIT( s ) 
+#  define BGL_SEMAPHORE_WAIT( s ) -1
 #endif
 
 #if( BGL_HAVE_SEMAPHORE )
 #  define BGL_SEMAPHORE_TRYWAIT( s ) sem_trywait( BGL_SEMAPHORE_SEM( s ) )
 #else
-#  define BGL_SEMAPHORE_TRYWAIT( s ) 
+#  define BGL_SEMAPHORE_TRYWAIT( s ) -1
 #endif
 
 #if( BGL_HAVE_SEMAPHORE )
 #  define BGL_SEMAPHORE_POST( s ) sem_post( BGL_SEMAPHORE_SEM( s ) )
 #else
-#  define BGL_SEMAPHORE_POST( s ) 
+#  define BGL_SEMAPHORE_POST( s ) -1
 #endif
 
 #if( BGL_HAVE_SEMAPHORE )
 #  define BGL_SEMAPHORE_VALUE( s ) sem_getvalue( BGL_SEMAPHORE_SEM( s ) )
 #else
-#  define BGL_SEMAPHORE_VALUE( s ) 
+#  define BGL_SEMAPHORE_VALUE( s ) -1
 #endif
 
 /*---------------------------------------------------------------------*/
