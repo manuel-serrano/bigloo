@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Wed Jun  7 15:44:36 2017 (serrano)                */
+;*    Last change :  Tue Dec  5 15:50:28 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -84,7 +84,9 @@
 	 (newline *c-port*)
 	 (newline *c-port*)
 	 (display "/* " *c-port*)
-	 (display (shape global) *c-port*)
+	 (display
+	    (pregexp-replace* "[*]/" (symbol->string! (shape global)) "*|")
+	    *c-port*)
 	 (display " */" *c-port*)
 	 ;; we have to emit a dummy location otherwise gdb get confused
 	 ;; with the function arguments! Thus all functions looks like
