@@ -3,11 +3,11 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Fri Apr 11 13:18:21 1997                          */
-;*    Last change :  Fri Apr 21 18:47:45 2017 (serrano)                */
+;*    Last change :  Sat Dec  9 08:53:46 2017 (serrano)                */
 ;*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements an optimization asked by John Gerard      */
-;*    Malecki <johnm@vlibs.com>. What is does is, for each generic     */
+;*    Malecki <johnm@vlibs.com>. What it does is, for each generic     */
 ;*    operation (e.g. +, max, ...) if a specialized operation exists,  */
 ;*    regarding Cfa type informations, the generic operation is        */
 ;*    replaced by the specific one.                                    */

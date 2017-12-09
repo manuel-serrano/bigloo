@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 28 10:52:56 1992                          */
-;*    Last change :  Sun Jun 15 09:19:39 2014 (serrano)                */
+;*    Last change :  Sat Dec  9 10:46:07 2017 (serrano)                */
 ;*                                                                     */
 ;*    On test les operateurs generiques sur les nombres                */
 ;*---------------------------------------------------------------------*/
@@ -295,6 +295,8 @@
    (test "number->string" (number->string -127 16) "-7f")
    (test "number->string" (number->string 127 8) "177")
    (test "number->string" (number->string -127 8) "-177")
+   (test "number->string" (number->string #s32:-1732584194) "-1732584194")
+   (test "number->string" (number->string #u32:1732584194) "1732584194")
    (test "elong.1" (find-runtime-type #e1) "elong")
    (test "elong.2" #e1 #e1)
    (test "elong.3" (elong? #exfeedabee) #t)

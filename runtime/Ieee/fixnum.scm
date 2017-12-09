@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Thu Nov  2 09:34:02 2017 (serrano)                */
+;*    Last change :  Sat Dec  9 10:47:01 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -65,7 +65,7 @@
 	   (macro $elong->int32::int32 (::elong) "(int32_t)")
 	   (macro $int32->elong::elong (::int32)  "(long)")
 	   (macro $elong->uint32::uint32 (::elong) "(uint32_t)")
-	   (macro $int32->llong::llong (::uint32)  "(BGL_LONGLONG_T)")
+	   (macro $int32->llong::llong (::int32)  "(BGL_LONGLONG_T)")
 	   (macro $uint32->elong::elong (::uint32)  "(long)")
 	   (macro $uint32->llong::llong (::uint32)  "(BGL_LONGLONG_T)")
 	   (macro $uint32->uint64::uint64 (::uint32)  "(uint64_t)")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Fri Nov 18 14:28:34 2016 (serrano)                */
+;*    Last change :  Wed Dec  6 16:45:08 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -402,7 +402,7 @@
 	      ((bignum? ,y)
 	       (,oppost (,opbx (fixnum->bignum ,x) ,y)))
 	      (else
-	       (error ',op "not a number" ,y))))
+	       (error ,(symbol->string op) "not a number" ,y))))
 	  ((flonum? ,x)
 	   (cond
 	      ((flonum? ,y)
@@ -418,7 +418,7 @@
 	      ((bignum? ,y)
 	       (,opfl ,x (bignum->flonum ,y)))
 	      (else
-	       (error ',op "not a number" ,y))))
+	       (error ,(symbol->string op) "not a number" ,y))))
 	  (($subelong? ,x)
 	   (cond
 	      ((fixnum? ,y)
@@ -434,7 +434,7 @@
 	      ((bignum? ,y)
 	       (,opbx (elong->bignum ($subelong->elong ,x)) ,y))
 	      (else
-	       (error ',op "not a number" ,y))))
+	       (error ,(symbol->string op) "not a number" ,y))))
 	  (($subllong? ,x)
 	   (cond
 	      ((fixnum? ,y)
@@ -450,7 +450,7 @@
 	      ((uint64? ,y)
 	       (,opuint64 (llong->uint64 ,x) ,y))
 	      (else
-	       (error ',op "not a number" ,y))))
+	       (error ,(symbol->string op) "not a number" ,y))))
 	  ((uint64? ,x)
 	   (cond
 	      ((fixnum? ,y)
@@ -466,7 +466,7 @@
 	      ((bignum? ,y)
 	       (,opbx ($uint64->bignum ,x) ,y))
 	      (else
-	       (error ',op "not a number5" ,y))))
+	       (error ,(symbol->string op) "not a number5" ,y))))
  	  ((bignum? ,x)
  	   (cond
  	      ((bignum? ,y)
@@ -482,9 +482,9 @@
 	      ((uint64? ,y)
  	       (,opbx ,x ($uint64->bignum ,y)))
  	      (else
- 	       (error ',op "not a number" ,y))))
+ 	       (error ,(symbol->string op) "not a number" ,y))))
 	  (else
-	   (error ',op "not a number" ,x)))))
+	   (error ,(symbol->string op) "not a number" ,x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    2= ...                                                           */
@@ -773,7 +773,7 @@
 		  q
 		  (/fl ($fixnum->flonum x) (bignum->flonum y)))))
 	  (else
-	   (error '/ "not a number" y))))
+	   (error "/" "not a number" y))))
       ((flonum? x)
        (cond
 	  ((flonum? y)
@@ -787,7 +787,7 @@
 	  ((bignum? y)
 	   (/fl x (bignum->flonum y)))
 	  (else
-	   (error '/ "not a number" y))))
+	   (error "/" "not a number" y))))
       ((elong? x)
        (cond
 	  ((fixnum? y)
@@ -814,7 +814,7 @@
 		  q
 		  (/fl ($elong->flonum x) (bignum->flonum y)))))
 	  (else
-	   (error '/ "not a number" y))))
+	   (error "/" "not a number" y))))
       ((llong? x)
        (cond
 	  ((fixnum? y)
@@ -841,7 +841,7 @@
 		  q
 		  (/fl ($llong->flonum x) (bignum->flonum y)))))
 	  (else
-	   (error '/ "not a number" y))))
+	   (error "/" "not a number" y))))
       ((bignum? x)
        (cond
  	  ((fixnum? y)
@@ -871,9 +871,9 @@
  		  q
  		  (/fl (bignum->flonum x) (bignum->flonum y)))))
   	  (else
-  	   (error '/ "not a number" y))))
+  	   (error "/" "not a number" y))))
       (else
-       (error / "not a number" x))))
+       (error "/" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    / ...                                                            */
@@ -1182,7 +1182,7 @@
 		    ((bignum? y)
 		     y)
 		    (else
-		     (error 'expr "not a number" y)))))
+		     (error "expr" "not a number" y)))))
 	  (exptbx x y1)))
       (else
        (let ((x1 (cond
@@ -1197,7 +1197,7 @@
 		    ((bignum? x)
 		     (bignum->flonum x))
 		    (else
-		     (error 'expr "not a number" x))))
+		     (error "expr" "not a number" x))))
 	     (y1 (cond
 		    ((flonum? y)
 		     y)
@@ -1210,7 +1210,7 @@
 		    ((bignum? y)
 		     (bignum->flonum y))
 		    (else
-		     (error 'expr "not a number" y)))))
+		     (error "expr" "not a number" y)))))
 	  (exptfl x1 y1)))))
 
 ;*---------------------------------------------------------------------*/
