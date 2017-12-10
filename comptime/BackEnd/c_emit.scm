@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Fri Aug 18 16:47:01 2017 (serrano)                */
+;*    Last change :  Sun Dec 10 09:44:28 2017 (serrano)                */
 ;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
@@ -301,7 +301,7 @@
        (display #\) *c-port*))
       ((int32? value) 
        (display "(int32_t)(" *c-port*)
-       (display (int32->fixnum value) *c-port*)
+       (display (int32->llong value) *c-port*)
        (display #\) *c-port*))
       ((uint32? value) 
        (display "(uint32_t)(" *c-port*)
