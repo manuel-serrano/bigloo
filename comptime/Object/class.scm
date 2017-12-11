@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu May 30 16:46:40 1996                          */
-;*    Last change :  Mon Feb 20 08:30:03 2017 (serrano)                */
+;*    Last change :  Mon Dec 11 09:12:40 2017 (serrano)                */
 ;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The class definition                                             */
@@ -81,7 +81,6 @@
 	    (class-make::obj ::tclass)
 	    (class-fill::obj ::tclass)
 	    (class-predicate::symbol ::tclass)
-	    (class-nil-constructor::symbol ::tclass)
 	    (class-allocate::symbol ::tclass)
 	    (check-class-declaration?::bool ::tclass ::obj)
 	    (set-class-slots! ::tclass ::pair-nil ::pair-nil)))
@@ -328,14 +327,6 @@
 ;*---------------------------------------------------------------------*/
 (define (class-predicate::symbol t::tclass)
    (symbol-append (type-id t) '?))
-
-;*---------------------------------------------------------------------*/
-;*    class-nil-constructor ...                                        */
-;*    -------------------------------------------------------------    */
-;*    The name of the nil constructor                                  */
-;*---------------------------------------------------------------------*/
-(define (class-nil-constructor::symbol t::tclass)
-   (symbol-append (type-id t) '-nil))
 
 ;*---------------------------------------------------------------------*/
 ;*    class-allocate ...                                               */

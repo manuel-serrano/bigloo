@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Tue Apr 11 12:29:36 2017 (serrano)                */
+;*    Last change :  Mon Dec 11 09:27:31 2017 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -28,6 +28,7 @@
 	    ast_occur
 	    ast_remove
 	    ast_dump
+	    object_class
 	    backend_backend)
    (export  (let-sym? ::obj)
 	    (let-sym::symbol)
@@ -547,6 +548,28 @@
 ;*    	body))                                                         */
 ;*---------------------------------------------------------------------*/
 (define (letrec*->node sexp stack loc site)
+
+   (define (type-undefined type)
+      (if (tclass? type)
+	  (let ((v (tclass-holder type)))
+	     `(class-nil (@ ,(global-id v) ,(global-module v))))
+	  (case (type-id type)
+	     ((obj _) #unspecified)
+	     ((int8) #s8:0)
+	     ((uint8) #u8:0)
+	     ((int16) #s16:0)
+	     ((uint16) #u16:0)
+	     ((int32) #s32:0)
+	     ((uint32) #u32:0)
+	     ((int64) #s64:0)
+	     ((uint64) #u64:0)
+	     ((double real) 0.0)
+	     ((int long) 0)
+	     ((bool) #f)
+	     ((procedure) 'list)
+	     ((cell) `(make-cell #f))
+	     ((char) #a000)
+	     (else (error "type-undefined" "cannot undefined type" (type-id type))))))
    
    (define (free-vars sexp v vars)
       ;; compute an over-approximation of all the
@@ -882,7 +905,8 @@
 					 ,body))
 				  ;; true letrec*
 				  `(let ,(map (lambda (b)
-						 (list (caar b) #unspecified))
+						 (let ((ty (type-of-id (caar b) (find-location (car b)))))
+						    (list (caar b) (type-undefined ty))))
 					    ebindings)
 				      ,@(map (lambda (b)
 						`(set! ,(fast-id-of-id (caar b) loc)
