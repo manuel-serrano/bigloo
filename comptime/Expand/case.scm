@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Tue Mar 22 08:06:46 2011 (serrano)                */
-;*    Copyright   :  1992-2011 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Dec 12 11:30:10 2017 (serrano)                */
+;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    On macro-expanse ce satane `case'                                */
 ;*=====================================================================*/
@@ -39,6 +39,12 @@
 	  ((integer)
 	   (trace expand "expand-case [integer]" #\Newline)
 	   (do-typed-case 'long value clauses e))
+	  ((uint32)
+	   (trace expand "expand-case [integer]" #\Newline)
+	   (do-typed-case 'uint32 value clauses e))
+	  ((int32)
+	   (trace expand "expand-case [integer]" #\Newline)
+	   (do-typed-case 'int32 value clauses e))
 	  ((char)
 	   (trace expand "expand-case [char]" #\Newline)
 	   (do-typed-case 'char value clauses e))
@@ -88,6 +94,8 @@
    (define (one-type datum)
       (cond
 	 ((fixnum? datum) 'integer)
+	 ((uint32? datum) 'uint32)
+	 ((int32? datum) 'int32)
 	 ((char? datum) 'char)
 	 ((cnst? datum) 'cnst)
 	 ((symbol? datum) 'symbol)
@@ -281,6 +289,18 @@
 	      (if (c-fixnum? ,aux)
 		  ,case-form
 		  (,else-name)))))
+      ((eq? type 'uint32)
+       `(labels ((,else-name () ,@else-body))
+	   (let ((,aux ,(e value e)))
+	      (if (uint32? ,aux)
+		  ,case-form
+		  (,else-name)))))
+      ((eq? type 'int32)
+       `(labels ((,else-name () ,@else-body))
+	   (let ((,aux ,(e value e)))
+	      (if (int32? ,aux)
+		  ,case-form
+		  (,else-name)))))
       ((eq? type 'symbol)
        `(labels ((,else-name () ,@else-body))
 	   (let ((,aux ,(e value e)))
@@ -318,7 +338,8 @@
 			  (error "case" "Illegal `case' clause" (car clauses)))
 			 ((and (list? datums) (<fx (length datums) 10))
 			  ;; unroll memv
-			  `(if (or ,@(map (lambda (d) `(eqv? case-value ',d)) datums))
+			  `(if (or ,@(map (lambda (d) `(eqv? case-value ',d))
+					datums))
 			       ,(expand-progn body)
 			       ,(loop (cdr clauses))))
 			 (else

@@ -3,7 +3,7 @@
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Mar 18 15:16:39 1992                          */
-;*    Last change :  Fri Dec 15 05:50:35 2006 (serrano)                */
+;*    Last change :  Tue Dec 12 11:31:43 2017 (serrano)                */
 ;*                                                                     */
 ;*    On test le case.                                                 */
 ;*---------------------------------------------------------------------*/
@@ -152,6 +152,16 @@
       (else 7)))
 
 ;*---------------------------------------------------------------------*/
+;*    test-uint32 ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (test-uint32 x::uint32)
+   (case x
+      ((#u32:0) (begin 28))
+      ((#u32:1) (begin 'un))
+      ((#u32:2) (begin #f))
+      (else (begin #t))))
+
+;*---------------------------------------------------------------------*/
 ;*    test-case ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (test-case)
@@ -182,7 +192,12 @@
    (test "case char" (test6 (string-ref "o" 0)) #\o)
    (test "case hash" (test7 'fibo) 'else)
    (test "case cond.1" (test-case-cond-1 5) 6)
-   (test "case cond.2" (test-case-cond-2 5) 6))
+   (test "case cond.2" (test-case-cond-2 5) 6)
+   (test "case uint32.1" (test-uint32 0) 28)
+   (test "case uint32.2" (test-uint32 1) 'un)
+   (test "case uint32.3" (test-uint32 2) #f)
+   (test "case uint32.4" (test-uint32 3) #t)
+   (test "case uint32.5" (test-uint32 4) #t))
    
 
 

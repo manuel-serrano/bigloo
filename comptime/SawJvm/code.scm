@@ -397,13 +397,21 @@
    (branch me 'goto (block-label (rtl_go-to fun)))
    'no-value )
 
+(define (intify x)
+   (cond
+      ((fixnum? x) x)
+      ((uint32? x) (uint32->fixnum x))
+      ((int32? x) (int32->fixnum x))
+      (else x)))
+
 (define-method (gen-fun fun::rtl_switch me);
    (with-access::rtl_switch fun (type patterns labels)
       ;; CARE do we have to make a coercion from "type" to int ??
       (let ( (ldef #unspecified) (num2lab '()) )
 	 (define (L n)
 	    (string->symbol (string-append "L" (integer->string n))) )
-	 (define (add n lab)  (set! num2lab (cons (cons n (L lab)) num2lab)))
+	 (define (add n lab)
+	    (set! num2lab (cons (cons (intify n) (L lab)) num2lab)))
 	 (for-each (lambda (pat lab)
 		      (if (eq? pat 'else)
 			  (set! ldef (L lab))
