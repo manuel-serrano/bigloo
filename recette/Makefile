@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Wed Oct 11 22:06:20 2017 (serrano)                */
+#*    Last change :  Thu Dec 14 15:28:34 2017 (serrano)                */
 #*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -54,17 +54,17 @@ ICOMMON		= vital bps bool list vector srfi4 struct print \
                   globalis filtre rgc_trap rgc_jm rgc_insert port \
                   read tail sqic eval inline match letrec macro \
                   flonum number bignum bchar define error cse \
-                  kapture include 0cfa alias alias_aux main \
+                  kapture include cfa alias alias_aux main \
                   rgc_eval rgc hash module import1 import2 \
                   cfa2 cell hygiene wind dsssl sua peek callcc fringe \
                   unicode optim pregexp lalr system date process \
                   mmap weakptr crypto crc
 
-OCOMMON		= object object-sans \
-                  object1 object1-sans \
-                  object2 object2-sans \
-                  object3 object3-sans \
-                  object5 object5-sans
+OCOMMON		= object object_sans \
+                  object1 object1_sans \
+                  object2 object2_sans \
+                  object3 object3_sans \
+                  object5 object5_sans
 
 COMMON		= $(ICOMMON) $(OCOMMON)
 
