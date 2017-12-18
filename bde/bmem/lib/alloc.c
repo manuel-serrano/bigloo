@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Thu Nov 16 10:09:16 2017 (serrano)                */
+/*    Last change :  Mon Dec 18 08:13:24 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -460,6 +460,122 @@ make_bllong( BGL_LONGLONG_T l ) {
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_llong );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_bint32 ...                                              */
+/*---------------------------------------------------------------------*/
+#if( defined( BGL_INT32_SIZE ) )
+obj_t
+bgl_make_bint32( int32_t l ) {
+   obj_t a_int32;
+
+   bmem_set_alloc_type( INT32_TYPE_NUM, 0 );
+
+   gc_alloc_size_add( BGL_INT32_SIZE );
+
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
+		  gc_number,
+		  BGL_INT32_SIZE, 0,
+		  INT32_TYPE_NUM, -1,
+		  ++stamp );
+   for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)BGL_INT32_SIZE );
+
+   a_int32 = ____GC_malloc_atomic( BGL_INT32_SIZE );
+
+   a_int32->sint32_t.header = MAKE_HEADER( INT32_TYPE_NUM, BGL_INT32_SIZE );
+   a_int32->sint32_t.val = l;
+
+   bmem_set_alloc_type( -1, 0 );
+   return BREF( a_int32 );
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_buint32 ...                                             */
+/*---------------------------------------------------------------------*/
+#if( defined( BGL_UINT32_SIZE ) )
+obj_t
+bgl_make_buint32( uint32_t l ) {
+   obj_t a_uint32;
+
+   bmem_set_alloc_type( UINT32_TYPE_NUM, 0 );
+
+   gc_alloc_size_add( BGL_UINT32_SIZE );
+
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
+		  gc_number,
+		  BGL_UINT32_SIZE, 0,
+		  UINT32_TYPE_NUM, -1,
+		  ++stamp );
+   for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)BGL_UINT32_SIZE );
+
+   a_uint32 = ____GC_malloc_atomic( BGL_UINT32_SIZE );
+
+   a_uint32->uint32_t.header = MAKE_HEADER( UINT32_TYPE_NUM, BGL_UINT32_SIZE );
+   a_uint32->uint32_t.val = l;
+
+   bmem_set_alloc_type( -1, 0 );
+   return BREF( a_uint32 );
+}
+#endif
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_bint64 ...                                              */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_make_bint64( int64_t l ) {
+   obj_t a_int64;
+
+   bmem_set_alloc_type( INT64_TYPE_NUM, 0 );
+
+   gc_alloc_size_add( BGL_INT64_SIZE );
+
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
+		  gc_number,
+		  BGL_INT64_SIZE, 0,
+		  INT64_TYPE_NUM, -1,
+		  ++stamp );
+   for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)BGL_INT64_SIZE );
+
+   a_int64 = ____GC_malloc_atomic( BGL_INT64_SIZE );
+
+   a_int64->sint64_t.header = MAKE_HEADER( INT64_TYPE_NUM, BGL_INT64_SIZE );
+   a_int64->sint64_t.val = l;
+
+   bmem_set_alloc_type( -1, 0 );
+   return BREF( a_int64 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_make_buint64 ...                                             */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_make_buint64( uint64_t l ) {
+   obj_t a_uint64;
+
+   bmem_set_alloc_type( UINT64_TYPE_NUM, 0 );
+
+   gc_alloc_size_add( BGL_UINT64_SIZE );
+
+   mark_function( bgl_debug_trace_top( get_alloc_type_offset() ),
+		  gc_number,
+		  BGL_UINT64_SIZE, 0,
+		  UINT64_TYPE_NUM, -1,
+		  ++stamp );
+   for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)BGL_UINT64_SIZE );
+
+   a_uint64 = ____GC_malloc_atomic( BGL_UINT64_SIZE );
+
+   a_uint64->uint64_t.header = MAKE_HEADER( UINT64_TYPE_NUM, BGL_UINT64_SIZE );
+   a_uint64->uint64_t.val = l;
+
+   bmem_set_alloc_type( -1, 0 );
+   return BREF( a_uint64 );
 }
 
 /*---------------------------------------------------------------------*/

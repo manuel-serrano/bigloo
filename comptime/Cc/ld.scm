@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 17 09:37:55 1992                          */
-;*    Last change :  Fri Jul 28 14:17:27 2017 (serrano)                */
+;*    Last change :  Mon Dec 18 07:59:44 2017 (serrano)                */
 ;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The (system) link.                                               */
@@ -260,6 +260,7 @@
 			 (if (and *strip* (not (eq? *pass* 'so)))
 			     (string-append " " (bigloo-config 'c-strip-flag))
 			     "")
+			 (string-append " " (bigloo-config 'c-pic-flag))
 			 ;; user ld options
 			 " " *ld-options* " "
 			 ;; the library path

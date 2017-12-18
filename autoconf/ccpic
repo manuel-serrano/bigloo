@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Wed Jul  1 14:04:43 2015 (serrano)                */
+#*    Last change :  Mon Dec 18 07:54:34 2017 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking if the compiler and linker support -f[pic|PIC]          */
 #*=====================================================================*/
@@ -95,6 +95,15 @@ if eval "$BUILDSH $compile"; then
    echo $cflags
    exit 0
 fi
+
+#* cflags="-fPIE -pie"                                                 */
+#* compile="$CC $eflags $cflags $file.c -o $aout >/dev/null"           */
+#*                                                                     */
+#* if eval "$BUILDSH $compile"; then                                   */
+#*    \rm -f $file.*                                                   */
+#*    echo $cflags                                                     */
+#*    exit 0                                                           */
+#* fi                                                                  */
 
 cflags=-fPIC
 compile="$CC $eflags $cflags $file.c -o $aout >/dev/null"

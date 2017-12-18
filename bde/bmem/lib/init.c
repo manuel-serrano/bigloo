@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Mon Nov 20 08:16:04 2017 (serrano)                */
+/*    Last change :  Mon Dec 18 08:14:06 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -60,6 +60,14 @@ void *(*____make_cell)( void * ) = 0;
 void *(*____make_real)( double ) = 0;
 void *(*____make_belong)( long ) = 0;
 void *(*____make_bllong)( BGL_LONGLONG_T ) = 0;
+#if( defined( BGL_INT32_SIZE ) )
+void *(*____bgl_make_bint32)( int32_t ) = 0;
+#endif
+#if( defined( BGL_UINT32_SIZE ) )
+void *(*____bgl_make_buint32)( uint32_t ) = 0;
+#endif
+void *(*____bgl_make_bint64)( int64_t ) = 0;
+void *(*____bgl_make_buint64)( uint64_t ) = 0;
 
 /* string */
 void *(*____string_to_bstring)( char * ) = 0;
@@ -363,6 +371,14 @@ bmem_init_inner() {
    ____make_real = get_function( hdl, "make_real" );
    ____make_belong = get_function( hdl, "make_belong" );
    ____make_bllong = get_function( hdl, "make_bllong" );
+#if( defined( BGL_INT32_SIZE ) )
+   ____bgl_make_bint32 = get_function( hdl, "bgl_make_bint32" );
+#endif
+#if( defined( BGL_UINT32_SIZE ) )
+   ____bgl_make_buint32 = get_function( hdl, "bgl_make_buint32" );
+#endif   
+   ____bgl_make_bint64 = get_function( hdl, "bgl_make_bint64" );
+   ____bgl_make_buint64 = get_function( hdl, "bgl_make_buint64" );
    ____GC_add_gc_hook( GC_collect_hook );
    ____GC_reset_allocated_bytes = (void (*)())get_function( hdl, "GC_reset_allocated_bytes" );
 
@@ -476,6 +492,10 @@ bmem_init_inner() {
    declare_type( CLASS_TYPE_NUM, "class" );
    declare_type( DATAGRAM_SOCKET_TYPE_NUM, "datagram-socket" );
    declare_type( REGEXP_TYPE_NUM, "regexp" );
+   declare_type( INT32_TYPE_NUM, "int32" );
+   declare_type( UINT32_TYPE_NUM, "uint32" );
+   declare_type( INT64_TYPE_NUM, "int64" );
+   declare_type( UINT64_TYPE_NUM, "uint64" );
 }
 
 /*---------------------------------------------------------------------*/

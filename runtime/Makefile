@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Thu Oct 26 16:08:55 2017 (serrano)                */
+#*    Last change :  Mon Dec 18 08:04:35 2017 (serrano)                */
 #*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -60,8 +60,7 @@ BCOMMONFLAGS	= $(BFLAGS) $(BOOTFLAGS) -rm -copt -w -lib-dir $(BOOTLIBDIR)
 #*--- Bigloo, safe ----------------------------------------------------*/
 BSAFEFLAGS	= -srfi bigloo-safe $(BCOMMONFLAGS) \
                   -O3 -mklib -cc $(CC) -fsharing \
-                  -q -unsafev -eval '(set! *indent* 4)' \
-                  -copt $(CPICFLAGS)
+                  -q -unsafev -eval '(set! *indent* 4)'
 CSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo JVM flags ------------------------------------------------*/
 BGLJFLAGS	= $(BFEATUREFLAGS) -srfi enable-gmp -jfile .jfile
@@ -71,18 +70,18 @@ BGSAFEFLAGS	= $(BSAFEFLAGS) -g
 #*--- Bigloo, unsafe, optimize ----------------------------------------*/
 BUNSAFEO0FLAGS	= $(BCOMMONFLAGS) \
                   -mklib -cc $(CC) -fsharing -q -no-hello \
-                  -copt $(CPICFLAGS) -unsafe -safee
+                  -unsafe -safee
 BUNSAFEFLAGS	= -srfi bigloo-unsafe $(BUNSAFEO0FLAGS) -O4
 CUNSAFEFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS) $(CPICFLAGS)
 #*--- Bigloo, unsafe, profiled ----------------------------------------*/
 BUNSAFEPFLAGS	= $(BCOMMONFLAGS) \
                   -O4 -mklib -unsafe -safee -cc $(CC) -fsharing -q -no-hello \
-                  -p -copt $(CPICFLAGS) -srfi bigloo-profile
+                  -p -srfi bigloo-profile
 CUNSAFEPFLAGS	= -I$(BOOTLIBDIR) $(CFLAGS_P) $(CPICFLAGS) -DPROFILE
 #*--- Bigloo, safe, debug, heap ---------------------------------------*/
-BSAFEDBGFLAGS	= $(BSAFEFLAGS) -gheap -copt $(CPICFLAGS)
+BSAFEDBGFLAGS	= $(BSAFEFLAGS) -gheap
 #*--- Bigloo, unsafe, heap --------------------------------------------*/
-BUNSAFEDBGFLAGS	= $(BUNSAFEFLAGS) -gheap -copt $(CPICFLAGS)
+BUNSAFEDBGFLAGS	= $(BUNSAFEFLAGS) -gheap
 CDBGFLAGS	= -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(BACKPTRFLAGS) -DBIGLOO_TRACE
 
 #*---------------------------------------------------------------------*/
@@ -826,7 +825,7 @@ objs/obj_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(EFLAGS) -cgen $< -o $@
 
 objs/obj_u/Eval/evprimop.o: objs/obj_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
+	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CEFLAGS) -c $< -o $@
 
 objs/saw_u/%.c: %.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BFLAGS_SYS) $(SAWFLAGS) $(EFLAGS) -c $< -indent -o $@
@@ -841,7 +840,7 @@ objs/saw_u/Eval/evprimop.c: Eval/evprimop.scm
 	$(BIGLOO) $(BFEATUREFLAGS) $(BUNSAFEFLAGS) $(SAWFLAGS) $(EFLAGS) -cgen $< -o $@
 
 objs/saw_u/Eval/evprimop.o: objs/saw_u/Eval/evprimop.c
-	$(CC) -I$(BOOTLIBDIR) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
+	$(CC) -I$(BOOTLIBDIR) $(CUNSAFEFLAGS) $(CSAWFLAGS) $(CEFLAGS) -c $< -o $@
 
 #*---------------------------------------------------------------------*/
 #*    mach_dep.o                                                       */
@@ -855,7 +854,7 @@ sparc_sunos4_mach_dep: Mlib/sparc_sunos4_mach_dep.s
 	$(AS) -o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o Mlib/sparc_sunos4_mach_dep.s
 
 generic_mach_dep: Mlib/mach_dep.c
-	$(CC) $(CPICFLAGS) $(CUNSAFEFLAGS) $(CEFLAGS) -c -o mach_dep.o $< && \
+	$(CC) $(CUNSAFEFLAGS) $(CEFLAGS) -c -o mach_dep.o $< && \
         mv mach_dep.o objs/$(OBJDIR_SYS)/Mlib/mach_dep.o
 
 #*---------------------------------------------------------------------*/

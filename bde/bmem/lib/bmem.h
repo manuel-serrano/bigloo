@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Mon Nov 20 08:27:58 2017 (serrano)                */
+/*    Last change :  Sat Dec 16 09:55:23 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -249,5 +249,9 @@ extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 #define PORT_TIMEOUT_TYPE_NUM          34
 #define DATAGRAM_SOCKET_TYPE_NUM       44
 #define REGEXP_TYPE_NUM                45
+#define INT32_TYPE_NUM                 48
+#define UINT32_TYPE_NUM                49
+#define INT64_TYPE_NUM                 50
+#define UINT64_TYPE_NUM                51
 /* a fake type */
 #define CLASS_TYPE_NUM                 99
