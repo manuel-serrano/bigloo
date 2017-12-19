@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Mon Oct 24 12:52:22 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Dec 19 11:27:18 2017 (serrano)                */
+;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -202,6 +202,8 @@
 				  (kaptured? #t))
 			       ;; MS: 24oct2016
 			       (when (eq? (local-access old) 'write)
+				  ;; MS: 19Decl2017
+				  (local-type-set! new *cell*)
 				  (local-access-set! new 'cell-globalize))
 			       ;;(local-access-set! new (local-access old))
 			       new))
