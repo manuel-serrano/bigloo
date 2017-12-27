@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Tue Oct 10 12:53:32 2017 (serrano)                */
+/*    Last change :  Tue Dec 26 09:08:11 2017 (serrano)                */
 /*    Copyright   :  2011-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */

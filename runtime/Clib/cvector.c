@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Thu Jul 27 08:29:40 2017 (serrano)                */
+/*    Last change :  Thu Dec 21 17:54:27 2017 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -36,7 +36,7 @@ bgl_fill_vector( obj_t bvector, long start, long end, obj_t init ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_fill_vector ...                                              */
+/*    fill_vector ...                                                  */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 fill_vector( obj_t bvector, long len, obj_t init ) {

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Dec 18 08:13:24 2017 (serrano)                */
+/*    Last change :  Wed Dec 27 07:00:10 2017 (serrano)                */
 /*    Copyright   :  2003-17 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -579,6 +579,19 @@ bgl_make_buint64( uint64_t l ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    GC_malloc_unknown ...                                            */
+/*---------------------------------------------------------------------*/
+int
+#if __GNUC__
+__attribute__ ((noinline))
+#endif
+GC_malloc_unknown( int ty, int to, int unknown ) {
+   // for gdb breakpoing
+   return ty == -1 ? unknown : ty;   
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    GC_malloc_find_type ...                                          */
 /*---------------------------------------------------------------------*/
@@ -590,7 +603,7 @@ GC_malloc_find_type( int lb, int unknown ) {
       int ty = ((esymbol_t *)CSYMBOL( top ))->class_alloc;
       int to = ((esymbol_t *)CSYMBOL( top ))->class_offset;
 
-      bmem_set_alloc_type( ty == -1 ? unknown : ty, to );
+      bmem_set_alloc_type( GC_malloc_unknown( ty, to, unknown ), to );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
 	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): %s ty=%d type=%ld\n",
@@ -618,8 +631,9 @@ obj_t
 GC_malloc( size_t lb ) {
    gc_alloc_size_add( lb );
 
-   if( get_alloc_type() == -1 )
+   if( get_alloc_type() == -1 ) {
       GC_malloc_find_type( lb, UNKNOWN_TYPE_NUM );
+   }
 
 #if BMEMDEBUG
    if( bmem_debug ) {
