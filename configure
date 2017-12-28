@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Nov 18 08:00:32 2017 (serrano)                */
+#*    Last change :  Thu Dec 28 06:08:52 2017 (serrano)                */
 #*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -257,7 +257,8 @@ customgc=yes
 #gccustom=gc-7.3alpha1-20120316
 #gccustom=gc-7.3alpha2
 #gccustom=gc-7.3alpha3-20130330
-gccustom=gc-7.5.0-27may2016
+#gccustom=gc-7.5.0-27may2016
+gccustom=gc-7.6.2
 gcversion=
 gcbump=0
 # the following variable is relevant only when using
@@ -1477,7 +1478,7 @@ case $hostos in
     echo -n "executing $droidadb shell ls /mnt/sdcard -> " >&2
   
     $droidadb shell ls /mnt/sdcard 2> /dev/null > /dev/null
-  
+
     if [ $? = 0 ]; then
       echo "ok" >&2
     else
@@ -1498,7 +1499,7 @@ case $hostos in
         fi
       done
     fi
-  
+
     if [ "$droidtmp " = " " ]; then
       echo "" >&2
       echo "*** ERROR: Bad Android configuration: Cannot setup /tmp." >&2
@@ -2076,7 +2077,7 @@ if [ "$action" != "bigloo_config_el" ]; then
         autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
         gcconfigureopt="$autoopts $gcconfigureopt"
         gcconfigurethreadsopt="$gcconfigurethreadsopt"
-        echo "+ Configuring custom GC..." && \
+        echo "+ Configuring custom GC ($gccustom)..." && \
         (. ./gc/configure-$gccustom $configuregcextraopt) || exit 1
       fi
     fi

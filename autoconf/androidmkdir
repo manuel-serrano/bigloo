@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    /tmp/build.hop.android/bigloo4.3a/autoconf/androidmkdir          */
+#*    serrano/prgm/project/bigloo/autoconf/androidmkdir                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 23 14:28:53 2010                          */
-#*    Last change :  Mon Jan 16 15:10:13 2017 (serrano)                */
+#*    Last change :  Wed Dec 27 10:34:20 2017 (serrano)                */
 #*    Copyright   :  2010-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Create a directory on the Android emulator                       */
@@ -17,7 +17,7 @@ ok=0
 # test the dir exists
 if $adb shell ls $dir 2>&1 | grep -iq 'no such'; then
    # no; try to create it
-   $adb shell mkdir $dir > /dev/null
+   $adb shell mkdir $dir 2> /dev/null
 
    if $adb shell ls $dir 2>&1 | grep -iq 'no such'; then
       ok=1
@@ -43,7 +43,7 @@ if [ $ok -eq 0 ]; then
       fi
 
       # cleanup
-      $adb shell rm $dir/foo
+      $adb shell rm -r $dir/foo
    fi
 fi
 

@@ -1,0 +1,28 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/gc/install-gc-7.6.2-android          */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Copyright   :  2007-17 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    This shell script installs a new GC.                             */
+#*    Run the script with:                                             */
+#*      GC=/usr/local/src/gc-7.6.2.tar.gz ./install-gc                 */
+#*=====================================================================*/
+
+src=$GC.tar.gz
+
+gc=`basename $src .tar.gz`
+bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
+
+tar=$TAR
+patch=$PATCH
+
+if [ "$tar " = " " ]; then
+  tar=tar
+fi
+
+if [ "$patch " = " " ]; then
+  patch=patch
+fi
+

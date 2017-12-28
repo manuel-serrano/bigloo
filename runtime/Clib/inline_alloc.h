@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Sun Oct 29 09:00:45 2017 (serrano)                */
+/*    Last change :  Thu Dec 28 06:17:35 2017 (serrano)                */
 /*    Copyright   :  2017 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -68,7 +68,7 @@
 #  define GC_INLINE_MALLOC GC_INLINE_MALLOC_7xx
 #endif
 
-#if( BGL_GC_VERSION >= 750 )
+#if( BGL_GC_VERSION >= 750 && BGL_GC_VERSION < 762 )
 #  define GC_objfreelist GC_freelists
 #endif
 
