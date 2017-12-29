@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Sep 23 14:28:53 2010                          */
-#*    Last change :  Wed Dec 27 10:34:20 2017 (serrano)                */
+#*    Last change :  Fri Dec 29 06:20:38 2017 (serrano)                */
 #*    Copyright   :  2010-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Create a directory on the Android emulator                       */
@@ -17,7 +17,7 @@ ok=0
 # test the dir exists
 if $adb shell ls $dir 2>&1 | grep -iq 'no such'; then
    # no; try to create it
-   $adb shell mkdir $dir 2> /dev/null
+   $adb shell mkdir $dir 2> /dev/null > /dev/null
 
    if $adb shell ls $dir 2>&1 | grep -iq 'no such'; then
       ok=1
