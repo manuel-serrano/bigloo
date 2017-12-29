@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bde/Makefile                         */
+#*    serrano/prgm/project/bigloo/bigloo/bde/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Sun Nov 19 08:10:22 2017 (serrano)                */
+#*    Last change :  Fri Dec 29 19:05:04 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -166,26 +166,12 @@ $(BOOTBINDIR)/bgljas: $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 #*---------------------------------------------------------------------*/
 install: all
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-	  cp $(BOOTBINDIR)/bglafile$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglafile$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bglafile.sh $(DESTDIR)$(BINDIR)/bglafile.sh; \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglafile.sh; \
-	  cp $(BOOTBINDIR)/bgljfile$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgljfile$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bgldepend$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgldepend$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bglmake$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglmake$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bglprof$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglprof$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bglmco$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglmco$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglmco$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bglpp$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bglpp$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bgltags$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgltags$(EXE_SUFFIX); \
-	  cp $(BOOTBINDIR)/bgljas$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX); \
-          chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bgljas$(EXE_SUFFIX); \
+          for p in bglafile bgljfile bgldepend bglmake bglprof bglmco bglpp bgltags bgljas; do \
+	    cp $(BOOTBINDIR)/$$p$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
+            chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
+	    cp $(BOOTBINDIR)/$$p.sh $(DESTDIR)$(BINDIR)/$$p.sh; \
+            chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p.sh; \
+          done; \
         fi
 	if [ "$(LDPRELOADSUPPORT)" = "yes" -a "$(PTHREADLIBS)" != "no" ]; then \
 	  (cd bmem; $(MAKE) install) || exit 1; \
