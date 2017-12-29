@@ -17,6 +17,7 @@
   (c-compiler-style . "@C_COMPILER_STYLE@")
   (c-compiler . "@C_COMPILER@")
   (c-flags . "@C_FLAGS@")
+  (c-pic-flag . "@C_PICFLAGS@")
   (c-compiler-o-option . "@C_COMPILER_O_OPTION@")
   (c-compiler-debug-option . "@C_COMPILER_DEBUG_OPTION@")
   (c-compiler-optim-flag . "@C_COMPILER_OPTIM_FLAGS@")

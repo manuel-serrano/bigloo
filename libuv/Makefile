@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Mon Jul 21 08:38:24 2014 (serrano)                */
-#*    Copyright   :  2014 Manuel Serrano                               */
+#*    Last change :  Sun Jul  9 10:26:38 2017 (serrano)                */
+#*    Copyright   :  2014-17 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom LIBUV library.                 */
 #*=====================================================================*/
@@ -14,6 +14,7 @@ do: boot
 #*---------------------------------------------------------------------*/
 #*    The default configuration                                        */
 #*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
 include ../Makefile.config
 include ../Makefile.misc
 
