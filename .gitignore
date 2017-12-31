@@ -106,6 +106,7 @@ api/alsa/src/Misc/alsa.init
 # avahi
 api/avahi/recette
 api/avahi/src/Misc/avahi.init
+api/avahi/src/Clib/bglavahi.h
 
 # calendar
 api/calendar/work/*
