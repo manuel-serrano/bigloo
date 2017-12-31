@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/Makefile                             */
+#*    serrano/prgm/project/bigloo/bigloo/Makefile                      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Dec  1 10:22:46 2017 (serrano)                */
+#*    Last change :  Sun Dec 31 07:12:31 2017 (serrano)                */
 #*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -908,7 +908,7 @@ distclean:
 #*---------------------------------------------------------------------*/
 pop:
 	@ echo LICENSE COPYING \
-               configure INSTALL INSTALL.jvm README \
+               configure INSTALL.md INSTALL.jvm README.md \
                Makefile Makefile.misc \
                Makefile.mercurial \
                Makefile.git \
