@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Type/misc.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Type/misc.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Oct  5 12:50:52 2004                          */
-;*    Last change :  Wed Dec  7 07:13:57 2016 (serrano)                */
-;*    Copyright   :  2004-16 Manuel Serrano                            */
+;*    Last change :  Fri Jan  5 19:08:02 2018 (serrano)                */
+;*    Copyright   :  2004-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Misc type functions                                              */
 ;*=====================================================================*/
@@ -41,6 +41,8 @@
        #t)
       ((eq? t2 *_*)
        #f)
+      ((and (bigloo-type? t1) (not (bigloo-type? t2)))
+       (eq? t1 (get-bigloo-type t2)))
       ((or (not (bigloo-type? t1)) (not (bigloo-type? t2)))
        #f)
       ((type-subclass? t2 t1)
