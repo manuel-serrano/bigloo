@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sat Jan  6 21:01:12 2018 (serrano)                */
+;*    Last change :  Sun Jan  7 07:26:42 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -579,11 +579,33 @@
    (define (immutable-in? b ebindings::pair-nil)
       (not (mutable-in? b ebindings)))
 
-   (define (free-in? b ebindings::pair-nil)
+   (define (used-in? b ebindings::pair-nil)
       (let ((var (ebinding-var b)))
-	 (not (find (lambda (eb)
-		       (memq var (ebinding-frees eb)))
-		 ebindings))))
+	 (find (lambda (eb)
+		  (memq var (ebinding-frees eb)))
+	    ebindings)))
+
+   (define (letstar ebindings body)
+      (cond
+	 ((null? ebindings)
+	  body)
+	 ((used-in? (car ebindings) (list (car ebindings)))
+	  `(letrec (,(ebinding-binding (car ebindings)))
+	      ,(letstar (cdr ebindings) body)))
+	 (else
+	  `(let (,(ebinding-binding (car ebindings)))
+	      ,(letstar (cdr ebindings) body)))))
+
+   (define (letrecursive ebindings body)
+      (cond
+	 ((null? ebindings)
+	  body)
+	 ((used-in? (car ebindings) ebindings)
+	  `(letrec (map ebinding-binding ebindings)
+	      ,body))
+	 (else
+	  `(let (,(ebinding-binding (car ebindings)))
+	      ,(letrecursive (cdr ebindings) body)))))
    
    (define (split-head-letrec ebindings body split::procedure kont)
       (cond
@@ -598,8 +620,8 @@
 		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
 	     (if (pair? rec-bindings)
 		 (sexp->node
-		    `(letrec ,(map ebinding-binding rec-bindings)
-			(letrec* ,(map ebinding-binding rec*-bindings)
+		    (letrecursive rec-bindings
+			`(letrec* ,(map ebinding-binding rec*-bindings)
 			   ,body))
 		    stack loc site)
 		 (kont ebindings body))))))
@@ -641,6 +663,30 @@
 			   ,body))
 		    stack loc site)
 		 (kont ebindings body))))))
+
+   (define (split-tail-let* ebindings body split::procedure kont)
+      (cond
+	 ((null? ebindings)
+	  (sexp->node body stack loc site))
+	 (else
+	  (multiple-value-bind (rec*-bindings tail-bindings)
+	     (split ebindings)
+	     (trace-item "rec*="
+		(map (lambda (x) (shape (ebinding-var x))) rec*-bindings))
+	     (trace-item "tail="
+		(map (lambda (x) (shape (ebinding-var x))) tail-bindings))
+	     (cond
+		((null? tail-bindings)
+		 (kont ebindings body))
+		((pair? rec*-bindings)
+		 (sexp->node
+		    `(letrec* ,(map ebinding-binding rec*-bindings)
+			,(letstar tail-bindings body))
+		    stack loc site))
+		(else
+		 (sexp->node
+		    (letstar tail-bindings body)
+		    stack loc site)))))))
    
    (define (type-undefined type)
       (if (tclass? type)
@@ -672,7 +718,7 @@
 	 (cond
 	    ((symbol? sexp)
 	     (cond
-		((or (eq? sexp v) (not (memq sexp vars))) res)
+		((not (memq sexp vars)) res)
 		((memq sexp res) res)
 		(else (cons sexp res))))
 	    ((not (pair? sexp))
@@ -702,184 +748,11 @@
 	    (else
 	     (loop (car sexp) (loop (cdr sexp) res))))))
    
-   (define (used? var ebindings)
-      (any (lambda (eb) (memq var (caddr eb))) ebindings))
-   
-   (define (op? val)
-      (memq val '(+ - *
-		  +fx -fx *fx
-		  +elong -elong *elong
-		  +llong -llong *llong
-		  +s8 -s8 *s8
-		  +u8 -u8 *u8
-		  +s16 -s16 *s16
-		  +u16 -u16 *u16
-		  +s32 -s32 *s32
-		  +u32 -u32 *u32
-		  +s64 -s64 *s64
-		  +u64 -u64 *u64
-		  +f32 -f32 *f32
-		  +f64 -f64 *f64
-		  
-		  > >= < <= =
-		  >fx >=fx <fx <=fx =fx
-		  >elong >=elong <elong <=elong =elong
-		  >llong >=llong <llong <=llong =llong
-		  >s8 >=s8 <s8 <=s8 =s8
-		  >u8 >=u8 <u8 <=u8 =u8
-		  >s16 >=s16 <s16 <=s16 =s16
-		  >u16 >=u16 <u16 <=u16 =u16
-		  >s32 >=s32 <s32 <=s32 =s32
-		  >u32 >=u32 <u32 <=u32 =u32
-		  >s64 >=s64 <s64 <=s64 =s64
-		  >u64 >=u64 <u64 <=u64 =u64
-		  >f32 >=f32 <f32 <=f32 =f32
-		  >f64 >=f64 <f64 <=f64 =f64
-		  
-		  eq? equal?
-		  
-		  bit-lsh bit-rsh bit-ursh bit-not bit-xor
-		  bit-lshelong bit-rshelong bit-urshelong bit-notelong bit-xorelong
-		  bit-lshs8 bit-rshs8 bit-urshs8 bit-nots8 bit-xors8
-		  bit-lshu8 bit-rshu8 bit-urshu8 bit-notu8 bit-xoru8
-		  bit-lshs16 bit-rshs16 bit-urshs16 bit-nots16 bit-xors16
-		  bit-lshu16 bit-rshu16 bit-urshu16 bit-notu16 bit-xoru16
-		  bit-lshs32 bit-rshs32 bit-urshs32 bit-nots32 bit-xors32
-		  bit-lshu32 bit-rshu32 bit-urshu32 bit-notu32 bit-xoru32
-		  bit-lshs64 bit-rshs64 bit-urshs64 bit-nots64 bit-xors64
-		  bit-lshu64 bit-rshu64 bit-urshu64 bit-notu64 bit-xoru64)))
-   
-   (define (side-effect-ebinding? e)
-      (let loop ((val (cadr (car e))))
-	 (match-case val
-	    ((? function?) #f)
-	    ((or (? number?) (? string?)) #f)
-	    ((? symbol?) #f)
-	    (((kwote quote) . ?-) #f)
-	    (((? op?) ?e1 ?e2) (or (loop e1) (loop e2)))
-	    (((kwote not) ?e) (loop e))
-	    ((if ?test ?then ?else) (or (loop test) (loop then) (loop else)))
-	    (else #t))))
-   
-   (define (split-pre-bindings ebindings)
-      (with-trace 'letrec* "split-pre-bindings"
-	 (let loop ((ebindings ebindings)
-		    (pre-bindings '()))
-	    (cond
-	       ((null? ebindings)
-		(values (reverse! pre-bindings) '()))
-	       ((and (function? (ebinding-value (car  ebindings)))
-		     (any (lambda (var)
-			     (any (lambda (eb)
-				     (eq? (cadr eb) var))
-				(cdr ebindings)))
-			(caddr (car ebindings))))
-		(trace-item "optim fun: " (shape (caar ebindings)))
-		(values (reverse! pre-bindings) ebindings))
-	       ((any (lambda (eb)
-			(memq (cadr eb) (caddr (car ebindings))))
-		   (cdr ebindings))
-		;; one of the variables introduced in the next bindings
-		;; appears free in the value of the current binding
-		(loop (cdr ebindings) (cons (car ebindings) pre-bindings)))
-	       (else
-		(trace-item "optim free: " (shape (caar ebindings)))
-		(values (reverse! (cons (car ebindings) pre-bindings))
-		   (cdr ebindings)))))))
-
-   
-
-;*    (define (split-lettail-bindings ebindings)                       */
-;*       (with-trace 'letrec* "split-lettail-bindings"                 */
-;* 	 (trace-item "ebindings="                                      */
-;* 	    (map (lambda (b) (shape (ebinding-var b))) ebindings))     */
-;* 	 (let loop ((ebindings (reverse ebindings))                    */
-;* 		    (rec*-bindings '())                                */
-;* 		    (tail-bindings '()))                               */
-;* 	    (cond                                                      */
-;* 	       ((null? ebindings)                                      */
-;* 		(values rec*-bindings tail-bindings))                  */
-;* 	       ((and #;(not (find (lambda (eb)                         */
-;* 				   (memq (ebinding-var (car ebindings)) */
-;* 				      (ebinding-frees eb)))            */
-;* 			     (cdr ebindings)))                         */
-;* 		     (not (find (lambda (eb)                           */
-;* 				   (memq (ebinding-var (car ebindings)) */
-;* 				      (ebinding-frees eb)))            */
-;* 			     rec*-bindings))                           */
-;* 		     (every (lambda (var)                              */
-;* 			       (find (lambda (b)                       */
-;* 					(eq? var (ebinding-var b)))    */
-;* 				  tail-bindings))                      */
-;* 			(ebinding-frees (car ebindings))))             */
-;* 		(tprint "OK " (ebinding-var (car ebindings))           */
-;* 		   " vars=" (map ebinding-var (cdr ebindings))         */
-;* 		   " frees=" (map ebinding-frees (cdr ebindings)))     */
-;* 		;; a variable that never appears free in the previous bindings */
-;* 		;; and that only used tail variables                   */
-;* 		(loop (cdr ebindings)                                  */
-;* 		   rec*-bindings                                       */
-;* 		   (cons (car ebindings) tail-bindings)))              */
-;* 	       (else                                                   */
-;* 		(tprint "POK " (ebinding-var (car ebindings)))         */
-;* 		(loop (cdr ebindings)                                  */
-;* 		   (cons (car ebindings) rec*-bindings)                */
-;* 		   tail-bindings))))))                                 */
-   
-   (define (stage100 ebindings body stack loc site)
-      ;; stage 3, try to put as many variables as possible in head positions
-      (with-trace 'letrec* "letrec*/stage4"
-	 (trace-item "ebindings="
-	    (map (lambda (b) (shape (ebinding-var b))) ebindings))
-	 (cond
-	    ((null? ebindings)
-	     (sexp->node body stack loc site))
-	    ((null? (cdr ebindings))
-	     (let->node
-		(epairify-propagate-loc
-		   `(letrec* ,(map car ebindings) ,body)
-		   loc)
-		stack loc site))
-	    (else
-	     (multiple-value-bind (pre-bindings letrec*-bindings)
-		(split-pre-bindings ebindings)
-		(trace-item "pre-bindings="
-		   (map (lambda (x) (shape (caar x))) pre-bindings))
-		(trace-item "rec*="
-		   (map (lambda (x) (shape (caar x))) letrec*-bindings))
-		(cond
-		   ((null? pre-bindings)
-		    (let->node
-		       (epairify-propagate-loc
-			  `(letrec* ,(map ebinding-binding letrec*-bindings) ,body)
-			  loc)
-		       stack loc site))
-		   ((null? letrec*-bindings)
-		    (let->node
-		       (epairify-propagate-loc
-			  `(letrec* ,(map ebinding-binding pre-bindings) ,body)
-			  loc)
-		       stack loc site))
-		   (else
-		    (letrec*->node
-		       (epairify-propagate-loc
-			  `(letrec* ,(map ebinding-binding pre-bindings)
-			      (letrec* ,(map ebinding-binding letrec*-bindings)
-				 ,body))
-			  loc)
-		       stack loc site))))))))
-   
-   (define (letstar bindings body)
-      (if (null? bindings)
-	  body
-	  (let ((binding (car bindings)))
-	     `(letrec (,(ebinding-binding binding))
-		 ,(letstar (cdr bindings) body)))))
    
    
-   (define (stage7 ebindings body)
+   (define (stage8 ebindings body)
       ;; a true letrec*
-      (with-trace 'letrec* "letrec*/stage7"
+      (with-trace 'letrec* "letrec*/stage8"
 	 (trace-item "bindings="
 	    (map (lambda (b) (shape (ebinding-var b))) ebindings))
 	 (let ((sexp `(let ,(map (lambda (b)
@@ -893,10 +766,10 @@
 			 ,body)))
 	    (sexp->node sexp stack loc site))))
 
-   (define (stage6 ebindings body)
+   (define (stage7 ebindings body)
       ;; if the last binding is not a function and if it is not typed
       ;; bind it to unspecified at the beginning of the letrec*
-      (with-trace 'letrec* "letrec*/stage6"
+      (with-trace 'letrec* "letrec*/stage7"
 	 (let* ((last (car (last-pair ebindings)))
 		(t (type-of-id (car (ebinding-binding last))
 		      (find-location (ebinding-binding last)))))
@@ -914,13 +787,13 @@
 		      stack loc site))
 		(begin
 		   (trace-item "no last t=" (type-id t))
-		   (stage7 ebindings body))))))
+		   (stage8 ebindings body))))))
 
-   (define (stage5 ebindings body)
+   (define (stage6 ebindings body)
       ;; move downward tail bindings that never appear in head bindings
 
       (define (split ebindings)
-	 (with-trace 'letrec* "letrec*/stage5/split"
+	 (with-trace 'letrec* "letrec*/stage6/split"
 	    (let loop ((ebindings (reverse ebindings))
 		       (rec*-bindings '())
 		       (let-bindings '()))
@@ -933,8 +806,8 @@
 		       (loop (cdr ebindings)
 			  (cons (car ebindings) rec*-bindings)
 			  let-bindings))
-		      ((and (free-in? (car ebindings) rec*-bindings)
-			    (free-in? (car ebindings) (cdr ebindings)))
+		      ((and (not (used-in? (car ebindings) rec*-bindings))
+			    (not (used-in? (car ebindings) (cdr ebindings))))
 		       (loop (cdr ebindings)
 			  rec*-bindings
 			  (cons (car ebindings) let-bindings)))
@@ -949,16 +822,16 @@
 		   (values (append (reverse ebindings) rec*-bindings)
 		      let-bindings))))))
       
-      (with-trace 'letrec* "letrec*/stage5"
-	 (split-tail-letrec ebindings body split stage6)))
+      (with-trace 'letrec* "letrec*/stage6"
+	 (split-tail-letrec ebindings body split stage7)))
 
-   (define (stage4 ebindings body)
+   (define (stage5 ebindings body)
       ;; split the values and the functions
       
       (define (split ebindings)
 	 ;; try to partition the bindings in the variables first
 	 ;; and the functions second
-	 (with-trace 'letrec* "letrec*/stage4/split"
+	 (with-trace 'letrec* "letrec*/stage5/split"
 	    (let loop ((l ebindings)
 		       (vbindings '())
 		       (fbindings '()))
@@ -979,7 +852,7 @@
 		  (else
 		   (loop (cdr l) (cons (car l) vbindings) fbindings))))))
       
-      (with-trace 'letrec* "letrec*/stage4"
+      (with-trace 'letrec* "letrec*/stage5"
 	 (cond
 	    ((null? ebindings)
 	     (sexp->node body stack loc site))
@@ -998,14 +871,14 @@
 			      ,body))
 		       stack loc site)
 		    ;; true letrec*
-		    (stage5 ebindings body)))))))
+		    (stage6 ebindings body)))))))
 
-   (define (stage3 ebindings body)
+   (define (stage4 ebindings body)
       ;; collect all first variables that do not use any of the following
       ;; variables
 
       (define (split ebindings)
-	 (with-trace 'letrec* "letrec*/stage3/split"
+	 (with-trace 'letrec* "letrec*/stage4/split"
 	    (let loop ((ebindings ebindings)
 		       (let*-bindings '()))
 	       (cond
@@ -1021,40 +894,15 @@
 		   (values (reverse! let*-bindings) ebindings))
 		  (else
 		   (loop (cdr ebindings) (cons (car ebindings) let*-bindings)))))))
-      (with-trace 'letrec* "letrec*/stage3"
-	 (split-head-let* ebindings body split stage4)))
+      (with-trace 'letrec* "letrec*/stage4"
+	 (split-head-let* ebindings body split stage5)))
 
-      
-;*    (define (stage1 ebindings body)                                  */
-;*       ;; stage 1, collect all bound immutable variables that        */
-;*       ;; never appears free in previous bindings, put them in tail  */
-;*       ;; position                                                   */
-;*       (with-trace 'letrec* "letrec*}stage1"                         */
-;* 	 (cond                                                         */
-;* 	    ((null? ebindings)                                         */
-;* 	     (sexp->node body stack loc site))                         */
-;* 	    (else                                                      */
-;* 	     (multiple-value-bind (rec*-bindings tail-bindings)        */
-;* 		(split-lettail-bindings ebindings)                     */
-;* 		(trace-item "rec*="                                    */
-;* 		   (map (lambda (x) (shape (ebinding-var x))) rec*-bindings)) */
-;* 		(trace-item "tail="                                    */
-;* 		   (map (lambda (x) (shape (ebinding-var x))) tail-bindings)) */
-;* 		(if (pair? tail-bindings)                              */
-;* 		    (sexp->node                                        */
-;* 		       (if (null? rec*-bindings)                       */
-;* 			   (letstar tail-bindings body)                */
-;* 			   `(letrec* ,(map ebinding-binding rec*-bindings) */
-;* 			       ,(letstar tail-bindings body)))         */
-;* 		       stack loc site)                                 */
-;* 		    (stage2 ebindings body)))))))                      */
-
-   (define (stage2 ebindings body)
+   (define (stage3 ebindings body)
       ;; collect all first immutable functions and move ahead those
       ;; that do not refer to any locally introduced variables
       
       (define (split ebindings)
-	 (with-trace 'letrec* "letrec*/stage2/split"
+	 (with-trace 'letrec* "letrec*/stage3/split"
 	    (let loop ((ebindings ebindings)
 		       (fun-bindings '())
 		       (rec*-bindings '()))
@@ -1079,14 +927,16 @@
 		   (values (reverse! fun-bindings)
 		      (append (reverse! rec*-bindings) ebindings)))))))
       
-      (with-trace 'letrec* "letrec*/stage2"
-	 (split-head-letrec ebindings body split stage3)))
+      (with-trace 'letrec* "letrec*/stage3"
+	 (split-head-letrec ebindings body split stage4)))
 
-   (define (stage1 ebindings body)
+   
+   
+   (define (stage2 ebindings body)
       ;; collect all first bound immutable values to move them up front
       
       (define (split ebindings)
-	 (with-trace 'letrec* "letrec*/stage1/split"
+	 (with-trace 'letrec* "letrec*/stage2/split"
 	    (let loop ((ebindings ebindings)
 		       (val-bindings '())
 		       (rec*-bindings '()))
@@ -1116,7 +966,36 @@
 		      (append (reverse! rec*-bindings) ebindings)))))))
       
       (with-trace 'letrec* "letrec*/stage1"
-	 (split-head-letrec ebindings body split stage2)))
+	 (split-head-letrec ebindings body split stage3)))
+
+   (define (stage1 ebindings body)
+      ;; collect all the last independant values and move them downward
+      ;; into a new let block
+
+      (define (split ebindings)
+	 (with-trace 'letrec* "letrec*/stage1/split"
+	    (let loop ((ebindings (reverse ebindings))
+		       (let*-bindings '()))
+	       (cond
+		  ((null? ebindings)
+		   (values '() let*-bindings))
+		  ((and (every (lambda (var)
+				  (find (lambda (eb)
+					   (eq? var (ebinding-var eb)))
+				     (cdr ebindings)))
+			   (ebinding-frees (car ebindings)))
+			;; all the ebinding free variables are defined before
+			;; and it is never used in a previous binding
+			(not (used-in? (car ebindings) (cdr ebindings))))
+		   (loop (cdr ebindings) (cons (car ebindings) let*-bindings)))
+		  (else
+		   ;; one of the variables introduced in the next bindings
+		   ;; appears free in the value of the current binding
+		   (trace-item "abort=" (ebinding-var (car ebindings)))
+		   (values (reverse ebindings) let*-bindings))))))
+      
+      (with-trace 'letrec* "letrec*/stage1"
+	 (split-tail-let* ebindings body split stage2)))
 
    (define (stage0 ebindings body)
       ;; collect all immutable variables bound to literals
@@ -1128,7 +1007,7 @@
 	    (cond
 	       ((null? ebindings)
 		(values (reverse! rec-bindings) (reverse! rec*-bindings)))
-	       ((and (constant? (ebinding-value (car ebindings)))
+	       ((and (not (side-effect? (ebinding-value (car ebindings))))
 		     (immutable-in? (car ebindings) rec*-bindings))
 		;; this is literal is boudn to an immutable variable
 		(loop (cdr ebindings)
@@ -1234,3 +1113,61 @@
    (or (atom? val) (kwote? val) (null? val) (number? val)
        (cnst? val) (string? val) (char? val) (boolean? val)
        (number? val)))
+
+;*---------------------------------------------------------------------*/
+;*    side-effect? ...                                                 */
+;*---------------------------------------------------------------------*/
+(define (side-effect? val)
+   
+   (define (op? val)
+      (memq val '(+ - *
+		  +fx -fx *fx
+		  +elong -elong *elong
+		  +llong -llong *llong
+		  +s8 -s8 *s8
+		  +u8 -u8 *u8
+		  +s16 -s16 *s16
+		  +u16 -u16 *u16
+		  +s32 -s32 *s32
+		  +u32 -u32 *u32
+		  +s64 -s64 *s64
+		  +u64 -u64 *u64
+		  +f32 -f32 *f32
+		  +f64 -f64 *f64
+		  
+		  > >= < <= =
+		  >fx >=fx <fx <=fx =fx
+		  >elong >=elong <elong <=elong =elong
+		  >llong >=llong <llong <=llong =llong
+		  >s8 >=s8 <s8 <=s8 =s8
+		  >u8 >=u8 <u8 <=u8 =u8
+		  >s16 >=s16 <s16 <=s16 =s16
+		  >u16 >=u16 <u16 <=u16 =u16
+		  >s32 >=s32 <s32 <=s32 =s32
+		  >u32 >=u32 <u32 <=u32 =u32
+		  >s64 >=s64 <s64 <=s64 =s64
+		  >u64 >=u64 <u64 <=u64 =u64
+		  >f32 >=f32 <f32 <=f32 =f32
+		  >f64 >=f64 <f64 <=f64 =f64
+		  
+		  eq? equal?
+		  
+		  bit-lsh bit-rsh bit-ursh bit-not bit-xor
+		  bit-lshelong bit-rshelong bit-urshelong bit-notelong bit-xorelong
+		  bit-lshs8 bit-rshs8 bit-urshs8 bit-nots8 bit-xors8
+		  bit-lshu8 bit-rshu8 bit-urshu8 bit-notu8 bit-xoru8
+		  bit-lshs16 bit-rshs16 bit-urshs16 bit-nots16 bit-xors16
+		  bit-lshu16 bit-rshu16 bit-urshu16 bit-notu16 bit-xoru16
+		  bit-lshs32 bit-rshs32 bit-urshs32 bit-nots32 bit-xors32
+		  bit-lshu32 bit-rshu32 bit-urshu32 bit-notu32 bit-xoru32
+		  bit-lshs64 bit-rshs64 bit-urshs64 bit-nots64 bit-xors64
+		  bit-lshu64 bit-rshu64 bit-urshu64 bit-notu64 bit-xoru64)))
+   
+   (let loop ((val val))
+      (match-case val
+	 ((? constant?) #f)
+	 (((kwote quote) . ?-) #f)
+	 (((? op?) ?e1 ?e2) (or (loop e1) (loop e2)))
+	 (((kwote not) ?e) (loop e))
+	 ((if ?test ?then ?else) (or (loop test) (loop then) (loop else)))
+	 (else #t))))
