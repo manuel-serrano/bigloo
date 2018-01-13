@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sun Jan  7 15:36:19 2018 (serrano)                */
+#*    Last change :  Sat Jan 13 07:00:05 2018 (serrano)                */
 #*    Copyright   :  1997-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -22,7 +22,7 @@ include ../Makefile.misc
 POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
 		  bgljfile.sh.in bgltags.sh.in bgldepend.sh.in \
                   bglrun.sh.in bglld.sh.in bglmake.sh.in bglprof.sh.in \
-                  bglpp.sh.sh bgljas.sh.in \
+                  bglpp.sh.in bgljas.sh.in \
                   bigloo_config.h.in bigloo_gc.h.in \
                   configure.java.in \
                   bigloo_config.sch.in \
