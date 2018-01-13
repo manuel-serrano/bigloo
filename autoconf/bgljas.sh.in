@@ -1,0 +1,19 @@
+#!@SHELL@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/bgljas.sh.in         */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Tue Oct 13 14:06:43 2015                          */
+#*    Last change :  Sun Jan  7 15:38:53 2018 (serrano)                */
+#*    Copyright   :  2015-18 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Jas wrapper                                                      */
+#*=====================================================================*/
+
+LD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$LD_LIBRARY_PATH
+DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH
+
+exec @JAS@ "$@"

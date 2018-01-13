@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/Makefile                    */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Fri Aug 18 07:00:53 2017 (serrano)                */
-#*    Copyright   :  1997-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jan  7 15:36:19 2018 (serrano)                */
+#*    Copyright   :  1997-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -21,7 +21,8 @@ include ../Makefile.misc
 #*---------------------------------------------------------------------*/
 POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
 		  bgljfile.sh.in bgltags.sh.in bgldepend.sh.in \
-                  bglrun.sh.in bglld.sh.in \
+                  bglrun.sh.in bglld.sh.in bglmake.sh.in bglprof.sh.in \
+                  bglpp.sh.sh bgljas.sh.in \
                   bigloo_config.h.in bigloo_gc.h.in \
                   configure.java.in \
                   bigloo_config.sch.in \

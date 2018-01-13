@@ -1,11 +1,11 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/configure                            */
+#*    serrano/prgm/project/bigloo/bigloo/configure                     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec 28 06:08:52 2017 (serrano)                */
-#*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sun Jan  7 15:44:17 2018 (serrano)                */
+#*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -3198,7 +3198,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   fi
 
   # bigloo_config_h, bigloo_config_jvm, bigloo_config_sch, bigloo.sh
-  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
+  for p in $bigloo_config_h $bigloo_config_jvm $bigloo_config_sch bigloo.sh bglafile.sh bgltags.sh bgljfile.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bglprof.sh bglpp.sh bgljas.sh; do
     if [ "$p " != " " ]; then
       rm -f $p 2> /dev/null
       rel=`echo $release | sed -e "s|[.]|_|"`;
@@ -3396,6 +3396,10 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@AFILE@|$buildbindir/$afile|" \
 	      -e "s|@JFILE@|$buildbindir/$jfile|" \
 	      -e "s|@BTAGS@|$buildbindir/$btags|" \
+	      -e "s|@BMAKE@|$buildbindir/$bmake|" \
+	      -e "s|@BPROF@|$buildbindir/$bprof|" \
+	      -e "s|@BPP@|$buildbindir/$bpp|" \
+	      -e "s|@JAS@|$buildbindir/$jas|" \
 	      -e "s|@BDEPEND@|$buildbindir/$bdepend|" \
 	      -e "s|@MCO@|$buildbindir/$mco|" \
           | sed \
@@ -3431,7 +3435,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_object_h` $bigloo_object_h
 
   # bigloo.sh
-  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh; do
+  for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bgljas.sh bglpp.sh bglprof.sh; do
     mv $p $bootdir/bin/$p
     chmod u+rx $bootdir/bin/$p
   done
