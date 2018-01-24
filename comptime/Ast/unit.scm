@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/unit.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/unit.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Mon Oct 17 08:27:23 2016 (serrano)                */
+;*    Last change :  Wed Jan 24 08:41:54 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -198,7 +198,13 @@
 	  (reverse! aexp*)
 	  (loop (cdr sexp*)
 		(append (toplevel->ast (car sexp*) gdefs) aexp*)))))
- 
+
+;*---------------------------------------------------------------------*/
+;*    lambda? ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (lambda? sym)
+   (and (symbol? sym) (eq? (fast-id-of-id sym #f) 'lambda)))
+	
 ;*---------------------------------------------------------------------*/
 ;*    toplevel->ast ...                                                */
 ;*    -------------------------------------------------------------    */
@@ -233,14 +239,28 @@
 		 (replace! sexp new-sexp)
 		 (make-svar-definition var sexp)))))
       ((define ?var (lambda ?args . ?exp))
-       (let* ((id     (id-of-id var (find-location sexp)))
-	      (def    (assq id gdefs))
+       (let* ((id (id-of-id var (find-location sexp)))
+	      (def (assq id gdefs))
 	      (global (find-global/module id *module*)))
 	  ;; same remark as in the previous match (variables vs functions)
 	  (if (and (eq? (car (cdr def)) 'read)
 		   (or (not (global? global))
 		       (eq? (global-access global) 'read)))
 	      (make-sfun-definition var
+		 *module* args
+		 (normalize-progn/error exp sexp (find-location (cddr sexp)))
+		 sexp 'sfun)
+	      (make-svar-definition var sexp))))
+      ((define ?var ((and ?lam (? lambda?)) ?args . ?exp))
+       (let* ((id (id-of-id var (find-location sexp)))
+	      (def (assq id gdefs))
+	      (global (find-global/module id *module*))
+	      (tlam (type-of-id lam #f)))
+	  ;; same remark as in the previous match (variables vs functions)
+	  (if (and (eq? (car (cdr def)) 'read)
+		   (or (not (global? global))
+		       (eq? (global-access global) 'read)))
+	      (make-sfun-definition (make-typed-ident id (type-id tlam))
 		 *module* args
 		 (normalize-progn/error exp sexp (find-location (cddr sexp)))
 		 sexp 'sfun)
