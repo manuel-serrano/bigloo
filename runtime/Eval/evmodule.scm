@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evmodule.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evmodule.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Sat Oct 15 09:17:47 2016 (serrano)                */
-;*    Copyright   :  2006-16 Manuel Serrano                            */
+;*    Last change :  Fri Jan 26 18:49:34 2018 (serrano)                */
+;*    Copyright   :  2006-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -278,6 +278,17 @@
 		     (lambda (loc s)
 			(eval/loc loc `(library-load ',s)))
 		     (cdr clause))))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-option ...                                              */
+;*---------------------------------------------------------------------*/
+(define (evmodule-option clause loc)
+   (match-case clause
+      ((option . ?exp)
+       (let ((loc (or (get-source-location clause) loc)))
+	  (for-each (lambda (e) (eval/loc loc e)) exp)))
+      (else
+       (evcompile-error loc "eval" "Illegal `option' clause" clause))))
 
 ;*---------------------------------------------------------------------*/
 ;*    mark-global! ...                                                 */
@@ -788,7 +799,9 @@
 		      ((export)
 		       (evmodule-export mod clause loc #f))
 		      ((load)
-		       (evmodule-import mod clause loc)))))
+		       (evmodule-import mod clause loc))
+		      ((option)
+		       (evmodule-option clause loc)))))
       clauses))
 
 ;*---------------------------------------------------------------------*/
