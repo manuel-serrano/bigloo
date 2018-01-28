@@ -105,7 +105,7 @@ MA 02111-1307, USA.
 @titlepage
 @c use the new format for titles
 @title Bigloo
-@subtitle A practical Scheme compiler
+@subtitle A practical Scheme compiler (@value{bigloovers})
 @subtitle User manual for version @value{edition}
 @subtitle @value{update-month}
 
@@ -145,9 +145,9 @@ MA 02111-1307, USA.
 @c    Dir entry                                                        @c
 @c ------------------------------------------------------------------- @c
 @ifinfo
-@dircategory The Algorithmic Language Scheme
+@dircategory Programming Language
 @direntry
-* bigloo: (bigloo).            The Bigloo Scheme compiler
+* bigloo @value{bigloovers}: (bigloo).  The Bigloo Scheme compiler
 @end direntry
 @end ifinfo
 
@@ -157,6 +157,9 @@ MA 02111-1307, USA.
 @ifinfo
 @node Top, Acknowledgements, (dir), (dir)
 @cindex bigloo
+
+Bigloo @value{bigloovers}, @value{bigloodate}
+
 
 @display
 

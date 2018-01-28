@@ -42,7 +42,7 @@ JDK or the zip tool is missing, the Bigloo JVM back-end can't be
 configured.
 
 The installation process for stable versions is described in the
-[INSTALL.md](install.md) file. To bootstrap the git version, proceed as follows:
+[INSTALL.md](INSTALL.md) file. To bootstrap the git version, proceed as follows:
 
   1. Install the latest stable version. Let us assume that the installation
  directories are `<lib-path-dir>` and `<bin-path-dir>`
