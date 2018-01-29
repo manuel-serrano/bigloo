@@ -106,6 +106,21 @@ For instance, one may write:
 the sole Bigloo interpreter.
 @end deffn
 
+@deffn {bigloo procedure} set-repl-error-notifier! notifier
+@deffnx {bigloo procedure} get-repl-error-notifier
+Set or get the procedure used in the REPLs to display errors. The notifier
+is a procedure of one argument, the error or exception that has been
+raised. Example:
+
+@smalllisp
+(set-repl-error-notifier!
+   (lambda (e)
+      (print "=== error ======)
+      (exception-notify e)))
+@end smalllisp
+@end deffn
+
+
 @deffn {bigloo procedure} quit 
 This exits from the currently running @code{repl}. If the current 
 @code{repl} is the first one then this function ends the interpreter.

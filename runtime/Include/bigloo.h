@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo.h             */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Oct 23 19:40:08 2017 (serrano)                */
+/*    Last change :  Mon Jan 29 15:45:01 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1984,7 +1984,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_ERROR_NOTIFIERS_GET() \
    BGL_ENV_ERROR_NOTIFIERS_GET( BGL_CURRENT_DYNAMIC_ENV() )
 #define BGL_ERROR_NOTIFIERS_SET( _not ) \
-   BGL_ENV_ERROR_NOTIFIERS_SET( BGL_CURRENT_DYNAMIC_ENV , _not )
+   BGL_ENV_ERROR_NOTIFIERS_SET( BGL_CURRENT_DYNAMIC_ENV(), _not )
    
 #define BGL_INTERRUPT_NOTIFIER_GET() \
    BGL_ENV_INTERRUPT_NOTIFIER_GET( BGL_CURRENT_DYNAMIC_ENV() )

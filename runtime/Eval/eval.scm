@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/eval.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/eval.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Oct 22 09:34:28 1994                          */
-;*    Last change :  Fri Jan  6 10:04:27 2017 (serrano)                */
+;*    Last change :  Mon Jan 29 15:54:22 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo evaluator                                                 */
 ;*    -------------------------------------------------------------    */
@@ -92,6 +92,8 @@
 	    (load <string> #!optional (env (default-environment)))
 	    (loadq <string> #!optional (env (default-environment)))
 	    (repl)
+	    (set-repl-error-notifier! ::obj)
+	    (get-repl-error-notifier)
 	    (c-debug-repl ::obj)
 	    (quit)
 	    (expand-define-macro <expression> <expander>)
@@ -308,6 +310,21 @@
        (lambda (p) (read p #t))))
 
 ;*---------------------------------------------------------------------*/
+;*    set-repl-error-notifier! ...                                     */
+;*---------------------------------------------------------------------*/
+(define (set-repl-error-notifier! proc)
+   (if (correct-arity? proc 1)
+       ($set-error-notifiers! (list proc))
+       (error "set-repl-error-notifier!" "procedure of 1 argument expected" proc)))
+
+;*---------------------------------------------------------------------*/
+;*    get-repl-error-notifier ...                                      */
+;*---------------------------------------------------------------------*/
+(define (get-repl-error-notifier)
+   (when (pair? ($get-error-notifiers))
+      (car ($get-error-notifiers))))
+
+;*---------------------------------------------------------------------*/
 ;*    internal-repl ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (internal-repl)
@@ -331,7 +348,9 @@
 	       (let luup ((mod mod))
 		  (with-handler
 		     (lambda (e)
-			(error-notify e)
+			(if (pair? ($get-error-notifiers))
+			    ((car ($get-error-notifiers)) e)
+			    (error-notify e))
 			(with-access::&error e (obj)
 			   (when (eof-object? obj)
 			      (reset-eof (current-input-port))))
