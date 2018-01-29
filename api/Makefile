@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/Makefile                         */
+#*    serrano/prgm/project/bigloo/bigloo/api/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Mar 24 05:30:44 2005                          */
-#*    Last change :  Sun Jul  9 09:59:06 2017 (serrano)                */
-#*    Copyright   :  2005-17 Manuel Serrano                            */
+#*    Last change :  Mon Jan 29 18:08:26 2018 (serrano)                */
+#*    Copyright   :  2005-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The API Makefile                                                 */
 #*=====================================================================*/
@@ -70,7 +70,14 @@ boot-dotnet:
 #*---------------------------------------------------------------------*/
 #*    clean                                                            */
 #*---------------------------------------------------------------------*/
-.PHONY: clean cleanall distclean
+.PHONY: clean-quick clean cleanall distclean
+
+clean-quick:
+	@ for d in $(DIRECTORIES) ; do \
+             if [ -d $$d ]; then \
+               (cd $$d/src; rm -f .afile); \
+             fi \
+          done;
 
 clean:
 	@ for d in $(DIRECTORIES) ; do \
