@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Sun Dec 31 07:12:31 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jan 29 17:45:01 2018 (serrano)                */
+#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -290,6 +290,8 @@ dobigboot:
 	@ $(MAKE) -C runtime heap-c BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C comptime BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ $(MAKE) -C runtime clean-quick heap libs BIGLOO=$(BOOTDIR)/bin/bigloo
+	@ $(MAKE) -C bde clean-quick boot BIGLOO=$(BOOTDIR)/bin/bigloo
+	@ $(MAKE) -C api clean-quick boot BIGLOO=$(BOOTDIR)/bin/bigloo
 	@ echo "Big boot done..."
 	@ echo "-------------------------------"
 

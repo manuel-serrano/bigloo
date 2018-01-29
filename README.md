@@ -53,7 +53,7 @@ The installation process for stable versions is described in the
   4. install that bootstrapped version:
  `make install-progs`
   5. compile all the libraries and complete the bootstrap:
- `make fullboostrap`
+ `make fullboostrap-sans-log`
   6. install everything:
  `make install`
  

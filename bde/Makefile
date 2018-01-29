@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Dec 29 19:05:04 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jan 29 16:44:16 2018 (serrano)                */
+#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ SHELL           = /bin/sh
 #*    Compilation flags                                                */
 #*---------------------------------------------------------------------*/
 #BFLAGS		= -jvm -jvm-jar -O2 -fsharing -unsafe
-BFLAGS		= -O2 -fsharing -unsafe $(SHRD_BDE_OPT)
+BFLAGS		= -O2 -fsharing -unsafe $(SHRD_BDE_OPT) -lib-dir $(BOOTLIBDIR)
 EFLAGS		=
 
 #*---------------------------------------------------------------------*/
