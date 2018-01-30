@@ -45,6 +45,6 @@ script:
   - ./configure --prefix=/tmp/BIGLOO --disable-gstreamer
   - make bigboot BGLBUILDBINDIR=/usr/bin
   - make install-progs
-  - make -j fullboostrap-sans-log
+  - make -j fullbootstrap-sans-log
   - make install
   - make test
