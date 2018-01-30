@@ -47,4 +47,4 @@ script:
   - make install-progs
   - make -j fullbootstrap-sans-log
   - make install
-  - pushd recette && make && popd
+  - pushd recette && make && ./recette && popd && exit 0
