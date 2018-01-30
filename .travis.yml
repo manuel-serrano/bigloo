@@ -43,7 +43,7 @@ before_install:
 before_script:
   - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo4.3b.tar.gz -O /tmp/bigloo4.3b.tar.gz
   - pushd /tmp && tar xvfz /tmp/bigloo4.3b.tar.gz && popd
-  - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr && make && sudo make install && popd
+  - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr --disable-gstreamer && make && sudo make install && popd
 
 script:
   - ./configure --prefix=/tmp/BIGLOO
