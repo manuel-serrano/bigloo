@@ -17,10 +17,6 @@ before_install:
   - sudo apt-get install -y libflac-dev
   - sudo apt-get install -y libmpg123-0
   - sudo apt-get install -y libmpg123-dev
-  - sudo apt-get install -y libgstreamer0.10-0
-  - sudo apt-get install -y libgstreamer0.10-dev
-  - sudo apt-get install -y libgstreamer-plugins-base0.10
-  - sudo apt-get install -y libgstreamer-plugins-base0.10-dev
   - sudo apt-get install -y libavahi-core7
   - sudo apt-get install -y libavahi-core-dev
   - sudo apt-get install -y libavahi-common-dev
@@ -43,10 +39,10 @@ before_install:
 before_script:
   - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo4.3b.tar.gz -O /tmp/bigloo4.3b.tar.gz
   - pushd /tmp && tar xvfz /tmp/bigloo4.3b.tar.gz && popd
-  - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr --disable-gstreamer && make && sudo make install && popd
+  - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr && make && sudo make install && popd
 
 script:
-  - ./configure --prefix=/tmp/BIGLOO
+  - ./configure --prefix=/tmp/BIGLOO --disable-gstreamer
   - make bigboot BGLBUILDBINDIR=/usr/bin
   - make install-progs
   - make -j fullboostrap-sans-log
