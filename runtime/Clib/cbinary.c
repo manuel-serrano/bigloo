@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cbinary.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cbinary.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Thu Sep 21 06:48:02 2017 (serrano)                */
+/*    Last change :  Tue Jan 30 13:55:36 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -275,7 +275,13 @@ input_obj( obj_t port ) {
 #endif		
       strobj->string_t.length = clen;
       
-      fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file );
+      if( !fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file ) ) {
+	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,
+			   "input_obj",
+			   "corrupted file",
+			   port );
+      }
+      
 
       res = string_to_obj( BSTRING( string ), BFALSE, BFALSE );
 
@@ -298,7 +304,12 @@ input_obj( obj_t port ) {
 #endif		
       string->string_t.length = clen;
 		
-      fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file );
+      if( !fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file ) ) {
+	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,
+			   "input_obj",
+			   "corrupted file",
+			   port );
+      }	 
       
       res = string_to_obj( BSTRING( string ), BFALSE, BFALSE );
 

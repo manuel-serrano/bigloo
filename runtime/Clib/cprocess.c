@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cprocess.c              */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cprocess.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Fri Jun  2 07:40:18 2017 (serrano)                */
+/*    Last change :  Tue Jan 30 13:59:39 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -526,13 +526,25 @@ c_run_process( obj_t bhost, obj_t bfork, obj_t bwaiting,
 	    if( STRINGP( redirection[ i ] ) ) {
 	       /* redirection in a file */
 	       close( i );
-	       dup( pipes[ i ][ 0 ] );
+	       if( dup( pipes[ i ][ 0 ] ) == -1 ) {
+		  sprintf( msg,
+			   "can't create stream for standard %s",
+			   std_streams[ i ] );
+		  
+		  cannot_run( pipes, bcommand, msg );
+	       }
 	       close( pipes[ i ][ 0 ] );
 	    } else {
 	       if( KEYWORDP( redirection[ i ] ) ) {
 		  /* redirection in a pipe */
 		  close( i );
-		  dup( pipes[ i ][ i == 0 ? 0 : 1 ] );
+		  if( dup( pipes[ i ][ i == 0 ? 0 : 1 ] ) == -1 ) {
+		     sprintf( msg,
+			      "can't create stream for standard %s",
+			      std_streams[ i ] );
+		  
+		     cannot_run( pipes, bcommand, msg );
+		  }
 		  close( pipes[ i ][ 0 ] );
 		  close( pipes[ i ][ 1 ] );
 	       }

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cports.c                */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cports.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Dec 26 12:02:34 2017 (serrano)                */
+/*    Last change :  Tue Jan 30 13:53:48 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -580,7 +580,7 @@ loop:
 	    }
 	 }
 #endif
-	 sprintf( buf, "Time limit (%lld us) exceeded",
+	 sprintf( buf, "Time limit (%ld us) exceeded",
 		  tmt->timeout.tv_sec * 1000000 + tmt->timeout.tv_usec );
 	 
 	 C_SYSTEM_FAILURE( BGL_IO_TIMEOUT_ERROR, "read/timeout", buf, port );
