@@ -4106,43 +4106,103 @@ public final class foreign
    
    public static void BGL_SU8VECTOR_COPY(u8vector t, int ts, u8vector s, int ss, int se ) {
       int len = se - ss;
-      for( int i = 0; i < len; i++ ) {
-	 t.objs[ ts + i ] = s.objs[ ss + i ];
+      boolean forward = true;
+      if (t == s) {
+          forward = !((ss < ts) && (ts < (ss + len)));
+      }
+      if (forward) {
+          for( int i = 0; i < len; i++ ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
+      } else {
+          for( int i = len-1; i >= 0; i-- ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
       }
    }
    
    public static void BGL_SU16VECTOR_COPY(u16vector t, int ts, u16vector s, int ss, int se ) {
       int len = se - ss;
-      for( int i = 0; i < len; i++ ) {
-	 t.objs[ ts + i ] = s.objs[ ss + i ];
+       boolean forward = true;
+      if (t == s) {
+          forward = !((ss < ts) && (ts < (ss + len)));
+      }
+      if (forward) {
+          for( int i = 0; i < len; i++ ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
+      } else {
+          for( int i = len-1; i >= 0; i-- ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
       }
    }
    
    public static void BGL_SU32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se ) {
       int len = se - ss;
-      for( int i = 0; i < len; i++ ) {
-	 t.objs[ ts + i ] = s.objs[ ss + i ];
+       boolean forward = true;
+      if (t == s) {
+          forward = !((ss < ts) && (ts < (ss + len)));
+      }
+      if (forward) {
+          for( int i = 0; i < len; i++ ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
+      } else {
+          for( int i = len-1; i >= 0; i-- ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
       }
    }
    
    public static void BGL_SU64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se ) {
       int len = se - ss;
-      for( int i = 0; i < len; i++ ) {
-	 t.objs[ ts + i ] = s.objs[ ss + i ];
+       boolean forward = true;
+      if (t == s) {
+          forward = !((ss < ts) && (ts < (ss + len)));
+      }
+      if (forward) {
+          for( int i = 0; i < len; i++ ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
+      } else {
+          for( int i = len-1; i >= 0; i-- ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
       }
    }
    
    public static void BGL_F32VECTOR_COPY(u32vector t, int ts, u32vector s, int ss, int se ) {
       int len = se - ss;
-      for( int i = 0; i < len; i++ ) {
-	 t.objs[ ts + i ] = s.objs[ ss + i ];
+       boolean forward = true;
+      if (t == s) {
+          forward = !((ss < ts) && (ts < (ss + len)));
+      }
+      if (forward) {
+          for( int i = 0; i < len; i++ ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
+      } else {
+          for( int i = len-1; i >= 0; i-- ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
       }
    }
    
    public static void BGL_F64VECTOR_COPY(u64vector t, int ts, u64vector s, int ss, int se ) {
       int len = se - ss;
-      for( int i = 0; i < len; i++ ) {
-	 t.objs[ ts + i ] = s.objs[ ss + i ];
+       boolean forward = true;
+      if (t == s) {
+          forward = !((ss < ts) && (ts < (ss + len)));
+      }
+      if (forward) {
+          for( int i = 0; i < len; i++ ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
+      } else {
+          for( int i = len-1; i >= 0; i-- ) {
+              t.objs[ ts + i ] = s.objs[ ss + i ];
+          }
       }
    }
    
