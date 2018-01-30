@@ -1,6 +1,8 @@
 Bigloo, a practical Scheme compiler
 ===================================
 
+[![Travis](https://api.travis-ci.org/manuel-serrano/bigloo.svg)](https://travis-ci.org/manuel-serrano/bigloo/builds)
+
 This directory contains the source files of Bigloo, a Scheme system
 which includes a compiler generating C code and Java classes, and an
 interpreter. Bigloo is the tool of choice for the construction of
