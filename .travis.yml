@@ -1,0 +1,52 @@
+language: c
+
+compiler:
+  - clang
+  - gcc
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y dh-make
+  - sudo apt-get install -y libssl1.0.0
+  - sudo apt-get install -y libssl0.9.8
+  - sudo apt-get install -y libssl-dev
+  - sudo apt-get install -y libsqlite3-0
+  - sudo apt-get install -y libsqlite3-dev
+  - sudo apt-get install -y libasound2
+  - sudo apt-get install -y libasound2-dev
+  - sudo apt-get install -y libflac8
+  - sudo apt-get install -y libflac-dev
+  - sudo apt-get install -y libmpg123-0
+  - sudo apt-get install -y libmpg123-dev
+  - sudo apt-get install -y libgstreamer0.10-0
+  - sudo apt-get install -y libgstreamer0.10-dev
+  - sudo apt-get install -y libgstreamer-plugins-base0.10
+  - sudo apt-get install -y libgstreamer-plugins-base0.10-dev
+  - sudo apt-get install -y libavahi-core7
+  - sudo apt-get install -y libavahi-core-dev
+  - sudo apt-get install -y libavahi-common-dev
+  - sudo apt-get install -y libavahi-common3
+  - sudo apt-get install -y libavahi-client3
+  - sudo apt-get install -y libavahi-client-dev
+  - sudo apt-get install -y libunistring0
+  - sudo apt-get install -y libunistring-dev
+  - sudo apt-get install -y libpulse-dev
+  - sudo apt-get install -y libpulse0
+  - sudo apt-get install -y automake
+  - sudo apt-get install -y libtool
+  - sudo apt-get install -y libgmp-dev
+  - sudo apt-get install -y libgmp3-dev
+  - sudo apt-get install -y libgmp10
+  
+before_script:
+  - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo4.3b.tar.gz /tmp/bigloo4.3b.tar.gz
+  - tar xvfz /tmp/bigloo4.3b.tar.gz
+  - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr && make && sudo make install && popd
+
+script:
+  - ./configure --prefix=/tmp/BIGLOO
+  - make bigboot BGLBUILDBINDIR=/usr/local
+  - make install-progs
+  - make -j fullboostrap-sans-log
+  - make install
+  - make test
