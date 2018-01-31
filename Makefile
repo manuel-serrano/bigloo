@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Jan 30 14:56:55 2018 (serrano)                */
+#*    Last change :  Tue Jan 30 19:07:34 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -674,7 +674,9 @@ jvm-test:
 
 .PHONY: uninstall
 
-install: install-progs install-apis install-docs
+install: install-sans-docs install-docs
+
+install-sans-docs: install-progs install-apis install-docs
 
 install-progs: install-devel install-libs
 

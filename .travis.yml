@@ -1,8 +1,13 @@
 language: c
+sudo: required
 
 compiler:
   - gcc
-
+  
+env:
+  global:
+  - NJOBS=2
+  
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y dh-make
@@ -42,9 +47,20 @@ before_script:
   - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr && make && sudo make install && popd
 
 script:
+  - set -e
+  - echo -en 'travis_fold:start:bigloo.config\\r'
   - ./configure --prefix=/tmp/BIGLOO --disable-gstreamer
+  - echo -en 'travis_fold:end:bigloo.config\\r'
+
+  - echo -en 'travis_fold:start:bigloo.build\\r'
   - make bigboot BGLBUILDBINDIR=/usr/bin
   - make install-progs
   - make -j fullbootstrap-sans-log
   - make install
-  - pushd recette && make && ./recette && popd && exit 0
+  - echo -en 'travis_fold:end:bigloo.build\\r'
+
+  - echo -en 'travis_fold:start:bigloo.test\\r'
+  - pushd recette && make && ./recette && popd
+  - echo -en 'travis_fold:end:bigloo.test\\r'
+
+  - set +e

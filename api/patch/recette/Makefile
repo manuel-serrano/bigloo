@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/patch/recette/Makefile           */
+#*    .../prgm/project/bigloo/bigloo/api/patch/recette/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Sun Jul  9 10:14:46 2017 (serrano)                */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Last change :  Wed Jan 31 07:01:52 2018 (serrano)                */
+#*    Copyright   :  2002-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Gstreamer tests                        */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ POPULATION	= recette.scm Makefile
 #*---------------------------------------------------------------------*/
 #*    the goals.                                                       */
 #*---------------------------------------------------------------------*/
-all: c # jvm dotnet
+all: c # jvm
 
 c: recette$(EXE_SUFFIX)
 recette$(EXE_SUFFIX): recette.o
@@ -49,16 +49,6 @@ jvm.not-implemented:
 recette-jvm$(SCRIPTEXTENSION): recette.class
 	$(BIGLOO) -jvm $(EFLAGS) $(BFLAGS) recette.class -o recette-jvm$(SCRIPTEXTENSION)
 
-dotnet: 
-
-dotnet.not-implemented:
-	@ if [ "$(DOTNETBACKEND)" = "yes" ]; then \
-             $(MAKE) recette-dotnet$(SCRIPTEXTENSION); \
-	  fi
-
-recette-dotnet$(SCRIPTEXTENSION): recette.obj
-	$(BIGLOO) -v -dotnet -dotnet-managed $(EFLAGS) $(BFLAGS) recette.obj -o recette-dotnet$(SCRIPTEXTENSION)
-
 pop:
 	@ echo $(POPULATION:%=patch/recette/%)
 
@@ -67,15 +57,13 @@ clean:
 	@- $(RM) -f *.escm *.ast recette.c recette$(EXE_SUFFIX)
 	@- $(RM) -f recette.o
 	@- $(RM) -f JVMMAIN.class *.class recette-jvm$(SCRIPTEXTENSION) 
-	@- $(RM) -f recette.obj recette.il
-	@- $(RM) -f recette-dotnet.exe recette-dotnet$(SCRIPTEXTENSION)
 
 distclean: clean
 
 #*---------------------------------------------------------------------*/
 #*    Test                                                             */
 #*---------------------------------------------------------------------*/
-test: test-c # test-jvm test-dotnet
+test: test-c test-jvm
 
 test-c:
 	(export LD_LIBRARY_PATH=../lib:$$LD_LIBRARY_PATH; \
@@ -84,19 +72,12 @@ test-c:
 
 test-jvm:
 
-test-jvm.not-implemented:
-	./recette-jvm$(SCRIPTEXTENSION)
-
-test-dotnet:
-
-test-dotnet.not-implemented:
-	./recette-dotnet$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .bgl .scm .o .class .obj
+.SUFFIXES: .bgl .scm .o .class
 
 #*---------------------------------------------------------------------*/
 #*    .scm -> .o/.class/.obj                                           */
@@ -106,6 +87,3 @@ test-dotnet.not-implemented:
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
-
-.scm.obj: $*.scm
-	$(BIGLOO) -c -dotnet -dotnet-managed $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.obj

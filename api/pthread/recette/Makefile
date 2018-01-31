@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/pthread/recette/Makefile         */
+#*    .../prgm/project/bigloo/bigloo/api/pthread/recette/Makefile      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Sun Jul  9 10:15:53 2017 (serrano)                */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Last change :  Wed Jan 31 07:02:14 2018 (serrano)                */
+#*    Copyright   :  2002-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Fair threads tests                     */
 #*=====================================================================*/
@@ -75,10 +75,10 @@ test-jvm:
 #*    Suffixes                                                         */
 #*---------------------------------------------------------------------*/
 .SUFFIXES:
-.SUFFIXES: .bgl .scm .o .class .obj
+.SUFFIXES: .bgl .scm .o .class
 
 #*---------------------------------------------------------------------*/
-#*    .scm -> .o/.class/.obj                                           */
+#*    .scm -> .o/.class                                                */
 #*---------------------------------------------------------------------*/
 .scm.o: $*.scm
 	$(BIGLOO) -static-all-bigloo -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
