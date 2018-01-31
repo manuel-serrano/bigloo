@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Jan 31 07:01:52 2018 (serrano)                */
+#*    Last change :  Wed Jan 31 10:19:10 2018 (serrano)                */
 #*    Copyright   :  2002-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Gstreamer tests                        */
@@ -40,8 +40,6 @@ recette$(EXE_SUFFIX): recette.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) recette.o -o recette$(EXE_SUFFIX)
 
 jvm: 
-
-jvm.not-implemented:
 	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
              $(MAKE) recette-jvm$(SCRIPTEXTENSION); \
 	  fi

@@ -1,20 +1,20 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/alsa/recette/recette.scm         */
+;*    .../prgm/project/bigloo/bigloo/api/patch/recette/recette.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb  4 14:28:58 2002                          */
-;*    Last change :  Mon Mar  3 10:49:24 2014 (serrano)                */
-;*    Copyright   :  2002-14 Manuel Serrano                            */
+;*    Last change :  Wed Jan 31 10:21:57 2018 (serrano)                */
+;*    Copyright   :  2002-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
-;*    A test module that for the Gstreamer library.                    */
+;*    A test module that for the patch library.                        */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
 ;*    The module                                                       */
 ;*---------------------------------------------------------------------*/
 (module recette
-   (library pthread alsa)
-   (main    main))
+   (cond-expand (bigloo-c (library patch)))
+   (main main))
 
 ;*---------------------------------------------------------------------*/
 ;*    err ...                                                          */
@@ -85,7 +85,8 @@
 ;*---------------------------------------------------------------------*/
 (define-test cond-expand
    (cond-expand
-      (alsa #t)
+      ((and bigloo-c patch) #t)
+      (bigloo-jvm #t)
       (else #f))
    :result #t)
 
