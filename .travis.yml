@@ -56,11 +56,11 @@ script:
   - make bigboot BGLBUILDBINDIR=/usr/bin
   - make install-progs
   - make -j fullbootstrap-sans-log
-  - make install
+  - make install-sans-docs
   - echo -en 'travis_fold:end:bigloo.build\\r'
 
   - echo -en 'travis_fold:start:bigloo.test\\r'
-  - pushd recette && make && ./recette && popd
+  - make test
   - echo -en 'travis_fold:end:bigloo.test\\r'
 
   - set +e
