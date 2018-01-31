@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Jan 31 10:19:10 2018 (serrano)                */
+#*    Last change :  Wed Jan 31 11:04:44 2018 (serrano)                */
 #*    Copyright   :  2002-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Gstreamer tests                        */
@@ -69,7 +69,7 @@ test-c:
          ./recette.out)
 
 test-jvm:
-
+	./recette-jvm$(SCRIPTEXTENSION)
 
 #*---------------------------------------------------------------------*/
 #*    Suffixes                                                         */
