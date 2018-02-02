@@ -97,4 +97,12 @@
    (let* ((v (vector 1 2 3))
 	  (v2 (vector 0)))
       (vector-copy! v2 0 v 1 2)
-      (test "vector-copy!" v2 '#(2))))
+      (test "vector-copy!" v2 '#(2)))
+   (let ((v (vector 1 2 3 4 5 6 7 8)))
+      (vector-copy! v 4 v 0 4)
+      (test "vector-copy! with from and to being the same vector" v '#(1 2 3 4 1 2 3 4))
+      (vector-copy! v 2 v 0 6)
+      (test "vector-copy! with from and to being the same vector and the range is overlapped"
+         v '#(1 2 1 2 3 4 1 2)))
+
+   )

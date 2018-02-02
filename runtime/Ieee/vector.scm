@@ -281,13 +281,22 @@
 ;*---------------------------------------------------------------------*/
 (define (vector-copy! target tstart source
 		      #!optional (sstart 0) (send (vector-length source)))
-   (let ((end (minfx send (vector-length source)))
-	 (tend (vector-length target)))
-      (let loop ((i sstart)
-		 (j tstart))
-	 (when (and (<fx i end) (<fx j tend))
-	    (vector-set-ur! target j (vector-ref-ur source i))
-	    (loop (+fx i 1) (+fx j 1))))))
+   (let* ((end (minfx send (vector-length source)))
+          (count (-fx end sstart))
+          (tend (minfx (+fx tstart count) (vector-length target))))
+      (if (and (eq? target source)
+               (<fx sstart tstart)
+               (<fx tstart (+fx sstart (-fx send sstart))))
+          (let loop ((i  (-fx end 1))
+                     (j (-fx tend 1)))
+             (when (and (>=fx i sstart) (>=fx j tstart))
+                (vector-set-ur! target j (vector-ref-ur source i))
+                (loop (-fx i 1) (-fx j 1))))
+          (let loop ((i sstart)
+                     (j tstart))
+             (when (and (<fx i end) (<fx j tend))
+                (vector-set-ur! target j (vector-ref-ur source i))
+                (loop (+fx i 1) (+fx j 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-append ...                                                */
