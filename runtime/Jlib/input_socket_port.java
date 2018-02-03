@@ -98,11 +98,8 @@ public class input_socket_port extends input_port {
 
       // FIX Dustin DeWeese" <dustin.deweese gmail.com> Feb 2006.
       // final int nbread = in.read( buffer, bufpose-1, (a < size ? a : size) );
-      System.out.println( "bufpose=" + bufpose + " size=" + size + " len="
-			+ buffer.length );
       final int nbread = in.read( buffer, bufpose, size );
-      System.out.println( "nread=" + nbread );
-
+     
       if (nbread == -1)
 	 eof = true;
       else
