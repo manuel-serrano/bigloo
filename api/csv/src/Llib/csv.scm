@@ -4,7 +4,7 @@
 ;*    Author      :  Joseph Donaldson (donaldsonjw@yahoo.com)          */
 ;*    Creation    :  Fri Feb 24 07:12:29 2012                          */
 ;*    Last change :  Mon Jul 17 07:57:53 2017 (serrano)                */
-;*    Copyright   :  2011-17 Joseph Donaldson                          */
+;*    Copyright   :  2011-18 Joseph Donaldson                          */
 ;*    -------------------------------------------------------------    */
 ;*    This file is part of bigloo-csv.                                 */
 ;*=====================================================================*/
@@ -25,6 +25,12 @@
            (read-csv-records in #!optional (lexer +csv-lexer+))
            (csv-for-each proc in #!optional (lexer +csv-lexer+))
            (csv-map proc in #!optional (lexer +csv-lexer+))))
+
+
+;*---------------------------------------------------------------------*/
+;*    unique unspecified value for csv                                 */
+;*---------------------------------------------------------------------*/
+(define +csv-unspecified+ '(#unspecified))
 
 ;*---------------------------------------------------------------------*/
 ;*    default csv lexers                                               */
@@ -57,17 +63,34 @@
 ;*    read-csv-record ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (read-csv-record in #!optional (lexer +csv-lexer+))
-   (if (input-port? in)
-       (let ((pc (peek-char in)))
-	  (if (eof-object? pc)
-	      pc
-	      (read/lalrp +csv-parser+ lexer in
-		 (lambda (x) (or (eof-object? x) (eq? x 'newline))))))
-       (raise
-	  (instantiate::&io-port-error
-	     (proc "read-csv-record")
-	     (msg "invalid input port")
-	     (obj in)))))
+   (when (not (input-port? in))
+      (raise (instantiate::&io-port-error (proc "read-csv-record")
+                                          (msg "invalid input port")
+                                          (obj in))))
+   (let loop ((token (read/rp lexer in))
+              (last-token +csv-unspecified+)
+              (res '()))
+      (cond ((or (eq? token 'newline)
+                 (eof-object? token))
+             (if (and (eof-object? token)
+                      (eq? last-token +csv-unspecified+))
+                 #eof-object
+                  (reverse! res)))
+            ((and (pair? token)
+                  (eq? (car token) 'text))
+             (loop (read/rp lexer in)
+                (car token)
+                (if (eq? last-token 'text)
+                    (cons (string-append (car res) (cdr token)) (cdr res))
+                    (cons (cdr token) res))))
+            ((eq? token 'separator)
+             (loop (read/rp lexer in)
+                'separator
+                res))
+            (else
+             (loop (read/rp lexer in)
+                'text
+                res)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    read-csv-records ...                                             */
