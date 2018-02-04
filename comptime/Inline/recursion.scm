@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/recursion.scm        */
+;*    .../prgm/project/bigloo/bigloo/comptime/Inline/recursion.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Fri Apr 21 18:48:21 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb  4 19:02:25 2018 (serrano)                */
+;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -74,7 +74,10 @@
 		    (variable-type variable)
 		    (variable-value variable)))
 	  (old-sfun (variable-value variable))
-	  (rec-calls (isfun-recursive-calls old-sfun))
+	  (old-body (if (isfun? old-sfun)
+			(isfun-original-body old-sfun)
+			(sfun-body old-sfun)))
+	  (rec-calls (find-recursive-calls old-body variable #t (make-cell #t)))
 	  (old-args (sfun-args old-sfun))
 	  (inv-args (invariant-args node variable rec-calls))
 	  (var-args (variant-args variable))
@@ -82,9 +85,7 @@
 			    (clone-local l (duplicate::svar (local-value l))))
 		       var-args))
 	  (substitute (substitutions variable (app-args node) new-args))
-	  (old-body (if (isfun? old-sfun)
-			(isfun-original-body old-sfun)
-			(sfun-body old-sfun)))
+	  
 	  (svg-calls-args (map (lambda (app) (app-args app)) rec-calls))
 	  (remove! (for-each remove-invariant-args! rec-calls))
 	  (iloc (and (global? variable)
