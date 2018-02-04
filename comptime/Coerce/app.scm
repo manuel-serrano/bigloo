@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Coerce/app.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Coerce/app.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Fri Nov 25 08:42:12 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Feb  4 18:20:22 2018 (serrano)                */
+;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
 ;*=====================================================================*/
@@ -135,6 +135,10 @@
 	  (ntype (get-type node #f)))
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
+	 (unless (=fx (length actuals) (length formals))
+	    (tprint "PAS BON " (shape callee) " " (shape node)
+	       " len-actuals=" (length actuals) " len-form=" (length formals))
+	    (exit 0))
 	 (assert (actuals formals sh) (=fx (length actuals) (length formals)))
 	 (if (null? actuals)
 	     (if (and (eq? caller callee) (not *unsafe-type*))
