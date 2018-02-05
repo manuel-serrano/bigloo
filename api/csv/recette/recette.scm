@@ -155,8 +155,8 @@
 	 (close-input-port in)))
    :result (lambda (v)
 	      (if (eq? v 'result)
-		  '("")
-		  (csv-record=? v '("")))))
+		  '()
+		  (csv-record=? v '()))))
 
 (define-test empty
    (let* ((test-string "")

@@ -33,7 +33,7 @@ POPULATION = Makefile README
 all: build
 boot: build
 
-build: build-c
+build: build-c build-jvm
 
 c: build-c
 jvm: build-jvm
@@ -46,7 +46,10 @@ build-c:
           fi
 
 build-jvm:
-	@ echo "CSV .jvm: Not implemented";
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	    echo "[0m[1;31m>>> JVM[0m";  \
+	    (cd src && $(MAKE) build-jvm); \
+          fi
 
 build-dotnet:
 	@ echo "CSV .net: Not implemented";
@@ -90,8 +93,12 @@ install: api-install-init
 	    $(MAKE) api-install-c; \
           fi
 
+	@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+	    $(MAKE) api-install-jvm; \
+          fi
 uninstall: api-uninstall-init \
-           api-uninstall-c
+           api-uninstall-c \
+	   api-uninstall-jvm
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

@@ -104,12 +104,16 @@ all:
 	@ if [ "$(NATIVEBACKEND)" = "yes" ]; then \
              $(MAKE) build-c; \
 	  fi
+		@ if [ "$(JVMBACKEND)" = "yes" ]; then \
+             $(MAKE) build-jvm; \
+	  fi
+
 
 c: build-c
 build-c: api-c
 
 jvm: build-jvm
-build-jvm:
+build-jvm: api-jvm
 
 $(MISC_SRC_DIR)/$(API).init: $(MISC_SRC_DIR)/$(API).init.in
 	@ echo "*** ERROR: $@ is out of date (older than $?)"

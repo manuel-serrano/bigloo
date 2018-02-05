@@ -23,7 +23,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = gflu
+SOURCES = gflu gflu-jvm
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
@@ -38,13 +38,16 @@ all: $(SOURCES)
 gflu: gflu.o
 	$(BIGLOO) $(EFLAGS) $(BFLAGS) $< -o $@$(EXE_SUFFIX)
 
+gflu-jvm : gflu.class
+	$(BIGLOO) -jvm $(EFLAGS) $(BFLAGS) $< -o $@$(SCRIPTEXTENSION)
+
 pop:
 	@ echo $(POPULATION:%=csv/examples/%)
 
 clean:
 	@- $(RM) -f *~ '#*#' core
-	@- $(RM) -f *.escm *.ast gflu$(EXE_SUFFIX)
-	@- $(RM) -f $(SOURCES:%=%$(EXE_SUFFIX)) $(SOURCES:%=%.o)
+	@- $(RM) -f *.escm *.ast gflu$(EXE_SUFFIX) gflu-jvm$(SCRIPTEXTENSION)
+	@- $(RM) -f $(SOURCES:%=%$(EXE_SUFFIX)) $(SOURCES:%=%.o) $(SOURCES:%=%.class)
 
 distclean: clean
 
