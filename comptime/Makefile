@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Feb  6 14:55:35 2018 (serrano)                */
+#*    Last change :  Tue Feb  6 15:34:49 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -342,11 +342,14 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
                   $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(PATCH_OBJ) Tools/date.o Tools/license.o
+                  $(PATCH_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
 O_OBJECTS       = $(O_OBJECTS_NOINIT) $(INIT_OBJ)
+
+G_OBJECTS	= Tools/date.o Tools/license.o
+
 CLASS_OBJECTS	= $(O_OBJECTS:%.o=%.class)
 
 # This entry is used by QNC, for building bigloo++. Mainly Christian
@@ -474,12 +477,12 @@ bigloo.$(SHAREDSUFFIX):
 #*    during the linkg if BIGLOO and BIGLOO_DEST are the same          */
 #*    file.                                                            */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS)
+$(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
 	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
 	          -o $(BIGLOO_DEST).aux \
-	          $(O_OBJECTS)
+	          $(O_OBJECTS) $(G_OBJECTS)
 	@ if [ $(HOSTOS) = "cygwin" ]; then \
 	    echo "Waiting a few seconds for the lock on $@ to be released..."; \
 	    sleep 5s; \
@@ -491,18 +494,19 @@ $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS)
 #*---------------------------------------------------------------------*/
 #*    bigloo.new                                                       */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .jfile .etags $(O_OBJECTS)
+$(BIGLOO_DEST).$(NEW_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
-	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS)
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) -o $@ $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
 #*---------------------------------------------------------------------*/
 #*    bigloo.$(SHAREDSUFFIX)                                           */
 #*---------------------------------------------------------------------*/
-$(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS)
+$(BIGLOO_DEST).$(SHAREDSUFFIX): $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
-	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ $(O_OBJECTS) \
+	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) -o $@ \
+                    $(O_OBJECTS) $(G_OBJECTS) \
                     -ldopt $(CSTRIPFLAGS)
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
@@ -615,11 +619,11 @@ boot:
 	fi
 	@ echo "$(BIGLOO_DEST)$(EXE_SUFFIX) done..."
 
-doboot.shared: $(O_OBJECTS)
-	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) -L$(BOOTLIBDIR) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)
+doboot.shared: $(O_OBJECTS) $(G_OBJECTS)
+	$(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(G_OBJECTS) -L$(BOOTLIBDIR) $(LDCOMPLIBS_SHARED) $(LDCOMPLIBS)
 
-doboot.static: $(O_OBJECTS)
-	 $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(LDCOMPLIBS_STATIC) $(LDCOMPLIBS)
+doboot.static: $(O_OBJECTS) $(G_OBJECTS)
+	 $(CC) $(EXTRA_LD_OPT) $(CFLAGS) -o $(BIGLOO_DEST)$(EXE_SUFFIX) $(O_OBJECTS) $(G_OBJECTS) $(LDCOMPLIBS_STATIC) $(LDCOMPLIBS)
 	-$(STRIP) $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
@@ -680,7 +684,7 @@ clean-common:
                      -type f -exec $(RM) {} \;   
 
 clean-c:
-	- $(RM) -f $(O_OBJECTS)
+	- $(RM) -f $(O_OBJECTS) $(G_OBJECTS)
 
 clean-jvm:
 	- $(RM) -f $(CLASS_OBJECTS)
@@ -701,7 +705,7 @@ cleanall: clean
 	- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 distclean: 
-	- $(RM) -f $(O_OBJECTS)
+	- $(RM) -f $(O_OBJECTS) $(G_OBJECTS)
 	- $(RM) -f $(BIGLOO_DEST)$(EXE_SUFFIX)
 
 #*---------------------------------------------------------------------*/
