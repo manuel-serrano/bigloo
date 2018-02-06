@@ -3,17 +3,17 @@ Bigloo, a practical Scheme compiler
 
 [![Travis](https://api.travis-ci.org/manuel-serrano/bigloo.svg)](https://travis-ci.org/manuel-serrano/bigloo/builds)
 
-This directory contains the source files of Bigloo, a Scheme system
-which includes a compiler generating C code and Java classes, and an
-interpreter. Bigloo is the tool of choice for the construction of
-autonomous applications in Scheme. Bigloo is mostly conformant to the
-Revised5 Report on the Algorithmic Language Scheme with many
-extensions: Rgc, a lex facility.  Match, a pattern-matching compiler.
-Foreign languages interface (connection to C and to Java).  Module
-language.  Extension package system.  An Lalr facility.  An Object
-sytem.  A thread library.  DSSSL support.  Unicode characters and
-strings.  Process, Pipe and Socket support. Bigloo comes with an
-Integrated Development Environment (the Bee).
+Bigloo is a Scheme development environment that includes a compiler
+generating C code and Java classes, and an interpreter. Bigloo is the
+tool of choice for building autonomous applications in Scheme. Bigloo
+is mostly conformant to the Revised5 Report on the Algorithmic
+Language Scheme with many extensions: Rgc, a lex facility.  Match, a
+pattern-matching compiler.  Foreign languages interface (connection to
+C and to Java).  Module language.  Extension package system.  An Lalr
+facility.  An Object sytem.  A thread library.  DSSSL support.
+Unicode characters and strings.  Process, Pipe and Socket
+support. Bigloo comes with an Integrated Development Environment (the
+Bee).
 
 
 Versions
