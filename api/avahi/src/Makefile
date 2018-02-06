@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/avahi/src/Makefile               */
+#*    serrano/prgm/project/bigloo/bigloo/api/avahi/src/Makefile        */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jul 31 07:38:13 2017 (serrano)                */
+#*    Last change :  Tue Feb  6 11:38:12 2018 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -93,7 +93,6 @@ INCLUDES	= $(BIGLOO_SRC_DIR)/avahi.sch
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
 POPULATION	= $(SOURCES) $(INCLUDES) $(_WIN32_SOURCES) \
-		  $(C_SRC_DIR)/bglavahi.h \
 		  $(MISC_SRC_DIR)/make_lib.scm \
                   $(MISC_SRC_DIR)/$(API).init.in \
                   Makefile

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/control.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/control.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 17:48:44 1995                          */
-;*    Last change :  Wed Aug 10 10:58:36 2016 (serrano)                */
+;*    Last change :  Tue Feb  6 08:29:46 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.9. Control features (page 27, r4)                              */
 ;*=====================================================================*/
@@ -252,18 +252,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    filter ...                                                       */
 ;*---------------------------------------------------------------------*/
-(define (filter pred lis)
-   (let recur ((lis lis))		
-      (if (null? lis)
-	  lis			
-	  (let ((head (car lis))
-		(tail (cdr lis)))
-	     (if (pred head)
-		 (let ((new-tail (recur tail)))
-		    (if (eq? tail new-tail)
-			lis
-			(cons head new-tail)))
-		 (recur tail))))))
+(define (filter pred l)
+   (let ((hook (cons #f '())))
+      (let loop ((l l)
+		 (h hook))
+	 (cond
+	    ((null? l)
+	     (cdr hook))
+	    ((pred (car l))
+	     (let ((nh (cons (car l) '())))
+		(set-cdr! h nh)
+		(loop (cdr l) nh)))
+	    (else
+	     (loop (cdr l) h))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    filter! ...                                                      */

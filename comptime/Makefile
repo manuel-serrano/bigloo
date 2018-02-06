@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/comptime/Makefile                    */
+#*    serrano/prgm/project/bigloo/bigloo/comptime/Makefile             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Oct  2 13:48:41 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Feb  6 11:39:28 2018 (serrano)                */
+#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -751,7 +751,7 @@ $(CSRCSUFFIX): %.scm
 #*    makefile) to get the list of file that populate a revision.      */
 #*---------------------------------------------------------------------*/
 .PHONY: pop
-pop: Tools/date.scm Tools/license.scm
+pop: 
 	@ echo $(POPULATION:%=comptime/%)
 
 #*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/map.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Expand/map.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec  4 18:08:53 1992                          */
-;*    Last change :  Tue Oct 23 11:36:12 2012 (serrano)                */
-;*    Copyright   :  1992-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb  6 08:34:02 2018 (serrano)                */
+;*    Copyright   :  1992-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    `map' and `for-each' compile-time macro expansion.               */
 ;*=====================================================================*/
@@ -580,22 +580,21 @@
 (define (expand-filter x e)
    (match-case x
       ((?- (and ?fun (? inline-map-lambda?)) ?list)
-       (let ((recur (mark-symbol-non-user! (gensym 'recur)))
-	      (lis (mark-symbol-non-user! (gensym 'lis)))
-	      (head (mark-symbol-non-user! (gensym 'head)))
-	      (tail (mark-symbol-non-user! (gensym 'tail)))
-	      (new-tail (mark-symbol-non-user! (gensym 'new-tail))))
-	  (let ((res `(let ,recur ((,lis ,list))
-			   (if ((@ null? __r4_pairs_and_lists_6_3) ,lis)
-			       ,lis			
-			       (let ((,head ((@ car __r4_pairs_and_lists_6_3) ,lis))
-				     (,tail ((@ cdr __r4_pairs_and_lists_6_3) ,lis)))
-				  (if (,fun ,head)
-				      (let ((,new-tail (,recur ,tail)))
-					 (if ((@ eq? __r4_equivalence_6_2) ,tail ,new-tail)
-					     ,lis
-					     ((@ cons __r4_pairs_and_lists_6_3) ,head ,new-tail)))
-				      (,recur ,tail)))))))
+       (let ((loop (mark-symbol-non-user! (gensym 'loop)))
+	     (l (mark-symbol-non-user! (gensym 'l)))
+	     (h (mark-symbol-non-user! (gensym 'h)))
+	     (nh (mark-symbol-non-user! (gensym 'nh)))
+	     (hook (mark-symbol-non-user! (gensym 'hook))))
+	  (let ((res `(let ((,hook (cons #f '())))
+			 (let ,loop ((,l ,list)
+				     (,h ,hook))
+			      (if ((@ null? __r4_pairs_and_lists_6_3) ,l)
+				  ((@ cdr __r4_pairs_and_lists_6_3) ,hook)
+				  (if (,fun ((@ car __r4_pairs_and_lists_6_3) ,l))
+				      (let ((,nh ((@ cons __r4_pairs_and_lists_6_3) ((@ car __r4_pairs_and_lists_6_3) ,l) '())))
+					 ((@ set-cdr! __r4_pairs_and_lists_6_3) ,h ,nh)
+					 (,loop ((@ cdr __r4_pairs_and_lists_6_3) ,l) ,nh))
+				      (,loop ((@ cdr __r4_pairs_and_lists_6_3) ,l) ,h)))))))
 	     (epairify! x (e res e)))))
       ((?- ?fun . ?lists)
        (let ((res `(filter ,(e fun e) ,@(map (lambda (l) (e l e)) lists))))

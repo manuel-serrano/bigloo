@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/list.scm                     */
+;*    serrano/prgm/project/bigloo/bigloo/recette/list.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:21:42 1992                          */
-;*    Last change :  Sat Oct 13 07:50:47 2012 (serrano)                */
+;*    Last change :  Tue Feb  6 08:29:01 2018 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations primitives sur les listes                */
 ;*---------------------------------------------------------------------*/
@@ -16,7 +16,38 @@
    (include "test.sch")
    (export  (test-list))
    (option  (set! *shared-cnst?* #f)))
- 
+
+;*---------------------------------------------------------------------*/
+;*    test-filter ...                                                  */
+;*---------------------------------------------------------------------*/
+(define (test-filter)
+   (let ((pred (lambda (x) (> x 2))))
+      (and (equal? (filter pred '(1 2 0)) '())
+	   (equal? (filter pred '(1 2 0 3)) '(3))
+	   (equal? (filter pred '(10 1 2 0 3)) '(10 3))
+	   (equal? (filter pred '(10 11 1 2 0 3)) '(10 11 3))
+	   (equal? (filter pred '(10 11 1 2 0 3 22)) '(10 11 3 22))
+	   (equal? (filter pred '(1 2 0 3 22)) '(3 22))
+	   (equal? (filter pred '(1 2 0 3 22 23)) '(3 22 23))
+	   (equal? (filter pred '(22 23)) '(22 23))
+	   (equal? (filter pred '(22)) '(22)))))
+
+;*---------------------------------------------------------------------*/
+;*    test-filter-dbg ...                                              */
+;*---------------------------------------------------------------------*/
+(define (test-filter-dbg l)
+   (let ((pred (lambda (x) (> x 2)))
+	 (f (car l)))
+      (and (equal? (f pred '(1 2 0)) '())
+	   (equal? (f pred '(1 2 0 3)) '(3))
+	   (equal? (f pred '(10 1 2 0 3)) '(10 3))
+	   (equal? (f pred '(10 11 1 2 0 3)) '(10 11 3))
+	   (equal? (f pred '(10 11 1 2 0 3 22)) '(10 11 3 22))
+	   (equal? (f pred '(1 2 0 3 22)) '(3 22))
+	   (equal? (f pred '(1 2 0 3 22 23)) '(3 22 23))
+	   (equal? (f pred '(22 23)) '(22 23))
+	   (equal? (f pred '(22)) '(22)))))
+
 ;*---------------------------------------------------------------------*/
 ;*    test-list ...                                                    */
 ;*---------------------------------------------------------------------*/
@@ -68,6 +99,8 @@
 		       v)
 	 45)
    (test "filter" (filter number? '(1 2 #\a "foo" foo 3)) '(1 2 3))
+   (test "filter.2" (test-filter) #t)
+   (test "filter.3" (test-filter-dbg (list filter)) #t)
    (test "filter!" (let ((l (list 1 2 #\a "foo" 'foo 3)))
 		      (set! l (filter! number? l))
 		      l) '(1 2 3))

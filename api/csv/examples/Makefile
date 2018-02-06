@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/csv/examples/Makefile            */
+#*    serrano/prgm/project/bigloo/bigloo/api/csv/examples/Makefile     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Sun Jul  9 10:07:11 2017 (serrano)                */
-#*    Copyright   :  2002-17 Manuel Serrano                            */
+#*    Last change :  Tue Feb  6 08:47:27 2018 (serrano)                */
+#*    Copyright   :  2002-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the CSV examples                           */
 #*=====================================================================*/
@@ -23,7 +23,7 @@ BCFLAGS =
 #*---------------------------------------------------------------------*/
 #*    Sources                                                          */
 #*---------------------------------------------------------------------*/
-SOURCES = gflu gflu-jvm
+SOURCES = gflu
 
 #*---------------------------------------------------------------------*/
 #*    All objects and sources                                          */
