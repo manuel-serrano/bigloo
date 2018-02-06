@@ -558,7 +558,7 @@ Tools/license.scm: $(LICENSE)
 ude: Tools/date.scm Tools/license.scm .afile .jfile .etags
 	$(MAKE) dep
 
-.afile: $(SOURCE_FILES)
+.afile: $(SOURCE_FILES) Tools/license.scm
 	$(BGLAFILE) -o .afile $(SOURCE_FILES)
 
 .jfile: .afile
