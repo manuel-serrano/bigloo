@@ -79,6 +79,7 @@ autoconf/runtest
 
 # comptime
 comptime/Tools/date.scm
+comptime/Tools/license.scm
 
 # runtime
 runtime/Unsafe/regexp.scm

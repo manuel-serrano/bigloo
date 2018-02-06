@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Feb  6 15:34:49 2018 (serrano)                */
+#*    Last change :  Tue Feb  6 15:40:57 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -563,13 +563,13 @@ ude: Tools/date.scm Tools/license.scm .afile .jfile .etags
 	$(MAKE) dep
 
 .afile: $(SOURCE_FILES) Tools/license.scm
-	$(BGLAFILE) -o .afile $(SOURCE_FILES)
+	$(BGLAFILE) -o .afile $(SOURCE_FILES) Tools/license.scm
 
 .jfile: .afile
-	$(BGLJFILE) -o .jfile $(SOURCE_FILES)
+	$(BGLJFILE) -o .jfile $(SOURCE_FILES) Tools/license.scm
 
 .etags: .afile
-	$(BGLTAGS) --define-var doc-define -o .etags $(SOURCE_FILES)
+	$(BGLTAGS) --define-var doc-define -o .etags $(SOURCE_FILES) Tools/license.scm
 
 #*---------------------------------------------------------------------*/
 #*    qnctags                                                          */
