@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/runtime/Makefile                     */
+#*    serrano/prgm/project/bigloo/bigloo/runtime/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Dec 18 08:04:35 2017 (serrano)                */
-#*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Feb  9 15:28:17 2018 (serrano)                */
+#*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -927,7 +927,7 @@ dirs:
            done; \
          done)
 
-obj: objs-sans-dirs dirs
+objs: objs-sans-dirs dirs
 
 #*---------------------------------------------------------------------*/
 #*    $(BOOTLIBDIR)/bigloo.h                                           */
