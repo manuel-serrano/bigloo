@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Feb  6 15:40:57 2018 (serrano)                */
+#*    Last change :  Fri Feb  9 11:26:15 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -425,7 +425,7 @@ jvm: $(CLASS_OBJECTS)
 #*    -------------------------------------------------------------    */
 #*    We prepare the compiler for a distribution                       */
 #*---------------------------------------------------------------------*/
-distrib: 
+distrib: Tools/date.scm Tools/license.scm
 	@ if [ `pwd` = $(BOOTDIR)/comptime ]; then \
              echo "*** ERROR:Illegal dir to make a distrib `pwd`"; \
              exit 1; \
