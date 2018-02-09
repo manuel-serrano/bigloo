@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Fri Feb  9 11:26:15 2018 (serrano)                */
+#*    Last change :  Fri Feb  9 16:45:17 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -521,7 +521,7 @@ mainnewo: $(O_LESS_MAIN_OBJECTS_OBJECTS)
 #*---------------------------------------------------------------------*/
 #*    dist-bigloo.exe                                                  */
 #*---------------------------------------------------------------------*/
-dist-bigloo.exe: $(C_OBJECTS)
+dist-bigloo.exe: $(C_OBJECTS) Tools/date.c Tools/license.c
 	@ echo "Comptime (distribution) done..."
 	@ echo "-------------------------------"
 
