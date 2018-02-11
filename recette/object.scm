@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/object.scm                   */
+;*    serrano/prgm/project/bigloo/bigloo/recette/object.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul 17 07:59:51 1996                          */
-;*    Last change :  Mon Dec  2 12:29:47 2013 (serrano)                */
+;*    Last change :  Sun Feb 11 18:38:13 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The object system tests                                          */
 ;*=====================================================================*/
@@ -72,7 +72,11 @@
 	   (wide-class def-gee::def-bar
 	      (z (default (cons 3 3)))))
    (static (class deftest (x (default (counter))))
-	   (counter)))
+	   (counter))
+   (export (generic dsssl-generic obj::object name::obj
+	      throw::bool %this::object
+	      cache::object
+	      #!optional (point -1) (cspecs 0))))
 
 ;*---------------------------------------------------------------------*/
 ;*    *counter* ...                                                    */
@@ -336,6 +340,27 @@
    (- (call-next-method) (+ x (if a a 0) (length rest))))
 
 ;*---------------------------------------------------------------------*/
+;*    dsssl-generic                                                    */
+;*---------------------------------------------------------------------*/
+(define-generic (dsssl-generic obj::object name::obj
+		   throw::bool %this::object
+		   cache::object
+		   #!optional (point -1) (cspecs 0))
+   (+ point cspecs))
+
+(define-method (dsssl-generic obj::titi name::obj
+		  throw::bool %this::object
+		  cache::object
+		  #!optional (point -1) (cspecs 0))
+   (+fx 10 (-fx (call-next-method) point)))
+
+(define-method (dsssl-generic obj::toto name::obj
+		  throw::bool %this::object
+		  cache::object
+		  #!optional (point -1) (cspecs 0))
+   (+fx 100 (-fx (call-next-method) cspecs)))
+
+;*---------------------------------------------------------------------*/
 ;*    test-object ...                                                  */
 ;*---------------------------------------------------------------------*/
 (define (test-object)
@@ -459,12 +484,27 @@
    (let ((o3 (instantiate::def-gee)))
       (with-access::def-gee o3 (x y z)
 	 (test "default field value.5" (+fx (car x) (car y)) (car z))))
-   (let ((ti (instantiate::titi))
+   (let ((ta (instantiate::def-gee))
+	 (ti (instantiate::titi))
 	 (to (instantiate::toto (y #\c) (yy #\a) (z 10) (t 10))))
       (test "dsssl generic.1" (dsssl-method ti :x 20) 20)
       (test "dsssl generic.2" (dsssl-method ti :x 20 :a -10) 10)
       (test "dsssl generic.3" (dsssl-method ti :x 20 :a -10 :z 4 5 6) 14)
       (test "dsssl generic.4" (dsssl-method to :x 20) 0)
       (test "dsssl generic.5" (dsssl-method to :x 20 :a -10) 00)
-      (test "dsssl generic.6" (dsssl-method to :x 20 :a -10 4 5 6) 0)))
+      (test "dsssl generic.6" (dsssl-method to :x 20 :a -10 4 5 6) 0)
+      (test "dsssl generic.10" (dsssl-generic ta "name" #f ta to -2 3) 1)
+      (test "dsssl generic.11" (dsssl-generic ta "name" #f ta to -2) -2)
+      (test "dsssl generic.12" (dsssl-generic ta "name" #f ta to) -1)
+      (test "dsssl generic.10" (dsssl-generic ti "name" #f to to -2 3) 13)
+      (test "dsssl generic.11" (dsssl-generic ti "name" #f to to -2) 10)
+      (test "dsssl generic.12" (dsssl-generic ti "name" #f to to) 10)
+      (test "dsssl generic.13" (dsssl-generic to "name" #f to to -2 3) 110)
+      (test "dsssl generic.14" (dsssl-generic to "name" #f to to -2) 110)
+      (test "dsssl generic.15" (dsssl-generic to "name" #f to to) 110)
+      (let ((g (car (list dsssl-generic))))
+	 (test "dsssl generic.16" (g to "name" #f to to -2 3) 110)
+	 (test "dsssl generic.17" (g to "name" #f to to -2) 110)
+	 (test "dsssl generic.18" (g to "name" #f to to) 110))))
+
       

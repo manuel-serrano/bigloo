@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/object.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/object.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Oct 27 04:26:34 2017 (serrano)                */
+;*    Last change :  Sun Feb 11 09:44:06 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -1133,8 +1133,9 @@
       ((not (class? class))
        (error name "Illegal class for method" class))
       ((and (not (=fx (procedure-arity generic) (procedure-arity method)))
-	    (not (and (<fx (procedure-arity generic) 0)
-		      (>fx (procedure-arity generic) (procedure-arity method)))))
+	    (>=fx (procedure-arity generic) 0))
+;* 	    (not (and (<fx (procedure-arity generic) 0)                */
+;* 		      (>fx (procedure-arity generic) (procedure-arity method))))) */
        (error name (format "method/generic arity mismatch, expecting ~a"
 		      (procedure-arity generic))
 	  (procedure-arity method)))

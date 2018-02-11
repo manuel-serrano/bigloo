@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Jan 24 08:41:54 2018 (serrano)                */
+;*    Last change :  Sun Feb 11 18:24:01 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -426,21 +426,7 @@
 ;*    make-sfun-opt-definition ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (make-sfun-opt-definition optionals id module args body src class loc)
-   (let* ((locals (append (map (lambda (a)
-				  (let* ((pid (check-id (parse-id a loc) src))
-					 (id (car pid))
-					 (type (cdr pid)))
-				     (if (user-symbol? id)
-					 (make-user-local-svar id type)
-					 (make-local-svar id type))))
-			       (dsssl-before-dsssl args))
-			  (map (lambda (o)
-				  (let* ((a (car o))
-					 (pid (check-id (parse-id a loc) src))
-					 (id (car pid))
-					 (type (cdr pid)))
-				     (make-user-local-svar id type)))
-			       optionals)))
+   (let* ((locals (parse-fun-opt-args args args loc))
 	  (glo (def-global-sfun! id args locals module class src 'now body))
 	  (clo (make-sfun-opt-closure glo optionals id module args body src class loc)))
       (list glo clo)))
@@ -449,7 +435,7 @@
 ;*    make-sfun-opt-closure ...                                        */
 ;*    -------------------------------------------------------------    */
 ;*    This function is actually the closure associated with the        */
-;*    global. Until the closure allocation it is handled as a          */
+;*    global. Until the closure allocation pass it is handled as a     */
 ;*    regular function. Then the closure allocation sets it            */
 ;*    as the closure of the global function.                           */
 ;*    -------------------------------------------------------------    */
@@ -475,16 +461,15 @@
 							 `(,v ($vector-ref-ur opt ,j)))
 						    (take (drop forms arity) i)
 						    (iota i arity))
-						 ,@(drop optionals i))
+						 ,@(if (<=fx i lopt)
+						       (drop optionals i)
+						       '()))
 					   (,glo
 					      ;; required unbound parameters
 					      ,@(take (sfun-args-name (global-value glo)) arity)
-;* 					      ,@(map (lambda (j)       */
-;* 							`($vector-ref-ur opt ,j)) */
-;* 						   (iota arity))       */
 					      ;; optional parameters
 					      ,@opts))))
-			       (iota (+ 1 lopt)))
+			       (iota (+fx lopt 1)))
 			    (else
 			     ,(if *unsafe-arity*
 				  #unspecified
@@ -655,6 +640,26 @@
 		   res)))))))
 
 ;*---------------------------------------------------------------------*/
+;*    parse-fun-opt-args ...                                           */
+;*---------------------------------------------------------------------*/
+(define (parse-fun-opt-args args src loc)
+   (append (map (lambda (a)
+		   (let* ((pid (check-id (parse-id a loc) src))
+			  (id (car pid))
+			  (type (cdr pid)))
+		      (if (user-symbol? id)
+			  (make-user-local-svar id type)
+			  (make-local-svar id type))))
+	      (dsssl-before-dsssl args))
+      (map (lambda (o)
+	      (let* ((a (car o))
+		     (pid (check-id (parse-id a loc) src))
+		     (id (car pid))
+		     (type (cdr pid)))
+		 (make-user-local-svar id type)))
+	 (dsssl-optionals args))))
+   
+;*---------------------------------------------------------------------*/
 ;*    make-sfun-noopt-definition ...                                   */
 ;*---------------------------------------------------------------------*/
 (define (make-sfun-noopt-definition id module args body src class loc)
@@ -724,7 +729,7 @@
 (define (make-generic-opt-definition optionals id module args body src)
    (let* ((loc (find-location src))
 	  (gen (make-generic-noopt-definition id module args body src))
-	  (glo (find-global id module))
+	  (glo (find-global (fast-id-of-id id #f) module))
 	  (clo (make-sfun-opt-closure glo optionals id module args body src 'sfun loc)))
       (cons clo gen)))
 
@@ -734,7 +739,7 @@
 (define (make-generic-key-definition keys id module args body src)
    (let* ((loc (find-location src))
 	  (gen (make-generic-noopt-definition id module args body src))
-	  (glo (find-global id module))
+	  (glo (find-global (fast-id-of-id id #f) module))
 	  (clo (make-sfun-key-closure glo keys id module args body src 'sfun loc)))
       (cons clo gen)))
 
@@ -770,13 +775,20 @@
 	     (find-location src))
 	  (list #unspecified))
        (let* ((loc (find-location src))
-	      (locals (parse-fun-args args src loc))
+	      (locals (if (and (dsssl-prototype? args)
+			       (pair? (dsssl-optionals args)))
+			  (parse-fun-opt-args args src loc)
+			  (parse-fun-args args src loc)))
 	      (pid (check-id (parse-id id loc) src))
 	      (name (gensym (car pid)))
 	      (type (cdr pid))
 	      (gbody   (make-generic-body id locals args src))
 	      (generic (def-global-sfun! id args locals module 'sgfun src 'now gbody))
-	      (def `(labels ((,name ,(typed-args args generic)
+	      ;;(def `(labels ((,name ,(typed-args args generic)
+	      (def `(labels ((,name ,(if (and (dsssl-prototype? args)
+					      (pair? (dsssl-optionals args)))
+					 (map local-id locals)
+					 (typed-args args generic))
 				;; use labels instead of a plain lambda expr
 				;; in order to give that default function
 				;; a pleasant debug identifier
@@ -820,11 +832,24 @@
 	      (locals (parse-fun-args args src loc)))
 	  (if (not (check-method-definition id args locals src))
 	      (list #unspecified)
-	      (let ((o-unit (get-method-unit))
-		    (sexp* (make-method-body id args locals body src)))
+	      (let* ((o-unit (get-method-unit))
+		     (sexp* (make-method-body id args locals body src loc)))
 		 (if (not (unit? o-unit))
 		     sexp*
 		     (begin
 			(unit-sexp*-add! o-unit sexp*)
 			(list #unspecified))))))))
 	     
+
+;*---------------------------------------------------------------------*/
+;*    make-method-body ...                                             */
+;*---------------------------------------------------------------------*/
+(define (make-method-body ident args locals body src loc)
+   (cond
+      ((not (dsssl-prototype? args))
+       (make-method-no-dsssl-body ident args locals body src))
+      ((dsssl-optional-only-prototype? args)
+       (let ((locals (parse-fun-opt-args args src loc)))
+	  (make-method-no-dsssl-body ident (map local-id locals) locals body src)))
+      (else
+       (make-method-dsssl-body ident args locals body src))))

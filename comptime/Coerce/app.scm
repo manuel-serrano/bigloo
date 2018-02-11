@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 19 11:51:05 1995                          */
-;*    Last change :  Sun Feb  4 18:20:22 2018 (serrano)                */
+;*    Last change :  Sun Feb 11 08:57:27 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    A little module which implement application arity checks.        */
@@ -136,9 +136,9 @@
       (let loop ((actuals (app-args node))
 		 (formals (sfun-args fun)))
 	 (unless (=fx (length actuals) (length formals))
-	    (tprint "PAS BON " (shape callee) " " (shape node)
-	       " len-actuals=" (length actuals) " len-form=" (length formals))
-	    (exit 0))
+	    (internal-error "app" "formals/actuals mismatch"
+	       (shape node))
+	    (exit -1))
 	 (assert (actuals formals sh) (=fx (length actuals) (length formals)))
 	 (if (null? actuals)
 	     (if (and (eq? caller callee) (not *unsafe-type*))
