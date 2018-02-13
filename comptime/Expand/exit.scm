@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/exit.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Expand/exit.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Wed Sep 28 10:33:04 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 13 15:52:38 2018 (serrano)                */
+;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
 ;*=====================================================================*/
@@ -70,6 +70,8 @@
 	 (else #f)))
 	  
    (match-case x
+      ((?- (?exit) (?exit ?expr))
+       (e expr e))
       ((?- (?exit) . ?body)
        (if (not (find-in-body exit body))
 	   (replace! x (e `(begin ,@body) e))
