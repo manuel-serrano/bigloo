@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/object5-sans.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/recette/object5_sans.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 24 13:29:40 2000                          */
-;*    Last change :  Sat Nov 19 07:18:02 2011 (serrano)                */
-;*    Copyright   :  2000-11 Manuel Serrano                            */
+;*    Last change :  Wed Feb 14 08:01:25 2018 (serrano)                */
+;*    Copyright   :  2000-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Testing with-access and instantiate.                             */
 ;*=====================================================================*/
@@ -21,15 +21,25 @@
 	      (y (default 1))
 	      (z (default '()))))
    (export (class object6-sans
-	      (rec (default (class-nil object6-sans)))))
+	      (rec (default (class-nil object6-sans))))
+	   (class object6b-sans::object6-sans))
    (export (class object7-sans (host (default #t)))
 	   (final-class object8-sans
 	      value::byte))
+   (export (generic show-sans ::object6-sans #!optional a b))
    (static (class recursive-dog-sans name next::recursive-dog-sans))
-   (eval (class object5-sans)
+   (eval (export show-sans)
+      (class object5-sans)
       (class object6-sans)
+      (class object6b-sans)
       (class object7-sans)
       (class object8-sans)))
+
+;*---------------------------------------------------------------------*/
+;*    show-sans ::object6-sans ...                                     */
+;*---------------------------------------------------------------------*/
+(define-generic (show-sans o::object6-sans #!optional a b)
+   (+fx a b))
 
 ;*---------------------------------------------------------------------*/
 ;*    test-object5-sans ...                                            */
@@ -185,5 +195,18 @@
 	 (eval '(apply show4 (list #f #f 5))) 5)
    (test "eval.generic-apply.7"
 	 (eval '(apply show4 (list (instantiate::object6-sans) 1 3))) 10)
-   (test "recursive class" (object? (class-nil recursive-dog-sans)) #t))
+   (test "recursive class" (object? (class-nil recursive-dog-sans)) #t)
+   (eval '(define-method (show-sans o::object6b-sans #!optional a b)
+	   (set! a 10)
+	   (set! b 1)
+	   (call-next-method)))
+   (eval '(define-generic (disp-sans o::object6-sans #!optional a b)
+	   (+fx a b)))
+   (eval '(define-method (disp-sans o::object6b-sans #!optional a b)
+	   (set! a 10)
+	   (set! b 1)
+	   (call-next-method)))
+   (test "eval.method.1" (eval '(disp-sans (instantiate::object6b-sans))) 11)
+   (test "eval.method.2" (eval '(show-sans (instantiate::object6b-sans))) 11))
+      
 

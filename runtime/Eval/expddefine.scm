@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expddefine.scm          */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expddefine.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Fri Jun 20 08:30:16 2014 (serrano)                */
-;*    Copyright   :  2001-14 Manuel Serrano                            */
+;*    Last change :  Wed Feb 14 08:05:56 2018 (serrano)                */
+;*    Copyright   :  2001-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/
@@ -259,13 +259,7 @@
 	      (va (and (not (null? formals))
 		       (or (not (pair? formals))
 			   (not (null? (cdr (last-pair formals)))))))
-	      (met (if (any (lambda (a)
-			       (if (pair? a)
-				   (eq? (car a) id)
-				   (eq? a id)))
-			     pa)
-		       (gensym id)
-		       id))
+	      (met (gensym id))  
 	      (met-body `(,met ,@(map+ (lambda (a)
 					 (if (pair? a) (car a) a))
 				      epa)))
@@ -285,16 +279,35 @@
 				    (if (procedure? ,met)
 					,(if va (cons 'apply met-body) met-body)
 					(,def)))))))
+		      ((and (list? formals) (memq #!optional formals))
+		       (if (pair? (cdr (filter dsssl-named-constant? formals)))
+			   (expand-error fun
+			      "generics can only use one DSSSL keyword"
+			      x)
+			   (let* ((loc (get-source-location x))
+				  (args (gensym 'args))
+				  (names (dsssl-formals->names formals))
+				  (unames (map (lambda (f) (car (parse-formal-ident f loc))) names)))
+			      `(lambda (,f0 ,@formals)
+				  (let ((,met (and (object? ,(caar pa))
+						   (find-method ,(caar pa) ,id))))
+				     (if (procedure? ,met)
+					 (,met ,(caar pa) ,@unames)
+					 ((generic-default ,id) ,(caar pa) ,@unames)))))))
 		      ((and (list? formals) (any dsssl-named-constant? formals))
-		       (let ((args (gensym 'args)))
-			  `(lambda (,f0 . ,args)
-			      (let ((,def (lambda ()
-					     (apply (generic-default ,id) ,(caar pa) ,args))))
-				 (let ((,met (and (object? ,(caar pa))
-						  (find-method ,(caar pa) ,id))))
-				    (if (procedure? ,met)
-					(apply ,met ,(caar pa) ,args)
-					(,def)))))))
+		       (if (pair? (cdr (filter dsssl-named-constant? formals)))
+			   (expand-error fun
+			      "generics can only use one DSSSL keyword"
+			      x)
+			   (let ((args (gensym 'args)))
+			      `(lambda (,f0 . ,args)
+				  (let ((,def (lambda ()
+						 (apply (generic-default ,id) ,(caar pa) ,args))))
+				     (let ((,met (and (object? ,(caar pa))
+						      (find-method ,(caar pa) ,id))))
+					(if (procedure? ,met)
+					    (apply ,met ,(caar pa) ,args)
+					    (,def))))))))
 		      (else
 		       (expand-error fun
 			  "Illegal formal arguments for generic function"
@@ -302,7 +315,10 @@
 	  (e `(begin
 		 (define ,fun (procedure->generic ,proc))
 		 (register-generic! ,id
-		    (lambda ,(cons f0 formals)
+		    (lambda ,(cons f0
+				(if (memq #!optional formals)
+				    (dsssl-formals->names formals)
+				    formals))
 		       ,(if (pair? body)
 			    `(begin ,@body)
 			    `(error ,(symbol->string (car pf))
@@ -324,14 +340,14 @@
 	 (if (pair? r)
 	     (car r)
 	     r)))
-
+   
    (define (get-args args loc)
       (cond
 	 ((null? args)
 	  '())
 	 ((pair? args)
 	  (cons (get-arg (car args) (or (get-source-location args) loc))
-		(get-args (cdr args) loc)))
+	     (get-args (cdr args) loc)))
 	 (else
 	  (list (get-arg args loc)))))
    
@@ -340,7 +356,7 @@
 	 ((pair? p) (cons (car p) (pair->list (cdr p))))
 	 ((null? p) '())
 	 (else (list p))))
-	  
+   
    (match-case x
       ((?- (?fun ?f0 . ?formals) . (and ?body (not ())))
        (let* ((loc (get-source-location x))
@@ -351,28 +367,8 @@
 		       (or (not (pair? formals))
 			   (not (null? (cdr (last-pair formals))))))))
 	  (if (and (pair? p0) (symbol? (cdr p0)))
-	      (if (and (list? formals) (any dsssl-named-constant? formals))
-		  ;;; dsssl method
-		  (let* ((tformals (dsssl-formals->scheme-typed-formals formals error #t))
-			 (uformals (dsssl-formals->scheme-typed-formals formals error #f))
-			 (res `(generic-add-eval-method!
-				  ,(car pf)
-				  ,(cdr p0)
-				  ,(e `(lambda ,(expand-args (cons f0 tformals) e)
-					  (define (call-next-method)
-					     (let ((next (find-super-class-method ,(car p0)
-							    ,fun
-							    ,(cdr p0))))
-						(if (procedure? next)
-						    (apply next ,(car p0)
-							,@(pair->list uformals))
-						    (apply ,fun ,(car p0)
-						       ,@(pair->list uformals)))))
-					  ,(make-dsssl-function-prelude fun formals
-					      `(begin ,@body) error))
-				      e)
-				  ',f0)))
-		     (evepairify res x))
+	      (cond
+		 ((or (not (list? formals)) (not (any dsssl-named-constant? formals)))
 		  (let* ((res `(generic-add-eval-method!
 				  ,(car pf)
 				  ,(cdr p0)
@@ -392,6 +388,60 @@
 					  ,@body) e)
 				  ',f0)))
 		     (evepairify res x)))
+		 ((memq #!optional formals)
+		  (let* ((tformals (dsssl-formals->scheme-typed-formals formals error #t))
+			 (uformals (dsssl-formals->scheme-typed-formals formals error #f))
+			 (names (dsssl-formals->names formals))
+			 (res `(generic-add-eval-method!
+				  ,(car pf)
+				  ,(cdr p0)
+				  ,(e `(lambda ,(expand-args (cons f0 names) e)
+					  (define (call-next-method)
+					     (let ((next (find-super-class-method ,(car p0)
+							    ,fun
+							    ,(cdr p0))))
+						(if (procedure? next)
+						    (next ,(car p0) ,@names)
+						    (apply ,fun ,(car p0) ,@names))))
+					  ,@body)
+				      e)
+				  ',f0)))
+		     (evepairify res x)))
+		 (else
+		  ;;; plain dsssl method
+		  (let* ((tformals (dsssl-formals->scheme-typed-formals formals error #t))
+			 (uformals (dsssl-formals->scheme-typed-formals formals error #f))
+			 (res `(generic-add-eval-method!
+				  ,(car pf)
+				  ,(cdr p0)
+				  ,(e `(lambda ,(expand-args (cons f0 tformals) e)
+					  (define (call-next-method)
+					     (let ((next (find-super-class-method ,(car p0)
+							    ,fun
+							    ,(cdr p0))))
+						(if (procedure? next)
+						    (apply next ,(car p0)
+						       ,@(pair->list uformals))
+						    (apply ,fun ,(car p0)
+						       ,@(pair->list uformals)))))
+					  ,(make-dsssl-function-prelude fun formals
+					      `(begin ,@body) error))
+				      e)
+				  ',f0)))
+		     (evepairify res x))))
 	      (expand-error "define-method" "Illegal form" x))))
       (else
        (expand-error "define-method" "Illegal form" x))))
+
+;*---------------------------------------------------------------------*/
+;*    dsssl-formals->names ...                                         */
+;*    -------------------------------------------------------------    */
+;*    Returns the parameters names. Assumes a well formed prototype.   */
+;*---------------------------------------------------------------------*/
+(define (dsssl-formals->names formals)
+   (filter-map (lambda (p)
+		  (cond
+		     ((symbol? p) p)
+		     ((pair? p) (car p))
+		     (else #f)))
+      formals))
