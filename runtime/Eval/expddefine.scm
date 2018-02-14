@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Wed Feb 14 08:05:56 2018 (serrano)                */
+;*    Last change :  Wed Feb 14 14:23:20 2018 (serrano)                */
 ;*    Copyright   :  2001-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -295,19 +295,15 @@
 					 (,met ,(caar pa) ,@unames)
 					 ((generic-default ,id) ,(caar pa) ,@unames)))))))
 		      ((and (list? formals) (any dsssl-named-constant? formals))
-		       (if (pair? (cdr (filter dsssl-named-constant? formals)))
-			   (expand-error fun
-			      "generics can only use one DSSSL keyword"
-			      x)
-			   (let ((args (gensym 'args)))
-			      `(lambda (,f0 . ,args)
-				  (let ((,def (lambda ()
-						 (apply (generic-default ,id) ,(caar pa) ,args))))
-				     (let ((,met (and (object? ,(caar pa))
-						      (find-method ,(caar pa) ,id))))
-					(if (procedure? ,met)
-					    (apply ,met ,(caar pa) ,args)
-					    (,def))))))))
+		       (let ((args (gensym 'args)))
+			  `(lambda (,f0 . ,args)
+			      (let ((,def (lambda ()
+					     (apply (generic-default ,id) ,(caar pa) ,args))))
+				 (let ((,met (and (object? ,(caar pa))
+						  (find-method ,(caar pa) ,id))))
+				    (if (procedure? ,met)
+					(apply ,met ,(caar pa) ,args)
+					(,def)))))))
 		      (else
 		       (expand-error fun
 			  "Illegal formal arguments for generic function"

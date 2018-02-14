@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Feb 14 08:07:57 2018 (serrano)                */
+;*    Last change :  Wed Feb 14 14:23:03 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -722,10 +722,7 @@
 		 (find-location src))
 	      (make-generic-opt-definition opts id module args body src)))
 	 ((pair? keys)
-	  (if (pair? (cdr (filter dsssl-named-constant? args)))
-	      (error-sexp->node "generics can only use on DSSSL keyword" src
-		 (find-location src))
-	      (make-generic-key-definition keys id module args body src)))
+	  (make-generic-key-definition keys id module args body src))
 	 (else
 	  (make-generic-noopt-definition id module args body src)))))
 

@@ -57,7 +57,7 @@ The installation process for stable versions is described in the
   5. compile all the libraries and complete the bootstrap:
  `make fullboostrap-sans-log`
   6. install everything:
- `make install`
+ `make install-sans-doc`
  
 See the `doc` directory for extra hints and information about the Bigloo
 installation process.
