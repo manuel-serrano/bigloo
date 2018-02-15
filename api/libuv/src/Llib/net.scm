@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/net.scm           */
+;*    .../prgm/project/bigloo/bigloo/api/libuv/src/Llib/net.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 25 07:38:37 2014                          */
-;*    Last change :  Wed Mar  1 12:08:32 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Thu Feb 15 05:23:06 2018 (serrano)                */
+;*    Copyright   :  2014-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV net                                                        */
 ;*=====================================================================*/
@@ -107,7 +107,7 @@
 	     (lambda ()
 		(with-access::UvStream o (loop)
 		   (uv-pop-gcmark! loop o))
-		cb)))
+		(cb))))
        (with-access::UvStream o (loop)
 	  (uv-pop-gcmark! loop o)))
    (call-next-method))
@@ -369,14 +369,16 @@
 (define (uv-udp-recv-start o::UvUdp #!key onalloc callback (loop (uv-default-loop)))
    (with-access::UvUdp o (%procm)
       (set! %procm (cons callback %procm))
+      (uv-push-gcmark! loop o)
       ($uv-udp-recv-start o onalloc callback loop)))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-udp-recv-stop ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (uv-udp-recv-stop handle)
-   (with-access::UvUdp handle ($builtin %procm)
+   (with-access::UvUdp handle ($builtin %procm loop)
       (set! %procm '())
+      (uv-pop-gcmark! loop handle)
       ($uv-udp-recv-stop ($uv-udp-t $builtin))))
 
 ;*---------------------------------------------------------------------*/

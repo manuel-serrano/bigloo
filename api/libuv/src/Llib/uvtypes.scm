@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/uvtypes.scm       */
+;*    .../project/bigloo/bigloo/api/libuv/src/Llib/uvtypes.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Wed Mar  1 11:35:52 2017 (serrano)                */
-;*    Copyright   :  2014-17 Manuel Serrano                            */
+;*    Last change :  Thu Feb 15 05:24:50 2018 (serrano)                */
+;*    Copyright   :  2014-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
 ;*=====================================================================*/
@@ -293,14 +293,13 @@
 		 (set! %gcmarkshead (cdr %gcmarkshead)))
 	     (let loop ((p %gcmarkshead))
 		(let ((n (cdr p)))
-		   (if (pair? n)
-		       (if (eq? (car n) val)
-			   (begin
-			      (when (eq? n %gcmarkstail)
-				 (set! %gcmarkstail p))
-			      (set-cdr! p (cdr n)))
-			   (loop n))
-		       (error "uv-pop-gcmark!" "Cannot find object" val))))))))
+		   (when (pair? n)
+		      (if (eq? (car n) val)
+			  (begin
+			     (when (eq? n %gcmarkstail)
+				(set! %gcmarkstail p))
+			     (set-cdr! p (cdr n)))
+			  (loop n)))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-gcmarks-empty? ...                                            */
