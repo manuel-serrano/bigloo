@@ -91,6 +91,7 @@
 	    (open-mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (string->mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (inline mmap->string::string ::mmap)
+            (inline mmap->bstring::bstring ::mmap)
 	    (inline close-mmap ::mmap)
 	    (inline mmap-length::elong ::mmap)
 	    (inline mmap-read-position::elong ::mmap)
@@ -131,6 +132,13 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap->string::string mmap::mmap)
    ($mmap->string mmap))
+
+;*---------------------------------------------------------------------*/
+;*    mmap->bstring ...                                                 */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap->bstring::bstring mmap::mmap)
+   (let ((len::int  (elong->fixnum ($mmap-length mmap))))
+      ($string->bstring-len ($mmap->string mmap) len)))
 
 ;*---------------------------------------------------------------------*/
 ;*    close-mmap ...                                                   */

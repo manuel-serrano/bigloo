@@ -64,5 +64,8 @@
       (test "mmap-put-string!.1" (mmap-get-string mm 9) s)
       (test "mmap-read-position.5" (mmap-read-position mm) #e29)
       (test "mmap-write-position.5" (mmap-write-position mm) #e29)
-      (test "close-mmap" (close-mmap mm) #t)))
+      (test "close-mmap" (close-mmap mm) #t)
+       (let ((test-str (make-string 16 #a000))) (test "mmap->bstring"
+                     (mmap->bstring (string->mmap test-str))
+                     test-str))))
       

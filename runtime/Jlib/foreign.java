@@ -2547,6 +2547,11 @@ public final class foreign
 	 return o;
       }
 
+    public static byte[] string_to_bstring_len(byte[] o, int len)
+      {
+         return o;
+      }
+
    public static byte[] BSTRING_TO_STRING(byte[]o)
       {
 	 return o;
