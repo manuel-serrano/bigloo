@@ -7511,7 +7511,11 @@ public final class foreign
    }
 
    public static byte[] bgl_mmap_to_string( mmap m ) {
-      return m.map.array();
+      if (m instanceof mmaps) {
+         return m.name;
+      } else {
+         return m.map.array();
+      }
    }
 
    public static Object bgl_close_mmap( mmap o ) {
