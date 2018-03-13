@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/mmap.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/mmap.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Mon Jan 23 08:13:57 2012 (serrano)                */
-;*    Copyright   :  2005-12 Manuel Serrano                            */
+;*    Last change :  Mon Mar 12 08:01:39 2018 (serrano)                */
+;*    Copyright   :  2005-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
 ;*    -------------------------------------------------------------    */
@@ -90,6 +90,7 @@
    (export  (inline mmap?::bool ::obj)
 	    (open-mmap::mmap ::bstring #!key (read #t) (write #t))
 	    (string->mmap::mmap ::bstring #!key (read #t) (write #t))
+	    (inline mmap-name::bstring ::mmap)
 	    (inline mmap->string::string ::mmap)
 	    (inline close-mmap ::mmap)
 	    (inline mmap-length::elong ::mmap)
@@ -125,6 +126,12 @@
 ;*---------------------------------------------------------------------*/
 (define (string->mmap s::bstring #!key (read #t) (write #t))
    ($string->mmap s read write))
+
+;*---------------------------------------------------------------------*/
+;*    mmap-name ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-inline (mmap-name mmap::mmap)
+   ($mmap-name mmap))
 
 ;*---------------------------------------------------------------------*/
 ;*    mmap->string ...                                                 */
