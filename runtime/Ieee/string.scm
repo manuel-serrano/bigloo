@@ -39,7 +39,7 @@
    (extern  (macro $string?::bool (::obj) "STRINGP")
 	    ($make-string::bstring (::long ::uchar) "make_string")
 	    ($make-string/wo-fill::bstring (::long) "make_string_sans_fill")
-	    
+	    ($string->bstring-len::bstring (str::string len::int) "string_to_bstring_len")
 	    (macro $string-length::long (::bstring) "STRING_LENGTH")
 	    (macro $string-ref::uchar (::bstring ::long) "STRING_REF")
 	    (macro $string-set!::obj (::bstring ::long ::uchar) "STRING_SET")
@@ -88,8 +88,11 @@
 	       (method static $string?::bool (::obj)
 		       "STRINGP")
 	       (method static $make-string::bstring (::long ::uchar)
-		       "make_string")
-	       
+                  "make_string")
+
+               (method static $string->bstring-len::bstring (::string ::long)
+                  "string_to_bstring_len")
+	   
 	       (method static $string-length::long (::bstring)
 		       "STRING_LENGTH")
 	       
