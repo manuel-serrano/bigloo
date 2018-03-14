@@ -1021,6 +1021,9 @@ how the file is open. The argument can be:
 Wrap a Bigloo string into a mmap object.
 @end deffn
 
+@deffn {bigloo procedure} mmap-name mm
+Returns the file name of the memory map @var{mm}.
+@end deffn
 
 @deffn {bigloo procedure} close-mmap mm
 Closes the memory mapped. Returns @code{#t} on success, @code{#f} otherwise.

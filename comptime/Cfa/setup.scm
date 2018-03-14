@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cfa/setup.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cfa/setup.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun 25 14:08:53 1996                          */
-;*    Last change :  Wed Jun  7 15:37:46 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 14 19:22:42 2018 (serrano)                */
+;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    We setup the ast for the Cfa.                                    */
 ;*=====================================================================*/
@@ -242,7 +242,7 @@
        (widen!::reshaped-global var))
    (if (and (global? var) (eq? (global-import var) 'import))
        (let ((approx (make-type-approx (global-type var))))
-	  (if (sfun-top? fun) (approx-set-top! approx))
+	  (if (or #t (sfun-top? fun)) (approx-set-top! approx))
 	  (widen!::extern-sfun/Cinfo fun
 	     (approx approx)))
        (let ((approx (make-type-approx (variable-type var))))
@@ -258,7 +258,7 @@
    (if (not (reshaped-global? var))
        (widen!::reshaped-global var))
    (let ((approx (make-type-approx (global-type var))))
-      (if (cfun-top? fun) (approx-set-top! approx))
+      (if (or #t (cfun-top? fun)) (approx-set-top! approx))
       (widen!::cfun/Cinfo fun
 	 (approx approx))))
  
