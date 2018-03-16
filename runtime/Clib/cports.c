@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Tue Jan 30 13:53:48 2018 (serrano)                */
+/*    Last change :  Fri Mar 16 10:12:23 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -1707,12 +1707,12 @@ bgl_reopen_input_c_string( obj_t port, char *c_string ) {
       CREF(port)->input_port_t.buf = make_string_sans_fill( bufsiz + 1 );
    }
 
-   CREF(port)->input_port_t.bufpos = bufsiz;
-   CREF(port)->input_port_t.matchstart = 0;
-   CREF(port)->input_port_t.matchstop = 0;
-   CREF(port)->input_port_t.forward = 0;
-   CREF(port)->input_port_t.lastchar = '\n';
-   CREF(port)->port_t.kindof = KINDOF_STRING;
+   CREF( port )->input_port_t.bufpos = bufsiz;
+   CREF( port )->input_port_t.matchstart = 0;
+   CREF( port )->input_port_t.matchstop = 0;
+   CREF( port )->input_port_t.forward = 0;
+   CREF( port )->input_port_t.lastchar = '\n';
+   CREF( port )->port_t.kindof = KINDOF_STRING;
 
    strcpy( (char *)&RGC_BUFFER_REF( port, 0 ), c_string );
 

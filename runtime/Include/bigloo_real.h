@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_real.h        */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_real.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Oct 27 17:24:54 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 13:03:21 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
 /*=====================================================================*/
@@ -59,7 +59,7 @@ struct bgl_real {
 #   define REALP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
 #else
 #   define BREAL( p ) BREF( p )
-#   define CREAL( p ) CREF( p )
+#   define CREAL( p ) CREFFAST( p )
 #   define DEFINE_REAL( name, aux, flonum ) \
       static struct { __CNST_ALIGN header_t header; \
 		      double real; } \

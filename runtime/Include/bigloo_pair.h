@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_pair.h        */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_pair.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Oct 26 18:52:23 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 10:27:59 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
 /*=====================================================================*/
@@ -86,7 +86,7 @@ struct bgl_epair {
 #   endif
 #else
 #   define BPAIR( p ) BREF( p )
-#   define CPAIR( p ) CREF( p )
+#   define CPAIR( p ) CREFFAST( p )
 #   define PAIRP( c ) (POINTERP( c ) && (TYPE( c ) == PAIR_TYPE))
 #endif
 
@@ -97,7 +97,7 @@ struct bgl_epair {
        (EPAIR( c ).eheader == BINT( EPAIR_TYPE )))
 #else
 #   define EPAIRP( c ) \
-       (PAIRP( c ) && (HEADER_SIZE( CREF( c  )->header) == EPAIR_SIZE))
+       (PAIRP( c ) && (HEADER_SIZE( CREFFAST( c  )->header) == EPAIR_SIZE))
 #endif
 
 /*---------------------------------------------------------------------*/

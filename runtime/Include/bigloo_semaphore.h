@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/runtime/Include/bigloo_semaphore.h       */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_semaphore.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Apr 20 11:17:03 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 13:05:12 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SEMAPHOREs                                                */
 /*=====================================================================*/
@@ -43,7 +43,7 @@ struct bgl_semaphore {
 /*---------------------------------------------------------------------*/
 #define BGL_SEMAPHORE_SIZE (sizeof( struct bgl_semaphore ))
 
-#define BGL_SEMAPHORE( o ) CREF( o )->semaphore_t
+#define BGL_SEMAPHORE( o ) CREFFAST( o )->semaphore_t
 
 #define BGL_SEMAPHOREP( o ) (POINTERP( o ) && (TYPE( o ) == SEMAPHORE_TYPE))
 

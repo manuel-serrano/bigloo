@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_int.h         */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_int.h      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sat Aug 19 10:30:16 2017 (serrano)                */
-/*    Copyright   :  2017 Manuel Serrano                               */
+/*    Last change :  Fri Mar 16 10:15:59 2018 (serrano)                */
+/*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
 /*=====================================================================*/
@@ -54,7 +54,7 @@ extern "C" {
 
 #define LLONGP( o ) (POINTERP( o ) && (TYPE( o ) == LLONG_TYPE))
 
-#define LLONG( o ) CREF( o )->llong_t
+#define LLONG( o ) CREFFAST( o )->llong_t
    
 #define LONG_TO_LLONG( l ) ((BGL_LONGLONG_T)l)   
 #define LLONG_TO_LONG( o ) ((long) o)
@@ -77,7 +77,7 @@ extern "C" {
 
 #define ELONGP( o ) (POINTERP( o ) && (TYPE( o ) == ELONG_TYPE))
 
-#define ELONG( o ) CREF( o )->elong_t
+#define ELONG( o ) CREFFAST( o )->elong_t
 
 #define ELONG_TO_BELONG( _1 ) make_belong( _1 )
 #define BELONG_TO_LONG( l ) (ELONG( l ).elong)
@@ -155,8 +155,8 @@ extern "C" {
 		 
 #  define BGL_INT32_SIZE (sizeof( struct bgl_sint32 ))
 #  define BGL_UINT32_SIZE (sizeof( struct bgl_uint32 ))
-#  define BGL_INT32( o ) CREF( o )->sint32_t
-#  define BGL_UINT32( o ) CREF( o )->uint32_t
+#  define BGL_INT32( o ) CREFFAST( o )->sint32_t
+#  define BGL_UINT32( o ) CREFFAST( o )->uint32_t
 #  define BGL_INT32_TO_BINT32( _1 ) bgl_make_bint32( _1 )
 #  define BGL_UINT32_TO_BUINT32( _1 ) bgl_make_buint32( _1 )
 #  define BGL_BINT32_TO_INT32( o ) BGL_INT32( o ).val
@@ -175,8 +175,8 @@ extern "C" {
 		 
 #define BGL_INT64_SIZE (sizeof( struct bgl_sint64 ))
 #define BGL_UINT64_SIZE (sizeof( struct bgl_uint64 ))
-#define BGL_INT64( o ) CREF( o )->sint64_t
-#define BGL_UINT64( o ) CREF( o )->uint64_t
+#define BGL_INT64( o ) CREFFAST( o )->sint64_t
+#define BGL_UINT64( o ) CREFFAST( o )->uint64_t
 #define BGL_INT64_TO_BINT64( _1 ) bgl_make_bint64( _1 )
 #define BGL_UINT64_TO_BUINT64( _1 ) bgl_make_buint64( _1 )
 #define BGL_BINT64_TO_INT64( o ) BGL_INT64( o ).val

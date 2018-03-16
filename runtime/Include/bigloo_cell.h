@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_cell.h        */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_cell.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Oct 26 18:31:27 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 13:39:53 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
 /*=====================================================================*/
@@ -55,7 +55,7 @@ struct bgl_cell {
 #   define CELLP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_CELL)))
 #else
 #   define BCELL( p ) BREF( p )
-#   define CCELL( p ) CREF( p )
+#   define CCELL( p ) CREFFAST( p )
 #   define CELLP( c ) (POINTERP( c ) && (TYPE( c ) == CELL_TYPE))
 #endif
 

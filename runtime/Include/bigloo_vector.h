@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_vector.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_vector.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Jul 27 08:43:03 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 10:25:22 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -56,8 +56,8 @@ struct bgl_hvector {
 };
 
 #define VECTOR( o ) CVECTOR( o )->vector_t
-#define TVECTOR( tv ) CREF( tv )->tvector_t
-#define HVECTOR( o ) CREF( o )->hvector_t
+#define TVECTOR( tv ) CREFFAST( tv )->tvector_t
+#define HVECTOR( o ) CREFFAST( o )->hvector_t
 
 #define VECTOR_SIZE (sizeof( struct bgl_vector ))
 #define TVECTOR_SIZE (sizeof( struct bgl_tvector ))
@@ -183,7 +183,7 @@ struct bgl_hvector {
 
 #define TVECTOR_REF( it, tv, o ) \
       (&(((struct bgl_tvector_of_##it *) \
-       CREF( tv ))->el0))[ o ]
+       CREFFAST( tv ))->el0))[ o ]
    
 #define TVECTOR_SET( it, tv, o, v ) \
      (TVECTOR_REF( it, tv, o ) = (v), BUNSPEC)
@@ -193,7 +193,7 @@ struct bgl_hvector {
 /*---------------------------------------------------------------------*/
    
 #define STVECTOR( o, type ) \
-   ((struct { header_t header; unsigned long length; type obj0; } *)(CREF( o )))
+   ((struct { header_t header; unsigned long length; type obj0; } *)(CREFFAST( o )))
    
 #define BGL_HVECTOR_LENGTH( v ) (HVECTOR( v ).length)
 

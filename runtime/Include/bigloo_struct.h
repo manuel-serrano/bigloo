@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_struct.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_struct.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Mar 15 21:56:52 2016 (serrano)                */
-/*    Copyright   :  2016 Manuel Serrano                               */
+/*    Last change :  Fri Mar 16 10:30:55 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRUCTs                                                   */
 /*=====================================================================*/
@@ -54,7 +54,7 @@ struct bgl_struct {
 #   define STRUCTP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_STRUCTURE)))
 #else
 #   define BSTRUCTURE( p ) BREF( p )
-#   define CSTRUCTURE( p ) CREF( p )
+#   define CSTRUCTURE( p ) CREFFAST( p )
 #   define STRUCTP( c ) (POINTERP( c ) && (TYPE( c ) == STRUCT_TYPE))
 #endif
 

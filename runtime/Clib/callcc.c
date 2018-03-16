@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/callcc.c                */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/callcc.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Mon Mar  3 08:49:46 2014 (serrano)                */
+/*    Last change :  Fri Mar 16 17:30:50 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -99,7 +99,7 @@ apply_continuation( obj_t kont, obj_t value ) {
 		   c_constant_string_to_string( "continuation" ),
 		   kont );
    
-   stack = CREF( PROCEDURE_REF( kont, 0 ) );
+   stack = PROCEDURE_REF( kont, 0 );
    etop = STACK( stack ).exitd_top;
    estamp = STACK( stack ).stamp;
    

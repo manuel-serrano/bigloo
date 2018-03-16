@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_string.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_string.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun May  7 07:54:44 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 13:05:21 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
 /*=====================================================================*/
@@ -88,7 +88,7 @@ struct bgl_ucs2_string {
 #endif
 
 #define BUCS2STRING( p ) BREF( p )
-#define CUCS2STRING( p ) CREF( p )
+#define CUCS2STRING( p ) CREFFAST( p )
 
 #define UCS2_STRINGP( c ) (POINTERP( c ) && (TYPE( c ) == UCS2_STRING_TYPE))
 

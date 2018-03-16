@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cweakptr.c              */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cweakptr.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Thu Jul 27 12:48:16 2017 (serrano)                */
+/*    Last change :  Fri Mar 16 18:06:08 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C weak pointer management                                        */
 /*=====================================================================*/

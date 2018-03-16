@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_bignum.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_bignum.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jul 26 08:58:25 2017                          */
-/*    Last change :  Thu Jul 27 12:54:45 2017 (serrano)                */
-/*    Copyright   :  2017 Manuel Serrano                               */
+/*    Last change :  Fri Mar 16 13:05:02 2018 (serrano)                */
+/*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo BIGNUMs                                                   */
 /*=====================================================================*/
@@ -39,7 +39,7 @@ struct bgl_bignum {
 #endif
 };
 
-#define BIGNUM( o ) (CREF( o )->bignum_t)
+#define BIGNUM( o ) (CREFFAST( o )->bignum_t)
 
 #define BIGNUM_SIZE (sizeof( struct bgl_bignum ))
 

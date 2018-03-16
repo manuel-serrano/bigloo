@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Include/bigloo_object.h      */
+/*    .../project/bigloo/bigloo/runtime/Include/bigloo_object.h        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Oct 27 05:06:19 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Fri Mar 16 10:13:25 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
 /*=====================================================================*/
@@ -66,7 +66,7 @@ typedef struct BgL_objectz00_bgl {
 #  define BGL_OBJECTP( o ) \
     ((POINTERP( o ) && (TYPE( o ) >= OBJECT_TYPE)))
 #  define BOBJECT( o ) BREF( o )
-#  define COBJECT( o ) CREF( o )
+#  define COBJECT( o ) CREFFAST( o )
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ typedef struct BgL_objectz00_bgl {
 #define BGL_CLASSP( o ) (POINTERP( o ) && (TYPE( o ) == CLASS_TYPE))
 
 #define BGL_CLASS_SIZE (sizeof( struct bgl_class ) )
-#define BGL_CLASS( f ) (CREF( f )->class_t)
+#define BGL_CLASS( f ) (CREFFAST( f )->class_t)
    
 #define BGL_CLASS_NAME( f ) (BGL_CLASS( f ).name)
    
