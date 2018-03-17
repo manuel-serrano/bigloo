@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/ctrace.c                */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/ctrace.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 31 18:06:36 1995                          */
-/*    Last change :  Wed Nov 19 13:02:23 2014 (serrano)                */
+/*    Last change :  Sat Mar 17 06:53:22 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    We dump a execution trace                                        */
 /*=====================================================================*/
@@ -55,7 +55,7 @@ get_trace_stack( int depth ) {
 /*---------------------------------------------------------------------*/
 obj_t
 cref( obj_t obj ) {
-   return CREF( obj );
+   return CREFFAST( obj );
 }
 
 /*---------------------------------------------------------------------*/

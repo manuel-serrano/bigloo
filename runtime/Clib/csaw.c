@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/csaw.c                  */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csaw.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Mon Jul 17 10:31:03 2017 (serrano)                */
-/*    Copyright   :  2016-17 Manuel Serrano                            */
+/*    Last change :  Sat Mar 17 06:52:39 2018 (serrano)                */
+/*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
 /*=====================================================================*/
@@ -103,7 +103,7 @@ typedef struct real_frame_struct {
 obj_t trace_obj(obj_t o) {
   //fprintf(stderr, "trace obj %p\n", o);
   if(BYOUNGP(o)) {
-    obj_t oo = CREF(o);
+    obj_t oo = CREFFAST(o);
     if(!((oo >= (obj_t) bgl_saw_nursery.heap) &&
 	 (oo <= (obj_t) bgl_saw_nursery.backpool))) {
       fprintf(stderr, "YOUNG not in heap %p\n", o);
@@ -127,7 +127,7 @@ void trace(obj_t *p) {
   obj_t o = *p;
   //fprintf(stderr, "trace obj %p\n", o);
   if(BYOUNGP(o)) {
-    obj_t oo = CREF(o);
+    obj_t oo = CREFFAST(o);
     if(!((oo >= (obj_t) bgl_saw_nursery.heap) &&
 	 (oo <= (obj_t) bgl_saw_nursery.backpool))) {
       fprintf(stderr, "YOUNG not in heap %p\n", o);

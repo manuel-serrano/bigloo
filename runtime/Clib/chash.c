@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/chash.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/chash.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Nov 26 15:23:07 1993                          */
-/*    Last change :  Wed Feb  1 17:22:27 2017 (serrano)                */
+/*    Last change :  Sat Mar 17 06:52:21 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Le hashage                                                       */
 /*=====================================================================*/
@@ -230,7 +230,7 @@ bgl_keyword_hash_number( obj_t s ) {
 /*---------------------------------------------------------------------*/
 long
 bgl_obj_hash_number( obj_t obj ) {
-   return ((long)((long)(CREF( obj )) >> TAG_SHIFT));
+   return ((long)((long)(CREFFAST( obj )) >> TAG_SHIFT));
 }
 
 /*---------------------------------------------------------------------*/

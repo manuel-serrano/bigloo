@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Sep 14 09:03:27 1992                          */
-/*    Last change :  Fri Mar 16 17:30:50 2018 (serrano)                */
+/*    Last change :  Sat Mar 17 06:54:00 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Implementing call/cc                                             */
 /*=====================================================================*/
@@ -170,7 +170,7 @@ callcc_install_stack( obj_t kont, obj_t value ) {
    memorycpy  = (void (*)( void*, void*, size_t ))PROCEDURE_REF( kont, 1 );
 
    /* Check the stack before restore */
-   if( (!STACKP( stack )) || (CREF( stack ) != STACK( stack ).self) )
+   if( (!STACKP( stack )) || (CREFFAST( stack ) != STACK( stack ).self) )
       C_FAILURE( "apply_continuation",
 		 "not a C stack",
 		 stack );
@@ -278,7 +278,7 @@ call_cc( obj_t proc ) {
       stack = MAKE_STACK( stack_size + sizeof(char *), aux );
 
       STACK( stack ).size       = (long)stack_size;
-      STACK( stack ).self       = CREF( stack );
+      STACK( stack ).self       = CREFFAST( stack );
       STACK( stack ).exitd_top  = BGL_ENV_EXITD_TOP( env );
       STACK( stack ).stamp      = BGL_ENV_EXITD_TOP( env )->stamp;
       STACK( stack ).before_top = BGL_ENV_BEFORED_TOP( env );

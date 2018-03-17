@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Mar 16 17:46:10 2018 (serrano)                */
+/*    Last change :  Sat Mar 17 05:51:28 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1090,7 +1090,7 @@ typedef obj_t (*function_t)();
 
 #define PROCEDURE_SIZE (sizeof( struct procedure ))
 
-#define PROCEDURE( o ) CREF( o )->procedure_t
+#define PROCEDURE( o ) CREFFAST( o )->procedure_t
    
 #define PROCEDURE_ENTRY( fun ) (obj_t)(PROCEDURE( fun ).entry)
 #define PROCEDURE_VA_ENTRY( fun ) (obj_t)(PROCEDURE( fun ).va_entry)
@@ -1099,7 +1099,7 @@ typedef obj_t (*function_t)();
    (POINTERP( fun ) && (TYPE( fun ) == PROCEDURE_TYPE))
 
 #define PROCEDURE_ARITY( fun ) (PROCEDURE( fun ).arity)
-#define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( CREF( fun )->header ))
+#define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( CREFFAST( fun )->header ))
    
 #define PROCEDURE_ATTR( fun ) (PROCEDURE( fun ).attr)
 #define PROCEDURE_ATTR_SET( fun, _v ) (BASSIGN( PROCEDURE( fun ).attr, (_v), fun ), (_v))
@@ -1588,7 +1588,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*    opaque                                                           */
 /*---------------------------------------------------------------------*/
 #define OPAQUEP( o ) (POINTERP( o ) && (TYPE( o ) == OPAQUE_TYPE))
-#define BGL_OPAQUE( f ) CREF( f )
+#define BGL_OPAQUE( f ) CREFFAST( f )
 		 
 BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_OPAQUE_NIL() BREF( &bgl_opaque_nil )
@@ -1599,7 +1599,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define CUSTOMP( o ) (POINTERP( o ) && (TYPE( o ) == CUSTOM_TYPE))
 
 #define CUSTOM_SIZE (sizeof( struct custom ))
-#define CUSTOM( f ) CREF( f )->custom_t
+#define CUSTOM( f ) CREFFAST( f )->custom_t
 
 #define CUSTOM_FINAL( f ) CUSTOM( f ).final
 #define CUSTOM_SERIAL( f ) CUSTOM( f ).serial
@@ -1689,7 +1689,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define FOREIGN_TYPE_NAME( o ) "_"
    
 #define FOREIGN_SIZE (sizeof( struct foreign ))
-#define FOREIGN( f ) CREF( f )->foreign_t
+#define FOREIGN( f ) CREFFAST( f )->foreign_t
 
 #define FOREIGN_NULL( obj ) ((obj == BFALSE) ? 0L : obj)
 #define FOREIGN_TO_COBJ( f ) (FOREIGN( f ).cobj)
@@ -2351,7 +2351,7 @@ struct befored {
 #define __EVMEANING_ADDRESS( x ) \
    BREF( &(x) )
 #define __EVMEANING_ADDRESS_REF( x ) \
-   (*((obj_t *)CREF( x )))
+   (*((obj_t *)CREFFAST( x )))
 #define __EVMEANING_ADDRESS_SET( x, y ) \
    (__EVMEANING_ADDRESS_REF( x ) = (obj_t)y, BUNSPEC)
 

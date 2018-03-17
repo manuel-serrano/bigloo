@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cerror.c                */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cerror.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Sat Aug 19 09:15:50 2017 (serrano)                */
-/*    Copyright   :  2002-17 Manuel Serrano                            */
+/*    Last change :  Sat Mar 17 06:52:05 2018 (serrano)                */
+/*    Copyright   :  2002-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
 /*=====================================================================*/
@@ -138,7 +138,7 @@ bgl_debug_header( obj_t obj ) {
 	    else
 	       fprintf( stderr, "(unknown type) " );
       }
-      fprintf( stderr, "HEADER_SIZE=%ld\n", HEADER_SIZE( CREF( obj )->header ) );
+      fprintf( stderr, "HEADER_SIZE=%ld\n", HEADER_SIZE( CREFFAST( obj )->header ) );
    }
 
    return obj;
