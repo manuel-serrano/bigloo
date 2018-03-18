@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jul 23 15:34:53 1992                          */
-/*    Last change :  Sat Mar 17 06:53:04 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 07:19:35 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Input ports handling                                             */
 /*=====================================================================*/
@@ -392,39 +392,39 @@ bgl_console_read( obj_t port, char *ptr, long num ) {
 /*---------------------------------------------------------------------*/
 static long
 bgl_proc_read( obj_t port, char *b, long l ) {
-   obj_t buf = CREFFAST( port )->input_procedure_port_t.pbuffer;
+   obj_t buf = CREF( port )->input_procedure_port_t.pbuffer;
 
  loop:
 
    if( STRINGP( buf ) ) {
       /* won't read because the proc buffer is already filled */
       char *s = BSTRING_TO_STRING( buf );
-      long p = CREFFAST( port )->input_procedure_port_t.pbufpos;
+      long p = CREF( port )->input_procedure_port_t.pbufpos;
       long r = STRING_LENGTH( buf ) - p;
 
       if( r <= l ) {
 	 memmove( b, &s[ p ], r );
-	 CREFFAST( port )->input_procedure_port_t.pbuffer = BFALSE;
-	 CREFFAST( port )->input_procedure_port_t.pbufpos = 0;
+	 CREF( port )->input_procedure_port_t.pbuffer = BFALSE;
+	 CREF( port )->input_procedure_port_t.pbufpos = 0;
 	 return r;
       } else {
 	 memmove( b, &s[ p ], l );
-	 CREFFAST( port )->input_procedure_port_t.pbufpos += l;
+	 CREF( port )->input_procedure_port_t.pbufpos += l;
 	 return l;
       }
    } else {
       /* invoke the procedure to fill the buffer */
-      //obj_t proc = CREFFAST( port )->input_port_t.port.name;
-      obj_t proc = CREFFAST( port )->input_procedure_port_t.proc;
+      //obj_t proc = CREF( port )->input_port_t.port.name;
+      obj_t proc = CREF( port )->input_procedure_port_t.proc;
       obj_t nbuf = PROCEDURE_ENTRY( proc )( proc, BEOA );
 
       if( STRINGP( nbuf ) ) {
-	 buf = CREFFAST( port )->input_procedure_port_t.pbuffer = nbuf;
+	 buf = CREF( port )->input_procedure_port_t.pbuffer = nbuf;
 	 goto loop;
       } else {
 	 if( nbuf == BFALSE ) {
 	    /* eof has been reached */
-	    CREFFAST( port )->input_port_t.eof = 1;
+	    CREF( port )->input_port_t.eof = 1;
 	    return 0;
 	 } else {
 	    C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -1595,7 +1595,7 @@ bgl_open_input_file( obj_t name, obj_t buffer ) {
 /*---------------------------------------------------------------------*/
 static void
 bgl_input_string_seek( obj_t port, long pos ) {
-   long offset = CREFFAST( port )->input_string_port_t.offset;
+   long offset = CREF( port )->input_string_port_t.offset;
    
    if( pos >= 0 && pos < BGL_INPUT_PORT_BUFSIZ( port ) ) {
       INPUT_PORT( port ).filepos = pos + offset;
@@ -1642,13 +1642,13 @@ bgl_open_input_substring_bang( obj_t buffer, long offset, long end ) {
 #if( defined( RGC_0 ) )
    STRING_SET( buffer, end, '\0' );
 #endif
-   CREFFAST( port )->input_port_t.eof = 1;
-   CREFFAST( port )->input_port_t.bufpos = end;
-   CREFFAST( port )->input_port_t.length = end;
-   CREFFAST( port )->input_port_t.matchstart = offset;
-   CREFFAST( port )->input_port_t.matchstop = offset;
-   CREFFAST( port )->input_port_t.sysseek = &bgl_input_string_seek;
-   CREFFAST( port )->input_string_port_t.offset = offset;
+   CREF( port )->input_port_t.eof = 1;
+   CREF( port )->input_port_t.bufpos = end;
+   CREF( port )->input_port_t.length = end;
+   CREF( port )->input_port_t.matchstart = offset;
+   CREF( port )->input_port_t.matchstop = offset;
+   CREF( port )->input_port_t.sysseek = &bgl_input_string_seek;
+   CREF( port )->input_string_port_t.offset = offset;
 
    return port;
 }
@@ -1704,15 +1704,15 @@ bgl_reopen_input_c_string( obj_t port, char *c_string ) {
    long bufsiz = (long)strlen( c_string );
 
    if( BGL_INPUT_PORT_BUFSIZ( port ) < (bufsiz + 1) ) {
-      CREFFAST(port)->input_port_t.buf = make_string_sans_fill( bufsiz + 1 );
+      CREF(port)->input_port_t.buf = make_string_sans_fill( bufsiz + 1 );
    }
 
-   CREFFAST( port )->input_port_t.bufpos = bufsiz;
-   CREFFAST( port )->input_port_t.matchstart = 0;
-   CREFFAST( port )->input_port_t.matchstop = 0;
-   CREFFAST( port )->input_port_t.forward = 0;
-   CREFFAST( port )->input_port_t.lastchar = '\n';
-   CREFFAST( port )->port_t.kindof = KINDOF_STRING;
+   CREF( port )->input_port_t.bufpos = bufsiz;
+   CREF( port )->input_port_t.matchstart = 0;
+   CREF( port )->input_port_t.matchstop = 0;
+   CREF( port )->input_port_t.forward = 0;
+   CREF( port )->input_port_t.lastchar = '\n';
+   CREF( port )->port_t.kindof = KINDOF_STRING;
 
    strcpy( (char *)&RGC_BUFFER_REF( port, 0 ), c_string );
 
@@ -1730,11 +1730,11 @@ bgl_open_input_procedure( obj_t fun, obj_t buffer ) {
 					KINDOF_PROCEDURE,
 					buffer );
 
-      CREFFAST( port )->port_t.stream.channel = port;
-      //CREFFAST( port )->port_t.name = fun;
-      CREFFAST( port )->input_procedure_port_t.proc = fun;
-      CREFFAST( port )->input_procedure_port_t.pbuffer = BUNSPEC;
-      CREFFAST( port )->input_procedure_port_t.pbufpos = 0;
+      CREF( port )->port_t.stream.channel = port;
+      //CREF( port )->port_t.name = fun;
+      CREF( port )->input_procedure_port_t.proc = fun;
+      CREF( port )->input_procedure_port_t.pbuffer = BUNSPEC;
+      CREF( port )->input_procedure_port_t.pbufpos = 0;
 
       return port;
    } else {
@@ -1757,12 +1757,12 @@ bgl_open_input_gzip_port( obj_t fun, obj_t in, obj_t buffer ) {
 					KINDOF_GZIP,
 					buffer );
 
-      CREFFAST( port )->port_t.stream.channel = port;
-      //CREFFAST( port )->port_t.name = fun;
-      CREFFAST( port )->input_procedure_port_t.proc = fun;
-      CREFFAST( port )->input_procedure_port_t.pbuffer = BUNSPEC;
-      CREFFAST( port )->input_procedure_port_t.pbufpos = 0;
-      CREFFAST( port )->input_gzip_port_t.gzip = in;
+      CREF( port )->port_t.stream.channel = port;
+      //CREF( port )->port_t.name = fun;
+      CREF( port )->input_procedure_port_t.proc = fun;
+      CREF( port )->input_procedure_port_t.pbuffer = BUNSPEC;
+      CREF( port )->input_procedure_port_t.pbufpos = 0;
+      CREF( port )->input_gzip_port_t.gzip = in;
 
       return port;
    } else {

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  3 17:05:58 2016                          */
-/*    Last change :  Sat Mar 17 06:52:39 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 07:19:43 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C Saw memory management.                                         */
@@ -103,7 +103,7 @@ typedef struct real_frame_struct {
 obj_t trace_obj(obj_t o) {
   //fprintf(stderr, "trace obj %p\n", o);
   if(BYOUNGP(o)) {
-    obj_t oo = CREFFAST(o);
+    obj_t oo = CREF(o);
     if(!((oo >= (obj_t) bgl_saw_nursery.heap) &&
 	 (oo <= (obj_t) bgl_saw_nursery.backpool))) {
       fprintf(stderr, "YOUNG not in heap %p\n", o);
@@ -127,7 +127,7 @@ void trace(obj_t *p) {
   obj_t o = *p;
   //fprintf(stderr, "trace obj %p\n", o);
   if(BYOUNGP(o)) {
-    obj_t oo = CREFFAST(o);
+    obj_t oo = CREF(o);
     if(!((oo >= (obj_t) bgl_saw_nursery.heap) &&
 	 (oo <= (obj_t) bgl_saw_nursery.backpool))) {
       fprintf(stderr, "YOUNG not in heap %p\n", o);

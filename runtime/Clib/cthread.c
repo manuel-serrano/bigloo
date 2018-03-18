@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Sat Mar 17 06:54:37 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 07:19:51 2018 (serrano)                */
 /*    Copyright   :  2004-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -311,9 +311,9 @@ bgl_dup_dynamic_env( obj_t o ) {
    
    obj_t env = make_dynamic_env();
    struct bgl_dynamic_env *dst =
-      (struct bgl_dynamic_env *)&(CREFFAST( env )->dynamic_env_t);
+      (struct bgl_dynamic_env *)&(CREF( env )->dynamic_env_t);
    struct bgl_dynamic_env *src =
-      (struct bgl_dynamic_env *)&(CREFFAST( o )->dynamic_env_t);
+      (struct bgl_dynamic_env *)&(CREF( o )->dynamic_env_t);
 
    dst->current_output_port = src->current_output_port;
    dst->current_error_port = src->current_error_port;
