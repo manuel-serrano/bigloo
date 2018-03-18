@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Mar 17 05:51:28 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 06:27:31 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -251,8 +251,9 @@ error "Unknown garbage collector type"
 #define OBJ_SIZE ((long)(sizeof( obj_t )))
 
 #define BREF( r ) ((obj_t)((long)r + TAG_STRUCT))
-#define CREF( r ) ((obj_t)((unsigned long)r & ~(TAG_MASK)))
+#define CREFSLOW( r ) ((obj_t)((unsigned long)r & ~(TAG_MASK)))
 #define CREFFAST( r ) ((obj_t)((long)r - TAG_STRUCT))
+#define CREF( r ) CREFFAST( r )
 
 #if( TAG_YOUNG )
 #  define BYOUNG( r ) ((obj_t)((long)r + TAG_YOUNG))
@@ -1090,7 +1091,7 @@ typedef obj_t (*function_t)();
 
 #define PROCEDURE_SIZE (sizeof( struct procedure ))
 
-#define PROCEDURE( o ) CREFFAST( o )->procedure_t
+#define PROCEDURE( o ) CREF( o )->procedure_t
    
 #define PROCEDURE_ENTRY( fun ) (obj_t)(PROCEDURE( fun ).entry)
 #define PROCEDURE_VA_ENTRY( fun ) (obj_t)(PROCEDURE( fun ).va_entry)
@@ -1099,7 +1100,7 @@ typedef obj_t (*function_t)();
    (POINTERP( fun ) && (TYPE( fun ) == PROCEDURE_TYPE))
 
 #define PROCEDURE_ARITY( fun ) (PROCEDURE( fun ).arity)
-#define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( CREFFAST( fun )->header ))
+#define PROCEDURE_LENGTH( fun ) (HEADER_SIZE( CREF( fun )->header ))
    
 #define PROCEDURE_ATTR( fun ) (PROCEDURE( fun ).attr)
 #define PROCEDURE_ATTR_SET( fun, _v ) (BASSIGN( PROCEDURE( fun ).attr, (_v), fun ), (_v))
@@ -1224,7 +1225,7 @@ typedef obj_t (*function_t)();
 #else   
 #   define SYMBOLP( o ) (POINTERP( o ) && (TYPE( o ) == SYMBOL_TYPE))
 #   define BSYMBOL( p ) BREF( p )
-#   define CSYMBOL( p ) CREFFAST( p )
+#   define CSYMBOL( p ) CREF( p )
 #endif   
 
 #define SYMBOL( o ) (CSYMBOL( o )->symbol_t)
@@ -1243,7 +1244,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define KEYWORDP( o ) (POINTERP( o ) && (TYPE( o ) == KEYWORD_TYPE))
 
-#define KEYWORD( o ) (CREFFAST( o )->keyword_t)
+#define KEYWORD( o ) (CREF( o )->keyword_t)
    
 #define KEYWORD_SIZE (sizeof( struct keyword ))
 
@@ -1265,7 +1266,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 /*    Ports                                                            */
 /*---------------------------------------------------------------------*/
-#define PORT( o ) CREFFAST( o )->port_t
+#define PORT( o ) CREF( o )->port_t
    
 #define PORT_CHOOK( o ) (PORT( o ).chook)
 #define PORT_CHOOK_SET( o, v ) BASSIGN( PORT( o ).chook, (v), o )
@@ -1279,7 +1280,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define OUTPUT_PORT_SIZE (sizeof( struct output_port ))
 
-#define OUTPUT_PORT( o ) (CREFFAST( o )->output_port_t)
+#define OUTPUT_PORT( o ) (CREF( o )->output_port_t)
 
 #define OUTPUT_PORTP( o ) \
    (POINTERP( o ) && (TYPE( o ) == OUTPUT_PORT_TYPE))
@@ -1334,7 +1335,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define OUTPUT_STRING_PORT_SIZE (sizeof( struct output_string_port ))
 
-#define OUTPUT_STRING_PORT( o ) CREFFAST( o )->output_string_port_t
+#define OUTPUT_STRING_PORT( o ) CREF( o )->output_string_port_t
 
 #define OUTPUT_STRING_PORT_BUFFER_SIZE 128
 
@@ -1348,7 +1349,7 @@ typedef obj_t (*function_t)();
 
 #define OUTPUT_PROCEDURE_PORT_SIZE (sizeof( struct output_procedure_port ))
 
-#define OUTPUT_PROCEDURE_PORT( o ) CREFFAST( o )->output_procedure_port_t
+#define OUTPUT_PROCEDURE_PORT( o ) CREF( o )->output_procedure_port_t
 
 /*---------------------------------------------------------------------*/
 /*    RGC ports                                                        */
@@ -1376,10 +1377,10 @@ typedef obj_t (*function_t)();
 #define INPUT_GZIP_PORT_SIZE (sizeof( struct input_gzip_port ))
 #define INPUT_STRING_PORT_SIZE (sizeof( struct input_string_port ))
 
-#define INPUT_GZIP_PORT( o ) CREFFAST( o )->input_gzip_port_t
-#define INPUT_PROCEDURE_PORT( o ) CREFFAST( o )->input_procedure_port_t
+#define INPUT_GZIP_PORT( o ) CREF( o )->input_gzip_port_t
+#define INPUT_PROCEDURE_PORT( o ) CREF( o )->input_procedure_port_t
 
-#define INPUT_PORT( o ) CREFFAST( o )->input_port_t
+#define INPUT_PORT( o ) CREF( o )->input_port_t
 
 #define INPUT_PORTP( o ) (POINTERP( o ) && (TYPE( o ) == INPUT_PORT_TYPE))
 
@@ -1442,7 +1443,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define BINARY_PORT_SIZE (sizeof( struct binary_port ))
 
-#define BINARY_PORT( o ) CREFFAST( o )->binary_port_t
+#define BINARY_PORT( o ) CREF( o )->binary_port_t
 
 #define BINARY_PORTP( o ) \
    ( POINTERP( o ) && (TYPE( o ) == BINARY_PORT_TYPE) )
@@ -1465,7 +1466,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define BGL_MMAP_SIZE (sizeof( struct bgl_mmap ))
 
-#define BGL_MMAP( o ) CREFFAST( o )->mmap_t
+#define BGL_MMAP( o ) CREF( o )->mmap_t
 
 #define BGL_MMAPP( o ) (POINTERP( o ) && (TYPE( o ) == MMAP_TYPE))
 
@@ -1507,7 +1508,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*---------------------------------------------------------------------*/
 #define PROCESSP( o ) (POINTERP( o ) && (TYPE( o ) == PROCESS_TYPE))
 #define PROCESS_SIZE (sizeof( struct process ))
-#define PROCESS( o ) (CREFFAST( o )->process_t)
+#define PROCESS( o ) (CREF( o )->process_t)
 #define PROCESS_PID( o ) (PROCESS( o ).pid)
 #define PROCESS_INPUT_PORT( o ) (PROCESS( o ).stream[ 0 ])
 #define PROCESS_OUTPUT_PORT( o ) (PROCESS( o ).stream[ 1 ])
@@ -1518,7 +1519,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*---------------------------------------------------------------------*/
 #define SOCKETP( o ) (POINTERP( o ) && (TYPE( o ) == SOCKET_TYPE))
 #define SOCKET_SIZE (sizeof( struct socket ))
-#define SOCKET( o ) (CREFFAST( o )->socket_t)
+#define SOCKET( o ) (CREF( o )->socket_t)
 #define SOCKET_HOSTNAME( o ) bgl_socket_hostname( o )
 #define SOCKET_HOSTIP( o ) (SOCKET( o ).hostip)
 #define SOCKET_PORT( o ) (SOCKET( o ).portnum)
@@ -1559,7 +1560,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_DATAGRAM_SOCKETP( o ) \
    (POINTERP( o ) && (TYPE( o ) == DATAGRAM_SOCKET_TYPE))
 #define BGL_DATAGRAM_SOCKET_SIZE (sizeof( struct bgl_datagram_socket ))
-#define BGL_DATAGRAM_SOCKET( o ) (CREFFAST( o )->datagram_socket_t)
+#define BGL_DATAGRAM_SOCKET( o ) (CREF( o )->datagram_socket_t)
 
 #define BGL_DATAGRAM_SOCKET_HOSTNAME( o ) bgl_datagram_socket_hostname( o )
 #define BGL_DATAGRAM_SOCKET_HOSTIP( o ) (BGL_DATAGRAM_SOCKET( o ).hostip)
@@ -1579,7 +1580,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_REGEXPP( o ) \
    (POINTERP( o ) && (TYPE( o ) == REGEXP_TYPE))
 #define BGL_REGEXP_SIZE (sizeof( struct bgl_regexp ))
-#define BGL_REGEXP( o ) (CREFFAST( o )->regexp_t)
+#define BGL_REGEXP( o ) (CREF( o )->regexp_t)
 #define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
 #define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
 #define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)   
@@ -1588,7 +1589,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*    opaque                                                           */
 /*---------------------------------------------------------------------*/
 #define OPAQUEP( o ) (POINTERP( o ) && (TYPE( o ) == OPAQUE_TYPE))
-#define BGL_OPAQUE( f ) CREFFAST( f )
+#define BGL_OPAQUE( f ) CREF( f )
 		 
 BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_OPAQUE_NIL() BREF( &bgl_opaque_nil )
@@ -1599,7 +1600,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define CUSTOMP( o ) (POINTERP( o ) && (TYPE( o ) == CUSTOM_TYPE))
 
 #define CUSTOM_SIZE (sizeof( struct custom ))
-#define CUSTOM( f ) CREFFAST( f )->custom_t
+#define CUSTOM( f ) CREF( f )->custom_t
 
 #define CUSTOM_FINAL( f ) CUSTOM( f ).final
 #define CUSTOM_SERIAL( f ) CUSTOM( f ).serial
@@ -1620,7 +1621,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_DATEP( o ) (POINTERP( o ) && (TYPE( o ) == DATE_TYPE))
 
 #define BGL_DATE_SIZE (sizeof( struct bgl_date ) )
-#define BGL_DATE( f ) CREFFAST( f )->date_t
+#define BGL_DATE( f ) CREF( f )->date_t
 
 #define BGL_DATE_NANOSECOND( f ) (BGL_DATE( f ).nsec)
 #define BGL_DATE_SECOND( f ) (BGL_DATE( f ).sec)
@@ -1639,7 +1640,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 /*---------------------------------------------------------------------*/
 #define BGL_MUTEXP( o ) (POINTERP( o ) && (TYPE( o ) == MUTEX_TYPE))
    
-#define BGL_MUTEX( o )  (CREFFAST( o )->mutex_t)
+#define BGL_MUTEX( o )  (CREF( o )->mutex_t)
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
 
 #define BGL_MUTEX_LOCK( o ) \
@@ -1671,7 +1672,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #endif
    
 #define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
-#define BGL_CONDVAR( o ) (CREFFAST( o )->condvar_t)
+#define BGL_CONDVAR( o ) (CREF( o )->condvar_t)
 #define BGL_CONDVAR_SIZE (sizeof( struct bgl_condvar ))
 
 #define BGL_CONDVAR_NAME( o ) (BGL_CONDVAR( o ).name)
@@ -1689,7 +1690,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define FOREIGN_TYPE_NAME( o ) "_"
    
 #define FOREIGN_SIZE (sizeof( struct foreign ))
-#define FOREIGN( f ) CREFFAST( f )->foreign_t
+#define FOREIGN( f ) CREF( f )->foreign_t
 
 #define FOREIGN_NULL( obj ) ((obj == BFALSE) ? 0L : obj)
 #define FOREIGN_TO_COBJ( f ) (FOREIGN( f ).cobj)
@@ -1772,7 +1773,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_DYNAMIC_ENVP( c ) \
    (POINTERP( c ) && (TYPE( c ) == DYNAMIC_ENV_TYPE))
 
-#define BGL_DYNAMIC_ENV( env ) (CREFFAST( env )->dynamic_env_t)
+#define BGL_DYNAMIC_ENV( env ) (CREF( env )->dynamic_env_t)
 
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
 #  define BGL_CURRENT_DYNAMIC_ENV() \
@@ -2351,7 +2352,7 @@ struct befored {
 #define __EVMEANING_ADDRESS( x ) \
    BREF( &(x) )
 #define __EVMEANING_ADDRESS_REF( x ) \
-   (*((obj_t *)CREFFAST( x )))
+   (*((obj_t *)CREF( x )))
 #define __EVMEANING_ADDRESS_SET( x, y ) \
    (__EVMEANING_ADDRESS_REF( x ) = (obj_t)y, BUNSPEC)
 
@@ -2360,7 +2361,7 @@ struct befored {
 /*---------------------------------------------------------------------*/
 #define STACK_SIZE (sizeof( struct stack ))
    
-#define STACK( _o_ ) CREFFAST( _o_ )->stack_t
+#define STACK( _o_ ) CREF( _o_ )->stack_t
 
 #define STACKP( _s_ ) (POINTERP( _s_ ) && (TYPE( _s_ ) == STACK_TYPE))
 

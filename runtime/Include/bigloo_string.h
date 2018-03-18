@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Mar 16 13:05:21 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 07:17:29 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -88,7 +88,7 @@ struct bgl_ucs2_string {
 #endif
 
 #define BUCS2STRING( p ) BREF( p )
-#define CUCS2STRING( p ) CREFFAST( p )
+#define CUCS2STRING( p ) CREF( p )
 
 #define UCS2_STRINGP( c ) (POINTERP( c ) && (TYPE( c ) == UCS2_STRING_TYPE))
 

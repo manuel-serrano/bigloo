@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Mar 16 13:03:21 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 07:17:12 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -59,7 +59,7 @@ struct bgl_real {
 #   define REALP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
 #else
 #   define BREAL( p ) BREF( p )
-#   define CREAL( p ) CREFFAST( p )
+#   define CREAL( p ) CREF( p )
 #   define DEFINE_REAL( name, aux, flonum ) \
       static struct { __CNST_ALIGN header_t header; \
 		      double real; } \

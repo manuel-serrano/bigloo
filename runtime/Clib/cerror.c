@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:58:06 1992                          */
-/*    Last change :  Sat Mar 17 06:52:05 2018 (serrano)                */
+/*    Last change :  Sun Mar 18 07:19:25 2018 (serrano)                */
 /*    Copyright   :  2002-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Error messages                                                   */
@@ -138,7 +138,7 @@ bgl_debug_header( obj_t obj ) {
 	    else
 	       fprintf( stderr, "(unknown type) " );
       }
-      fprintf( stderr, "HEADER_SIZE=%ld\n", HEADER_SIZE( CREFFAST( obj )->header ) );
+      fprintf( stderr, "HEADER_SIZE=%ld\n", HEADER_SIZE( CREF( obj )->header ) );
    }
 
    return obj;
