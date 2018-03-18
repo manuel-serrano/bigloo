@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul 10 10:40:10 2005                          */
-;*    Last change :  Mon Mar 12 08:01:39 2018 (serrano)                */
+;*    Last change :  Fri Mar 16 20:40:24 2018 (serrano)                */
 ;*    Copyright   :  2005-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Map IO                                                           */
@@ -141,7 +141,7 @@
    ($mmap->string mmap))
 
 ;*---------------------------------------------------------------------*/
-;*    mmap->bstring ...                                                 */
+;*    mmap->bstring ...                                                */
 ;*---------------------------------------------------------------------*/
 (define-inline (mmap->bstring::bstring mmap::mmap)
    (let ((len::int  (elong->fixnum ($mmap-length mmap))))
