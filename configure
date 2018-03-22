@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan 30 17:44:49 2018 (serrano)                */
+#*    Last change :  Thu Mar 22 12:54:46 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -231,6 +231,7 @@ customlibuv=yes
 libuvconfigureopt=
 libuvversion=master-18jul2014
 libuvversion=1.x-24jan2015
+libuvversion=v1.19.1
 
 #*--- patch (left blank for autoconfiguration) ------------------------*/
 patchapi=
