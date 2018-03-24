@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/iarith.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Expand/iarith.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Aug 26 09:16:56 1994                          */
-;*    Last change :  Tue May  9 11:27:38 2017 (serrano)                */
-;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Mar 23 19:11:17 2018 (serrano)                */
+;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Les expandeurs arithmetiques (entiers)                           */
 ;*=====================================================================*/
@@ -33,6 +33,7 @@
 	   (expand-bit-lsh ::obj ::procedure)
 	   (expand-bit-lshu32 ::obj ::procedure)
 	   (expand-bit-rsh ::obj ::procedure)
+	   (expand-bit-rshs32 ::obj ::procedure)
 	   (expand-bit-rshu32 ::obj ::procedure)
 	   (expand-bit-ursh ::obj ::procedure)
 	   (expand-bit-urshu32 ::obj ::procedure)
@@ -353,6 +354,7 @@
 (define (expand-bit-lshu32 x e) (expand-bit bit-lshu32 uint32?))
 
 (define (expand-bit-rsh x e) (expand-bit bit-rsh fixnum?))
+(define (expand-bit-rshs32 x e) (expand-bit bit-rshs32 int32?))
 (define (expand-bit-rshu32 x e) (expand-bit bit-rshu32 uint32?))
 
 (define (expand-bit-ursh x e)

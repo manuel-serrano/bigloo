@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/initial.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Expand/initial.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Fri Jun  9 09:16:53 2017 (serrano)                */
-;*    Copyright   :  1994-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Mar 23 19:11:28 2018 (serrano)                */
+;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -435,6 +435,7 @@
    (install-O-comptime-expander 'bit-lsh expand-bit-lsh)
    (install-O-comptime-expander 'bit-lshu32 expand-bit-lshu32)
    (install-O-comptime-expander 'bit-rsh expand-bit-rsh)
+   (install-O-comptime-expander 'bit-rshs32 expand-bit-rshs32)
    (install-O-comptime-expander 'bit-rshu32 expand-bit-rshu32)
    (install-O-comptime-expander 'bit-ursh expand-bit-ursh)
    (install-O-comptime-expander 'bit-urshu32 expand-bit-urshu32)
