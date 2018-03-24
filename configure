@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Mar 24 16:46:33 2018 (serrano)                */
+#*    Last change :  Sat Mar 24 18:55:44 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -143,8 +143,7 @@ gmpsrc=$GMPSRC
 gmpconfigureopt=
 
 if [ "$gmpsrc " = " " ]; then
-  gmpversion=6.1.2
-  gmpsrc=gmp/gmp-$gmpversion.tgz
+  gmpsrc=gmp/gmp-6.1.2.tgz
 fi  
 
 srfi27force=no
