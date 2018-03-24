@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gmp/Makefile                         */
+#*    /tmp/BGL/bigloo4.3b/gmp/Makefile                                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Sun Jul  9 10:26:23 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Sat Mar 24 16:14:54 2018 (serrano)                */
+#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
 #*=====================================================================*/
@@ -33,7 +33,7 @@ OUTDIR = $(GMP)/.libs
 #*---------------------------------------------------------------------*/
 #*    boot                                                             */
 #*---------------------------------------------------------------------*/
-.PHONY: boot boot-gmp
+.PHONY: boot boot-gmp ld
 .NOTPARALLEL: boot
 
 boot: boot-gmp
@@ -49,10 +49,10 @@ $(OUTDIR)/libgmp.a:
 
 $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX): $(OUTDIR)/libgmp.a
 	(mkdir -p GMP_OBJ; cd GMP_OBJ; ar x ../$(OUTDIR)/libgmp.a)
+	$(MAKE) ld LIBDEST=$@
 
 ld:
 	$(MAKE) shared-lib \
-             LIBDEST=$@ \
 	     LIBPATH=$(BOOTLIBDIR) \
              SONAME=libbigloogmp-$(RELEASE).$(SHAREDSUFFIX) \
              GCCLOSELIB= \

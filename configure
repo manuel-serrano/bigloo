@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Mar 22 12:54:46 2018 (serrano)                */
+#*    Last change :  Sat Mar 24 16:46:33 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -134,7 +134,7 @@ cobj=o
 specific=""
 ln_s="ln -s"
 
-#*--- gmp version (left blank for autoconfiguration)    ---------------*/
+#*--- gmp version (left blank for autoconfiguration) ------------------*/
 gmplib=
 gmpversion=
 gmpforce=no
@@ -142,13 +142,18 @@ customgmp=no
 gmpsrc=$GMPSRC
 gmpconfigureopt=
 
+if [ "$gmpsrc " = " " ]; then
+  gmpversion=6.1.2
+  gmpsrc=gmp/gmp-$gmpversion.tgz
+fi  
+
 srfi27force=no
 
-#*--- resolv version (left blank for autoconfiguration)    ------------*/
+#*--- resolv version (left blank for autoconfiguration) ---------------*/
 resolv=
 resolvforce=no
 
-#*--- unistring version (left blank for autoconfiguration)    ---------*/
+#*--- unistring version (left blank for autoconfiguration) ------------*/
 unistring=
 unistringforce=no
 customunistring=
@@ -815,6 +820,13 @@ while : ; do
     --gcconfigureopt=*)
       gcconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --custom-all-libs)
+      customgc=yes;
+      customgmp=yes;
+      customunistring=yes;
+      customlibuv=yes;
+      custompcre=yes;;
+      
     --finalization=yes)
       gcfinalizer=1;
       cgcfinalflags=;;
@@ -1126,6 +1138,7 @@ while : ; do
       echo "   --jvm-default-backend" >&2;
       echo "" >&2;
       echo "Misc:"  >&2;
+      echo "   --custom-all-libs [use custom version for all third party libs]" >&2;
       echo "   --finalization=yes|no [default no]" >&2;
       echo "   --benchmark=yes|no [default no] (must use --arch too)" >&2;
       echo "   --strip=no (disable stripping during linking)" >&2;
