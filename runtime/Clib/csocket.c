@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/csocket.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csocket.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Jul 27 08:08:21 2017 (serrano)                */
+/*    Last change :  Mon Apr  2 19:21:40 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1299,7 +1299,7 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
       
       BGL_MUTEX_LOCK( socket_mutex );
       sprintf( buffer, "%s: cannot create socket io ports, %s (s=%d->%p)",
-	       who, strerror( errno ), t, fs );
+	       who, strerror( errno ), s, fs );
       BGL_MUTEX_UNLOCK( socket_mutex );
       socket_error( "set_socket_io_ports", buffer, sock );
    }
@@ -1399,7 +1399,7 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
    server.sin_port = htons( port );
 
    hname = string_to_bstring( hp->h_name );
-   
+
 #if( BGL_HAVE_SELECT && BGL_HAVE_FCNTL )
    if( timeo > 0 ) set_socket_blocking( s, 1 );
 #endif
