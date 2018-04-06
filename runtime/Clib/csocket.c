@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Apr  2 19:21:40 2018 (serrano)                */
+/*    Last change :  Thu Apr  5 05:09:46 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1298,9 +1298,10 @@ set_socket_io_ports( int s, obj_t sock, const char *who, obj_t inb, obj_t outb )
       char *buffer = alloca( 1024 );
       
       BGL_MUTEX_LOCK( socket_mutex );
-      sprintf( buffer, "%s: cannot create socket io ports, %s (s=%d->%p)",
-	       who, strerror( errno ), s, fs );
+      sprintf( buffer, "%s: cannot create socket io ports, %s (%d)",
+	       who, strerror( errno ), s );
       BGL_MUTEX_UNLOCK( socket_mutex );
+      close( t );
       socket_error( "set_socket_io_ports", buffer, sock );
    }
    
