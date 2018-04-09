@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Thu Apr  5 05:09:46 2018 (serrano)                */
+/*    Last change :  Mon Apr  9 21:20:15 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1208,7 +1208,6 @@ bgl_sclose_rd( FILE *stream ) {
 /*---------------------------------------------------------------------*/
 static int
 bgl_sclose_wd( int stream ) {
-   shutdown( stream, SHUT_WR );
    // ignore shutdown errors to avoid fd leaks
    return close( stream );
 }
@@ -2067,6 +2066,7 @@ socket_close( obj_t sock ) {
       }
    
       if( OUTPUT_PORTP( SOCKET( sock ).output ) ) {
+	 shutdown( PORT_FD( SOCKET( sock ).output ), SHUT_WR );
 	 bgl_close_output_port( SOCKET( sock ).output );
       }
    }
