@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Sun Apr  8 18:04:02 2018 (serrano)                */
+/*    Last change :  Wed Apr 11 16:42:24 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -163,18 +163,14 @@ sort_vector( obj_t obj, obj_t proc ) {
 
    n = VECTOR_LENGTH( obj );
 
-   if( VA_PROCEDUREP( proc ) )
-      cb = (obj_t (*)())PROCEDURE_VA_ENTRY( proc );
-   else
-      cb = (obj_t (*)())PROCEDURE_ENTRY( proc );
-   
    for( incr = n / 2; incr; incr /= 2 ) {
       for( i = incr; i < n; i++ ) {
 	 for( j = i-incr; j >= 0; j -= incr ) {
-	    if( cb( proc,
-		    VECTOR_REF( obj, j ),
-		    VECTOR_REF( obj, j + incr ),
-		    BEOA ) != BFALSE )
+	    if( PROCEDURE_ENTRY( proc )( proc,
+					 VECTOR_REF( obj, j ),
+					 VECTOR_REF( obj, j + incr ),
+					 BEOA )
+		!= BFALSE )
 	       break;
 	    else {
 	       obj_t tmp = VECTOR_REF( obj, j + incr );
