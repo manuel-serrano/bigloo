@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Mar 24 18:55:44 2018 (serrano)                */
+#*    Last change :  Thu Apr 12 05:39:09 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -462,8 +462,8 @@ while : ; do
       sharedcompiler=no;
       sharedbde=yes;
       infodir=$HOME/house/info;
-      java=java;
-      javac=javac;
+      java=java8;
+      javac=javac8;
       ld=gcc;
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
       coflags="$coflags";
