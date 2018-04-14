@@ -20,6 +20,7 @@ public class configure {
   public static final int PTR_ALIGNMENT = @PTR_ALIGNMENT@;
   public static final int BGL_INT_BIT_SIZE = 32;
   public static final int BGL_ELONG_BIT_SIZE = 64;
+  public static final boolean BGL_NAN_TAGGING = false;
   public static final byte[] SETJMP = "@SETJMP@".getBytes();
   public static final byte[] LONGJMP = "@LONGJMP@".getBytes();
   public static final boolean HAVE_BCOPY = (@HAVE_BCOPY@ == 1);

@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 12 05:39:09 2018 (serrano)                */
+#*    Last change :  Thu Apr 12 12:04:06 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2604,9 +2604,11 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$alignment" = "3" ]; then 
     intsize=61
     elongsize=64
+    bglnantagging=0
   else
     intsize=30
     elongsize=32
+    bglnantagging=0
   fi
 
   # The -O C compiler options
@@ -3238,6 +3240,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@PTR_ALIGNMENT@|$alignment|" \
               -e "s|@INT_BIT_SIZE@|$intsize|" \
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
+              -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \

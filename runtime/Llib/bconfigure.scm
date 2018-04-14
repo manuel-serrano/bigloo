@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/bconfigure.scm          */
+;*    .../prgm/project/bigloo/bigloo/runtime/Llib/bconfigure.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Thu Oct  5 18:06:49 2017 (serrano)                */
-;*    Copyright   :  2000-17 Manuel Serrano                            */
+;*    Last change :  Thu Apr 12 12:06:12 2018 (serrano)                */
+;*    Copyright   :  2000-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -102,6 +102,7 @@
 	   (macro $configure-dns-cache-enabled::bool "BGL_DNS_CACHE")
 	   (macro $configure-big-endian::bool "BGL_BIG_ENDIAN")
 	   (macro $configure-regexp-family::string "BGL_REGEXP_FAMILY")
+	   (macro $configure-nan-tagging::bool "BGL_NAN_TAGGING")
 	   (macro $configure-int-size::int "BGL_INT_BIT_SIZE")
 	   (macro $configure-elong-size::int "BGL_ELONG_BIT_SIZE")
 	   (macro $configure-have-unistring::bool "BGL_HAVE_UNISTRING")
@@ -175,6 +176,7 @@
 	      (field static regexp-family::string "BGL_REGEXP_FAMILY")
 	      (field static int-size::int "BGL_INT_BIT_SIZE")
 	      (field static elong-size::int "BGL_ELONG_BIT_SIZE")
+	      (field static nan-tagging::bool "BGL_NAN_TAGGING")
 	      (field static have-unistring::bool "BGL_HAVE_UNISTRING")
 	      (field static have-syslog::bool "BGL_HAVE_SYSLOG")
 	      (field static have-overflow::bool "BGL_HAVE_OVERFLOW")
@@ -263,6 +265,7 @@
      (regexp . ,$configure-regexp-family)
      (int-size . ,$configure-int-size)
      (elong-size . ,$configure-elong-size)
+     (nan-tagging . ,$configure-nan-tagging)
      (have-unistring . ,$configure-have-unistring)
      (have-syslog . ,$configure-have-syslog)
      (have-overflow . ,$configure-have-overflow)

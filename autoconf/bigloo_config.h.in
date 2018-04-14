@@ -82,6 +82,9 @@
 #undef BGL_ELONG_BIT_SIZE
 #define BGL_ELONG_BIT_SIZE @ELONG_BIT_SIZE@
 
+#undef BGL_NAN
+#define BGL_NAN_SIZE @BGL_NAN@
+
 #undef HAVE_BCOPY
 #define HAVE_BCOPY @HAVE_BCOPY@
 
