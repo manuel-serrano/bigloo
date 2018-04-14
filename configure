@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 12 12:04:06 2018 (serrano)                */
+#*    Last change :  Sat Apr 14 18:14:25 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -95,6 +95,8 @@ gcconfigurethreadsopt=--enable-thread
 
 belong_prealloc_min=-10
 belong_prealloc_max=100
+
+bglnantagging=0
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -870,6 +872,9 @@ while : ; do
     --mingw=yes)
       mingw="yes";;
 
+    --nan-tagging)
+      bglnantagging=1;;
+      
     --enable-thread|--enable-threads)
       threadsupport=yes;
       addp=1;
@@ -1176,6 +1181,9 @@ while : ; do
       echo "   --build-bindir=dir (directory which contains the binaries used to bootstrap)" >&2;
       echo "   --thirdparty-configure-opt=opt" >&2;
       echo "   --configureinfo=yes|no [default no]" >&2;
+      echo "" >&2;
+      echo "Experimental features:"  >&2;
+      echo "   --nan-tagging" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
       echo "CC         C compiler command" >&2;
@@ -2604,11 +2612,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$alignment" = "3" ]; then 
     intsize=61
     elongsize=64
-    bglnantagging=0
   else
     intsize=30
     elongsize=32
-    bglnantagging=0
   fi
 
   # The -O C compiler options
@@ -4841,6 +4847,11 @@ if [ "$summary" = "yes" ]; then
   echo "Implementation details:"
   echo "  tuning...................... $mode $tuning"
   echo "  cc.......................... $cc"
+  if [ $bglnantagging = "1" ]; then
+    echo "  nan tagging................. yes"
+  else
+    echo "  nan tagging................. no"
+  fi
   if [ $customgc = "yes" ];then
      echo "  gc.......................... custom ($gclib-$release, v$gcversion)"
   else
