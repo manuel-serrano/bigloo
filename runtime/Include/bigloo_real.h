@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sun Mar 18 07:17:12 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 15:25:05 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -26,17 +26,19 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 
+#if( !BGL_NAN_TAGGING ) 
 BGL_RUNTIME_DECL obj_t make_real( double );
 
-#if( BGL_SAW == 1 ) 
+#   if( BGL_SAW == 1 ) 
 BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
+#   endif
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    bgl_real ...                                                     */
 /*---------------------------------------------------------------------*/
 struct bgl_real {
-#if( !defined( TAG_REAL ) )
+#if( !defined( TAG_REAL ) && !BGL_NAN_TAGGING )
    header_t header;
 #endif
    double real;
@@ -49,7 +51,12 @@ struct bgl_real {
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
-#if( defined( TAG_REAL ) )
+#if( BGL_NAN_TAGGING )
+#   define BREAL( p ) (p)
+#   define CREAL( p ) (p)
+#   define DEFINE_REAL( name, aux, flonum ) double name = flonum
+#   define REALP( c ) (((unsigned long)c & TAG_MASK != TAG_MASK) || isnan( c ))
+#elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))
 #   define DEFINE_REAL( name, aux, flonum ) \
@@ -82,19 +89,28 @@ struct bgl_real {
 		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ); \
    (an_object)->real_t.real = d;
 
-#if( BGL_GC != BGL_SAW_GC )
-#  define DOUBLE_TO_REAL( d ) (make_real( d ))
-#else					
+#if( !BGL_NAN_TAGGING )
+#  if( BGL_GC != BGL_SAW_GC )
+#    define DOUBLE_TO_REAL( d ) (make_real( d ))
+#  else					
 BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
-#  define DOUBLE_TO_REAL( d ) (bgl_saw_make_real( d ))
-#endif					
-#define REAL_TO_DOUBLE( r ) (REAL( r ).real)
-
-#define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
-#define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))
+#    define DOUBLE_TO_REAL( d ) (bgl_saw_make_real( d ))
+#  endif
+#  define REAL_TO_DOUBLE( r ) (REAL( r ).real)
+#  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
+#  define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))
+#else
+#  define make_real( d ) (d)
+#  define REAL_TO_DOUBLE( r ) (r)
+#  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
+#  define REAL_TO_FLOAT( r ) ((float)(r))
+#endif
 
 /* boehm allocation */
-#if( BGL_GC == BGL_BOEHM_GC )
+#if( BGL_NAN_TAGGING )
+#  define MAKE_REAL( v ) (v)
+#  define BGL_MAKE_INLINE_REAL( v ) (v)
+#elif( BGL_GC == BGL_BOEHM_GC )
 #  if( BGL_GC_CUSTOM || !defined( __GNUC__ ) )
 #     define MAKE_REAL( v ) make_real( v )
 #  else
@@ -103,16 +119,14 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 	    BGL_INIT_REAL( an_object, v ); \
 	    BREAL( an_object ); })
 #  endif
-
 #  define MAKE_YOUNG_REAL( v ) MAKE_REAL( v )
+#  define BGL_MAKE_INLINE_REAL( d ) \
+     an_object = GC_MALLOC_ATOMIC( REAL_SIZE ); \
+     IFN_REAL_TAG( an_object->real_t.header = \
+  		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) )\
+     an_object->real_t.real = d; \
+     BREAL( an_object )
 #endif
-
-#define BGL_MAKE_INLINE_REAL( d ) \
-   an_object = GC_MALLOC_ATOMIC( REAL_SIZE ); \
-   IFN_REAL_TAG( an_object->real_t.header = \
-		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) )\
-   an_object->real_t.real = d; \
-   BREAL( an_object )
 
 /*---------------------------------------------------------------------*/
 /*    api                                                              */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar 18 07:17:45 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 15:23:25 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -69,7 +69,11 @@ struct bgl_hvector {
 #if( defined( TAG_VECTOR ) )
 #   define BVECTOR( p ) ((obj_t)((long)p + TAG_VECTOR))
 #   define CVECTOR( p ) ((obj_t)((unsigned long)p - TAG_VECTOR))
-#   define VECTORP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_VECTOR)))
+#   if( TAG_VECTOR != 0 ) 
+#      define VECTORP( c ) (((long)c) & TAG_MASK) == TAG_VECTOR)
+#   else
+#      define VECTORP( c ) ((c) && ((((long)c) & TAG_MASK) == TAG_VECTOR))
+#   endif
 #else
 #   define BVECTOR( p ) BREF( p )
 #   define CVECTOR( p ) ((obj_t)((long)(p) - TAG_STRUCT))

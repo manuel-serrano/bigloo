@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar 18 07:16:58 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 15:20:52 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -52,13 +52,11 @@ typedef struct BgL_objectz00_bgl {
    (BGL_TAG_CNSTP(o) && (((unsigned long)o) < ((unsigned long)0xff << 24)))
 #  define BOBJECT( o ) ((obj_t)((unsigned long)o + TAG_CNST))
 #  define COBJECT( o ) ((obj_t)((unsigned long)o - TAG_CNST))
-#elif( defined( TAG_OBJECT) )
-#  if( TAG_OBJECT == 0 )
-#    define BGL_OBJECTP( o ) \
-       ((((long)o) & TAG_MASK) == TAG_OBJECT)
+#elif( defined( TAG_OBJECT ) )
+#  if( TAG_OBJECT != 0 )
+#    define BGL_OBJECTP( o ) ((((long)o) & TAG_MASK) == TAG_OBJECT)
 #  else
-#    define BGL_OBJECTP( o ) \
-       ((o) && (((long)o) & TAG_MASK) == TAG_OBJECT)
+#    define BGL_OBJECTP( o ) ((o) && (((long)o) & TAG_MASK) == TAG_OBJECT)
 #  endif
 #  define BOBJECT( o ) ((obj_t)((unsigned long)o + TAG_OBJECT))
 #  define COBJECT( o ) ((obj_t)((unsigned long)o - TAG_OBJECT))

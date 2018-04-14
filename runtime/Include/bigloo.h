@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 12 11:13:22 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 14:56:03 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -143,6 +143,7 @@ extern "C" {
 /*    |xxxxxxxx|xxxxxxxx|........|mmmmmm??|                            */
 /*    +--------+--------+--------+--------+                            */
 /*                                                                     */
+/*    -------------------------------------------------------------    */
 /*    64 bit tagging:                                                  */
 /*    -------------------------------------------------------------    */
 /*    pointers (vector, cell, real):                                   */
@@ -155,33 +156,49 @@ extern "C" {
 /*    |xxxxxxxx|xxxxxxxx|xxxxxxxx|.......|...................... ???|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*                                                                     */
+/*    -------------------------------------------------------------    */
+/*    64 nan tagging:                                                  */
+/*    -------------------------------------------------------------    */
+/*    pointers (vector, cell, real):                                   */
+/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*    |11111111|1111????|.........pointer...........................|  */
+/*    +--------+--------+--------+- ... -+--------+--------+--------+  */
+/*                                                                     */
 /*---------------------------------------------------------------------*/
-#define TAG_SHIFT PTR_ALIGNMENT
-#define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
+#if( BGL_NAN_TAGGING )
+#   define TAG_MASK ((unsigned long)7fff << 48)
+#   define NAN_MASK (((unsigned long)1 << 48) - 1)
 
-#define TAG( val, shift, tag ) ((long)(((unsigned long)(val) << shift) | tag))
-#define UNTAG( val, shift, tag ) ((long)((long)(val) >> shift))
+#   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) | tag))
+#   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK))
+#else
+#   define TAG_SHIFT PTR_ALIGNMENT
+#   define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
 
-#define BGL_CNST_SHIFT_CHAR 8
-#define BGL_CNST_SHIFT_INT16 16
-#define BGL_CNST_SHIFT_UCS2 16
+#   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) << shift) | tag))
+#   define UNTAG( _v, shift, tag ) ((long)((long)(_v) >> shift))
 
-#if( PTR_ALIGNMENT >= 3 )
-#  define BGL_CNST_SHIFT_INT32 32
+#   define BGL_CNST_SHIFT_CHAR 8
+#   define BGL_CNST_SHIFT_INT16 16
+#   define BGL_CNST_SHIFT_UCS2 16
+
+#   if( PTR_ALIGNMENT >= 3 )
+#     define BGL_CNST_SHIFT_INT32 32
+#   endif
 #endif
 
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
-#if( BGL_NAN )
-#   define NAN_INT 0xfff8ULL << 48    /*  Int tagging       111...1000 */
-#   define NAN_STRUCT 0xfff9ULL << 48 /*  Pointers tagging  111...1001 */
-#   define NAN_CNST 0xfffaULL << 48   /*  Constants tagging 111...1010 */
-#   define NAN_VECTOR 0xfffbULL << 48 /*  Vector tagging    111...1011 */
-#   define NAN_CELL 0xfffcULL << 48   /*  Cell tagging      111...1100 */
-#   define NAN_SYMBOL 0xfffdULL << 48 /*  Symbol tagging    111...1101 */
-#   define NAN_PAIR 0xfffeULL << 48   /*  Pair tagging      111...1110 */
-#   define NAN_OBJECT 0xffffULL << 48 /*  Object tagging    111...1111 */
+#if( BGL_NAN_TAGGING )
+#   define TAG_INT 0x7ff8ULL << 48    /*  Int tagging       011...1000 */
+#   define TAG_STRUCT 0x7ff9ULL << 48 /*  Pointers tagging  011...1001 */
+#   define TAG_CNST 0x7ffaULL << 48   /*  Constants tagging 011...1010 */
+#   define TAG_VECTOR 0x7ffbULL << 48 /*  Vector tagging    011...1011 */
+#   define TAG_CELL 0x7ffcULL << 48   /*  Cell tagging      011...1100 */
+#   define TAG_SYMBOL 0x7ffdULL << 48 /*  Symbol tagging    011...1101 */
+#   define TAG_PAIR 0x7ffeULL << 48   /*  Pair tagging      011...1110 */
+#   define TAG_OBJECT 0x7fffULL << 48 /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
 #   define TAG_INT 0                  /*  Integers tagging      ....00 */
 #   define TAG_STRUCT 1               /*  Pointers tagging      ....01 */
@@ -201,14 +218,14 @@ extern "C" {
 error "Unknown garbage collector type"
 #endif
 
-#if( PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN)
+#if( PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING)
 #   define TAG_VECTOR 4               /*  Vector tagging        ...100 */
 #   define TAG_CELL 5                 /*  Cells tagging         ...101 */
 #   define TAG_REAL 6                 /*  Reals tagging         ...110 */
 #   define TAG_SYMBOL 7               /*  Symbols tagging       ...111 */
 #endif
 
-#if( PTR_ALIGNMENT == 2 && defined( BGL_TAG_CNST32 ) && !BGL_NAN)
+#if( PTR_ALIGNMENT == 2 && defined( BGL_TAG_CNST32 ) && !BGL_NAN_TAGGING)
 #   define TAG_OBJECT TAG_CNST
 
 #   undef BGL_CNST_SHIFT_INT16
@@ -1053,17 +1070,6 @@ typedef obj_t (*function_t)();
    ((ucs2_t)CCNST_MASK((unsigned long)(o) >> BGL_CNST_SHIFT_UCS2))
 
 #define BGL_INT_TO_UCS2( _i ) ((ucs2_t)(_i))
-
-/*---------------------------------------------------------------------*/
-/*    Integers                                                         */
-/*---------------------------------------------------------------------*/
-#define INTEGERP( o ) ((((long)o) & TAG_MASK) == TAG_INT)
-
-#define BINT( i ) (obj_t)TAG( i, TAG_SHIFT, TAG_INT )
-#define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
-
-#define ODDP_FX( i )  ((i) & 0x1 )
-#define EVENP_FX( i ) (!ODDP_FX( i ))
 
 /*---------------------------------------------------------------------*/
 /*    Regular procedures                                               */

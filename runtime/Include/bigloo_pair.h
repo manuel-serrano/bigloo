@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Apr 12 11:09:19 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 15:03:00 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -45,7 +45,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_old_epair( obj_t, obj_t, obj_t );
 /*    bgl_pair ...                                                     */
 /*---------------------------------------------------------------------*/
 struct bgl_pair {
-#if( BOX_PAIR )
+#if( !TAG_PAIR )
    /* the header, unless pairs are tagged */
    header_t header;
 #endif      
@@ -54,13 +54,13 @@ struct bgl_pair {
 };
 
 struct bgl_epair {
-#if( BOX_PAIR )
+#if( !TAG_PAIR )
    header_t header; 
 #endif 
    obj_t car;       
    obj_t cdr;
    /* extended header type */
-#if( (BGL_GC == BGL_BOEHM_GC) && !BOX_PAIR )
+#if( (BGL_GC == BGL_BOEHM_GC) && TAG_PAIR )
    obj_t eheader;
 #endif   
    /* extended slot */
@@ -76,8 +76,6 @@ struct bgl_epair {
 /*---------------------------------------------------------------------*/
 /*    tagging ...                                                      */
 /*---------------------------------------------------------------------*/
-#define BOX_PAIR (!(defined( TAG_PAIR ) || defined( NAN_PAIR ) ))
-
 #if( defined( TAG_PAIR ) )
 #   define BPAIR( p ) ((obj_t)((long)p + TAG_PAIR))
 #   define CPAIR( p ) ((obj_t)((long)p - TAG_PAIR))
@@ -86,16 +84,13 @@ struct bgl_epair {
 #   else
 #      define PAIRP( c ) ((((long)c) & TAG_MASK) == TAG_PAIR)
 #   endif
-#elif( ddfined( NAN_PAIR ) )
-#   define BPAIR( p ) ((obj_t)((unsigned long)p + NAN_PAIR))
-#   define CPAIR( p ) ((obj_t)((unsigned long)p - NAN_PAIR))
 #else
 #   define BPAIR( p ) BREF( p )
 #   define CPAIR( p ) CREF( p )
 #   define PAIRP( c ) (POINTERP( c ) && (TYPE( c ) == PAIR_TYPE))
 #endif
 
-#if( BGL_GC == BGL_BOEHM_GC && !BOX_PAIR )
+#if( BGL_GC == BGL_BOEHM_GC && TAG_PAIR )
 #   define EPAIRP( c ) \
       (PAIRP( c ) && \
        (((long)GC_size( BPAIR( c ) )) >= EPAIR_SIZE) && \
@@ -108,13 +103,13 @@ struct bgl_epair {
 /*---------------------------------------------------------------------*/
 /*    alloc ...                                                        */
 /*---------------------------------------------------------------------*/
-#if( BOX_PAIR )
+#if( !TAG_PAIR )
 #  define IFN_PAIR_TAG( expr ) expr
 #else
 #  define IFN_PAIR_TAG( expr ) 0
 #endif   
 
-#if( !BOX_PAIR && ( BGL_GC == BGL_BOEHM_GC) )
+#if( TAG_PAIR && ( BGL_GC == BGL_BOEHM_GC) )
 #  define IF_EPAIR_TAG( expr ) expr
 #else
 #  define IF_EPAIR_TAG( expr ) 

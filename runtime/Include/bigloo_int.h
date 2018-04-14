@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sun Mar 18 07:16:50 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 15:06:47 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -29,7 +29,7 @@ extern "C" {
 #define BINT( i ) (obj_t)TAG( i, TAG_SHIFT, TAG_INT )
 #define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
 
-#define ODDP_FX( i )  ((i) & 0x1 )
+#define ODDP_FX( i )  ((i) & 0x1)
 #define EVENP_FX( i ) (!ODDP_FX( i ))
 
 #define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
