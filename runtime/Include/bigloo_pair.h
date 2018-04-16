@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Apr 15 06:13:28 2018 (serrano)                */
+/*    Last change :  Mon Apr 16 18:21:23 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -78,7 +78,7 @@ struct bgl_epair {
 /*---------------------------------------------------------------------*/
 #if( defined( TAG_PAIR ) )
 #   define BPAIR( p ) BGL_BPTR( (long)p + TAG_PAIR )
-#   define CPAIR( p ) (union scmobj *)(((long)BGL_CPTR( p )) - TAG_PAIR)
+#   define CPAIR( p ) ((union scmobj *)(((long)BGL_CPTR( p )) - TAG_PAIR))
 #   if( TAG_PAIR != 0 )
 #      define PAIRP( c ) ((((long)c) & TAG_MASK) == TAG_PAIR)
 #   else

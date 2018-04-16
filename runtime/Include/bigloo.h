@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Apr 14 18:20:00 2018 (serrano)                */
+/*    Last change :  Mon Apr 16 18:21:48 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -386,8 +386,8 @@ typedef union {
 #else
 #define BGL_CPTR( _o ) (_o)
 #define BGL_BPTR( _o ) (_o)
-#define BGL_BREAL( _o ) (_o)
 #define BGL_CREAL( _o ) (_o)
+#define BGL_BREAL( _o ) (_o)
 typedef union scmobj *obj_t;
 #endif
 
@@ -1119,7 +1119,7 @@ typedef obj_t (*function_t)();
 
 #define PROCEDURE_SIZE (sizeof( struct procedure ))
 
-#define PROCEDURE( o ) CREF( o )->procedure_t
+#define PROCEDURE( o ) CREF( o )->procedure
    
 #define PROCEDURE_ENTRY( fun ) (obj_t)(PROCEDURE( fun ).entry)
 #define PROCEDURE_VA_ENTRY( fun ) (obj_t)(PROCEDURE( fun ).va_entry)
