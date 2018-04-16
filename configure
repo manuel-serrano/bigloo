@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Apr 14 18:14:25 2018 (serrano)                */
+#*    Last change :  Sat Apr 14 18:17:38 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2615,6 +2615,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   else
     intsize=30
     elongsize=32
+    bglnantagging=0
   fi
 
   # The -O C compiler options

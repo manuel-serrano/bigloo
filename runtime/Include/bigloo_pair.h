@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Apr 14 15:03:00 2018 (serrano)                */
+/*    Last change :  Sun Apr 15 06:13:28 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -67,22 +67,22 @@ struct bgl_epair {
    obj_t cer;
 };                    
 
-#define PAIR( o ) (CPAIR( o )->pair_t)
-#define EPAIR( o ) (CPAIR( o )->epair_t)
-
 #define PAIR_SIZE (sizeof( struct bgl_pair ))
 #define EPAIR_SIZE (sizeof( struct bgl_epair ))
+
+#define PAIR( o ) (CPAIR( o )->pair)
+#define EPAIR( o ) (CPAIR( o )->epair)
 
 /*---------------------------------------------------------------------*/
 /*    tagging ...                                                      */
 /*---------------------------------------------------------------------*/
 #if( defined( TAG_PAIR ) )
-#   define BPAIR( p ) ((obj_t)((long)p + TAG_PAIR))
-#   define CPAIR( p ) ((obj_t)((long)p - TAG_PAIR))
-#   if( TAG_PAIR == 0 )
-#      define PAIRP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_PAIR)))
-#   else
+#   define BPAIR( p ) BGL_BPTR( (long)p + TAG_PAIR )
+#   define CPAIR( p ) (union scmobj *)(((long)BGL_CPTR( p )) - TAG_PAIR)
+#   if( TAG_PAIR != 0 )
 #      define PAIRP( c ) ((((long)c) & TAG_MASK) == TAG_PAIR)
+#   else
+#      define PAIRP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_PAIR)))
 #   endif
 #else
 #   define BPAIR( p ) BREF( p )
@@ -116,18 +116,18 @@ struct bgl_epair {
 #endif   
 
 #define BGL_INIT_PAIR( an_object, a, d ) \
-   IFN_PAIR_TAG( (an_object)->pair_t.header = \
+   IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \
 		 MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ); \
-   (an_object)->pair_t.car = a; \
-   (an_object)->pair_t.cdr = d;
+   BGL_CPTR( an_object )->pair.car = a; \
+   BGL_PAIR( an_object )->pair.cdr = d;
 
 #define BGL_INIT_EPAIR( an_object, a, d, e ) \
-   IFN_PAIR_TAG( (an_object)->pair_t.header = \
+   IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \
 		 MAKE_HEADER( PAIR_TYPE, EPAIR_SIZE ) ); \
-   (an_object)->pair_t.car = a; \
-   (an_object)->pair_t.cdr = d;	\
-   (an_object)->epair_t.cer = e; \
-   IF_EPAIR_TAG( (an_object)->epair_t.eheader = BINT( EPAIR_TYPE ) );
+   BGL_CPTR( an_object )->pair.car = a; \
+   BGL_CPTR( an_object )->pair.cdr = d;	\
+   BGL_CPTR( an_object )->epair.cer = e; \
+   IF_EPAIR_TAG( BGL_CPTR( an_object )->epair.eheader = BINT( EPAIR_TYPE ) );
 
 /* boehm allocation */
 #if( BGL_GC == BGL_BOEHM_GC )

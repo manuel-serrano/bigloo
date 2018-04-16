@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar 18 07:17:38 2018 (serrano)                */
+/*    Last change :  Sun Apr 15 06:55:00 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRUCTs                                                   */
@@ -41,17 +41,21 @@ struct bgl_struct {
    obj_t obj0;
 };
 
-#define STRUCT( o ) CSTRUCTURE( o )->struct_t
-
 #define STRUCT_SIZE (sizeof( struct bgl_struct ))
+
+#define STRUCT( o ) CSTRUCTURE( o )->structure
 
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
 #if( defined( TAG_STRUCTURE ) )
-#   define BSTRUCTURE( r ) ((obj_t)((long)p + TAG_STRUCTURE))
-#   define CSTRUCTURE( p ) ((obj_t)((long)p - TAG_STRUCTURE))
-#   define STRUCTP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_STRUCTURE)))
+#   define BSTRUCTURE( r ) BGL_UNPTR( (obj_t)((long)p + TAG_STRUCTURE) )
+#   define CSTRUCTURE( p ) BGL_PTR( (obj_t)((long)p - TAG_STRUCTURE) )
+#   if( TAG_STRUCTURE != 0 )
+#      define STRUCTP( c ) ((((long)c) & TAG_MASK) == TAG_STRUCTURE)
+#   else
+#      define STRUCTP( c ) ((c && ((((long)c) & TAG_MASK) == TAG_STRUCTURE)))
+#   endif
 #else
 #   define BSTRUCTURE( p ) BREF( p )
 #   define CSTRUCTURE( p ) CREF( p )

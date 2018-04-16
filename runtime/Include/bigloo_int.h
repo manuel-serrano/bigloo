@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sat Apr 14 15:06:47 2018 (serrano)                */
+/*    Last change :  Sun Apr 15 06:32:52 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -45,21 +45,20 @@ extern "C" {
 /*    Long long                                                        */
 /*---------------------------------------------------------------------*/
 #define DEFINE_LLONG( name, aux, num ) \
-   static struct { __CNST_ALIGN header_t header; \
-                   BGL_LONGLONG_T llong; } \
-      const aux = { __CNST_FILLER, MAKE_HEADER( LLONG_TYPE, 0 ), (BGL_LONGLONG_T)(num) }; \
-      const obj_t name = BREF( &(aux.header) )
+   static struct { __CNST_ALIGN header_t header; BGL_LONGLONG_T llong; } \
+      const aux = { __CNST_FILLER MAKE_HEADER( LLONG_TYPE, 0 ), BGL_LONGLONG_T)(num) }; \
+   const obj_t name = BREF( &(aux.header) )
 
 #define LLONG_SIZE (sizeof( struct llong ))
 
 #define LLONGP( o ) (POINTERP( o ) && (TYPE( o ) == LLONG_TYPE))
 
-#define LLONG( o ) CREF( o )->llong_t
+#define LLONG( o ) CREF( o )->llong
    
 #define LONG_TO_LLONG( l ) ((BGL_LONGLONG_T)l)   
 #define LLONG_TO_LONG( o ) ((long) o)
 	    
-#define BLLONG_TO_LLONG( l ) (LLONG( l ).llong)
+#define BLLONG_TO_LLONG( l ) (LLONG( l ).val)
 #define BLLONG_TO_LONG( l ) ((long)BLLONG_TO_LLONG( l ))
 #define LONG_TO_BLLONG( l ) (make_bllong((BGL_LONGLONG_T)l))
 #define LLONG_TO_BLLONG( l ) (make_bllong((BGL_LONGLONG_T)l))
@@ -68,19 +67,18 @@ extern "C" {
 /*    Exact long                                                       */
 /*---------------------------------------------------------------------*/
 #define DEFINE_ELONG( name, aux, num ) \
-   static struct { __CNST_ALIGN header_t header; \
-                   long elong; } \
-      const aux = { __CNST_FILLER, MAKE_HEADER( ELONG_TYPE, 0 ), num }; \
-      const obj_t name = BREF( &(aux.header) )
+   static struct { __CNST_ALIGN header_t header; long elong; } \
+      const aux = { __CNST_FILLER MAKE_HEADER( ELONG_TYPE, 0 ), num }; \
+   const obj_t name = BREF( &(aux.header) )
 		 
 #define ELONG_SIZE (sizeof( struct elong ))
 
 #define ELONGP( o ) (POINTERP( o ) && (TYPE( o ) == ELONG_TYPE))
 
-#define ELONG( o ) CREF( o )->elong_t
+#define ELONG( o ) CREF( o )->elong
 
 #define ELONG_TO_BELONG( _1 ) make_belong( _1 )
-#define BELONG_TO_LONG( l ) (ELONG( l ).elong)
+#define BELONG_TO_LONG( l ) (ELONG( l ).val)
 
 /*---------------------------------------------------------------------*/
 /*    Stdint                                                           */
@@ -145,12 +143,12 @@ extern "C" {
 #else
 #  define DEFINE_INT32( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; int32_t val; } \
-      const aux = { __CNST_FILLER, MAKE_HEADER( INT32_TYPE, 0 ), (int32_t)(num) }; \
+      const aux = { __CNST_FILLER MAKE_HEADER( INT32_TYPE, 0 ), (int32_t)(num) }; \
       const obj_t name = BREF( &(aux.header) )
 		 
 #  define DEFINE_UINT32( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; int32_t val; } \
-      const aux = { __CNST_FILLER, MAKE_HEADER( UINT32_TYPE, 0 ), (uint32_t)(num) }; \
+      const aux = { __CNST_FILLER MAKE_HEADER( UINT32_TYPE, 0 ), (uint32_t)(num) }; \
       const obj_t name = BREF( &(aux.header) )
 		 
 #  define BGL_INT32_SIZE (sizeof( struct bgl_sint32 ))
@@ -165,18 +163,18 @@ extern "C" {
 
 #define DEFINE_INT64( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; int64_t val; } \
-      const aux = { __CNST_FILLER, MAKE_HEADER( INT64_TYPE, 0 ), (int64_t)(num) }; \
+      const aux = { __CNST_FILLER MAKE_HEADER( INT64_TYPE, 0 ), (int64_t)(num) }; \
       const obj_t name = BREF( &(aux.header) )
 		 
 #define DEFINE_UINT64( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; uint64_t val; } \
-      const aux = { __CNST_FILLER, MAKE_HEADER( UINT64_TYPE, 0 ), (uint64_t)(num) }; \
+      const aux = { __CNST_FILLER MAKE_HEADER( UINT64_TYPE, 0 ), (uint64_t)(num) }; \
       const obj_t name = BREF( &(aux.header) )
 		 
 #define BGL_INT64_SIZE (sizeof( struct bgl_sint64 ))
 #define BGL_UINT64_SIZE (sizeof( struct bgl_uint64 ))
-#define BGL_INT64( o ) CREF( o )->sint64_t
-#define BGL_UINT64( o ) CREF( o )->uint64_t
+#define BGL_INT64( o ) CREF( o )->sint64
+#define BGL_UINT64( o ) CREF( o )->uint64
 #define BGL_INT64_TO_BINT64( _1 ) bgl_make_bint64( _1 )
 #define BGL_UINT64_TO_BUINT64( _1 ) bgl_make_buint64( _1 )
 #define BGL_BINT64_TO_INT64( o ) BGL_INT64( o ).val

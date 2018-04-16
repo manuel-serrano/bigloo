@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sat Apr 14 15:25:05 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 18:34:36 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -37,16 +37,19 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 /*---------------------------------------------------------------------*/
 /*    bgl_real ...                                                     */
 /*---------------------------------------------------------------------*/
+#if( !BGL_NAN_TAGGING ) 
 struct bgl_real {
-#if( !defined( TAG_REAL ) && !BGL_NAN_TAGGING )
+#if( !defined( TAG_REAL ) )
    header_t header;
 #endif
-   double real;
+   double val;
 };
 
-#define REAL( o ) (CREAL( o )->real_t)
-
-#define REAL_SIZE  (sizeof( struct bgl_real ))
+#  define REAL( o ) (CREAL( o )->real)
+#  define REAL_SIZE  (sizeof( struct bgl_real ))
+#else
+#  define REAL( _o ) ( _o.real )
+#endif
    
 /*---------------------------------------------------------------------*/
 /*    tagging                                                          */
@@ -54,8 +57,10 @@ struct bgl_real {
 #if( BGL_NAN_TAGGING )
 #   define BREAL( p ) (p)
 #   define CREAL( p ) (p)
-#   define DEFINE_REAL( name, aux, flonum ) double name = flonum
-#   define REALP( c ) (((unsigned long)c & TAG_MASK != TAG_MASK) || isnan( c ))
+#   define DEFINE_REAL( name, aux, flonum ) obj_t name = BREAL( flonum )
+#   define REALP( c ) \
+   (((unsigned long)c & TAG_MASK != TAG_MASK) \
+    || (!((unsigned long) c & NAN_MASK)))
 #elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))
@@ -84,11 +89,6 @@ struct bgl_real {
 #  define IFN_REAL_TAG( expr )
 #endif   
 
-#define BGL_INIT_REAL( an_object, d ) \
-   IFN_REAL_TAG( (an_object)->real_t.header = \
-		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ); \
-   (an_object)->real_t.real = d;
-
 #if( !BGL_NAN_TAGGING )
 #  if( BGL_GC != BGL_SAW_GC )
 #    define DOUBLE_TO_REAL( d ) (make_real( d ))
@@ -100,20 +100,25 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
 #  define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))
 #else
-#  define make_real( d ) (d)
-#  define REAL_TO_DOUBLE( r ) (r)
+#  define make_real( d ) ((obj_t)( { real: d } ))
+#  define REAL_TO_DOUBLE( r ) REAL( r )
+#  define DOUBLE_TO_REAL( r ) make_real(r)
 #  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
-#  define REAL_TO_FLOAT( r ) ((float)(r))
+#  define REAL_TO_FLOAT( r ) ((float)(REAL( r )))
 #endif
 
 /* boehm allocation */
 #if( BGL_NAN_TAGGING )
-#  define MAKE_REAL( v ) (v)
-#  define BGL_MAKE_INLINE_REAL( v ) (v)
+#  define MAKE_REAL( v ) make_real( v )
+#  define BGL_MAKE_INLINE_REAL( v ) MAKE_REAL( v )
 #elif( BGL_GC == BGL_BOEHM_GC )
 #  if( BGL_GC_CUSTOM || !defined( __GNUC__ ) )
 #     define MAKE_REAL( v ) make_real( v )
 #  else
+#     define BGL_INIT_REAL( an_object, d ) \
+        IFN_REAL_TAG( (an_object)->real.header = \
+	     	      MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ); \
+	(an_object)->real.real = d;
 #     define MAKE_REAL( v ) \
          ({ obj_t an_object = GC_MALLOC( REAL_SIZE ); \
 	    BGL_INIT_REAL( an_object, v ); \
@@ -124,7 +129,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
      an_object = GC_MALLOC_ATOMIC( REAL_SIZE ); \
      IFN_REAL_TAG( an_object->real_t.header = \
   		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) )\
-     an_object->real_t.real = d; \
+     an_object->real.real = d; \
      BREAL( an_object )
 #endif
 

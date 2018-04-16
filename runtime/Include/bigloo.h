@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Apr 14 14:56:03 2018 (serrano)                */
+/*    Last change :  Sat Apr 14 18:20:00 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -105,7 +105,7 @@ extern "C" {
 /*    constant alignment                                               */
 /*---------------------------------------------------------------------*/
 #define __CNST_ALIGN double _;   
-#define __CNST_FILLER 0.0
+#define __CNST_FILLER 0.0,
 
 /*---------------------------------------------------------------------*/
 /*    Constants pool                                                   */
@@ -166,11 +166,11 @@ extern "C" {
 /*                                                                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
-#   define TAG_MASK ((unsigned long)7fff << 48)
+#   define TAG_MASK ((unsigned long)0x7fff << 48)
 #   define NAN_MASK (((unsigned long)1 << 48) - 1)
 
-#   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) | tag))
-#   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK))
+#   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) | tag)))
+#   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK)))
 #else
 #   define TAG_SHIFT PTR_ALIGNMENT
 #   define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
@@ -191,14 +191,14 @@ extern "C" {
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
-#   define TAG_INT 0x7ff8ULL << 48    /*  Int tagging       011...1000 */
-#   define TAG_STRUCT 0x7ff9ULL << 48 /*  Pointers tagging  011...1001 */
-#   define TAG_CNST 0x7ffaULL << 48   /*  Constants tagging 011...1010 */
-#   define TAG_VECTOR 0x7ffbULL << 48 /*  Vector tagging    011...1011 */
-#   define TAG_CELL 0x7ffcULL << 48   /*  Cell tagging      011...1100 */
-#   define TAG_SYMBOL 0x7ffdULL << 48 /*  Symbol tagging    011...1101 */
-#   define TAG_PAIR 0x7ffeULL << 48   /*  Pair tagging      011...1110 */
-#   define TAG_OBJECT 0x7fffULL << 48 /*  Object tagging    011...1111 */
+#   define TAG_INT (0x7ff8ULL<<48)    /*  Int tagging       011...1000 */
+#   define TAG_STRUCT (0x7ff9ULL<<48) /*  Pointers tagging  011...1001 */
+#   define TAG_CNST (0x7ffaULL<<48)   /*  Constants tagging 011...1010 */
+#   define TAG_VECTOR (0x7ffbULL<<48) /*  Vector tagging    011...1011 */
+#   define TAG_CELL (0x7ffcULL<<48)   /*  Cell tagging      011...1100 */
+#   define TAG_SYMBOL (0x7ffdULL<<48) /*  Symbol tagging    011...1101 */
+#   define TAG_PAIR (0x7ffeULL<<48)   /*  Pair tagging      011...1110 */
+#   define TAG_OBJECT (0x7fffULL<<48) /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
 #   define TAG_INT 0                  /*  Integers tagging      ....00 */
 #   define TAG_STRUCT 1               /*  Pointers tagging      ....01 */
@@ -235,14 +235,18 @@ error "Unknown garbage collector type"
 #endif
 
 #if( TAG_YOUNG )
-#   define POINTERP( o ) (((((long)o) & 1) == 0) && o)
+#   define POINTERP( o ) (((((long)BGL_CPTR( o )) & 1) == 0) && o)
 #else
 #   if( TAG_STRUCT != 0 )
-#      define POINTERP( o ) ((((long)o) & TAG_MASK) == TAG_STRUCT)
+#      define POINTERP( o ) ((((long)BGL_CPTR( o )) & TAG_MASK) == TAG_STRUCT)
 #   else
-#      define POINTERP( o ) (((((long)o) & TAG_MASK) == TAG_STRUCT) && o)
+#      define POINTERP( o ) (((((long)BGL_CPTR( o )) & TAG_MASK) == TAG_STRUCT) && BGL_CPTR( o ))
 #   endif
 #endif
+
+#define BREF( r ) BGL_BPTR( (obj_t)((long)r + TAG_STRUCT) )
+#define CREFSLOW( r ) BGL_CPTR( (obj_t)((unsigned long)r & ~(TAG_MASK)) )
+#define CREF( r ) BGL_CPTR( (obj_t)((long)r - TAG_STRUCT) )
 
 /*---------------------------------------------------------------------*/
 /*    Allocated objects                                                */
@@ -271,11 +275,6 @@ error "Unknown garbage collector type"
 #define TYPE( _o ) HEADER_TYPE( CREF( _o )->header )
        
 #define OBJ_SIZE ((long)(sizeof( obj_t )))
-
-#define BREF( r ) ((obj_t)((long)r + TAG_STRUCT))
-#define CREFSLOW( r ) ((obj_t)((unsigned long)r & ~(TAG_MASK)))
-#define CREFFAST( r ) ((obj_t)((long)r - TAG_STRUCT))
-#define CREF( r ) CREFFAST( r )
 
 #if( TAG_YOUNG )
 #  define BYOUNG( r ) ((obj_t)((long)r + TAG_YOUNG))
@@ -320,7 +319,7 @@ error "Unknown garbage collector type"
 #endif   
 #define SOCKET_TYPE 15
 #define STRUCT_TYPE 16
-#if( !defined( TAG_REAL ) )
+#if( !defined( TAG_REAL ) && !BGL_NAN_TAGGING )
 #  define REAL_TYPE 17
 #endif   
 #define PROCESS_TYPE 18
@@ -374,7 +373,23 @@ error "Unknown garbage collector type"
 typedef long header_t;
 typedef int bool_t;
 typedef uint16_t ucs2_t;
+
+#if( BGL_NAN_TAGGING )
+#define BGL_CPTR( _o ) (_o.ptr)
+#define BGL_CREAL( _o ) (_o.real)
+#define BGL_BPTR( _o ) ((obj_t)({ ptr: (union scm obj *)_o }))
+#define BGL_BREAL( _o ) ((obj_t)({ real: (double)_o }))
+typedef union {
+   union scmobj *ptr;
+   double real;
+} obj_t;
+#else
+#define BGL_CPTR( _o ) (_o)
+#define BGL_BPTR( _o ) (_o)
+#define BGL_BREAL( _o ) (_o)
+#define BGL_CREAL( _o ) (_o)
 typedef union scmobj *obj_t;
+#endif
 
 #include <bigloo_saw.h>
 #include <bigloo_pair.h>
@@ -415,19 +430,19 @@ union scmobj {
    header_t header;
    
    /* pairs */
-   struct bgl_pair pair_t;
-   struct bgl_epair epair_t;
+   struct bgl_pair pair;
+   struct bgl_epair epair;
    
    /* strings */
-   struct bgl_string string_t;
+   struct bgl_string string;
 
    /* ucs2/utf16 strings */
-   struct bgl_ucs2_string ucs2_string_t; 
+   struct bgl_ucs2_string ucs2_string; 
 
    /* vectors */
-   struct bgl_vector vector_t;
-   struct bgl_tvector tvector_t;
-   struct bgl_hvector hvector_t;
+   struct bgl_vector vector;
+   struct bgl_tvector tvector;
+   struct bgl_hvector hvector;
 
    /* procedure (closures) */
    struct procedure {
@@ -437,13 +452,13 @@ union scmobj {
       union scmobj *attr;
       int arity;
       union scmobj *obj0;
-   } procedure_t;
+   } procedure;
 
    /* light procedures (results of the CFA optimization) */
    struct procedure_light {
       union scmobj *(*entry)();
       union scmobj  *obj0;
-   } procedure_light_t;
+   } procedure_light;
 
    /* symbols and keywords */
    struct symbol {
@@ -452,13 +467,13 @@ union scmobj {
 #endif      
       union scmobj *string;
       union scmobj *cval;
-   } symbol_t;
+   } symbol;
 
    struct keyword {
       header_t header;
       union scmobj *string;
       union scmobj *cval;
-   } keyword_t;
+   } keyword;
    
    /* common ports structure (output, input, procedure, gzip) */
    struct port {
@@ -477,7 +492,7 @@ union scmobj {
       void *userdata;
       /* OS close primitive */
       int (*sysclose)();
-   } port_t;
+   } port;
 
    /* output ports */
    struct output_port {
@@ -507,7 +522,7 @@ union scmobj {
       long err;
       /* mutex to prevent multiwrite */
       union scmobj *mutex;
-   } output_port_t;
+   } output_port;
 
    /* input ports */
    struct input_port {
@@ -539,7 +554,7 @@ union scmobj {
       int lastchar;
       /* the number of chars in that port */
       long length;
-   } input_port_t;
+   } input_port;
 
    /* string input ports */
    struct input_string_port {
@@ -547,7 +562,7 @@ union scmobj {
       struct input_port iport;
       /* offset */
       long offset;
-   } input_string_port_t;
+   } input_string_port;
 	 
    /* procedure input ports */
    struct input_procedure_port {
@@ -559,7 +574,7 @@ union scmobj {
       long pbufpos;
       /* the procedure */
       union scmobj *proc;
-   } input_procedure_port_t;
+   } input_procedure_port;
    
    /* gzipped input ports */
    struct input_gzip_port {
@@ -567,7 +582,7 @@ union scmobj {
       struct input_procedure_port iport;
       /* gzipped port */
       union scmobj *gzip;
-   } input_gzip_port_t;
+   } input_gzip_port;
 
    /* binary ports */
    struct binary_port {
@@ -578,16 +593,18 @@ union scmobj {
       FILE *file;
       /* type 0=input, 1=output, 2=close */
       int io;
-   } binary_port_t;
+   } binary_port;
    
    /* cells (compiler and user values) */	
-   struct bgl_cell cell_t;
+   struct bgl_cell cell;
 
    /* structures */
-   struct bgl_struct struct_t;
+   struct bgl_struct structure;
 
    /* floating point numbers */
-   struct bgl_real real_t;
+#if( !BGL_NAN_TAGGING )
+   struct bgl_real real;
+#endif   
 
    /* call/cc stack */
    struct stack {
@@ -608,55 +625,55 @@ union scmobj {
       char *stack_bot;
       /* heap allocated copy of the stack */
       void *stack;
-   } stack_t;
+   } stack;
    
    /* boxed foreign values */
    struct foreign {
       header_t header;    
       union scmobj *id;
       void *cobj;
-   } foreign_t;
+   } foreign;
    
    /* exact longs (i.e., boxed C longs) */
    struct elong {
       header_t header;
-      long elong;
-   } elong_t;
+      long val;
+   } elong;
 
    /* long longs */
    struct llong {
       header_t header;
-      BGL_LONGLONG_T llong;
-   } llong_t;
+      BGL_LONGLONG_T val;
+   } llong;
 
 #if( !defined( BGL_CNST_SHIFT_INT32 ) )
    /* sint32 */
    struct bgl_sint32 {
       header_t header;
       int32_t val;
-   } sint32_t;
+   } sint32;
       
    /* uint32 */
    struct bgl_uint32 {
       header_t header;
       uint32_t val;
-   } uint32_t;
+   } uint32;
 #endif
    
    /* sint64 */
    struct bgl_sint64 {
       header_t header;
       int64_t val;
-   } sint64_t;
+   } sint64;
       
    /* uint64 */
    struct bgl_uint64 {
       header_t header;
       uint64_t val;
-   } uint64_t;
+   } uint64;
    
    /* arbitrary precision integers */
-   struct bgl_bignum bignum_t;
+   struct bgl_bignum bignum;
 
    /* processes */
    struct process { 
@@ -675,7 +692,7 @@ union scmobj {
       /* win32 process handle */
       void *hProcess;
 #endif
-   } process_t;
+   } process;
 
    /* TCP sockets */
    struct socket {
@@ -707,7 +724,7 @@ union scmobj {
       union scmobj *(*accept)();
       /* user data */
       void *userdata; 
-   } socket_t;
+   } socket;
 
    /* UDP sockets */
    struct bgl_datagram_socket {
@@ -735,7 +752,7 @@ union scmobj {
       void *server;
       /* assocated port */
       union scmobj *port;
-   } datagram_socket_t;
+   } datagram_socket;
 
    /* regular expressions */
    struct bgl_regexp {
@@ -755,7 +772,7 @@ union scmobj {
       union scmobj *preg;
 #  endif
 #endif      
-   } regexp_t;
+   } regexp;
 
    /* custom objects */
    struct custom {
@@ -772,7 +789,7 @@ union scmobj {
       char *(*to_string)();
       /* output function */
       union scmobj *(*output)();
-   } custom_t;
+   } custom;
 
    /* dates */
    struct bgl_date {
@@ -799,7 +816,7 @@ union scmobj {
       long timezone;
       /* daylight savings? [-1/0/1] */   
       int isdst;                 
-   } date_t;
+   } date;
 
    /* mutexes */
    struct bgl_mutex {
@@ -821,7 +838,7 @@ union scmobj {
       union scmobj *backend;
       /* actual OS mutex */
       void *sysmutex;
-   } mutex_t;
+   } mutex;
 
    /* condition variables */
    struct bgl_condvar {
@@ -838,7 +855,7 @@ union scmobj {
       int (*sysbroadcast)();
       /* actual OS condition variable */
       void *condvar;
-   } condvar_t;
+   } condvar;
 
    /* memory mapped IOs */
    struct bgl_mmap {
@@ -863,13 +880,13 @@ union scmobj {
       /* alternate write position */ 
       long aw;
 #endif
-   } mmap_t;
+   } mmap;
    
    /* weak pointers */
    struct bgl_weakptr {
       header_t header;
       union scmobj *data;
-   } weakptr_t;
+   } weakptr;
 
    /* classes */
    struct bgl_class {
@@ -904,7 +921,7 @@ union scmobj {
       union scmobj *super;
       union scmobj *subclasses;
       union scmobj *ancestor0;
-   } class_t;
+   } class;
 
    /* thread dynamic environment */
    struct bgl_dynamic_env {
@@ -958,10 +975,10 @@ union scmobj {
 #endif      
       /* user per thread data */
       union scmobj *user_data;
-   } dynamic_env_t;
+   } dynamic_env;
 
    /* semaphores */
-   struct bgl_semaphore semaphore_t;
+   struct bgl_semaphore semaphore;
 };
 
 /* function type */
@@ -1080,7 +1097,7 @@ typedef obj_t (*function_t)();
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
+      na = { __CNST_FILLER MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
 	     (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1093,7 +1110,7 @@ typedef obj_t (*function_t)();
                    obj_t (*va_entry)(); \
                    obj_t attr; \
                    int arity; } \
-      na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
+      na = { __CNST_FILLER MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
              (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1143,7 +1160,7 @@ typedef obj_t (*function_t)();
 #define DEFINE_BGL_L_PROCEDURE( n, na, e ) \
    static const struct { __CNST_ALIGN ; \
                    union scmobj *(*entry)(); } \
-      na = { __CNST_FILLER, (obj_t (*)())e }; \
+      na = { __CNST_FILLER (obj_t (*)())e }; \
       static const obj_t n = BLIGHT( &(na.entry) )
    
 #define BLIGHT( l ) BPAIR( l )
@@ -1151,7 +1168,7 @@ typedef obj_t (*function_t)();
 
 #define PROCEDURE_L_SIZE (sizeof( struct procedure_light ))
 
-#define PROCEDURE_L( _o_ ) (CLIGHT( _o_ )->procedure_light_t)
+#define PROCEDURE_L( _o_ ) (CLIGHT( _o_ )->procedure_light)
 
 #define PROCEDURE_L_ENTRY( fun ) (PROCEDURE_L( fun ).entry)
 
@@ -1164,12 +1181,12 @@ typedef obj_t (*function_t)();
 #   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
       ( { obj_t an_object; \
 	  an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ); \
-	  (an_object->procedure_light_t).entry = _entry; \
+	  (an_object->procedure_light).entry = _entry; \
           ( BLIGHT( an_object ) ); } )
 #else
 #   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
       (   an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ), \
-	  (an_object->procedure_light_t).entry = _entry, \
+	  (an_object->procedure_light).entry = _entry, \
           ( BLIGHT( an_object ) ) )
 #endif
 
@@ -1197,7 +1214,7 @@ typedef obj_t (*function_t)();
 		   obj_t env0; \
 		   obj_t env1; \
 		   obj_t env2; } \
-      na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
+      na = { __CNST_FILLER MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
 	     (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1216,7 +1233,7 @@ typedef obj_t (*function_t)();
 		   obj_t env0; \
 		   obj_t env1; \
 		   obj_t env2; } \
-      na = { __CNST_FILLER, MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
+      na = { __CNST_FILLER MAKE_HEADER( PROCEDURE_TYPE, 0 ), \
              (obj_t (*)())p, \
 	     (obj_t (*)())vp, \
              at, \
@@ -1239,7 +1256,7 @@ typedef obj_t (*function_t)();
 #   define CSYMBOL( p ) CREF( p )
 #endif   
 
-#define SYMBOL( o ) (CSYMBOL( o )->symbol_t)
+#define SYMBOL( o ) (CSYMBOL( o )->symbol)
    
 #define SYMBOL_SIZE (sizeof( struct symbol ))
 
@@ -1255,7 +1272,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define KEYWORDP( o ) (POINTERP( o ) && (TYPE( o ) == KEYWORD_TYPE))
 
-#define KEYWORD( o ) (CREF( o )->keyword_t)
+#define KEYWORD( o ) (CREF( o )->keyword)
    
 #define KEYWORD_SIZE (sizeof( struct keyword ))
 
@@ -1277,7 +1294,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 /*    Ports                                                            */
 /*---------------------------------------------------------------------*/
-#define PORT( o ) CREF( o )->port_t
+#define PORT( o ) CREF( o )->port
    
 #define PORT_CHOOK( o ) (PORT( o ).chook)
 #define PORT_CHOOK_SET( o, v ) BASSIGN( PORT( o ).chook, (v), o )
@@ -1291,7 +1308,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define OUTPUT_PORT_SIZE (sizeof( struct output_port ))
 
-#define OUTPUT_PORT( o ) (CREF( o )->output_port_t)
+#define OUTPUT_PORT( o ) (CREF( o )->output_port)
 
 #define OUTPUT_PORTP( o ) \
    (POINTERP( o ) && (TYPE( o ) == OUTPUT_PORT_TYPE))
@@ -1346,7 +1363,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define OUTPUT_STRING_PORT_SIZE (sizeof( struct output_string_port ))
 
-#define OUTPUT_STRING_PORT( o ) CREF( o )->output_string_port_t
+#define OUTPUT_STRING_PORT( o ) CREF( o )->output_string_port
 
 #define OUTPUT_STRING_PORT_BUFFER_SIZE 128
 
@@ -1360,7 +1377,7 @@ typedef obj_t (*function_t)();
 
 #define OUTPUT_PROCEDURE_PORT_SIZE (sizeof( struct output_procedure_port ))
 
-#define OUTPUT_PROCEDURE_PORT( o ) CREF( o )->output_procedure_port_t
+#define OUTPUT_PROCEDURE_PORT( o ) CREF( o )->output_procedure_port
 
 /*---------------------------------------------------------------------*/
 /*    RGC ports                                                        */
@@ -1388,10 +1405,10 @@ typedef obj_t (*function_t)();
 #define INPUT_GZIP_PORT_SIZE (sizeof( struct input_gzip_port ))
 #define INPUT_STRING_PORT_SIZE (sizeof( struct input_string_port ))
 
-#define INPUT_GZIP_PORT( o ) CREF( o )->input_gzip_port_t
-#define INPUT_PROCEDURE_PORT( o ) CREF( o )->input_procedure_port_t
+#define INPUT_GZIP_PORT( o ) CREF( o )->input_gzip_port
+#define INPUT_PROCEDURE_PORT( o ) CREF( o )->input_procedure_port
 
-#define INPUT_PORT( o ) CREF( o )->input_port_t
+#define INPUT_PORT( o ) CREF( o )->input_port
 
 #define INPUT_PORTP( o ) (POINTERP( o ) && (TYPE( o ) == INPUT_PORT_TYPE))
 
@@ -1454,7 +1471,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define BINARY_PORT_SIZE (sizeof( struct binary_port ))
 
-#define BINARY_PORT( o ) CREF( o )->binary_port_t
+#define BINARY_PORT( o ) CREF( o )->binary_port
 
 #define BINARY_PORTP( o ) \
    ( POINTERP( o ) && (TYPE( o ) == BINARY_PORT_TYPE) )
@@ -1477,7 +1494,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 #define BGL_MMAP_SIZE (sizeof( struct bgl_mmap ))
 
-#define BGL_MMAP( o ) CREF( o )->mmap_t
+#define BGL_MMAP( o ) CREF( o )->mmap
 
 #define BGL_MMAPP( o ) (POINTERP( o ) && (TYPE( o ) == MMAP_TYPE))
 
@@ -1503,7 +1520,7 @@ typedef obj_t (*function_t)();
 /*---------------------------------------------------------------------*/
 /*    WEAKPTR                                                          */
 /*---------------------------------------------------------------------*/
-#define WEAKPTR( o ) CREF( o )->weakptr_t
+#define WEAKPTR( o ) CREF( o )->weakptr
 
 #define WEAKPTR_SIZE (sizeof(struct bgl_weakptr))
 
@@ -1519,7 +1536,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*---------------------------------------------------------------------*/
 #define PROCESSP( o ) (POINTERP( o ) && (TYPE( o ) == PROCESS_TYPE))
 #define PROCESS_SIZE (sizeof( struct process ))
-#define PROCESS( o ) (CREF( o )->process_t)
+#define PROCESS( o ) (CREF( o )->process)
 #define PROCESS_PID( o ) (PROCESS( o ).pid)
 #define PROCESS_INPUT_PORT( o ) (PROCESS( o ).stream[ 0 ])
 #define PROCESS_OUTPUT_PORT( o ) (PROCESS( o ).stream[ 1 ])
@@ -1530,7 +1547,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 /*---------------------------------------------------------------------*/
 #define SOCKETP( o ) (POINTERP( o ) && (TYPE( o ) == SOCKET_TYPE))
 #define SOCKET_SIZE (sizeof( struct socket ))
-#define SOCKET( o ) (CREF( o )->socket_t)
+#define SOCKET( o ) (CREF( o )->socket)
 #define SOCKET_HOSTNAME( o ) bgl_socket_hostname( o )
 #define SOCKET_HOSTIP( o ) (SOCKET( o ).hostip)
 #define SOCKET_PORT( o ) (SOCKET( o ).portnum)
@@ -1571,7 +1588,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_DATAGRAM_SOCKETP( o ) \
    (POINTERP( o ) && (TYPE( o ) == DATAGRAM_SOCKET_TYPE))
 #define BGL_DATAGRAM_SOCKET_SIZE (sizeof( struct bgl_datagram_socket ))
-#define BGL_DATAGRAM_SOCKET( o ) (CREF( o )->datagram_socket_t)
+#define BGL_DATAGRAM_SOCKET( o ) (CREF( o )->datagram_socket)
 
 #define BGL_DATAGRAM_SOCKET_HOSTNAME( o ) bgl_datagram_socket_hostname( o )
 #define BGL_DATAGRAM_SOCKET_HOSTIP( o ) (BGL_DATAGRAM_SOCKET( o ).hostip)
@@ -1591,7 +1608,7 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_REGEXPP( o ) \
    (POINTERP( o ) && (TYPE( o ) == REGEXP_TYPE))
 #define BGL_REGEXP_SIZE (sizeof( struct bgl_regexp ))
-#define BGL_REGEXP( o ) (CREF( o )->regexp_t)
+#define BGL_REGEXP( o ) (CREF( o )->regexp)
 #define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
 #define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
 #define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)   
@@ -1611,7 +1628,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define CUSTOMP( o ) (POINTERP( o ) && (TYPE( o ) == CUSTOM_TYPE))
 
 #define CUSTOM_SIZE (sizeof( struct custom ))
-#define CUSTOM( f ) CREF( f )->custom_t
+#define CUSTOM( f ) CREF( f )->custom
 
 #define CUSTOM_FINAL( f ) CUSTOM( f ).final
 #define CUSTOM_SERIAL( f ) CUSTOM( f ).serial
@@ -1632,7 +1649,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_DATEP( o ) (POINTERP( o ) && (TYPE( o ) == DATE_TYPE))
 
 #define BGL_DATE_SIZE (sizeof( struct bgl_date ) )
-#define BGL_DATE( f ) CREF( f )->date_t
+#define BGL_DATE( f ) CREF( f )->date
 
 #define BGL_DATE_NANOSECOND( f ) (BGL_DATE( f ).nsec)
 #define BGL_DATE_SECOND( f ) (BGL_DATE( f ).sec)
@@ -1651,7 +1668,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 /*---------------------------------------------------------------------*/
 #define BGL_MUTEXP( o ) (POINTERP( o ) && (TYPE( o ) == MUTEX_TYPE))
    
-#define BGL_MUTEX( o )  (CREF( o )->mutex_t)
+#define BGL_MUTEX( o )  (CREF( o )->mutex)
 #define BGL_MUTEX_SIZE (sizeof( struct bgl_mutex ))
 
 #define BGL_MUTEX_LOCK( o ) \
@@ -1683,7 +1700,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #endif
    
 #define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
-#define BGL_CONDVAR( o ) (CREF( o )->condvar_t)
+#define BGL_CONDVAR( o ) (CREF( o )->condvar)
 #define BGL_CONDVAR_SIZE (sizeof( struct bgl_condvar ))
 
 #define BGL_CONDVAR_NAME( o ) (BGL_CONDVAR( o ).name)
@@ -1701,7 +1718,7 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define FOREIGN_TYPE_NAME( o ) "_"
    
 #define FOREIGN_SIZE (sizeof( struct foreign ))
-#define FOREIGN( f ) CREF( f )->foreign_t
+#define FOREIGN( f ) CREF( f )->foreign
 
 #define FOREIGN_NULL( obj ) ((obj == BFALSE) ? 0L : obj)
 #define FOREIGN_TO_COBJ( f ) (FOREIGN( f ).cobj)
@@ -1784,7 +1801,7 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #define BGL_DYNAMIC_ENVP( c ) \
    (POINTERP( c ) && (TYPE( c ) == DYNAMIC_ENV_TYPE))
 
-#define BGL_DYNAMIC_ENV( env ) (CREF( env )->dynamic_env_t)
+#define BGL_DYNAMIC_ENV( env ) (CREF( env )->dynamic_env)
 
 #if( BGL_HAS_THREAD_LOCALSTORAGE )
 #  define BGL_CURRENT_DYNAMIC_ENV() \
@@ -2372,7 +2389,7 @@ struct befored {
 /*---------------------------------------------------------------------*/
 #define STACK_SIZE (sizeof( struct stack ))
    
-#define STACK( _o_ ) CREF( _o_ )->stack_t
+#define STACK( _o_ ) CREF( _o_ )->stack
 
 #define STACKP( _s_ ) (POINTERP( _s_ ) && (TYPE( _s_ ) == STACK_TYPE))
 
