@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Apr 17 09:36:50 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 09:46:13 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -114,7 +114,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #  define BGL_INIT_REAL( an_object, d ) \
      IFN_REAL_TAG( (an_object)->real.header = \
 		   MAKE_HEADER( REAL_TYPE, REAL_SIZE ) ); \
-     (an_object)->real.real = d;
+     (an_object)->real.val = d;
 #  if( BGL_GC_CUSTOM || !defined( __GNUC__ ) )
 #     define MAKE_REAL( v ) make_real( v )
 #  else
@@ -128,7 +128,7 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
      an_object = GC_MALLOC_ATOMIC( REAL_SIZE ); \
      IFN_REAL_TAG( an_object->real_t.header = \
   		 MAKE_HEADER( REAL_TYPE, REAL_SIZE ) )\
-     an_object->real.real = d; \
+     an_object->real.val = d; \
      BREAL( an_object )
 #endif
 
