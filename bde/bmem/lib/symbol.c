@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/symbol.c                */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/symbol.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
-/*    Last change :  Mon Oct 23 19:38:43 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 09:01:52 2018 (serrano)                */
+/*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/
@@ -33,11 +33,11 @@ make_symbol( obj_t name ) {
    }
 #endif
 #if( !defined( TAG_SYMBOL ) )   
-   symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
+   symbol->symbol.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
 #endif
    
-   symbol->symbol_t.string = name;
-   symbol->symbol_t.cval   = BNIL;
+   symbol->symbol.string = name;
+   symbol->symbol.cval   = BNIL;
 
    ((esymbol_t *)(symbol))->alloc_info = 0;
    ((esymbol_t *)(symbol))->class_alloc = -1;
