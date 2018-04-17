@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Apr 17 08:33:08 2018 (serrano)                */
+#*    Last change :  Tue Apr 17 09:26:12 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -560,6 +560,9 @@ while : ; do
     --gcparallelmark=*)
       gcparallelmark="`echo $1 | sed 's/^[^=]*=//'`";;
 
+    --gcbump)
+      gcbump=1;;
+    
     --gcbump=*)
       if [ "`echo $1 | sed 's/^[^=]*=//'` " = "yes " ]; then
         gcbump=1;
@@ -1227,6 +1230,7 @@ if [ "$bigloo_h " = " " ]; then
   bigloo_cell_h=lib/bigloo/$release/bigloo_cell.h
   bigloo_semaphore_h=lib/bigloo/$release/bigloo_semaphore.h
   bigloo_object_h=lib/bigloo/$release/bigloo_object.h
+  bigloo_exit_h=lib/bigloo/$release/bigloo_exit.h
 fi
 
 # The bigloo_gc.h file
@@ -3456,6 +3460,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   cp runtime/Include/`basename $bigloo_cell_h` $bigloo_cell_h
   cp runtime/Include/`basename $bigloo_semaphore_h` $bigloo_semaphore_h
   cp runtime/Include/`basename $bigloo_object_h` $bigloo_object_h
+  cp runtime/Include/`basename $bigloo_exit_h` $bigloo_exit_h
 
   # bigloo.sh
   for p in bigloo.sh bglafile.sh bgljfile.sh bgltags.sh bgldepend.sh bglmco.sh bglrun.sh bglld.sh bglmake.sh bgljas.sh bglpp.sh bglprof.sh; do
