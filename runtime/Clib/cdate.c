@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cdate.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cdate.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Feb  4 11:51:17 2003                          */
-/*    Last change :  Thu Jul 27 12:58:30 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:00:58 2018 (serrano)                */
+/*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of time & date                                  */
 /*=====================================================================*/
@@ -89,26 +89,26 @@ tm_to_date( struct tm *tm ) {
    obj_t date;
 
    date = GC_MALLOC_ATOMIC( BGL_DATE_SIZE );
-   date->date_t.header = MAKE_HEADER( DATE_TYPE, 0 );
+   date->date.header = MAKE_HEADER( DATE_TYPE, 0 );
 
 #if( BGL_HAVE_GMTOFF )
-   date->date_t.timezone = tm->tm_gmtoff;
+   date->date.timezone = tm->tm_gmtoff;
 #else
-   date->date_t.timezone = bgl_timezone();   
+   date->date.timezone = bgl_timezone();   
 #endif
 
-   date->date_t.nsec = 0;
-   date->date_t.sec = tm->tm_sec;
-   date->date_t.min = tm->tm_min;
-   date->date_t.hour = tm->tm_hour;
+   date->date.nsec = 0;
+   date->date.sec = tm->tm_sec;
+   date->date.min = tm->tm_min;
+   date->date.hour = tm->tm_hour;
       
-   date->date_t.mday = tm->tm_mday;
-   date->date_t.mon = tm->tm_mon + 1;
-   date->date_t.year = tm->tm_year + 1900;
-   date->date_t.wday = tm->tm_wday + 1;
-   date->date_t.yday = tm->tm_yday + 1;
+   date->date.mday = tm->tm_mday;
+   date->date.mon = tm->tm_mon + 1;
+   date->date.year = tm->tm_year + 1900;
+   date->date.wday = tm->tm_wday + 1;
+   date->date.yday = tm->tm_yday + 1;
 
-   date->date_t.isdst = tm->tm_isdst;
+   date->date.isdst = tm->tm_isdst;
 
    return BREF( date );
 }

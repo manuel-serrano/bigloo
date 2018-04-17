@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Oct  6 11:49:21 2004                          */
-/*    Last change :  Sun Mar 18 07:19:51 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:01:05 2018 (serrano)                */
 /*    Copyright   :  2004-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Thread tools (mutex, condition-variable, ...).                   */
@@ -98,9 +98,9 @@ static obj_t
 bgl_create_mutex_default( obj_t name ) {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE );
 
-   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
-   m->mutex_t.name = name;
-   m->mutex_t.sysmutex = 0L;
+   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.name = name;
+   m->mutex.sysmutex = 0L;
 
    return BREF( m );
 }
@@ -151,9 +151,9 @@ obj_t
 bgl_make_nil_mutex() {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE );
 
-   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
-   m->mutex_t.name = BUNSPEC;
-   m->mutex_t.sysmutex = 0L;
+   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.name = BUNSPEC;
+   m->mutex.sysmutex = 0L;
 
    return bgl_mutex_init( BREF( m ) );
 }
@@ -167,9 +167,9 @@ obj_t
 bgl_create_condvar( obj_t name ) {
    obj_t cv = GC_MALLOC( BGL_CONDVAR_SIZE );
 
-   cv->condvar_t.header = MAKE_HEADER( CONDVAR_TYPE, BGL_CONDVAR_SIZE );
-   cv->condvar_t.name = name;
-   cv->condvar_t.condvar = 0L;
+   cv->condvar.header = MAKE_HEADER( CONDVAR_TYPE, BGL_CONDVAR_SIZE );
+   cv->condvar.name = name;
+   cv->condvar.condvar = 0L;
 
    return BREF( cv );
 }
@@ -207,9 +207,9 @@ obj_t
 bgl_make_nil_condvar() {
    obj_t m = GC_MALLOC( BGL_CONDVAR_SIZE );
 
-   m->condvar_t.header = MAKE_HEADER( CONDVAR_TYPE, BGL_CONDVAR_SIZE );
-   m->condvar_t.name = BUNSPEC;
-   m->condvar_t.condvar = 0L;
+   m->condvar.header = MAKE_HEADER( CONDVAR_TYPE, BGL_CONDVAR_SIZE );
+   m->condvar.name = BUNSPEC;
+   m->condvar.condvar = 0L;
 
    return bgl_condvar_init( BREF( m ) );
 }
@@ -241,61 +241,61 @@ make_dynamic_env() {
    
    obj_t env = GC_MALLOC( sizeof( struct bgl_dynamic_env ) );
 
-   env->dynamic_env_t.header = MAKE_HEADER( DYNAMIC_ENV_TYPE, 0 );
+   env->dynamic_env.header = MAKE_HEADER( DYNAMIC_ENV_TYPE, 0 );
    
-   env->dynamic_env_t.current_output_port = BUNSPEC;
-   env->dynamic_env_t.current_error_port = BUNSPEC;
-   env->dynamic_env_t.current_input_port = BUNSPEC;
+   env->dynamic_env.current_output_port = BUNSPEC;
+   env->dynamic_env.current_error_port = BUNSPEC;
+   env->dynamic_env.current_input_port = BUNSPEC;
    
-   env->dynamic_env_t.current_display = BUNSPEC;
+   env->dynamic_env.current_display = BUNSPEC;
 
-   env->dynamic_env_t.exit_value = BUNSPEC;
-   env->dynamic_env_t.exitd_bottom = make_exitd_bottom();
-   env->dynamic_env_t.exitd_top = env->dynamic_env_t.exitd_bottom;
-   env->dynamic_env_t.exitd_val = MAKE_PAIR( BUNSPEC, BUNSPEC );
-   SET_CAR( env->dynamic_env_t.exitd_val, MAKE_PAIR( BUNSPEC, BUNSPEC ) );
-   env->dynamic_env_t.exitd_stamp = BINT( 0 );
-   env->dynamic_env_t.befored_top = 0L;
+   env->dynamic_env.exit_value = BUNSPEC;
+   env->dynamic_env.exitd_bottom = make_exitd_bottom();
+   env->dynamic_env.exitd_top = env->dynamic_env.exitd_bottom;
+   env->dynamic_env.exitd_val = MAKE_PAIR( BUNSPEC, BUNSPEC );
+   SET_CAR( env->dynamic_env.exitd_val, MAKE_PAIR( BUNSPEC, BUNSPEC ) );
+   env->dynamic_env.exitd_stamp = BINT( 0 );
+   env->dynamic_env.befored_top = 0L;
 
-   env->dynamic_env_t.mvalues_number = 1;
+   env->dynamic_env.mvalues_number = 1;
    for( i = 0; i < 16; i++ ) {
-      env->dynamic_env_t.mvalues[ i ] = BUNSPEC;
+      env->dynamic_env.mvalues[ i ] = BUNSPEC;
    }
 
-   env->dynamic_env_t.error_handler = BNIL;
-   env->dynamic_env_t.uncaught_exception_handler = BNIL;
-   env->dynamic_env_t.error_notifiers = BNIL;
+   env->dynamic_env.error_handler = BNIL;
+   env->dynamic_env.uncaught_exception_handler = BNIL;
+   env->dynamic_env.error_notifiers = BNIL;
    
-   env->dynamic_env_t.interrupt_notifier = BNIL;
+   env->dynamic_env.interrupt_notifier = BNIL;
    
-   env->dynamic_env_t.top_of_frame = 0L;
-   env->dynamic_env_t.exit_traces = BNIL;
-   env->dynamic_env_t.top.name = BUNSPEC;
-   env->dynamic_env_t.top.location = BUNSPEC;
-   env->dynamic_env_t.top.link = 0;
+   env->dynamic_env.top_of_frame = 0L;
+   env->dynamic_env.exit_traces = BNIL;
+   env->dynamic_env.top.name = BUNSPEC;
+   env->dynamic_env.top.location = BUNSPEC;
+   env->dynamic_env.top.link = 0;
 
-   env->dynamic_env_t.debug_alist = BNIL;
+   env->dynamic_env.debug_alist = BNIL;
 
-   env->dynamic_env_t.thread_backend = BUNSPEC;
-   env->dynamic_env_t.current_thread = 0L;
+   env->dynamic_env.thread_backend = BUNSPEC;
+   env->dynamic_env.current_thread = 0L;
 
-   env->dynamic_env_t.lexical_stack = BNIL;
+   env->dynamic_env.lexical_stack = BNIL;
  
-   env->dynamic_env_t.evstate = BUNSPEC;
-   env->dynamic_env_t.module = BUNSPEC;
-   env->dynamic_env_t.abase = BUNSPEC;
+   env->dynamic_env.evstate = BUNSPEC;
+   env->dynamic_env.module = BUNSPEC;
+   env->dynamic_env.abase = BUNSPEC;
 
 #if( BGL_SAW == 1 ) 
-   env->dynamic_env_t.saw_sp = 0L;
+   env->dynamic_env.saw_sp = 0L;
 #endif
    
-   env->dynamic_env_t.parameters = BNIL;
+   env->dynamic_env.parameters = BNIL;
    
    for( i = 0; i < 32; i++ ) {
-      env->dynamic_env_t.sig_handlers[ i ] = BFALSE;
+      env->dynamic_env.sig_handlers[ i ] = BFALSE;
    }
 
-   env->dynamic_env_t.user_data = BNIL;
+   env->dynamic_env.user_data = BNIL;
    
    return BREF( env );
 }
@@ -311,9 +311,9 @@ bgl_dup_dynamic_env( obj_t o ) {
    
    obj_t env = make_dynamic_env();
    struct bgl_dynamic_env *dst =
-      (struct bgl_dynamic_env *)&(CREF( env )->dynamic_env_t);
+      (struct bgl_dynamic_env *)&(CREF( env )->dynamic_env);
    struct bgl_dynamic_env *src =
-      (struct bgl_dynamic_env *)&(CREF( o )->dynamic_env_t);
+      (struct bgl_dynamic_env *)&(CREF( o )->dynamic_env);
 
    dst->current_output_port = src->current_output_port;
    dst->current_error_port = src->current_error_port;

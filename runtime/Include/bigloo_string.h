@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Apr 15 07:00:37 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 07:16:52 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -87,7 +87,7 @@ struct bgl_ucs2_string {
 #   endif
 #else
 #   define BSTRING( p ) BREF( p )
-#   define CSTRING( p ) BGL_CPTR( ((obj_t)((unsigned long)(p) - TAG_STRUCT) )
+#   define CSTRING( p ) BGL_CPTR( ((obj_t)((unsigned long)(p) - TAG_STRUCT)) )
 #   define STRINGP( c ) (POINTERP( c ) && (TYPE( c ) == STRING_TYPE))
 #endif
 

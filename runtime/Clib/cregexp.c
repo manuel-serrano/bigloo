@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cregexp.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cregexp.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec  6 15:44:28 2011                          */
-/*    Last change :  Tue Dec 26 09:08:11 2017 (serrano)                */
-/*    Copyright   :  2011-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:03:13 2018 (serrano)                */
+/*    Copyright   :  2011-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Native posix regular expressions for Bigloo                      */
 /*=====================================================================*/
@@ -19,8 +19,8 @@ bgl_make_regexp( obj_t pat ) {
    obj_t re = GC_MALLOC( BGL_REGEXP_SIZE );
    int err;
    
-   re->regexp_t.header = MAKE_HEADER( REGEXP_TYPE, 0 );
-   re->regexp_t.pat = pat;
+   re->regexp.header = MAKE_HEADER( REGEXP_TYPE, 0 );
+   re->regexp.pat = pat;
 
    return BREF( re );
 }

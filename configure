@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Apr 14 18:17:38 2018 (serrano)                */
+#*    Last change :  Tue Apr 17 08:33:08 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1083,7 +1083,6 @@ while : ; do
       echo "   --gccustomversion=version (custom gc version, e.g., \"gc-7.1\")" >&2;
       echo "   --gccustominstall=[install|skip] (configure and install the gc)" >&2;
       echo "   --gcparallelmark=[yes|no] (configure the gc for parallel mark)" >&2;
-      echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "" >&2;
       echo "Tools and compilers:"  >&2;
       echo "   --bigloo=comp [default bigloo]" >&2;
@@ -1183,6 +1182,7 @@ while : ; do
       echo "   --configureinfo=yes|no [default no]" >&2;
       echo "" >&2;
       echo "Experimental features:"  >&2;
+      echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
       echo "   --nan-tagging" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
@@ -3490,10 +3490,10 @@ if [ $action = "all" -o $action = "bigloo_static" ]; then
   max=`expr $belong_prealloc_max - 1`;
   i=$belong_prealloc_min
   while expr $i "<" $max > /dev/null; do
-    echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), elong: $i }, " >> $bigloo_static_h
+    echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), val: $i }, " >> $bigloo_static_h
     i=`expr $i + 1`;
   done
-  echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), elong: $i } }; " >> $bigloo_static_h
+  echo "  { header: MAKE_HEADER( ELONG_TYPE, ELONG_SIZE ), val: $i } }; " >> $bigloo_static_h
   echo "" >> $bigloo_static_h
   echo "#if( !defined( BGL_CNST_SHIFT_INT32 ) )" >> $bigloo_static_h
   echo "#define BGL_INT32_PREALLOC_MIN $belong_prealloc_min" >> $bigloo_static_h

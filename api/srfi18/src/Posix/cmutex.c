@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/srfi18/src/Posix/cmutex.c        */
+/*    .../prgm/project/bigloo/bigloo/api/srfi18/src/Posix/cmutex.c     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Tue Aug  9 10:53:44 2016 (serrano)                */
-/*    Copyright   :  2004-16 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:22:31 2018 (serrano)                */
+/*    Copyright   :  2004-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -326,8 +326,8 @@ obj_t
 srfi18_create_mutex( obj_t name ) {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct srfi18mutex ) );
 
-   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
-   m->mutex_t.name = name;
+   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.name = name;
 
    return BREF( m );
 }

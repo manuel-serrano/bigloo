@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../project/bigloo/api/pthread/src/Posix/bglpsemaphore.c         */
+/*    .../bigloo/bigloo/api/pthread/src/Posix/bglpsemaphore.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Sat Dec  2 15:53:09 2017 (serrano)                */
-/*    Copyright   :  2004-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:21:57 2018 (serrano)                */
+/*    Copyright   :  2004-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix semaphore implementation                               */
 /*=====================================================================*/
@@ -42,13 +42,13 @@ bgl_open_semaphore( obj_t name,
    obj_t sem = GC_MALLOC( BGL_SEMAPHORE_SIZE );
    long flag = (create?O_CREAT:0) | (excl?O_EXCL:0);
    
-   sem->semaphore_t.header = MAKE_HEADER( SEMAPHORE_TYPE, 0 );
-   sem->semaphore_t.name = name;
+   sem->semaphore.header = MAKE_HEADER( SEMAPHORE_TYPE, 0 );
+   sem->semaphore.name = name;
 
-   sem->semaphore_t.semaphore =
+   sem->semaphore.semaphore =
       sem_open( BSTRING_TO_STRING( name ), flag, mode, val );
 
-   if( sem->semaphore_t.semaphore == SEM_FAILED ) {
+   if( sem->semaphore.semaphore == SEM_FAILED ) {
       C_SYSTEM_FAILURE( BGL_ERROR, "open-semaphore",
 			strerror( errno ),
 			name );

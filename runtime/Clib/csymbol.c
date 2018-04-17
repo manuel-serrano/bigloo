@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/csymbol.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/csymbol.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Feb 12 14:51:41 1992                          */
-/*    Last change :  Thu Jul 27 08:07:52 2017 (serrano)                */
+/*    Last change :  Tue Apr 17 07:48:48 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Symbol handling (creation and hash tabling).                     */
 /*=====================================================================*/
@@ -64,10 +64,10 @@ make_symbol( obj_t name ) {
    symbol = GC_MALLOC_UNCOLLECTABLE( SYMBOL_SIZE );
 
 #if( !defined( TAG_SYMBOL ) )   
-   symbol->symbol_t.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
+   symbol->symbol.header = MAKE_HEADER( SYMBOL_TYPE, SYMBOL_SIZE );
 #endif   
-   symbol->symbol_t.string = name;
-   symbol->symbol_t.cval = BNIL;
+   symbol->symbol.string = name;
+   symbol->symbol.cval = BNIL;
 
    return BSYMBOL( symbol );
 }

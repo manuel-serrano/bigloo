@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun  7 09:02:35 1994                          */
-/*    Last change :  Tue Jan 30 13:55:36 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 07:59:52 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Binary input and output ports.                                   */
 /*=====================================================================*/
@@ -66,10 +66,10 @@ bgl_make_binary_port( char *name, FILE *file, bool_t io ) {
 
    binary_port = GC_MALLOC( BINARY_PORT_SIZE );
 
-   binary_port->binary_port_t.header = MAKE_HEADER( BINARY_PORT_TYPE, 0 );
-   binary_port->binary_port_t.file = file;
-   binary_port->binary_port_t.name = string_to_bstring( name );
-   binary_port->binary_port_t.io = (int)io;
+   binary_port->binary_port.header = MAKE_HEADER( BINARY_PORT_TYPE, 0 );
+   binary_port->binary_port.file = file;
+   binary_port->binary_port.name = string_to_bstring( name );
+   binary_port->binary_port.io = (int)io;
 
    return BREF( binary_port );
 }
@@ -271,9 +271,9 @@ input_obj( obj_t port ) {
       obj_t res, strobj = (obj_t)string;
 
 #if( !defined( TAG_STRING ) || defined( BUMPY_GC ) )
-      strobj->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+      strobj->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif		
-      strobj->string_t.length = clen;
+      strobj->string.length = clen;
       
       if( !fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file ) ) {
 	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,
@@ -300,9 +300,9 @@ input_obj( obj_t port ) {
 			   "can't allocate string", port );
 
 #if( !defined( TAG_STRING ) || defined( BUMPY_GC ) )
-      string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+      string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif		
-      string->string_t.length = clen;
+      string->string.length = clen;
 		
       if( !fread( BSTRING_TO_STRING( BSTRING( string ) ), clen, 1, file ) ) {
 	 C_SYSTEM_FAILURE( BGL_IO_READ_ERROR,

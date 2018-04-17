@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/capply.c                */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/capply.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Mar 20 11:26:29 1992                          */
-/*    Last change :  Wed May 26 13:48:54 2010 (serrano)                */
-/*    Copyright   :  2006-10 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 07:58:36 2018 (serrano)                */
+/*    Copyright   :  2006-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo APPLY                                                     */
 /*=====================================================================*/
@@ -40,9 +40,9 @@ opt_apply( obj_t proc, obj_t args_list ) {
    args = (obj_t)alloca( byte_size );
 
 #if( !defined( TAG_VECTOR ) )
-   args->vector_t.header = MAKE_HEADER( VECTOR_TYPE, 0 );
+   args->vector.header = MAKE_HEADER( VECTOR_TYPE, 0 );
 #endif		
-   args->vector_t.length = len;
+   args->vector.length = len;
    args = BVECTOR( args );
 
    /* fill the vector, up to arity argument */

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cmmap.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cmmap.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Jul 10 10:46:32 2005                          */
-/*    Last change :  Tue Mar  7 21:05:54 2017 (serrano)                */
-/*    Copyright   :  2005-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:01:23 2018 (serrano)                */
+/*    Copyright   :  2005-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Bigloo C mmap implementation                                 */
 /*=====================================================================*/
@@ -63,13 +63,13 @@ bgl_open_mmap( obj_t name, bool_t r, bool_t w ) {
 
 	 mm = GC_MALLOC( BGL_MMAP_SIZE );
 
-	 mm->mmap_t.header = MAKE_HEADER( MMAP_TYPE, 0 );
-	 mm->mmap_t.name = name;
-	 mm->mmap_t.length = s.st_size;
-	 mm->mmap_t.fd = fd;
-	 mm->mmap_t.map = (unsigned char *)map;
-	 mm->mmap_t.rp = 0;
-	 mm->mmap_t.wp = 0;
+	 mm->mmap.header = MAKE_HEADER( MMAP_TYPE, 0 );
+	 mm->mmap.name = name;
+	 mm->mmap.length = s.st_size;
+	 mm->mmap.fd = fd;
+	 mm->mmap.map = (unsigned char *)map;
+	 mm->mmap.rp = 0;
+	 mm->mmap.wp = 0;
 
 	 /* The glibc looks like erroneous. Contrarily to the Linux    */
 	 /* man pages, MMAP does not change st_ctime and st_mtime      */
@@ -97,15 +97,15 @@ bgl_open_mmap( obj_t name, bool_t r, bool_t w ) {
 
 	    mm = GC_MALLOC( BGL_MMAP_SIZE );
 
-	    mm->mmap_t.header = MAKE_HEADER( MMAP_TYPE, 0 );
-	    mm->mmap_t.name = name;
-	    mm->mmap_t.length = s.st_size;
-	    mm->mmap_t.fd = fd;
-	    mm->mmap_t.afd = afd;
-	    mm->mmap_t.rp = 0;
-	    mm->mmap_t.wp = 0;
-	    mm->mmap_t.ar = 0;
-	    mm->mmap_t.aw = 0;
+	    mm->mmap.header = MAKE_HEADER( MMAP_TYPE, 0 );
+	    mm->mmap.name = name;
+	    mm->mmap.length = s.st_size;
+	    mm->mmap.fd = fd;
+	    mm->mmap.afd = afd;
+	    mm->mmap.rp = 0;
+	    mm->mmap.wp = 0;
+	    mm->mmap.ar = 0;
+	    mm->mmap.aw = 0;
 
 	    return BREF( mm );
 	 }
@@ -126,13 +126,13 @@ bgl_string_to_mmap( obj_t s, bool_t r, bool_t w ) {
 
    mm = GC_MALLOC( BGL_MMAP_SIZE );
 
-   mm->mmap_t.header = MAKE_HEADER( MMAP_TYPE, 0 );
-   mm->mmap_t.name = s;
-   mm->mmap_t.length = STRING_LENGTH( s );
-   mm->mmap_t.fd = 0;
-   mm->mmap_t.map = BSTRING_TO_USTRING( s );
-   mm->mmap_t.rp = 0;
-   mm->mmap_t.wp = 0;
+   mm->mmap.header = MAKE_HEADER( MMAP_TYPE, 0 );
+   mm->mmap.name = s;
+   mm->mmap.length = STRING_LENGTH( s );
+   mm->mmap.fd = 0;
+   mm->mmap.map = BSTRING_TO_USTRING( s );
+   mm->mmap.rp = 0;
+   mm->mmap.wp = 0;
 
    return BREF( mm );
 }

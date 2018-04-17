@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Feb  9 15:28:17 2018 (serrano)                */
+#*    Last change :  Tue Apr 17 07:44:22 2018 (serrano)                */
 #*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -293,7 +293,8 @@ INCLUDE_FILE	= Include/bigloo.h Include/bigloo_saw.h \
                   Include/bigloo_vector.h Include/bigloo_string.h \
                   Include/bigloo_struct.h Include/bigloo_cell.h \
                   Include/bigloo_int.h Include/bigloo_semaphore.h \
-                  Include/bigloo_object.h Include/bigloo_bignum.h
+                  Include/bigloo_object.h Include/bigloo_bignum.h \
+                  Include/bigloo_exit.h
 
 #*---------------------------------------------------------------------*/
 #*    Object files                                                     */

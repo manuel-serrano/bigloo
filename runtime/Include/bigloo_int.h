@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sun Apr 15 06:32:52 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:08:59 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -46,7 +46,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #define DEFINE_LLONG( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; BGL_LONGLONG_T llong; } \
-      const aux = { __CNST_FILLER MAKE_HEADER( LLONG_TYPE, 0 ), BGL_LONGLONG_T)(num) }; \
+      const aux = { __CNST_FILLER MAKE_HEADER( LLONG_TYPE, 0 ), (BGL_LONGLONG_T)(num) }; \
    const obj_t name = BREF( &(aux.header) )
 
 #define LLONG_SIZE (sizeof( struct llong ))
@@ -153,8 +153,8 @@ extern "C" {
 		 
 #  define BGL_INT32_SIZE (sizeof( struct bgl_sint32 ))
 #  define BGL_UINT32_SIZE (sizeof( struct bgl_uint32 ))
-#  define BGL_INT32( o ) CREF( o )->sint32_t
-#  define BGL_UINT32( o ) CREF( o )->uint32_t
+#  define BGL_INT32( o ) CREF( o )->sint32
+#  define BGL_UINT32( o ) CREF( o )->uint32
 #  define BGL_INT32_TO_BINT32( _1 ) bgl_make_bint32( _1 )
 #  define BGL_UINT32_TO_BUINT32( _1 ) bgl_make_buint32( _1 )
 #  define BGL_BINT32_TO_INT32( o ) BGL_INT32( o ).val

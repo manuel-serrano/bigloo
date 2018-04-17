@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/api/pthread/src/Posix/bglpmutex.c        */
+/*    .../project/bigloo/bigloo/api/pthread/src/Posix/bglpmutex.c      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Nov  3 07:58:16 2004                          */
-/*    Last change :  Mon Oct 24 14:10:02 2016 (serrano)                */
-/*    Copyright   :  2004-16 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:21:38 2018 (serrano)                */
+/*    Copyright   :  2004-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The Posix mutex implementation                                   */
 /*=====================================================================*/
@@ -313,8 +313,8 @@ obj_t
 bglpth_create_mutex( obj_t name ) {
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpmutex ) );
 
-   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
-   m->mutex_t.name = name;
+   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.name = name;
 
    return BREF( m );
 }
@@ -330,8 +330,8 @@ bglpth_create_spinlock( obj_t name ) {
 #if( BGL_HAVE_SPINLOCK )
    obj_t m = GC_MALLOC( BGL_MUTEX_SIZE + sizeof( struct bglpspinlock ) );
 
-   m->mutex_t.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
-   m->mutex_t.name = name;
+   m->mutex.header = MAKE_HEADER( MUTEX_TYPE, BGL_MUTEX_SIZE );
+   m->mutex.name = name;
 
    return BREF( m );
 #else

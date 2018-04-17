@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/ccustom.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/ccustom.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Aug 16 16:56:24 1999                          */
-/*    Last change :  Mon Mar  3 09:42:27 2014 (serrano)                */
+/*    Last change :  Tue Apr 17 08:00:50 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The custom management.                                           */
 /*=====================================================================*/
@@ -65,13 +65,13 @@ create_custom( long len ) {
 
    custom = GC_MALLOC_ATOMIC( CUSTOM_SIZE + len );
 
-   custom->custom_t.header = MAKE_HEADER( CUSTOM_TYPE, 0 );
-   custom->custom_t.final = 0L;
-   custom->custom_t.identifier = 0L;
-   custom->custom_t.equal = custom_default_equal;
-   custom->custom_t.hash = custom_default_hash;
-   custom->custom_t.to_string  = custom_default_to_string;
-   custom->custom_t.output = custom_default_output;
+   custom->custom.header = MAKE_HEADER( CUSTOM_TYPE, 0 );
+   custom->custom.final = 0L;
+   custom->custom.identifier = 0L;
+   custom->custom.equal = custom_default_equal;
+   custom->custom.hash = custom_default_hash;
+   custom->custom.to_string  = custom_default_to_string;
+   custom->custom.output = custom_default_output;
 
    return BREF( custom );
 }

@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cbignum.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cbignum.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Thu Jul 27 12:55:05 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 08:01:47 2018 (serrano)                */
+/*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -50,9 +50,9 @@ static obj_t
 make_bignum( size_t sz ) {
    obj_t o = GC_MALLOC( BIGNUM_SIZE );
    
-   o->bignum_t.header = MAKE_HEADER( BIGNUM_TYPE, 0 );
-   o->bignum_t.mpz._mp_d = (mp_limb_t *)GC_MALLOC_ATOMIC( sz * sizeof( mp_limb_t ) );
-   o->bignum_t.mpz._mp_alloc = sz;
+   o->bignum.header = MAKE_HEADER( BIGNUM_TYPE, 0 );
+   o->bignum.mpz._mp_d = (mp_limb_t *)GC_MALLOC_ATOMIC( sz * sizeof( mp_limb_t ) );
+   o->bignum.mpz._mp_alloc = sz;
 
    return BREF( o );
 }
@@ -985,8 +985,8 @@ obj_t
 bgl_make_bignum( obj_t v ) {
    obj_t o = GC_MALLOC( BIGNUM_SIZE );
    
-   o->bignum_t.header = MAKE_HEADER( BIGNUM_TYPE, 0 );
-   o->bignum_t.u16vect = v;
+   o->bignum.header = MAKE_HEADER( BIGNUM_TYPE, 0 );
+   o->bignum.u16vect = v;
 
    return BREF( o );
 }

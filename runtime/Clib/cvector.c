@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Wed Apr 11 16:42:24 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 07:48:59 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -85,9 +85,9 @@ create_vector( long len ) {
       vector = GC_MALLOC( byte_size );
 
 #if( !defined( TAG_VECTOR ) )
-      vector->vector_t.header = MAKE_HEADER( VECTOR_TYPE, 0 );
+      vector->vector.header = MAKE_HEADER( VECTOR_TYPE, 0 );
 #endif		
-      vector->vector_t.length = len;
+      vector->vector.length = len;
 
       return BVECTOR( vector );
    }
@@ -116,9 +116,9 @@ create_vector_uncollectable( long len ) {
       vector = GC_MALLOC_UNCOLLECTABLE( byte_size );
 
 #if( !defined( TAG_VECTOR ) )
-      vector->vector_t.header = MAKE_HEADER( VECTOR_TYPE, 0 );
+      vector->vector.header = MAKE_HEADER( VECTOR_TYPE, 0 );
 #endif		
-      vector->vector_t.length = len;
+      vector->vector.length = len;
 
       return BVECTOR( vector );
    }

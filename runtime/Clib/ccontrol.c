@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/ccontrol.c              */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/ccontrol.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Nov 18 12:20:44 2014 (serrano)                */
+/*    Last change :  Tue Apr 17 07:59:26 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -42,11 +42,11 @@ make_fx_procedure( obj_t (*entry)(), int arity, int size ) {
       obj_t a_tproc = GC_MALLOC( byte_size );
       static long count = 0;
 	      
-      a_tproc->procedure_t.header = MAKE_HEADER( PROCEDURE_TYPE, size );
-      a_tproc->procedure_t.entry = entry; 
-      a_tproc->procedure_t.va_entry = 0L;
-      a_tproc->procedure_t.attr = BUNSPEC;
-      a_tproc->procedure_t.arity = arity;
+      a_tproc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size );
+      a_tproc->procedure.entry = entry; 
+      a_tproc->procedure.va_entry = 0L;
+      a_tproc->procedure.attr = BUNSPEC;
+      a_tproc->procedure.arity = arity;
 
       return BREF( a_tproc );
    }
@@ -65,11 +65,11 @@ make_va_procedure( obj_t (*entry)(), int arity, int size ) {
       int byte_size = PROCEDURE_SIZE + ((size-1) * OBJ_SIZE);
       obj_t a_tproc = GC_MALLOC( byte_size );
 	      
-      a_tproc->procedure_t.header = MAKE_HEADER( PROCEDURE_TYPE, size );
-      a_tproc->procedure_t.entry = (obj_t (*)())va_generic_entry; 
-      a_tproc->procedure_t.va_entry = entry;
-      a_tproc->procedure_t.attr = BUNSPEC;
-      a_tproc->procedure_t.arity = arity;
+      a_tproc->procedure.header = MAKE_HEADER( PROCEDURE_TYPE, size );
+      a_tproc->procedure.entry = (obj_t (*)())va_generic_entry; 
+      a_tproc->procedure.va_entry = entry;
+      a_tproc->procedure.attr = BUNSPEC;
+      a_tproc->procedure.arity = arity;
       
       return BREF( a_tproc );
    }
@@ -353,9 +353,9 @@ opt_generic_entry( obj_t proc, ... ) {
    args = (obj_t)alloca( byte_size );
 
 #if( !defined( TAG_VECTOR ) )
-   args->vector_t.header = MAKE_HEADER( VECTOR_TYPE, byte_size );
+   args->vector.header = MAKE_HEADER( VECTOR_TYPE, byte_size );
 #endif		
-   args->vector_t.length = len;
+   args->vector.length = len;
 
    args = BVECTOR( args );
 

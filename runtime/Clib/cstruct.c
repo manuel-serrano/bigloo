@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cstruct.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cstruct.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 16 09:28:53 1992                          */
-/*    Last change :  Mon Dec  4 15:45:40 2006 (serrano)                */
-/*    Copyright   :  2000-06 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 07:58:52 2018 (serrano)                */
+/*    Copyright   :  2000-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Structures constructions.                                        */
 /*=====================================================================*/
@@ -19,11 +19,11 @@ set_struct( obj_t heap, obj_t key, int len ) {
    obj_t structure = (obj_t)heap;
    
 #if( !defined( TAG_STRUCTURE ) )
-   structure->struct_t.header = MAKE_HEADER( STRUCT_TYPE, 0 );
+   structure->structure.header = MAKE_HEADER( STRUCT_TYPE, 0 );
 #endif	
 
-   structure->struct_t.key    = key;
-   structure->struct_t.length = len;
+   structure->structure.key = key;
+   structure->structure.length = len;
    
    return BSTRUCTURE( structure );
 }

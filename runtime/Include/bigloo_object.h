@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Apr 14 15:20:52 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:03:52 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -97,7 +97,7 @@ typedef struct BgL_objectz00_bgl {
 #define BGL_CLASSP( o ) (POINTERP( o ) && (TYPE( o ) == CLASS_TYPE))
 
 #define BGL_CLASS_SIZE (sizeof( struct bgl_class ) )
-#define BGL_CLASS( f ) (CREF( f )->class_t)
+#define BGL_CLASS( f ) (CREF( f )->class)
    
 #define BGL_CLASS_NAME( f ) (BGL_CLASS( f ).name)
    

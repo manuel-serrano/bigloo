@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Wed Jul 26 08:58:25 2017                          */
-/*    Last change :  Sun Mar 18 07:16:23 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:02:07 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo BIGNUMs                                                   */
@@ -39,7 +39,7 @@ struct bgl_bignum {
 #endif
 };
 
-#define BIGNUM( o ) (CREF( o )->bignum_t)
+#define BIGNUM( o ) (CREF( o )->bignum)
 
 #define BIGNUM_SIZE (sizeof( struct bgl_bignum ))
 

@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cunicode.c              */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cunicode.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May 19 17:47:11 1997                          */
-/*    Last change :  Tue Mar  7 21:05:42 2017 (serrano)                */
+/*    Last change :  Tue Apr 17 08:00:21 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Unicode strings handling                                         */
 /*=====================================================================*/
@@ -35,10 +35,10 @@ make_ucs2_string( int len, ucs2_t c ) {
       int i;
       
       string  = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof(ucs2_t)) );
-      cstring = (&(string->ucs2_string_t.char0));
+      cstring = (&(string->ucs2_string.char0));
 
-      string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-      string->ucs2_string_t.length = len;
+      string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+      string->ucs2_string.length = len;
 
       for( i = 0; i < len; i++ )
 	cstring[ i ] = c;
@@ -71,16 +71,16 @@ ucs2_string_append( obj_t s1, obj_t s2 ) {
 
    ucs2_string = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + ((l1 + l2) * sizeof( ucs2_t )) );
 
-   ucs2_string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-   ucs2_string->ucs2_string_t.length = l1 + l2;
+   ucs2_string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+   ucs2_string->ucs2_string.length = l1 + l2;
 
-   ucs2cpy( &(ucs2_string->ucs2_string_t.char0),
+   ucs2cpy( &(ucs2_string->ucs2_string.char0),
 	    &UCS2_STRING_REF( s1, 0 ),
 	    l1 );
-   ucs2cpy( &((ucs2_t *)(&(ucs2_string->ucs2_string_t.char0)))[ l1 ],
+   ucs2cpy( &((ucs2_t *)(&(ucs2_string->ucs2_string.char0)))[ l1 ],
 	    &UCS2_STRING_REF( s2, 0 ),
 	    l2 );
-   ((ucs2_t *)(&(ucs2_string->ucs2_string_t.char0)))[ l1 + l2 ] = (ucs2_t)0;
+   ((ucs2_t *)(&(ucs2_string->ucs2_string.char0)))[ l1 + l2 ] = (ucs2_t)0;
 	
    return BUCS2STRING( ucs2_string );
 }
@@ -98,13 +98,13 @@ c_subucs2_string( obj_t src_ucs2_string, int min, int max ) {
 
    dst_ucs2_string = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof( ucs2_t ) ) );
 
-   dst_ucs2_string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-   dst_ucs2_string->ucs2_string_t.length = len;
+   dst_ucs2_string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+   dst_ucs2_string->ucs2_string.length = len;
 
-   ucs2cpy( &(dst_ucs2_string->ucs2_string_t.char0),
+   ucs2cpy( &(dst_ucs2_string->ucs2_string.char0),
 	    &UCS2_STRING_REF( src_ucs2_string, min ),
             len );
-   (&(dst_ucs2_string->ucs2_string_t.char0))[ len ] = (ucs2_t)0;
+   (&(dst_ucs2_string->ucs2_string.char0))[ len ] = (ucs2_t)0;
 
    return BUCS2STRING( dst_ucs2_string );
 }
@@ -122,11 +122,11 @@ c_ucs2_string_copy( obj_t src ) {
    int    i;
 
    string  = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof( ucs2_t ) ) );
-   cstring = (&(string->ucs2_string_t.char0));
+   cstring = (&(string->ucs2_string.char0));
    cstr    = &UCS2_STRING_REF( src, 0 );
 
-   string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-   string->ucs2_string_t.length = len;
+   string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+   string->ucs2_string.length = len;
    
    for( i = 0; i < len; i++ )
       cstring[ i ] = cstr[ i ];
@@ -147,10 +147,10 @@ string_to_ucs2_string( char *c ) {
    int     i;
 
    string  = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof( ucs2_t ) ) );
-   cstring = (&(string->ucs2_string_t.char0));
+   cstring = (&(string->ucs2_string.char0));
 
-   string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-   string->ucs2_string_t.length = len;
+   string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+   string->ucs2_string.length = len;
    
    for( i = 0; i < len; i++ )
       cstring[ i ] = (ucs2_t)(c[ i ]);
@@ -169,13 +169,13 @@ bstring_to_ucs2_string( obj_t src ) {
    obj_t   string;
    ucs2_t *cstring;
    int    i;
-   char   *c = (char *)(&(src->string_t.char0));
+   char   *c = (char *)(&(src->string.char0));
 
    string  = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof( ucs2_t ) ) );
-   cstring = (&(string->ucs2_string_t.char0));
+   cstring = (&(string->ucs2_string.char0));
 
-   string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-   string->ucs2_string_t.length = len;
+   string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+   string->ucs2_string.length = len;
    
    for( i = 0; i < len; i++ )
       cstring[ i ] = (ucs2_t)(c[ i ]);
@@ -690,10 +690,10 @@ utf8_string_to_ucs2_string( obj_t butf8 ) {
    }
          
    string  = GC_MALLOC_ATOMIC( UCS2_STRING_SIZE + (len * sizeof( ucs2_t ) ) );
-   cstring = (&(string->ucs2_string_t.char0));
+   cstring = (&(string->ucs2_string.char0));
 
-   string->ucs2_string_t.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
-   string->ucs2_string_t.length = write;
+   string->ucs2_string.header = MAKE_HEADER( UCS2_STRING_TYPE, 0 );
+   string->ucs2_string.length = write;
    ucs2cpy( cstring, aux, write );
                 
    free( aux );

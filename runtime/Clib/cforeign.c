@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cforeign.c              */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cforeign.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Oct 19 08:45:22 1993                          */
-/*    Last change :  Mon Jan 14 19:58:21 2008 (serrano)                */
+/*    Last change :  Tue Apr 17 08:00:01 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    La gestion de l'interface etrangere                              */
 /*=====================================================================*/
@@ -25,9 +25,9 @@ cobj_to_foreign( obj_t id, void *cobj ) {
 
    handle = GC_MALLOC( FOREIGN_SIZE );
 
-   handle->foreign_t.header = MAKE_HEADER( FOREIGN_TYPE, FOREIGN_SIZE );
-   handle->foreign_t.cobj   = (void *)cobj;
-   handle->foreign_t.id     = id;
+   handle->foreign.header = MAKE_HEADER( FOREIGN_TYPE, FOREIGN_SIZE );
+   handle->foreign.cobj = (void *)cobj;
+   handle->foreign.id = id;
 
    return BREF( handle );
 }

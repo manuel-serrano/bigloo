@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Apr 16 18:21:23 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 07:34:44 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -119,7 +119,7 @@ struct bgl_epair {
    IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \
 		 MAKE_HEADER( PAIR_TYPE, PAIR_SIZE ) ); \
    BGL_CPTR( an_object )->pair.car = a; \
-   BGL_PAIR( an_object )->pair.cdr = d;
+   BGL_CPTR( an_object )->pair.cdr = d;
 
 #define BGL_INIT_EPAIR( an_object, a, d, e ) \
    IFN_PAIR_TAG( BGL_CPTR( an_object )->pair.header = \

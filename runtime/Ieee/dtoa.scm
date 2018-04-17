@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/dtoa.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/dtoa.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Wed Apr 26 08:08:47 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Tue Apr 17 08:15:44 2018 (serrano)                */
+;*    Copyright   :  2011-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
 ;*=====================================================================*/
@@ -57,7 +57,7 @@
 		      tname
 		      (map (lambda (i) (format "obj_t obj~a" i))
 			 (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER, \n#if( !defined( TAG_VECTOR ) ) \nMAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nMAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
 		       tname vname
 		       (vector-length v)
 		       (map (lambda (i) (format "BINT( ~a )" i))
@@ -76,7 +76,7 @@
 		       tname
 		       (map (lambda (i) (format "obj_t obj~a" i))
 			  (iota (vector-length v)))))
-	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER, \n#if( !defined( TAG_VECTOR ) ) \nMAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
+	     (vdecl (format "static struct ~a ~a = { __CNST_FILLER \n#if( !defined( TAG_VECTOR ) ) \nMAKE_HEADER( VECTOR_TYPE, 0 ),\n#endif\n ~a, ~(, ) }"
 		       tname vname
 		       (vector-length v)
 		       (map (lambda (i) (format "BREF( &(~a[ ~a ].header) )" aname i))
@@ -86,7 +86,7 @@
 	     (pragma ,(format "static struct ~a ~a[] = { ~(, ) };"
 			 lname aname
 			 (map (lambda (i)
-				 (format "{ __CNST_FILLER, MAKE_HEADER( LLONG_TYPE, 0 ), ~a }" i))
+				 (format "{ __CNST_FILLER MAKE_HEADER( LLONG_TYPE, 0 ), ~a }" i))
 			    l)))
 	     (pragma ,(format "~a; ~a" tdecl vdecl))
 	     (pragma::vector ,(format "\n#if( !defined( TAG_VECTOR ) )\nBVECTOR( &(~a.header) )\n#else\nBVECTOR( &(~a.len) )\n#endif\n" vname vname)))))

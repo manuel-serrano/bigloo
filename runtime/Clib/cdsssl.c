@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cdsssl.c                */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cdsssl.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Thu Jul 27 08:08:08 2017 (serrano)                */
+/*    Last change :  Tue Apr 17 08:00:11 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -46,9 +46,9 @@ make_keyword( obj_t name ) {
 
    keyword = GC_MALLOC( KEYWORD_SIZE );
 
-   keyword->keyword_t.header = MAKE_HEADER( KEYWORD_TYPE, KEYWORD_SIZE );
-   keyword->keyword_t.string = name;
-   keyword->keyword_t.cval   = BNIL;
+   keyword->keyword.header = MAKE_HEADER( KEYWORD_TYPE, KEYWORD_SIZE );
+   keyword->keyword.string = name;
+   keyword->keyword.cval = BNIL;
    
    return BREF( keyword );
 }

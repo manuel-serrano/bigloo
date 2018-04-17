@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sat Apr 14 18:34:36 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 07:30:46 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -73,9 +73,8 @@ struct bgl_real {
 #   define BREAL( p ) BREF( p )
 #   define CREAL( p ) CREF( p )
 #   define DEFINE_REAL( name, aux, flonum ) \
-      static struct { __CNST_ALIGN header_t header; \
-		      double real; } \
-         const aux = { __CNST_FILLER, MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \
+      static struct { __CNST_ALIGN header_t header; double real; } \
+         const aux = { __CNST_FILLER MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \
          const obj_t name = BREAL( &(aux.header) )
 #   define REALP( c ) (POINTERP( c ) && (TYPE( c ) == REAL_TYPE))
 #endif
@@ -96,9 +95,9 @@ struct bgl_real {
 BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #    define DOUBLE_TO_REAL( d ) (bgl_saw_make_real( d ))
 #  endif
-#  define REAL_TO_DOUBLE( r ) (REAL( r ).real)
+#  define REAL_TO_DOUBLE( r ) (REAL( r ).val)
 #  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
-#  define REAL_TO_FLOAT( r ) ((float)(REAL( r ).real))
+#  define REAL_TO_FLOAT( r ) ((float)(REAL( r ).val))
 #else
 #  define make_real( d ) ((obj_t)( { real: d } ))
 #  define REAL_TO_DOUBLE( r ) REAL( r )

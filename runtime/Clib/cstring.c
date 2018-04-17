@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cstring.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cstring.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Sun May  7 07:55:58 2017 (serrano)                */
+/*    Last change :  Tue Apr 17 07:48:35 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -27,10 +27,10 @@ string_to_bstring_len( char *c_string, int len ) {
    if( !c_string ) c_string = "";
 
 #if( !defined( TAG_STRING ) )
-   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
-   string->string_t.length = len;
-   string->string_t.sentinel = 0;
+   string->string.length = len;
+   string->string.sentinel = 0;
 
    dst = BSTRING_TO_STRING( BSTRING( string ) );
 
@@ -78,12 +78,12 @@ make_string( int len, unsigned char c ) {
       string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )
-      string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+      string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
-      string->string_t.length = len;
-      string->string_t.sentinel = c > 127 ? 0 : len;
+      string->string.length = len;
+      string->string.sentinel = c > 127 ? 0 : len;
 
-      memset( &(string->string_t.char0), c, len );
+      memset( &(string->string.char0), c, len );
       STRING_SET( BSTRING( string ), len, '\0' );
 		
       return BSTRING( string );
@@ -102,10 +102,10 @@ make_string_sans_fill( long len ) {
    obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )
-   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
-   string->string_t.length = len;
-   string->string_t.sentinel = len;
+   string->string.length = len;
+   string->string.sentinel = len;
 
    STRING_SET( BSTRING( string ), len, '\0' );
    return BSTRING( string );
@@ -131,15 +131,15 @@ string_append( obj_t s1, obj_t s2 ) {
    obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + l12 );
 
 #if( !defined( TAG_STRING ) )
-   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
-   string->string_t.length = l12;
-   string->string_t.sentinel = STRING_ASCII_SENTINEL( s1 ) == l1 ?
+   string->string.length = l12;
+   string->string.sentinel = STRING_ASCII_SENTINEL( s1 ) == l1 ?
       l1 + STRING_ASCII_SENTINEL( s2 ) : STRING_ASCII_SENTINEL( s1 );
 
-   memcpy( &(string->string_t.char0), &STRING_REF( s1, 0 ), l1 );
-   memcpy( &((char *)(&(string->string_t.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
-   ((char *)(&(string->string_t.char0)))[ l12 ] = '\0';
+   memcpy( &(string->string.char0), &STRING_REF( s1, 0 ), l1 );
+   memcpy( &((char *)(&(string->string.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
+   ((char *)(&(string->string.char0)))[ l12 ] = '\0';
 	
    return BSTRING( string );
 }
@@ -157,24 +157,24 @@ string_append_3( obj_t s1, obj_t s2, obj_t s3 ) {
    obj_t string = GC_MALLOC_ATOMIC( STRING_SIZE + l123 );
 
 #if( !defined( TAG_STRING ) )
-   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
-   string->string_t.length = l123;
+   string->string.length = l123;
    if( STRING_ASCII_SENTINEL( s1 ) == l1 ) { 
       if( STRING_ASCII_SENTINEL( s2 ) == l2 ) {
-	 string->string_t.sentinel =
+	 string->string.sentinel =
 	    l1 + l2 + STRING_ASCII_SENTINEL( s3 );
       } else {
-	 string->string_t.sentinel = l1 + STRING_ASCII_SENTINEL( s2 );
+	 string->string.sentinel = l1 + STRING_ASCII_SENTINEL( s2 );
       }
    } else {
-      string->string_t.sentinel = STRING_ASCII_SENTINEL( s1 );
+      string->string.sentinel = STRING_ASCII_SENTINEL( s1 );
    }
 
-   memcpy( &(string->string_t.char0), &STRING_REF( s1, 0 ), l1 );
-   memcpy( &((char *)(&(string->string_t.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
-   memcpy( &((char *)(&(string->string_t.char0)))[ l1 + l2 ], &STRING_REF( s3, 0 ), l3 );
-   ((char *)(&(string->string_t.char0)))[ l123 ] = '\0';
+   memcpy( &(string->string.char0), &STRING_REF( s1, 0 ), l1 );
+   memcpy( &((char *)(&(string->string.char0)))[ l1 ], &STRING_REF( s2, 0 ), l2 );
+   memcpy( &((char *)(&(string->string.char0)))[ l1 + l2 ], &STRING_REF( s3, 0 ), l3 );
+   ((char *)(&(string->string.char0)))[ l123 ] = '\0';
 	
    return BSTRING( string );
 }
@@ -189,13 +189,13 @@ c_substring( obj_t src_string, int min, int max ) {
    obj_t dst_string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )
-   dst_string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   dst_string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
-   dst_string->string_t.length = len;
-   dst_string->string_t.sentinel =
+   dst_string->string.length = len;
+   dst_string->string.sentinel =
       STRING_ASCII_SENTINEL( src_string ) > max ? max : 0;
 
-   memcpy( &(dst_string->string_t.char0),
+   memcpy( &(dst_string->string.char0),
 	   &STRING_REF( src_string, min ),
             len );
    STRING_SET( BSTRING( dst_string ), len, '\0' );
@@ -906,10 +906,10 @@ bgl_escape_C_string( unsigned char *src, long start, long end ) {
    string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )
-   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
 
-   dst = ((unsigned char *)(&string->string_t.char0));
+   dst = ((unsigned char *)(&string->string.char0));
    src += start;
    
    while( src < stop ) {
@@ -1060,8 +1060,8 @@ bgl_escape_C_string( unsigned char *src, long start, long end ) {
    }
    *dst = '\0';
    
-   string->string_t.length = len;
-   string->string_t.sentinel = 0;
+   string->string.length = len;
+   string->string.sentinel = 0;
 
    return BSTRING( string );
 }
@@ -1082,10 +1082,10 @@ bgl_escape_scheme_string( unsigned char *src, long start, long end ) {
    string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )
-   string->string_t.header = MAKE_HEADER( STRING_TYPE, 0 );
+   string->string.header = MAKE_HEADER( STRING_TYPE, 0 );
 #endif	
 
-   dst = ((char *)(&(string->string_t.char0)));
+   dst = ((char *)(&(string->string.char0)));
    src += start;
   
    while( src < stop ) {
@@ -1100,8 +1100,8 @@ bgl_escape_scheme_string( unsigned char *src, long start, long end ) {
    }
    *dst = '\0';
    
-   string->string_t.length = len;
-   string->string_t.sentinel = 0;
+   string->string.length = len;
+   string->string.sentinel = 0;
 
    return BSTRING( string );
 }

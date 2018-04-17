@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Stephane Epardaud                                 */
 /*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-/*    Last change :  Sun Mar 18 06:27:21 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:01:40 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C weak pointer management                                        */
 /*=====================================================================*/
@@ -31,17 +31,17 @@ make_weakptr( obj_t data ) {
    if( POINTERP( data ) && GC_base( CREFSLOW( data ) ) != NULL ) {
       // make a real weak pointer
       ptr = GC_MALLOC_ATOMIC( WEAKPTR_SIZE );
-      ptr->weakptr_t.header = MAKE_HEADER( WEAKPTR_TYPE, 0 );
-      ptr->weakptr_t.data = data;
-      GC_general_register_disappearing_link( &(ptr->weakptr_t.data), 
+      ptr->weakptr.header = MAKE_HEADER( WEAKPTR_TYPE, 0 );
+      ptr->weakptr.data = data;
+      GC_general_register_disappearing_link( &(ptr->weakptr.data), 
 					     GC_base( CREFSLOW( data ) ) );
    } else {
       // If not, we need to not tell the GC about the
       // disappearing link, and our
       // weak pointer will just be a regular hard pointer.
       ptr = GC_MALLOC( WEAKPTR_SIZE );
-      ptr->weakptr_t.header = MAKE_HEADER( WEAKPTR_TYPE, 0 );
-      ptr->weakptr_t.data = data;
+      ptr->weakptr.header = MAKE_HEADER( WEAKPTR_TYPE, 0 );
+      ptr->weakptr.data = data;
    }
    
    return BREF( ptr );

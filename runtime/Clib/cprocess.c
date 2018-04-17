@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Erick Gallesio                                    */
 /*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-/*    Last change :  Tue Jan 30 13:59:39 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:00:30 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Process handling C part. This part is mostly compatible with     */
 /*    STK. This code is extracted from STK by Erick Gallesio.          */
@@ -340,12 +340,12 @@ make_process() {
    obj_t a_proc;
 
    a_proc = GC_MALLOC( PROCESS_SIZE );
-   a_proc->process_t.header = MAKE_HEADER( PROCESS_TYPE, 0 );
-   a_proc->process_t.stream[ 0 ] = BFALSE;
-   a_proc->process_t.stream[ 1 ] = BFALSE;
-   a_proc->process_t.stream[ 2 ] = BFALSE;
-   a_proc->process_t.exit_status = 0;
-   a_proc->process_t.exited = 0;
+   a_proc->process.header = MAKE_HEADER( PROCESS_TYPE, 0 );
+   a_proc->process.stream[ 0 ] = BFALSE;
+   a_proc->process.stream[ 1 ] = BFALSE;
+   a_proc->process.stream[ 2 ] = BFALSE;
+   a_proc->process.exit_status = 0;
+   a_proc->process.exited = 0;
 
    /* Enter this process in the process table */
    BGL_MUTEX_LOCK( process_mutex );
@@ -361,7 +361,7 @@ make_process() {
 			BUNSPEC );
    }
    else {
-      a_proc->process_t.index = first_free_index;
+      a_proc->process.index = first_free_index;
       proc_arr[ first_free_index ] = BREF( a_proc );
       
       while( (first_free_index < max_proc_num) &&

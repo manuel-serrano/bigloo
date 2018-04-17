@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/runtime/Clib/inline_alloc_thread.h       */
+/*    .../project/bigloo/bigloo/runtime/Clib/inline_alloc_thread.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Sun Oct 29 09:02:15 2017 (serrano)                */
-/*    Copyright   :  2017 Manuel Serrano                               */
+/*    Last change :  Tue Apr 17 08:29:54 2018 (serrano)                */
+/*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
 /*=====================================================================*/
@@ -95,8 +95,8 @@ make_belong( long elong ) {
 
    a_elong = GC_THREAD_MALLOC_ATOMIC( ELONG_SIZE );
    
-   a_elong->elong_t.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
-   a_elong->elong_t.elong = elong;
+   a_elong->elong.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
+   a_elong->elong.val = elong;
 	
    return BREF( a_elong );
 }
@@ -111,8 +111,8 @@ make_bllong( BGL_LONGLONG_T llong ) {
 
    a_llong = GC_THREAD_MALLOC_ATOMIC( LLONG_SIZE );
    
-   a_llong->llong_t.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
-   a_llong->llong_t.llong = llong;
+   a_llong->llong.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
+   a_llong->llong.val = llong;
 	
    return BREF( a_llong );
 }
@@ -128,8 +128,8 @@ bgl_make_bint32( int32_t l ) {
 
    a_sint32 = GC_THREAD_MALLOC_ATOMIC( BGL_INT32_SIZE );
    
-   a_sint32->sint32_t.header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE );
-   a_sint32->sint32_t.val = l;
+   a_sint32->sint32.header = MAKE_HEADER( INT32_TYPE, BGL_INT32_SIZE );
+   a_sint32->sint32.val = l;
 	
    return BREF( a_sint32 );
 }
@@ -144,8 +144,8 @@ bgl_make_buint32( uint32_t l ) {
 
    a_uint32 = GC_THREAD_MALLOC_ATOMIC( BGL_UINT32_SIZE );
    
-   a_uint32->uint32_t.header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE );
-   a_uint32->uint32_t.val = l;
+   a_uint32->uint32.header = MAKE_HEADER( UINT32_TYPE, BGL_UINT32_SIZE );
+   a_uint32->uint32.val = l;
 	
    return BREF( a_uint32 );
 }
@@ -161,8 +161,8 @@ bgl_make_bint64( int64_t l ) {
 
    a_sint64 = GC_THREAD_MALLOC_ATOMIC( BGL_INT64_SIZE );
    
-   a_sint64->sint64_t.header = MAKE_HEADER( INT64_TYPE, BGL_INT64_SIZE );
-   a_sint64->sint64_t.val = l;
+   a_sint64->sint64.header = MAKE_HEADER( INT64_TYPE, BGL_INT64_SIZE );
+   a_sint64->sint64.val = l;
 	
    return BREF( a_sint64 );
 }
@@ -177,8 +177,8 @@ bgl_make_buint64( uint64_t l ) {
 
    a_uint64 = GC_THREAD_MALLOC_ATOMIC( BGL_UINT64_SIZE );
    
-   a_uint64->uint64_t.header = MAKE_HEADER( UINT64_TYPE, BGL_UINT64_SIZE );
-   a_uint64->uint64_t.val = l;
+   a_uint64->uint64.header = MAKE_HEADER( UINT64_TYPE, BGL_UINT64_SIZE );
+   a_uint64->uint64.val = l;
 	
    return BREF( a_uint64 );
 }

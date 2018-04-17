@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar 18 07:17:18 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 07:49:20 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo SEMAPHOREs                                                */
@@ -43,7 +43,7 @@ struct bgl_semaphore {
 /*---------------------------------------------------------------------*/
 #define BGL_SEMAPHORE_SIZE (sizeof( struct bgl_semaphore ))
 
-#define BGL_SEMAPHORE( o ) CREF( o )->semaphore_t
+#define BGL_SEMAPHORE( o ) CREF( o )->semaphore
 
 #define BGL_SEMAPHOREP( o ) (POINTERP( o ) && (TYPE( o ) == SEMAPHORE_TYPE))
 

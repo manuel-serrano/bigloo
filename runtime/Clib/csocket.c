@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Mon Apr  9 21:20:15 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:00:41 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -1478,17 +1478,17 @@ bgl_make_client_socket( obj_t hostname, int port, int timeo, obj_t inb, obj_t ou
 
    /* Create a new Scheme socket object */
    a_socket = GC_MALLOC( SOCKET_SIZE );
-   a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
-   a_socket->socket_t.portnum = ntohs( server.sin_port );
-   a_socket->socket_t.hostname = hname;
-   a_socket->socket_t.hostip = BUNSPEC;
-   a_socket->socket_t.family = AF_INET;
-   a_socket->socket_t.address.in_addr = server.sin_addr;
-   a_socket->socket_t.fd = s;
-   a_socket->socket_t.input = BFALSE;
-   a_socket->socket_t.output = BFALSE;
-   a_socket->socket_t.stype = BGL_SOCKET_CLIENT;
-   a_socket->socket_t.userdata = BUNSPEC;
+   a_socket->socket.header = MAKE_HEADER( SOCKET_TYPE, 0 );
+   a_socket->socket.portnum = ntohs( server.sin_port );
+   a_socket->socket.hostname = hname;
+   a_socket->socket.hostip = BUNSPEC;
+   a_socket->socket.family = AF_INET;
+   a_socket->socket.address.in_addr = server.sin_addr;
+   a_socket->socket.fd = s;
+   a_socket->socket.input = BFALSE;
+   a_socket->socket.output = BFALSE;
+   a_socket->socket.stype = BGL_SOCKET_CLIENT;
+   a_socket->socket.userdata = BUNSPEC;
 
    set_socket_io_ports( s, BREF( a_socket ), "make-client-socket", inb, outb );
    
@@ -1538,16 +1538,16 @@ bgl_make_unix_socket( obj_t path, int timeo, obj_t inb, obj_t outb ) {
 
    /* Create a new Scheme socket object */
    a_socket = GC_MALLOC( SOCKET_SIZE );
-   a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
-   a_socket->socket_t.hostname = path;
-   a_socket->socket_t.portnum = -1;
-   a_socket->socket_t.hostip = BFALSE;
-   a_socket->socket_t.family = AF_UNIX;
-   a_socket->socket_t.fd = s;
-   a_socket->socket_t.input = BFALSE;
-   a_socket->socket_t.output = BFALSE;
-   a_socket->socket_t.stype = BGL_SOCKET_UNIX;
-   a_socket->socket_t.userdata = BUNSPEC;
+   a_socket->socket.header = MAKE_HEADER( SOCKET_TYPE, 0 );
+   a_socket->socket.hostname = path;
+   a_socket->socket.portnum = -1;
+   a_socket->socket.hostip = BFALSE;
+   a_socket->socket.family = AF_UNIX;
+   a_socket->socket.fd = s;
+   a_socket->socket.input = BFALSE;
+   a_socket->socket.output = BFALSE;
+   a_socket->socket.stype = BGL_SOCKET_UNIX;
+   a_socket->socket.userdata = BUNSPEC;
 
    set_socket_io_ports( s, BREF( a_socket ), "make-client-socket", inb, outb );
    
@@ -1622,17 +1622,17 @@ bgl_make_server_socket( obj_t hostname, int portnum, int backlog, bool_t ipv6 ) 
 
    /* Now we can create the socket object */
    a_socket = GC_MALLOC( SOCKET_SIZE );
-   a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
-   a_socket->socket_t.portnum = ntohs( sin.sin_port );
-   a_socket->socket_t.hostname = BUNSPEC;
-   a_socket->socket_t.hostip = BFALSE;
-   a_socket->socket_t.family = AF_INET;
-   a_socket->socket_t.fd = s;
-   a_socket->socket_t.input = BFALSE;
-   a_socket->socket_t.output = BFALSE;
-   a_socket->socket_t.stype = BGL_SOCKET_SERVER;
-   a_socket->socket_t.accept = 0L;
-   a_socket->socket_t.userdata = BUNSPEC;
+   a_socket->socket.header = MAKE_HEADER( SOCKET_TYPE, 0 );
+   a_socket->socket.portnum = ntohs( sin.sin_port );
+   a_socket->socket.hostname = BUNSPEC;
+   a_socket->socket.hostip = BFALSE;
+   a_socket->socket.family = AF_INET;
+   a_socket->socket.fd = s;
+   a_socket->socket.input = BFALSE;
+   a_socket->socket.output = BFALSE;
+   a_socket->socket.stype = BGL_SOCKET_SERVER;
+   a_socket->socket.accept = 0L;
+   a_socket->socket.userdata = BUNSPEC;
 
    return BREF( a_socket );
 }
@@ -1839,15 +1839,15 @@ bgl_socket_accept( obj_t serv, bool_t errp, obj_t inb, obj_t outb ) {
    a_socket = GC_MALLOC( SOCKET_SIZE );
 
    /* allocate and fill the new socket client for this connection */
-   a_socket->socket_t.header = MAKE_HEADER( SOCKET_TYPE, 0 );
-   a_socket->socket_t.portnum = ntohs( sin.sin_port );
-   a_socket->socket_t.hostname = BUNSPEC;
-   a_socket->socket_t.hostip = BUNSPEC;
-   a_socket->socket_t.family = AF_INET;
-   a_socket->socket_t.address.in_addr = sin.sin_addr;
-   a_socket->socket_t.fd = new_s;
-   a_socket->socket_t.stype = BGL_SOCKET_CLIENT;
-   a_socket->socket_t.userdata = BUNSPEC;
+   a_socket->socket.header = MAKE_HEADER( SOCKET_TYPE, 0 );
+   a_socket->socket.portnum = ntohs( sin.sin_port );
+   a_socket->socket.hostname = BUNSPEC;
+   a_socket->socket.hostip = BUNSPEC;
+   a_socket->socket.family = AF_INET;
+   a_socket->socket.address.in_addr = sin.sin_addr;
+   a_socket->socket.fd = new_s;
+   a_socket->socket.stype = BGL_SOCKET_CLIENT;
+   a_socket->socket.userdata = BUNSPEC;
 
    set_socket_io_ports( new_s, BREF( a_socket ), "socket-accept", inb, outb );
 
@@ -2580,7 +2580,7 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    }
    
    a_socket = GC_MALLOC( BGL_DATAGRAM_SOCKET_SIZE + sizeof( struct sockaddr_in ) );
-   server = (struct sockaddr_in *)&(a_socket->datagram_socket_t.server);
+   server = (struct sockaddr_in *)&(a_socket->datagram_socket.server);
    
    /* setup a connect address */
    memset( server, 0, sizeof( struct sockaddr_in ) );
@@ -2592,20 +2592,20 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
    hname = string_to_bstring( hp->h_name );
    memset( server->sin_zero, 0, sizeof( server->sin_zero ) );
 
-   a_socket->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
-   a_socket->datagram_socket_t.portnum = ntohs( server->sin_port );
-   a_socket->datagram_socket_t.hostname = hname;
-/*    a_socket->datagram_socket_t.hostip = bgl_inet_ntop( AF_INET, &(server->sin_addr) ); */
-   a_socket->datagram_socket_t.hostip = BUNSPEC;
-   a_socket->datagram_socket_t.family = AF_INET;
-   a_socket->datagram_socket_t.address.in_addr = server->sin_addr;
+   a_socket->datagram_socket.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   a_socket->datagram_socket.portnum = ntohs( server->sin_port );
+   a_socket->datagram_socket.hostname = hname;
+/*    a_socket->datagram_socket.hostip = bgl_inet_ntop( AF_INET, &(server->sin_addr) ); */
+   a_socket->datagram_socket.hostip = BUNSPEC;
+   a_socket->datagram_socket.family = AF_INET;
+   a_socket->datagram_socket.address.in_addr = server->sin_addr;
    
-   a_socket->datagram_socket_t.stype = BGL_SOCKET_CLIENT;
-   a_socket->datagram_socket_t.fd = s;
+   a_socket->datagram_socket.stype = BGL_SOCKET_CLIENT;
+   a_socket->datagram_socket.fd = s;
    
    /* socket port */
-   a_socket->datagram_socket_t.port =
-      bgl_make_output_port( a_socket->datagram_socket_t.hostip,
+   a_socket->datagram_socket.port =
+      bgl_make_output_port( a_socket->datagram_socket.hostip,
 			    (bgl_stream_t)(void *)BREF( a_socket ),
 			    BGL_STREAM_TYPE_CHANNEL,
 			    KINDOF_SOCKET,
@@ -2613,8 +2613,8 @@ bgl_make_datagram_client_socket( obj_t hostname, int port, bool_t broadcast ) {
 			    &datagram_socket_write,
 			    0L,
 			    &bgl_sclose_wd );
-   OUTPUT_PORT( a_socket->datagram_socket_t.port ).sysflush = &bgl_socket_flush;
-   OUTPUT_PORT( a_socket->datagram_socket_t.port ).bufmode = BGL_IONB;
+   OUTPUT_PORT( a_socket->datagram_socket.port ).sysflush = &bgl_socket_flush;
+   OUTPUT_PORT( a_socket->datagram_socket.port ).bufmode = BGL_IONB;
    
    return BREF( a_socket );
 }
@@ -2686,13 +2686,13 @@ bgl_make_datagram_server_socket( int portnum ) {
 
    /* Now we can create the socket object */
    sock = GC_MALLOC( SOCKET_SIZE );
-   sock->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
-   sock->datagram_socket_t.portnum = portnum;
-   sock->datagram_socket_t.hostname = BUNSPEC;
-   sock->datagram_socket_t.hostip = BFALSE;
-   sock->datagram_socket_t.family = AF_INET;
-   sock->datagram_socket_t.fd = s;
-   sock->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+   sock->datagram_socket.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   sock->datagram_socket.portnum = portnum;
+   sock->datagram_socket.hostname = BUNSPEC;
+   sock->datagram_socket.hostip = BFALSE;
+   sock->datagram_socket.family = AF_INET;
+   sock->datagram_socket.fd = s;
+   sock->datagram_socket.stype = BGL_SOCKET_SERVER;
 
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
@@ -2707,13 +2707,13 @@ bgl_make_datagram_server_socket( int portnum ) {
    /* Make an unbuffered input port, so that `datagram-socket-receive',   */
    /* which bypasses port buffering, can still be used without troubles.  */
    setbuf( fs, NULL );
-   sock->datagram_socket_t.port =
+   sock->datagram_socket.port =
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
-   INPUT_PORT( sock->datagram_socket_t.port ).sysread = bgl_read;
-   INPUT_PORT( sock->datagram_socket_t.port ).sysseek = bgl_input_socket_seek;
-   PORT( sock->datagram_socket_t.port ).sysclose = bgl_sclose_rd;
+   INPUT_PORT( sock->datagram_socket.port ).sysread = bgl_read;
+   INPUT_PORT( sock->datagram_socket.port ).sysseek = bgl_input_socket_seek;
+   PORT( sock->datagram_socket.port ).sysclose = bgl_sclose_rd;
 
    return BREF( sock );
 #endif
@@ -2747,13 +2747,13 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
    }
 
    sock = GC_MALLOC( SOCKET_SIZE );
-   sock->datagram_socket_t.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
-   sock->datagram_socket_t.portnum = 0;
-   sock->datagram_socket_t.hostname = BUNSPEC;
-   sock->datagram_socket_t.hostip = BFALSE;
-   sock->datagram_socket_t.family = AF_INET;
-   sock->datagram_socket_t.fd = s;
-   sock->datagram_socket_t.stype = BGL_SOCKET_SERVER;
+   sock->datagram_socket.header = MAKE_HEADER( DATAGRAM_SOCKET_TYPE, 0 );
+   sock->datagram_socket.portnum = 0;
+   sock->datagram_socket.hostname = BUNSPEC;
+   sock->datagram_socket.hostip = BFALSE;
+   sock->datagram_socket.family = AF_INET;
+   sock->datagram_socket.fd = s;
+   sock->datagram_socket.stype = BGL_SOCKET_SERVER;
 
    if ( !(fs = fdopen( s, "r" )) ) {
       char buffer[1024];
@@ -2768,13 +2768,13 @@ bgl_make_datagram_unbound_socket( obj_t family ) {
    /* Make an unbuffered input port, so that `datagram-socket-receive',   */
    /* which bypasses port buffering, can still be used without troubles.  */
    setbuf( fs, NULL );
-   sock->datagram_socket_t.port =
+   sock->datagram_socket.port =
       bgl_make_input_port( string_to_bstring( "datagram-server" ),
 			   fs, KINDOF_DATAGRAM,
 			   make_string_sans_fill( 0 ) );
-   INPUT_PORT( sock->datagram_socket_t.port ).sysread = bgl_read;
-   INPUT_PORT( sock->datagram_socket_t.port ).sysseek = bgl_input_socket_seek;
-   PORT( sock->datagram_socket_t.port ).sysclose = bgl_sclose_rd;
+   INPUT_PORT( sock->datagram_socket.port ).sysread = bgl_read;
+   INPUT_PORT( sock->datagram_socket.port ).sysseek = bgl_input_socket_seek;
+   PORT( sock->datagram_socket.port ).sysclose = bgl_sclose_rd;
 
    return BREF( sock );
 }

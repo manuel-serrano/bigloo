@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Apr 15 07:16:26 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:14:04 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -147,7 +147,7 @@ struct bgl_hvector {
 		   unsigned long length; \
 		   obj_t descr; \
 		   itype items[ len ]; } \
-      aux = { __CNST_FILLER, MAKE_HEADER( TVECTOR_TYPE, 0 ), len, 0L,
+      aux = { __CNST_FILLER MAKE_HEADER( TVECTOR_TYPE, 0 ), len, 0L,
 	      
 #define DEFINE_TVECTOR_STOP( name, aux ) \
 	   }; static obj_t name = BREF( &(aux.header) )

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sun Mar 18 07:16:42 2018 (serrano)                */
+/*    Last change :  Tue Apr 17 08:05:08 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
@@ -42,7 +42,7 @@ struct bgl_cell {
     obj_t val;        
 };
 
-#define CELL( o ) CCELL( o )->cell_t
+#define CELL( o ) CCELL( o )->cell
 
 #define CELL_SIZE (sizeof( struct bgl_cell ))
 
@@ -69,9 +69,9 @@ struct bgl_cell {
 #endif   
 
 #define BGL_INIT_CELL( an_object, v ) \
-   IFN_CELL_TAG( (an_object)->cell_t.header = \
+   IFN_CELL_TAG( (an_object)->cell.header = \
 		 MAKE_HEADER( CELL_TYPE, CELL_SIZE ) ); \
-   (an_object)->cell_t.val = v;
+   (an_object)->cell.val = v;
 
 /* boehm allocation */
 #if( BGL_GC == BGL_BOEHM_GC )
@@ -96,7 +96,7 @@ struct bgl_cell {
 /*---------------------------------------------------------------------*/
 /*    api                                                              */
 /*---------------------------------------------------------------------*/
-#define CELL_REF( c ) ((CCELL( c )->cell_t).val)
+#define CELL_REF( c ) ((CCELL( c )->cell).val)
 #define CELL_SET( c, v ) BASSIGN( CELL_REF( c ), v, c )
 
 /*---------------------------------------------------------------------*/
