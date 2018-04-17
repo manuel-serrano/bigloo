@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/alloc.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/alloc.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Dec 27 07:00:10 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Last change :  Tue Apr 17 09:00:29 2018 (serrano)                */
+/*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -340,10 +340,10 @@ make_pair( obj_t car, obj_t cdr ) {
    pair = ____GC_malloc( PAIR_SIZE );
 
 #if( !defined( TAG_PAIR ) )
-   pair->pair_t.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
+   pair->pair.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
 #endif
-   pair->pair_t.car = car;
-   pair->pair_t.cdr = cdr;
+   pair->pair.car = car;
+   pair->pair.cdr = cdr;
 
    bmem_set_alloc_type( -1, 0 );
    return BPAIR( pair );
@@ -369,9 +369,9 @@ make_cell( obj_t val ) {
 
    cell = ____GC_malloc( CELL_SIZE );
 #if( !defined( TAG_CELL ) )
-   cell->cell_t.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE );
+   cell->cell.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE );
 #endif
-   cell->cell_t.val = val;
+   cell->cell.val = val;
 
    bmem_set_alloc_type( -1, 0 );
    return BCELL( cell );
@@ -398,9 +398,9 @@ make_real( double d ) {
    a_real = ____GC_malloc_atomic( REAL_SIZE );
 
 #if( !defined( TAG_REAL ) )
-   a_real->real_t.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE );
+   a_real->real.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE );
 #endif
-   a_real->real_t.real = d;
+   a_real->real.val = d;
 
    bmem_set_alloc_type( -1,0  );
    return BREAL( a_real );
@@ -427,8 +427,8 @@ make_belong( long l ) {
 
    a_elong = ____GC_malloc_atomic( ELONG_SIZE );
 
-   a_elong->elong_t.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
-   a_elong->elong_t.elong = l;
+   a_elong->elong.header = MAKE_HEADER( ELONG_TYPE, ELONG_SIZE );
+   a_elong->elong.val = l;
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_elong );
@@ -455,8 +455,8 @@ make_bllong( BGL_LONGLONG_T l ) {
 
    a_llong = ____GC_malloc_atomic( LLONG_SIZE );
 
-   a_llong->llong_t.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
-   a_llong->llong_t.llong = l;
+   a_llong->llong.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
+   a_llong->llong.val = l;
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_llong );
@@ -484,8 +484,8 @@ bgl_make_bint32( int32_t l ) {
 
    a_int32 = ____GC_malloc_atomic( BGL_INT32_SIZE );
 
-   a_int32->sint32_t.header = MAKE_HEADER( INT32_TYPE_NUM, BGL_INT32_SIZE );
-   a_int32->sint32_t.val = l;
+   a_int32->sint32.header = MAKE_HEADER( INT32_TYPE_NUM, BGL_INT32_SIZE );
+   a_int32->sint32.val = l;
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_int32 );
@@ -514,8 +514,8 @@ bgl_make_buint32( uint32_t l ) {
 
    a_uint32 = ____GC_malloc_atomic( BGL_UINT32_SIZE );
 
-   a_uint32->uint32_t.header = MAKE_HEADER( UINT32_TYPE_NUM, BGL_UINT32_SIZE );
-   a_uint32->uint32_t.val = l;
+   a_uint32->uint32.header = MAKE_HEADER( UINT32_TYPE_NUM, BGL_UINT32_SIZE );
+   a_uint32->uint32.val = l;
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_uint32 );
@@ -543,8 +543,8 @@ bgl_make_bint64( int64_t l ) {
 
    a_int64 = ____GC_malloc_atomic( BGL_INT64_SIZE );
 
-   a_int64->sint64_t.header = MAKE_HEADER( INT64_TYPE_NUM, BGL_INT64_SIZE );
-   a_int64->sint64_t.val = l;
+   a_int64->sint64.header = MAKE_HEADER( INT64_TYPE_NUM, BGL_INT64_SIZE );
+   a_int64->sint64.val = l;
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_int64 );
@@ -571,8 +571,8 @@ bgl_make_buint64( uint64_t l ) {
 
    a_uint64 = ____GC_malloc_atomic( BGL_UINT64_SIZE );
 
-   a_uint64->uint64_t.header = MAKE_HEADER( UINT64_TYPE_NUM, BGL_UINT64_SIZE );
-   a_uint64->uint64_t.val = l;
+   a_uint64->uint64.header = MAKE_HEADER( UINT64_TYPE_NUM, BGL_UINT64_SIZE );
+   a_uint64->uint64.val = l;
 
    bmem_set_alloc_type( -1, 0 );
    return BREF( a_uint64 );
