@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 07:42:02 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:03:06 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -376,7 +376,7 @@ typedef int bool_t;
 typedef uint16_t ucs2_t;
 typedef union scmobj *obj_t;
 
-#define BGL_CPTR( _o ) ((void *)(_o))
+#define BGL_CPTR( _o ) ((obj_t)(_o))
 #define BGL_BPTR( _o ) ((obj_t)(_o))
 
 #include <bigloo_saw.h>

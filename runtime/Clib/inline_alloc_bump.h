@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/inline_alloc_bump.h     */
+/*    .../project/bigloo/bigloo/runtime/Clib/inline_alloc_bump.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:26:00 2017                          */
-/*    Last change :  Thu Nov  2 07:07:56 2017 (serrano)                */
-/*    Copyright   :  2017 Manuel Serrano                               */
+/*    Last change :  Thu Apr 19 08:07:31 2018 (serrano)                */
+/*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bump gc allocations                                              */
 /*=====================================================================*/
@@ -121,6 +121,7 @@ make_cell( obj_t val ) {
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
 
+#if( !BGL_NAN_TAGGING ) 
 static obj_t
 alloc_make_real( double d ) {
    bgl_gc_ptr_base = (char *)GC_MALLOC( BGL_BUMP_CARD_SIZE );
@@ -140,6 +141,7 @@ make_real( double d ) {
       return alloc_make_real( d );
    }
 }
+#endif
 
 #endif
 

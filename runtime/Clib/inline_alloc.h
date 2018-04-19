@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:43:27 2017                          */
-/*    Last change :  Tue Apr 17 08:26:16 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:07:07 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Single-threaded Boehm allocations                                */
@@ -166,6 +166,7 @@ make_cell( obj_t val ) {
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
 
+#if( !BGL_NAN_TAGGING ) 
 static obj_t
 alloc_make_real( double d ) {
    obj_t real;
@@ -186,6 +187,7 @@ make_real( double d ) {
    return BREAL( real );
 }
 
+#endif
 #endif
 
 /*---------------------------------------------------------------------*/

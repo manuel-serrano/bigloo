@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Tue Apr 17 08:29:54 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:07:44 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -73,6 +73,7 @@ make_cell( obj_t val ) {
 #ifndef BGL_MAKE_REAL
 #define BGL_MAKE_REAL
 
+#if( !BGL_NAN_TAGGING ) 
 GC_API obj_t
 make_real( double real ) {
    obj_t a_real;
@@ -82,6 +83,7 @@ make_real( double real ) {
 
    return BREAL( a_real );
 }
+#if( !BGL_NAN_TAGGING ) 
 
 #endif
 
