@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Apr 19 09:29:06 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 09:46:33 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -114,9 +114,9 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #else
 #  define make_real( d ) BREAL( d )
 #  define REAL_TO_DOUBLE( r ) CREAL( r )
-#  define DOUBLE_TO_REAL( r ) make_real(r)
+#  define DOUBLE_TO_REAL( r ) make_real( r )
 #  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
-#  define REAL_TO_FLOAT( r ) ((float)(REAL( r )))
+#  define REAL_TO_FLOAT( r ) ((float)(REAL_TO_DOUBLE( r ) ))
 #endif
 
 /* boehm allocation */
