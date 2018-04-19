@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 09:28:42 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 12:04:24 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -172,7 +172,7 @@ extern "C" {
 
 #   define TAG_SHIFT 0
 
-#   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) | tag)))
+#   define TAG( _v, shift, tag ) ((long)((((unsigned long)(_v) & ~(0xfULL << 48)) | tag)))
 #   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK)))
 #else
 #   define TAG_SHIFT PTR_ALIGNMENT
