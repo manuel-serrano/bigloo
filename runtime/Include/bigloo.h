@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 12:04:24 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 13:25:18 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -168,7 +168,8 @@ extern "C" {
 #if( BGL_NAN_TAGGING )
 #   define TAG_MASK ((unsigned long)0x7fff << 48)
 #   define NAN_MASK (((unsigned long)1 << 48) - 1)
-#   define NAN_TAG ((unsigned long)0x1 << 51)
+#   define NAN_MASK_SIGNED (NAN_MASK | ((unsigned long)1 <<63))
+#   define NAN_TAG (((unsigned long)0x1 << 51) + ((unsigned long)0x1 << 63))
 
 #   define TAG_SHIFT 0
 

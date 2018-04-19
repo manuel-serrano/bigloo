@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Tue Apr 17 08:08:59 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 17:15:22 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -26,8 +26,13 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #define INTEGERP( o ) ((((long)o) & TAG_MASK) == TAG_INT)
 
-#define BINT( i ) (obj_t)TAG( i, TAG_SHIFT, TAG_INT )
-#define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
+#if( !BGL_NAN_TAGGING )
+#  define BINT( i ) (obj_t)TAG( i, TAG_SHIFT, TAG_INT )
+#  define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
+#else
+#  define BINT( i ) ((obj_t)(((long)i & NAN_MASK_SIGNED) | TAG_INT))
+#  define CINT( i ) ((((long long)((long long)i & (1UL<<63))) >> (64-48)) | (((long)i) & NAN_MASK))
+#endif
 
 #define ODDP_FX( i )  ((i) & 0x1)
 #define EVENP_FX( i ) (!ODDP_FX( i ))
