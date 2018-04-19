@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Apr 17 07:34:44 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 11:45:03 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PAIRs                                                     */
@@ -93,7 +93,7 @@ struct bgl_epair {
 #if( BGL_GC == BGL_BOEHM_GC && TAG_PAIR )
 #   define EPAIRP( c ) \
       (PAIRP( c ) && \
-       (((long)GC_size( BPAIR( c ) )) >= EPAIR_SIZE) && \
+       (((long)GC_size( CPAIR( c ) )) >= EPAIR_SIZE) && \
        (EPAIR( c ).eheader == BINT( EPAIR_TYPE )))
 #else
 #   define EPAIRP( c ) \
