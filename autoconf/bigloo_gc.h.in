@@ -107,6 +107,12 @@
 #  if( !defined( GC_REGISTER_DISPLACEMENT ) )
 #    define GC_REGISTER_DISPLACEMENT( o ) GC_register_displacement( o )
 #  endif
+
+#  if( BGL_NAN_TAGGING )
+#  undef GC_REGISTER_DISPLACEMENT
+#  define GC_REGISTER_DISPLACEMENT( o )
+#  endif
+
 #  if( defined( TAG_STRUCT ) && ( TAG_STRUCT != 0) )
 #    define STRUCT_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_STRUCT ) 
 #  else

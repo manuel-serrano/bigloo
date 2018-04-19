@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:50:11 2017                          */
-/*    Last change :  Thu Apr 19 08:07:44 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:09:48 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Multi-threaded Boehm allocations                                 */
@@ -83,7 +83,7 @@ make_real( double real ) {
 
    return BREAL( a_real );
 }
-#if( !BGL_NAN_TAGGING ) 
+#endif
 
 #endif
 

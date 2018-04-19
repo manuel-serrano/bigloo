@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 08:03:06 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:20:05 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -179,14 +179,14 @@ extern "C" {
 #   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) << shift) | tag))
 #   define UNTAG( _v, shift, tag ) ((long)((long)(_v) >> shift))
 
-#   define BGL_CNST_SHIFT_CHAR 8
-#   define BGL_CNST_SHIFT_INT16 16
-#   define BGL_CNST_SHIFT_UCS2 16
-
 #   if( PTR_ALIGNMENT >= 3 )
 #     define BGL_CNST_SHIFT_INT32 32
 #   endif
 #endif
+
+#define BGL_CNST_SHIFT_CHAR 8
+#define BGL_CNST_SHIFT_INT16 16
+#define BGL_CNST_SHIFT_UCS2 16
 
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */

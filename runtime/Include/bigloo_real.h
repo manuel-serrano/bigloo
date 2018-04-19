@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Apr 19 07:46:49 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:12:46 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -105,8 +105,8 @@ BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
 #  define REAL_TO_FLOAT( r ) ((float)(REAL( r ).val))
 #else
-#  define make_real( d ) ((obj_t)( { real: d } ))
-#  define REAL_TO_DOUBLE( r ) REAL( r )
+#  define make_real( d ) BREAL( d )
+#  define REAL_TO_DOUBLE( r ) CREAL( r )
 #  define DOUBLE_TO_REAL( r ) make_real(r)
 #  define FLOAT_TO_REAL( d ) (DOUBLE_TO_REAL( (double)(d) ))
 #  define REAL_TO_FLOAT( r ) ((float)(REAL( r )))
