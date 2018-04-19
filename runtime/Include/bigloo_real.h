@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Apr 19 08:42:12 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 09:29:06 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -24,14 +24,15 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 /*    extern                                                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
-
 #if( !BGL_NAN_TAGGING ) 
+BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity;
 BGL_RUNTIME_DECL obj_t make_real( double );
 
 #   if( BGL_SAW == 1 ) 
 BGL_RUNTIME_DECL obj_t bgl_saw_make_real( double );
 #   endif
+#else
+BGL_RUNTIME_DECL union nanobj bigloo_nan, bigloo_infinity, bigloo_minfinity;
 #endif
 
 /*---------------------------------------------------------------------*/

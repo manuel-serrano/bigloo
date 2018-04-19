@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cinit_obj.c             */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cinit_obj.c      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jan 29 09:19:48 2002                          */
-/*    Last change :  Thu Aug  3 13:11:40 2017 (serrano)                */
-/*    Copyright   :  2002-17 Manuel Serrano                            */
+/*    Last change :  Thu Apr 19 09:30:38 2018 (serrano)                */
+/*    Copyright   :  2002-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bootstrap of pre-allocated objects.                              */
 /*=====================================================================*/
@@ -81,7 +81,6 @@ void bgl_init_objects() {
    bigloo_nan = DOUBLE_TO_REAL( bgl_nan() );
    bigloo_infinity = DOUBLE_TO_REAL( bgl_infinity() );
    bigloo_minfinity = DOUBLE_TO_REAL( -bgl_infinity() );
-   
 }
 
 /*---------------------------------------------------------------------*/

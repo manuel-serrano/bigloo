@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 08:25:48 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 09:28:42 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2403,8 +2403,6 @@ BGL_RUNTIME_DECL obj_t bgl_setsockopt( obj_t, obj_t, obj_t );
 BGL_RUNTIME_DECL void bgl_init_trace( void );
 
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
-
-/* BGL_RUNTIME_DECL obj_t bigloo_nan, bigloo_infinity, bigloo_minfinity; */
 
 BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );
 BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
