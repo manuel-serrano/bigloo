@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 18:21:02 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 19:19:25 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -270,7 +270,7 @@ error "Unknown garbage collector type"
 #define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
 
 #define MAKE_HEADER( _i, _sz ) \
-   ((header_t)( ((((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT )) ))
+   ((header_t)( (((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT )) )
 
 #define HEADER_TYPE( _i ) (((long)(_i)) >> TYPE_SHIFT)
 
@@ -1009,7 +1009,11 @@ typedef obj_t (*function_t)();
 #  define CNST32P( o ) 1
 #  define BCNST( o ) BGL_TAG_BCNST( o )
 #  define CCNST( o ) BGL_TAG_CCNST( o )
-#  define CCNST_MASK( o ) (o)
+#  if( BGL_NAN_TAGGING )
+#    define CCNST_MASK( o ) (o & NAN_MASK)
+#  else   
+#    define CCNST_MASK( o ) (o)
+#  endif
 #endif
 
 #define BNIL BCNST( 0 )
