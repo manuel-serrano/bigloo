@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 13:25:18 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 18:21:02 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -270,9 +270,9 @@ error "Unknown garbage collector type"
 #define TYPE_SHIFT (HEADER_SHIFT + HEADER_SIZE_BIT_SIZE)
 
 #define MAKE_HEADER( _i, _sz ) \
-   ((header_t)TAG( (_i), TYPE_SHIFT, (_sz & SIZE_MASK) << HEADER_SHIFT ))
+   ((header_t)( ((((long)(_i)) << TYPE_SHIFT) | ((_sz & SIZE_MASK) << HEADER_SHIFT )) ))
 
-#define HEADER_TYPE( _i ) (long)UNTAG( (_i), TYPE_SHIFT, 0 )
+#define HEADER_TYPE( _i ) (((long)(_i)) >> TYPE_SHIFT)
 
 #define HEADER_SIZE( _h ) (((_h) >> HEADER_SHIFT) & SIZE_MASK)
 
