@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 19 06:54:25 2018 (serrano)                */
+#*    Last change :  Thu Apr 19 07:11:25 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1477,19 +1477,6 @@ if [ "$enable_bglpkg " = "force " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
-#*    Pointer alignment                                                */
-#*---------------------------------------------------------------------*/
-alignment=`$autoconf alignment` || exit 1
-
-if [ "$alignment" = "3" ]; then 
-  intsize=61
-  elongsize=64
-else
-  intsize=30
-  elongsize=32
-fi
-
-#*---------------------------------------------------------------------*/
 #*    User hostos specific configuration                               */
 #*---------------------------------------------------------------------*/
 echo "+ User specified host specific configuration ($hostos)..." >> $configurelog
@@ -1671,6 +1658,19 @@ fi
 # Grab the buildosversion info
 if [ "$buildosversion " = " " ]; then
   buildosversion=`$autoconfdir/osversion --sh=""` || exit 1
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Pointer alignment                                                */
+#*---------------------------------------------------------------------*/
+alignment=`$autoconf alignment` || exit 1
+
+if [ "$alignment" = "3" ]; then 
+  intsize=61
+  elongsize=64
+else
+  intsize=30
+  elongsize=32
 fi
 
 #*---------------------------------------------------------------------*/
