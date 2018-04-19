@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Apr 17 09:26:12 2018 (serrano)                */
+#*    Last change :  Thu Apr 19 06:54:25 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -268,7 +268,9 @@ customgc=yes
 gccustom=gc-7.6.2
 gcversion=
 gcbump=0
-# the following variable is relevant only when using
+cgcflags=
+
+# the following variables are relevant only when using
 # standard (i.e. already existing and operational) Boehm's GC
 # and when customgc=no
 stdgclib=gc
@@ -1475,6 +1477,19 @@ if [ "$enable_bglpkg " = "force " ]; then
 fi
 
 #*---------------------------------------------------------------------*/
+#*    Pointer alignment                                                */
+#*---------------------------------------------------------------------*/
+alignment=`$autoconf alignment` || exit 1
+
+if [ "$alignment" = "3" ]; then 
+  intsize=61
+  elongsize=64
+else
+  intsize=30
+  elongsize=32
+fi
+
+#*---------------------------------------------------------------------*/
 #*    User hostos specific configuration                               */
 #*---------------------------------------------------------------------*/
 echo "+ User specified host specific configuration ($hostos)..." >> $configurelog
@@ -1991,7 +2006,7 @@ else
   # pthread kill
   if [ "$pthreadlibs" != "no" ]; then
     pthreadkill=`$autoconf pthreadkill --lib="$pthreadlibs"` || exit 1;
-    cgcflags="$gcflags -DBGL_$pthreadkill"
+    cgcflags="$cgcflags -DBGL_$pthreadkill"
   fi
   
   # get the number of processors of the machine
@@ -2042,9 +2057,19 @@ echo >> $configurelog
 #*    GC configuration                                                 */
 #*---------------------------------------------------------------------*/
 if [ "$action" != "bigloo_config_el" ]; then
+  if [ "$bglnantagging " = "1 " ]; then
+    if [ "$alignment" = "3" ]; then 
+      customgc=yes;
+      cgcflags="-DPOINTER_MASK=0xffffffffffff $cgcflags";
+    else
+      echo "*** ERROR: Nan-tagging requires 64bit platforms"
+      exit 1
+    fi
+  fi
+
   echo "+ GC configuration ($customgc)..." >> $configurelog
   
-  cgcflags=`$autoconf gcflags` || exit 1
+  cgcflags="`$autoconf gcflags` $cgcflags" || exit 1
   
   # We check the standard GC if we have to use one
   if [ "$customgc " = "no " ]; then
@@ -2609,18 +2634,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # The C compiler options
   cbraflags=`$autoconf ccbracket` || exit 1
   cflags="$cflags $cbraflags"
-
-  # The pointer alignment
-  alignment=`$autoconf alignment` || exit 1
-
-  if [ "$alignment" = "3" ]; then 
-    intsize=61
-    elongsize=64
-  else
-    intsize=30
-    elongsize=32
-    bglnantagging=0
-  fi
 
   # The -O C compiler options
   coflags=`$autoconf ccoptim --cflags="$coflags"` || exit 1
