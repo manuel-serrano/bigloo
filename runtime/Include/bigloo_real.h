@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Tue Apr 17 09:46:13 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 07:46:49 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -55,12 +55,18 @@ struct bgl_real {
 /*    tagging                                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
-#   define BREAL( p ) (p)
-#   define CREAL( p ) (p)
+union nanobj {
+   double real;
+   obj_t ptr;
+};
+      
+#   define BREAL( _n ) (((union nanobj){ real: _n }).ptr)
+#   define CREAL( _p ) (((union nanobj){ ptr: _p }).real)
+
 #   define DEFINE_REAL( name, aux, flonum ) obj_t name = BREAL( flonum )
 #   define REALP( c ) \
-   (((unsigned long)c & TAG_MASK != TAG_MASK) \
-    || (!((unsigned long) c & NAN_MASK)))
+       ((((unsigned long)c & NAN_MASK) != NAN_MASK) \
+	|| (!((unsigned long)c & NAN_TAG)))
 #elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))

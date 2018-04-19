@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Tue Apr 17 07:40:37 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 07:42:02 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -161,13 +161,14 @@ extern "C" {
 /*    -------------------------------------------------------------    */
 /*    pointers (vector, cell, real):                                   */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
-/*    |11111111|1111????|.........pointer...........................|  */
+/*    |x1111111|1111????|.........pointer...........................|  */
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*                                                                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
 #   define TAG_MASK ((unsigned long)0x7fff << 48)
 #   define NAN_MASK (((unsigned long)1 << 48) - 1)
+#   define NAN_TAG ((unsigned long)0x1 << 51)
 
 #   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) | tag)))
 #   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK)))
@@ -373,23 +374,10 @@ error "Unknown garbage collector type"
 typedef long header_t;
 typedef int bool_t;
 typedef uint16_t ucs2_t;
-
-#if( BGL_NAN_TAGGING )
-#define BGL_CPTR( _o ) (_o.ptr)
-#define BGL_CREAL( _o ) (_o.real)
-#define BGL_BPTR( _o ) ((obj_t)({ ptr: (union scm obj *)_o }))
-#define BGL_BREAL( _o ) ((obj_t)({ real: (double)_o }))
-typedef union {
-   union scmobj *ptr;
-   double real;
-} obj_t;
-#else
-#define BGL_CPTR( _o ) (_o)
-#define BGL_BPTR( _o ) ((obj_t)(_o))
-#define BGL_CREAL( _o ) (_o)
-#define BGL_BREAL( _o ) ((obj_t)(_o))
 typedef union scmobj *obj_t;
-#endif
+
+#define BGL_CPTR( _o ) ((void *)(_o))
+#define BGL_BPTR( _o ) ((obj_t)(_o))
 
 #include <bigloo_saw.h>
 #include <bigloo_pair.h>
