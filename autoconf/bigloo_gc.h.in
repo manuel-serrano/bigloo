@@ -108,52 +108,47 @@
 #    define GC_REGISTER_DISPLACEMENT( o ) GC_register_displacement( o )
 #  endif
 
-#  if( BGL_NAN_TAGGING )
-#  undef GC_REGISTER_DISPLACEMENT
-#  define GC_REGISTER_DISPLACEMENT( o ) 0
-#  endif
-
-#  if( defined( TAG_STRUCT ) && ( TAG_STRUCT != 0) )
+#  if( defined( TAG_STRUCT ) && ( TAG_STRUCT != 0) && !BGL_NAN_TAGGING )
 #    define STRUCT_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_STRUCT ) 
 #  else
 #    define STRUCT_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_PAIR ) && ( TAG_PAIR != 0) )
+#  if( defined( TAG_PAIR ) && ( TAG_PAIR != 0) && !BGL_NAN_TAGGING )
 #    define PAIR_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_PAIR ) 
 #  else
 #    define PAIR_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_VECTOR ) && ( TAG_VECTOR != 0) )
+#  if( defined( TAG_VECTOR ) && ( TAG_VECTOR != 0) && !BGL_NAN_TAGGING )
 #    define VECTOR_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_VECTOR ) 
 #  else
 #    define VECTOR_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_CELL ) && ( TAG_CELL != 0) )
+#  if( defined( TAG_CELL ) && ( TAG_CELL != 0) && !BGL_NAN_TAGGING )
 #    define CELL_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_CELL ) 
 #  else
 #    define CELL_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_STRUCTURE ) && ( TAG_STRUCTURE != 0) )
+#  if( defined( TAG_STRUCTURE ) && ( TAG_STRUCTURE != 0) && !BGL_NAN_TAGGING )
 #    define STRUCTURE_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_STRUCTURE ) 
 #   else
 #    define STRUCTURE_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_STRING ) && ( TAG_STRING != 0) )
+#  if( defined( TAG_STRING ) && ( TAG_STRING != 0) && !BGL_NAN_TAGGING )
 #    define STRING_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_STRING ) 
 #  else
 #    define STRING_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_SYMBOL ) && ( TAG_SYMBOL != 0) )
+#  if( defined( TAG_SYMBOL ) && ( TAG_SYMBOL != 0) && !BGL_NAN_TAGGING )
 #    define SYMBOL_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_SYMBOL ) 
 #  else
 #    define SYMBOL_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_REAL ) && ( TAG_REAL != 0) )
+#  if( defined( TAG_REAL ) && ( TAG_REAL != 0) && !BGL_NAN_TAGGING )
 #    define REAL_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_REAL ) 
 #  else
 #    define REAL_DISPLACEMENT() 0
 #  endif
-#  if( defined( TAG_OBJECT ) && ( TAG_OBJECT != 0) )
+#  if( defined( TAG_OBJECT ) && ( TAG_OBJECT != 0) && !BGL_NAN_TAGGING )
 #    define OBJECT_DISPLACEMENT() GC_REGISTER_DISPLACEMENT( TAG_OBJECT ) 
 #  else
 #    define OBJECT_DISPLACEMENT() 0

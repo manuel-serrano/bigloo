@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 08:20:05 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:25:48 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -169,6 +169,8 @@ extern "C" {
 #   define TAG_MASK ((unsigned long)0x7fff << 48)
 #   define NAN_MASK (((unsigned long)1 << 48) - 1)
 #   define NAN_TAG ((unsigned long)0x1 << 51)
+
+#   define TAG_SHIFT 0
 
 #   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) | tag)))
 #   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK)))

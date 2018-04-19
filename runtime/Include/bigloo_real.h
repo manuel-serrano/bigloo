@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Thu Apr 19 08:12:46 2018 (serrano)                */
+/*    Last change :  Thu Apr 19 08:42:12 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -63,25 +63,31 @@ union nanobj {
 #   define BREAL( _n ) (((union nanobj){ real: _n }).ptr)
 #   define CREAL( _p ) (((union nanobj){ ptr: _p }).real)
 
-#   define DEFINE_REAL( name, aux, flonum ) obj_t name = BREAL( flonum )
+#   define BGL_REAL_CNST( name ) name.ptr
+#   define DEFINE_REAL( name, aux, _flonum ) \
+      static const union nanobj name = { real: _flonum }; \
+
 #   define REALP( c ) \
        ((((unsigned long)c & NAN_MASK) != NAN_MASK) \
 	|| (!((unsigned long)c & NAN_TAG)))
 #elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))
+#   define BGL_REAL_CNST( name ) name
 #   define DEFINE_REAL( name, aux, flonum ) \
-      static struct { double real; } \
-         const aux = { flonum }; \
-         const obj_t name = BREAL( &aux )
+      static struct { double real; } aux = { flonum }; \
+      static const obj_t name = BREAL( &aux )
+
 #   define REALP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
 #else
 #   define BREAL( p ) BREF( p )
 #   define CREAL( p ) CREF( p )
+#   define BGL_REAL_CNST( name ) name
 #   define DEFINE_REAL( name, aux, flonum ) \
       static struct { __CNST_ALIGN header_t header; double real; } \
-         const aux = { __CNST_FILLER MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \
-         const obj_t name = BREAL( &(aux.header) )
+	 aux = { __CNST_FILLER MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \
+      static const obj_t name = BREAL( &(aux.header) )
+
 #   define REALP( c ) (POINTERP( c ) && (TYPE( c ) == REAL_TYPE))
 #endif
 
