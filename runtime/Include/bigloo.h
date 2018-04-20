@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Apr 19 19:19:25 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 06:59:04 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -165,87 +165,105 @@ extern "C" {
 /*    +--------+--------+--------+- ... -+--------+--------+--------+  */
 /*                                                                     */
 /*---------------------------------------------------------------------*/
-#if( BGL_NAN_TAGGING )
-#   define TAG_MASK ((unsigned long)0x7fff << 48)
-#   define NAN_MASK (((unsigned long)1 << 48) - 1)
-#   define NAN_MASK_SIGNED (NAN_MASK | ((unsigned long)1 <<63))
-#   define NAN_TAG (((unsigned long)0x1 << 51) + ((unsigned long)0x1 << 63))
+#if( BGL_NAN_TAGGING ) /* BGL_NAN_TAGGING */
+#  define TAG_MASK ((unsigned long)0x7fff << 48)
+#  define NAN_MASK (((unsigned long)1 << 48) - 1)
+#  define NAN_MASK_SIGNED (NAN_MASK | ((unsigned long)1 <<63))
+#  define NAN_TAG (((unsigned long)0x1 << 51) + ((unsigned long)0x1 << 63))
 
-#   define TAG_SHIFT 0
+#  define TAG_SHIFT 0
 
-#   define TAG( _v, shift, tag ) ((long)((((unsigned long)(_v) & ~(0xfULL << 48)) | tag)))
-#   define UNTAG( _v, shift, tag ) ((long)(((unsigned long)(_v) & NAN_MASK)))
-#else
-#   define TAG_SHIFT PTR_ALIGNMENT
-#   define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
+#  define TAG( _v, shift, tag ) \
+     ((long)((((unsigned long)(_v) & ~(0xfULL << 48)) | tag)))
+#  define UNTAG( _v, shift, tag ) \
+     ((long)(((unsigned long)(_v) & NAN_MASK)))
 
-#   define TAG( _v, shift, tag ) ((long)(((unsigned long)(_v) << shift) | tag))
-#   define UNTAG( _v, shift, tag ) ((long)((long)(_v) >> shift))
+#  define BGL_CNSTP( o, header, shift ) \
+     (((unsigned long)o & (unsigned long)header) == (unsigned long)header)
+#  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
+     ((obj_t)(header | ((type)o)))
+#  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
+     ((type)((unsigned long)o & mask))
+#else /* BGL_NAN_TAGGING */
+#  define TAG_SHIFT PTR_ALIGNMENT
+#  define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
 
-#   if( PTR_ALIGNMENT >= 3 )
-#     define BGL_CNST_SHIFT_INT32 32
-#   endif
-#endif
+#  define TAG( _v, shift, tag ) \
+     ((long)(((unsigned long)(_v) << shift) | tag))
+#  define UNTAG( _v, shift, tag ) \
+     ((long)((long)(_v) >> shift))
+
+#  define BGL_CNSTP( o, header, shift ) \
+     (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (shift)) -1)) == CCNST_MASK((long)header)) )
+#  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
+     ((obj_t)(header + ((type)(o) << shift)))
+#  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
+     ((type)CCNST_MASK((unsigned long)(o) >> shift))  
+#endif  /* BGL_NAN_TAGGING */
 
 #define BGL_CNST_SHIFT_CHAR 8
 #define BGL_CNST_SHIFT_INT16 16
 #define BGL_CNST_SHIFT_UCS2 16
 
+#if( PTR_ALIGNMENT >= 3 )
+#  define BGL_CNST_SHIFT_INT32 32
+#endif
+
 /*---------------------------------------------------------------------*/
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
-#   define TAG_INT (0x7ff8ULL<<48)    /*  Int tagging       011...1000 */
-#   define TAG_STRUCT (0x7ff9ULL<<48) /*  Pointers tagging  011...1001 */
-#   define TAG_CNST (0x7ffaULL<<48)   /*  Constants tagging 011...1010 */
-#   define TAG_VECTOR (0x7ffbULL<<48) /*  Vector tagging    011...1011 */
-#   define TAG_CELL (0x7ffcULL<<48)   /*  Cell tagging      011...1100 */
-#   define TAG_SYMBOL (0x7ffdULL<<48) /*  Symbol tagging    011...1101 */
-#   define TAG_PAIR (0x7ffeULL<<48)   /*  Pair tagging      011...1110 */
-#   define TAG_OBJECT (0x7fffULL<<48) /*  Object tagging    011...1111 */
+#  define TAG_INT (0x7ff8ULL<<48)     /*  Int tagging       011...1000 */
+#  define TAG_STRUCT (0x7ff9ULL<<48)  /*  Pointers tagging  011...1001 */
+#  define TAG_CNST (0x7ffaULL<<48)    /*  Constants tagging 011...1010 */
+#  define TAG_VECTOR (0x7ffbULL<<48)  /*  Vector tagging    011...1011 */
+#  define TAG_CELL (0x7ffcULL<<48)    /*  Cell tagging      011...1100 */
+#  define TAG_SYMBOL (0x7ffdULL<<48)  /*  Symbol tagging    011...1101 */
+#  define TAG_PAIR (0x7ffeULL<<48)    /*  Pair tagging      011...1110 */
+#  define TAG_OBJECT (0x7fffULL<<48)  /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
-#   define TAG_INT 0                  /*  Integers tagging      ....00 */
-#   define TAG_STRUCT 1               /*  Pointers tagging      ....01 */
-#   define TAG_YOUNG 2                /*  Pointers tagging      ....10 */
-#   define TAG_CNST 3                 /*  Constants tagging     ....11 */
+#  define TAG_INT 0                   /*  Integers tagging      ....00 */
+#  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
+#  define TAG_YOUNG 2                 /*  Pointers tagging      ....10 */
+#  define TAG_CNST 3                  /*  Constants tagging     ....11 */
 #elif( BGL_GC == BGL_BOEHM_GC ) 
-#   define TAG_INT 0                  /*  Integers tagging      ....00 */
-#   define TAG_STRUCT 1               /*  Pointers tagging      ....01 */
-#   define TAG_CNST 2                 /*  Constants tagging     ....10 */
-#   define TAG_PAIR 3                 /*  Pairs tagging         ....11 */
+#  define TAG_INT 0                   /*  Integers tagging      ....00 */
+#  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
+#  define TAG_CNST 2                  /*  Constants tagging     ....10 */
+#  define TAG_PAIR 3                  /*  Pairs tagging         ....11 */
 #elif( BGL_GC == BGL_NO_GC )
-#   define TAG_INT 0                  /*  Integers tagging      ....00 */
-#   define TAG_STRUCT 1               /*  Pointers tagging      ....01 */
-#   define TAG_CNST 2                 /*  Constants tagging     ....10 */
-#   define TAG_PAIR 3                 /*  Pairs tagging         ....11 */
+#  define TAG_INT 0                   /*  Integers tagging      ....00 */
+#  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
+#  define TAG_CNST 2                  /*  Constants tagging     ....10 */
+#  define TAG_PAIR 3                  /*  Pairs tagging         ....11 */
 #else
 error "Unknown garbage collector type"
 #endif
 
 #if( PTR_ALIGNMENT >= 3 && BGL_GC != BGL_SAW_GC && !BGL_NAN_TAGGING)
-#   define TAG_VECTOR 4               /*  Vector tagging        ...100 */
-#   define TAG_CELL 5                 /*  Cells tagging         ...101 */
-#   define TAG_REAL 6                 /*  Reals tagging         ...110 */
-#   define TAG_SYMBOL 7               /*  Symbols tagging       ...111 */
+#  define TAG_VECTOR 4                /*  Vector tagging        ...100 */
+#  define TAG_CELL 5                  /*  Cells tagging         ...101 */
+#  define TAG_REAL 6                  /*  Reals tagging         ...110 */
+#  define TAG_SYMBOL 7                /*  Symbols tagging       ...111 */
 #endif
 
 #if( PTR_ALIGNMENT == 2 && defined( BGL_TAG_CNST32 ) && !BGL_NAN_TAGGING)
-#   define TAG_OBJECT TAG_CNST
+#  define TAG_OBJECT TAG_CNST
 
-#   undef BGL_CNST_SHIFT_INT16
-#   undef BGL_CNST_SHIFT_UCS2
-#   define BGL_CNST_SHIFT_INT16 8
-#   define BGL_CNST_SHIFT_UCS2 8
+#  undef BGL_CNST_SHIFT_INT16
+#  undef BGL_CNST_SHIFT_UCS2
+#  define BGL_CNST_SHIFT_INT16 8
+#  define BGL_CNST_SHIFT_UCS2 8
 #endif
 
 #if( TAG_YOUNG )
-#   define POINTERP( o ) (((((long)BGL_CPTR( o )) & 1) == 0) && o)
+#  define POINTERP( o ) (((((long)BGL_CPTR( o )) & 1) == 0) && o)
 #else
-#   if( TAG_STRUCT != 0 )
-#      define POINTERP( o ) ((((long)BGL_CPTR( o )) & TAG_MASK) == TAG_STRUCT)
-#   else
-#      define POINTERP( o ) (((((long)BGL_CPTR( o )) & TAG_MASK) == TAG_STRUCT) && BGL_CPTR( o ))
-#   endif
+#  if( TAG_STRUCT != 0 )
+#     define POINTERP( o ) ((((long)BGL_CPTR( o )) & TAG_MASK) == TAG_STRUCT)
+#  else
+#     define POINTERP( o ) (((((long)BGL_CPTR( o )) & TAG_MASK) == TAG_STRUCT) && BGL_CPTR( o ))
+#  endif
 #endif
 
 #define BREF( r ) BGL_BPTR( (obj_t)((long)r + TAG_STRUCT) )
@@ -1009,11 +1027,7 @@ typedef obj_t (*function_t)();
 #  define CNST32P( o ) 1
 #  define BCNST( o ) BGL_TAG_BCNST( o )
 #  define CCNST( o ) BGL_TAG_CCNST( o )
-#  if( BGL_NAN_TAGGING )
-#    define CCNST_MASK( o ) (o & NAN_MASK)
-#  else   
-#    define CCNST_MASK( o ) (o)
-#  endif
+#  define CCNST_MASK( o ) (o)
 #endif
 
 #define BNIL BCNST( 0 )
@@ -1036,14 +1050,9 @@ typedef obj_t (*function_t)();
 #  define BUINT32H ((unsigned long)BCNST( 11 ))
 #endif
 
-/* #define BEOF BCNST( 0x100 )                                         */
-/* #define BEOA BCNST( 0x101 )                                         */
 #define BEOF BCNST( 12 )
 #define BEOA BCNST( 13 )
 
-/* #define BOPTIONAL BCNST( 0x102 )                                    */
-/* #define BREST BCNST( 0x103 )                                        */
-/* #define BKEY BCNST( 0x106 )                                         */
 #define BOPTIONAL BCNST( 14 )
 #define BREST BCNST( 15 )
 #define BKEY BCNST( 16 )
@@ -1064,23 +1073,21 @@ typedef obj_t (*function_t)();
 /*    Characters (bytes)                                               */
 /*---------------------------------------------------------------------*/
 #define CHARP( o ) \
-   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_CHAR)) -1)) == CCNST_MASK((long)BCHARH)) )
-
+   BGL_CNSTP( o, BCHARH, BGL_CNST_SHIFT_CHAR )
 #define BCHAR( c ) \
-   ((obj_t)(BCHARH + ((unsigned char)(c) << BGL_CNST_SHIFT_CHAR)))
+   BGL_CNST_TO_BCNST( c, BCHARH, BGL_CNST_SHIFT_CHAR, unsigned char )
 #define CCHAR( o ) \
-   ((unsigned char)CCNST_MASK((unsigned long)(o) >> BGL_CNST_SHIFT_CHAR))
+   BGL_BCNST_TO_CNST( o, 0xff, BGL_CNST_SHIFT_CHAR, unsigned char )
 
 /*---------------------------------------------------------------------*/
 /*    UCS2/UTF16 characters                                            */
 /*---------------------------------------------------------------------*/
 #define UCS2P( o ) \
-   (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (BGL_CNST_SHIFT_UCS2)) -1)) == CCNST_MASK((long)BUCS2H)) )
-
+   BGL_CNSTP( o, BUCS2H, BGL_CNST_SHIFT_UCS2 )
 #define BUCS2( u ) \
-   ((obj_t)(BUCS2H + ((unsigned long)((ucs2_t)(u) << BGL_CNST_SHIFT_UCS2))))
+   BGL_CNST_TO_BCNST( u, BUCS2H, BGL_CNST_SHIFT_UCS2, int )
 #define CUCS2( o ) \
-   ((ucs2_t)CCNST_MASK((unsigned long)(o) >> BGL_CNST_SHIFT_UCS2))
+   BGL_BCNST_TO_CNST( o, 0xffff, BGL_CNST_SHIFT_UCS2, int )
 
 #define BGL_INT_TO_UCS2( _i ) ((ucs2_t)(_i))
 
@@ -1174,13 +1181,13 @@ typedef obj_t (*function_t)();
 #define PROCEDURE_L_SET( p, _i, o ) BASSIGN( PROCEDURE_L_REF( p, _i ), o, p )
 
 #if( defined( __GNUC__ ) )
-#   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
+#  define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
       ( { obj_t an_object; \
 	  an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ); \
 	  (an_object->procedure_light).entry = _entry; \
           ( BLIGHT( an_object ) ); } )
 #else
-#   define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
+#  define MAKE_L_PROCEDURE_ALLOC( ALLOC, _entry, _size ) \
       (   an_object = ALLOC( PROCEDURE_L_SIZE + ((_size-1) * OBJ_SIZE) ), \
 	  (an_object->procedure_light).entry = _entry, \
           ( BLIGHT( an_object ) ) )
@@ -1243,13 +1250,13 @@ typedef obj_t (*function_t)();
 /*    Symbols                                                          */
 /*---------------------------------------------------------------------*/
 #if( defined( TAG_SYMBOL ) )
-#   define SYMBOLP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_SYMBOL)))
-#   define BSYMBOL( p ) ((obj_t)((long)p + TAG_SYMBOL))
-#   define CSYMBOL( p ) ((obj_t)((long)p - TAG_SYMBOL))
+#  define SYMBOLP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_SYMBOL)))
+#  define BSYMBOL( p ) ((obj_t)((long)p + TAG_SYMBOL))
+#  define CSYMBOL( p ) ((obj_t)((long)p - TAG_SYMBOL))
 #else   
-#   define SYMBOLP( o ) (POINTERP( o ) && (TYPE( o ) == SYMBOL_TYPE))
-#   define BSYMBOL( p ) BREF( p )
-#   define CSYMBOL( p ) CREF( p )
+#  define SYMBOLP( o ) (POINTERP( o ) && (TYPE( o ) == SYMBOL_TYPE))
+#  define BSYMBOL( p ) BREF( p )
+#  define CSYMBOL( p ) CREF( p )
 #endif   
 
 #define SYMBOL( o ) (CSYMBOL( o )->symbol)
@@ -1282,9 +1289,9 @@ typedef obj_t (*function_t)();
 /*    Array bound checking                                             */
 /*---------------------------------------------------------------------*/
 #if( TAG_SHIFT <= LONG_MAX )
-#   define BOUND_CHECK( o, v ) ((unsigned long)o < (unsigned long)v)
+#  define BOUND_CHECK( o, v ) ((unsigned long)o < (unsigned long)v)
 #else
-#   define BOUND_CHECK( o, v ) (((long)o >= 0) && ((long)o < (long)v))
+#  define BOUND_CHECK( o, v ) (((long)o >= 0) && ((long)o < (long)v))
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -1347,12 +1354,6 @@ typedef obj_t (*function_t)();
 #define BGL_IOLBF 1 /* line buffered */
 #define BGL_IOFBF 2 /* fully buffered */
 #define BGL_IOEBF 3 /* extensible buffered */
-
-/* #define BGL_DISPLAY_STRING( o, op ) \                               */
-/*    bgl_write_with_lock( op, &STRING_REF( o, 0 ), STRING_LENGTH( o ) ) */
-/*                                                                     */
-/* #define BGL_DISPLAY_SUBSTRING( o, start, end, op ) \                */
-/*    bgl_write_with_lock( op, &STRING_REF( o, start ), end - start )  */
 
 /*---------------------------------------------------------------------*/
 /*    Les OUTPUT_STRING_PORTs                                          */
@@ -1690,9 +1691,9 @@ BGL_RUNTIME_DECL header_t bgl_opaque_nil;
 #define BGL_MUTEX_BACKEND( o ) BGL_MUTEX( o ).backend
 
 #if( defined( BGL_INLINE_MUTEX ) )   
-#   define BGL_MUTEX_SYSMUTEX( o ) &(BGL_MUTEX( o ).sysmutex)
+#  define BGL_MUTEX_SYSMUTEX( o ) &(BGL_MUTEX( o ).sysmutex)
 #else
-#   define BGL_MUTEX_SYSMUTEX( o ) BGL_MUTEX( o ).sysmutex
+#  define BGL_MUTEX_SYSMUTEX( o ) BGL_MUTEX( o ).sysmutex
 #endif
    
 #define BGL_CONDVARP( o ) (POINTERP( o ) && (TYPE( o ) == CONDVAR_TYPE))
@@ -2152,10 +2153,10 @@ BGL_RUNTIME_DECL obj_t (*bgl_multithread_dynamic_denv)();
 #undef RGC_DEBUG
 
 #if defined( RGC_DEBUG )
-#   include <assert.h>
+#  include <assert.h>
 #else
 #undef assert   
-#   define assert( exp ) ;
+#  define assert( exp ) ;
 #endif
 
 #define RGC_BUFFER_REF( p, o ) \

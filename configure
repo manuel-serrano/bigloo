@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Apr 19 07:11:25 2018 (serrano)                */
+#*    Last change :  Fri Apr 20 07:05:49 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2057,9 +2057,10 @@ echo >> $configurelog
 #*    GC configuration                                                 */
 #*---------------------------------------------------------------------*/
 if [ "$action" != "bigloo_config_el" ]; then
-  if [ "$bglnantagging " = "1 " ]; then
+  if [ "$bglnantagging " != "0 " ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
+      bglnantagging=64;
       cgcflags="-DPOINTER_MASK=0xffffffffffff $cgcflags";
     else
       echo "*** ERROR: Nan-tagging requires 64bit platforms"
@@ -4866,8 +4867,8 @@ if [ "$summary" = "yes" ]; then
   echo "Implementation details:"
   echo "  tuning...................... $mode $tuning"
   echo "  cc.......................... $cc"
-  if [ $bglnantagging = "1" ]; then
-    echo "  nan tagging................. yes"
+  if [ $bglnantagging != "0" ]; then
+    echo "  nan tagging................. $bglnantagging"
   else
     echo "  nan tagging................. no"
   fi
