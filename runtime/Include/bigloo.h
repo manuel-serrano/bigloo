@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 11:01:17 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 11:57:55 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -213,14 +213,14 @@ extern "C" {
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
-#  define TAG_INT (0x7ff8L<<48)       /*  Int tagging       011...1000 */
-#  define TAG_STRUCT (0x7ff9UL<<48)   /*  Pointers tagging  011...1001 */
-#  define TAG_CNST (0x7ffaUL<<48)     /*  Constants tagging 011...1010 */
-#  define TAG_VECTOR (0x7ffbUL<<48)   /*  Vector tagging    011...1011 */
-#  define TAG_CELL (0x7ffcUL<<48)     /*  Cell tagging      011...1100 */
-#  define TAG_SYMBOL (0x7ffdUL<<48)   /*  Symbol tagging    011...1101 */
-#  define TAG_PAIR (0x7ffeUL<<48)     /*  Pair tagging      011...1110 */
-#  define TAG_OBJECT (0x7fffUL<<48)   /*  Object tagging    011...1111 */
+#  define TAG_INT (0x7ff0L<<48)       /*  Int tagging       011...1000 */
+#  define TAG_STRUCT (0x7ff1UL<<48)   /*  Pointers tagging  011...1001 */
+#  define TAG_CNST (0x7ff2UL<<48)     /*  Constants tagging 011...1010 */
+#  define TAG_VECTOR (0x7ff3UL<<48)   /*  Vector tagging    011...1011 */
+#  define TAG_CELL (0x7ff4UL<<48)     /*  Cell tagging      011...1100 */
+#  define TAG_SYMBOL (0x7ff5UL<<48)   /*  Symbol tagging    011...1101 */
+#  define TAG_PAIR (0x7ff6UL<<48)     /*  Pair tagging      011...1110 */
+#  define TAG_OBJECT (0x7ff7UL<<48)   /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
 #  define TAG_INT 0                   /*  Integers tagging      ....00 */
 #  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
