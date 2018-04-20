@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Apr 20 07:32:41 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 07:47:39 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -140,7 +140,7 @@ extern "C" {
 #  define BGL_INT32_TO_BINT32( i ) \
    BGL_CNST_TO_BCNST( i, BINT32H, BGL_CNST_SHIFT_INT32, int32_t )
 #  define BGL_UINT32_TO_BUINT32( i ) \
-   BGL_CNST_TO_BCNST( i, BINTU32H, BGL_CNST_SHIFT_INT32, uint32_t )
+   BGL_CNST_TO_BCNST( i, BUINT32H, BGL_CNST_SHIFT_INT32, uint32_t )
 #  define BGL_BINT32_TO_INT32( o ) \
    BGL_BCNST_TO_CNST( o, 0xffffffff, BGL_CNST_SHIFT_INT32, int32_t )
 #  define BGL_BUINT32_TO_UINT32( o ) \
