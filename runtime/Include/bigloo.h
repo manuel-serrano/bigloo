@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 08:11:53 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 08:28:58 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -166,10 +166,10 @@ extern "C" {
 /*                                                                     */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING ) /* BGL_NAN_TAGGING */
-#  define TAG_MASK ((unsigned long)0x7fff << 48)
-#  define NAN_MASK (((unsigned long)1 << 48) - 1)
-#  define NAN_MASK_SIGNED (NAN_MASK | ((unsigned long)1 <<63))
-#  define NAN_TAG (((unsigned long)0x1 << 51) + ((unsigned long)0x1 << 63))
+#  define TAG_MASK (0x7fffUL << 48)
+#  define NAN_MASK ((1UL << 48) - 1)
+#  define NAN_MASK_SIGNED (NAN_MASK | (1UL <<63))
+#  define NAN_TAG ((0x1UL << 51) + (1UL << 63))
 
 #  define TAG_SHIFT 0
 
@@ -179,7 +179,7 @@ extern "C" {
      ((long)(((unsigned long)(_v) & NAN_MASK)))
 
 #  define BGL_CNSTP( o, header, shift ) \
-     (((unsigned long)o & (unsigned long)header) == (unsigned long)header)
+     ((((unsigned long)o & ~0xffffffffUL) == ((unsigned long)header)))
 #  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
      ((obj_t)(header | ((type)o)))
 #  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
@@ -213,14 +213,14 @@ extern "C" {
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
-#  define TAG_INT (0x7ff8ULL<<48)     /*  Int tagging       011...1000 */
-#  define TAG_STRUCT (0x7ff9ULL<<48)  /*  Pointers tagging  011...1001 */
-#  define TAG_CNST (0x7ffaULL<<48)    /*  Constants tagging 011...1010 */
-#  define TAG_VECTOR (0x7ffbULL<<48)  /*  Vector tagging    011...1011 */
-#  define TAG_CELL (0x7ffcULL<<48)    /*  Cell tagging      011...1100 */
-#  define TAG_SYMBOL (0x7ffdULL<<48)  /*  Symbol tagging    011...1101 */
-#  define TAG_PAIR (0x7ffeULL<<48)    /*  Pair tagging      011...1110 */
-#  define TAG_OBJECT (0x7fffULL<<48)  /*  Object tagging    011...1111 */
+#  define TAG_INT (0x7ff8L<<48)       /*  Int tagging       011...1000 */
+#  define TAG_STRUCT (0x7ff9UL<<48)   /*  Pointers tagging  011...1001 */
+#  define TAG_CNST (0x7ffaUL<<48)     /*  Constants tagging 011...1010 */
+#  define TAG_VECTOR (0x7ffbUL<<48)   /*  Vector tagging    011...1011 */
+#  define TAG_CELL (0x7ffcUL<<48)     /*  Cell tagging      011...1100 */
+#  define TAG_SYMBOL (0x7ffdUL<<48)   /*  Symbol tagging    011...1101 */
+#  define TAG_PAIR (0x7ffeUL<<48)     /*  Pair tagging      011...1110 */
+#  define TAG_OBJECT (0x7fffUL<<48)   /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
 #  define TAG_INT 0                   /*  Integers tagging      ....00 */
 #  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
@@ -1008,8 +1008,13 @@ typedef obj_t (*function_t)();
 #  define BGL_TAG_CNSTP( o ) ((o) && ((((long)o) & TAG_MASK) == TAG_CNST))
 #endif
 
-#define BGL_TAG_BCNST( c ) (obj_t)TAG( c, TAG_SHIFT, TAG_CNST )
-#define BGL_TAG_CCNST( c ) (long)UNTAG( c, TAG_SHIFT, TAG_CNST )
+#if( BGL_NAN_TAGGING ) /* BGL_NAN_TAGGING */
+#  define BGL_TAG_BCNST( c ) (obj_t)TAG( c << 32, TAG_SHIFT, TAG_CNST )
+#  define BGL_TAG_CCNST( c ) (long)UNTAG( (unsigned long)c >> 32, TAG_SHIFT, TAG_CNST )
+#else  /* !BGL_NAN_TAGGING */
+#  define BGL_TAG_BCNST( c ) (obj_t)TAG( c, TAG_SHIFT, TAG_CNST )
+#  define BGL_TAG_CCNST( c ) (long)UNTAG( c, TAG_SHIFT, TAG_CNST )
+#endif  /* BGL_NAN_TAGGING */
 
 #if( defined( BGL_TAG_CNST32 ) ) /* BGL_TAG_CNST32 */
 #  define CNSTP( o ) \
@@ -1017,7 +1022,7 @@ typedef obj_t (*function_t)();
 #  define CNST32P( o ) \
     ((((unsigned long)o) >> 24) == 0xff)
 #  define BCNST( o ) \
-    ((obj_t)(((unsigned long)BGL_TAG_BCNST( o )) + ((unsigned long)0xff << 24)))
+    ((obj_t)(((unsigned long)BGL_TAG_BCNST( o )) + (0xffUL << 24)))
 #  define CCNST( o ) \
     ((long)(((unsigned long)BGL_TAG_CCNST( o )) & 0xffff))
 #  define CCNST_MASK( o ) \
@@ -1030,32 +1035,32 @@ typedef obj_t (*function_t)();
 #  define CCNST_MASK( o ) (o)
 #endif  /* BGL_TAG_CNST32 */
 
-#define BNIL BCNST( 0 )
-#define BUNSPEC BCNST( 3 )
+#define BNIL BCNST( 0L )
+#define BUNSPEC BCNST( 3L )
    
-#define BFALSE BCNST( 1 )
-#define BTRUE BCNST( 2 )
+#define BFALSE BCNST( 1L )
+#define BTRUE BCNST( 2L )
    
-#define BCHARH ((unsigned long)BCNST( 4 ))
-#define BUCS2H ((unsigned long)BCNST( 5 ))
+#define BCHARH ((unsigned long)BCNST( 4L ))
+#define BUCS2H ((unsigned long)BCNST( 5L ))
 
-#define BINT8H ((unsigned long)BCNST( 6 ))
-#define BUINT8H ((unsigned long)BCNST( 7 ))
+#define BINT8H ((unsigned long)BCNST( 6L ))
+#define BUINT8H ((unsigned long)BCNST( 7L ))
 
-#define BINT16H ((unsigned long)BCNST( 8 ))
-#define BUINT16H ((unsigned long)BCNST( 9 ))
+#define BINT16H ((unsigned long)BCNST( 8L ))
+#define BUINT16H ((unsigned long)BCNST( 9L ))
 
 #if( PTR_ALIGNMENT >= 3 )
-#  define BINT32H ((unsigned long)BCNST( 10 ))
-#  define BUINT32H ((unsigned long)BCNST( 11 ))
+#  define BINT32H ((unsigned long)BCNST( 10L ))
+#  define BUINT32H ((unsigned long)BCNST( 11L ))
 #endif
 
-#define BEOF BCNST( 12 )
-#define BEOA BCNST( 13 )
+#define BEOF BCNST( 12L )
+#define BEOA BCNST( 13L )
 
-#define BOPTIONAL BCNST( 14 )
-#define BREST BCNST( 15 )
-#define BKEY BCNST( 16 )
+#define BOPTIONAL BCNST( 14L )
+#define BREST BCNST( 15L )
+#define BKEY BCNST( 16L )
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */

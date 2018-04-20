@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Apr 20 07:59:43 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 09:16:16 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -29,16 +29,17 @@ extern "C" {
 #if( !BGL_NAN_TAGGING )
 #  define BINT( i ) (obj_t)TAG( i, TAG_SHIFT, TAG_INT )
 #  define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
+#  define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
+#  define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
 #else
 #  define BINT( i ) ((obj_t)(((long)i & NAN_MASK_SIGNED) | TAG_INT))
-#  define CINT( i ) ((((long long)((long long)i & (1UL<<63))) >> (64-48)) | (((long)i) & NAN_MASK))
+#  define CINT( i ) ((((long)((long)i & (1UL<<63))) >> (64-48)) | (((long)i) & NAN_MASK))
+#  define ADDFX( x, y ) BINT( CINT( x ) + CINT( y ) )
+#  define SUBFX( x, y ) BINT( CINT( x ) - CINT( y ) )
 #endif
 
-#define ODDP_FX( i )  ((i) & 0x1)
+#define ODDP_FX( i )  ((i) & 1)
 #define EVENP_FX( i ) (!ODDP_FX( i ))
-
-#define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
-#define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
 
 #define LTFX( x, y ) ((long)(x) < (long)(y))
 #define LEFX( x, y ) ((long)(x) <= (long)(y))
