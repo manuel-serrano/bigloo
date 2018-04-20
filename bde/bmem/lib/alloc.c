@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Tue Apr 17 09:00:29 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 09:47:04 2018 (serrano)                */
 /*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -381,6 +381,7 @@ make_cell( obj_t val ) {
 /*    obj_t                                                            */
 /*    make_real ...                                                    */
 /*---------------------------------------------------------------------*/
+#if( !BGL_NAN_TAGGING )
 obj_t
 make_real( double d ) {
    obj_t a_real;
@@ -405,6 +406,7 @@ make_real( double d ) {
    bmem_set_alloc_type( -1,0  );
    return BREAL( a_real );
 }
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
