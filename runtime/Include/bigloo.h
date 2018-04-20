@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 07:53:29 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 08:11:53 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -194,9 +194,9 @@ extern "C" {
      ((long)((long)(_v) >> shift))
 
 #  define BGL_CNSTP( o, header, shift ) \
-     (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (shift)) -1)) == CCNST_MASK((long)header)) )
+     (CNST32P( o ) && (((unsigned long)(o) & (long)(((long)1 << (shift)) -1)) == CCNST_MASK((long)header)) )
 #  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
-   ((obj_t)(header + ((unsigned long)((type)(o)) << shift)))
+     ((obj_t)(header + ((unsigned long)((type)(o)) << shift)))
 #  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
      ((type)CCNST_MASK((unsigned long)(o) >> shift))  
 #endif  /* BGL_NAN_TAGGING */
