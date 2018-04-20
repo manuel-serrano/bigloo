@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 16:30:17 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 16:38:24 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -170,7 +170,6 @@ extern "C" {
 #  define NAN_MASK ((1UL << 48) - 1)
 #  define NAN_MASK_SIGNED (NAN_MASK | (1UL <<63))
 #  define NAN_TAG ((1UL << 51) + (1UL << 63))
-
 #  define TAG_SHIFT 0
 
 #  define TAG( _v, shift, tag ) \
@@ -213,6 +212,7 @@ extern "C" {
 /*    The tagged pointers ...                                          */
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
+#  define TAG_QNAN (0x7ff8UL<<48)
 #  define TAG_INT (0x7ff9L<<48)       /*  Int tagging       011...1000 */
 #  define TAG_STRUCT (0x7ffaUL<<48)   /*  Pointers tagging  011...1001 */
 #  define TAG_CNST (0x7ffbUL<<48)     /*  Constants tagging 011...1010 */
@@ -222,16 +222,19 @@ extern "C" {
 #  define TAG_OBJECT (0x7fffUL<<48)   /*  Object tagging    011...1110 */
 #  define TAG_STRING (0x7ff8UL<<48)   /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
+#  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  Integers tagging      ....00 */
 #  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
 #  define TAG_YOUNG 2                 /*  Pointers tagging      ....10 */
 #  define TAG_CNST 3                  /*  Constants tagging     ....11 */
 #elif( BGL_GC == BGL_BOEHM_GC ) 
+#  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  Integers tagging      ....00 */
 #  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
 #  define TAG_CNST 2                  /*  Constants tagging     ....10 */
 #  define TAG_PAIR 3                  /*  Pairs tagging         ....11 */
 #elif( BGL_GC == BGL_NO_GC )
+#  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  Integers tagging      ....00 */
 #  define TAG_STRUCT 1                /*  Pointers tagging      ....01 */
 #  define TAG_CNST 2                  /*  Constants tagging     ....10 */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Apr 20 16:37:02 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 16:37:49 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -83,7 +83,7 @@ struct bgl_ucs2_string {
 #   if( TAG_STRING == 0 )
 #      define STRINGP( c ) \
           ((c && ((((long)c)&TAG_MASK) == TAG_STRING)))
-#   elif( TAG_STRING == TAG_NAN_QUIET )
+#   elif( TAG_STRING == TAG_QNAN )
 #      define STRINGP( c ) \
           (((((long)c) & TAG_MASK) == TAG_STRING) && ((long) c) & NAN_MASK)
 #   else
