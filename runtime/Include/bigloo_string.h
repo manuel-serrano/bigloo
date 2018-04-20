@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Apr 20 16:37:49 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 16:45:43 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -114,47 +114,47 @@ struct bgl_ucs2_string {
 /*          {45,46,0},                                       */
 /*        DEFINE_STRING_STOP( f, a, 2 );                     */
 #if( defined( TAG_STRING ) )
-#   define DEFINE_STRING( name, aux, str, len ) \
+#  define DEFINE_STRING( name, aux, str, len ) \
    static struct { __CNST_ALIGN long length;
                       long sentinel; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER len, 0, str }; \
          static obj_t name = BSTRING( &(aux.length) )
-#   define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
+#  define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
    static struct { __CNST_ALIGN long length;
                       long sentinel; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER len, sen, str }; \
          static obj_t name = BSTRING( &(aux.length) )
-#   define DEFINE_STRING_START( name, aux, len ) \
+#  define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN long length; \
                       long sentinel; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER len, 0
-#   define DEFINE_STRING_STOP( name, aux ) \
+#  define DEFINE_STRING_STOP( name, aux ) \
         }; static obj_t name = BSTRING( &(aux.length) 
 #else
-#   define DEFINE_STRING( name, aux, str, len ) \
+#  define DEFINE_STRING( name, aux, str, len ) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       long sentinel; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, 0 ), len, 0, str }; \
          static obj_t name = BSTRING( &(aux.header) )
-#   define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
+#  define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       long sentinel; \
                       char string[ len + 1 ]; } \
          aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, sen ), len, sen, str }; \
          static obj_t name = BSTRING( &(aux.header) )
-#   define DEFINE_STRING_START( name, aux, len ) \
+#  define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
                       long sentinel; \
                       char string[ len + 1]; } \
          aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, 0 ), len, 0
-#   define DEFINE_STRING_STOP( name, aux ) \
+#  define DEFINE_STRING_STOP( name, aux ) \
         }; static obj_t name = BSTRING( &(aux.header) )
 #endif
 

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Apr 20 12:41:18 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 16:49:57 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -69,8 +69,9 @@ union nanobj {
       static const union nanobj name = { real: _flonum }; \
 
 #   define REALP( c ) \
-   ((((unsigned long)c >> (64-12) & 0x7ff) != 0x7ff) \
-    || (((unsigned long)c & NAN_TAG)))
+      ((((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8) \
+       || (((unsigned long)c >> 48) == 0xfff8) \
+       || (((unsigned long)c == TAG_QNAN)))
 #elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))
