@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Apr 17 08:14:04 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 10:10:17 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -195,7 +195,6 @@ struct bgl_hvector {
 /*---------------------------------------------------------------------*/
 /*    HVECTOR                                                          */
 /*---------------------------------------------------------------------*/
-   
 #define STVECTOR( o, type ) \
    ((struct { header_t header; unsigned long length; type obj0; } *)(CREF( o )))
    

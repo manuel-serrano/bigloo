@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 08:28:58 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 11:01:17 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -180,8 +180,8 @@ extern "C" {
 
 #  define BGL_CNSTP( o, header, shift ) \
      ((((unsigned long)o & ~0xffffffffUL) == ((unsigned long)header)))
-#  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
-     ((obj_t)(header | ((type)o)))
+#  define BGL_CNST_TO_BCNST( o, mask, header, shift, type )	\
+     ((obj_t)(header | ((long)(o & mask))))
 #  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
      ((type)((unsigned long)o & mask))
 #else /* !BGL_NAN_TAGGING */
@@ -195,7 +195,7 @@ extern "C" {
 
 #  define BGL_CNSTP( o, header, shift ) \
      (CNST32P( o ) && (((unsigned long)(o) & (long)(((long)1 << (shift)) -1)) == CCNST_MASK((long)header)) )
-#  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
+#  define BGL_CNST_TO_BCNST( o, mask, header, shift, type )	\
      ((obj_t)(header + ((unsigned long)((type)(o)) << shift)))
 #  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
      ((type)CCNST_MASK((unsigned long)(o) >> shift))  
@@ -1080,9 +1080,9 @@ typedef obj_t (*function_t)();
 #define CHARP( o ) \
    BGL_CNSTP( o, BCHARH, BGL_CNST_SHIFT_CHAR )
 #define BCHAR( c ) \
-   BGL_CNST_TO_BCNST( c, BCHARH, BGL_CNST_SHIFT_CHAR, unsigned char )
+   BGL_CNST_TO_BCNST( c, 0xffL, BCHARH, BGL_CNST_SHIFT_CHAR, unsigned char )
 #define CCHAR( o ) \
-   BGL_BCNST_TO_CNST( o, 0xff, BGL_CNST_SHIFT_CHAR, unsigned char )
+   BGL_BCNST_TO_CNST( o, 0xffL, BGL_CNST_SHIFT_CHAR, unsigned char )
 
 /*---------------------------------------------------------------------*/
 /*    UCS2/UTF16 characters                                            */
@@ -1090,9 +1090,9 @@ typedef obj_t (*function_t)();
 #define UCS2P( o ) \
    BGL_CNSTP( o, BUCS2H, BGL_CNST_SHIFT_UCS2 )
 #define BUCS2( u ) \
-   BGL_CNST_TO_BCNST( u, BUCS2H, BGL_CNST_SHIFT_UCS2, int )
+   BGL_CNST_TO_BCNST( u, 0xffffL, BUCS2H, BGL_CNST_SHIFT_UCS2, int )
 #define CUCS2( o ) \
-   BGL_BCNST_TO_CNST( o, 0xffff, BGL_CNST_SHIFT_UCS2, int )
+   BGL_BCNST_TO_CNST( o, 0xffffL, BGL_CNST_SHIFT_UCS2, int )
 
 #define BGL_INT_TO_UCS2( _i ) ((ucs2_t)(_i))
 

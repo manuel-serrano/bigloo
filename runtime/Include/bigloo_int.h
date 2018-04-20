@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Apr 20 09:16:16 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 11:06:15 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -113,24 +113,24 @@ extern "C" {
 #define BGL_UINT64P( o ) (POINTERP( o ) && (TYPE( o ) == UINT64_TYPE))
 
 #define BGL_INT8_TO_BINT8( i ) \
-   BGL_CNST_TO_BCNST( i, BINT8H, BGL_CNST_SHIFT_INT16, int8_t )
+   BGL_CNST_TO_BCNST( i, 0xffL, BINT8H, BGL_CNST_SHIFT_INT16, int8_t )
 #define BGL_UINT8_TO_BUINT8( i ) \
-   BGL_CNST_TO_BCNST( i, BUINT8H, BGL_CNST_SHIFT_INT16, uint8_t )
+   BGL_CNST_TO_BCNST( i, 0xffL, BUINT8H, BGL_CNST_SHIFT_INT16, uint8_t )
 
 #define BGL_BINT8_TO_INT8( o ) \
-   BGL_BCNST_TO_CNST( o, 0xff, BGL_CNST_SHIFT_INT16, int8_t )
+   BGL_BCNST_TO_CNST( o, 0xffL, BGL_CNST_SHIFT_INT16, int8_t )
 #define BGL_BUINT8_TO_UINT8( o ) \
-   BGL_BCNST_TO_CNST( o, 0xff, BGL_CNST_SHIFT_INT16, uint8_t )
+   BGL_BCNST_TO_CNST( o, 0xffL, BGL_CNST_SHIFT_INT16, uint8_t )
 
 #define BGL_INT16_TO_BINT16( i ) \
-   BGL_CNST_TO_BCNST( i, BINT16H, BGL_CNST_SHIFT_INT16, int16_t )
+   BGL_CNST_TO_BCNST( i, 0xffffL, BINT16H, BGL_CNST_SHIFT_INT16, int16_t )
 #define BGL_UINT16_TO_BUINT16( i ) \
-   BGL_CNST_TO_BCNST( i, BUINT16H, BGL_CNST_SHIFT_INT16, uint16_t )
+   BGL_CNST_TO_BCNST( i, 0xffffL, BUINT16H, BGL_CNST_SHIFT_INT16, uint16_t )
 	    
 #define BGL_BINT16_TO_INT16( o ) \
-   BGL_BCNST_TO_CNST( o, 0xffff, BGL_CNST_SHIFT_INT16, int16_t )
+   BGL_BCNST_TO_CNST( o, 0xffffL, BGL_CNST_SHIFT_INT16, int16_t )
 #define BGL_BUINT16_TO_UINT16( o ) \
-   BGL_BCNST_TO_CNST( o, 0xffff, BGL_CNST_SHIFT_INT16, uint16_t )
+   BGL_BCNST_TO_CNST( o, 0xffffL, BGL_CNST_SHIFT_INT16, uint16_t )
 
 #if( defined( BGL_CNST_SHIFT_INT32 ) ) /* BGL_CNST_SHIFT_INT32 */
 #  define DEFINE_INT32( name, aux, num ) \
@@ -139,13 +139,13 @@ extern "C" {
    const obj_t name = BGL_UINT32_TO_BUINT32( num )
    
 #  define BGL_INT32_TO_BINT32( i ) \
-   BGL_CNST_TO_BCNST( i, BINT32H, BGL_CNST_SHIFT_INT32, int32_t )
+   BGL_CNST_TO_BCNST( i, 0xffffffffL, BINT32H, BGL_CNST_SHIFT_INT32, int32_t )
 #  define BGL_UINT32_TO_BUINT32( i ) \
-   BGL_CNST_TO_BCNST( i, BUINT32H, BGL_CNST_SHIFT_INT32, uint32_t )
+   BGL_CNST_TO_BCNST( i, 0xffffffffL, BUINT32H, BGL_CNST_SHIFT_INT32, uint32_t )
 #  define BGL_BINT32_TO_INT32( o ) \
-   BGL_BCNST_TO_CNST( o, 0xffffffff, BGL_CNST_SHIFT_INT32, int32_t )
+   BGL_BCNST_TO_CNST( o, 0xffffffffL, BGL_CNST_SHIFT_INT32, int32_t )
 #  define BGL_BUINT32_TO_UINT32( o ) \
-   BGL_BCNST_TO_CNST( o, 0xffffffff, BGL_CNST_SHIFT_INT32, uint32_t )
+   BGL_BCNST_TO_CNST( o, 0xffffffffL, BGL_CNST_SHIFT_INT32, uint32_t )
 #else /* !BGL_CNST_SHIFT_INT32 */
 #  define DEFINE_INT32( name, aux, num ) \
    static struct { __CNST_ALIGN header_t header; int32_t val; } \
