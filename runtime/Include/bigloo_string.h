@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Apr 17 07:16:52 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 16:36:07 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -80,10 +80,15 @@ struct bgl_ucs2_string {
 #if( defined( TAG_STRING ) )
 #   define BSTRING( p ) BGL_BPTR( (obj_t)((long)p + TAG_STRING) )
 #   define CSTRING( p ) BGL_CPTR( (obj_t)((long)p - TAG_STRING) )
-#   if( TAG_STRING != 0 )
-#      define STRINGP( c ) ((((long)c) & TAG_MASK) == TAG_STRING)
+#   if( TAG_STRING = 0 )
+#      define STRINGP( c ) \
+          ((c && ((((long)c)&TAG_MASK) == TAG_STRING)))
+#   elif( TAG_STRING = TAG_NAN_QUIET )
+#      define STRINGP( c ) \
+          (((((long)c) & TAG_MASK) == TAG_STRING) && ((long) c) & NAN_MASK)
 #   else
-#      define STRINGP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_STRING)))
+#      define STRINGP( c ) \
+          ((((long)c) & TAG_MASK) == TAG_STRING)
 #   endif
 #else
 #   define BSTRING( p ) BREF( p )
