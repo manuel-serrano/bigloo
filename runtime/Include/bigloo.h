@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 16:38:24 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 16:42:17 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -220,7 +220,7 @@ extern "C" {
 #  define TAG_CELL (0x7ffdUL<<48)     /*  Cell tagging      011...1100 */
 #  define TAG_PAIR (0x7ffeUL<<48)     /*  Pair tagging      011...1101 */
 #  define TAG_OBJECT (0x7fffUL<<48)   /*  Object tagging    011...1110 */
-#  define TAG_STRING (0x7ff8UL<<48)   /*  Object tagging    011...1111 */
+//#  define TAG_STRING (0x7ff8UL<<48)   /*  Object tagging    011...1111 */
 #elif( BGL_GC == BGL_SAW_GC )    
 #  define TAG_QNAN 0
 #  define TAG_INT 0                   /*  Integers tagging      ....00 */
