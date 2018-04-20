@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 11:57:55 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 12:47:34 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -169,7 +169,7 @@ extern "C" {
 #  define TAG_MASK (0x7fffUL << 48)
 #  define NAN_MASK ((1UL << 48) - 1)
 #  define NAN_MASK_SIGNED (NAN_MASK | (1UL <<63))
-#  define NAN_TAG ((0x1UL << 51) + (1UL << 63))
+#  define NAN_TAG ((1UL << 51) + (1UL << 63))
 
 #  define TAG_SHIFT 0
 
