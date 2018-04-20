@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Fri Apr 20 06:59:04 2018 (serrano)                */
+/*    Last change :  Fri Apr 20 07:53:29 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -184,7 +184,7 @@ extern "C" {
      ((obj_t)(header | ((type)o)))
 #  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
      ((type)((unsigned long)o & mask))
-#else /* BGL_NAN_TAGGING */
+#else /* !BGL_NAN_TAGGING */
 #  define TAG_SHIFT PTR_ALIGNMENT
 #  define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
 
@@ -196,7 +196,7 @@ extern "C" {
 #  define BGL_CNSTP( o, header, shift ) \
      (CNST32P( o ) && (((unsigned long)(o) & (long)((1 << (shift)) -1)) == CCNST_MASK((long)header)) )
 #  define BGL_CNST_TO_BCNST( o, header, shift, type ) \
-     ((obj_t)(header + ((type)(o) << shift)))
+   ((obj_t)(header + ((unsigned long)((type)(o)) << shift)))
 #  define BGL_BCNST_TO_CNST( o, mask, shift, type ) \
      ((type)CCNST_MASK((unsigned long)(o) >> shift))  
 #endif  /* BGL_NAN_TAGGING */
@@ -251,8 +251,8 @@ error "Unknown garbage collector type"
 #  define TAG_OBJECT TAG_CNST
 
 #  undef BGL_CNST_SHIFT_INT16
-#  undef BGL_CNST_SHIFT_UCS2
 #  define BGL_CNST_SHIFT_INT16 8
+#  undef BGL_CNST_SHIFT_UCS2
 #  define BGL_CNST_SHIFT_UCS2 8
 #endif
 
@@ -1011,7 +1011,7 @@ typedef obj_t (*function_t)();
 #define BGL_TAG_BCNST( c ) (obj_t)TAG( c, TAG_SHIFT, TAG_CNST )
 #define BGL_TAG_CCNST( c ) (long)UNTAG( c, TAG_SHIFT, TAG_CNST )
 
-#if( defined( BGL_TAG_CNST32 ) )
+#if( defined( BGL_TAG_CNST32 ) ) /* BGL_TAG_CNST32 */
 #  define CNSTP( o ) \
     (BGL_TAG_CNSTP( o ) && ((((unsigned long)o) >> 24) == 0xff))
 #  define CNST32P( o ) \
@@ -1022,13 +1022,13 @@ typedef obj_t (*function_t)();
     ((long)(((unsigned long)BGL_TAG_CCNST( o )) & 0xffff))
 #  define CCNST_MASK( o ) \
     (o & 0xffff)
-#else
+#else  /* !BGL_TAG_CNST32 */
 #  define CNSTP( o ) BGL_TAG_CNSTP( o )
 #  define CNST32P( o ) 1
 #  define BCNST( o ) BGL_TAG_BCNST( o )
 #  define CCNST( o ) BGL_TAG_CCNST( o )
 #  define CCNST_MASK( o ) (o)
-#endif
+#endif  /* BGL_TAG_CNST32 */
 
 #define BNIL BCNST( 0 )
 #define BUNSPEC BCNST( 3 )
