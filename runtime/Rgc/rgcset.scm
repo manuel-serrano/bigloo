@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 12:37:15 1998                          */
-;*    Last change :  Sat Apr 21 12:07:01 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 16:08:03 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A simple implementation of bit vectors for handling set of       */
 ;*    integers.                                                        */
@@ -45,10 +45,11 @@
 	    __r4_vectors_6_8
 	    __rgc)
 
-   (extern  (macro $int-bit-size::long "BGL_INT_BIT_SIZE"))
+   (extern  (macro $configure-int-bit-size::long "BGL_INT_BIT_SIZE"))
 
-   (java    (class foreign
-	       (field static $int-bit-size::long "BGL_INT_BIT_SIZE")))
+   (java    (class $configure
+	       (field static int-bit-size::long "BGL_INT_BIT_SIZE")
+	       "bigloo.configure"))
 
    (export  (make-rgcset          ::long)
 	    (rgcset-length::long  <rgcset>)
@@ -70,7 +71,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bit-per-word ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define bit-per-word $int-bit-size)
+(define bit-per-word (-fx $configure-int-bit-size 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    rgcset structure ...                                             */

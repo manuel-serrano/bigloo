@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/inline.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Inline/inline.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sun May  7 08:35:49 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Apr 21 16:58:53 2018 (serrano)                */
+;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -36,6 +36,9 @@
 ;*    inline-sfun! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (inline-sfun! variable kfactor stack)
+   (when (getenv "INLINE")
+      (tprint "inline-sfun var=" (shape variable) " kfactor=" kfactor
+	 " stack=" (length stack)))
    (trace (inline inline+ 0)
       "--- SCANNING: " (shape variable) " ---- kactor: " kfactor
       " occurrence=" (variable-occurrence variable) #\Newline)
@@ -126,6 +129,9 @@
 ;*    inline-node ::app ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::app kfactor stack)
+   (when (getenv "INLINE")
+      (tprint "inline-node ::app var=" (typeof node) " kfactor=" kfactor
+	 " stack=" (length stack) " args=" (length (app-args node))))
    (inline-node*! (app-args node) kfactor stack)
    (inline-app node kfactor stack))
  

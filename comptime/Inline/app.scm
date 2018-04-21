@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/app.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Inline/app.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Wed Feb 22 11:54:49 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Apr 21 17:00:25 2018 (serrano)                */
+;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -33,6 +33,9 @@
 ;*    inline-app ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define (inline-app node kfactor stack)
+   (when (getenv "INLINE")
+      (tprint "inline-app node=" (shape node) " kfactor=" kfactor
+	 " stack=" (length stack)))
    (let* ((callee (app-fun node))
 	  (var    (var-variable callee))
 	  (sfun   (variable-value var))
@@ -40,6 +43,12 @@
 	  (loc    (node-loc node)))
       (trace (inline inline+ 3) "inline-app: " (shape node)
 	 " mode=" *inline-mode* #\Newline)
+      (when (getenv "INLINE")
+	 (when (sfun? sfun)
+	    (tprint "inline-app inline-app?: "
+	       (inline-app? var kfactor (call-size node) stack))
+	    (tprint "inline-app inline-clo?: "
+	       (inline-closure? var stack))))
       (cond
 	 ((not (sfun? sfun))
 	  node)
