@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgcset.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgcset.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 12:37:15 1998                          */
-;*    Last change :  Mon Aug 27 11:04:15 2012 (serrano)                */
+;*    Last change :  Sat Apr 21 12:07:01 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A simple implementation of bit vectors for handling set of       */
 ;*    integers.                                                        */
@@ -45,10 +45,10 @@
 	    __r4_vectors_6_8
 	    __rgc)
 
-   (extern  (macro %ptr-alignment::long "PTR_ALIGNMENT"))
+   (extern  (macro $int-bit-size::long "BGL_INT_BIT_SIZE"))
 
    (java    (class foreign
-	       (field static %ptr-alignment::long "PTR_ALIGNMENT")))
+	       (field static $int-bit-size::long "BGL_INT_BIT_SIZE")))
 
    (export  (make-rgcset          ::long)
 	    (rgcset-length::long  <rgcset>)
@@ -70,9 +70,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    bit-per-word ...                                                 */
 ;*---------------------------------------------------------------------*/
-(define bit-per-word
-   (let ((ptr-align %ptr-alignment))
-      (-fx (bit-lsh 1 (+fx ptr-align 3)) ptr-align)))
+(define bit-per-word $int-bit-size)
 
 ;*---------------------------------------------------------------------*/
 ;*    rgcset structure ...                                             */

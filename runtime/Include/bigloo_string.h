@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Apr 20 16:45:43 2018 (serrano)                */
+/*    Last change :  Sat Apr 21 11:12:45 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo STRINGs                                                   */
@@ -58,7 +58,6 @@ struct bgl_string {
    header_t header;
 #endif		
    long length;
-   long sentinel;
    unsigned char char0[ 1 ];
 };
 
@@ -115,45 +114,28 @@ struct bgl_ucs2_string {
 /*        DEFINE_STRING_STOP( f, a, 2 );                     */
 #if( defined( TAG_STRING ) )
 #  define DEFINE_STRING( name, aux, str, len ) \
-   static struct { __CNST_ALIGN long length;
-                      long sentinel; \
+   static struct { __CNST_ALIGN long length; \
                       char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER len, 0, str }; \
-         static obj_t name = BSTRING( &(aux.length) )
-#  define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
-   static struct { __CNST_ALIGN long length;
-                      long sentinel; \
-                      char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER len, sen, str }; \
+         aux = { __CNST_FILLER len, str }; \
          static obj_t name = BSTRING( &(aux.length) )
 #  define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN long length; \
-                      long sentinel; \
                       char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER len, 0
+         aux = { __CNST_FILLER len
 #  define DEFINE_STRING_STOP( name, aux ) \
         }; static obj_t name = BSTRING( &(aux.length) 
 #else
 #  define DEFINE_STRING( name, aux, str, len ) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
-                      long sentinel; \
                       char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, 0 ), len, 0, str }; \
-         static obj_t name = BSTRING( &(aux.header) )
-#  define DEFINE_STRING_ASCII_SENTINEL( name, aux, str, len, sen ) \
-      static struct { __CNST_ALIGN header_t header; \
-                      long length; \
-                      long sentinel; \
-                      char string[ len + 1 ]; } \
-         aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, sen ), len, sen, str }; \
+         aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, 0 ), len, str }; \
          static obj_t name = BSTRING( &(aux.header) )
 #  define DEFINE_STRING_START( name, aux, len ) \
       static struct { __CNST_ALIGN header_t header; \
                       long length; \
-                      long sentinel; \
                       char string[ len + 1]; } \
-         aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, 0 ), len, 0
+         aux = { __CNST_FILLER MAKE_HEADER( STRING_TYPE, 0 ), len
 #  define DEFINE_STRING_STOP( name, aux ) \
         }; static obj_t name = BSTRING( &(aux.header) )
 #endif
@@ -171,11 +153,6 @@ struct bgl_ucs2_string {
 #define STRING_REF( v, i ) (((unsigned char *)BSTRING_TO_STRING( v ))[ i ])
 #define STRING_SET( s, i, c ) (STRING_REF( s, i ) = c, BUNSPEC)
 #define STRING_PTR_NULL( _p ) (_p == 0)
-
-#define STRING_ASCII_SENTINEL( s ) \
-   (STRING( s ).sentinel)
-#define STRING_ASCII_SENTINEL_SET( s, i ) \
-    (STRING_ASCII_SENTINEL( s ) = (i), s)
 
 #define BGL_MEMCHR( s, c, n, i ) memchr( &s[ i ], c, n )
 #define BGL_MEMCHR_ZERO( s ) ((s) == 0L)
