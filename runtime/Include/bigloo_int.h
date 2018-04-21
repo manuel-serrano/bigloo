@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sat Apr 21 10:37:33 2018 (serrano)                */
+/*    Last change :  Sat Apr 21 19:24:55 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -34,24 +34,30 @@ extern "C" {
 #  define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
 #  define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
 #  define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
-#else
-#  define BGL_LONG_MIN (LONG_MIN >> (64-48))
-#  define BGL_LONG_MAX (LONG_MAX >> (64-48))
 
-#  define BINT( i ) ((obj_t)(((long)i & NAN_MASK_SIGNED) | TAG_INT))
-#  define CINT( i ) ((((long)((long)i & (1UL<<63))) >> (64-48)) | (((long)i) & NAN_MASK))
+#  define LTFX( x, y ) ((long)(x) < (long)(y))
+#  define LEFX( x, y ) ((long)(x) <= (long)(y))
+#  define GTFX( x, y ) ((long)(x) > (long)(y))
+#  define GEFX( x, y ) ((long)(x) >= (long)(y))
+#  define EGFX( x, y ) ((long)(x) == (long)(y))
+#else
+#  define BGL_LONG_MIN (INT32_MIN)
+#  define BGL_LONG_MAX (INT32_MAX)
+
+#  define BINT( i ) ((obj_t)(((long)((int32_t)i)) | TAG_INT))
+#  define CINT( i ) ((long)((int32_t)i))
 #  define ADDFX( x, y ) BINT( CINT( x ) + CINT( y ) )
 #  define SUBFX( x, y ) BINT( CINT( x ) - CINT( y ) )
+
+#  define LTFX( x, y ) ((int32_t)(x) < (int32_t)(y))
+#  define LEFX( x, y ) ((int32_t)(x) <= (int32_t)(y))
+#  define GTFX( x, y ) ((int32_t)(x) > (int32_t)(y))
+#  define GEFX( x, y ) ((int32_t)(x) >= (int32_t)(y))
+#  define EGFX( x, y ) ((x) == (y))
 #endif
 
 #define ODDP_FX( i )  ((i) & 1)
 #define EVENP_FX( i ) (!ODDP_FX( i ))
-
-#define LTFX( x, y ) ((long)(x) < (long)(y))
-#define LEFX( x, y ) ((long)(x) <= (long)(y))
-#define GTFX( x, y ) ((long)(x) > (long)(y))
-#define GEFX( x, y ) ((long)(x) >= (long)(y))
-#define EGFX( x, y ) ((long)(x) == (long)(y))
 
 /*---------------------------------------------------------------------*/
 /*    Long long                                                        */

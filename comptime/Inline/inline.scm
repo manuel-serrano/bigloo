@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sat Apr 21 17:16:30 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 18:14:05 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -36,9 +36,6 @@
 ;*    inline-sfun! ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define (inline-sfun! variable kfactor stack)
-   (when (getenv "INLINE")
-      (tprint "inline-sfun var=" (shape variable) " kfactor=" kfactor
-	 " stack=" (length stack)))
    (trace (inline inline+ 0)
       "--- SCANNING: " (shape variable) " ---- kactor: " kfactor
       " occurrence=" (variable-occurrence variable) #\Newline)
@@ -47,12 +44,6 @@
 		     sfun
 		     (widen!::isfun sfun (original-body (sfun-body sfun)))))
 	  (o-body (isfun-original-body isfun))
-	  (_ (when (getenv "INLINE")
-		(tprint "inline-sfun inline-app?=...")))
-	  (_1 (when (getenv "INLINE")
-		(tprint "inline-sfun inline-app?="
-		   (inline-app? variable *kfactor*
-		      (+fx 1 (length (sfun-args sfun))) '()))))
 	  (inl-body (if (inline-app? variable *kfactor*
 			   (+fx 1 (length (sfun-args sfun))) '())
 			;; if at least one call to `variable' can be
@@ -68,11 +59,7 @@
 		     (eq? (variable-removable variable) 'cgen))
                  (and (global? variable)
                       (not (eq? (global-import variable) 'static))))
-	     (begin
-		(when (getenv "INLINE")
-		   (tprint "inline-sfun inline-node=" (typeof inl-body)
-		      " kfactor=" kfactor " sk=" (length stack)))
-		(inline-node inl-body kfactor (cons variable stack)))
+	     (inline-node inl-body kfactor (cons variable stack))
              inl-body)))
    (trace (inline inline+ 0)
       "--- END SCANNING: " (shape variable) " ----" #\Newline))
@@ -139,9 +126,6 @@
 ;*    inline-node ::app ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::app kfactor stack)
-   (when (getenv "INLINE")
-      (tprint "inline-node ::app var=" (typeof node) " kfactor=" kfactor
-	 " stack=" (length stack) " args=" (length (app-args node))))
    (inline-node*! (app-args node) kfactor stack)
    (inline-app node kfactor stack))
  

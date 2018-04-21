@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Apr 21 12:06:12 2018 (serrano)                */
+#*    Last change :  Sat Apr 21 19:27:57 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1667,7 +1667,7 @@ alignment=`$autoconf alignment` || exit 1
 
 if [ "$alignment" = "3" ]; then
   if [ "$bglnantagging " != "0 " ]; then
-    intsize=48
+    intsize=32
   else
     intsize=61
   fi
