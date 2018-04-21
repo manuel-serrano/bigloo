@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sat Apr 21 17:34:55 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 17:36:15 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -112,10 +112,11 @@
 		    (isfun-original-body sfun)
 		    (sfun-body sfun))))
       (when (getenv "INLINE")
-	 (tprint "inline-app? var=" (shape var) "...")
+	 (tprint "inline-app? var=" (shape var) "..." (typeof sfun))
 	 (tprint "inline-app? node-size...")
-	 (when (isa? body node)
-	    (tprint (node-size body))))
+	 (if (isa? body node)
+	     (tprint "node-size=" (node-size body))
+	     (tprint "node-size=" -1)))
       (cond
 	 ((not (isa? body node))
 	  (trace (inline inline+ 0) " no (no body)" #\Newline)
