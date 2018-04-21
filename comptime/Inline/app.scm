@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sat Apr 21 17:17:33 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 17:22:11 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
@@ -101,7 +101,7 @@
 ;*---------------------------------------------------------------------*/
 (define (inline-app? var::variable kfactor::long call-size::long stack)
    (when (getenv "INLINE")
-      (tprint "inline-app? var=" (shape variable) " kfactor=" kfactor
+      (tprint "inline-app? var=" (shape var) " kfactor=" kfactor
 	 " call-size=" call-size " stack=" (length stack)))
    (trace (inline inline+ 0)
       "inline-app?: " (shape var)
@@ -111,6 +111,8 @@
 	  (body (if (isfun? sfun)
 		    (isfun-original-body sfun)
 		    (sfun-body sfun))))
+      (when (getenv "INLINE")
+	 (tprint "inline-app? var=" (shape var) "..."))
       (cond
          ((not *inlining?*)
 	  (when (getenv "INLINE")
