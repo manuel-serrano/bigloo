@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Inline/size.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Inline/size.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Fri Apr 21 18:42:16 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sat Apr 21 17:43:52 2018 (serrano)                */
+;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
 ;*=====================================================================*/
@@ -87,8 +87,12 @@
 ;*    node-size ::app ...                                              */
 ;*---------------------------------------------------------------------*/
 (define-method (node-size node::app)
+   (when (getenv "INLINE")
+      (tprint ">>> inline-size node=" (shape node)))
    (let loop ((args  (app-args node))
 	      (size  (node-size (app-fun node))))
+      (when (getenv "INLINE")
+	 (tprint "--- inline-size args=" (length args) " sz=" size))
       (if (null? args)
 	  size
 	  (loop (cdr args) (+fx size (node-size (car args)))))))
