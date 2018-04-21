@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/fixnum.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/fixnum.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sat Dec  9 10:47:01 2017 (serrano)                */
+;*    Last change :  Sat Apr 21 10:38:57 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -43,8 +43,8 @@
 	   (macro $uint32?::bool (::obj) "BGL_UINT32P")
 	   (macro $int64?::bool (::obj) "BGL_INT64P")
 	   (macro $uint64?::bool (::obj) "BGL_UINT64P")
-	   (macro $minvalfx::long "(LONG_MIN >> TAG_SHIFT)")
-	   (macro $maxvalfx::long "(LONG_MAX >> TAG_SHIFT)")
+	   (macro $minvalfx::long "BGL_LONG_MIN")
+	   (macro $maxvalfx::long "BGL_LONG_MAX")
 	   (macro $minvalelong::elong "LONG_MIN")
 	   (macro $maxvalelong::elong "LONG_MAX")
 	   (macro $minvalllong::llong "BGL_LONGLONG_MIN")

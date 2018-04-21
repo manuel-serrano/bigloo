@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Fri Apr 20 11:06:15 2018 (serrano)                */
+/*    Last change :  Sat Apr 21 10:37:33 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -27,11 +27,17 @@ extern "C" {
 #define INTEGERP( o ) ((((long)o) & TAG_MASK) == TAG_INT)
 
 #if( !BGL_NAN_TAGGING )
+#  define BGL_LONG_MIN (LONG_MIN >> TAG_SHIFT)
+#  define BGL_LONG_MAX (LONG_MAX >> TAG_SHIFT)
+
 #  define BINT( i ) (obj_t)TAG( i, TAG_SHIFT, TAG_INT )
 #  define CINT( o ) (long)UNTAG( o, TAG_SHIFT, TAG_INT )
 #  define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
 #  define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
 #else
+#  define BGL_LONG_MIN (LONG_MIN >> (64-48))
+#  define BGL_LONG_MAX (LONG_MAX >> (64-48))
+
 #  define BINT( i ) ((obj_t)(((long)i & NAN_MASK_SIGNED) | TAG_INT))
 #  define CINT( i ) ((((long)((long)i & (1UL<<63))) >> (64-48)) | (((long)i) & NAN_MASK))
 #  define ADDFX( x, y ) BINT( CINT( x ) + CINT( y ) )
