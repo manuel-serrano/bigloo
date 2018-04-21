@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Sat Apr 21 18:04:43 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 18:06:03 2018 (serrano)                */
 ;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
@@ -95,7 +95,7 @@
    (let loop ((args  (app-args node))
 	      (size  (node-size (app-fun node))))
       (when (getenv "INLINESZ")
-	 (fprint (current-error-port) (make-string m #\space) "--- inline-size node=" (shape node)))
+	 (fprint (current-error-port) (make-string m #\space) "--- inline-size node=" (map shape args) " size=" size " null=" (null? args)))
       (if (null? args)
 	  (begin
 	     (when (getenv "INLINESZ")
