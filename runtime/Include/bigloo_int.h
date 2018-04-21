@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Sat Apr 21 20:21:46 2018 (serrano)                */
+/*    Last change :  Sat Apr 21 20:24:15 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -44,15 +44,15 @@ extern "C" {
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
-#  define BINT( i ) ((obj_t)(((long)((int32_t)i)) | TAG_INT))
-#  define CINT( i ) ((long)((int32_t)((long)i)))
+#  define BINT( i ) ((obj_t)(((long)((uint32_t)i)) | TAG_INT))
+#  define CINT( i ) ((long)((uint32_t)((long)i)))
 #  define ADDFX( x, y ) BINT( CINT( x ) + CINT( y ) )
 #  define SUBFX( x, y ) BINT( CINT( x ) - CINT( y ) )
 
-#  define LTFX( x, y ) ((int32_t)((long)(x)) < (int32_t)((long)(y)))
-#  define LEFX( x, y ) ((int32_t)((long)(x)) <= (int32_t)((long)(y)))
-#  define GTFX( x, y ) ((int32_t)((long)(x)) > (int32_t)((long)(y)))
-#  define GEFX( x, y ) ((int32_t)((long)(x)) >= (int32_t)((long)(y)))
+#  define LTFX( x, y ) (CINT( x ) < CINT( y ))
+#  define LEFX( x, y ) (CINT( x ) <= CINT( y ))
+#  define GTFX( x, y ) (CINT( x ) > CINT( y ))
+#  define GEFX( x, y ) (CINT( x ) >= CINT( y ))
 #  define EGFX( x, y ) (((long)(x)) == ((long)(y)))
 #endif
 
