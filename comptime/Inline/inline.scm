@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sat Apr 21 17:09:40 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 17:16:30 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
@@ -48,6 +48,8 @@
 		     (widen!::isfun sfun (original-body (sfun-body sfun)))))
 	  (o-body (isfun-original-body isfun))
 	  (_ (when (getenv "INLINE")
+		(tprint "inline-sfun inline-app?=...")))
+	  (_1 (when (getenv "INLINE")
 		(tprint "inline-sfun inline-app?="
 		   (inline-app? variable *kfactor*
 		      (+fx 1 (length (sfun-args sfun))) '()))))
