@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 17 12:06:16 1996                          */
-;*    Last change :  Sat Apr 21 17:43:52 2018 (serrano)                */
+;*    Last change :  Sat Apr 21 17:44:17 2018 (serrano)                */
 ;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The size an ast node.                                            */
@@ -16,6 +16,8 @@
    
    (include "Ast/node.sch"
 	    "Inline/size.sch")
+
+   (import  tools_shape)
    
    (static  (wide-class sized-sequence::sequence (size::long read-only))
 	    (wide-class sized-sync::sync (size::long read-only))
