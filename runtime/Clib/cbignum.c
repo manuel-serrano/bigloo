@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Tue Apr 17 08:01:47 2018 (serrano)                */
+/*    Last change :  Sun Apr 22 07:56:15 2018 (serrano)                */
 /*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -784,7 +784,8 @@ bgl_safe_mul_fx( long x, long y ) {
    if( !y || !x )
       return BINT( 0 );
    else {
-      long z = ((x * y) << PTR_ALIGNMENT) >> PTR_ALIGNMENT;
+      //long z = ((x * y) << PTR_ALIGNMENT) >> PTR_ALIGNMENT;
+      long z = CINT( BINT( (x * y) ) );
 
       if( z / y == x && z % y == 0 )
 	 return BINT( z );
