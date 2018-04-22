@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Sun Apr 22 08:13:14 2018 (serrano)                */
+/*    Last change :  Sun Apr 22 08:28:32 2018 (serrano)                */
 /*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -801,14 +801,12 @@ bgl_safe_mul_fx( long x, long y ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_safe_quotient_fx( long x, long y ) {
-   fprintf( stderr, "safe quotien x=%lld y=%lld\n", x, y );
    if( x == BGL_LONG_MIN && y == -1 ) {
       return bgl_bignum_div( bgl_long_to_bignum( x ), bgl_long_to_bignum( y ) );
    } else {
 #if( !BGL_NAN_TAGGING )
       return BINT( x / y );
 #else
-      fprintf( stderr, "ICI %lld %lld\n", x / y, CINT( BINT( ((int32_t)(x / y )) ) ) );
       return BINT( x / y );
 #endif
    }
