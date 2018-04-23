@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  José Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Sun Apr 22 08:28:32 2018 (serrano)                */
+/*    Last change :  Mon Apr 23 07:57:36 2018 (serrano)                */
 /*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
@@ -740,7 +740,7 @@ obj_t
 bgl_safe_bignum_to_fixnum( obj_t bx ) {
    size_t bs = mpz_sizeinbase( &(BIGNUM(bx).mpz), 2 );
 
-   if( bs < ((sizeof( long ) * 8) - TAG_SHIFT) )
+   if( bs < BGL_INT_BIT_SIZE )
       return BINT( bgl_bignum_to_long( bx ) );
    else
       return bx;
