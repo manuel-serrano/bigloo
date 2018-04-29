@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/cse.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/cse.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Fri Apr 21 18:40:53 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Apr 29 19:10:21 2018 (serrano)                */
+;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    The reduction of type checks.                                    */
+;*    Common sub-expression elimination.                               */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/
@@ -416,6 +416,7 @@
 	 ((null? stack)
 	  #f)
 	 ((same-node? node (call-node (car stack)) '())
+	  (tprint "SAME_NODE: " (shape node) " " (shape (call-node (car stack))))
 	  (call-variable (car stack)))
 	 (else
 	  (loop (cdr stack))))))

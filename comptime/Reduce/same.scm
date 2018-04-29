@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Reduce/same.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Reduce/same.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  5 12:54:32 1996                          */
-;*    Last change :  Mon Nov 11 10:10:05 2013 (serrano)                */
-;*    Copyright   :  1996-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Apr 29 19:11:55 2018 (serrano)                */
+;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The comparison of two nodes.                                     */
 ;*=====================================================================*/
@@ -35,7 +35,12 @@
 	  "   " (shape node2) #\Newline)
    (and (atom? node2)
 	(eq? (node-type node) (node-type node2))
-	(equal? (atom-value node) (atom-value node2))))
+	(if (flonum? (atom-value node))
+	    (and (flonum? (atom-value node2))
+		 (=fl (atom-value node) (atom-value node2))
+		 (=fx (signbitfl (atom-value node))
+		    (signbitfl (atom-value node2))))
+	    (equal? (atom-value node) (atom-value node2)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    same-node? ::kwote ...                                           */
