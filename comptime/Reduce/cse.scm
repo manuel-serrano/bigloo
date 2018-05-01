@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 13 10:29:17 1995                          */
-;*    Last change :  Sun Apr 29 19:10:21 2018 (serrano)                */
+;*    Last change :  Sun Apr 29 19:18:56 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Common sub-expression elimination.                               */
@@ -416,7 +416,6 @@
 	 ((null? stack)
 	  #f)
 	 ((same-node? node (call-node (car stack)) '())
-	  (tprint "SAME_NODE: " (shape node) " " (shape (call-node (car stack))))
 	  (call-variable (car stack)))
 	 (else
 	  (loop (cdr stack))))))
