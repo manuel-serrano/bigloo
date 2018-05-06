@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sat Jan 13 07:00:05 2018 (serrano)                */
+#*    Last change :  Sun May  6 06:45:23 2018 (serrano)                */
 #*    Copyright   :  1997-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -43,7 +43,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   inet_aton inet_pton \
                   unixsocket info cctest ccoptim ccbracket ccdiv0 ccwarning \
                   ccprof termio termios installinfo installinfodir dlopen \
-                  user xemacsbin gmaketest ccpic ccpic2 \
+                  user xemacsbin gmaketest ccpic ccpic2 ccssex86 \
                   ziptest javatest jartest \
                   oscharset strip cygwindospath select fcntl ccstrip \
                   emacsbrand emacslisppath stacksize gcstd \

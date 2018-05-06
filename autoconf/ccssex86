@@ -1,0 +1,91 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ccssex86             */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan 14 10:31:33 1999                          */
+#*    Last change :  Sun May  6 06:51:23 2018 (serrano)                */
+#*    -------------------------------------------------------------    */
+#*    There is a rampant problem with precision of x87 arithmetic      */
+#*    unit that causes all sort of problem. This is now as             */
+#*    GCC bug 323 (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=323)   */
+#*    Apparently, the best way to eliminate it is to use the options   */
+#*    -msse2 -mfpmath=sse. This checks their availability.             */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    flags                                                            */
+#*---------------------------------------------------------------------*/
+cflags=""
+
+#*---------------------------------------------------------------------*/
+#*    We parse the arguments                                           */
+#*---------------------------------------------------------------------*/
+while : ; do
+  case $1 in
+    "")
+      break;;
+
+    --cflags=*|-cflags=*)
+      cflags="`echo $1 | sed 's/^[-a-z]*=//'`";;
+
+    -*)
+      echo "Unknown option \"$1\", ignored" >&2;;
+  esac
+  shift
+done
+
+file=$TMP/actest$USER
+aout=$TMP/Xactest$USER
+
+# The default pic value
+if [ "$cflags " = " " ]; then
+  cflags="-msse2 -mfpmath=sse"
+fi
+
+#*---------------------------------------------------------------------*/
+#*    gcc tuning                                                       */
+#*---------------------------------------------------------------------*/
+if [ "$CC" = "gcc" ]; then 
+  eflags=-Werror
+else
+  eflags=
+fi
+
+#*---------------------------------------------------------------------*/
+#*    The test C file                                                  */
+#*---------------------------------------------------------------------*/
+if( test -f $file.c ); then
+   rm -f $file.c || exit $?
+fi
+
+#*---------------------------------------------------------------------*/
+#*    Test                                                             */
+#*---------------------------------------------------------------------*/
+cat > $file.c <<EOF
+#include <stdio.h>
+
+int BGl_testz00zzbugz002(double BgL_lhs1029z00_4) {
+   double BgL_tmpz00_1191 = BgL_lhs1029z00_4 * ((double) 0.1);
+   return (((double) 0.0) == BgL_tmpz00_1191);
+}
+
+int main( int argc, char *argv ) {
+  fprintf( stderr, "%d\n", BGl_testz00zzbugz002( 5e-324 ) );
+}
+EOF
+
+#*---------------------------------------------------------------------*/
+#*    Compilation test                                                 */
+#*---------------------------------------------------------------------*/
+compile="$CC $eflags $cflags $file.c -o $aout >/dev/null"
+
+if eval "$BUILDSH $compile"; then
+   \rm -f $file.*
+   echo $cflags
+   exit 0
+fi
+
+\rm -f $file.*
+echo ""
+exit 0
