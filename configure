@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May  7 10:30:15 2018 (serrano)                */
+#*    Last change :  Mon May  7 10:59:27 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -879,7 +879,6 @@ while : ; do
       mingw="yes";;
 
     --nan-tagging)
-      cnanflags="-DBGL_NAN_TAGGING=1";
       bglnantagging=1;;
       
     --enable-thread|--enable-threads)
@@ -2067,6 +2066,7 @@ if [ "$action" != "bigloo_config_el" ]; then
     if [ "$alignment" = "3" ]; then 
       customgc=yes;
       bglnantagging=64;
+      cnanflags="-DBGL_NAN_TAGGING=64";
       cgcflags="-DPOINTER_MASK=0xffffffffffff $cgcflags";
     else
       echo "*** ERROR: Nan-tagging requires 64bit platforms"
