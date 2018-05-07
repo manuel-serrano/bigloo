@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Cc/cc.scm                   */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Cc/cc.scm            */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Apr 29 09:51:32 1995                          */
-;*    Last change :  Mon Dec 18 08:02:36 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon May  7 09:47:11 2018 (serrano)                */
+;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C compilation                                                */
 ;*=====================================================================*/
@@ -77,8 +77,8 @@
 		     " "
 		     *cflags*
 		     " "
-;* 		     (if (eq? *pass* 'so) (bigloo-config 'c-pic-flag) "") */
 		     (string-append " " (bigloo-config 'c-pic-flag))
+		     (string-append " " (bigloo-config 'c-nan-flag))
 		     " "
 		     " -c "
 		     (if need-o *cc-o-option* "")

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Thu Apr 12 12:06:12 2018 (serrano)                */
+;*    Last change :  Mon May  7 09:53:26 2018 (serrano)                */
 ;*    Copyright   :  2000-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -60,6 +60,7 @@
 	   (macro $configure-c-compiler-rpath::string "C_COMPILER_RPATH")
 	   (macro $configure-c-flags::string "C_FLAGS")
 	   (macro $configure-c-pic-flag::string "C_PICFLAGS")
+	   (macro $configure-c-nan-flag::string "C_NANFLAGS")
 	   (macro $configure-c-strip-flag::string "C_STRIP_FLAGS")
 	   (macro $configure-c-prof-flag::string "C_PROFILE_FLAGS")
            (macro $configure-c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -133,6 +134,7 @@
 	      (field static c-compiler-rpath::string "C_COMPILER_RPATH")
 	      (field static c-flags::string "C_FLAGS")
 	      (field static c-pic-flag::string "C_PICFLAGS")
+	      (field static c-nan-flag::string "C_NANFLAGS")
 	      (field static c-strip-flag::string "C_STRIP_FLAGS")
 	      (field static c-prof-flag::string "C_PROFILE_FLAGS")
               (field static c-object-file-extension::string "C_OBJECT_FILE_EXTENSION")
@@ -219,6 +221,7 @@
      (c-compiler-rpath . ,$configure-c-compiler-rpath)
      (c-flags . ,$configure-c-flags)
      (c-pic-flag . ,$configure-c-pic-flag)
+     (c-nan-flag . ,$configure-c-nan-flag)
      (c-strip-flag . ,$configure-c-strip-flag)
      (c-prof-flag . ,$configure-c-prof-flag)
      (c-object-file-extension . ,$configure-c-object-file-extension)

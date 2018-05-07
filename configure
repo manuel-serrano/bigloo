@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun May  6 06:46:43 2018 (serrano)                */
+#*    Last change :  Mon May  7 09:45:34 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -75,7 +75,8 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - "demanded" auto configuration but with a preference to "no"
              #  - any legal C compiler option that enables PIC code.
              #  - blank (uninitalized) for automatic configuration of the
-             #    position independent code compiler option
+#    position independent code compiler option
+cnanflags=
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
@@ -878,6 +879,7 @@ while : ; do
       mingw="yes";;
 
     --nan-tagging)
+      cnanflags="BGL_NAN_TAGGING";
       bglnantagging=1;;
       
     --enable-thread|--enable-threads)
@@ -3366,6 +3368,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@C_LD@|$ld|" \
               -e "s|@C_FLAGS@|$cflags|" \
               -e "s|@C_PICFLAGS@|$cpicflags|" \
+              -e "s|@C_NANFLAGS@|$cnanflags|" \
               -e "s|@C_COMPILER_O_OPTION@|-o |" \
               -e "s|@C_COMPILER_DEBUG_OPTION@|-g|" \
               -e "s|@C_OBJECT_FILE_EXTENSION@|$cobj|" \
@@ -3790,6 +3793,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
   echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
+  echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
   echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
   
   # Close and extra libs
@@ -3798,7 +3802,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo >> $makefile_cfg
 
   # The GC library
-  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS)" >> $makefile_cfg
+  echo "CGCFLAGS=$cgcflags $cgcfinalflags $gcspecial -I$""(BOOTLIBDIR) $""(CPICFLAGS) $""(CPICFLAGS)" >> $makefile_cfg
   echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   echo "GCLIB=$gclib" >> $makefile_cfg
@@ -4759,6 +4763,7 @@ echo "  options for compiling................. $cflags" >> $configurelog
 echo "  options for optimizing................ $coflags" >> $configurelog
 echo "  options for stripping................. $csflags" >> $configurelog
 echo "  options for PIC code.................. $cpicflags" >> $configurelog
+echo "  options for NAN code.................. $cnanflags" >> $configurelog
 echo "  options for profiling................. $cpflags" >> $configurelog
 echo "  options for linking................... $extralibs" >> $configurelog
 echo "  assembly.............................. $as" >> $configurelog
