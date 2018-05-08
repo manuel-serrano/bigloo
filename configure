@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May  7 10:59:27 2018 (serrano)                */
+#*    Last change :  Tue May  8 14:49:38 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -76,7 +76,7 @@ cpicflags="demanded" # Possible values for cpicflags are:
              #  - any legal C compiler option that enables PIC code.
              #  - blank (uninitalized) for automatic configuration of the
 #    position independent code compiler option
-cnanflags=
+cnanflags=-DBGL_NAN_TAGGING=0
 as=          # left blank for autoconfiguration
 ar=          # left blank for autoconfiguration
 ranlib=      # left blank for autoconfiguration
