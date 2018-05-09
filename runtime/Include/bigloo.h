@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Apr 22 08:49:57 2018 (serrano)                */
+/*    Last change :  Wed May  9 11:48:04 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -167,6 +167,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING ) /* BGL_NAN_TAGGING */
 #  define TAG_MASK (0xffffUL << 48)
+#  define TAG_MASKOBJECT (0x7fffUL << 48)
 #  define NAN_MASK ((1UL << 48) - 1)
 #  define NAN_MASK_SIGNED (NAN_MASK | (1UL <<63))
 #  define NAN_TAG ((1UL << 51) + (1UL << 63))
@@ -186,6 +187,7 @@ extern "C" {
 #else /* !BGL_NAN_TAGGING */
 #  define TAG_SHIFT PTR_ALIGNMENT
 #  define TAG_MASK ((1 << PTR_ALIGNMENT) - 1)
+#  define TAG_MASKOBJECT TAG_MASK
 
 #  define TAG( _v, shift, tag ) \
      ((long)(((unsigned long)(_v) << shift) | tag))
@@ -220,6 +222,7 @@ extern "C" {
 #  define TAG_CELL (0x7ffdUL<<48)     /*  Cell tagging      011...1100 */
 #  define TAG_PAIR (0x7ffeUL<<48)     /*  Pair tagging      011...1101 */
 #  define TAG_OBJECT (0x7fffUL<<48)   /*  Object tagging    011...1110 */
+#  define TAG_NANOBJECT (0xffffUL<<48)/*  Object tagging    111...1110 */
 #  define TAG_STRING (0xfff9UL<<48)   /*  Object tagging    111...1000 */
 #  define TAG_SYMBOL (0xfffaUL<<48)   /*  Symbol tagging    111...1001 */
 #elif( BGL_GC == BGL_SAW_GC )    

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Feb 11 09:44:06 2018 (serrano)                */
+;*    Last change :  Wed May  9 12:00:41 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -61,6 +61,8 @@
 		   "OBJECT_TYPE")
 	    (macro %object?::bool (::obj)
 		   "BGL_OBJECTP")
+	    (macro $nanobject?::bool (::obj)
+		   "BGL_NANOBJECTP")
 	    (macro %object-class-num::long (::object)
 		   "BGL_OBJECT_CLASS_NUM")
 	    (macro %object-class-num-set!::obj (::object ::long)

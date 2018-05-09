@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Tue Apr 17 08:03:52 2018 (serrano)                */
+/*    Last change :  Wed May  9 11:47:18 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -54,9 +54,9 @@ typedef struct BgL_objectz00_bgl {
 #  define COBJECT( o ) ((obj_t)((unsigned long)o - TAG_CNST))
 #elif( defined( TAG_OBJECT ) )
 #  if( TAG_OBJECT != 0 )
-#    define BGL_OBJECTP( o ) ((((long)o) & TAG_MASK) == TAG_OBJECT)
+#    define BGL_OBJECTP( o ) ((((long)o) & TAG_MASKOBJECT) == TAG_OBJECT)
 #  else
-#    define BGL_OBJECTP( o ) ((o) && (((long)o) & TAG_MASK) == TAG_OBJECT)
+#    define BGL_OBJECTP( o ) ((o) && (((long)o) & TAG_MASKOBJECT) == TAG_OBJECT)
 #  endif
 #  define BOBJECT( o ) ((obj_t)((unsigned long)o + TAG_OBJECT))
 #  define COBJECT( o ) ((obj_t)((unsigned long)o - TAG_OBJECT))
@@ -65,6 +65,20 @@ typedef struct BgL_objectz00_bgl {
     ((POINTERP( o ) && (TYPE( o ) >= OBJECT_TYPE)))
 #  define BOBJECT( o ) BREF( o )
 #  define COBJECT( o ) CREF( o )
+#endif
+
+#if( defined( TAG_NANOBJECT ) )
+#  if( TAG_NANOBJECT != 0 )
+#    define BGL_NANOBJECTP( o ) ((((long)o) & TAG_MASK) == TAG_NANOBJECT)
+#  else
+#    define BGL_NANOBJECTP( o ) ((o) && (((long)o) & TAG_MASK) == TAG_NANOBJECT)
+#  endif
+#  define BNANOBJECT( o ) ((obj_t)((unsigned long)o + TAG_NANOBJECT))
+#  undef COBJECT
+#  define COBJECT( o ) ((obj_t)((unsigned long)o & ~(TAG_NANMASK)))
+#else
+#  define BGL_NANOBJECTP( o ) (0)
+#  define BNANOBJECT( o ) BOBJECT( o )
 #endif
 
 /*---------------------------------------------------------------------*/
