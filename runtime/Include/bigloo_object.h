@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Wed May  9 11:47:18 2018 (serrano)                */
+/*    Last change :  Wed May  9 12:12:45 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo OBJECTs                                                   */
@@ -75,7 +75,7 @@ typedef struct BgL_objectz00_bgl {
 #  endif
 #  define BNANOBJECT( o ) ((obj_t)((unsigned long)o + TAG_NANOBJECT))
 #  undef COBJECT
-#  define COBJECT( o ) ((obj_t)((unsigned long)o & ~(TAG_NANMASK)))
+#  define COBJECT( o ) ((obj_t)((unsigned long)o & ~(TAG_MASK)))
 #else
 #  define BGL_NANOBJECTP( o ) (0)
 #  define BNANOBJECT( o ) BOBJECT( o )
