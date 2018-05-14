@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/init.c                  */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/init.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Mon Dec 18 08:14:06 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Last change :  Mon May 14 09:21:47 2018 (serrano)                */
+/*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -57,7 +57,9 @@ void (*____GC_reset_allocated_bytes)() = 0;
 /* inline allocations */
 void *(*____make_pair)( void *, void * ) = 0;
 void *(*____make_cell)( void * ) = 0;
+#if( !BGL_NAN_TAGGING )
 void *(*____make_real)( double ) = 0;
+#endif
 void *(*____make_belong)( long ) = 0;
 void *(*____make_bllong)( BGL_LONGLONG_T ) = 0;
 #if( defined( BGL_INT32_SIZE ) )
@@ -368,7 +370,9 @@ bmem_init_inner() {
    ____GC_gcollect = (void (*)())get_function( hdl, "GC_gcollect" );
    ____make_pair = get_function( hdl, "make_pair" );
    ____make_cell = get_function( hdl, "make_cell" );
+#if( !BGL_NAN_TAGGING )
    ____make_real = get_function( hdl, "make_real" );
+#endif
    ____make_belong = get_function( hdl, "make_belong" );
    ____make_bllong = get_function( hdl, "make_bllong" );
 #if( defined( BGL_INT32_SIZE ) )
