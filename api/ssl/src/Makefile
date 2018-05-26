@@ -172,20 +172,27 @@ jvm-extra: $(JAVA_CLASSES_SRC) $(BOOTLIBDIR)/$(SSL_ZIP)
 #*---------------------------------------------------------------------*/
 #*    Java auconfiguration                                             */
 #*---------------------------------------------------------------------*/
-ifeq ($(JAVA_VERSION), 1.7)
+ifeq ($(JAVA_VERSION), 1.9)
   JDK=15
 else
- ifeq ($(JAVA_VERSION), 1.6)
+ ifeq ($(JAVA_VERSION), 1.8)
    JDK=15
  else
-  ifeq ($(JAVA_VERSION), 1.5)
+  ifeq ($(JAVA_VERSION), 1.7)
     JDK=15
   else
-    JDK=13
+   ifeq ($(JAVA_VERSION), 1.6)
+     JDK=15
+   else
+    ifeq ($(JAVA_VERSION), 1.5)
+      JDK=15
+    else
+      JDK=13
+    endif
+   endif
   endif
  endif
 endif
-
 $(JAVA_SRC_DIR)/ssl_client_socket.java: \
     $(JAVA_SRC_DIR)/ssl_client_socket$(JDK).java
 	echo "// Generated file, don't edit" > $@
