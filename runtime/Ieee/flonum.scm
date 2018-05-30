@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/flonum.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/flonum.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Sun Oct 23 11:40:00 2016 (serrano)                */
+;*    Last change :  Wed May 30 15:50:40 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -32,6 +32,7 @@
 	    __evenv)
    
    (extern  (macro c-flonum?::bool (::obj) "REALP")
+	    (macro $flonum?::bool (::obj) "FLONUMP")
 	    (infix macro c-=fl::bool (::double ::double) "==")
 	    (infix macro c-<fl::bool (::double ::double) "<")
 	    (infix macro c-<=fl::bool (::double ::double) "<=")
@@ -82,6 +83,8 @@
    
    (java    (class foreign
 	       (method static c-flonum?::bool (::obj)
+		  "REALP")
+	       (method static $flonum?::bool (::obj)
 		  "REALP")
 	       (method static c-=fl::bool (::double ::double)
 		  "EQ_FL")
@@ -230,6 +233,7 @@
 	    (inline randomfl::double))
    
    (pragma  (c-flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
+	    ($flonum? no-alloc side-effect-free (predicate-of real) no-cfa-top nesting fail-safe)
 	    (real? no-alloc side-effect-free no-cfa-top nesting fail-safe)
 	    (c-=fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)
 	    (c->fl no-alloc side-effect-free no-cfa-top nesting args-safe fail-safe)

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Fri Apr 20 16:49:57 2018 (serrano)                */
+/*    Last change :  Wed May 30 15:52:44 2018 (serrano)                */
 /*    Copyright   :  2016-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
@@ -68,10 +68,10 @@ union nanobj {
 #   define DEFINE_REAL( name, aux, _flonum ) \
       static const union nanobj name = { real: _flonum }; \
 
-#   define REALP( c ) \
-      ((((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8) \
-       || (((unsigned long)c >> 48) == 0xfff8) \
-       || (((unsigned long)c == TAG_QNAN)))
+#   define FLONUMP( c ) ((((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8)
+#   define NANP( c ) (((unsigned long)c == TAG_QNAN)))
+#   define REALP( c ) FLONUMP( c ) || NANP( c )
+//|| (((unsigned long)c >> 48) == 0xfff8)  // MS: don't think this is needed
 #elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))
@@ -80,7 +80,8 @@ union nanobj {
       static struct { double real; } aux = { flonum }; \
       static const obj_t name = BREAL( &aux )
 
-#   define REALP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
+#   define FLONUMP( c ) ((c && ((((long)c)&TAG_MASK) == TAG_REAL)))
+#   define REALP( c ) FLONUMP( c )
 #else
 #   define BREAL( p ) BREF( p )
 #   define CREAL( p ) CREF( p )
@@ -90,7 +91,8 @@ union nanobj {
 	 aux = { __CNST_FILLER MAKE_HEADER( REAL_TYPE, 0 ), flonum }; \
       static const obj_t name = BREAL( &(aux.header) )
 
-#   define REALP( c ) (POINTERP( c ) && (TYPE( c ) == REAL_TYPE))
+#   define FLONUMP( c ) (POINTERP( c ) && (TYPE( c ) == REAL_TYPE))
+#   define REALP( c ) FLONUMP( c )
 #endif
 
 /*---------------------------------------------------------------------*/
