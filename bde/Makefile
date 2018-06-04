@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Jan 29 16:44:16 2018 (serrano)                */
+#*    Last change :  Mon Jun  4 08:07:52 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -169,7 +169,10 @@ install: all
           for p in bglafile bgljfile bgldepend bglmake bglprof bglmco bglpp bgltags bgljas; do \
 	    cp $(BOOTBINDIR)/$$p$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
             chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
-	    cp $(BOOTBINDIR)/$$p.sh $(DESTDIR)$(BINDIR)/$$p.sh; \
+            cat $(BOOTBINDIR)/$$p.sh | \
+              sed -e "s|$(BOOTBINDIR)|$(DESTDIR)$(BINDIR)|" \
+                  -e "s|$(BOOTLIBDIR)|$(DESTDIR)$(LIBDIR)/$(FILDIR)|" \
+              > $(DESTDIR)$(BINDIR)/$$p.sh && \
             chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p.sh; \
           done; \
         fi
