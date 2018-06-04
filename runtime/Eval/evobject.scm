@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evobject.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evobject.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan 14 17:11:54 2006                          */
-;*    Last change :  Sun May 10 08:57:14 2015 (serrano)                */
-;*    Copyright   :  2006-15 Manuel Serrano                            */
+;*    Last change :  Mon Jun  4 08:46:51 2018 (serrano)                */
+;*    Copyright   :  2006-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval class definition                                            */
 ;*=====================================================================*/
@@ -166,26 +166,29 @@
       o))
 
 ;*---------------------------------------------------------------------*/
-;*    eval-register-class ...                                          */
+;*    patch-field-default-values! ...                                  */
 ;*---------------------------------------------------------------------*/
-(define (eval-register-class id module super abstract slots hash constr)
+(define (patch-field-default-values! slots fields module)
+   ;; the default values compilation has been postponned after the class
+   ;; is properly defined. this function compiles these values.
+   (for-each (lambda (field slot)
+		;; the index is extract from the function
+		;; (@ CLASS-FIELD-DEFAULT-VALUE __OBJECT)
+		(vector-set-ur! field 6
+		   (eval! `(lambda ()
+			      ,(slot-default-value slot))
+		      module)))
+      (vector->list fields) slots))
 
-   (define (patch-field-default-values! slots fields)
-      ;; the default values compilation has been postponned after the class
-      ;; is properly defined. this function compiles these values.
-      (for-each (lambda (field slot)
-		   ;; the index is extract from the function
-		   ;; (@ CLASS-FIELD-DEFAULT-VALUE __OBJECT)
-		   (vector-set-ur! field 6
-		      (eval! `(lambda ()
-				 ,(slot-default-value slot))
-			 module)))
-	 (vector->list fields) slots))
-
-   (define (patch-vfield-accessors! slots fields virtuals)
-      ;; virtual getters and setters compilation have been postponned after
-      ;; the class is properly defined. this function compiles these functions.
-      (for-each (lambda (field slot)
+;*---------------------------------------------------------------------*/
+;*    patch-vfield-accessors! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (patch-vfield-accessors! slots fields virtuals module)
+   ;; virtual getters and setters compilation have been postponned after
+   ;; the class is properly defined. this function compiles these functions.
+   (for-each (lambda (field)
+		(let* ((id (class-field-name field))
+		       (slot (find (lambda (s) (eq? (slot-id s) id)) slots)))
 		   ;; the indexes are extract from the function
 		   ;; (@ MAKE-CLASS-FIELD __OBJECT)
 		   (when (slot-virtual? slot)
@@ -196,9 +199,13 @@
 		      (let* ((num (slot-virtual-num slot))
 			     (vfield (vector-ref virtuals num)))
 			 (set-car! vfield (slot-getter slot))
-			 (set-cdr! vfield (slot-setter slot)))))
-	 (vector->list fields) slots))
-   
+			 (set-cdr! vfield (slot-setter slot))))))
+      (vector->list fields)))
+
+;*---------------------------------------------------------------------*/
+;*    eval-register-class ...                                          */
+;*---------------------------------------------------------------------*/
+(define (eval-register-class id module super abstract slots hash constr)
    (let* ((size (length (filter (lambda (s) (not (slot-virtual? s))) slots)))
 	  (offset (if (eval-class? super) (class-evdata super) 0))
 	  (native (let loop ((super super))
@@ -241,8 +248,8 @@
 	 (class-evfields-set! clazz fields)
 	 ;; now the class is properly defined, it is possible to evaluate
 	 ;; the default values and virtual getters/setters
-	 (patch-field-default-values! slots fields)
-	 (patch-vfield-accessors! slots fields (class-virtual clazz)))
+	 '(patch-field-default-values! slots fields)
+	 '(patch-vfield-accessors! slots fields (class-virtual clazz)))
       clazz))
 
 ;*---------------------------------------------------------------------*/
@@ -281,12 +288,12 @@
    
    (define (make-class-field-virtual s)
       ((@ make-class-field __object)
-	(slot-id s)
-	(slot-getter s) (slot-setter s) (slot-read-only? s)
-	#t
-	(eval! (slot-user-info s))
-	(slot-default-value s)
-	(slot-type s)))
+       (slot-id s)
+       (slot-getter s) (slot-setter s) (slot-read-only? s)
+       #t
+       (eval! (slot-user-info s))
+       (slot-default-value s)
+       (slot-type s)))
    
    (define (make-class-field-plain s i class)
       (let ((defs (classgen-slot-anonymous i s class)))
@@ -330,7 +337,7 @@
       (install-expander wid
 	 (eval-instantiate-expander class))))
 
-;*---------------------------------------------------------------------*/
+;*--------------------------------------------------------------------*/
 ;*    eval-instantiate-expander ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (eval-instantiate-expander class)
@@ -737,8 +744,15 @@
 		   (eval! `(define ,cid ,clazz))
 		   ;; with-access
 		   (eval-expand-with-access clazz)
+		   ;; now the class is properly defined, it is possible to
+		   ;; evaluate the default values and virtual getters/setters
+		   (let ((fields (class-fields clazz)))
+		      (patch-field-default-values!
+			 slots fields mod)
+		      (patch-vfield-accessors!
+			 slots fields (class-virtual clazz) mod))
+		   ;; instantiate and duplicate expanders
 		   (unless abstract
-		      ;; instantiate
 		      (eval-expand-instantiate clazz)
 		      (eval-expand-duplicate clazz))
 		   (list cid)))))))
