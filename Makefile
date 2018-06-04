@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Mon Jun  4 11:13:10 2018 (serrano)                */
+#*    Last change :  Mon Jun  4 12:04:55 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -372,7 +372,7 @@ fullbootstrap-sans-log:
 	$(MAKE) -C runtime -i touchall; $(MAKE) -C runtime heap libs-c
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
 	$(MAKE) -C comptime -i touchall; $(MAKE) -C comptime
-        if [ "$(JVMBACKEND)" = "yes" ]; then \
+	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C runtime heap-jvm libs-jvm; \
         fi
 	$(MAKE) -C bde -i clean; $(MAKE) -C bde
@@ -384,7 +384,7 @@ fullbootstrap-sans-log:
 	fi
 	$(MAKE) -C recette -i touchall
 	$(MAKE) -C recette && (cd recette && ./recette$(EXE_SUFFIX))
-        if [ "$(JVMBACKEND)" = "yes" ]; then \
+	if [ "$(JVMBACKEND)" = "yes" ]; then \
 	  $(MAKE) -C recette jvm && (cd recette && ./recette-jvm$(SCRIPTEXTENSION)); \
         fi
 	$(MAKE) -C recette clean
