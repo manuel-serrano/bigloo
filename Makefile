@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Wed Jan 31 07:56:51 2018 (serrano)                */
+#*    Last change :  Mon Jun  4 10:10:30 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -351,7 +351,7 @@ fullbootstrap-sans-log:
            $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
            cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
            $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
-	@ ./configure --bootconfig
+	@ ./configure --bootconfig $(CONFIGUREOPTS)
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C gc clean; \
 	  $(MAKE) -C gc boot; \
@@ -401,7 +401,7 @@ c-fullbootstrap:
            $(RM) -f $(BOOTBINDIR)/bigloo.?????????.gz > /dev/null 2>&1; \
            cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX); \
            $(GZIP) $(BOOTBINDIR)/bigloo.$$dt$(EXE_SUFFIX))
-	@ ./configure --bootconfig
+	@ ./configure --bootconfig $(CONFIGUREOPTS)
 	@ (cd comptime && $(MAKE) -i touchall; $(MAKE))
 	@ (cd runtime && $(MAKE) -i touchall; $(MAKE) heap libs-c gcs)
 	@ (cd comptime && $(MAKE) -i touchall; $(MAKE))

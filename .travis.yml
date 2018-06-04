@@ -49,13 +49,13 @@ before_script:
 script:
   - set -e
   - echo -en 'travis_fold:start:bigloo.config\\r'
-  - ./configure --prefix=/tmp/BIGLOO --disable-gstreamer
+  - ./configure --prefix=/tmp/BIGLOO --disable-gstreamer --jvm=no
   - echo -en 'travis_fold:end:bigloo.config\\r'
 
   - echo -en 'travis_fold:start:bigloo.build\\r'
   - make bigboot BGLBUILDBINDIR=/usr/bin
   - make install-progs
-  - make -j fullbootstrap-sans-log
+  - make -j fullbootstrap-sans-log CONFIGUREOPTS="--jvm=no"
   - make install-sans-docs
   - echo -en 'travis_fold:end:bigloo.build\\r'
 
