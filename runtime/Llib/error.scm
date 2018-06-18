@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Jun 13 23:37:01 2018 (serrano)                */
+;*    Last change :  Fri Jun 15 15:17:15 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -1167,7 +1167,7 @@
       ((tvector? obj)
        "tvector")
       ((struct? obj)
-       "struct")
+       (string-append "struct:" (symbol->string! (struct-key obj))))
       ((procedure? obj)
        "procedure")
       ((input-port? obj)
