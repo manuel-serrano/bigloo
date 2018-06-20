@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:35:53 1996                          */
-;*    Last change :  Wed Feb 14 14:23:03 2018 (serrano)                */
+;*    Last change :  Wed Jun 20 13:23:03 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    A module is composed of several unit (for instance, the user     */
 ;*    unit (also called the toplevel unit), the foreign unit, the      */
@@ -246,6 +246,20 @@
 	  (if (and (eq? (car (cdr def)) 'read)
 		   (or (not (global? global))
 		       (eq? (global-access global) 'read)))
+	      (make-sfun-definition var
+		 *module* args
+		 (normalize-progn/error exp sexp (find-location (cddr sexp)))
+		 sexp 'sfun)
+	      (make-svar-definition var sexp))))
+      ((define ?var (labels ((?f ?args . ?exp)) ?f))
+       (let* ((id (id-of-id var (find-location sexp)))
+	      (def (assq id gdefs))
+	      (global (find-global/module id *module*)))
+	  ;; same remark as in the previous match (variables vs functions)
+	  (if (and (eq? (car (cdr def)) 'read)
+		   (or (not (global? global))
+		       (eq? (global-access global) 'read))
+		   (eq? id f))
 	      (make-sfun-definition var
 		 *module* args
 		 (normalize-progn/error exp sexp (find-location (cddr sexp)))

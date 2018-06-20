@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  1 11:37:29 1995                          */
-;*    Last change :  Sun Jan  7 07:26:42 2018 (serrano)                */
+;*    Last change :  Wed Jun 20 13:48:49 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `let->ast' translator                                        */
 ;*=====================================================================*/
@@ -96,7 +96,7 @@
 			    (else
 			     #t))))))
 	   (error-sexp->node
-	      (string-append "Illegal " (symbol->string (car exp)) "' form")
+	      (string-append "Illegal `" (symbol->string (car exp)) "' form")
 	      exp
 	      (find-location/loc exp oloc))
 	   (make-smart-generic-let
@@ -105,7 +105,7 @@
 	      site)))
       (else
        (error-sexp->node
-	  (string-append "Illegal " (symbol->string (car exp)) "' form")
+	  (string-append "Illegal `" (symbol->string (car exp)) "' form")
 	  exp
 	  (find-location/loc exp oloc)))))
 
@@ -601,7 +601,7 @@
 	 ((null? ebindings)
 	  body)
 	 ((used-in? (car ebindings) ebindings)
-	  `(letrec (map ebinding-binding ebindings)
+	  `(letrec ,(map ebinding-binding ebindings)
 	      ,body))
 	 (else
 	  `(let (,(ebinding-binding (car ebindings)))
@@ -767,7 +767,7 @@
 	    (sexp->node sexp stack loc site))))
 
    (define (stage7 ebindings body)
-      ;; if the last binding is not a function and if it is not typed
+      ;; if the last binding is not a function and if it is not typed,
       ;; bind it to unspecified at the beginning of the letrec*
       (with-trace 'letrec* "letrec*/stage7"
 	 (let* ((last (car (last-pair ebindings)))
@@ -829,8 +829,8 @@
       ;; split the values and the functions
       
       (define (split ebindings)
-	 ;; try to partition the bindings in the variables first
-	 ;; and the functions second
+	 ;; try to partition the bindings putting variables first
+	 ;; and functions second
 	 (with-trace 'letrec* "letrec*/stage5/split"
 	    (let loop ((l ebindings)
 		       (vbindings '())
@@ -930,8 +930,6 @@
       (with-trace 'letrec* "letrec*/stage3"
 	 (split-head-letrec ebindings body split stage4)))
 
-   
-   
    (define (stage2 ebindings body)
       ;; collect all first bound immutable values to move them up front
       
@@ -965,7 +963,7 @@
 		   (values (reverse! val-bindings)
 		      (append (reverse! rec*-bindings) ebindings)))))))
       
-      (with-trace 'letrec* "letrec*/stage1"
+      (with-trace 'letrec* "letrec*/stage2"
 	 (split-head-letrec ebindings body split stage3)))
 
    (define (stage1 ebindings body)
@@ -1009,7 +1007,7 @@
 		(values (reverse! rec-bindings) (reverse! rec*-bindings)))
 	       ((and (not (side-effect? (ebinding-value (car ebindings))))
 		     (immutable-in? (car ebindings) rec*-bindings))
-		;; this is literal is boudn to an immutable variable
+		;; this is literal is bound to an immutable variable
 		(loop (cdr ebindings)
 		   (cons (car ebindings) rec-bindings)
 		   rec*-bindings))
