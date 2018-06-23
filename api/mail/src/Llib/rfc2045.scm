@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/mail/src/Llib/rfc2045.scm        */
+;*    .../prgm/project/bigloo/bigloo/api/mail/src/Llib/rfc2045.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed May 30 12:51:46 2007                          */
-;*    Last change :  Mon Oct  5 18:07:50 2015 (serrano)                */
-;*    Copyright   :  2007-15 Manuel Serrano                            */
+;*    Last change :  Sat Jun 23 07:37:27 2018 (serrano)                */
+;*    Copyright   :  2007-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements encoder/decoder for quoted-printable as   */
 ;*    defined by the RFC 2045:                                         */
@@ -35,9 +35,9 @@
 	   (mime-content-disposition-decode::pair-nil ::bstring)
 
 	   (mime-multipart-decode-port::pair-nil ::input-port ::bstring
-						 #!optional recursive)
+						 #!optional recursive quiet)
 	   (mime-multipart-decode::pair-nil ::bstring ::bstring
-					    #!optional recursive)))
+					    #!optional recursive quiet)))
 
 ;*---------------------------------------------------------------------*/
 ;*    quoted-printable-encode-port ...                                 */
@@ -404,7 +404,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    multipart-parse-entry ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (multipart-parse-entry buffer in boundary recursive)
+(define (multipart-parse-entry buffer in boundary recursive quiet)
    (let loop ((entries '()))
       (multiple-value-bind (len crlf eof)
 	 (fill-line! buffer in)
@@ -425,7 +425,7 @@
 					(lambda (e)
 					   (if (isa? e &io-parse-error)
 					       (begin
-						  (when (>fx (bigloo-warning) 0)
+						  (when (and (>fx (bigloo-warning) 0) (not quiet))
 						     (display "*** WARNING:multipart"
 							(current-error-port))
 						     (display " Illegal mimetype ("
@@ -488,15 +488,15 @@
 ;*---------------------------------------------------------------------*/
 ;*    mime-multipart-decode-port ...                                   */
 ;*---------------------------------------------------------------------*/
-(define (mime-multipart-decode-port in boundary #!optional recursive)
+(define (mime-multipart-decode-port in boundary #!optional recursive quiet)
    (let ((buffer (make-string (+fx (string-length boundary) 256))))
-      (multipart-parse-entry buffer in boundary recursive)))
+      (multipart-parse-entry buffer in boundary recursive quiet)))
 
 ;*---------------------------------------------------------------------*/
 ;*    mime-multipart-decode ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (mime-multipart-decode str boundary #!optional recursive)
+(define (mime-multipart-decode str boundary #!optional recursive quiet)
    (let ((in (open-input-string str)))
       (unwind-protect
-	 (mime-multipart-decode-port in boundary recursive)
+	 (mime-multipart-decode-port in boundary recursive quiet)
 	 (close-input-port in))))
