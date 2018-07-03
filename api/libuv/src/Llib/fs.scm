@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/fs.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/api/libuv/src/Llib/fs.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 10 11:28:07 2014                          */
-;*    Last change :  Fri Oct 14 12:18:56 2016 (serrano)                */
-;*    Copyright   :  2014-16 Manuel Serrano                            */
+;*    Last change :  Fri Jun 29 16:22:05 2018 (serrano)                */
+;*    Copyright   :  2014-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV fs                                                         */
 ;*=====================================================================*/
@@ -20,7 +20,8 @@
 	    __libuv_loop)
    
    (export  #;(uv-open-input-file ::bstring #!key (bufinfo #t) callback)
-	    
+
+            (inline uv-fs-dup::int ::int)
 	    (uv-fs-rename::int ::bstring ::bstring
 	       #!key callback (loop (uv-default-loop)))
 	    (uv-fs-ftruncate::int ::UvFile ::int64
@@ -112,6 +113,12 @@
 ;* 	  (error "uv-open-input-file" "wrong callback arity" callback)) */
 ;* 	 (else                                                         */
 ;* 	  ($uv-open-input-file name buf callback)))))                  */
+
+;*---------------------------------------------------------------------*/
+;*    uv-fs-dup ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-inline (uv-fs-dup old)
+   ($dup old))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-fs-rename ...                                                 */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Llib/uv.sch            */
+;*    serrano/prgm/project/bigloo/bigloo/api/libuv/src/Llib/uv.sch     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:57:14 2014                          */
-;*    Last change :  Fri Oct 14 13:07:18 2016 (serrano)                */
-;*    Copyright   :  2014-16 Manuel Serrano                            */
+;*    Last change :  Fri Jun 29 16:21:31 2018 (serrano)                */
+;*    Copyright   :  2014-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV C bindings                                                 */
 ;*    -------------------------------------------------------------    */
@@ -192,6 +192,8 @@
       (macro $uv_async_send::void (::$uv_async_t) "uv_async_send")
       
       ;; fs
+      (macro $dup::int (::int) "dup")
+	 
       ($uv-open-input-file::obj (::obj ::obj ::obj)
 	 "bgl_uv_open_input_file")
       
