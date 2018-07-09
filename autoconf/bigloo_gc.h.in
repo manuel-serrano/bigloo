@@ -75,6 +75,7 @@
 #    define BGL_GC_INTERIOR_POINTERS() GC_all_interior_pointers=0
 #  endif
 #else
+extern GC_set_all_interior_pointers( int );
 #  if( BGL_GC_BUMP_ALLOC )
 #    define BGL_GC_INTERIOR_POINTERS() GC_set_all_interior_pointers( 1 )
 #  else

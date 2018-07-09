@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cmain.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cmain.c          */
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Fri Nov 14 18:14:12 2014 (serrano)                */
+/*    Last change :  Mon Jul  9 13:23:11 2018 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -45,7 +45,6 @@ extern void bgl_init_objects();
 extern obj_t bigloo_exit_apply( obj_t );
 extern void *bgl_callcc_get_top_of_stack( void * );
 extern void bgl_end_io();
-extern void GC_set_all_interior_pointers( int );
 
 #ifndef _MSC_VER
 extern char *getenv();
