@@ -3,7 +3,7 @@
 /*                                                                     */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jul 17 09:40:49 1992                          */
-/*    Last change :  Mon Jul  9 17:19:39 2018 (serrano)                */
+/*    Last change :  Mon Jul  9 17:26:01 2018 (serrano)                */
 /*                                                                     */
 /*    Le fichier de main de toute application. Comme je m'y prends     */
 /*    plus intelligement que dans la version 0.8 (si, si :-), je       */
@@ -45,7 +45,7 @@ extern void bgl_init_objects();
 extern obj_t bigloo_exit_apply( obj_t );
 extern void *bgl_callcc_get_top_of_stack( void * );
 extern void bgl_end_io();
-extern GC_set_all_interior_pointers( int );
+extern void GC_set_all_interior_pointers( int );
 
 #ifndef _MSC_VER
 extern char *getenv();
