@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Apr 20 09:47:04 2018 (serrano)                */
+/*    Last change :  Wed Jul 11 17:18:05 2018 (serrano)                */
 /*    Copyright   :  2003-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -337,16 +337,10 @@ make_pair( obj_t car, obj_t cdr ) {
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)PAIR_SIZE );
 
-   pair = ____GC_malloc( PAIR_SIZE );
-
-#if( !defined( TAG_PAIR ) )
-   pair->pair.header = MAKE_HEADER( PAIR_TYPE, PAIR_SIZE );
-#endif
-   pair->pair.car = car;
-   pair->pair.cdr = cdr;
+   pair = ____make_pair( car, cdr );
 
    bmem_set_alloc_type( -1, 0 );
-   return BPAIR( pair );
+   return pair;
 }
 
 /*---------------------------------------------------------------------*/
@@ -367,14 +361,10 @@ make_cell( obj_t val ) {
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)CELL_SIZE );
 
-   cell = ____GC_malloc( CELL_SIZE );
-#if( !defined( TAG_CELL ) )
-   cell->cell.header = MAKE_HEADER( CELL_TYPE, CELL_SIZE );
-#endif
-   cell->cell.val = val;
+   cell = ____make_cell( val );
 
    bmem_set_alloc_type( -1, 0 );
-   return BCELL( cell );
+   return cell;
 }
 
 /*---------------------------------------------------------------------*/
@@ -396,15 +386,10 @@ make_real( double d ) {
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)REAL_SIZE );
 
-   a_real = ____GC_malloc_atomic( REAL_SIZE );
-
-#if( !defined( TAG_REAL ) )
-   a_real->real.header = MAKE_HEADER( REAL_TYPE, REAL_SIZE );
-#endif
-   a_real->real.val = d;
+   a_real = ____make_real( d );
 
    bmem_set_alloc_type( -1,0  );
-   return BREAL( a_real );
+   return a_real;
 }
 #endif
 
