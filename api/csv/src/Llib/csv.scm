@@ -86,7 +86,11 @@
             ((eq? token 'separator)
              (loop (read/rp lexer in)
                 'separator
-                res))
+                ;; make sure we include blank/empty fields
+                (if (eq? last-token 'separator)
+                    (cons "" res)
+                    res)
+                ))
             (else
              (loop (read/rp lexer in)
                 'text
