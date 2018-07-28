@@ -524,6 +524,10 @@
 	      (read-error "Illegal character" (the-string) (the-port))))))
       ((: "#\\" (>= 3 digit))
        (integer->char (string->integer (the-substring 2 (the-length)) 8)))
+      ((: "#\\a" (>= 3 digit))
+       (integer->char (string->integer (the-substring 2 (the-length)) 10)))
+      ((: "#\\x" (>= 4 (or (in ("af") ("AF")) digit)))
+       (integer->char (string->integer (the-substring 2 (the-length)) 16)))
       
       ;; strings with newline in them in addition to compute
       ;; the string, we have to count the number of newline

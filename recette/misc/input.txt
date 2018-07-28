@@ -98,6 +98,12 @@ toto_n_est_pas_content
 
 #\newline
 
+#\040
+
+#\a032
+
+#\x0020
+
 toto
 
 456
