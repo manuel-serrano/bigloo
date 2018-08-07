@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Jun 29 16:40:40 2018 (serrano)                */
+#*    Last change :  Mon Aug  6 10:18:56 2018 (serrano)                */
 #*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2663,7 +2663,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # C compiler nan and infinity
   ccdiv0=`$autoconf ccdiv0` || exit 1
 
-  # C compiler sse and math operations on x96-32 architecture
+  # C compiler sse and math operations on x86-32 architecture
   if [ "$alignment " = "2 " ]; then
     cflags="$cflags `$autoconf ccssex86`"
   fi
