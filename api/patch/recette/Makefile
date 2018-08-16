@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jan  7 14:55:33 2002                          */
-#*    Last change :  Wed Jan 31 11:04:44 2018 (serrano)                */
+#*    Last change :  Thu Aug 16 11:05:00 2018 (serrano)                */
 #*    Copyright   :  2002-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the Gstreamer tests                        */
@@ -81,7 +81,7 @@ test-jvm:
 #*    .scm -> .o/.class/.obj                                           */
 #*---------------------------------------------------------------------*/
 .scm.o: $*.scm
-	$(BIGLOO) -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.o
+	$(BIGLOO) -c $(EFLAGS) $(BCFLAGS) $(BFLAGS) -copt "-I../src/Clib" $*.scm -o $*.o
 
 .scm.class: $*.scm
 	$(BIGLOO) -c -jvm $(EFLAGS) $(BCFLAGS) $(BFLAGS) $*.scm -o $*.class
