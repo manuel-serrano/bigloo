@@ -190,7 +190,8 @@ gc/gc-7.6.2_fth
 # libuv
 libuv/libuv-1.x-24jan2015/
 libuv/libuv-master-18jul2014/
-libuv/libuv-v1.19.1/
+libuv/libuv-v1.19.2/
+libuv/libuv-v1.20.3/
 
 # xlib
 xlib/include/
