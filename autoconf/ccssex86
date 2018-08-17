@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jan 14 10:31:33 1999                          */
-#*    Last change :  Sun May  6 06:51:23 2018 (serrano)                */
+#*    Last change :  Fri Aug 17 12:07:35 2018 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    There is a rampant problem with precision of x87 arithmetic      */
 #*    unit that causes all sort of problem. This is now as             */
@@ -81,9 +81,11 @@ EOF
 compile="$CC $eflags $cflags $file.c -o $aout >/dev/null"
 
 if eval "$BUILDSH $compile"; then
-   \rm -f $file.*
-   echo $cflags
-   exit 0
+  \rm -f $file.*
+  echo $cflags
+  
+  # finally, check if the hardware supports sse2
+  grep sse2 /proc/cpuinfo > /dev/null 2> /dev/null || exit 1
 fi
 
 \rm -f $file.*
