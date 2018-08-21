@@ -1,14 +1,13 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/patch/src/Clib/bglpatch.h        */
+/*    .../prgm/project/bigloo/bigloo/api/patch/src/Clib/bglpatch.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Fri Jun  2 08:27:57 2017                          */
-/*    Last change :  Wed Jun 28 13:08:38 2017 (serrano)                */
-/*    Copyright   :  2017 Manuel Serrano                               */
+/*    Last change :  Tue Aug 21 11:23:12 2018 (serrano)                */
+/*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo wrapper to SELF-MOD                                       */
 /*=====================================================================*/
-
 #ifndef _BGL_PATCH_H
 #define _BGL_PATCH_H
 
@@ -29,14 +28,16 @@ extern void bgl_patch_init( void *, void * );
 /*    Patch types                                                      */
 /*---------------------------------------------------------------------*/
 typedef struct patch_descr bgl_patch_descr_t;
-typedef long patch_32_type;
+typedef int32_t patch_32_type;
 
 /*---------------------------------------------------------------------*/
 /*    Patch imports & macros                                           */
 /*---------------------------------------------------------------------*/
 extern void patch_32( bgl_patch_descr_t *patch, patch_32_type val_32 );
 
-#define BGL_PATCH_DESCR32( d, v ) patch_32( d, (patch_32_type)v )
+#define BGL_PATCH_DESCR32_OBJ( d, v ) patch_32( d, (patch_32_type)((long)((void *)v)) )
+#define BGL_PATCH_DESCR32_PTR( d, v ) patch_32( d, (patch_32_type)((long)((void *)v)) )
+#define BGL_PATCH_DESCR32_LONG( d, v ) patch_32( d, (patch_32_type)((long)v) )
 
 
 /* extern long GLOB;                                                   */
