@@ -8,7 +8,7 @@
 /*---------------------------------------------------------------------------*/
 
 #define PATCH_DEBUG
-//#undef PATCH_DEBUG
+#undef PATCH_DEBUG
 
 void bgl_patch_init(void *__start, void *__etext) {
 #ifdef linux
@@ -30,11 +30,18 @@ void bgl_patch_init(void *__start, void *__etext) {
 }
 
 void patch_32(patch_descr *patch, patch_32_type val_32) {
+#if( defined( PATCH_DEBUG ) )  
+  //fprintf( stderr, ">>> patching...%p\n", patch );
+   long n = 0;
+#endif
 
   while (patch->addr != NULL) {
 
     patch_32_type *addr = (patch_32_type*)patch->addr;
-
+#if( defined( PATCH_DEBUG ) )  
+    n++;
+#endif
+    
     if ((patch->kind & 0x100) == 0) {
 
       switch (patch->kind & 0xff) {
@@ -52,6 +59,15 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
 
           break;
         }
+
+
+      case 1:
+	{
+          patch_32_type val = val_32 * (patch_32_type)patch->mult + (patch_32_type)patch->offs;
+	  *addr = val;
+	  break;
+	}
+	
       default:
         {
           /* patch a 32 bit value */
@@ -59,10 +75,10 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
           patch_32_type val = val_32 * (patch_32_type)patch->mult + (patch_32_type)patch->offs;
 
 #ifdef PATCH_DEBUG
-          fprintf(stderr, "patch_32 patching value %d->%d (%p) at address %p\n", *addr, val, (void*)val, addr);
+          fprintf(stderr, "patch_32 patching value %p->%p address=%p kind=%d offset=%d mult=%d\n", *addr, val, patch->addr, patch->kind, patch->offs, patch->mult );
 #endif
 
-          *addr = val;
+	  *addr = val;
 
           break;
         }
@@ -103,7 +119,9 @@ void patch_32(patch_descr *patch, patch_32_type val_32) {
 
     patch++;
   }
-
+#if( defined( PATCH_DEBUG ) )
+  if( n > 0 ) fprintf( stderr, "<<< patching...n=%d\n",n );
+#endif
 }
 
 void patch_64(patch_descr *patch, patch_64_type val_64) {
