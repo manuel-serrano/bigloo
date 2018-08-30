@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Expand/define.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Expand/define.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:56:53 1994                          */
-;*    Last change :  Mon Nov 30 09:09:52 2015 (serrano)                */
-;*    Copyright   :  1994-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Aug 30 11:51:57 2018 (serrano)                */
+;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `define' forms                                               */
 ;*=====================================================================*/
@@ -124,8 +124,7 @@
 					    ,(expand-args args e)
 					    ,(e (normalize-progn/loc body loc) e)))
 				   (enbody (epairify nbody body)))
-			       (replace! x
-					 `(define ,name-id ,enbody)))))))
+			       (replace! x `(define ,name-id ,enbody)))))))
 		 (let* ((nvalue (e value e))
 			(envalue (if (pair? nvalue)
 				     (epairify nvalue value)

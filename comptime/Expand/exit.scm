@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 21 15:03:35 1995                          */
-;*    Last change :  Tue Feb 13 15:52:38 2018 (serrano)                */
+;*    Last change :  Thu Aug 30 10:18:20 2018 (serrano)                */
 ;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The macro expansion of the `exit' machinery.                     */
@@ -68,30 +68,113 @@
 	  (unless (eq? (car body) 'quote)
 	     (or (find-in-body k (car body)) (find-in-body k (cdr body)))))
 	 (else #f)))
-	  
+
+   (define (tailrec*? exit body)
+      (let ((ydob (reverse body)))
+	 (unless (any (lambda (b) (find-in-body exit b)) (cdr ydob))
+	    (tailrec? exit (car ydob)))))
+   
+   (define (tailrec? exit body)
+      (match-case body
+	 (((? (lambda (f) (eq? f exit))) ?arg)
+	  (not (find-in-body exit arg)))
+	 ((begin . (and (? list?) ?body))
+	  (tailrec*? exit body))
+	 ((if ?test ?then ?otherwise)
+	  (and (not (find-in-body exit test))
+	       (tailrec? exit then)
+	       (tailrec? exit otherwise)))
+	 (((or let let* letrec letrec*) (and (? list?) ?bindings) . ?body)
+	  (unless (any (lambda (b) (find-in-body exit b)) bindings)
+	     (tailrec*? exit body)))
+	 ((bind-exit (?xit) . ?body)
+	  (unless (eq? xit exit)
+	     (tailrec*? exit body)))
+	 (((kwote quote) . ?-)
+	  #t)
+	 ((? (lambda (id) (eq? id exit)))
+	  #f)
+	 ((? (lambda (v) (not (pair? v))))
+	  #t)
+	 (else
+	  #f)))
+
+   (define (return! exit body)
+      (match-case body
+	 (((? (lambda (f) (eq? f exit))) ?arg)
+	  (set-car! body 'begin)
+	  body)
+	 ((begin . ?exprs)
+	  (return! exit (car (last-pair exprs)))
+	  body)
+	 ((if ?test ?then ?otherwise)
+	  (return! exit then)
+	  (return! exit otherwise)
+	  body)
+	 (((or let let* letrec letrec*) ?- . ?exprs)
+	  (return! exit (car (last-pair exprs)))
+	  body)
+	 ((bind-exit ?- . ?exprs)
+	  (return! exit (car (last-pair exprs)))
+	  body)
+	 (else
+	  body)))
+      
+   (define (default-expansion exit body)
+      (let ((an-exit  (mark-symbol-non-user! (gensym 'an_exit)))
+	    (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
+	    (val      (mark-symbol-non-user! (gensym 'val)))
+	    (res      (mark-symbol-non-user! (gensym 'res))))
+	 (let ((new `(set-exit (,an-exit)
+			(let ()
+			   (push-exit! ,an-exit 1)
+			   (let ((,an-exitd ($get-exitd-top)))
+			      (labels ((,exit (,val)
+					  ((@ unwind-until! __bexit)
+					   ,an-exitd
+					   ,val)))
+				 (let ((,res (begin ,@body)))
+				    (pop-exit!)
+				    ,res)))))))
+	    (replace! x new))))
+
+   
    (match-case x
       ((?- (?exit) (?exit ?expr))
        (e expr e))
-      ((?- (?exit) . ?body)
-       (if (not (find-in-body exit body))
-	   (replace! x (e `(begin ,@body) e))
-	   (let ((an-exit  (mark-symbol-non-user! (gensym 'an_exit)))
-		 (an-exitd (mark-symbol-non-user! (gensym 'an_exitd)))
-		 (val      (mark-symbol-non-user! (gensym 'val)))
-		 (res      (mark-symbol-non-user! (gensym 'res))))
-	      (let ((new (e `(set-exit (,an-exit)
-				(let ()
-				   (push-exit! ,an-exit 1)
-				   (let ((,an-exitd ($get-exitd-top)))
-				      (labels ((,exit (,val)
-						  ((@ unwind-until! __bexit)
-						   ,an-exitd
-						   ,val)))
-					 (let ((,res (begin ,@body)))
-					    (pop-exit!)
-					    ,res)))))
-			    e)))
-		 (replace! x new)))))
+      ((?- (?exit) . ?exprs)
+       ;; force the macro expansion before optimizing bind-exit
+       (let ((old-internal internal-definition?))
+	  (set! internal-definition? #t)
+
+	  (let* ((e (internal-begin-expander e))
+		 (nexprs (e `(begin ,@exprs) e)))
+	     (set-car! (cddr x) nexprs)
+	     (set-cdr! (cddr x) '()))
+	  (set! internal-definition? old-internal))
+       (match-case x
+	  ((?- (?exit)
+	      ((and (or let let* letrec letrec*) ?letk)
+	       (and (? list?) ?bindings)
+	       (and ?body (?exit ?expr))))
+	   (if (every (lambda (b)
+			 (or (symbol? b)
+			     (and (list? b)
+				  (not (find-in-body exit (car b))))))
+		  bindings)
+	       (replace! x `(,letk ,bindings ,expr))
+	       (default-expansion exit body)))
+	  ((?- (?exit) . ?body)
+	   (if (not (find-in-body exit body))
+	       (replace! x (e `(begin ,@body) e))
+	       (let ((head (take body (- (length body) 1)))
+		     (tail (car (last-pair body))))
+		  (if (and (not (find-in-body exit head))
+			   (tailrec? exit tail))
+		      (replace! x `(begin ,@head ,(return! exit tail)))
+		      (default-expansion exit body)))))
+	  (else
+	   (error #f "Illegal `bind-exit' form" x))))
       (else
        (error #f "Illegal `bind-exit' form" x))))
 

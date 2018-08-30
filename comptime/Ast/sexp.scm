@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/sexp.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/sexp.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Tue Jun 27 08:52:26 2017 (serrano)                */
+;*    Last change :  Thu Aug 30 11:53:21 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -319,7 +319,7 @@
 	      "Illegal `set!' form" exp (find-location/loc exp loc)))))
 ;*--- define ----------------------------------------------------------*/
       ((define . ?-)
-       ;; define is very close to `set!' excepted that is it not
+       ;; define is very close to `set!' except that is it not
        ;; considered as a mutation of the defined variable.
        (match-case exp
           ((?- ?var ?val)
