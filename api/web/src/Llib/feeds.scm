@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/feeds.scm           */
+;*    .../prgm/project/bigloo/bigloo/api/web/src/Llib/feeds.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Cyprien Nicolas                                   */
 ;*    Creation    :  Fri Aug 29 13:43:18 2008                          */
-;*    Last change :  Fri Dec 31 07:40:27 2010 (serrano)                */
-;*    Copyright   :  2008-10 Manuel Serrano                            */
+;*    Last change :  Thu Sep  6 15:48:36 2018 (serrano)                */
+;*    Copyright   :  2008-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Unified support for atom and rss feeds                           */
 ;*=====================================================================*/
@@ -84,8 +84,8 @@
 		     (procedure-arity make-body))
 	     make-body))
    (let ((xml-tree (xml-parse ip
-			      :content-length content-length
-			      :encoding encoding))
+		      :content-length content-length
+		      :encoding encoding))
 	 (parser #f)
 	 (prefix #f))
       (multiple-value-bind (ver enc lang root rver ns)
@@ -155,13 +155,13 @@
 				   (set! prefix pref)
 				   (set! parser atom2005-parse))
 				  (else
-				   (error 'feed-parse
+				   (error "feed-parse"
 					  "Unable to use namespace"
 					  my-ns)))
-			       (error 'feed-parse
+			       (error "feed-parse"
 				      "No namespace defined to use for prefix"
 				      pref)))
-			(error 'feed-parse
+			(error "feed-parse"
 			       "Illegal XML use of element without namespace"
 			       root))))))
 	    ((pair? root)
@@ -170,9 +170,9 @@
 		((atom-2005) (set! parser atom2005-parse))
 		((rss-1.0) (set! parser rss-1.0-parse))
 		((atom) (and (= rver 0.3) (set! parser atom0.3-parse)))
-		(else (error 'feed-parse
+		(else (error "feed-parse"
 			     "Unknown root namespace element"
 			     root)))))
 	 (if parser
 	     (parser xml-tree ns make-feed make-head make-body prefix: prefix)
-	     (error 'feed-parse "Invalid feed" (list root rver ns))))))
+	     (error "feed-parse" "Invalid feed" (list root rver ns))))))
