@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Fri Jun 15 15:17:15 2018 (serrano)                */
+;*    Last change :  Thu Sep  6 08:25:00 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -799,11 +799,11 @@
 		 (simple-warning e))
 		(else
 		 (warning/location-file fname location args))))
-	  (simple-warning e)))
-   ;; stack
-   (with-access::&warning e (stack)
-      (when stack
-	 (display-trace-stack stack (current-error-port))))
+	  (simple-warning e))
+      ;; stack
+      (with-access::&warning e (stack)
+	 (when stack
+	    (display-trace-stack stack (current-error-port)))))
    #f)
 
 ;*---------------------------------------------------------------------*/
