@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:12:41 2005                          */
-;*    Last change :  Fri Sep  7 04:57:24 2018 (serrano)                */
+;*    Last change :  Fri Sep  7 07:34:22 2018 (serrano)                */
 ;*    Copyright   :  2005-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    RSS parsing                                                      */
@@ -212,7 +212,7 @@
 			      "items in channel element"
 			      items))))))
       
-      (define (rss-enclosure attr)
+      (define (rss-enclosure attr title)
 	 (let ((href #f)
 	       (type #f)
 	       (length #f))
@@ -226,10 +226,11 @@
 			       ((length)
 				(set! length (cdata-decode (cdr e)))))))
 		      attr)
-	    `(enclosure:
-		((href . ,href)
+	    `(enclosure
+		(href . ,href)
 		(type . ,type)
-		(length . ,length)))))
+		(length . ,length)
+		(title . ,title))))
       
       
       (define (item attr body)
@@ -258,17 +259,13 @@
 			       ((link)
 				(when (pair? (caddr e))
 				   (push! links
-				      `(alternate (href . ,(cdata-decode
-							      (caaddr e)))
+				      `(alternate
+					  (href . ,(cdata-decode (caaddr e)))
 					  (title . ,title)
 					  (type . ,#f)))))
 			       ((enclosure)
-				(let ((lnk (rss-enclosure (cadr e))))
-				   (tprint "lnk=" lnk)
-				   (push! links
-				      (if title
-					  (append lnk (cons 'title title))
-					  lnk))))
+				(let ((lnk (rss-enclosure (cadr e) title)))
+				   (push! links lnk)))
 			       ((description dc:description)
 				(set! summary (cdata-decode (caddr e))))
 			       ((content content:encoded)
