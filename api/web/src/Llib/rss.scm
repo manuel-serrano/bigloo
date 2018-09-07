@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:12:41 2005                          */
-;*    Last change :  Thu Sep  6 15:06:12 2018 (serrano)                */
+;*    Last change :  Fri Sep  7 04:57:24 2018 (serrano)                */
 ;*    Copyright   :  2005-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    RSS parsing                                                      */
@@ -91,6 +91,25 @@
 		    (string->symbol (substring s (+fx l 1) (string-length s)))
 		    e))
 	     e))
+
+      (define (decode-image img)
+	 (append-map (lambda (prop)
+			(if (pair? prop)
+			    (filter-map (match-lambda
+					   ((?key () (?val))
+					    (cons key val))
+					   (else
+					    #f))
+			       prop)
+			    '()))
+	    img))
+
+      (define (flatten l)
+	 (append-map (lambda (l)
+			(if (pair? l)
+			    (filter pair? l)
+			    '()))
+	    l))
       
       (define (channel attr body)
 	 (let ((title #f)
@@ -144,6 +163,9 @@
 			       ((item ?a ?b . ?-)
 				;; Only for RSS 2.0
 				(push! items (item a b)))
+			       ((image . ?img)
+				(set! rest
+				   (cons* :image (decode-image img) rest)))
 			       (else
 				(set! rest
 				   (cons* (symbol->keyword (car e))
@@ -204,9 +226,10 @@
 			       ((length)
 				(set! length (cdata-decode (cdr e)))))))
 		      attr)
-	    `(enclosure (href . ,href)
-			(type . ,type)
-			(length . ,length))))
+	    `(enclosure:
+		((href . ,href)
+		(type . ,type)
+		(length . ,length)))))
       
       
       (define (item attr body)
@@ -241,10 +264,11 @@
 					  (type . ,#f)))))
 			       ((enclosure)
 				(let ((lnk (rss-enclosure (cadr e))))
-				   (push! links (if title
-						    (append lnk
-							    (cons 'title title))
-						    lnk))))
+				   (tprint "lnk=" lnk)
+				   (push! links
+				      (if title
+					  (append lnk (cons 'title title))
+					  lnk))))
 			       ((description dc:description)
 				(set! summary (cdata-decode (caddr e))))
 			       ((content content:encoded)
@@ -271,6 +295,9 @@
 						  (car uri))))))
 			       ((dc:rights copyright)
 				(set! rights (cdata-decode (caddr e))))
+			       ((media:content)
+				(set! rest
+				   (cons* content: (flatten (cdr e)) rest)))
 			       (else
 				(set! rest
 				   (cons* (symbol->keyword (car e))
