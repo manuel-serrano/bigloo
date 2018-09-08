@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May 17 08:12:41 2005                          */
-;*    Last change :  Fri Sep  7 07:34:22 2018 (serrano)                */
+;*    Last change :  Fri Sep  7 11:11:31 2018 (serrano)                */
 ;*    Copyright   :  2005-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    RSS parsing                                                      */
@@ -166,6 +166,11 @@
 			       ((image . ?img)
 				(set! rest
 				   (cons* :image (decode-image img) rest)))
+			       ((language . ?lang)
+				(set! rest
+				   (cons* language:
+				      (car (apply append lang))
+				      rest)))
 			       (else
 				(set! rest
 				   (cons* (symbol->keyword (car e))
