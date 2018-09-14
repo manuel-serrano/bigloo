@@ -53,7 +53,7 @@
 (define (test-read)
    (test-module "read" "read.scm")
    (test "test" (call-with-input-file "misc/input.txt" read-test)
-	 '(16 2 2 5 2 7 34))
+	 '(16 5 2 5 2 7 37))
    (test "read" (cdr '((foo . bar) . hux)) 'hux)
    (test "circular"
 	 (caddr (read (open-input-string "((1 . #0=(-6 7)) 5 . #0#)"))) -6)
