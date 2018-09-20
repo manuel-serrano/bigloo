@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Mon Jun  4 08:07:26 2018 (serrano)                */
+#*    Last change :  Thu Sep 20 10:20:16 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -479,10 +479,17 @@ bigloo.$(SHAREDSUFFIX):
 #*---------------------------------------------------------------------*/
 $(BIGLOO_DEST)$(EXE_SUFFIX): .afile .jfile .etags $(O_OBJECTS) $(G_OBJECTS)
 	@ echo "Linking..."
-	$(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
+	if [ "$(LDRPATHOPT) " != " " ]; then \
+	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
 	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
 	          -o $(BIGLOO_DEST).aux \
-	          $(O_OBJECTS) $(G_OBJECTS)
+	          $(O_OBJECTS) $(G_OBJECTS); \
+        else \
+	   $(BIGLOO) $(BBFLAGS) $(BFLAGS) $(EFLAGS) $(LDBOOTFLAGS) \
+	          -copt "$(EXTRA_LD_OPT) $(LDRPATHOPT)$(RPATH)" \
+	          -o $(BIGLOO_DEST).aux \
+	          $(O_OBJECTS) $(G_OBJECTS); \
+        fi
 	@ if [ $(HOSTOS) = "cygwin" ]; then \
 	    echo "Waiting a few seconds for the lock on $@ to be released..."; \
 	    sleep 5s; \
