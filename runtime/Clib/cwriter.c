@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Clib/cwriter.c               */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cwriter.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Thu Apr 20 11:50:17 2017 (serrano)                */
+/*    Last change :  Thu Sep 20 12:43:02 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -319,9 +319,10 @@ bgl_write_char( obj_t o, obj_t op ) {
       bgl_write( op, (unsigned char *)name, strlen( name ) );
    } else {
       PUTC( op, '#' );
-      PUTC( op, 'a' );
+      PUTC( op, '\\' );
+      PUTC( op, 'x' );
 
-      PRINTF1( op, 4, "%03d", (unsigned char)(c) );
+      PRINTF1( op, 2, "%02x", (unsigned char)(c) );
    }
    
    BGL_MUTEX_UNLOCK( mutex );
