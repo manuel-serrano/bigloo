@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CLASSPATH=.:$BIGLOOCLASSPATH:$BUGLOOCLASSPATH:'/home/serrano/prgm/project/bigloo/lib/bigloo/4.3b/bigloo_s.zip':'/home/serrano/prgm/project/bigloo/lib/bigloo/4.3b/biglootext_s-4.3b.zip':'/home/serrano/prgm/project/bigloo/lib/bigloo/4.3b/biglootext_es-4.3b.zip'
+CLASSPATH=.:$BIGLOOCLASSPATH:$BUGLOOCLASSPATH:'/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.3c/bigloo_s.zip':'/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.3c/biglootext_s-4.3c.zip':'/home/serrano/prgm/project/bigloo/bigloo/lib/bigloo/4.3c/biglootext_es-4.3c.zip'
 export CLASSPATH
 
-exec java  $BIGLOOJAVAOPT $BUGLOOJAVAOPT   recette $*
+exec java8  $BIGLOOJAVAOPT $BUGLOOJAVAOPT   recette $*

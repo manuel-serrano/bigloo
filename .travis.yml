@@ -60,7 +60,7 @@ script:
   - echo -en 'travis_fold:end:bigloo.build\\r'
 
   - echo -en 'travis_fold:start:bigloo.test\\r'
-  - make test
+  - make fulltest
   - echo -en 'travis_fold:end:bigloo.test\\r'
 
   - set +e

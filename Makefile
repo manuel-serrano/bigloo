@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Fri Aug 17 15:34:27 2018 (serrano)                */
+#*    Last change :  Thu Sep 20 11:11:02 2018 (serrano)                */
 #*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -639,7 +639,20 @@ test:
 	   ($(MAKE) jvm-test); \
          fi
 
+fulltest:
+	@if [ "$(NATIVEBACKEND)" = "yes" ]; then \
+	   ($(MAKE) c-fulltest); \
+         fi
+	@if [ "$(JVMBACKEND)" = "yes" ]; then \
+	   ($(MAKE) jvm-test); \
+         fi
+
 c-test: 
+	(cd recette && \
+         $(MAKE) recette-static && \
+         $(BGLBUILDBINDIR)/bglrun.sh ./recette-static $(RECETTEFLAGS))
+
+c-fulltest: 
 	(cd recette && \
          $(MAKE) recette-static && \
          $(BGLBUILDBINDIR)/bglrun.sh ./recette-static $(RECETTEFLAGS))
