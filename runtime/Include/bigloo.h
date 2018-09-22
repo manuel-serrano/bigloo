@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Wed May  9 11:48:04 2018 (serrano)                */
+/*    Last change :  Sat Sep 22 14:56:51 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1042,32 +1042,36 @@ typedef obj_t (*function_t)();
 #  define CCNST_MASK( o ) (o)
 #endif  /* BGL_TAG_CNST32 */
 
-#define BNIL BCNST( 0L )
+/* arrange nil and unspec to have a shared unique lower bit pattern */
+/* this will enable the JavaScript runtime to test with a single    */
+/* bitop NIL and UNSPEC (as needed when compiling x==null)          */
+/* practically NIL and UNSPEC are the only two ODD constants.       */
+#define BNIL BCNST( 1L )
 #define BUNSPEC BCNST( 3L )
    
-#define BFALSE BCNST( 1L )
-#define BTRUE BCNST( 2L )
+#define BFALSE BCNST( 2L )
+#define BTRUE BCNST( 4L )
    
-#define BCHARH ((unsigned long)BCNST( 4L ))
-#define BUCS2H ((unsigned long)BCNST( 5L ))
+#define BCHARH ((unsigned long)BCNST( 6L ))
+#define BUCS2H ((unsigned long)BCNST( 8L ))
 
-#define BINT8H ((unsigned long)BCNST( 6L ))
-#define BUINT8H ((unsigned long)BCNST( 7L ))
+#define BINT8H ((unsigned long)BCNST( 10L ))
+#define BUINT8H ((unsigned long)BCNST( 12L ))
 
-#define BINT16H ((unsigned long)BCNST( 8L ))
-#define BUINT16H ((unsigned long)BCNST( 9L ))
+#define BINT16H ((unsigned long)BCNST( 14L ))
+#define BUINT16H ((unsigned long)BCNST( 16L ))
 
 #if( PTR_ALIGNMENT >= 3 )
-#  define BINT32H ((unsigned long)BCNST( 10L ))
-#  define BUINT32H ((unsigned long)BCNST( 11L ))
+#  define BINT32H ((unsigned long)BCNST( 18L ))
+#  define BUINT32H ((unsigned long)BCNST( 20L ))
 #endif
 
-#define BEOF BCNST( 12L )
-#define BEOA BCNST( 13L )
+#define BEOF BCNST( 22L )
+#define BEOA BCNST( 24L )
 
-#define BOPTIONAL BCNST( 14L )
-#define BREST BCNST( 15L )
-#define BKEY BCNST( 16L )
+#define BOPTIONAL BCNST( 26L )
+#define BREST BCNST( 28L )
+#define BKEY BCNST( 30L )
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Oct 26 15:26:00 2017                          */
-/*    Last change :  Thu Apr 19 08:07:31 2018 (serrano)                */
+/*    Last change :  Sat Sep 22 07:13:51 2018 (serrano)                */
 /*    Copyright   :  2017-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bump gc allocations                                              */
@@ -124,7 +124,7 @@ make_cell( obj_t val ) {
 #if( !BGL_NAN_TAGGING ) 
 static obj_t
 alloc_make_real( double d ) {
-   bgl_gc_ptr_base = (char *)GC_MALLOC( BGL_BUMP_CARD_SIZE );
+   bgl_gc_ptr_base = (char *)GC_MALLOC_ATOMIC( BGL_BUMP_CARD_SIZE );
    bgl_gc_ptr_head = bgl_gc_ptr_base + BGL_BUMP_CARD_SIZE - REAL_SIZE;
    
    BGL_INIT_REAL( (obj_t)bgl_gc_ptr_head, d );
