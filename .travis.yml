@@ -42,9 +42,9 @@ before_install:
   - sudo apt-get install -y openjdk-8-jdk
   
 before_script:
-  - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo4.3b.tar.gz -O /tmp/bigloo4.3b.tar.gz
-  - pushd /tmp && tar xvfz /tmp/bigloo4.3b.tar.gz && popd
-  - pushd /tmp/bigloo4.3b && ./configure --prefix=/usr && make && sudo make install && popd
+  - wget ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo4.3c.tar.gz -O /tmp/bigloo4.3c.tar.gz
+  - pushd /tmp && tar xvfz /tmp/bigloo4.3c.tar.gz && popd
+  - pushd /tmp/bigloo4.3c && ./configure --prefix=/usr && make && sudo make install && popd
 
 script:
   - set -e
@@ -60,7 +60,7 @@ script:
   - echo -en 'travis_fold:end:bigloo.build\\r'
 
   - echo -en 'travis_fold:start:bigloo.test\\r'
-  - make test
+  - make fulltest
   - echo -en 'travis_fold:end:bigloo.test\\r'
 
   - set +e

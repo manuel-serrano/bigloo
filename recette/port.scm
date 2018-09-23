@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/port.scm                     */
+;*    serrano/prgm/project/bigloo/bigloo/recette/port.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun May 24 10:56:01 1992                          */
-;*    Last change :  Sat Sep  6 07:14:53 2014 (serrano)                */
+;*    Last change :  Thu Sep 20 12:47:11 2018 (serrano)                */
 ;*                                                                     */
 ;*    On teste les operations simples sur les ports                    */
 ;*---------------------------------------------------------------------*/
@@ -420,17 +420,17 @@
       (test "input-string!.8" (test-input-string! (string-copy s) 10 12) 'ba))
    (let ((p (open-output-string)))
       (write #a012 p)
-      (test "char.1" (close-output-port p) "#a012"))
+      (test "char.1" (close-output-port p) "#\\x0c"))
    (let ((p (open-output-string)))
       (test "char.2" (begin
 			(with-output-to-port p
 			   (lambda ()
 			      (write #a012)))
 			(close-output-port p))
-	    "#a012"))
+	    "#\\x0c"))
    (let ((p (open-output-string)))
       (write #a179 p)
-      (test "char.3" (close-output-port p) "#a179"))
+      (test "char.3" (close-output-port p) "#\\xb3"))
    (test "char.4"
       (let* ((s "toto\000tutu\000\000")
 	     (p (open-input-string s)))

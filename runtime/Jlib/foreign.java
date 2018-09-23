@@ -6996,49 +6996,46 @@ public final class foreign
 					       "x", "y", "z", "{", "|", "}", "~", ""
    };
 
-   public static Object write_char(bchar c, output_port p)
+   public static Object write_char(bchar c, output_port p) {
+      final int cn = c.value & 0xFF;
+
+      if ((0 < cn) && (cn < 128))
       {
-	 final int cn = c.value & 0xFF;
+	 final String rep = char_name[cn];
 
-	 if ((0 < cn) && (cn < 128))
+	 if (rep.length() != 0)
 	 {
-	    final String rep = char_name[cn];
-
-	    if (rep.length() != 0)
-	    {
-	       p.write("#\\");
-	       p.write(rep);
-	       return p;
-	    }
+	    p.write("#\\");
+	    p.write(rep);
+	    return p;
 	 }
-
-	 p.write("#a");
-	 p.write(((byte) '0') + (cn / 100));
-	 p.write(((byte) '0') + ((cn / 10) % 10));
-	 p.write(((byte) '0') + (cn % 10));
-
-	 return p;
       }
 
-   private static final byte[] hexa =
-   { (byte) '0', (byte) '1', (byte) '2', (byte) '3',
-     (byte) '4', (byte) '5', (byte) '6', (byte) '7',
-     (byte) '8', (byte) '9', (byte) 'a', (byte) 'b',
-     (byte) 'c', (byte) 'd', (byte) 'e', (byte) 'f'
+      p.write("#\\x");
+      p.write(hexa[cn >> 4]);
+      p.write(hexa[cn & 0xf]);
+
+      return p;
+   }
+
+   private static final byte[] hexa = {
+      (byte) '0', (byte) '1', (byte) '2', (byte) '3',
+      (byte) '4', (byte) '5', (byte) '6', (byte) '7',
+      (byte) '8', (byte) '9', (byte) 'a', (byte) 'b',
+      (byte) 'c', (byte) 'd', (byte) 'e', (byte) 'f'
    };
 
-   public static Object write_ucs2(bucs2 s, output_port p)
-      {
-	 final int value = s.value;
+   public static Object write_ucs2(bucs2 s, output_port p) {
+      final int value = s.value;
 
-	 p.write("#u");
-	 p.write(hexa[(value & 0xf000) >> 12]);
-	 p.write(hexa[(value & 0x0f00) >> 8]);
-	 p.write(hexa[(value & 0x00f0) >> 4]);
-	 p.write(hexa[(value & 0x000f)]);
+      p.write("#u");
+      p.write(hexa[(value & 0xf000) >> 12]);
+      p.write(hexa[(value & 0x0f00) >> 8]);
+      p.write(hexa[(value & 0x00f0) >> 4]);
+      p.write(hexa[(value & 0x000f)]);
 
-	 return p;
-      }
+      return p;
+   }
 
    public static Object display_ucs2(bucs2 s, output_port p)
       {

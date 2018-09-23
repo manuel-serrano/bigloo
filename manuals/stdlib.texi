@@ -1007,14 +1007,17 @@ Converts the given llong bits to a double.
 @cindex characters
 @cindex #a<ddd>
 
-Bigloo knows one more named characters @code{#\tab}, @code{#\return}, and
-@code{#\null} in addition to the @code{#\space} and @code{#\newline} of R5RS.
+Bigloo knows named characters @code{#\alarm}, @code{#\backspace},
+@code{#\delete}, @code{#\escape}, @code{#\tab}, @code{#\return}, and
+@code{#\null} in addition to the @code{#\space} and @code{#\newline}
+of R5RS.
 
 A new alternate syntax exists for characters:
 @code{#a<ascii-code>}
 where @code{<ascii-code>} is the three digit decimal ASCII number
 of the character to be read. Thus, for instance, the character @code{#\space}
-can be written @code{#a032}.
+can be written @code{#a032}. Bigloo also supports the R7Rs syntax
+@code{#\x<hex-code>}.
 
 @deffn {procedure} char? obj
 @end deffn

@@ -397,25 +397,25 @@
 (define (null-list? l)
   (cond ((pair? l) #f)
 	((null? l) #t)
-	(else (error "null-pair?" "argument out of domain" l))))
-           
+	(else (error "null-list?" "argument out of domain" l))))
+
 
 (define (list= = . lists)
-   (or (null? lists) ; special case
+  (or (null? lists) ; special case
 
-       (let lp1 ((list-a (car lists)) (others (cdr lists)))
-	  (or (null? others)
-	      (let ((list-b (car others))
-		    (others (cdr others)))
-		 (if (eq? list-a list-b)
-		     (lp1 list-b others)
-		     (let lp2 ((list-a list-a) (list-c list-b))
-			(if (null-list? list-a)
-			    (and (null-list? list-c)
-				 (lp1 list-b others))
-			    (and (not (null-list? list-c))
-				 (= (car list-a) (car list-c))
-				 (lp2 (cdr list-a) (cdr list-c)))))))))))
+      (let lp1 ((list-a (car lists)) (others (cdr lists)))
+	(or (null? others)
+	    (let ((list-b (car others))
+		  (others (cdr others)))
+	      (if (eq? list-a list-b)	; EQ? => LIST=
+		  (lp1 list-b others)
+		  (let lp2 ((pair-a list-a) (pair-b list-b))
+		    (if (null-list? pair-a)
+			(and (null-list? pair-b)
+			     (lp1 list-b others))
+			(and (not (null-list? pair-b))
+			     (= (car pair-a) (car pair-b))
+			     (lp2 (cdr pair-a) (cdr pair-b)))))))))))
 
 
 ;;; R4RS, so commented out.
@@ -1590,7 +1590,7 @@
 	    ;; Compute a-b and a^b, then compute b-(a^b) and
 	    ;; cons it onto the front of a-b.
 	    (receive (a-b a-int-b)   (lset-diff+intersection = a b)
-	      (cond ((null? a-b)     (lset-difference b a =))
+	      (cond ((null? a-b)     (lset-difference = b a))
 		    ((null? a-int-b) (append b a))
 		    (else (fold (lambda (xb ans)
 				  (if (member xb a-int-b =) ans (cons xb ans)))
@@ -1612,7 +1612,7 @@
 	    ;; Compute a-b and a^b, then compute b-(a^b) and
 	    ;; cons it onto the front of a-b.
 	    (receive (a-b a-int-b)   (lset-diff+intersection! = a b)
-	      (cond ((null? a-b)     (lset-difference! b a =))
+	      (cond ((null? a-b)     (lset-difference! = b a))
 		    ((null? a-int-b) (append! b a))
 		    (else (pair-fold (lambda (b-pair ans)
 				       (if (member (car b-pair) a-int-b =) ans

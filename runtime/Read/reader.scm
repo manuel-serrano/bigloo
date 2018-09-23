@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Read/reader.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Read/reader.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Sat Sep 23 09:35:47 2017 (serrano)                */
+;*    Last change :  Thu Sep 20 11:17:36 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -426,7 +426,7 @@
 		     (apply p (cdr f))
 		     (read-error "Unknown SRFI-10 extension" (car f) (the-port))))
 	      (read-error "Bad SRFI-10 form" f (the-port)))))
-      
+
       (else
        (let ((c (the-failure)))
 	  (if (char? c)
@@ -520,10 +520,24 @@
 	      (integer->char 13))
 	     ((eq? char-name 'NULL)
 	      (integer->char 0))
+	     ((eq? char-name 'ALARM)
+	      (integer->char 7))
+	     ((eq? char-name 'BACKSPACE)
+	      (integer->char 8))
+	     ((eq? char-name 'DELETE)
+	      (integer->char #x7f))
+	     ((eq? char-name 'ESCAPE)
+	      (integer->char #x1b))
 	     (else
 	      (read-error "Illegal character" (the-string) (the-port))))))
       ((: "#\\" (>= 3 digit))
        (integer->char (string->integer (the-substring 2 (the-length)) 8)))
+      ;; R[67]RS characters notation
+      ((: "#\\x" (+ xdigit))
+       (let ((n (string->integer (the-substring 3 0) 16)))
+	  (if (<=fx n 256)
+	      (integer->char n)
+	      (integer->ucs2 n))))
       
       ;; strings with newline in them in addition to compute
       ;; the string, we have to count the number of newline

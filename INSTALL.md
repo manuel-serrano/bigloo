@@ -41,6 +41,7 @@ Postscript and HTML version of the Bigloo documentation can be found at:
     $ make compile-bee
     $ make install
     $ make install-bee
+    $ make fulltest
 
 
 On an Athlon 800Mhz running Linux 2.2, this whole procedure lasts about 
