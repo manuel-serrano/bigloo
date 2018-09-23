@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.3d
+release=4.3c
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
