@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sat Apr 21 10:38:57 2018 (serrano)                */
+;*    Last change :  Sun Sep 23 17:34:10 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
    (use     __type
 	    __bigloo
 	    __tvector
+	    __r4_equivalence_6_2
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_flonum
 	    __r4_booleans_6_1

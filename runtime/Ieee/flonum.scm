@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Wed May 30 15:50:40 2018 (serrano)                */
+;*    Last change :  Sun Sep 23 17:34:21 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -15,6 +15,7 @@
    
    (import  __error
 	    __param
+	    __r4_equivalence_6_2
 	    __r4_numbers_6_5_flonum_dtoa)
    
    (use     __type

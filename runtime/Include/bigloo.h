@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sat Sep 22 14:56:51 2018 (serrano)                */
+/*    Last change :  Sun Sep 23 16:21:14 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1072,6 +1072,9 @@ typedef obj_t (*function_t)();
 #define BOPTIONAL BCNST( 26L )
 #define BREST BCNST( 28L )
 #define BKEY BCNST( 30L )
+
+#define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   (((long)(obj) & (long)BNIL) == (long)BNIL)
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */

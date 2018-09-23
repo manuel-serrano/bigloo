@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/boolean.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/boolean.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:34:45 1995                          */
-;*    Last change :  Sun May 30 07:59:33 2010 (serrano)                */
+;*    Last change :  Sun Sep 23 17:33:52 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.1. Booleans (page 13, r4)                                      */
 ;*=====================================================================*/
@@ -19,6 +19,7 @@
 	    __bigloo
 	    __tvector
 	    __bignum
+	    __r4_equivalence_6_2
 	    __r4_symbols_6_4
 	    __r4_strings_6_7
 	    __r4_vectors_6_8
