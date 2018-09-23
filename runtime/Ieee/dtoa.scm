@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Florian Loitsch                                   */
 ;*    Creation    :  Fri Feb 18 14:43:08 2011                          */
-;*    Last change :  Tue Apr 17 08:15:44 2018 (serrano)                */
+;*    Last change :  Sun Sep 23 17:34:34 2018 (serrano)                */
 ;*    Copyright   :  2011-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Correct and fast double-to-string conversion.                    */
@@ -22,6 +22,7 @@
 	    __tvector
 	    __bignum
 	    __r4_booleans_6_1
+	    __r4_equivalence_6_2
 	    __r4_vectors_6_8
 	    __r4_strings_6_7
 	    __r4_characters_6_6

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/bigloo.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/bigloo.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Wed May 25 11:46:38 2016 (serrano)                */
+;*    Last change :  Sun Sep 23 16:15:32 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -137,6 +137,9 @@
 	    (macro $time::obj (::procedure)
 		   "bgl_time")
 
+	    (macro $null-or-unspecified?::bool (::obj)
+		   "BGL_NULL_OR_UNSPECIFIEDP")
+
 	    ($bgl-bmem-reset::obj () "bgl_bmem_reset")
 	    ($bgl-gc-verbose-set!::void (::bool) "bgl_gc_verbose_set")
 
@@ -260,6 +263,7 @@
 	    (inline procedure-attr::obj ::procedure)
 	    (inline procedure-attr-set!::obj ::procedure ::obj)
 	    (inline unspecified::unspecified)
+	    (inline null-or-unspecified?::bool ::obj)
 	    (bigloo-mangled?::bool ::bstring)
 	    (bigloo-need-mangling?::bool ::bstring)
 	    (bigloo-class-mangled?::bool ::bstring)
@@ -371,6 +375,18 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (unspecified)
    __unspec__)
+
+;*---------------------------------------------------------------------*/
+;*    null-or-unspecified? ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (null-or-unspecified? obj)
+   (cond-expand
+      (bigloo-c
+       ;; this stupid trick is only used to improve JavaScript performance
+       ;; don't use that in real code!
+       ($null-or-unspecified? obj))
+      (else
+       (or (null? obj) (eq? obj #unspecified)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cnst? ...                                                        */
