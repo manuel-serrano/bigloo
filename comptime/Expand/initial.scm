@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Fri Mar 23 19:11:28 2018 (serrano)                */
+;*    Last change :  Sun Sep 30 11:50:12 2018 (serrano)                */
 ;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
@@ -717,6 +717,20 @@
 	       `(integer->char ,(e n e))))
 	  (else
 	   (error #f "Illegal `integer->char' call" x)))))
+
+   ;; string->integer
+   (install-O-comptime-expander
+      'string->integer
+      (lambda (x::obj e::procedure)
+	 (match-case x
+	    ((?- ?str)
+	     (e `(strtol ,str 0 10) e))
+	    ((?- ?str (and (? fixnum?) ?r))
+	     (if (and (>=fx r 2) (<=fx r 36))
+		 (e `(strtol ,str 0 ,r) e)
+		 (error #f "Illegal `string->integer' radix" r)))
+	    (else
+	     (map (lambda (x) (e x e)) x)))))
    
    ;; char->integer
    (install-O-comptime-expander

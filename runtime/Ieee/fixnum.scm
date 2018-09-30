@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Sep 23 17:34:10 2018 (serrano)                */
+;*    Last change :  Sun Sep 30 11:50:58 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -2434,6 +2434,8 @@
 (define (string->integer string . radix)
    (let ((r (if (null? radix) 10 (car radix))))
       (if (and (>=fx r 2) (<=fx r 36))
+	  ;; strtol cannot be renamed as it is used by the compiler
+	  ;; to optmize the call
 	  (strtol string 0 r)
 	  (error "string->integer" "Illegal radix" r))))
 
