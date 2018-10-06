@@ -163,7 +163,8 @@
 	    (iso8601-date->date::date ::bstring)
 	    (iso8601-parse-date::date ::input-port)
 	    
-	    (date->rfc2822-date::bstring ::date))
+	    (date->rfc2822-date::bstring ::date)
+            (date->iso8601-date::bstring ::date))
 
    (pragma  (date? (predicate-of date) no-cfa-top nesting)
 	    (c-date? (predicate-of date) no-cfa-top nesting)
@@ -503,6 +504,30 @@
 	     (date-minute date)
 	     (date-second date)
 	     (if (<fx tz 0) "-" "+")
+	     (absfx (/fx tz 3600))
+	     (absfx (remainder tz 3600))))))
+
+;*---------------------------------------------------------------------*/
+;*    date->iso8601-date ...                                           */
+;*---------------------------------------------------------------------*/
+(define (date->iso8601-date date)
+   (let ((tz (date-timezone date)))
+      (if (=fx tz 0)
+          (format "~a-~2,0d-~2,0dT~2,0d:~2,0d:~2,0dZ"
+             (date-year date)
+             (date-month date)
+             (date-day date)
+             (date-hour date)
+             (date-minute date)
+             (date-second date))
+          (format "~a-~2,0d-~2,0dT~2,0d:~2,0d:~2,0d~a~2,0d:~2,0d"
+             (date-year date)
+             (date-month date)
+             (date-day date)
+             (date-hour date)
+             (date-minute date)
+             (date-second date)
+             (if (<fx tz 0) "-" "+")
 	     (absfx (/fx tz 3600))
 	     (absfx (remainder tz 3600))))))
 

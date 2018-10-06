@@ -170,5 +170,10 @@ Parses ISO8601 string representing a date. These functions produce
 a Bigloo date object.
 @end deffn
 
+@deffn {bigloo procedure} date->iso8601-date date
+Converts a Bigloo date into a string representation compliant with the iso8601
+format.
+@end deffn
+
 
 
