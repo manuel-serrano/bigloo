@@ -370,5 +370,16 @@
 		  '("dog " " cat")
 		  (csv-record=? v '("dog " " cat")))))
 
+(define-test empty-fields
+   (let* ((test-string "dog,,,cat")
+	  (in (open-input-string test-string)))
+      (unwind-protect
+	 (read-csv-record in)
+	 (close-input-port in)))
+   :result (lambda (v)
+	      (if (eq? v 'result)
+		  '("dog" "" "" "cat")
+		  (csv-record=? v '("dog" "" ""  "cat")))))
+
 
 
