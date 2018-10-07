@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/xml.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/api/web/src/Llib/xml.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 11 16:23:53 2005                          */
-;*    Last change :  Mon Nov 27 08:40:12 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Sun Oct  7 08:46:03 2018 (serrano)                */
+;*    Copyright   :  2005-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    XML parsing                                                      */
 ;*=====================================================================*/
@@ -168,7 +168,6 @@
 			    (input-port-position (the-port)))
 	   (the-string)))
       ((+ (out " \t\n\r<>(){}[]@!\"'/"))
-       (tprint "attr value [" (the-string) "]")
        (if strict
 	   (xml-parse-error (format "Illegal `~a' attribute character" tag)
 			    (the-string)
@@ -209,7 +208,6 @@
 	      (val (read/rp attribute-value-grammar (the-port) strict tag)))
 	  (cons (string->symbol (decoder key)) (decoder val))))
       ((: id (+ blank) "=")
-       (tprint "attr=" (the-string))
        (let* ((key (the-substring 0 (-fx (the-length) 2)))
 	      (val (read/rp attribute-value-grammar (the-port) strict tag)))
 	  (let loop ((i (-fx (string-length key) 1)))
