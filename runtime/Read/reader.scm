@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Thu Sep 20 11:17:36 2018 (serrano)                */
+;*    Last change :  Mon Oct  8 08:11:58 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -505,7 +505,7 @@
       ;; characters
       ((: "#\\" (or letter digit special (in "|#; " quote paren)))
        (string-ref (the-string) 2))
-      ((: "#\\" (>= 2 letter))
+      ((: "#\\" (in ("awyzAWYZ")) (>= 2 letter))
        (let ((char-name (string->symbol
 			   (string-upcase!
 			      (the-substring 2 (the-length))))))

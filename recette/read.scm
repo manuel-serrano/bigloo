@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/read.scm                     */
+;*    serrano/prgm/project/bigloo/bigloo/recette/read.scm              */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 22 16:17:03 1992                          */
-;*    Last change :  Sat Sep 13 09:41:49 2014 (serrano)                */
+;*    Last change :  Mon Oct  8 08:31:43 2018 (serrano)                */
 ;*                                                                     */
 ;*    Un essai de reader                                               */
 ;*---------------------------------------------------------------------*/
@@ -59,7 +59,8 @@
 	 (caddr (read (open-input-string "((1 . #0=(-6 7)) 5 . #0#)"))) -6)
    (test "read-C-string"
 	 (call-with-input-string "\"foo\n\tbar\"" read)
-	 "foo\n\tbar"))
+	 "foo\n\tbar")
+   (test "read-string" (call-with-input-string "#\\\"str\"" read) #\"))
 	    
 		   
 

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/recette/vital.scm                    */
+;*    serrano/prgm/project/bigloo/bigloo/recette/vital.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  3 17:11:11 2002                          */
-;*    Last change :  Mon Aug  7 06:38:36 2017 (serrano)                */
-;*    Copyright   :  2002-17 Manuel Serrano                            */
+;*    Last change :  Mon Oct  8 08:18:26 2018 (serrano)                */
+;*    Copyright   :  2002-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Preliminary tests for Bigloo.                                    */
 ;*=====================================================================*/
@@ -375,6 +375,7 @@
    (test "eq? char.4" (char->integer #\') 39)
    (test "eq? char.5" (integer->char 255) #a255)
    (test "eq? char.6" (char=? (integer->char 255) #a255) #t)
+   (test "eq? char.7" (=fx (char->integer #\xea) #xea) #t)
    (test "eq? symbol.1" (eq? 'a 'a) #t)
    (test "eq? symbol.2" (eq? 'a 'A) #f)
    (test "eq? symbol.3" (eq? 'A 'A) #t)
@@ -410,7 +411,7 @@
    (test "set!" (let ((v (integer? var))) (set! var 4) (set! var 'toto) v) #f)
    (test "if.1" (if #t #t #f) #t)
    (test "if.2" (let ((if (lambda (x y z) z))) (if #t #t #f)) #f)
-   (test "symbol.1" 'étè (string->symbol "étè"))
+   (test "symbol.1" 'Ã©tÃ¨ (string->symbol "Ã©tÃ¨"))
    (test "symbol.2" (symbol? (with-input-from-string "||" read)) #t)
    (test "symbol.3" (with-input-from-string "||" read) (string->symbol ""))
    (test "symbol.4" (symbol? (with-input-from-string "|'|" read)) #t)
