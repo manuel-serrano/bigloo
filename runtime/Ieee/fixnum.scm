@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/trashcan/fixnum.scm                                      */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/fixnum.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Oct 10 10:27:17 2018 (serrano)                */
+;*    Last change :  Wed Oct 10 13:00:43 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -908,8 +908,7 @@
 	    (inline absu64::uint64 ::uint64)
 	    (inline absbx::bignum ::bignum)
  	    (remainder::obj ::obj ::obj)
-	    ;;(inline remainderfx::long ::long ::long)
-	    (remainderfx::long ::long ::long)
+	    (inline remainderfx::long ::long ::long)
 	    (inline remainderelong::elong ::elong ::elong)
 	    (inline remainderllong::llong ::llong ::llong)
 	    (inline remainders8::int8 ::int8 ::int8)
@@ -2036,7 +2035,7 @@
 ;*---------------------------------------------------------------------*/
 (define (remainder n1 n2) (int2op remainder n1 n2))
 
-(define (remainderfx n1 n2)
+(define-inline (remainderfx n1 n2)
    ;; on a 64bit machines, if the two arguments are 32bit integer, use
    ;; a 32 bit division which is significantly faster than a 64bit operation
    (cond-expand
@@ -2047,12 +2046,7 @@
        ;;                `--------'`--------'
        ;;                 33 1-bit  31 0-bit
        (if (=fx (pragma::long "((($1) | ($2)) & -2147483648)" n1 n2) 0)
-	   (let ((v1 (int32->fixnum ($remainders32 (fixnum->int32 n1) (fixnum->int32 n2))))
-		 (v2 (c-remainderfx n1 n2)))
-	      (unless (=fx v1 v2)
-		 (pragma "fprintf( stderr, \"BAS BON %ld %ld -> %ld/%ld\\n\", $1, $2, $3, $4 )"
-		    n1 n2 v1 v2))
-	      v2)
+	   (int32->fixnum ($remainders32 (fixnum->int32 n1) (fixnum->int32 n2)))
 	   (c-remainderfx n1 n2)))
       (else
        (c-remainderfx n1 n2))))
