@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/libuv/src/Clib/bgluv.c           */
+/*    .../prgm/project/bigloo/bigloo/api/libuv/src/Clib/bgluv.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue May  6 13:53:14 2014                          */
-/*    Last change :  Tue Aug  1 16:54:16 2017 (serrano)                */
-/*    Copyright   :  2014-17 Manuel Serrano                            */
+/*    Last change :  Tue Oct 23 11:40:13 2018 (serrano)                */
+/*    Copyright   :  2014-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    LIBUV Bigloo C binding                                           */
 /*=====================================================================*/
@@ -33,6 +33,8 @@ typedef BgL_uvpollz00_bglt bgl_uv_poll_t;
 
 extern obj_t bgl_uv_handle_type_symbol( long );
 extern obj_t bgl_uv_events_to_list( int );
+
+extern obj_t bgl_uv_pop_gcmark( bgl_uv_handle_t, obj_t );
 
 /*---------------------------------------------------------------------*/
 /*    Accessors                                                        */
@@ -129,6 +131,21 @@ bgl_uv_timer_new( BgL_uvtimerz00_bglt o, bgl_uv_loop_t loop ) {
 
    uv_timer_init( LOOP_BUILTIN( loop ), new );
    return new;
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_uv_timer_cb ...                                              */
+/*---------------------------------------------------------------------*/
+void
+bgl_uv_timer_cb( uv_handle_t *handle, char *path, int events, int status ) {
+   bgl_uv_watcher_t o = (bgl_uv_watcher_t)handle->data;
+   obj_t p = ((bgl_uv_watcher_t)COBJECT( o ))->BgL_cbz00;
+   bgl_uv_loop_t l = ((BgL_uvwatcherz00_bglt)COBJECT( o ))->BgL_loopz00;
+
+   bgl_uv_pop_gcmark( (bgl_uv_handle_t)l, (obj_t)o );
+
+   if( PROCEDUREP( p ) ) PROCEDURE_ENTRY( p )( p, o, BINT( status ), BEOA );
 }
 
 /*---------------------------------------------------------------------*/

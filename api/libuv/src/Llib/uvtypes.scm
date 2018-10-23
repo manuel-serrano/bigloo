@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue May  6 11:55:29 2014                          */
-;*    Last change :  Thu Feb 15 05:24:50 2018 (serrano)                */
+;*    Last change :  Tue Oct 23 11:30:19 2018 (serrano)                */
 ;*    Copyright   :  2014-18 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    LIBUV types                                                      */
@@ -164,7 +164,9 @@
 	   (uv-guess-handle::symbol ::int)
 	   (inline uv-push-gcmark! ::UvHandle o)
 	   (uv-pop-gcmark! ::UvHandle o)
-	   (uv-gcmarks-empty?::bool o::UvHandle)))
+	   (uv-gcmarks-empty?::bool o::UvHandle))
+
+   (extern (export uv-pop-gcmark! "bgl_uv_pop_gcmark")))
 
 ;*---------------------------------------------------------------------*/
 ;*    uv-version ...                                                   */
