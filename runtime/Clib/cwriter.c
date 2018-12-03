@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Dec 17 09:44:20 1991                          */
-/*    Last change :  Thu Sep 20 12:43:02 2018 (serrano)                */
+/*    Last change :  Tue Dec  4 00:26:10 2018 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Object (that have to be non recursives) printing.                */
 /*=====================================================================*/
@@ -322,7 +322,7 @@ bgl_write_char( obj_t o, obj_t op ) {
       PUTC( op, '\\' );
       PUTC( op, 'x' );
 
-      PRINTF1( op, 2, "%02x", (unsigned char)(c) );
+      PRINTF1( op, 3, "%02x", (unsigned char)(c) );
    }
    
    BGL_MUTEX_UNLOCK( mutex );
