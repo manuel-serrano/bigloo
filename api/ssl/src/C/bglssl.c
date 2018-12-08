@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/ssl/src/C/bglssl.c               */
+/*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/C/bglssl.c        */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Mon Jul 31 07:31:27 2017 (serrano)                */
-/*    Copyright   :  2005-17 Manuel Serrano                            */
+/*    Last change :  Tue Dec  4 15:54:20 2018 (serrano)                */
+/*    Copyright   :  2005-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -166,6 +166,11 @@ void static bgl_ssl_library_init() {
 
    OpenSSL_add_all_algorithms();
    OpenSSL_add_all_digests();
+
+   // Turn off compression. Saves memory and protects against CRIME attacks.
+   // No-op with OPENSSL_NO_COMP builds of OpenSSL.
+   sk_SSL_COMP_zero(SSL_COMP_get_compression_methods());
+
    SSL_load_error_strings();
    ERR_load_crypto_strings();
 }
@@ -1218,7 +1223,7 @@ bgl_select_sni_context_callback( SSL *ssl, int *ad, void* arg ) {
       CCON( c )->BgL_serverzd2namezd2 = bsrv;
       
       // Call the SNI callback and use its return value as context
-      if( proc ) {
+      if( PROCEDUREP( proc ) ) {
 	 if( !PROCEDURE_CORRECT_ARITYP( proc, 2 ) ) {
 	    C_SYSTEM_FAILURE( BGL_TYPE_ERROR, "ssl-connection",
 			      "wrong callback arity", proc );
@@ -1816,7 +1821,7 @@ bgl_ssl_connection_get_session( ssl_connection ssl ) {
    } else {
       int slen = i2d_SSL_SESSION( sess, NULL );
       if( slen > 0 ) {
-	 unsigned char *sbuf = alloca( slen );
+	 unsigned char *sbuf = alloca( slen + 1 );
 	 unsigned char *p = sbuf;
 	 
 	 i2d_SSL_SESSION( sess, &p );
