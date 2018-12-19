@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/Makefile.git                         */
+#*    serrano/prgm/project/bigloo/bigloo/Makefile.git                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jan 20 14:43:37 2006                          */
-#*    Last change :  Tue Jul  4 13:30:26 2017 (serrano)                */
-#*    Copyright   :  2006-17 Manuel Serrano                            */
+#*    Last change :  Wed Dec 19 09:18:41 2018 (serrano)                */
+#*    Copyright   :  2006-18 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Git config                                                       */
 #*=====================================================================*/
@@ -55,7 +55,7 @@ revision: populate
           fi \
         else \
           echo $(RELEASE) > .bigloorelease; \
-          $(VM-TAG) $(RELEASE); \
+          $(VM-TAG) v$(RELEASE); \
         fi
 
 #*---------------------------------------------------------------------*/
