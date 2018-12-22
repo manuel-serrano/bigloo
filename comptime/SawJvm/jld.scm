@@ -326,6 +326,20 @@
 			 (loop (+fx o 72))))))
 
 ;*---------------------------------------------------------------------*/
+;*    manifest-classpath-format ...                                    */
+;*    the manifest classpath is separated by one or more spaces        */
+;*---------------------------------------------------------------------*/
+(define (manifest-classpath-format classpath::bstring)
+   (cond ((string=? *jvm-shell* "sh")
+          (string-replace classpath #\:  #\space))
+         ((string=? *jvm-shell* "msdos")
+          (string-replace classpath #\; #\space))
+         (else
+          (warning "manifest-classpath-format"
+             "Illegal shell `:" *jvm-shell* "' --using `sh'")
+          (string-replace classpath #\:  #\space))))
+   
+;*---------------------------------------------------------------------*/
 ;*    generate-sh-jvm-manifest ...                                     */
 ;*---------------------------------------------------------------------*/
 (define (generate-sh-jvm-manifest fname main zips)
@@ -334,8 +348,10 @@
 	 (print "Manifest-Version: 1.0")
 	 (print "Main-Class: " main)
 	 (display* "Class-Path: "
-		   (split-72 *jvm-classpath*))
-	 (display "\n ")
+            (split-72  (manifest-classpath-format *jvm-classpath*)))
+         ;; at least 2 spaces are required after the newline to separate components
+         ;; of the classpath, otherwise it is interpreted as a line continuation
+	 (display "\n  ")
 	 (display (split-72
 		   (make-file-name
 		    (jvm-bigloo-classpath)
@@ -343,7 +359,10 @@
 			"bigloo_u.zip"
 			"bigloo_s.zip"))))
 	 (for-each (lambda (l)
-		      (display "\n ")
+                      ;; at least 2 spaces are required after the newline to
+                      ;; separate components of the classpath, otherwise it
+                      ;; is interpreted as a line continuation
+		      (display "\n  ")
 		      (display (split-72 (user-library l))))
 		   zips)
 	 (newline)

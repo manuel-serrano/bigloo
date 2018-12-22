@@ -102,7 +102,7 @@ bglnantagging=0
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
 zip=zip
-jar="jar cfm"
+jar="jar cmf"
 zflags=
 javac=javac
 jcflags=-O
