@@ -35,7 +35,8 @@ done
 #*    The autodetection ELisp expression                               */
 #*---------------------------------------------------------------------*/
 expr="(cond \
-        ((string-match \"GNU Emacs 25\" (emacs-version)) (kill-emacs 25))
+        ((string-match \"GNU Emacs 26\" (emacs-version)) (kill-emacs 26)) \
+        ((string-match \"GNU Emacs 25\" (emacs-version)) (kill-emacs 25)) \
         ((string-match \"GNU Emacs 24\" (emacs-version)) (kill-emacs 24)) \
         ((string-match \"GNU Emacs 23\" (emacs-version)) (kill-emacs 23)) \
         ((string-match \"GNU Emacs 22\" (emacs-version)) (kill-emacs 22)) \
@@ -67,7 +68,9 @@ else
             if [ "$version" = "25" ]; then
               echo "emacs25"      
             else
-              echo "generic";
+              if [ "$version" = "26" ]; then
+                echo "emacs26"      
+              fi
             fi    
           fi
         fi
