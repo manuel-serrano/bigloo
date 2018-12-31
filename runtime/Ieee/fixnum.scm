@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Oct 10 13:00:43 2018 (serrano)                */
+;*    Last change :  Sun Dec 30 15:32:28 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -2279,24 +2279,18 @@
 ;*---------------------------------------------------------------------*/
 (define (exptfx x y)
    (cond
-      ((zerofx? y)
-       1)
-      ((evenfx? y)
-       (exptfx (*fx x x) (quotientfx y 2)))
-      (else
-       (*fx x (exptfx x (-fx y 1))))))
+      ((zerofx? y) 1)
+      ((evenfx? y) (exptfx (*fx x x) (quotientfx y 2)))
+      (else (*fx x (exptfx x (-fx y 1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptbx ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (exptbx x y)
    (cond
-      ((zerobx? y)
-       #z1)
-      ((evenbx? y)
-       (exptbx (*bx x x) (quotientbx y #z2)))
-      (else
-       (*bx x (exptbx x (-bx y #z1))))))
+      ((zerobx? y) #z1)
+      ((evenbx? y) (exptbx (*bx x x) (quotientbx y #z2)))
+      (else (*bx x (exptbx x (-bx y #z1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->string-op ...                                           */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/number.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/number.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 24 09:59:43 1995                          */
-;*    Last change :  Wed Dec  6 16:45:08 2017 (serrano)                */
+;*    Last change :  Sun Dec 30 15:20:57 2018 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -576,54 +576,36 @@
 ;*---------------------------------------------------------------------*/
 (define (zero? x)
    (cond
-      ((fixnum? x)
-       (zerofx? x))
-      ((flonum? x)
-       (zerofl? x))
-      ((elong? x)
-       (=elong x #e0))
-      ((llong? x)
-       (=llong x #l0))
-      ((bignum? x)
-       (zerobx? x))
-      (else
-       (error "zero" "not a number" x))))
+      ((fixnum? x) (zerofx? x))
+      ((flonum? x) (zerofl? x))
+      ((elong? x) (=elong x #e0))
+      ((llong? x) (=llong x #l0))
+      ((bignum? x) (zerobx? x))
+      (else (error "zero" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    positive? ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (positive? x)
    (cond
-      ((fixnum? x)
-       (positivefx? x))
-      ((flonum? x)
-       (positivefl? x))
-      ((elong? x)
-       (>elong x #e0))
-      ((llong? x)
-       (>llong x #l0))
-      ((bignum? x)
-       (positivebx? x))
-      (else
-       (error "positive" "not a number" x))))
+      ((fixnum? x) (positivefx? x))
+      ((flonum? x) (positivefl? x))
+      ((elong? x) (>elong x #e0))
+      ((llong? x) (>llong x #l0))
+      ((bignum? x) (positivebx? x))
+      (else (error "positive" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    negative? ...                                                    */
 ;*---------------------------------------------------------------------*/
 (define (negative? x)
    (cond
-      ((fixnum? x)
-       (negativefx? x))
-      ((flonum? x)
-       (negativefl? x))
-      ((elong? x)
-       (<elong x #e0))
-      ((llong? x)
-       (<llong x #l0))
-      ((bignum? x)
-       (negativebx? x))
-      (else
-       (error "negative" "not a number" x))))
+      ((fixnum? x) (negativefx? x))
+      ((flonum? x) (negativefl? x))
+      ((elong? x) (<elong x #e0))
+      ((llong? x) (<llong x #l0))
+      ((bignum? x) (negativebx? x))
+      (else (error "negative" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    2max ...                                                         */
@@ -917,196 +899,131 @@
 ;*---------------------------------------------------------------------*/
 (define (floor x)
    (cond
-      ((fixnum? x)
-       x)
-      ((flonum? x)
-       (floorfl x))
-      ((elong? x)
-       x)
-      ((llong? x)
-       x)
-      ((bignum? x)
-       x)
-      (else
-       (error "floor" "not a number" x))))
+      ((fixnum? x) x)
+      ((flonum? x) (floorfl x))
+      ((elong? x) x)
+      ((llong? x) x)
+      ((bignum? x) x)
+      (else (error "floor" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    ceiling ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (ceiling x)
    (cond
-      ((fixnum? x)
-       x)
-      ((flonum? x)
-       (ceilingfl x))
-      ((elong? x)
-       x)
-      ((llong? x)
-       x)
-      ((bignum? x)
-       x)
-      (else
-       (error "ceiling" "not a number" x))))
+      ((fixnum? x) x)
+      ((flonum? x) (ceilingfl x))
+      ((elong? x) x)
+      ((llong? x) x)
+      ((bignum? x) x)
+      (else (error "ceiling" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    truncate ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (truncate x)
    (cond
-      ((fixnum? x)
-       x)
-      ((flonum? x)
-       (truncatefl x))
-      ((elong? x)
-       x)
-      ((llong? x)
-       x)
-      (else
-       (error "truncate" "not a number" x))))
+      ((fixnum? x) x)
+      ((flonum? x) (truncatefl x))
+      ((elong? x) x)
+      ((llong? x) x)
+      (else (error "truncate" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    round ...                                                        */
 ;*---------------------------------------------------------------------*/
 (define (round x)
    (cond
-      ((fixnum? x)
-       x)
-      ((flonum? x)
-       (roundfl x))
-      ((elong? x)
-       x)
-      ((llong? x)
-       x)
-      ((bignum? x)
-       x)
-      (else
-       (error "round" "not a number" x))))
+      ((fixnum? x) x)
+      ((flonum? x) (roundfl x))
+      ((elong? x) x)
+      ((llong? x) x)
+      ((bignum? x) x)
+      (else (error "round" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exp ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (exp x)
    (cond
-      ((flonum? x)
-       (expfl x))
-      ((fixnum? x)
-       (expfl ($fixnum->flonum x)))
-      ((elong? x)
-       (expfl ($elong->flonum x)))
-      ((llong? x)
-       (expfl ($llong->flonum x)))
-      ((bignum? x)
-       (expfl (bignum->flonum x)))
-      (else
-       (error "exp" "not a number" x))))
+      ((flonum? x) (expfl x))
+      ((fixnum? x) (expfl ($fixnum->flonum x)))
+      ((elong? x) (expfl ($elong->flonum x)))
+      ((llong? x) (expfl ($llong->flonum x)))
+      ((bignum? x) (expfl (bignum->flonum x)))
+      (else (error "exp" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    log ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (log x)
    (cond
-      ((flonum? x)
-       (logfl x))
-      ((fixnum? x)
-       (logfl ($fixnum->flonum x)))
-      ((elong? x)
-       (logfl ($elong->flonum x)))
-      ((llong? x)
-       (logfl ($llong->flonum x)))
-      ((bignum? x)
-       (logfl ($bignum->flonum x)))
-      (else
-       (error "log" "not a number" x))))
+      ((flonum? x) (logfl x))
+      ((fixnum? x) (logfl ($fixnum->flonum x)))
+      ((elong? x) (logfl ($elong->flonum x)))
+      ((llong? x) (logfl ($llong->flonum x)))
+      ((bignum? x) (logfl ($bignum->flonum x)))
+      (else (error "log" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sin ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (sin x)
    (cond
-      ((flonum? x)
-       (sinfl x))
-      ((fixnum? x)
-       (sinfl ($fixnum->flonum x)))
-      ((elong? x)
-       (sinfl ($elong->flonum x)))
-      ((llong? x)
-       (sinfl ($llong->flonum x)))
-      ((bignum? x)
-       (sinfl (bignum->flonum x)))
-      (else
-       (error "sin" "not a number" x))))
+      ((flonum? x) (sinfl x))
+      ((fixnum? x) (sinfl ($fixnum->flonum x)))
+      ((elong? x) (sinfl ($elong->flonum x)))
+      ((llong? x) (sinfl ($llong->flonum x)))
+      ((bignum? x) (sinfl (bignum->flonum x)))
+      (else (error "sin" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    cos ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (cos x)
    (cond
-      ((flonum? x)
-       (cosfl x))
-      ((fixnum? x)
-       (cosfl ($fixnum->flonum x)))
-      ((elong? x)
-       (cosfl ($elong->flonum x)))
-      ((llong? x)
-       (cosfl ($llong->flonum x)))
-      ((bignum? x)
-       (cosfl (bignum->flonum x)))
-      (else
-       (error "cos" "not a number" x))))
+      ((flonum? x) (cosfl x))
+      ((fixnum? x) (cosfl ($fixnum->flonum x)))
+      ((elong? x) (cosfl ($elong->flonum x)))
+      ((llong? x) (cosfl ($llong->flonum x)))
+      ((bignum? x) (cosfl (bignum->flonum x)))
+      (else (error "cos" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    tan ...                                                          */
 ;*---------------------------------------------------------------------*/
 (define (tan x)
    (cond
-      ((flonum? x)
-       (tanfl x))
-      ((fixnum? x)
-       (tanfl ($fixnum->flonum x)))
-      ((elong? x)
-       (tanfl ($elong->flonum x)))
-      ((llong? x)
-       (tanfl ($llong->flonum x)))
-      ((bignum? x)
-       (tanfl (bignum->flonum x)))
-      (else
-       (error "tan" "not a number" x))))
+      ((flonum? x) (tanfl x))
+      ((fixnum? x) (tanfl ($fixnum->flonum x)))
+      ((elong? x) (tanfl ($elong->flonum x)))
+      ((llong? x) (tanfl ($llong->flonum x)))
+      ((bignum? x) (tanfl (bignum->flonum x)))
+      (else (error "tan" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    asin ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (asin x)
    (cond
-      ((flonum? x)
-       (asinfl x))
-      ((fixnum? x)
-       (asinfl ($fixnum->flonum x)))
-      ((elong? x)
-       (asinfl ($elong->flonum x)))
-      ((llong? x)
-       (asinfl ($llong->flonum x)))
-      ((bignum? x)
-       (asinfl (bignum->flonum x)))
-      (else
-       (error "asin" "not a number" x))))
+      ((flonum? x) (asinfl x))
+      ((fixnum? x) (asinfl ($fixnum->flonum x)))
+      ((elong? x) (asinfl ($elong->flonum x)))
+      ((llong? x) (asinfl ($llong->flonum x)))
+      ((bignum? x) (asinfl (bignum->flonum x)))
+      (else (error "asin" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    acos ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (acos x)
    (cond
-      ((flonum? x)
-       (acosfl x))
-      ((fixnum? x)
-       (acosfl ($fixnum->flonum x)))
-      ((elong? x)
-       (acosfl ($elong->flonum x)))
-      ((llong? x)
-       (acosfl ($llong->flonum x)))
-      ((bignum? x)
-       (acosfl (bignum->flonum x)))
-      (else
-       (error "acos" "not a number" x))))
+      ((flonum? x) (acosfl x))
+      ((fixnum? x) (acosfl ($fixnum->flonum x)))
+      ((elong? x) (acosfl ($elong->flonum x)))
+      ((llong? x) (acosfl ($llong->flonum x)))
+      ((bignum? x) (acosfl (bignum->flonum x)))
+      (else (error "acos" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    atan ...                                                         */
@@ -1115,48 +1032,33 @@
    (let ((y (if (pair? y)
 		(let ((y (car y)))
 		   (cond
-		      ((fixnum? y)
-		       ($fixnum->flonum y))
-		      ((flonum? y)
-		       y)
-		      (else
-		       (error "atan" "not a number" y))))
+		      ((fixnum? y) ($fixnum->flonum y))
+		      ((flonum? y) y)
+		      (else (error "atan" "not a number" y))))
 		#f)))
       (define (do-atanfl x) 
 	 (if (number? y)
 	     (atanfl x y)
 	     (atanfl x)))
       (cond
-	 ((flonum? x)
-	  (do-atanfl x))
-	 ((fixnum? x)
-	  (do-atanfl ($fixnum->flonum x)))
-	 ((elong? x)
-	  (do-atanfl ($elong->flonum x)))
-	 ((llong? x)
-	  (do-atanfl ($llong->flonum x)))
-	 ((bignum? x)
-	  (do-atanfl (bignum->flonum x)))
-	 (else
-	  (error "atan" "not a number" x)))))
+	 ((flonum? x) (do-atanfl x))
+	 ((fixnum? x) (do-atanfl ($fixnum->flonum x)))
+	 ((elong? x) (do-atanfl ($elong->flonum x)))
+	 ((llong? x) (do-atanfl ($llong->flonum x)))
+	 ((bignum? x) (do-atanfl (bignum->flonum x)))
+	 (else (error "atan" "not a number" x)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    sqrt ...                                                         */
 ;*---------------------------------------------------------------------*/
 (define (sqrt x)
    (cond
-      ((fixnum? x)
-       (sqrtfl ($fixnum->flonum x)))
-      ((flonum? x)
-       (sqrtfl x))
-      ((elong? x)
-       (sqrtfl ($elong->flonum x)))
-      ((llong? x)
-       (sqrtfl ($llong->flonum x)))
-      ((bignum? x)
-       (sqrtfl (bignum->flonum x)))
-      (else
-       (error "sqrt" "not a number" x))))
+      ((fixnum? x) (sqrtfl ($fixnum->flonum x)))
+      ((flonum? x) (sqrtfl x))
+      ((elong? x) (sqrtfl ($elong->flonum x)))
+      ((llong? x) (sqrtfl ($llong->flonum x)))
+      ((bignum? x) (sqrtfl (bignum->flonum x)))
+      (else (error "sqrt" "not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    expt ...                                                         */
@@ -1171,46 +1073,28 @@
        (exptbx x y))
       ((bignum? x)
        (let ((y1 (cond
-		    ((flonum? y)
-		     ($fixnum->bignum ($flonum->fixnum y)))
-		    ((fixnum? y)
-		     ($fixnum->bignum y))
-		    ((elong? y)
-		     ($elong->bignum y))
-		    ((llong? y)
-		     ($llong->bignum y))
-		    ((bignum? y)
-		     y)
-		    (else
-		     (error "expr" "not a number" y)))))
+		    ((flonum? y) ($fixnum->bignum ($flonum->fixnum y)))
+		    ((fixnum? y) ($fixnum->bignum y))
+		    ((elong? y) ($elong->bignum y))
+		    ((llong? y) ($llong->bignum y))
+		    ((bignum? y) y)
+		    (else (error "expt" "not a number" y)))))
 	  (exptbx x y1)))
       (else
        (let ((x1 (cond
-		    ((flonum? x)
-		     x)
-		    ((fixnum? x)
-		     ($fixnum->flonum x))
-		    ((elong? x)
-		     ($elong->flonum x))
-		    ((llong? x)
-		     ($llong->flonum x))
-		    ((bignum? x)
-		     (bignum->flonum x))
-		    (else
-		     (error "expr" "not a number" x))))
+		    ((flonum? x) x)
+		    ((fixnum? x) ($fixnum->flonum x))
+		    ((elong? x) ($elong->flonum x))
+		    ((llong? x) ($llong->flonum x))
+		    ((bignum? x) (bignum->flonum x))
+		    (else (error "expt" "not a number" x))))
 	     (y1 (cond
-		    ((flonum? y)
-		     y)
-		    ((fixnum? y)
-		     ($fixnum->flonum y))
-		    ((elong? y)
-		     ($elong->flonum y))
-		    ((llong? y)
-		     ($llong->flonum y))
-		    ((bignum? y)
-		     (bignum->flonum y))
-		    (else
-		     (error "expr" "not a number" y)))))
+		    ((flonum? y) y)
+		    ((fixnum? y) ($fixnum->flonum y))
+		    ((elong? y) ($elong->flonum y))
+		    ((llong? y) ($llong->flonum y))
+		    ((bignum? y) (bignum->flonum y))
+		    (else (error "expt" "not a number" y)))))
 	  (exptfl x1 y1)))))
 
 ;*---------------------------------------------------------------------*/
@@ -1218,18 +1102,12 @@
 ;*---------------------------------------------------------------------*/
 (define (exact->inexact z)
    (cond
-      ((fixnum? z)
-       ($fixnum->flonum z))
-      ((flonum? z)
-       z)
-      ((elong? z)
-       ($elong->flonum z))
-      ((llong? z)
-       ($llong->flonum z))
-      ((bignum? z)
-       (bignum->flonum z))
-      (else
-       z)))
+      ((fixnum? z) ($fixnum->flonum z))
+      ((flonum? z) z)
+      ((elong? z) ($elong->flonum z))
+      ((llong? z) ($llong->flonum z))
+      ((bignum? z) (bignum->flonum z))
+      (else z)))
 
 ;*---------------------------------------------------------------------*/
 ;*    max int values ...                                               */
@@ -1257,36 +1135,21 @@
 ;*---------------------------------------------------------------------*/
 (define (number->string x #!optional (radix 10))
    (cond
-      ((not (integer? radix))
-       (error 'number->string "Illegal radix" radix))
-      ((fixnum? x)
-       (integer->string x radix))
-      ((flonum? x)
-       (real->string x))
-      ((elong? x)
-       (elong->string x radix))
-      ((llong? x)
-       (llong->string x radix))
-      ((bignum? x)
-       (bignum->string x radix))
-      ((int8? x)
-       (integer->string (int8->fixnum x) radix))
-      ((uint8? x)
-       (integer->string (uint8->fixnum x) radix))
-      ((int16? x)
-       (integer->string (int16->fixnum x) radix))
-      ((uint16? x)
-       (integer->string (uint16->fixnum x) radix))
-      ((int32? x)
-       (llong->string (int32->llong x) radix))
-      ((uint32? x)
-       (llong->string (uint32->llong x) radix))
-      ((int64? x)
-       (llong->string (int64->llong x) radix))
-      ((uint64? x)
-       (llong->string (uint64->llong x) radix))
-      (else
-       (error "number->string" "Argument not a number" x))))
+      ((not (integer? radix)) (error 'number->string "Illegal radix" radix))
+      ((fixnum? x) (integer->string x radix))
+      ((flonum? x) (real->string x))
+      ((elong? x) (elong->string x radix))
+      ((llong? x) (llong->string x radix))
+      ((bignum? x) (bignum->string x radix))
+      ((int8? x) (integer->string (int8->fixnum x) radix))
+      ((uint8? x) (integer->string (uint8->fixnum x) radix))
+      ((int16? x) (integer->string (int16->fixnum x) radix))
+      ((uint16? x) (integer->string (uint16->fixnum x) radix))
+      ((int32? x) (llong->string (int32->llong x) radix))
+      ((uint32? x) (llong->string (uint32->llong x) radix))
+      ((int64? x) (llong->string (int64->llong x) radix))
+      ((uint64? x) (llong->string (uint64->llong x) radix))
+      (else (error "number->string" "Argument not a number" x))))
 
 ;*---------------------------------------------------------------------*/
 ;*    @deffn string->number@ ...                                       */
