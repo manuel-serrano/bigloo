@@ -36,12 +36,12 @@
      extern obj_t GC_debug_malloc( size_t, char *, long );
      extern obj_t GC_debug_malloc_atomic( size_t, char *, long );
      extern int GC_gc_no;
-     extern int GC_size( void * );
+     extern size_t GC_size( void * );
      extern void GC_init();
      extern void bgl_gc_init();
      extern void GC_expand_hp( size_t );
-     extern void GC_register_displacement( int );
-     extern void GC_debug_register_displacement( int );
+     extern void GC_register_displacement( size_t );
+     extern void GC_debug_register_displacement( size_t );
      extern void* GC_base( void* );
      extern int GC_invoke_finalizers();
      extern int GC_general_register_disappearing_link( obj_t * , obj_t );

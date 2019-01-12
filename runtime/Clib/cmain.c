@@ -94,10 +94,10 @@ extern obj_t bgl_exit_mutex();
 /*    This function can't be included inside callcc.c otherwise it may */
 /*    be incorrectly inlined by optimizing C compilers.                */
 /*---------------------------------------------------------------------*/
+BGL_NOINLINE
 void *
 bgl_get_top_of_stack() {
    void *dummy;
-   
    return bgl_callcc_get_top_of_stack( &dummy );
 }
 
@@ -152,7 +152,6 @@ _bigloo_main( int argc,
    char *env_size;
    obj_t cons;
    long  i;
-
    /* we store the global environment */
    bgl_envp = env;
    bgl_envp_len = 0;
@@ -197,8 +196,7 @@ _bigloo_main( int argc,
       bgl_init_objects();
 
       /* store the stack bottom address */
-      BGL_ENV_STACK_BOTTOM_SET( BGL_CURRENT_DYNAMIC_ENV(), (char *)&argc );
-
+      BGL_ENV_STACK_BOTTOM_SET( BGL_CURRENT_DYNAMIC_ENV(), (char *)&mega_size );
       /* initialize constants */
       bgl_init_eval_cnst();
 

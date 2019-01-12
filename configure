@@ -2786,7 +2786,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   likely=`$autoconf likely`
 
   # Does the C compiler support GCC attributes
-  gccattrs=`$autoconf likely`
+  gccattrs=`$autoconf gccattrs`
 
   # Is gmp available?
   buildgmplibdir=$buildlibdir

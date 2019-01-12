@@ -75,6 +75,10 @@ __noreturn stop() {
   exit( 0 );
 }
 
+__noinline void* bar(void* dummy) {
+  return dummy;    
+}
+
 main( int argc, char *argv[] ) {
    if( foo() != 0 ) {
      return 1;
