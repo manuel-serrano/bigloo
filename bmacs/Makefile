@@ -181,6 +181,7 @@ install.emacs22: doinstall
 install.emacs23: doinstall
 install.emacs24: doinstall
 install.emacs25: doinstall
+install.emacs26: doinstall
 install.xemacs: doinstall
 
 install.generic:
