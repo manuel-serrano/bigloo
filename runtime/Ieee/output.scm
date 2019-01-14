@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/output.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/output.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jul  5 11:13:01 1992                          */
-;*    Last change :  Thu May  4 08:19:54 2017 (serrano)                */
+;*    Last change :  Mon Jan 14 14:01:03 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.3 Output (page 31, r4)                                      */
 ;*    -------------------------------------------------------------    */
@@ -54,6 +54,7 @@
 	    __bignum
 	    __regexp
 	    __pp_circle
+	    __bit
 	    
 	    __r4_ports_6_10_1
 	    __r4_input_6_10_2

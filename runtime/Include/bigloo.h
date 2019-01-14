@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Sep 23 16:21:14 2018 (serrano)                */
+/*    Last change :  Mon Jan 14 15:02:27 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -776,19 +776,17 @@ union scmobj {
       header_t header;
       /* string source */
       union scmobj *pat;
-#if( BGL_REGEXP_TYPE == BGL_REGEXP_regex )
-      /* posix regular expression */
-      regex_t preg;
-#else
+      /* the native regular expression */
+      void *preg;
+      /* native matching routines */
+      union scmobj *(*match)();
+      union scmobj *(*match_n)();
+      union scmobj *(*free)();
 #  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
       /* pcre regular expression */
-      void *preg;
       void *study;
       int capturecount;
-#  else
-      union scmobj *preg;
 #  endif
-#endif      
    } regexp;
 
    /* custom objects */
@@ -2436,6 +2434,8 @@ BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
 BGL_RUNTIME_DECL void bgl_restore_signal_handlers( void );
 extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);
 extern void bps_bmassign(obj_t *field, obj_t value);
+
+BGL_RUNTIME_DECL obj_t bgl_make_regexp( obj_t pat );
 
 /* memory profiling */
 BGL_RUNTIME_DECL void bmem_set_allocation_type( long, long );

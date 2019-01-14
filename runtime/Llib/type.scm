@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/type.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/type.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 08:52:32 1995                          */
-;*    Last change :  Mon Nov  6 14:00:55 2017 (serrano)                */
+;*    Last change :  Mon Jan 14 14:01:15 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The type description                                             */
 ;*=====================================================================*/
@@ -30,7 +30,8 @@
 	__r4_symbols_6_4
 	__r4_strings_6_7
 	__evenv
-	__object)
+	__object
+	__bit)
    
    (type
     

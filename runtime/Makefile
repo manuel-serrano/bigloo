@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Fri Apr 20 11:25:00 2018 (serrano)                */
-#*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon Jan 14 15:17:06 2019 (serrano)                */
+#*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
 #*=====================================================================*/
@@ -344,7 +344,8 @@ POPULATION_SI	= $(SRC_FILES) \
                   Clib/gc_intf.c \
                   Clib/inline_alloc_bump.h \
                   Clib/inline_alloc.h \
-                  Clib/inline_alloc_thread.h
+                  Clib/inline_alloc_thread.h \
+                  Clib/cregex.h Clib/cpcre.h
 POPULATION	= $(POPULATION_SI) $(INCLUDE_FILE) \
                   Jlib/JDK13.java \
                   Jlib/JDK14.java \
@@ -997,3 +998,5 @@ objs/saw_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/saw_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/saw_s/Llib/evobject.o: Llib/object.sch
 objs/saw_u/Llib/evobject.o: Llib/object.sch
+objs_objs_s/Clib/cregexp.o: Clib/cpcre.h Clib/cregexp.h
+objs_objs_y/Clib/cregexp.o: Clib/cpcre.h Clib/cregexp.h

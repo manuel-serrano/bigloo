@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Mon Jan  7 05:25:38 2019 (serrano)                */
+;*    Last change :  Mon Jan 14 12:53:24 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Unicode (UCS-2) strings handling.                                */
 ;*=====================================================================*/
@@ -168,6 +168,7 @@
 	    (inline utf8-string->ucs2-string::ucs2string ::bstring)
 	    (inverse-utf8-table ::vector)
 	    (utf8-char-size::long c::char)
+	    (inline utf8-char-size-ur::long c::char)
 	    (ascii-string?::bool ::bstring)
 	    (utf8-string?::bool ::bstring #!optional strict::bool)
 	    (utf8-normalize-utf16::bstring str::bstring #!optional strict::bool (start::long 0) (end::long (string-length str)))
@@ -1032,6 +1033,13 @@
 	 ((=fx n #xfc) 4) ;; see utf8-string-append
 	 ((<=fx n #xfd) 6)
 	 (else (error "utf8-char-size" "Badly formed UTF8 string" c)))))
+
+;*---------------------------------------------------------------------*/
+;*    utf8-char-size-ur ...                                            */
+;*---------------------------------------------------------------------*/
+(define-inline (utf8-char-size-ur c)
+   (vector-ref-ur '#(1 1 1 1 1 1 1 1 2 2 2 2 3 3 4)
+      (bit-rsh (char->integer c) 4)))
 
 ;*---------------------------------------------------------------------*/
 ;*    utf8-string-length ...                                           */
