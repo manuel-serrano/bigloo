@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/pcre.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/pcre.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Tue Oct 10 08:27:45 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Mon Jan 14 15:53:37 2019 (serrano)                */
+;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
 ;*=====================================================================*/
@@ -44,11 +44,11 @@
             __evenv)
 
    (extern ($regcomp::regexp (::bstring ::obj) "bgl_regcomp")
-           ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
-	   ($regmatch-n::long (::regexp ::string ::vector ::int ::int) "bgl_regmatch_n")
-           ($regfree::obj (::regexp) "bgl_regfree")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
-           (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT"))
+           (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
+	   (macro $regmatch::obj (::regexp ::string ::bool ::int ::int) "BGL_REGEXP_MATCH")
+	   (macro $regmatch-n::long (::regexp ::string ::vector ::int ::int) "BGL_REGEXP_MATCH_N")
+           (macro $regfree::obj (::regexp) "BGL_REGEXP_FREE"))
    
    (java   (class foreign
               (method static $regexp?::bool (::obj)

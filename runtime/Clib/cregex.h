@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:06:49 2019                          */
-/*    Last change :  Mon Jan 14 15:31:11 2019 (serrano)                */
+/*    Last change :  Mon Jan 14 15:51:56 2019 (serrano)                */
 /*    Copyright   :  2019 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Basic C regex support.                                           */
@@ -11,33 +11,6 @@
 #include <regex.h>
 
 #define BGL_REGEXP_REGEX( o ) ((regex_t *)BGL_REGEXP_PREG( o ))
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
-/*    bgl_regcomp ...                                                  */
-/*---------------------------------------------------------------------*/
-obj_t
-bgl_regcomp( obj_t pat, obj_t _ ) {
-   int err;
-   obj_t re = bgl_make_regexp( pat );
-
-   BGL_REGEXP_PREG( re ) = (void *)GC_MALLOC_ATOMIC( sizeof( regex_t ) );
-
-   if( !(err = regcomp( BGL_REGEXP_REGEX( re ),
-			BSTRING_TO_STRING( pat ),
-			REG_EXTENDED )) ) {
-      return re;
-   } else {
-      char *buf;
-      int n;
-      n = regerror( err, BGL_REGEXP_REGEX( re ), 0, 0);
-
-      buf = alloca( n + 1 );
-      regerror( err, BGL_REGEXP_REGEX( re ), buf, n );
-
-      C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
-   }
-}
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -99,4 +72,45 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int end ) {
    }
 }
 
-#endif
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_regmatch_n ...                                               */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int end ) {
+   C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "match_d", "not implemented" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_regcomp ...                                                  */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_regcomp( obj_t pat, obj_t _ ) {
+   int err;
+   obj_t re = bgl_make_regexp( pat );
+
+   BGL_REGEXP_PREG( re ) = (void *)GC_MALLOC_ATOMIC( sizeof( regex_t ) );
+
+   if( !(err = regcomp( BGL_REGEXP_REGEX( re ),
+			BSTRING_TO_STRING( pat ),
+			REG_EXTENDED )) ) {
+      
+      BGL_REGEXP( re ).match = bgl_regmatch;
+      BGL_REGEXP( re ).match_n = bgl_regmatch_n;
+      BGL_REGEXP( re ).free = bgl_regfree;
+      
+      return re;
+   } else {
+      char *buf;
+      int n;
+      n = regerror( err, BGL_REGEXP_REGEX( re ), 0, 0);
+
+      buf = alloca( n + 1 );
+      regerror( err, BGL_REGEXP_REGEX( re ), buf, n );
+
+      C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
+   }
+}
+
+

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jan 14 15:02:27 2019 (serrano)                */
+/*    Last change :  Mon Jan 14 16:01:01 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1625,8 +1625,15 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_REGEXP( o ) (CREF( o )->regexp)
 #define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
 #define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
-#define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)   
+#define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)
 
+#define BGL_REGEXP_MATCH( o, string, stringp, beg, len ) \
+   BGL_REGEXP( o ).match( o, string, stringp, beg, len )
+#define BGL_REGEXP_MATCH_N( o, string, vres, beg, len ) \
+   BGL_REGEXP( o ).match_n( o, string, vres, beg, len )
+#define BGL_REGEXP_FREE( o ) \
+   BGL_REGEXP( o ).free( o )
+   
 /*---------------------------------------------------------------------*/
 /*    opaque                                                           */
 /*---------------------------------------------------------------------*/

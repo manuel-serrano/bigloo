@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Mon Jan 14 15:39:57 2019 (serrano)                */
+/*    Last change :  Mon Jan 14 15:51:20 2019 (serrano)                */
 /*    Copyright   :  2019 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
@@ -109,56 +109,6 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
 
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
-/*    bgl_regcomp ...                                                  */
-/*---------------------------------------------------------------------*/
-obj_t
-bgl_regcomp( obj_t pat, obj_t optargs ) {
-   obj_t re = bgl_make_regexp( pat );
-   const char *error;
-   int erroffset;
-   int options = bgl_pcre_options( optargs );
-   static int init = 1000;
-
-   if( !init-- ) { 
-      init = 1000;
-      /* force finalizers to free unused regexp */
-      GC_invoke_finalizers();
-   }
-   
-#ifndef PCRE_STUDY_JIT_COMPILE
-#define PCRE_STUDY_JIT_COMPILE 0
-#endif
-   
-   if( (BGL_REGEXP_PREG( re ) =
-	pcre_compile( BSTRING_TO_STRING( pat ), options,
-		      &error, &erroffset, NULL )) ) {
-      pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
-      BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
-					   PCRE_STUDY_JIT_COMPILE,
-					   &error );
-
-      pcre_fullinfo( BGL_REGEXP_PCRE( re ),
-		     BGL_REGEXP( re ).study,
-		     PCRE_INFO_CAPTURECOUNT,
-		     &(BGL_REGEXP( re ).capturecount) );
-
-      GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
-			     0, 0L, 0L );
-      return re;
-   } else {
-      char *buf = alloca( 50 + strlen( error ) );
-
-      sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
-	       erroffset, error );
-
-      C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
-
-      return re;
-   }
-}
-
-/*---------------------------------------------------------------------*/
-/*    obj_t                                                            */
 /*    bgl_regmatch ...                                                 */
 /*---------------------------------------------------------------------*/
 obj_t
@@ -223,6 +173,61 @@ bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
       }
       
       return i >> 1;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_regcomp ...                                                  */
+/*---------------------------------------------------------------------*/
+obj_t
+bgl_regcomp( obj_t pat, obj_t optargs ) {
+   obj_t re = bgl_make_regexp( pat );
+   const char *error;
+   int erroffset;
+   int options = bgl_pcre_options( optargs );
+   static int init = 1000;
+
+   if( !init-- ) { 
+      init = 1000;
+      /* force finalizers to free unused regexp */
+      GC_invoke_finalizers();
+   }
+   
+#ifndef PCRE_STUDY_JIT_COMPILE
+#define PCRE_STUDY_JIT_COMPILE 0
+#endif
+   
+   if( (BGL_REGEXP_PREG( re ) =
+	pcre_compile( BSTRING_TO_STRING( pat ), options,
+		      &error, &erroffset, NULL )) ) {
+      pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
+      BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
+					   PCRE_STUDY_JIT_COMPILE,
+					   &error );
+
+      pcre_fullinfo( BGL_REGEXP_PCRE( re ),
+		     BGL_REGEXP( re ).study,
+		     PCRE_INFO_CAPTURECOUNT,
+		     &(BGL_REGEXP( re ).capturecount) );
+
+      GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
+			     0, 0L, 0L );
+
+      BGL_REGEXP( re ).match = bgl_regmatch;
+      BGL_REGEXP( re ).match_n = bgl_regmatch_n;
+      BGL_REGEXP( re ).free = bgl_regfree;
+      
+      return re;
+   } else {
+      char *buf = alloca( 50 + strlen( error ) );
+
+      sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
+	       erroffset, error );
+
+      C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
+
+      return re;
    }
 }
 
