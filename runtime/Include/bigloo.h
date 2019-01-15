@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Mon Jan 14 16:54:57 2019 (serrano)                */
+/*    Last change :  Tue Jan 15 07:02:00 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2434,9 +2434,9 @@ BGL_RUNTIME_DECL void bgl_init_trace( void );
 
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 
-BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
-BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
+/* BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );                 */
+/* BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );                        */
+/* BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int ); */
 
 BGL_RUNTIME_DECL void bgl_restore_signal_handlers( void );
 extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);

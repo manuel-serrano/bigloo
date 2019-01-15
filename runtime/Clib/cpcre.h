@@ -3,12 +3,14 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Mon Jan 14 15:51:20 2019 (serrano)                */
+/*    Last change :  Tue Jan 15 06:22:16 2019 (serrano)                */
 /*    Copyright   :  2019 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
 /*=====================================================================*/
 #include <pcre.h>
+
+extern obj_t make_string( int, unsigned char );
 
 static obj_t utf8_symbol = BUNSPEC;
 static obj_t javascript_symbol = BUNSPEC;
@@ -24,6 +26,7 @@ static obj_t multiline_symbol = BUNSPEC;
 #endif	    
 
 #define BGL_REGEXP_PCRE( o ) (pcre *)(BGL_REGEXP_PREG( o ))
+#define BGL_REGEXP_CHAR( o ) (char)(long)(BGL_REGEXP_PREG( o ))
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -78,7 +81,7 @@ bgl_pcre_options( obj_t args ) {
 /*    obj_t                                                            */
 /*    bgl_regfree ...                                                  */
 /*---------------------------------------------------------------------*/
-obj_t
+static obj_t
 bgl_regfree( obj_t re ) {
    pcre *rx = BGL_REGEXP_PCRE( re );
 
@@ -99,19 +102,10 @@ bgl_regfree( obj_t re ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    static void                                                      */
-/*    bgl_pcre_regcomp_finalize ...                                    */
-/*---------------------------------------------------------------------*/
-static void
-bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
-   bgl_regfree( re );
-}
-
-/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_regmatch ...                                                 */
 /*---------------------------------------------------------------------*/
-obj_t
+static obj_t
 bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
    int oveccount = BGL_REGEXP( re ).capturecount + 1;
    int *ovect = alloca( sizeof( int ) * oveccount * 3 );
@@ -152,7 +146,7 @@ bgl_regmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
 /*    long                                                             */
 /*    bgl_regmatch_n ...                                               */
 /*---------------------------------------------------------------------*/
-long
+static long
 bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
    int oveccount = BGL_REGEXP( re ).capturecount + 1;
    int *ovect = alloca( sizeof( int ) * oveccount * 3 );
@@ -177,6 +171,81 @@ bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
 }
 
 /*---------------------------------------------------------------------*/
+/*    static long                                                      */
+/*    char_compile ...                                                 */
+/*---------------------------------------------------------------------*/
+static long
+char_compile( char *string, int options ) {
+   return (long)(*string);
+}
+
+/*---------------------------------------------------------------------*/
+/*    static obj_t                                                     */
+/*    bgl_charmatch ...                                                */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_charmatch( obj_t re, char *string, bool_t stringp, int beg, int len ) {
+   char c = BGL_REGEXP_CHAR( re );
+
+   while( beg < len ) {
+      if( string[ beg++ ] == c ) {
+	 obj_t p = stringp ?
+	    make_string( 1, c ) : MAKE_PAIR( BINT( beg - 1 ), BINT( beg ) );
+
+	 return MAKE_PAIR( p, BNIL );
+      }
+   }
+
+   return BFALSE;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    static long                                                      */
+/*    bgl_charmatch_n ...                                              */
+/*---------------------------------------------------------------------*/
+static long
+bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
+   char c = BGL_REGEXP_CHAR( re );
+
+   while( len-- > 0 ) {
+      if( string[ beg ] == c ) {
+	 VECTOR_SET( vres, 0, BINT( beg - 1 ) );
+	 VECTOR_SET( vres, 1, BINT( beg ) );
+
+	 return 1;
+      }
+   }
+
+   return -1;
+}
+   
+/*---------------------------------------------------------------------*/
+/*    obj_t                                                            */
+/*    bgl_charfree ...                                                 */
+/*---------------------------------------------------------------------*/
+static obj_t
+bgl_charfree( obj_t re ) {
+   return BUNSPEC;
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    bgl_pcre_regcomp_finalize ...                                    */
+/*---------------------------------------------------------------------*/
+static void
+bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
+   bgl_regfree( re );
+}
+
+/*---------------------------------------------------------------------*/
+/*    CHAR_REGEXP ...                                                  */
+/*---------------------------------------------------------------------*/
+#define CHAR_REGEXP( pat, options ) \
+   (STRING_LENGTH( pat ) == 1 \
+    && !strchr( "$[*+?.(", STRING_REF( pat, 0 ) ) \
+    && !(options & PCRE_CASELESS))
+
+/*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
@@ -188,46 +257,56 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
    int options = bgl_pcre_options( optargs );
    static int init = 1000;
 
-   if( !init-- ) { 
-      init = 1000;
-      /* force finalizers to free unused regexp */
-      GC_invoke_finalizers();
-   }
+   if( CHAR_REGEXP( pat, options ) ) {
+      BGL_REGEXP_PREG( re ) = (void *)char_compile( BSTRING_TO_STRING( pat ), options );
+	   
+      BGL_REGEXP( re ).match = bgl_charmatch;
+      BGL_REGEXP( re ).match_n = bgl_charmatch_n;
+      BGL_REGEXP( re ).free = bgl_charfree;
+      
+      return re;
+   } else {
+      if( !init-- ) { 
+	 init = 1000;
+	 /* force finalizers to free unused regexp */
+	 GC_invoke_finalizers();
+      }
    
 #ifndef PCRE_STUDY_JIT_COMPILE
 #define PCRE_STUDY_JIT_COMPILE 0
 #endif
    
-   if( (BGL_REGEXP_PREG( re ) =
-	pcre_compile( BSTRING_TO_STRING( pat ), options,
-		      &error, &erroffset, NULL )) ) {
-      pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
-      BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
-					   PCRE_STUDY_JIT_COMPILE,
-					   &error );
+      if( (BGL_REGEXP_PREG( re ) =
+	   pcre_compile( BSTRING_TO_STRING( pat ), options,
+			 &error, &erroffset, NULL )) ) {
+	 pcre_refcount( BGL_REGEXP_PCRE( re ), 1 );
+	 BGL_REGEXP( re ).study = pcre_study( BGL_REGEXP_PCRE( re ),
+					      PCRE_STUDY_JIT_COMPILE,
+					      &error );
 
-      pcre_fullinfo( BGL_REGEXP_PCRE( re ),
-		     BGL_REGEXP( re ).study,
-		     PCRE_INFO_CAPTURECOUNT,
-		     &(BGL_REGEXP( re ).capturecount) );
+	 pcre_fullinfo( BGL_REGEXP_PCRE( re ),
+			BGL_REGEXP( re ).study,
+			PCRE_INFO_CAPTURECOUNT,
+			&(BGL_REGEXP( re ).capturecount) );
 
-      GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
-			     0, 0L, 0L );
+	 GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
+				0, 0L, 0L );
 
-      BGL_REGEXP( re ).match = bgl_regmatch;
-      BGL_REGEXP( re ).match_n = bgl_regmatch_n;
-      BGL_REGEXP( re ).free = bgl_regfree;
+	 BGL_REGEXP( re ).match = bgl_regmatch;
+	 BGL_REGEXP( re ).match_n = bgl_regmatch_n;
+	 BGL_REGEXP( re ).free = bgl_regfree;
       
-      return re;
-   } else {
-      char *buf = alloca( 50 + strlen( error ) );
+	 return re;
+      } else {
+	 char *buf = alloca( 50 + strlen( error ) );
 
-      sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
-	       erroffset, error );
+	 sprintf( buf, "PCRE compilation failed at offset %d: %s\n",
+		  erroffset, error );
 
-      C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
+	 C_SYSTEM_FAILURE( BGL_IO_PARSE_ERROR, "pregexp", buf, pat );
 
-      return re;
+	 return re;
+      }
    }
 }
 

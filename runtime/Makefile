@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Mar 21 08:14:18 1995                          */
-#*    Last change :  Mon Jan 14 15:17:06 2019 (serrano)                */
+#*    Last change :  Tue Jan 15 06:56:53 2019 (serrano)                */
 #*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The (gnu) makefile to build the Bigloo's library.                */
@@ -998,5 +998,5 @@ objs/saw_s/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/saw_u/Llib/pregexp.o: Llib/regex.sch Llib/pregexp.sch Llib/pcre.sch
 objs/saw_s/Llib/evobject.o: Llib/object.sch
 objs/saw_u/Llib/evobject.o: Llib/object.sch
-objs_objs_s/Clib/cregexp.o: Clib/cpcre.h Clib/cregexp.h
-objs_objs_y/Clib/cregexp.o: Clib/cpcre.h Clib/cregexp.h
+objs/obj_s/Clib/cregexp.o: Clib/cpcre.h Clib/cregex.h
+objs/obj_u/Clib/cregexp.o: Clib/cpcre.h Clib/cregex.h
