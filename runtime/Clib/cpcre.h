@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Tue Jan 15 06:22:16 2019 (serrano)                */
+/*    Last change :  Tue Jan 15 15:29:31 2019 (serrano)                */
 /*    Copyright   :  2019 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
@@ -207,8 +207,8 @@ static long
 bgl_charmatch_n( obj_t re, char *string, obj_t vres, int beg, int len ) {
    char c = BGL_REGEXP_CHAR( re );
 
-   while( len-- > 0 ) {
-      if( string[ beg ] == c ) {
+   while( beg < len ) {
+      if( string[ beg++ ] == c ) {
 	 VECTOR_SET( vres, 0, BINT( beg - 1 ) );
 	 VECTOR_SET( vres, 1, BINT( beg ) );
 
