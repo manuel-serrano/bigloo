@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Dec 30 15:32:28 2018 (serrano)                */
+;*    Last change :  Fri Jan 18 12:29:27 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -973,6 +973,8 @@
 	    (lcmu64::uint64 . pair)
 	    (lcmbx::bignum . pair)
 	    (exptfx::long ::long ::long)
+	    (expts32::int32 ::int32 ::int32)
+	    (exptu32::uint32 ::uint32 ::uint32)
 	    (exptbx::bignum ::bignum ::bignum)
 	    (integer->string::bstring ::long #!optional (radix::long 10))
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
@@ -1208,6 +1210,8 @@
  	    (lcmu64 no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
 	    (lcmbx no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (exptfx no-alloc side-effect-free no-cfa-top nesting (effect))
+	    (expts32 no-alloc side-effect-free no-cfa-top nesting (effect))
+	    (exptu32 no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (exptbx side-effect-free no-cfa-top nesting (effect))
  	    (positivefx? no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
 	    (positiveelong? no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
@@ -2282,6 +2286,24 @@
       ((zerofx? y) 1)
       ((evenfx? y) (exptfx (*fx x x) (quotientfx y 2)))
       (else (*fx x (exptfx x (-fx y 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    expts32 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (expts32 x y)
+   (cond
+      ((zeros32? y) #s32:1)
+      ((evens32? y) (expts32 (*s32 x x) (quotients32 y #s32:2)))
+      (else (*s32 x (expts32 x (-s32 y #s32:1))))))
+
+;*---------------------------------------------------------------------*/
+;*    exptu32 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (exptu32 x y)
+   (cond
+      ((zerou32? y) #u32:1)
+      ((evenu32? y) (exptu32 (*u32 x x) (quotientu32 y #u32:2)))
+      (else (*u32 x (exptu32 x (-u32 y #u32:1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptbx ...                                                       */
