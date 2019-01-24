@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/check_type.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Ast/check_type.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Dec 28 17:38:10 2000                          */
-;*    Last change :  Fri Apr 21 18:48:43 2017 (serrano)                */
-;*    Copyright   :  2000-17 Manuel Serrano                            */
+;*    Last change :  Thu Jan 24 10:04:47 2019 (serrano)                */
+;*    Copyright   :  2000-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a simple self debug module. It reports on */
 ;*    nodes that are inconsitently typed.                              */
@@ -19,6 +19,7 @@
    (import  ast_env
 	    ast_var
 	    ast_node
+	    ast_dump
 	    engine_param
 	    tools_error
 	    tools_shape
@@ -26,6 +27,7 @@
 	    type_cache
 	    type_coercion
 	    type_typeof
+	    tvector_tvector
 	    object_class
 	    module_module
 	    module_include
@@ -349,6 +351,8 @@
        #t)
       ((and (eq? t1 *foreign*) (coercer-exists? t1 t2))
        ;; foreign type subtyping, XXX < foreign
+       #t)
+      ((and (eq? (type-id t1) 'tvector) (tvec? t2))
        #t)
       (else
        #f)))
