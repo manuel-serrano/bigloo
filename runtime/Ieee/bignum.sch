@@ -42,7 +42,7 @@
 	($lcmbx::bignum (::bignum ::bignum) "bgl_bignum_lcm")
 	($string->bignum::bignum (::string ::int) "bgl_string_to_bignum")
 	($string->integer-obj::obj (::string ::int) "bgl_string_to_integer_obj")
-	(c-bignum->string::bstring  (::bignum ::long) "bgl_bignum_to_string")
+	(c-bignum->string::bstring  (::bignum ::int) "bgl_bignum_to_string")
 	($randbx::bignum (::bignum) "bgl_rand_bignum")
 	($seed-rand::void (::long) "bgl_seed_rand")
 	

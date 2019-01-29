@@ -68,7 +68,7 @@
 	    (macro %object-class-num-set!::obj (::object ::long)
 		   "BGL_OBJECT_CLASS_NUM_SET")
 	    ($bigloo-generic-mutex::mutex "bigloo_generic_mutex")
-	    (%object-hashnumber::int (::obj) "bgl_obj_hash_number")
+	    (%object-hashnumber::long (::obj) "bgl_obj_hash_number")
 	    ($make-generic::procedure (::procedure) "bgl_make_generic")
 
 	    (macro $make-class::class (::symbol ::symbol ::long

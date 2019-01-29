@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------*/
 extern obj_t c_constant_string_to_string( char *c_string );
 extern obj_t llong_to_string( BGL_LONGLONG_T x, long radix );
-extern obj_t bgl_bignum_to_string( obj_t x, long radix );
+extern obj_t bgl_bignum_to_string( obj_t x, int radix );
 extern obj_t bgl_write_obj( obj_t, obj_t );
 extern obj_t bgl_display_obj( obj_t, obj_t );
 extern obj_t bgl_write( obj_t, unsigned char *, size_t );

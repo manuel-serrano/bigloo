@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------*/
 extern bool_t ucs2_lower( ucs2_t );
 extern obj_t integer_to_string( long, long );
-extern obj_t make_string( int, unsigned char );
+extern obj_t make_string( long, unsigned char );
 extern ucs2_t ucs2_tolower( ucs2_t );
 extern obj_t bgl_real_to_string( double );
 

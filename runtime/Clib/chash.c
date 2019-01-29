@@ -168,7 +168,7 @@ get_hash_power_number_from_int( unsigned long i, unsigned long power ) {
 /*    int                                                              */
 /*    get_hash_power_number_from_pointer ...                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF int
+BGL_RUNTIME_DEF long
 bgl_pointer_hashnumber( void * i, unsigned long power ) {
    return get_hash_power_number_from_int( (unsigned long)i, power );
 }
