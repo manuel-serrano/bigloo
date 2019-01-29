@@ -78,7 +78,7 @@
 	    ($gethostinterfaces::pair-nil () "bgl_gethostinterfaces")
 	    ($getprotoents::pair-nil () "bgl_getprotoents")
 	    ($getprotobyname::obj (::string) "bgl_getprotobyname")
-	    ($getprotobynumber::obj (::long) "bgl_getprotobynumber")
+	    ($getprotobynumber::obj (::int) "bgl_getprotobynumber")
 	    
 	    ($getsockopt::obj (::socket ::keyword) "bgl_getsockopt")
 	    ($setsockopt!::obj (::socket ::keyword ::obj) "bgl_setsockopt")
@@ -111,7 +111,7 @@
 	       "bgl_datagram_socket_close")
 	    ($datagram-socket-receive::obj (::datagram-socket ::long)
 	       "bgl_datagram_socket_receive")
-            ($datagram-socket-send::long (::datagram-socket ::bstring ::bstring ::int)
+            ($datagram-socket-send::obj (::datagram-socket ::bstring ::bstring ::int)
 	       "bgl_datagram_socket_send"))
    
    (java    (class foreign

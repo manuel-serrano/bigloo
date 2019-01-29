@@ -28,7 +28,7 @@ extern obj_t make_fx_procedure( obj_t (*)(), int, int );
 extern obj_t c_constant_string_to_string( char * );
 
 static obj_t callcc_restore_stack();
-extern obj_t unwind_stack_until( struct exitd *, obj_t, obj_t, obj_t );
+extern obj_t unwind_stack_until( obj_t, obj_t, obj_t, obj_t );
 extern bool_t unwind_stack_value_p( obj_t );
 extern void *bgl_get_top_of_stack();
 extern obj_t  bgl_current_dynamic_env();
@@ -37,6 +37,7 @@ extern obj_t  bgl_current_dynamic_env();
 /*    void *                                                           */
 /*    bgl_callcc_get_top_of_stack ...                                  */
 /*---------------------------------------------------------------------*/
+BGL_NOINLINE
 void *
 bgl_callcc_get_top_of_stack( void *dummy ) {
    return dummy;
@@ -112,7 +113,7 @@ apply_continuation( obj_t kont, obj_t value ) {
 		 "attempted to apply foreign continuation (created in another thread)",
 		 kont ); 
 	 
-   return unwind_stack_until( etop, estamp, value, restore );
+   return unwind_stack_until( (obj_t)(etop), estamp, value, restore );
 }
 
 /*---------------------------------------------------------------------*/
@@ -147,7 +148,7 @@ callcc_init_stack() {
    BGL_ENV_EXITD_TOP_SET( env, STACK( stack ).exitd_top );
 
    /* jump to the continuation, evaluting the DYNAMIC-WIND's after thunks */
-   unwind_stack_until( BGL_ENV_EXITD_TOP( env ), stamp, s_value, BFALSE );
+   unwind_stack_until( (obj_t)(BGL_ENV_EXITD_TOP( env )), stamp, s_value, BFALSE );
 }
 
 void (*__callcc_init_stack)() = &callcc_init_stack;
@@ -202,7 +203,8 @@ void (*__callcc_install_stack)(obj_t, obj_t) = &callcc_install_stack;
 /*---------------------------------------------------------------------*/
 static obj_t
 callcc_restore_stack( obj_t env, obj_t value, char **_dummy ) {
-   char *stack_top, *actual_stack_top;
+   char *stack_top;
+   char *actual_stack_top;
    obj_t stack;
    obj_t kont = PROCEDURE_REF( env, 0 );
    char *dummy[ 1024 ];
@@ -231,8 +233,25 @@ callcc_restore_stack( obj_t env, obj_t value, char **_dummy ) {
       /* En plus, afin, d'etre sur que dummy ne va pas etre mangee    */
       /* par un compilo trop intelligent, on la range dans une        */
       /* variable globale.                                            */
-      glob_dummy = (long)dummy;
-      callcc_restore_stack( env, value, &dummy[ 1 ] );
+
+      /* if we have alloca, use it to increase the size of the stack. */
+      /* This helps guard against the case where the recursive call   */
+      /* is optimized to a goto. This can happen when linktime        */
+      /* optimization is used.                                        */
+
+#if( defined( HAVE_ALLOCA ) ) 
+#if( defined( STACK_GROWS_DOWN ) )
+     unsigned long stack_incr = (unsigned long)actual_stack_top -
+       (unsigned long)stack_top;
+#else
+     unsigned long stack_incr = (unsigned long)stack_top -
+       (unsigned long)actual_stack_top;
+#endif
+     alloca(stack_incr+1);
+#endif     
+     
+     glob_dummy = (long)dummy;
+     callcc_restore_stack( env, value, &dummy[ 1 ] );
    } else {
       __callcc_install_stack( kont, value );
    }
@@ -273,7 +292,6 @@ call_cc( obj_t proc ) {
 #else
       stack_size = (unsigned long)stack_top-(unsigned long)BGL_ENV_STACK_BOTTOM( env );
 #endif
-
       /* on alloue un espace pour la sauvegarder de la pile  */
       stack = MAKE_STACK( stack_size + sizeof(char *), aux );
 

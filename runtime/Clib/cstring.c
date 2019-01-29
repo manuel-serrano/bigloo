@@ -68,7 +68,7 @@ string_to_bstring( char *c_string ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-make_string( int len, unsigned char c ) {
+make_string( long len, unsigned char c ) {
    obj_t string;
 
    if( len < 0 ) {
@@ -169,8 +169,8 @@ string_append_3( obj_t s1, obj_t s2, obj_t s3 ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-c_substring( obj_t src_string, int min, int max ) {
-   int len = max - min;
+c_substring( obj_t src_string, long min, long max ) {
+   long len = max - min;
    obj_t dst_string = GC_MALLOC_ATOMIC( STRING_SIZE + len );
 
 #if( !defined( TAG_STRING ) )
@@ -192,7 +192,7 @@ c_substring( obj_t src_string, int min, int max ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF
 obj_t
-blit_string( obj_t s1, int offset1, obj_t s2, int offset2, int len ) {
+blit_string( obj_t s1, long offset1, obj_t s2, long offset2, long len ) {
    /* intrinsic memcpy doest not work when memory areas overlap */
    unsigned char *src = &STRING_REF( s1, offset1 );
    unsigned char *dest = &STRING_REF( s2, offset2 );
