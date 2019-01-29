@@ -232,6 +232,9 @@ using the @code{library-load} function (see @ref{Bigloo Libraries}).
 @subsubsection Certificates
 @cindex Certificates
 
+Certificates are instances of the @code{certificate} class. There type
+can be checked with @code{(isa? expr certificate)}.
+
 @deffn {SSL library procedure} read-certificate file
 Reads an X509 certificate stored in PEM format in the given @var{file} name.
 If the file cannot be read, it raises an
@@ -244,11 +247,6 @@ name.
 If the file cannot be read, it raises an
 @code{&io-error} condition. Otherwise the list of certificate contained in
 the file is returned.
-@end deffn
-
-@deffn {SSL library procedure} certificate? obj
-Returns @code{#t} if @var{obj} is an SSL certificate.
-Otherwise returns @code{#f}.
 @end deffn
 
 @deffn {SSL library procedure} certificate-subject cert
@@ -264,14 +262,12 @@ Returns the CommonName (CN) part of the issuer of the given certificate.
 @subsubsection Private Keys
 @cindex Private Keys
 
+Private keys are instances of the @code{private-key} class. There type
+can be checked with @code{(isa? expr private-key)}.
+
 @deffn {SSL library procedure} read-private-key file
 Reads a private key stored in PEM format in the given @var{file} name.
 If the file cannot be read, it raises an
 @code{&io-error} condition. Otherwise the private key is returned.
-@end deffn
-
-@deffn {SSL library procedure} private-key? obj
-Returns @code{#t} if @var{obj} is an SSL private key.
-Otherwise returns @code{#f}.
 @end deffn
 
