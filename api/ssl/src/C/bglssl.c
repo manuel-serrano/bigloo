@@ -82,7 +82,7 @@ const char *root_certs[] = {
 };
 
 extern obj_t void_star_to_obj( void * );
-extern obj_t make_string( int, char );
+extern obj_t make_string( long, char );
 
 #define kMaxSessionSize (10 * 1014)
 
@@ -1300,7 +1300,7 @@ bgl_verify_callback( int preverify_ok, X509_STORE_CTX *ctx ) {
 /*    bgl_ssl_connection_init ...                                      */
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
-bgl_ssl_connection_init( ssl_connection ssl, char *servname ) {
+bgl_ssl_connection_init( ssl_connection ssl) {
    secure_context bctx = CCON( ssl )->BgL_ctxz00;
    int verify_mode;
    SSL *_ssl = SSL_new( CSC( bctx )->BgL_z42nativez42 );
@@ -2022,7 +2022,7 @@ bgl_ssl_connection_verify_error( ssl_connection ssl ) {
 /*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_ssl_ctx_set_key ...                                          */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
+BGL_RUNTIME_DEF bool_t
 bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
    
 #if( SSL_DEBUG )
@@ -2031,7 +2031,7 @@ bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t
    {
       BIO *bio = bgl_load_bio( cert, offset, len );
 
-      if( !bio ) return BFALSE;
+      if( !bio ) return 0;
 
       EVP_PKEY *key =  PEM_read_bio_PrivateKey(
 	 bio, NULL, NULL,
@@ -2053,7 +2053,7 @@ bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t
 
       BIO_free( bio );
    
-      return BTRUE;
+      return 1;
    }
 }
 	 
@@ -2061,8 +2061,8 @@ bgl_ssl_ctx_set_key( secure_context sc, obj_t cert, long offset, long len, obj_t
 /*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_ssl_ctx_set_cert ...                                         */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
-bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_t passphrase ) {
+BGL_RUNTIME_DEF bool_t
+bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len) {
 #if( SSL_DEBUG )
    fprintf( stderr, "%s,%d:setCert\n", __FILE__, __LINE__ );
 #endif
@@ -2072,7 +2072,7 @@ bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_
       int r;
       BIO *bio = bgl_load_bio( cert, offset, len );
 	 
-      if( !bio ) return BFALSE;
+      if( !bio ) return 0;
 
       rv = SSL_CTX_use_certificate_chain( CSC( sc )->BgL_z42nativez42, bio );
 
@@ -2085,7 +2085,7 @@ bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_
 			   (obj_t)sc );
       }
 
-      return BTRUE;
+      return 1;
    }
 }
 	 
@@ -2093,7 +2093,7 @@ bgl_ssl_ctx_set_cert( secure_context sc, obj_t cert, long offset, long len, obj_
 /*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_ssl_ctx_set_session_id_context ...                           */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
+BGL_RUNTIME_DEF bool_t
 bgl_ssl_ctx_set_session_id_context( secure_context sc, obj_t sic, long offset, long len ) {
    int r = SSL_CTX_set_session_id_context
       ( CSC( sc )->BgL_z42nativez42, &(STRING_REF( sic, offset)), len );
@@ -2119,14 +2119,14 @@ bgl_ssl_ctx_set_session_id_context( secure_context sc, obj_t sic, long offset, l
 			msg, (obj_t)sc );
    }
 
-   return BTRUE;
+   return 1;
 }
 
 /*---------------------------------------------------------------------*/
 /*    BGL_RUNTIME_DEF obj_t                                            */
 /*    bgl_load_pkcs12 ...                                              */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
+BGL_RUNTIME_DEF bool_t
 bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
 #if( SSL_DEBUG )
    fprintf( stderr, "%s,%d:LoadPKCS12\n", __FILE__, __LINE__ );
@@ -2163,7 +2163,7 @@ bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
 	 X509_free( cert );
 	 sk_X509_free( extraCerts );
 
-	 ret = 1;
+	 ret = 0;
       }
 
       PKCS12_free( p12 );
@@ -2176,7 +2176,7 @@ bgl_load_pkcs12( secure_context sc, obj_t pfx, obj_t pass ) {
 	 C_SYSTEM_FAILURE( BGL_IO_ERROR, "load-pkcs12", str, (obj_t)sc );
       }
 	 
-      return BTRUE;
+      return 1;
    }
 }
   
@@ -2861,10 +2861,10 @@ bgl_ssl_hash_digest( ssl_hash hash ) {
 }
 
 /*---------------------------------------------------------------------*/
-/*    BGL_RUNTIME_DEF obj_t                                            */
+/*    BGL_RUNTIME_DEF bool_t                                            */
 /*    bgl_ssl_hmac_init ...                                            */
 /*---------------------------------------------------------------------*/
-BGL_RUNTIME_DEF obj_t
+BGL_RUNTIME_DEF bool_t
 bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
 #if( SSL_DEBUG )
    BGL_MUTEX_LOCK( bigloo_mutex );
@@ -2882,7 +2882,7 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
 
    CHMAC( hmac )->BgL_z42mdz42 =
       (void *)EVP_get_digestbyname( (const char *)BSTRING_TO_STRING( type ) );
-   if( !(CHMAC( hmac )->BgL_z42mdz42) ) return BFALSE;
+   if( !(CHMAC( hmac )->BgL_z42mdz42) ) return 0;
 
    CHMAC( hmac )->BgL_z42mdzd2ctxz90 = BGL_HMAC_CTX_new();
    BGL_HMAC_CTX_init( CHMAC( hmac )->BgL_z42mdzd2ctxz90 );
@@ -2898,7 +2898,7 @@ bgl_ssl_hmac_init( ssl_hmac hmac, obj_t type, obj_t key ) {
 		     STRING_LENGTH( key ),
 		     CHMAC( hmac )->BgL_z42mdz42 );
    }
-   return BTRUE;
+   return 1;
 }
    
 /*---------------------------------------------------------------------*/

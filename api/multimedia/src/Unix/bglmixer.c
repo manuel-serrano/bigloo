@@ -66,12 +66,12 @@ typedef struct mixer {
 /*    exported functions                                               */
 /*---------------------------------------------------------------------*/
 extern obj_t bgl_open_mixer( char * );
-extern obj_t bgl_close_mixer( mixer_t );
-extern int bgl_mixer_read_vol( mixer_t, int, int );
-extern obj_t bgl_mixer_write_vol( mixer_t, int, int );
-extern char *bgl_mixer_dev_name( mixer_t, int );
-extern int bgl_mixer_dev_num( mixer_t );
-extern bool bgl_mixer_dev_p( mixer_t, int );
+extern obj_t bgl_close_mixer( obj_t );
+extern int bgl_mixer_read_vol( obj_t, int, int );
+extern obj_t bgl_mixer_write_vol( obj_t, int, int );
+extern char *bgl_mixer_dev_name( obj_t, int );
+extern int bgl_mixer_dev_num( obj_t );
+extern bool bgl_mixer_dev_p( obj_t, int );
 
 /*---------------------------------------------------------------------*/
 /*    static functions                                                 */
@@ -88,22 +88,22 @@ bgl_open_mixer( char *dname ) {
 }
 
 obj_t
-bgl_close_mixer( mixer_t mixer ) {
+bgl_close_mixer( obj_t mixerobj ) {
    return BUNSPEC;
 }
 
 int
-bgl_mixer_read_vol( mixer_t mixer, int dev, int read ) {
+bgl_mixer_read_vol( obj_t mixerobj, int dev, int read ) {
    return -1;
 }
 
 obj_t
-bgl_mixer_write_vol( mixer_t mixer, int dev, int value ) {
+bgl_mixer_write_vol( obj_t mixerobj, int dev, int value ) {
    return BUNSPEC;
 }
 
 char *
-bgl_mixer_dev_name( mixer_t mixer, int dev ) {
+bgl_mixer_dev_name( obj_t mixerobj, int dev ) {
    C_SYSTEM_FAILURE( BGL_IO_ERROR,
 		     "mixer-dev-name",
 		     "operation not supported on this platform",
@@ -111,12 +111,12 @@ bgl_mixer_dev_name( mixer_t mixer, int dev ) {
 }
 
 int
-bgl_mixer_dev_num( mixer_t mixer ) {
+bgl_mixer_dev_num( obj_t mixerobj ) {
    return -1;
 }
 
 bool
-bgl_mixer_devp( mixer_t mixer, int dev ) {
+bgl_mixer_devp( obj_t mixerobj, int dev ) {
    return 0;
 }
 
@@ -177,9 +177,10 @@ bgl_open_mixer( char *dname ) {
 /*    bgl_close_mixer ...                                              */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_close_mixer( mixer_t mixer ) {
+bgl_close_mixer( obj_t mixerobj ) {
    int i;
 
+   mixer_t mixer = (mixer_t)mixerobj;
    ioctl( mixer->mixfd, SOUND_MIXER_READ_RECSRC, &(mixer->recsrc) );
    for( i = 0; i < mixer->nrdevices; i++ ) {
       if( mixer->mixdevs[ i ].support )
@@ -215,8 +216,9 @@ do_status( mixer_t mixer ) {
 /*    Read the volume for a device.                                    */
 /*---------------------------------------------------------------------*/
 int
-bgl_mixer_read_vol( mixer_t mixer, int dev, int read ) {
-   if( read )
+bgl_mixer_read_vol( obj_t mixerobj, int dev, int read ) {
+  mixer_t mixer = (mixer_t)mixerobj;
+  if( read )
       ioctl( mixer->mixfd, MIXER_READ( dev ), &(mixer->mixdevs[ dev ].value) );
    return mixer->mixdevs[ dev ].value;
 }
@@ -226,7 +228,8 @@ bgl_mixer_read_vol( mixer_t mixer, int dev, int read ) {
 /*    bgl_mixer_write_vol ...                                          */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_mixer_write_vol( mixer_t mixer, int dev, int value ) {
+bgl_mixer_write_vol( obj_t mixerobj, int dev, int value ) {
+   mixer_t mixer = (mixer_t)mixerobj;
    mixer->mixdevs[ dev ].value = value;
    ioctl( mixer->mixfd, MIXER_WRITE( dev ), &(mixer->mixdevs[ dev ].value) );
 
@@ -238,7 +241,8 @@ bgl_mixer_write_vol( mixer_t mixer, int dev, int value ) {
 /*    bgl_mixer_dev_name ...                                           */
 /*---------------------------------------------------------------------*/
 char *
-bgl_mixer_dev_name( mixer_t mixer, int dev ) {
+bgl_mixer_dev_name( obj_t mixerobj, int dev ) {
+   mixer_t mixer = (mixer_t)mixerobj;
    return mixer->mixdevs[ dev ].name;
 }
 
@@ -247,7 +251,8 @@ bgl_mixer_dev_name( mixer_t mixer, int dev ) {
 /*    bgl_mixer_dev_num ...                                            */
 /*---------------------------------------------------------------------*/
 int
-bgl_mixer_dev_num( mixer_t mixer ) {
+bgl_mixer_dev_num( obj_t mixerobj ) {
+   mixer_t mixer = (mixer_t)mixerobj;
    return mixer->nrdevices;
 }
 
@@ -256,7 +261,8 @@ bgl_mixer_dev_num( mixer_t mixer ) {
 /*    bgl_mixer_devp ...                                               */
 /*---------------------------------------------------------------------*/
 bool
-bgl_mixer_devp( mixer_t mixer, int dev ) {
+bgl_mixer_devp( obj_t mixerobj, int dev ) {
+   mixer_t mixer = (mixer_t)mixerobj;
    return (dev < mixer->nrdevices) && (mixer->mixdevs[ dev ].support);
 }
 
