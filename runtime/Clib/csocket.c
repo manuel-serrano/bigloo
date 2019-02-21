@@ -1703,11 +1703,11 @@ bgl_socket_localp( obj_t sock ) {
    if( SOCKET( sock ).stype == BGL_SOCKET_SERVER ) {
       return 0;
    } else {
-      struct sockaddr_in sin;
-      int len = sizeof( sin );
+      struct sockaddr_storage address;
+      int len = sizeof( address );
       
       if( getsockname( SOCKET( sock ).fd,
-		       (struct sockaddr *)&sin,
+		       (struct sockaddr *)&address,
 		       (socklen_t *)&len) ) {
 	 char *buffer = alloca( 1024 );
       
@@ -1718,12 +1718,14 @@ bgl_socket_localp( obj_t sock ) {
 	 socket_error( "socket-localp", buffer, sock );
       } else if( SOCKET( sock ).family == AF_INET ) {
 	 /* ipv4 addr */
-	 return sin.sin_addr.s_addr == SOCKET( sock ).address.in_addr.s_addr;
+         struct sockaddr_in* sin = (struct sockaddr_in *)&address;
+	 return sin->sin_addr.s_addr == SOCKET( sock ).address.in_addr.s_addr;
       } else {
 	 /* ipv6 addr */
 	 /* MS: 17nov2014 don't know how to implement this */
+         struct sockaddr_in6* sin = (struct sockaddr_in6 *)&address;
 	 fprintf( stderr, "(%s:%d) IPV6 UNTESTED\n", __FILE__, __LINE__ );
-	 return memcmp( (char *)&(((struct sockaddr_in6 *)( &sin ))->sin6_addr),
+	 return memcmp( (char *)&(sin->sin6_addr),
 			(char *)&(SOCKET( sock ).address.in6_addr),
 			sizeof( (SOCKET( sock ).address.in6_addr) ) );
       }
