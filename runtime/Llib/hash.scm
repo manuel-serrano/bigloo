@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/hash.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/hash.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon May  4 16:46:53 2015 (serrano)                */
+;*    Last change :  Mon Feb 25 14:03:38 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -118,7 +118,8 @@
 	    (hashtable-key-list::pair-nil ::struct)
 	    (hashtable-map ::struct ::procedure)
 	    (hashtable-for-each ::struct ::procedure)
-	    (hashtable-filter! ::struct ::procedure))
+	    (hashtable-filter! ::struct ::procedure)
+	    (hashtable-clear! ::struct))
 
    (pragma  (hashtable-contains? side-effect-free)
 	    (hashtable-get side-effect-free)))
@@ -403,6 +404,27 @@
 		(loop (+fx i 1) (+fx delta (-fx new-len old-len))))
              (%hashtable-size-set! table
 		(+fx delta (%hashtable-size table)))))))
+
+;*---------------------------------------------------------------------*/
+;*    hashtable-clear! ...                                             */
+;*---------------------------------------------------------------------*/
+(define (hashtable-clear! table::struct)
+   (if (hashtable-weak? table)
+       (weak-hashtable-clear! table)
+       (plain-hashtable-clear! table)))
+
+;*---------------------------------------------------------------------*/
+;*    plain-hashtable-clear! ...                                       */
+;*---------------------------------------------------------------------*/
+(define (plain-hashtable-clear! table::struct)
+   (let* ((buckets (%hashtable-buckets table))
+	  (buckets-len (vector-length buckets)))
+      (let loop ((i 0))
+	 (if (<fx i buckets-len)
+	     (begin
+		(vector-set-ur! buckets i '())
+		(loop (+fx i 1)))
+             (%hashtable-size-set! table 0)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    hashtable-contains? ...                                          */
