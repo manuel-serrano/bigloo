@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/remove.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/remove.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Fri Apr 21 18:48:54 2017 (serrano)                */
+;*    Last change :  Tue Feb 26 13:42:21 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a function which takes a list of          */
 ;*    global variables and remove all globals which are not            */
@@ -191,7 +191,7 @@
 ;*    node-remove! ::cast ...                                          */
 ;*---------------------------------------------------------------------*/
 (define-method (node-remove! node::cast)
-   (node-remove! (cast-arg node))
+   (cast-arg-set! node (node-remove! (cast-arg node)))
    node)
 
 ;*---------------------------------------------------------------------*/

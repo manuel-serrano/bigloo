@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Beta/walk.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Beta/walk.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 08:46:28 1996                          */
-;*    Last change :  Wed May 31 15:56:00 2017 (serrano)                */
+;*    Last change :  Tue Feb 26 13:54:42 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements a very simple beta reduction. It reduces  */
 ;*    read-only local variables bound to atom (e.g., bool, number)     */
@@ -115,7 +115,7 @@
 ;*    node-beta! ::cast ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (node-beta! node::cast stack)
-   (node-beta! (cast-arg node) stack)
+   (cast-arg-set! node (node-beta! (cast-arg node) stack))
    node)
 
 ;*---------------------------------------------------------------------*/

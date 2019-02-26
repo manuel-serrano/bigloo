@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Callcc/walk.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Callcc/walk.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Apr 28 10:50:15 1995                          */
-;*    Last change :  Fri Apr 21 18:47:20 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 26 13:55:25 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    When compiling for call/cc we put all written local variables    */
 ;*    in cells.                                                        */
@@ -219,7 +219,7 @@
 ;*    callcc! ::cast ...                                               */
 ;*---------------------------------------------------------------------*/
 (define-method (callcc! node::cast)
-   (callcc! (cast-arg node))
+   (cast-arg-set! node (callcc! (cast-arg node)))
    node)
 
 ;*---------------------------------------------------------------------*/
