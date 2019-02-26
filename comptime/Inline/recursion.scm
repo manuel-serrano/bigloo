@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 19 13:40:47 1996                          */
-;*    Last change :  Sun Feb  4 19:02:25 2018 (serrano)                */
-;*    Copyright   :  1996-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 26 10:59:18 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of recursive functions.                             */
 ;*=====================================================================*/
@@ -52,7 +52,8 @@
 	  (inline-app-simple node kfactor stack "simple"))
 	 (else
 	  ;; ok, we do a smart inlining.
-	  (trace (inline 2) "inline-app-recursive: " (shape node) #\Newline)
+	  (trace (inline inline+ 2)
+	     "inline-app-recursive: " (shape node) #\Newline)
 	  (inline-app-labels node kfactor stack)))))
 
 ;*---------------------------------------------------------------------*/
@@ -85,7 +86,6 @@
 			    (clone-local l (duplicate::svar (local-value l))))
 		       var-args))
 	  (substitute (substitutions variable (app-args node) new-args))
-	  
 	  (svg-calls-args (map (lambda (app) (app-args app)) rec-calls))
 	  (remove! (for-each remove-invariant-args! rec-calls))
 	  (iloc (and (global? variable)
@@ -129,7 +129,7 @@
 				  #f)))
       (local-value-set! local new-sfun)
       ;; some traces
-      (trace (inline 3)
+      (trace (inline inline+ 3)
 	     "   new-fun  : " (shape local) #\Newline
 	     "   user?    : " (local-user? local) #\Newline
 	     "   rec-calls: " (shape rec-calls) #\Newline
@@ -142,7 +142,7 @@
 		   " (recursive)"
 		   #\Newline))
       ;; now (and only now), we can inline the new local body
-      (trace (inline 3)
+      (trace (inline inline+ 3)
 	     "Je reinline: " (shape local) " "
 	     (shape (sfun-body (local-value local)))
 	     #\Newline)
@@ -179,6 +179,7 @@
 	 (type (node-type node))
 	 (locals (list local))
 	 (body (alphatize (list variable) (list local) iloc new-call)))))
+
 
 ;*---------------------------------------------------------------------*/
 ;*    unroll-call ...                                                  */
