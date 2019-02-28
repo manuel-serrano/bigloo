@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Mon Feb 25 14:03:38 2019 (serrano)                */
+;*    Last change :  Thu Feb 28 07:36:01 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The hash tables.                                                 */
 ;*    -------------------------------------------------------------    */
@@ -691,7 +691,7 @@
       ((foreign? key)
        (absfx (foreign-hash-number key)))
       ((real? key)
-       (get-hashnumber (flonum->fixnum (*fl key 1000.))))
+       (get-hashnumber (flonum->fixnum key)))
       (else
        (absfx (obj-hash-number key)))))
 
