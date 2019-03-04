@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Apr 20 10:10:17 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Last change :  Mon Mar  4 15:33:24 2019 (serrano)                */
+/*    Copyright   :  2016-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -212,6 +212,8 @@ struct bgl_hvector {
 #define BGL_U64VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == U64VECTOR_TYPE))
 #define BGL_F32VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == F32VECTOR_TYPE))
 #define BGL_F64VECTORP( v ) (POINTERP( v ) && (TYPE( v ) == F64VECTOR_TYPE))
+
+#define BGL_SVECTOR_TO_PTR( v ) (&(STVECTOR( v, void * )->obj0))
 
 #define BGL_S8VREF( v, i ) (&(STVECTOR( v, int8_t )->obj0))[ i ]
 #define BGL_S8VSET( v, i, o ) (BGL_S8VREF( v, i ) = o, BUNSPEC)

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/alsa/src/Llib/alsa.sch           */
+;*    .../prgm/project/bigloo/bigloo/api/alsa/src/Llib/alsa.sch        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Mon Mar 23 17:45:08 2015 (serrano)                */
-;*    Copyright   :  2011-15 Manuel Serrano                            */
+;*    Last change :  Mon Mar  4 08:21:38 2019 (serrano)                */
+;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
 ;*=====================================================================*/
@@ -360,6 +360,10 @@
 
       (macro $bgl-snd-ctl-card-info-init::void
 	 (::obj) "bgl_snd_ctl_card_info_init")
+      (macro $bgl-snd-ctl-rawmidi-info-init::void
+	 (::obj) "bgl_snd_ctl_rawmidi_info_init")
+      (macro $bgl-snd-ctl-rawmidi-next-device::int
+	 (::obj ::int) "bgl_snd_ctl_rawmidi_next_device")
 
       ;; snd-mixer
       (type $snd-mixer void* "snd_mixer_t *")
@@ -376,6 +380,36 @@
 	 (::$snd-mixer) "snd_mixer_load")
       (macro $snd-mixer-get-count::uint
 	 (::$snd-mixer) "snd_mixer_get_count")
+
+      ;; snd-rawmidi
+      (type $snd-rawmidi void* "snd_rawmidi_t *")
+      (infix macro $snd-rawmidi-nil::$snd-rawmidi () "0L")
+      (infix macro $snd-rawmidi-nil?::bool ($snd-rawmidi) " == 0L")
+
+      (macro $snd-rawmidi-append::int
+	 "SND_RAWMIDI_APPEND")
+      (macro $snd-rawmidi-nonblock::int
+	 "SND_RAWMIDI_NONBLOCK")
+      (macro $snd-rawmidi-sync::int
+	 "SND_RAWMIDI_SYNC")
+      
+      (macro $snd-rawmidi-stream-input::int
+	 "SND_RAWMIDI_STREAM_INPUT")
+      (macro $snd-rawmidi-stream-output::int
+	 "SND_RAWMIDI_STREAM_OUTPUT")
+      ($bgl-snd-rawmidi-isdir::bool
+	 (::obj ::int ::int ::int) "bgl_snd_rawmidi_isdir")
+
+      ($bgl-snd-rawmidi-open-output::int
+	 (::obj ::string ::int) "bgl_snd_rawmidi_open_output")
+      (macro $snd-rawmidi-close::int
+	 (::$snd-rawmidi) "snd_rawmidi_close")
+
+      (macro $snd-rawmidi-write::int
+	 (::$snd-rawmidi ::void* ::long) "snd_rawmidi_write")
+      
+      (macro $u8vector->bytes::void*
+	 (::u8vector) "BGL_SVECTOR_TO_PTR")
       
       ;; snd-error
       (macro $snd-strerror::string

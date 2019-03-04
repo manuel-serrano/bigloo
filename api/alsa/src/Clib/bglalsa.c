@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/alsa/src/Clib/bglalsa.c          */
+/*    .../prgm/project/bigloo/bigloo/api/alsa/src/Clib/bglalsa.c       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:07:00 2011                          */
-/*    Last change :  Wed Jul 26 18:21:27 2017 (serrano)                */
-/*    Copyright   :  2011-17 Manuel Serrano                            */
+/*    Last change :  Mon Mar  4 08:22:36 2019 (serrano)                */
+/*    Copyright   :  2011-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo ALSA specific functions                                   */
 /*=====================================================================*/
@@ -14,6 +14,7 @@
 #include "bglpcm.h"
 #include "bglctl.h"
 #include "bglmixer.h"
+#include "bglrawmidi.h"
 
 /*---------------------------------------------------------------------*/
 /*    OBJ_TO_SND_PCM                                                   */
@@ -34,6 +35,12 @@
    (((BgL_alsazd2sndzd2mixerz00_bglt)CREF(o))->BgL_z42builtinz42)
 
 /*---------------------------------------------------------------------*/
+/*    OBJ_TO_SND_RAWMIDI                                               */
+/*---------------------------------------------------------------------*/
+#define OBJ_TO_SND_RAWMIDI( o ) \
+   (((BgL_alsazd2sndzd2rawmidiz00_bglt)CREF(o))->BgL_z42builtinz42)
+
+/*---------------------------------------------------------------------*/
 /*    alsa-snd-card-info bigloo object                                 */
 /*---------------------------------------------------------------------*/
 #define BGL_SND_CTL_CARD_INFO_CTL( o ) \
@@ -52,6 +59,26 @@
    ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_mixernamez00
 #define BGL_SND_CTL_CARD_INFO_COMPONENTS( o ) \
    ((BgL_alsazd2sndzd2ctlzd2cardzd2infoz00_bglt)CREF(o))->BgL_componentsz00
+
+/*---------------------------------------------------------------------*/
+/*    alsa-snd-rawmidi-info bigloo object                              */
+/*---------------------------------------------------------------------*/
+#define BGL_SND_CTL_RAWMIDI_INFO_CTL( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_ctlz00
+#define BGL_SND_CTL_RAWMIDI_INFO_RAWMIDI( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_rawmidiz00
+#define BGL_SND_CTL_RAWMIDI_INFO_CARD( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_cardz00
+#define BGL_SND_CTL_RAWMIDI_INFO_ID( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_idz00
+#define BGL_SND_CTL_RAWMIDI_INFO_NAME( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_namez00
+#define BGL_SND_CTL_RAWMIDI_INFO_DEVICE( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_devicez00
+#define BGL_SND_CTL_RAWMIDI_INFO_SUBDEVICE( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_subdevicez00
+#define BGL_SND_CTL_RAWMIDI_INFO_SUBDEVICESCOUNT( o ) \
+   ((BgL_alsazd2sndzd2ctlzd2rawmidizd2infoz00_bglt)CREF(o))->BgL_subdevicescountz00
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
@@ -100,6 +127,24 @@ bgl_snd_ctl_open( obj_t o, char *card, int mode ) {
 
 /*---------------------------------------------------------------------*/
 /*    int                                                              */
+/*    bgl_snd_ctl_rawmidi_next_device ...                              */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_ctl_rawmidi_next_device( obj_t o, int dev ) {
+   int device = dev;
+   int err = snd_ctl_rawmidi_next_device( OBJ_TO_SND_CTL( o ), &device );
+
+   if( err < 0 ) {
+      bgl_alsa_error( "alsa-snd-ctl-rawmidi-next-device",
+		      (char *)snd_strerror( err ),
+		      o );
+   } else {
+      return device;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
 /*    bgl_snd_mixer_open ...                                           */
 /*---------------------------------------------------------------------*/
 int
@@ -115,6 +160,7 @@ void
 bgl_snd_ctl_card_info_init( obj_t o ) {
    int err;
    snd_ctl_card_info_t *info;
+   
    snd_ctl_card_info_alloca( &info );
    snd_ctl_t *handle = OBJ_TO_SND_CTL( BGL_SND_CTL_CARD_INFO_CTL( o ) );
    
@@ -138,6 +184,50 @@ bgl_snd_ctl_card_info_init( obj_t o ) {
       string_to_bstring( (char *)snd_ctl_card_info_get_mixername( info ) );
    BGL_SND_CTL_CARD_INFO_COMPONENTS( o ) =
       string_to_bstring( (char *)snd_ctl_card_info_get_components( info ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bgl_snd_ctl_rawmidi_info_init ...                                */
+/*---------------------------------------------------------------------*/
+void
+bgl_snd_ctl_rawmidi_info_init( obj_t o ) {
+   int err;
+   snd_rawmidi_info_t *info;
+   int device = -1;
+
+   snd_rawmidi_info_alloca( &info );
+   snd_rawmidi_info_set_device( info, BGL_SND_CTL_RAWMIDI_INFO_DEVICE( o ) );
+   snd_ctl_t *handle = OBJ_TO_SND_CTL( BGL_SND_CTL_RAWMIDI_INFO_CTL( o ) );
+   
+   if( (err = snd_ctl_rawmidi_info( handle, info )) < 0 ) {
+      bgl_alsa_error( "alsa-snd-ctl-rawmidi-info",
+		      (char *)snd_strerror( err ),
+		      o );
+   }
+   
+   BGL_SND_CTL_RAWMIDI_INFO_CARD( o ) =
+      snd_rawmidi_info_get_card( info );
+   BGL_SND_CTL_RAWMIDI_INFO_ID( o ) =
+      string_to_bstring( (char *)snd_rawmidi_info_get_id( info ) );
+   BGL_SND_CTL_RAWMIDI_INFO_NAME( o ) =
+      string_to_bstring( (char *)snd_rawmidi_info_get_name( info ) );
+   BGL_SND_CTL_RAWMIDI_INFO_DEVICE( o ) =
+      snd_rawmidi_info_get_device( info );
+   BGL_SND_CTL_RAWMIDI_INFO_SUBDEVICE( o ) =
+      snd_rawmidi_info_get_subdevice( info );
+   BGL_SND_CTL_RAWMIDI_INFO_SUBDEVICESCOUNT( o ) =
+      snd_rawmidi_info_get_subdevices_count( info );
+
+}
+
+/*---------------------------------------------------------------------*/
+/*    int                                                              */
+/*    bgl_snd_rawmidi_open_output ...                                  */
+/*---------------------------------------------------------------------*/
+int
+bgl_snd_rawmidi_open_output( obj_t o, char *name, int mode ) {
+   return snd_rawmidi_open( NULL, &(OBJ_TO_SND_RAWMIDI( o )), name, mode );
 }
 
 /*---------------------------------------------------------------------*/
@@ -475,7 +565,6 @@ bgl_snd_card_get_longname( int i ) {
       return 0L;
    }
 }      
-
    
 /*---------------------------------------------------------------------*/
 /*    obj_t                                                            */
@@ -502,3 +591,26 @@ bgl_snd_devices_list( char *iface ) {
       return BNIL;
    }
 }      
+
+/*---------------------------------------------------------------------*/
+/*    bool_t                                                           */
+/*    bgl_snd_rawmidi_isdir ...                                        */
+/*---------------------------------------------------------------------*/
+bool_t
+bgl_snd_rawmidi_isdir( obj_t o, int card, int device, int sub, int dir ) {
+   snd_rawmidi_info_t *info;
+   int status;
+
+   snd_rawmidi_info_alloca( &info);
+   snd_rawmidi_info_set_device( info, device );
+   snd_rawmidi_info_set_subdevice( info, sub );
+   snd_rawmidi_info_set_stream( info, dir );
+   
+   if( (status = snd_ctl_rawmidi_info(OBJ_TO_SND_CTL( o ), info)) < 0 && status != -ENXIO ) {
+      return status;
+   } else if( status == 0 ) {
+      return 1;
+   }
+
+   return 0;
+}
