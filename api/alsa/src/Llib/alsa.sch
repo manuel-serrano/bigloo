@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Mon Mar  4 08:21:38 2019 (serrano)                */
+;*    Last change :  Tue Mar  5 12:38:08 2019 (serrano)                */
 ;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -407,9 +407,6 @@
 
       (macro $snd-rawmidi-write::int
 	 (::$snd-rawmidi ::void* ::long) "snd_rawmidi_write")
-      
-      (macro $u8vector->bytes::void*
-	 (::u8vector) "BGL_SVECTOR_TO_PTR")
       
       ;; snd-error
       (macro $snd-strerror::string

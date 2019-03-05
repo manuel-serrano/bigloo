@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar  4 08:15:55 2019                          */
-;*    Last change :  Mon Mar  4 15:44:58 2019 (serrano)                */
+;*    Last change :  Tue Mar  5 12:34:34 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    ALSA rawmidi wrapper                                             */
@@ -19,6 +19,12 @@
    (import  __alsa_alsa
 	    __alsa_control)
 
+   
+   (extern (macro $u8vector->bytes::void*
+	      (::u8vector) "BGL_SVECTOR_TO_PTR")
+	   (macro $bstring->bytes::void*
+	      (::bstring) "(void *)BSTRING_TO_STRING"))
+
    (export (class alsa-snd-rawmidi::alsa-object
 	      ($builtin::$snd-rawmidi read-only (default (%$snd-rawmidi-nil))))
 
@@ -29,6 +35,7 @@
 
 	   (inline alsa-snd-rawmidi-write-byte ::alsa-snd-rawmidi ::uint8)
 	   (inline alsa-snd-rawmidi-write-bytes ::alsa-snd-rawmidi ::u8vector)
+	   (alsa-snd-rawmidi-write-string ::alsa-snd-rawmidi ::bstring)
 	   
 	   (inline alsa-snd-rawmidi-input?::bool ::alsa-snd-ctl ::int ::int)
 	   (inline alsa-snd-rawmidi-output?::bool ::alsa-snd-ctl ::int ::int)))
@@ -76,6 +83,14 @@
    (with-access::alsa-snd-rawmidi rm ($builtin)
       ($snd-rawmidi-write $builtin ($u8vector->bytes bytes)
 	 (u8vector-length bytes))))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-rawmidi-write-string ...                                */
+;*---------------------------------------------------------------------*/
+(define (alsa-snd-rawmidi-write-string rm::alsa-snd-rawmidi string)
+   (with-access::alsa-snd-rawmidi rm ($builtin)
+      ($snd-rawmidi-write $builtin ($bstring->bytes string)
+	 (string-length string))))
 
 ;*---------------------------------------------------------------------*/
 ;*    alsa-snd-rawmidi-input? ...                                      */
