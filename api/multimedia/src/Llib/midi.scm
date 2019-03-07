@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar  7 17:33:01 2019                          */
-;*    Last change :  Thu Mar  7 18:12:20 2019 (serrano)                */
+;*    Last change :  Thu Mar  7 19:03:03 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Midi support (sequencer and tools).                              */
@@ -390,17 +390,27 @@
 ;*---------------------------------------------------------------------*/
 ;*    midi-write-byte ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-generic (midi-write-byte op long))
+(define-generic (midi-write-byte op long)
+   (when (output-port? op)
+      (write-byte long op)))
 
 ;*---------------------------------------------------------------------*/
 ;*    midi-write-byte ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-generic (midi-write-bytes op u8vec))
+(define-generic (midi-write-bytes op u8vec)
+   (when (output-port? op)
+      (let ((len (u8vector-length u8vec)))
+	 (let loop ((i 0))
+	    (when (<fx i len)
+	       (write-byte (uint8->fixnum (u8vector-ref u8vec i)) op)
+	       (loop (+fx i 1)))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    midi-write-string ...                                            */
 ;*---------------------------------------------------------------------*/
-(define-generic (midi-write-string op str))
+(define-generic (midi-write-string op str)
+   (when (output-port? op)
+      (display-string str op)))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-noteon ...                                            */
