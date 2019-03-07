@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/api/multimedia/src/Misc/make_lib.scm     */
+;*    .../bigloo/bigloo/api/multimedia/src/Misc/make_lib.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Sat Oct 29 21:17:39 2016 (serrano)                */
-;*    Copyright   :  2001-16 Manuel Serrano                            */
+;*    Last change :  Thu Mar  7 17:44:20 2019 (serrano)                */
+;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -28,7 +28,8 @@
 	   __multimedia-mplayer
 	   __multimedia-mixer
 	   __multimedia-soundcard
-	   __multimedia-color)
+	   __multimedia-color
+	   __multimedia-midi)
 
    (eval   (export-all)
 	   (class exif)
@@ -50,7 +51,9 @@
 	   (class mpg123)
 	   (class mplayer)
 	   (class soundcard)
- 	   (class mpd-database))
+ 	   (class mpd-database)
+	   (class miditrack)
+	   (class midiplayer))
 
    (export (%multimedia-eval)))
 

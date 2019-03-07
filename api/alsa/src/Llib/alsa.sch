@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 17:42:08 2011                          */
-;*    Last change :  Tue Mar  5 12:38:08 2019 (serrano)                */
+;*    Last change :  Thu Mar  7 14:26:32 2019 (serrano)                */
 ;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Direct use of ALSA types and functions                           */
@@ -407,7 +407,12 @@
 
       (macro $snd-rawmidi-write::int
 	 (::$snd-rawmidi ::void* ::long) "snd_rawmidi_write")
-      
+
+      (macro $snd-rawmidi-drain::int
+	 (::$snd-rawmidi) "snd_rawmidi_drain")
+      (macro $snd-rawmidi-drop::int
+	 (::$snd-rawmidi) "snd_rawmidi_drop")
+
       ;; snd-error
       (macro $snd-strerror::string
 	 (::int) "(char *)snd_strerror")))

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar  4 08:15:55 2019                          */
-;*    Last change :  Tue Mar  5 12:34:34 2019 (serrano)                */
+;*    Last change :  Thu Mar  7 14:24:14 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    ALSA rawmidi wrapper                                             */
@@ -14,6 +14,8 @@
 ;*---------------------------------------------------------------------*/
 (module __alsa_rawmidi
 
+   (library multimedia)
+   
    (include "alsa.sch")
 
    (import  __alsa_alsa
@@ -33,12 +35,15 @@
 	   (alsa-snd-rawmidi-open-output::alsa-snd-rawmidi ::bstring ::symbol)
 	   (alsa-snd-rawmidi-close ::alsa-snd-rawmidi)
 
+	   (inline alsa-snd-rawmidi-input?::bool ::alsa-snd-ctl ::int ::int)
+	   (inline alsa-snd-rawmidi-output?::bool ::alsa-snd-ctl ::int ::int)
+	   
 	   (inline alsa-snd-rawmidi-write-byte ::alsa-snd-rawmidi ::uint8)
 	   (inline alsa-snd-rawmidi-write-bytes ::alsa-snd-rawmidi ::u8vector)
 	   (alsa-snd-rawmidi-write-string ::alsa-snd-rawmidi ::bstring)
-	   
-	   (inline alsa-snd-rawmidi-input?::bool ::alsa-snd-ctl ::int ::int)
-	   (inline alsa-snd-rawmidi-output?::bool ::alsa-snd-ctl ::int ::int)))
+
+	   (inline alsa-snd-rawmidi-drain ::alsa-snd-rawmidi)
+	   (inline alsa-snd-rawmidi-drop ::alsa-snd-rawmidi)))
 
 ;*---------------------------------------------------------------------*/
 ;*    %$snd-rawmidi-nil ...                                            */
@@ -70,6 +75,32 @@
       ($snd-rawmidi-close $builtin)))
 
 ;*---------------------------------------------------------------------*/
+;*    alsa-snd-rawmidi-input? ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (alsa-snd-rawmidi-input?::bool ctl device sub)
+   ($bgl-snd-rawmidi-isdir ctl device sub $snd-rawmidi-stream-input))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-rawmidi-output? ...                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (alsa-snd-rawmidi-output?::bool ctl device sub)
+   ($bgl-snd-rawmidi-isdir ctl device sub $snd-rawmidi-stream-output))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-rawmidi-drain ...                                       */
+;*---------------------------------------------------------------------*/
+(define-inline (alsa-snd-rawmidi-drain rm::alsa-snd-rawmidi)
+   (with-access::alsa-snd-rawmidi rm ($builtin)
+      ($snd-rawmidi-drain $builtin)))
+
+;*---------------------------------------------------------------------*/
+;*    alsa-snd-rawmidi-drop ...                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (alsa-snd-rawmidi-drop rm::alsa-snd-rawmidi)
+   (with-access::alsa-snd-rawmidi rm ($builtin)
+      ($snd-rawmidi-drop $builtin)))
+
+;*---------------------------------------------------------------------*/
 ;*    alsa-snd-rawmidi-write-byte ...                                  */
 ;*---------------------------------------------------------------------*/
 (define-inline (alsa-snd-rawmidi-write-byte rm::alsa-snd-rawmidi byte)
@@ -92,15 +123,22 @@
       ($snd-rawmidi-write $builtin ($bstring->bytes string)
 	 (string-length string))))
 
-;*---------------------------------------------------------------------*/
-;*    alsa-snd-rawmidi-input? ...                                      */
-;*---------------------------------------------------------------------*/
-(define-inline (alsa-snd-rawmidi-input?::bool ctl device sub)
-   ($bgl-snd-rawmidi-isdir ctl device sub $snd-rawmidi-stream-input))
 
 ;*---------------------------------------------------------------------*/
-;*    alsa-snd-rawmidi-output? ...                                     */
+;*    midi-write-byte ...                                              */
 ;*---------------------------------------------------------------------*/
-(define-inline (alsa-snd-rawmidi-output?::bool ctl device sub)
-   ($bgl-snd-rawmidi-isdir ctl device sub $snd-rawmidi-stream-output))
+(define-method (midi-write-byte op::alsa-snd-rawmidi long)
+   (alsa-snd-rawmidi-write-byte op (fixnum->uint8 long)))
+
+;*---------------------------------------------------------------------*/
+;*    midi-write-byte ...                                              */
+;*---------------------------------------------------------------------*/
+(define-method (midi-write-bytes op::alsa-snd-rawmidi u8vec)
+   (alsa-snd-rawmidi-write-bytes op u8vec))
+
+;*---------------------------------------------------------------------*/
+;*    midi-write-string ...                                            */
+;*---------------------------------------------------------------------*/
+(define-method (midi-write-string op::alsa-snd-rawmidi str)
+   (alsa-snd-rawmidi-write-string op str))
 

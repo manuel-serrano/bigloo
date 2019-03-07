@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Mar  4 18:20:54 2019 (serrano)                */
+#*    Last change :  Thu Mar  7 17:57:28 2019 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 DEPEND		= $(BGLBUILDBINDIR)/$(BDEPEND_EXE)
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-BAPISAFE	= #-unsafe -safee
+BAPISAFE	= -unsafe -safee
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
                   -srfi $(API) -copt "$(ALSACFLAGS)"
 CAPIFLAGS       = $(ALSACFLAGS) $(CGCTHREADFLAGS)
