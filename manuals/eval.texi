@@ -213,7 +213,7 @@ Loads a shared library named @code{filename}. Returns the value of the
 last top-level expression.
 
 @emph{Important note: } The function @code{dynamic-load} can only be
-used from interpreters linked against dynamic libraries. In particular,
+used from compiled modules linked against dynamic libraries. In particular,
 the @code{dynamic-load} function can be issued from the @code{bigloo}
 command if and only if the option @code{--sharedcompiler=yes} has been
 used when configuring Bigloo. If the @code{bigloo} command is not linked
@@ -327,6 +327,29 @@ Returns @code{#t} on success. Returns @code{#f} otherwise.
 A list of search paths for the @code{dynamic-load} functions.
 @end deffn
 
+@deffn {bigloo-procedure} dynamic-load-symbol filename name #!optional module
+@deffnx {bigloo-procedure} dynamic-load-symbol-get dlsym
+@deffnx {bigloo-procedure} dynamic-load-symbol-set dlsym val
+
+The function @code{dynamic-load-symbol} looks up for a variable in the
+dynamic library @var{filename}. If found, it returns a @code{custom}
+Bigloo object denoting that variable. Otherwise it returns @code{#f}.
+This function assumes that @var{filename} has previously been successfully
+loaded with @code{dynamic-load}. If not, an error is raised. The argument
+@var{filename} must be equal (in the sense of @code{string=?} to the argument
+used to load the library.
+
+The C name of the looked up variable is @var{name} is @var{module} is
+not provided. Otherwise, it is the result of calling @code{bigloo-module-mangle}
+with @var{name} and @var{module} as arguments.
+
+The function @code{dynamic-load-symbol-get} returns the value of a
+dynamically loaded variable.
+
+The function @code{dynamic-load-symbol-set} sets the value of a dynamic
+loaded variable. It assumes that the variable is writable, i.e., that it has
+not been compiled as a C constant.
+@end deffn
 
 @deffn {procedure} transcript-on filename
 @deffnx {procedure} transcript-off 
