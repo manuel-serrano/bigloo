@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c_emit.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/c_emit.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar 16 18:14:47 1995                          */
-;*    Last change :  Sun Dec 10 09:44:28 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 11 14:25:38 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of the C code                                       */
 ;*=====================================================================*/
@@ -224,8 +224,12 @@
       (emit-bdb-loc #unspecified)
       (fprint *c-port* "BGL_EXPORTED_DEF obj_t " sym "() {")
       (emit-bdb-loc #unspecified)
-      (fprint *c-port* "  return " (global-name global) "( 0, \""
-	      (car *src-files*) "\" );")
+      (fprint *c-port* "obj_t res = " (global-name global) "( 0, \""
+	 (car *src-files*) "\" );")
+      (fprint *c-port* "BGL_MVALUES_NUMBER_SET(2);")
+      (fprint *c-port* "BGL_MVALUES_VAL_SET(1,string_to_bstring( \""
+	 (global-module global) "\" ));")
+      (fprint *c-port* "return res;")
       (emit-bdb-loc #unspecified)
       (fprint *c-port* "}")
       (newline *c-port*)))
