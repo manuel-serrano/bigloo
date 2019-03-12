@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Sun Mar 10 09:28:36 2019 (serrano)                */
+;*    Last change :  Tue Mar 12 10:39:27 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -179,7 +179,13 @@
 	       (method static %dload-error::string ()
 		  "bgl_dload_error")
 	       (method static $umask::int (::int)
-		  "bgl_umask"))
+		  "bgl_umask")
+	       (method static $bgl-dlsym::custom (::bstring ::bstring ::bstring)
+		  "bgl_dlsym")
+	       (method static $bgl-dlsym-get::obj (::custom)
+		  "bgl_dlsym_get")
+	       (method static $bgl-dlsym-set::obj (::custom ::obj)
+		  "bgl_dlsym_set"))
       
       (class runtime
 	 (field static default-executable-name::string

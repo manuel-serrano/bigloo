@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/runtime/Jlib/dlopen.java             */
+/*    serrano/prgm/project/bigloo/bigloo/runtime/Jlib/dlopen.java      */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Dec 11 15:42:09 2000                          */
-/*    Last change :  Fri Aug 28 09:02:38 2015 (serrano)                */
-/*    Copyright   :  2000-15 Manuel Serrano                            */
+/*    Last change :  Tue Mar 12 10:40:36 2019 (serrano)                */
+/*    Copyright   :  2000-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Dynamic class loading for the Jvm back-end.                      */
 /*=====================================================================*/
@@ -83,8 +83,8 @@ public abstract class dlopen {
    }
 	       
    private static Object dloadzip( final byte[] filename,
-				final byte[] init_sym,
-				final byte[] mod_sym )
+				   final byte[] init_sym,
+				   final byte[] mod_sym )
       throws Exception {
       InputStream in = new FileInputStream( new String( filename ) );
       ZipInputStream zin = new ZipInputStream( in );
@@ -123,8 +123,8 @@ public abstract class dlopen {
    }
    
    public static Object dloadresource( final byte[] filename,
-				    final byte[] init_sym,
-				    final byte[] mod_sym )
+				       final byte[] init_sym,
+				       final byte[] mod_sym )
       throws Exception {
       String name = prefix( bigloo.foreign.resource_name( filename ) ).replace( '/', '.' );
 
@@ -148,10 +148,13 @@ public abstract class dlopen {
    }
 
    static Object dload_inner( final byte[] filename,
-			   final byte[] init_sym,
-			   final byte[] mod_sym ) {
+			      final byte[] init_sym,
+			      final byte[] mod_sym ) {
       bgl_dload_error = NO_ERROR_YET;
 
+      System.out.println( "MS 12mar19: DLOAD_INNER incompatible with the C version" );
+      System.out.println( "should return a multiple value" );
+      
       try {
 	 if( suffix( filename ).equals( "zip" ) ) {
 	    return dloadzip( filename, init_sym, mod_sym );
@@ -182,8 +185,8 @@ public abstract class dlopen {
    }
 
    public static Object dload( final byte[] filename,
-			    final byte[] init_sym,
-			    final byte[] mod_sym ) {
+			       final byte[] init_sym,
+			       final byte[] mod_sym ) {
       synchronized( dlopen_table ) {
 	 if( !(dlopen_table.contains( filename )) ) {
 	    Object res = dload_inner( filename, init_sym, mod_sym );

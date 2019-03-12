@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar  4 08:15:55 2019                          */
-;*    Last change :  Thu Mar  7 14:24:14 2019 (serrano)                */
+;*    Last change :  Tue Mar 12 10:22:58 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    ALSA rawmidi wrapper                                             */
@@ -122,7 +122,6 @@
    (with-access::alsa-snd-rawmidi rm ($builtin)
       ($snd-rawmidi-write $builtin ($bstring->bytes string)
 	 (string-length string))))
-
 
 ;*---------------------------------------------------------------------*/
 ;*    midi-write-byte ...                                              */

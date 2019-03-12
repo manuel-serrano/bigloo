@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Thu Mar  7 17:44:20 2019 (serrano)                */
+;*    Last change :  Tue Mar 12 11:01:22 2019 (serrano)                */
 ;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
@@ -52,8 +52,11 @@
 	   (class mplayer)
 	   (class soundcard)
  	   (class mpd-database)
+	   (class midiscore)
 	   (class miditrack)
-	   (class midiplayer))
+	   (class midiplayer)
+	   (class midireader)
+	   (class midisink))
 
    (export (%multimedia-eval)))
 
