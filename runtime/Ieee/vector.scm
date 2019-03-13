@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Tue Mar 12 16:52:51 2019 (serrano)                */
+;*    Last change :  Wed Mar 13 07:24:23 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -430,7 +430,7 @@
    (let ((len (vector-length vdest)))
       (let loop ((i 0))
 	 (if (<fx i len)
-	     (let ((args (for-each (lambda (v) (vector-ref v i)) vrest)))
+	     (let ((args (map (lambda (v) (vector-ref v i)) vrest)))
 		(apply proc (vector-ref vsrc i) args)
 		(loop (+fx i 1)))
 	     vdest))))

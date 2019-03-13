@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar  4 08:15:55 2019                          */
-;*    Last change :  Tue Mar 12 10:22:58 2019 (serrano)                */
+;*    Last change :  Wed Mar 13 08:15:55 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    ALSA rawmidi wrapper                                             */
@@ -122,22 +122,3 @@
    (with-access::alsa-snd-rawmidi rm ($builtin)
       ($snd-rawmidi-write $builtin ($bstring->bytes string)
 	 (string-length string))))
-
-;*---------------------------------------------------------------------*/
-;*    midi-write-byte ...                                              */
-;*---------------------------------------------------------------------*/
-(define-method (midi-write-byte op::alsa-snd-rawmidi long)
-   (alsa-snd-rawmidi-write-byte op (fixnum->uint8 long)))
-
-;*---------------------------------------------------------------------*/
-;*    midi-write-byte ...                                              */
-;*---------------------------------------------------------------------*/
-(define-method (midi-write-bytes op::alsa-snd-rawmidi u8vec)
-   (alsa-snd-rawmidi-write-bytes op u8vec))
-
-;*---------------------------------------------------------------------*/
-;*    midi-write-string ...                                            */
-;*---------------------------------------------------------------------*/
-(define-method (midi-write-string op::alsa-snd-rawmidi str)
-   (alsa-snd-rawmidi-write-string op str))
-
