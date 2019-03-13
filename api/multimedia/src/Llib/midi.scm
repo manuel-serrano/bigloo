@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar  7 17:33:01 2019                          */
-;*    Last change :  Wed Mar 13 07:35:20 2019 (serrano)                */
+;*    Last change :  Wed Mar 13 19:37:03 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Midi support (sequencer and tools).                              */
@@ -99,8 +99,9 @@
 	   (generic midisink-init ::midisink)
 	   
 	   (midiscore-file::midiscore ::bstring)
-	   (miditrack-input-port::miditrack ::input-port ::long ::long)
-	   (miditrack-file::miditrack ::bstring ::long ::long ::long)
+	   (miditrack-input-port::miditrack ::input-port ::long)
+	   (miditrack-file::miditrack ::bstring ::long ::long)
+	   (miditrack-string::miditrack ::bstring ::long)
 
 	   (midiscore-play ::midiscore ::midiplayer ::midisink)
 
@@ -166,8 +167,8 @@
       (multiple-value-bind (sz fmt tck tempo ppq)
 	 (midi-read-mthd ip)
 	 (let ((tracks (case fmt
-			  ((0) (vector (miditrack-input-port ip tempo ppq)))
-			  ((1) (miditracks-input-port ip tempo ppq tck))
+			  ((0) (vector (miditrack-input-port ip tempo)))
+			  ((1) (miditracks-input-port ip tempo tck))
 			  ((2) (error "midiscore-file" "format not supported" fmt))
 			  (else (error "midiplayer-file" "bad midi format" fmt)))))
 	    (instantiate::midiscore
@@ -189,7 +190,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    miditrack-input-port ...                                         */
 ;*---------------------------------------------------------------------*/
-(define (miditrack-input-port ip::input-port tempo::long ppq::long)
+(define (miditrack-input-port ip::input-port tempo::long)
    (instantiate::miditrack
       (%stream ip)
       (%reader midireader-input-port)
@@ -200,10 +201,10 @@
 ;*---------------------------------------------------------------------*/
 ;*    miditracks-input-port ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (miditracks-input-port ip::input-port tempo::long ppq::long tnum)
+(define (miditracks-input-port ip::input-port tempo::long tnum)
    
-   (define (read-track ip tempo ppq)
-      (let ((track (miditrack-input-port ip tempo ppq)))
+   (define (read-track ip tempo)
+      (let ((track (miditrack-input-port ip tempo)))
 	 (with-access::miditrack track (%eot %stream %reader)
 	    (with-access::midireader %reader (read-vlq)
 	       (let loop ()
@@ -219,7 +220,7 @@
 	 (set-input-port-position! port pos)
 	 port))
    
-   (let ((t0 (read-track ip tempo ppq)))
+   (let ((t0 (read-track ip tempo)))
       (with-access::miditrack t0 (tempo)
 	 (let ((file (input-port-name ip)))
 	    (let loop ((i 1)
@@ -228,7 +229,7 @@
 	       (if (=fx i tnum)
 		   (list->vector (cons t0 (reverse! tks)))
 		   (let* ((ip (open-input-file/position file pos))
-			  (t (miditrack-input-port ip tempo ppq)))
+			  (t (miditrack-input-port ip tempo)))
 		      (with-access::miditrack t (len)
 			 (loop (+fx i 1)
 			    (+fx (input-port-position ip) (int32->fixnum len))
@@ -237,11 +238,23 @@
 ;*---------------------------------------------------------------------*/
 ;*    miditrack-file ...                                               */
 ;*---------------------------------------------------------------------*/
-(define (miditrack-file filename offset tempo::long ppq::long)
+(define (miditrack-file filename offset tempo::long)
    (call-with-input-file filename
       (lambda (ip)
 	 (set-input-port-position! ip offset)
-	 (miditrack-input-port ip tempo ppq))))
+	 (miditrack-input-port ip tempo))))
+
+;*---------------------------------------------------------------------*/
+;*    miditrack-string ...                                             */
+;*---------------------------------------------------------------------*/
+(define (miditrack-string string tempo::long)
+   (let ((ip (open-input-string string)))
+      (instantiate::miditrack
+	 (%stream ip)
+	 (%reader midireader-input-port)
+	 (%close close-input-port)
+	 (len (string-length string))
+	 (tempo tempo))))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiscore-play ...                                               */
