@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Mar  7 17:33:01 2019                          */
-;*    Last change :  Wed Mar 13 19:37:03 2019 (serrano)                */
+;*    Last change :  Thu Mar 14 08:59:26 2019 (serrano)                */
 ;*    Copyright   :  2019 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    Midi support (sequencer and tools).                              */
@@ -79,8 +79,8 @@
 	      (meta-midiport::procedure (default midiplayer-ignore))
 	      (meta-eot::procedure (default midiplayer-ignore))
 	      (meta-tempo::procedure (default midiplayer-ignore))
-	      (meta-smtpe::procedure (default (lambda (mp ms hr mm se fr ff) #f)))
-	      (meta-timesig::procedure (default (lambda (mp ms nn dd cc bb) #f)))
+	      (meta-smtpe::procedure (default (lambda (mp ms tick hr mm se fr ff) #f)))
+	      (meta-timesig::procedure (default (lambda (mp ms tick nn dd cc bb) #f)))
 	      (meta-keysig::procedure (default midiplayer-ignore))
 	      (meta-seqspec::procedure (default midiplayer-ignore)))
 
@@ -105,21 +105,26 @@
 
 	   (midiscore-play ::midiscore ::midiplayer ::midisink)
 
-	   (midiplayer-cdelay ::midiplayer ::midisink ::miditrack ::long ::long ::long)
-	   (midiplayer-ignore ::midiplayer ::midisink ::obj)
-	   (midiplayer-noteoff ::midiplayer ::midisink ::long ::long ::long)
-	   (midiplayer-noteon ::midiplayer ::midisink ::long ::long ::long)
-	   (midiplayer-aftertouch ::midiplayer ::midisink ::long ::long ::long)
-	   (midiplayer-ctrlchange ::midiplayer ::midisink ::long ::long ::long)
-	   (midiplayer-prgmchange ::midiplayer ::midisink ::long ::long)
-	   (midiplayer-after-touch ::midiplayer ::midisink ::long ::long)
-	   (midiplayer-pitch ::midiplayer ::midisink ::long ::long ::long)
-	   (midiplayer-sysex ::midiplayer ::midisink ::bstring)
+	   (midiplayer-cdelay ::midiplayer ::midisink ::long ::miditrack ::long ::long ::long)
+	   (midiplayer-ignore ::midiplayer ::midisink ::long ::obj)
+	   (midiplayer-noteoff ::midiplayer ::midisink ::long ::long ::long ::long)
+	   (midiplayer-noteon ::midiplayer ::midisink ::long ::long ::long ::long)
+	   (midiplayer-aftertouch ::midiplayer ::midisink ::long ::long ::long ::long)
+	   (midiplayer-ctrlchange ::midiplayer ::midisink ::long ::long ::long ::long)
+	   (midiplayer-prgmchange ::midiplayer ::midisink ::long ::long ::long)
+	   (midiplayer-after-touch ::midiplayer ::midisink ::long ::long ::long)
+	   (midiplayer-pitch ::midiplayer ::midisink ::long ::long ::long ::long)
+	   (midiplayer-sysex ::midiplayer ::midisink ::long ::bstring)
 	   
 	   (midi-note-name::bstring ::long)
 	   (midi-program-name::bstring ::long)
 	   (midi-controller-name::bstring ::long)
 	   (midi-program-index ::bstring)))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream ...                                                */
+;*---------------------------------------------------------------------*/
+(define-struct string-stream string index)
 
 ;*---------------------------------------------------------------------*/
 ;*    midireader-input-port ...                                        */
@@ -135,19 +140,32 @@
       (read-chars read-chars)))
 
 ;*---------------------------------------------------------------------*/
+;*    midireader-string-stream ...                                     */
+;*---------------------------------------------------------------------*/
+(define midireader-string-stream
+   (instantiate::midireader
+      (peek-byte string-stream-peek-byte)
+      (read-byte string-stream-read-byte)
+      (read-int16 string-stream-read-int16)
+      (read-int32 string-stream-read-int32)
+      (read-int string-stream-read-int)
+      (read-vlq string-stream-read-vlq)
+      (read-chars string-stream-read-chars)))
+
+;*---------------------------------------------------------------------*/
 ;*    midiplayer-read ...                                              */
 ;*---------------------------------------------------------------------*/
 (define midiplayer-read
    (instantiate::midiplayer
-      (cdelay (lambda (mp ms track ppq dt us) #f))
-      (noteoff (lambda (mp ms x y z) #f))
-      (noteon (lambda (mp ms x y z) #f))
-      (aftertouch (lambda (mp ms x y z) #f))
-      (ctrlchange (lambda (mp ms x y z) #f))
-      (prgmchange (lambda (mp ms x y) #f))
-      (after-touch (lambda (mp ms x y) #f))
-      (pitch (lambda (mp ms x y z) #f))
-      (sysex (lambda (mp ms s) #f))))
+      (cdelay (lambda (mp ms tick track ppq dt us) #f))
+      (noteoff (lambda (mp ms tick x y z) #f))
+      (noteon (lambda (mp ms tick x y z) #f))
+      (aftertouch (lambda (mp ms tick x y z) #f))
+      (ctrlchange (lambda (mp ms tick x y z) #f))
+      (prgmchange (lambda (mp ms tick x y) #f))
+      (after-touch (lambda (mp ms tick x y) #f))
+      (pitch (lambda (mp ms tick x y z) #f))
+      (sysex (lambda (mp ms tick s) #f))))
 
 ;*---------------------------------------------------------------------*/
 ;*    midisink-null ...                                                */
@@ -210,7 +228,7 @@
 	       (let loop ()
 		  (read-vlq %stream)
 		  (miditrack-play-event track midiplayer-read
-		     midisink-null 0 0 0)
+		     midisink-null 0 0 0 0)
 		  (if %eot
 		      track
 		      (loop)))))))
@@ -248,13 +266,12 @@
 ;*    miditrack-string ...                                             */
 ;*---------------------------------------------------------------------*/
 (define (miditrack-string string tempo::long)
-   (let ((ip (open-input-string string)))
-      (instantiate::miditrack
-	 (%stream ip)
-	 (%reader midireader-input-port)
-	 (%close close-input-port)
-	 (len (string-length string))
-	 (tempo tempo))))
+   (instantiate::miditrack
+      (%stream (string-stream string 0))
+      (%reader midireader-string-stream)
+      (%close (lambda (s) #f))
+      (len (string-length string))
+      (tempo tempo)))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiscore-play ...                                               */
@@ -272,15 +289,15 @@
 (define (midiscore-play0 mscore::midiscore mplayer::midiplayer msink::midisink)
    (with-access::midiscore mscore (tracks ppq)
       (let ((track (vector-ref tracks 0)))
-	 (with-access::midiplayer mplayer (cdelay)
-	    (with-access::miditrack track (%eot %stream %reader)
-	       (with-access::midireader %reader (read-vlq)
-		  (let loop ()
-		     (let* ((t0 (current-microseconds))
-			    (dt (read-vlq %stream)))
-			(miditrack-play-event track mplayer msink ppq dt t0)
-			(unless %eot
-			   (loop))))))))))
+	 (with-access::miditrack track (%eot %stream %reader)
+	    (with-access::midireader %reader (read-vlq)
+	       (let loop ((tick #u32:0))
+		  (let* ((t0 (current-microseconds))
+			 (dt (read-vlq %stream)))
+		     (miditrack-play-event track mplayer msink
+			(uint32->fixnum tick) ppq dt t0)
+		     (unless %eot
+			(loop (+u32 tick 1))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiscore-play1 ...                                              */
@@ -304,7 +321,8 @@
 		     (let ((track (vector-ref tracks i)))
 			(with-access::miditrack track (%eot)
 			   (unless %eot
-			      (miditrack-wait-event track mplayer msink tick)
+			      (miditrack-wait-event track mplayer msink
+				 (uint32->fixnum tick))
 			      (unless %eot (set! eos #f)))))
 		     (loop (-fx i 1))))
 	       (unless eos
@@ -317,12 +335,12 @@
 ;*    miditrack-wait-event ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (miditrack-wait-event track::miditrack
-	   mplayer::midiplayer msink::midisink tick::uint32)
+	   mplayer::midiplayer msink::midisink tick::long)
    (with-access::miditrack track (%stream %reader %eot %wtick tempo)
       (with-access::midireader %reader (read-vlq)
 	 (when (<=u32 %wtick tick)
 	    (let loop ()
-	       (miditrack-play-event track mplayer msink 0 0 #l0)
+	       (miditrack-play-event track mplayer msink tick 0 0 #l0)
 	       (unless %eot
 		  (let ((dt (read-vlq %stream)))
 		     (if (=fx dt 0)
@@ -333,7 +351,7 @@
 ;*    miditrack-play-event ...                                         */
 ;*---------------------------------------------------------------------*/
 (define (miditrack-play-event track::miditrack
-	   mplayer::midiplayer msink::midisink
+	   mplayer::midiplayer msink::midisink tick::long
 	   ppq::long dt::long t0::llong)
    (with-access::miditrack track (%stream %reader %eot %status tempo)
       (with-access::midireader %reader (read-vlq peek-byte read-byte read-chars)
@@ -359,51 +377,51 @@
 	       (cond
 		  ((=fx (bit-rsh status 4) #x8)
 		   ;; noteoff
-		   (let* ((kk (char->int7 (read-char %stream)))
-			  (vv (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let* ((kk (int7 (read-byte %stream)))
+			  (vv (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (noteoff mplayer msink (bit-and status #b1111) kk vv)))
+		      (noteoff mplayer msink tick (bit-and status #b1111) kk vv)))
 		  ((=fx (bit-rsh status 4) #x9)
 		   ;; noteon
-		   (let* ((kk (char->int7 (read-char %stream)))
-			  (vv (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let* ((kk (int7 (read-byte %stream)))
+			  (vv (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (noteon mplayer msink (bit-and status #b1111) kk vv)))
+		      (noteon mplayer msink tick (bit-and status #b1111) kk vv)))
 		  ((=fx (bit-rsh status 4) #xa)
 		   ;; after touch
-		   (let* ((cc (char->int7 (read-char %stream)))
-			  (vv (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let* ((cc (int7 (read-byte %stream)))
+			  (vv (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (aftertouch mplayer msink (bit-and status #b1111) cc vv)))
+		      (aftertouch mplayer msink tick (bit-and status #b1111) cc vv)))
 		  ((=fx (bit-rsh status 4) #xb)
 		   ;; control change
-		   (let* ((cc (char->int7 (read-char %stream)))
-			  (nn (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let* ((cc (int7 (read-byte %stream)))
+			  (nn (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (ctrlchange mplayer msink (bit-and status #b1111) cc nn)))
+		      (ctrlchange mplayer msink tick (bit-and status #b1111) cc nn)))
 		  ((=fx (bit-rsh status 4) #xc)
 		   ;; program change
-		   (let ((pp (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let ((pp (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (prgmchange mplayer msink (bit-and status #b1111) pp)))
+		      (prgmchange mplayer msink tick (bit-and status #b1111) pp)))
 		  ((=fx (bit-rsh status 4) #xd)
 		   ;; channel key press
-		   (let ((pp (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let ((pp (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (after-touch mplayer msink (bit-and status #b1111) pp)))
+		      (after-touch mplayer msink tick (bit-and status #b1111) pp)))
 		  ((=fx (bit-rsh status 4) #xe)
 		   ;; pitch
-		   (let* ((cc (char->int7 (read-char %stream)))
-			  (vv (char->int7 (read-char %stream))))
-		      (cdelay mplayer msink track ppq dt
+		   (let* ((cc (int7 (read-byte %stream)))
+			  (vv (int7 (read-byte %stream))))
+		      (cdelay mplayer msink tick track ppq dt
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (pitch mplayer msink (bit-and status #b1111) cc vv)))
+		      (pitch mplayer msink tick (bit-and status #b1111) cc vv)))
 		  ((=fx status #xff)
 		   ;; meta events
 		   (let* ((c (read-byte %stream))
@@ -411,48 +429,48 @@
 		      (case c
 			 ((#x00)
 			  ;; sequence number
-			  (meta-seqnum mplayer msink (read-int16 %stream)))
+			  (meta-seqnum mplayer msink tick (read-int16 %stream)))
 			 ((#x01)
 			  ;; text
-			  (meta-text mplayer msink (read-chars l %stream)))
+			  (meta-text mplayer msink tick (read-chars l %stream)))
 			 ((#x02)
 			  ;; copyright notice
-			  (meta-copyright mplayer msink (read-chars l %stream)))
+			  (meta-copyright mplayer msink tick (read-chars l %stream)))
 			 ((#x03)
 			  ;; sequence/track name
-			  (meta-track mplayer msink (read-chars l %stream)))
+			  (meta-track mplayer msink tick (read-chars l %stream)))
 			 ((#x04)
 			  ;; instrument name
-			  (meta-instrument mplayer msink (read-chars l %stream)))
+			  (meta-instrument mplayer msink tick (read-chars l %stream)))
 			 ((#x05)
 			  ;; lyric
-			  (meta-lyric mplayer msink (read-chars l %stream)))
+			  (meta-lyric mplayer msink tick (read-chars l %stream)))
 			 ((#x06)
 			  ;; marker
-			  (meta-marker mplayer msink (read-chars l %stream)))
+			  (meta-marker mplayer msink tick (read-chars l %stream)))
 			 ((#x07)
 			  ;; cue point
-			  (meta-cue mplayer msink (read-chars l %stream)))
+			  (meta-cue mplayer msink tick (read-chars l %stream)))
 			 ((#x08)
 			  ;; program name
-			  (meta-prgmname mplayer msink (read-chars l %stream)))
+			  (meta-prgmname mplayer msink tick (read-chars l %stream)))
 			 ((#x09)
 			  ;; device name
-			  (meta-devname mplayer msink (read-chars l %stream)))
+			  (meta-devname mplayer msink tick (read-chars l %stream)))
 			 ((#x20)
 			  ;; channel prefix
-			  (meta-channpref mplayer msink (read-byte %stream)))
+			  (meta-channpref mplayer msink tick (read-byte %stream)))
 			 ((#x21)
 			  ;; midi port
-			  (meta-channpref mplayer msink (read-int l %stream)))
+			  (meta-channpref mplayer msink tick (read-int l %stream)))
 			 ((#x2f)
 			  ;; end of track
 			  (set! %eot #t)
-			  (meta-eot mplayer msink #unspecified))
+			  (meta-eot mplayer msink tick #unspecified))
 			 ((#x51)
 			  ;; duration in usec of a quarter note (une noire)
 			  (set! tempo (read-int l %stream))
-			  (meta-tempo mplayer msink tempo))
+			  (meta-tempo mplayer msink tick tempo))
 			 ((#x54)
 			  ;; SMTPE offset
 			  (let* ((hr (read-byte %stream))
@@ -460,29 +478,29 @@
 				 (se (read-byte %stream))
 				 (fr (read-byte %stream))
 				 (ff (read-byte %stream)))
-			     (meta-smtpe mplayer msink hr mm se fr ff)))
+			     (meta-smtpe mplayer msink tick hr mm se fr ff)))
 			 ((#x58)
 			  ;; time signature
-			  (let* ((nn (char->integer (read-char %stream)))
-				 (dd (char->integer (read-char %stream)))
-				 (cc (char->integer (read-char %stream)))
-				 (bb (char->integer (read-char %stream))))
-			     (meta-timesig mplayer msink nn dd cc bb)))
+			  (let* ((nn (read-byte %stream))
+				 (dd (read-byte %stream))
+				 (cc (read-byte %stream))
+				 (bb (read-byte %stream)))
+			     (meta-timesig mplayer msink tick nn dd cc bb)))
 			 ((#x59)
 			  ;; key signature
-			  (meta-keysig mplayer msink (read-int l %stream)))
+			  (meta-keysig mplayer msink tick (read-int l %stream)))
 			 ((#x7f)
 			  ;; sequencer specific meta-event
-			  (meta-seqspec mplayer msink (read-chars l %stream)))
+			  (meta-seqspec mplayer msink tick (read-chars l %stream)))
 			 (else
 			  (err "midiplay" "illegal meta-event"
 			     (format "~x:~x" status c))))))
 		  ((or (=fx status #xf0) (=fx status #xf7))
 		   ;; sysex events
 		   (let ((str (read-chars (read-vlq %stream) %stream)))
-		      (cdelay mplayer msink track dt ppq
+		      (cdelay mplayer msink tick track dt ppq
 			 (llong->fixnum (-llong (current-microseconds) t0)))
-		      (sysex mplayer msink str)))
+		      (sysex mplayer msink tick str)))
 		  (else
 		   (err "midiplay" "illegal event" status))))
 	    (with-access::midisink msink (flush stream)
@@ -525,10 +543,10 @@
 	  (read-int32 ip))))
 
 ;*---------------------------------------------------------------------*/
-;*    char->int7 ...                                                   */
+;*    int7 ...                                                         */
 ;*---------------------------------------------------------------------*/
-(define (char->int7 c)
-   (bit-and #x7f (char->integer c)))
+(define (int7 c::long)
+   (bit-and #x7f c))
 
 ;*---------------------------------------------------------------------*/
 ;*    char->int32 ...                                                  */
@@ -573,14 +591,77 @@
 ;*    read-vlq ...                                                     */
 ;*---------------------------------------------------------------------*/
 (define (read-vlq ip)
-   (let ((c (char->integer (read-char ip))))
-      (if (<=fx c #x7f)
-	  c
-	  (let loop ((val (bit-lsh (-fx c 128) 7)))
-	     (let ((c (char->integer (read-char ip))))
-		(if (<= c 127)
-		    (+fx val c)
-		    (loop (bit-lsh (+fx val c) 7))))))))
+   (let loop ((acc 0))
+      (let ((c (char->integer (read-char ip))))
+	 (if (<=fx c #x7f)
+	     (+fx c acc)
+	     (loop (bit-lsh (+fx acc (bit-and c #x7f)) 7) )))))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-peek-byte ...                                      */
+;*---------------------------------------------------------------------*/
+(define (string-stream-peek-byte ip::struct)
+   (char->integer
+      (string-ref (string-stream-string ip) (string-stream-index ip))))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-read-byte ...                                      */
+;*---------------------------------------------------------------------*/
+(define (string-stream-read-byte ip::struct)
+   (let ((b (string-stream-peek-byte ip)))
+      (string-stream-index-set! ip (+fx (string-stream-index ip) 1))
+      b))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-read-int16 ...                                     */
+;*---------------------------------------------------------------------*/
+(define (string-stream-read-int16 ip::struct)
+   (let* ((b1 (string-stream-read-byte ip))
+	  (b0 (string-stream-read-byte ip)))
+      (+s32 (bit-lshs32 (fixnum->int32 b1) 8) (fixnum->int32 b0))))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-read-int32 ...                                     */
+;*---------------------------------------------------------------------*/
+(define (string-stream-read-int32 ip::struct)
+   (let* ((b3 (string-stream-read-byte ip))
+	  (b2 (string-stream-read-byte ip))
+	  (b1 (string-stream-read-byte ip))
+	  (b0 (string-stream-read-byte ip)))
+      (+s32 (bit-lshs32 (fixnum->int32 b3) 24)
+	 (+s32 (bit-lshs32 (fixnum->int32 b2) 16)
+	    (+s32 (bit-lshs32 (fixnum->int32 b1) 8)
+	       (fixnum->int32 b0))))))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-read-int ...                                       */
+;*---------------------------------------------------------------------*/
+(define (string-stream-read-int len::long ip::struct)
+   (let loop ((val (string-stream-read-byte ip))
+	      (len len))
+      (if (=fx len 1)
+	  val
+	  (loop (+fx (bit-lsh val 8) (string-stream-read-byte ip))
+	     (-fx len 1)))))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-read-vlq ...                                       */
+;*---------------------------------------------------------------------*/
+(define (string-stream-read-vlq ip)
+   (let loop ((acc 0))
+      (let ((c (string-stream-read-byte ip)))
+	 (if (<=fx c #x7f)
+	     (+fx c acc)
+	     (loop (bit-lsh (+fx acc (bit-and c #x7f)) 7) )))))
+
+;*---------------------------------------------------------------------*/
+;*    string-stream-read-chars ...                                     */
+;*---------------------------------------------------------------------*/
+(define (string-stream-read-chars len ip::struct)
+   (let ((s (substring (string-stream-string ip)
+	       (string-stream-index ip) (+ (string-stream-index ip) len))))
+      (string-stream-index-set! ip (+ (string-stream-index ip) len))
+      s))
 
 ;*---------------------------------------------------------------------*/
 ;*    midi-text-names ...                                              */
@@ -909,7 +990,8 @@
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-cdelay ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-cdelay mp::midiplayer ms::midisink track::miditrack ppq dt us)
+(define (midiplayer-cdelay mp::midiplayer
+	   ms::midisink tick::long track::miditrack ppq dt us)
    (with-access::miditrack track (tempo)
       (with-access::midisink ms (usleep)
 	 (when (>fx dt 0)
@@ -918,7 +1000,7 @@
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-ignore ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-ignore mp::midiplayer ms::midisink obj)
+(define (midiplayer-ignore mp::midiplayer ms::midisink tick::long obj)
    #unspecified)
 
 ;*---------------------------------------------------------------------*/
@@ -941,49 +1023,56 @@
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-noteoff ...                                           */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-noteoff mp::midiplayer ms::midisink nn::long kk::long vv::long)
+(define (midiplayer-noteoff mp::midiplayer ms::midisink tick::long
+	   nn::long kk::long vv::long)
    (midiplayer-cmd3 ms #x80 nn kk vv))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-noteon ...                                            */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-noteon mp::midiplayer ms::midisink nn::long kk::long vv::long)
+(define (midiplayer-noteon mp::midiplayer ms::midisink tick::long
+	   nn::long kk::long vv::long)
    (midiplayer-cmd3 ms #x90 nn kk vv))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-aftertouch ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-aftertouch mp::midiplayer ms::midisink nn::long kk::long vv::long)
+(define (midiplayer-aftertouch mp::midiplayer ms::midisink tick::long
+	   nn::long kk::long vv::long)
    (midiplayer-cmd3 ms #xa0 nn kk vv))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-ctrlchange ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-ctrlchange mp::midiplayer ms::midisink nn::long kk::long vv::long)
+(define (midiplayer-ctrlchange mp::midiplayer ms::midisink tick::long
+	   nn::long kk::long vv::long)
    (midiplayer-cmd3 ms #xb0 nn kk vv))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-prgmchange ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-prgmchange mp::midiplayer ms::midisink nn::long pp::long)
+(define (midiplayer-prgmchange mp::midiplayer ms::midisink tick::long
+	   nn::long pp::long)
    (midiplayer-cmd2 ms #xc0 nn pp))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-after-touch ...                                       */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-after-touch mp::midiplayer ms::midisink nn::long pp::long)
+(define (midiplayer-after-touch mp::midiplayer ms::midisink tick::long
+	   nn::long pp::long)
    (midiplayer-cmd2 ms #xd0 nn pp))
 
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-pitch ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-pitch mp::midiplayer ms::midisink nn::long cc::long vv::long)
+(define (midiplayer-pitch mp::midiplayer ms::midisink tick::long
+	   nn::long cc::long vv::long)
    (midiplayer-cmd3 ms #xe0 nn cc vv))
 	   
 ;*---------------------------------------------------------------------*/
 ;*    midiplayer-sysex ...                                             */
 ;*---------------------------------------------------------------------*/
-(define (midiplayer-sysex mp::midiplayer ms::midisink data)
+(define (midiplayer-sysex mp::midiplayer ms::midisink tick::long data)
    (with-access::midisink ms (stream write-string)
       (write-string stream)))
 
@@ -1040,6 +1129,21 @@
 ;*---------------------------------------------------------------------*/
 (define (read-type ip)
    (read-chars 4 ip))
+
+;*---------------------------------------------------------------------*/
+;*    vlq-encode ...                                                   */
+;*    -------------------------------------------------------------    */
+;*    See the Wikipedia web page for encoding description:             */
+;*      https://en.wikipedia.org/wiki/Variable-length_quantity         */
+;*---------------------------------------------------------------------*/
+(define (vlq i)
+   (let loop ((i i)
+	      (b 0))
+      (if (<=fx i 127)
+	  (string (integer->char (bit-or i b)))
+	  (let ((u (bit-rsh i 7))
+		(l (bit-or (bit-and i #x7f) b)))
+	     (string-append (loop u #x80) (string (integer->char l)))))))
 
 ;* {*---------------------------------------------------------------------*} */
 ;* {*    midiplayer-play ...                                              *} */

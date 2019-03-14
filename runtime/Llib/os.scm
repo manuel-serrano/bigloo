@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Tue Mar 12 10:39:27 2019 (serrano)                */
+;*    Last change :  Thu Mar 14 14:53:53 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -264,7 +264,7 @@
 			  (init %dload-init-sym)
 			  (module #f))
 	    (dynamic-unload ::bstring)
-	    (dynamic-load-symbol::custom ::bstring ::bstring #!optional module)
+	    (dynamic-load-symbol::obj ::bstring ::bstring #!optional module)
 	    (inline dynamic-load-symbol-get::obj ::custom)
 	    (inline dynamic-load-symbol-set::obj ::custom ::obj)
 	    (unix-path->list::pair-nil ::bstring)

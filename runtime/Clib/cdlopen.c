@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Feb 17 14:34:53 2000                          */
-/*    Last change :  Sun Mar 10 07:07:21 2019 (serrano)                */
+/*    Last change :  Thu Mar 14 15:09:40 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    The dlopen interface.                                            */
 /*=====================================================================*/
@@ -18,7 +18,7 @@
 /*---------------------------------------------------------------------*/
 struct bgl_dlsym_custom_t {
    struct custom custom;
-   obj_t *ptr;
+   obj_t *addr;
 };
 
 /*---------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ bgl_dload_error() {
 /*---------------------------------------------------------------------*/
 static void *
 dload_init_call( void *handle, char *sym ) {
-   void *(*init)() = dlsym( handle, sym );
+   void *(*init)() = BGL_DLSYM( handle, sym );
    char *error;
 
    if( init == NULL ) {
@@ -280,7 +280,7 @@ static obj_t *
 dload_get_symbol_addr( obj_t filename, obj_t name, obj_t symbol ) {
    obj_t h;
    void *dlopen = 0L;
-   
+
    /* file the dload structure */
    BGL_MUTEX_LOCK( dload_mutex );
    h = dload_list;
@@ -292,6 +292,7 @@ dload_get_symbol_addr( obj_t filename, obj_t name, obj_t symbol ) {
 	 h = CDR( h );
       }
    }
+   BGL_MUTEX_UNLOCK( dload_mutex );
 
    if( !dlopen ) {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
@@ -325,10 +326,12 @@ dlsym_to_string( obj_t obj, char *buffer, int len ) {
 /*    dlsym_output ...                                                 */
 /*---------------------------------------------------------------------*/
 static obj_t
-dlsym_output( obj_t obj, FILE *file ) {
+dlsym_output( obj_t obj, obj_t op ) {
    obj_t id = (obj_t)CUSTOM_IDENTIFIER( obj );
-   
-   fprintf( file, "<dlsym:%s>", BSTRING_TO_STRING( id ) );
+   bgl_write( op, "<dlsym:", 8 );
+   bgl_write( op, BSTRING_TO_STRING( id ), STRING_LENGTH( id ) );
+   bgl_write( op, ">", 1 );
+   return obj;
 }
 
 /*---------------------------------------------------------------------*/
@@ -341,10 +344,12 @@ bgl_dlsym( obj_t filename, obj_t name, obj_t symbol ) {
 
    if( addr ) {
       obj_t res = create_custom( sizeof( obj_t * ) );
+      struct bgl_dlsym_custom_t *obj = (struct bgl_dlsym_custom_t *)CREF( res );
 
       CUSTOM_IDENTIFIER_SET( res, (char *)( name ) );
       CUSTOM_TO_STRING( res ) = dlsym_to_string;
       CUSTOM_OUTPUT( res ) = dlsym_output;
+      obj->addr = addr;
 
       return res;
    } else {
@@ -358,7 +363,7 @@ bgl_dlsym( obj_t filename, obj_t name, obj_t symbol ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_dlsym_get( obj_t dlsym ) {
-   obj_t *ptr = ((struct bgl_dlsym_custom_t *)dlsym)->ptr;
+   obj_t *ptr = ((struct bgl_dlsym_custom_t *)CREF( dlsym ))->addr;
    return *ptr;
 }
 
@@ -368,6 +373,6 @@ bgl_dlsym_get( obj_t dlsym ) {
 /*---------------------------------------------------------------------*/
 obj_t
 bgl_dlsym_set( obj_t dlsym, obj_t val ) {
-   obj_t *ptr = ((struct bgl_dlsym_custom_t *)dlsym)->ptr;
+   obj_t *ptr = ((struct bgl_dlsym_custom_t *)CREF( dlsym ))->addr;
    return *ptr = val;
 }
