@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Tue Apr 17 07:48:59 2018 (serrano)                */
+/*    Last change :  Thu Mar 28 16:02:39 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -42,24 +42,6 @@ BGL_RUNTIME_DEF obj_t
 fill_vector( obj_t bvector, long len, obj_t init ) {
    return bgl_fill_vector( bvector, 0, len, init );
 }
-
-/* {*---------------------------------------------------------------------*} */
-/* {*    BGL_RUNTIME_DEF obj_t                                            *} */
-/* {*    bgl_saw_vector_copy ...                                          *} */
-/* {*---------------------------------------------------------------------*} */
-/* #if( BGL_GC == BGL_SAW_GC )                                         */
-/* BGL_RUNTIME_DEF obj_t                                               */
-/* bgl_saw_vector_copy( obj_t old ) {                                  */
-/*    long i = VECTOR_LENGTH( old ) - 1;                               */
-/*    obj_t new = create_vector( i );                                  */
-/*                                                                     */
-/*    while( i-- >= 0 ) {                                              */
-/*       VECTOR_REF( new, i ) = bgl_saw_gc_copy( VECTOR_REF( old, i ) ); */
-/*    }                                                                */
-/*                                                                     */
-/*    return new;                                                      */
-/* }                                                                   */
-/* #endif                                                              */
 
 /*---------------------------------------------------------------------*/
 /*    create_vector ...                                                */
