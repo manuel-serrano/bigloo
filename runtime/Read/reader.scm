@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec 27 11:16:00 1994                          */
-;*    Last change :  Mon Jan 14 13:58:26 2019 (serrano)                */
+;*    Last change :  Fri Apr 12 10:58:36 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo's reader                                                  */
 ;*=====================================================================*/
@@ -589,10 +589,18 @@
 	      (map! string->symbol (string-split (the-string) "."))
 	      (input-port-name (the-port))
 	      (input-port-position (the-port)))
-	   (the-symbol)))
+	   (let ((s (the-symbol))
+		 (name (input-port-name (the-port)))
+		 (pos (-fx (input-port-position (the-port)) (the-length))))
+	      (putprop! s 'loc (make-source-location name pos))
+	      s)))
       (id
        ;; this rule has to be placed after the rule matching the `.' char
-       (the-symbol))
+       (let ((s (the-symbol))
+	     (name (input-port-name (the-port)))
+	     (pos (-fx (input-port-position (the-port)) (the-length))))
+	  (putprop! s 'loc (make-source-location name pos))
+	  s))
       ((: "|" (* (or (out #a000 #\\ #\|) (: #\\ all))) "|")
        (if (=fx (the-length) 2)
 	   (string->symbol "")

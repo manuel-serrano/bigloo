@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/pragma.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/pragma.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Thu Aug  3 08:40:42 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 12 08:23:06 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -173,6 +173,13 @@
 	      (when (or (sfun? val) (cfun? val))
 		 (global-pragma-set! global
 		    (cons 'default-inline
+		       (global-pragma global))))))
+	  ((thread-local-storage)
+	   ;; thread local variable
+	   (let ((val (global-value global)))
+	      (unless (or (sfun? val) (cfun? val))
+		 (global-pragma-set! global
+		    (cons 'thread-local-storage
 		       (global-pragma global))))))
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" clause '()))))

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tools/location.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Tools/location.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:00:44 1996                          */
-;*    Last change :  Wed Feb 10 11:21:56 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 12 11:08:03 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The location managment                                           */
 ;*=====================================================================*/
@@ -61,6 +61,8 @@
       ((epair? exp)
        ;; easy the location has been directly produced by the reader.
        (parse-location (cer exp)))
+      ((symbol? exp)
+       (parse-location (getprop exp 'loc)))
       (else
        #f)))
 

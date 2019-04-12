@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/BackEnd/c_proto.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/BackEnd/c_proto.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Tue Mar  7 19:03:25 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 12 08:25:33 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
 ;*=====================================================================*/
@@ -120,7 +120,7 @@
 ;*    emit-prototype/svar/scnst ...                                    */
 ;*---------------------------------------------------------------------*/
 (define (emit-prototype/svar/scnst value variable)
-   (with-access::variable variable (type id name)
+   (with-access::variable variable (type id name pragma)
       (set-variable-name! variable)
       (cond
 	 ((eq? (global-import variable) 'static)
@@ -131,9 +131,11 @@
 		  (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
 	 ((eq? (global-import variable) 'export)
 	  (fprint *c-port*
-		  "BGL_EXPORTED_DEF "
-		  (make-typed-declaration type name)
-		  (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
+	     (if (memq 'thread-local-storage (global-pragma variable))
+		 "BGL_THREAD_DECL "
+		 "BGL_EXPORTED_DEF ")
+	     (make-typed-declaration type name)
+	     (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
 	 (else
 	  (fprint *c-port*
 		  (get-c-scope variable)

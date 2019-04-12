@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Tools/error.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Tools/error.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 10:47:51 1994                          */
-;*    Last change :  Sun Nov 10 09:39:15 2013 (serrano)                */
-;*    Copyright   :  1994-2013 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Fri Apr 12 11:04:42 2019 (serrano)                */
+;*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Error utilities                                                  */
 ;*=====================================================================*/
