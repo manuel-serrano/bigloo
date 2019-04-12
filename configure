@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan 29 08:14:39 2019 (serrano)                */
+#*    Last change :  Fri Apr 12 08:01:03 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -922,7 +922,7 @@ while : ; do
       apis=$napis;;
 
     --enable-thread-local-storage)
-      pthreadlocalstorage=yes;;
+      pthreadlocalstorage=;;
 
     --disable-thread-local-storage)
       pthreadlocalstorage=no;;
@@ -2033,8 +2033,8 @@ else
   fi
 
   # thread local storage
-  if [ "$pthreadlocalstorage" = "yes" -a "$threadsupport " != "no " ]; then
-    pthreaddecl=__thread
+  if [ "$pthreadlocalstorage " != " " -a "$threadsupport " != "no " ]; then
+    pthreaddecl=$pthreadlocalstorage
     pthreadhastls=1
     gcthread="$gcthread -DUSE_COMPILER_TLS"
   else
