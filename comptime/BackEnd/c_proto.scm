@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Fri Apr 12 08:25:33 2019 (serrano)                */
+;*    Last change :  Sat Apr 13 07:36:40 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -131,7 +131,7 @@
 		  (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
 	 ((eq? (global-import variable) 'export)
 	  (fprint *c-port*
-	     (if (memq 'thread-local-storage (global-pragma variable))
+	     (if (memq 'thread-local (global-pragma variable))
 		 "BGL_THREAD_DECL "
 		 "BGL_EXPORTED_DEF ")
 	     (make-typed-declaration type name)

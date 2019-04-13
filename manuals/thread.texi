@@ -161,12 +161,19 @@ Thread locking mechanism is common to Fair Threads and Posix Threads.
 
 @deffn {SRFI-18 function} mutex? @var{obj}
 @deffnx {SRFI-18 function} make-mutex [@var{name}]
+@deffnx {SRFI-18 function} make-spinlock [@var{name}]
 @deffnx {SRFI-18 function} mutex-name @var{mutex}
 @deffnx {SRFI-18 function} mutex-specific @var{mutex}
 @deffnx {SRFI-18 function} mutex-specific-set! @var{mutex} @var{obj}
 @deffnx {SRFI-18 function} mutex-state @var{mutex}
 @deffnx {SRFI-18 function, deprecated} mutex-lock! @var{mutex} [@var{timeout} [@var{thread}]]
 @deffnx {SRFI-18 function, deprecated} mutex-unlock! @var{mutex}
+
+The function @code{make-spinlock} creates a spin lock on architectures
+on support it, otherwise it creates a regular mutex as if @code{make-mutex}
+was called. The support for spin lock can be checked with:
+
+@code{bigloo-config 'have-spinlock}
 
 @smalllisp
 (let ((m (make-mutex)))
@@ -212,6 +219,7 @@ Thread locking mechanism is common to Fair Threads and Posix Threads.
   @result{} (0 2)
 @end smalllisp
 @end deffn
+
 
 @deffn {Bigloo form} synchronize mutex exp1 exp2 ...
 The function @var{synchronize} evaluates the expressions @var{exp1},
