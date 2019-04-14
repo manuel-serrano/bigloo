@@ -1,12 +1,12 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Read/include.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Read/include.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Dec 26 10:44:03 1994                          */
-;*    Last change :  Mon Oct 31 16:12:06 2005 (serrano)                */
-;*    Copyright   :  1994-2005 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Apr 14 06:52:22 2019 (serrano)                */
+;*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
-;*    We read an include file                                          */
+;*    Read an include file                                             */
 ;*=====================================================================*/
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Thu Jan 24 08:21:07 2019 (serrano)                */
+;*    Last change :  Sun Apr 14 06:43:01 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -157,10 +157,6 @@
       ;; patch the types of vector-set! familly function.
       (profile vect (patch-vector-set!))
 
-;*       ;; when the vector->tvector optimization is enabled we have to */
-;*       ;; patch the types of vector-set! familly function.           */
-;*       (profile vect (patch-vector-set!))                            */
-;*                                                                     */
       ;; when the cfa pair tracking is enabled we have to
       ;; patch the types of vector-set! familly function.
       (profile pair (patch-pair-set!))

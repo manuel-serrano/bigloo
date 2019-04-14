@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Sat Apr 13 07:36:50 2019 (serrano)                */
+;*    Last change :  Sun Apr 14 06:33:21 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -46,7 +46,8 @@
    (lambda (clause)
       (match-case clause
 	 ((?- . ?protos)
-	  (for-each (lambda (proto) (pragma-parser proto module clause))
+	  (for-each (lambda (proto)
+		       (pragma-parser proto module clause))
 		    protos)
 	  '())
 	 (else
@@ -58,7 +59,11 @@
 (define (pragma-parser proto module clause)
    (match-case proto
       (((and ?id (? symbol?)) . ?prop)
-       (set! *pragma-list* (cons (list id module prop clause) *pragma-list*)))
+       (set! *pragma-list*
+	  (let ((prag (if (epair? proto)
+			  (econs id (list module prop clause) (cer proto))
+			  (list id module prop clause))))
+	     (cons prag *pragma-list*))))
       (else
        (user-error "pragma" "Illegal clause" clause '()))))
 
@@ -79,9 +84,11 @@
 					 global
 					 (find-global/module id 'foreign)))))
 		       (if (not (global? global))
-			   (warning `(@ ,id ,module)
-				    "Can't find global variable for pragma -- "
-				    pragma)
+			   (user-warning/location
+			      (find-location pragma)
+			      "pragma"
+			      "Can't find global variable for pragma"
+			      `(@ ,id ,module))
 			   (set-pragma-properties! global prop* clause))))
 		   (else
 		    (internal-error "pragma-finalizer"
@@ -95,7 +102,8 @@
 ;*    set-pragma-properties! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (set-pragma-properties! global prop* clause)
-   (for-each (lambda (prop) (set-pragma-property! global prop clause))
+   (for-each (lambda (prop)
+		(set-pragma-property! global prop clause))
 	     prop*))
  
 ;*---------------------------------------------------------------------*/

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/impuse.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/impuse.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 12:25:53 1996                          */
-;*    Last change :  Wed Oct 14 12:26:40 2015 (serrano)                */
-;*    Copyright   :  1996-2015 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Apr 14 06:48:35 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of import/use/from clauses                       */
 ;*=====================================================================*/
