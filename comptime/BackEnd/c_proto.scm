@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 09:57:04 1996                          */
-;*    Last change :  Sat Apr 13 07:36:40 2019 (serrano)                */
+;*    Last change :  Fri Apr 19 16:19:24 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The emission of prototypes                                       */
@@ -125,10 +125,12 @@
       (cond
 	 ((eq? (global-import variable) 'static)
 	  (fprint *c-port*
-		  "static"
-		  #\space
-		  (make-typed-declaration type name)
-		  (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
+	     (if (memq 'thread-local (global-pragma variable))
+		 "static BGL_THREAD_DECL"
+		 "static")
+	     #\space
+	     (make-typed-declaration type name)
+	     (if (sub-type? type *obj*) " = BUNSPEC;" #\;)))
 	 ((eq? (global-import variable) 'export)
 	  (fprint *c-port*
 	     (if (memq 'thread-local (global-pragma variable))
@@ -572,16 +574,16 @@
 ;*    get-c-scope ::global ...                                         */
 ;*---------------------------------------------------------------------*/
 (define-method (get-c-scope variable::global)
-   (with-access::global variable (import library)
-      (case import
-	 ((static)
-	  "static")
-	 ((import)
-	  (if library "BGL_IMPORT" "extern"))
-	 ((export)
-	  "BGL_EXPORTED_DECL")
-	 (else
-	  (internal-error "get-c-scope" "Unknown importation" import)))))
+   (with-access::global variable (import library id pragma)
+      (let ((scope (case import
+		      ((static) "static")
+		      ((import) (if library "BGL_IMPORT" "extern"))
+		      ((export) "BGL_EXPORTED_DECL")
+		      (else (internal-error "get-c-scope"
+			       "Unknown importation" import)))))
+	 (if (memq 'thread-local (global-pragma variable))
+	     (string-append scope " BGL_THREAD_DECL")
+	     scope))))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-c-scope ::local ...                                          */
