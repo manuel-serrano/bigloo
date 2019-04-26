@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/ssl/src/C/ssl_debug.h            */
+/*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/C/ssl_debug.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Jun 23 08:29:53 2015                          */
-/*    Last change :  Sun Nov 27 10:59:05 2016 (serrano)                */
-/*    Copyright   :  2015-16 Manuel Serrano                            */
+/*    Last change :  Tue Dec  4 13:43:42 2018 (serrano)                */
+/*    Copyright   :  2015-18 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Temporary include for debugging ssl                              */
 /*=====================================================================*/
@@ -54,7 +54,7 @@ static int count;
 #define call8( fun, a0, a1, a2, a3, a4, a5, a6, a7 ) \
    (fprintf( stderr, "SSL_DEBUG(%d): " #fun "\n", count++ ), fun(a0,a1,a2,a3,a4,a5,a6,a7))
 
-#define SSLv23_method()	call0(SSLv23_method)
+//#define SSLv23_method()	call0(SSLv23_method)
 #define SSLv2_method() call0(SSLv2_method)
 #define SSLv1_server_method() call0(SSLv1_server_method)
 #define SSLv1_client_method() call0(SSLv1_client_method)

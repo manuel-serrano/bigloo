@@ -1,0 +1,81 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/gc/install-gc-8.0.2                  */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Copyright   :  2007-19 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    This shell script installs a new GC.                             */
+#*    Run the script with:                                             */
+#*      GC=/usr/local/src/gc-8.0.2.tar.gz ./install-gc                 */
+#*=====================================================================*/
+
+src=$GC.tar.gz
+gcversion=8.0.2
+libatomicversion=7.6.8
+
+gc=`basename $src .tar.gz`
+bglversion=`grep release ../configure | head -n 1 | awk -F= '{ print $2 }'`
+
+tar=$TAR
+patch=$PATCH
+
+if [ "$tar " = " " ]; then
+  tar=tar
+fi
+
+if [ "$patch " = " " ]; then
+  patch=patch
+fi
+
+# untar the two versions of the GC
+$tar xfz $src -C ../gc || (echo "$tar xfz $src failed"; exit 1)
+$tar xfz libatomic_ops-$libatomicversion.tar.gz -C ../gc/gc-$gcversion \
+  || (echo "$tar xfz $src failed"; exit 1)
+mv ../gc/gc-$gcversion/libatomic_ops-$libatomicversion ../gc/gc-$gcversion/libatomic_ops
+/bin/rm -rf "../gc/$gc"_fth
+mv ../gc/$gc "../gc/$gc"_fth || (echo "mv $gc failed"; exit 1)
+
+$tar xfz $src  -C ../gc || (echo "$tar xfz $src failed"; exit 1)
+$tar xfz libatomic_ops-$libatomicversion.tar.gz -C ../gc/gc-$gcversion \
+  || (echo "$tar xfz $src failed"; exit 1)
+mv ../gc/gc-$gcversion/libatomic_ops-$libatomicversion ../gc/gc-$gcversion/libatomic_ops
+
+# general Bigloo patch
+(cd "../gc/$gc"_fth && $patch -p1 < ../$gc.patch > /dev/null)
+if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
+(cd ../gc/$gc && $patch -p1 < ../$gc.patch > /dev/null)
+if [ $? != "0" ]; then echo "bigloo patch failed"; exit 1; fi
+
+# Patch the Makefiles for generating a good lib name
+for p in configure configure.ac Makefile.direct Makefile.am Makefile.in; do
+
+  sed 's|gc\.a|$(BOOTLIBDIR)/libbigloogc-$(RELEASE).a|g' $gc/$p > $gc/$p.new
+  mv $gc/$p.new $gc/$p
+
+  sed 's|gc\.a|$(BOOTLIBDIR)/libbigloogc_fth-$(RELEASE).a|g' "$gc"_fth/$p > "$gc"_fth/$p.new
+  mv "$gc"_fth/$p.new "$gc"_fth/$p
+
+done
+
+# Set the correct mode for configure (configure is not currently used by Bigloo)
+chmod a+rx $gc/configure
+chmod a+rx "$gc"_fth/configure
+
+# Copy the inline_alloc.c file
+cp ../runtime/Clib/inline_alloc.c $gc
+cp ../runtime/Clib/inline_alloc.h $gc
+cp ../runtime/Clib/inline_alloc_bump.h $gc
+
+cp ../runtime/Clib/inline_alloc.c "$gc"_fth
+cp ../runtime/Clib/inline_alloc_thread.h "$gc"_fth
+cp ../runtime/Clib/inline_alloc_bump.h "$gc"_fth
+
+# Copy the gc_intf.c file
+cp ../runtime/Clib/gc_intf.c $gc
+cp ../runtime/Clib/gc_intf.c "$gc"_fth
+
+# hostos Bigloo specific patch
+if [ "$HOSTOS " != " " -a -x ./install-$gccustom-$HOSTOS ]; then
+  ./install-$gccustom-$HOSTOS || exit 1
+fi

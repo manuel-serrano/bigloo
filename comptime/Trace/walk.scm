@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Trace/walk.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Trace/walk.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 13 13:53:58 1995                          */
-;*    Last change :  Wed May 17 13:23:40 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 26 13:56:22 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The introduction of trace in debugging mode.                     */
 ;*=====================================================================*/
@@ -335,7 +335,7 @@
 ;*    trace-node ::cast ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-method (trace-node node::cast stack level)
-   (trace-node (cast-arg node) stack level)
+   (cast-arg-set! node (trace-node (cast-arg node) stack level))
    node)
 
 ;*---------------------------------------------------------------------*/

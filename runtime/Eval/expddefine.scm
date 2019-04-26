@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Wed Feb 14 14:23:20 2018 (serrano)                */
-;*    Copyright   :  2001-18 Manuel Serrano                            */
+;*    Last change :  Mon Jan 28 11:26:44 2019 (serrano)                */
+;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
 ;*=====================================================================*/
@@ -372,15 +372,15 @@
 					  (define (call-next-method)
 					     (let ((next (find-super-class-method
 							    ,(car p0)
-							    ,fun
+							    ,(car pf)
 							    ,(cdr p0))))
 						(if (procedure? next)
 						    ,(if va
 							 `(apply next ,(car p0) ,@rest)
 							 `(next ,(car p0) ,@rest))
 						    ,(if va
-							 `(apply ,fun ,(car p0) ,@rest)
-							 `(,fun ,(car p0) ,@rest)))))
+							 `(apply ,(car pf) ,(car p0) ,@rest)
+							 `(,(car pf) ,(car p0) ,@rest)))))
 					  ,@body) e)
 				  ',f0)))
 		     (evepairify res x)))
@@ -394,11 +394,11 @@
 				  ,(e `(lambda ,(expand-args (cons f0 names) e)
 					  (define (call-next-method)
 					     (let ((next (find-super-class-method ,(car p0)
-							    ,fun
+							    ,(car pf)
 							    ,(cdr p0))))
 						(if (procedure? next)
 						    (next ,(car p0) ,@names)
-						    (apply ,fun ,(car p0) ,@names))))
+						    (apply ,(car pf) ,(car p0) ,@names))))
 					  ,@body)
 				      e)
 				  ',f0)))
@@ -413,12 +413,12 @@
 				  ,(e `(lambda ,(expand-args (cons f0 tformals) e)
 					  (define (call-next-method)
 					     (let ((next (find-super-class-method ,(car p0)
-							    ,fun
+							    ,(car pf)
 							    ,(cdr p0))))
 						(if (procedure? next)
 						    (apply next ,(car p0)
 						       ,@(pair->list uformals))
-						    (apply ,fun ,(car p0)
+						    (apply ,(car pf) ,(car p0)
 						       ,@(pair->list uformals)))))
 					  ,(make-dsssl-function-prelude fun formals
 					      `(begin ,@body) error))

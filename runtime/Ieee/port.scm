@@ -196,9 +196,9 @@
 	    ($utime::int (::string ::elong ::elong) "bgl_utime")
 	    
 	    ($file-size::elong (::string) "bgl_file_size")
-	    ($file-uid::int (::string) "bgl_file_uid")
-	    ($file-gid::int (::string) "bgl_file_gid")
-	    ($file-mode::int (::string) "bgl_file_mode")
+	    ($file-uid::long (::string) "bgl_file_uid")
+	    ($file-gid::long (::string) "bgl_file_gid")
+	    ($file-mode::long (::string) "bgl_file_mode")
 	    ($file-type::symbol (::string) "bgl_file_type")
 	    ($symlink::int (::string ::string) "bgl_symlink")
 	    ($select::pair-nil (::long ::pair-nil ::pair-nil ::pair-nil) "bgl_select")

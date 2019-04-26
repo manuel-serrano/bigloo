@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/equiv.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/equiv.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 09:57:55 1995                          */
-;*    Last change :  Tue Jun 17 09:26:13 2014 (serrano)                */
+;*    Last change :  Mon Jan 14 14:00:37 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.2. Equivalence predicates (page 13, r4)                        */
 ;*=====================================================================*/
@@ -30,6 +30,7 @@
 	    __date
 	    __srfi4
 	    __bignum
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

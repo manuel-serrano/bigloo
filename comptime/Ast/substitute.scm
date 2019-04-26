@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/substitute.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Ast/substitute.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan  6 11:09:14 1995                          */
-;*    Last change :  Fri Apr 21 18:45:25 2017 (serrano)                */
+;*    Last change :  Tue Feb 26 13:54:27 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The substitution tools module                                    */
 ;*=====================================================================*/
@@ -167,7 +167,7 @@
 ;*    do-substitute! ::cast ...                                        */
 ;*---------------------------------------------------------------------*/
 (define-method (do-substitute! node::cast site)
-   (do-substitute! (cast-arg node) site)
+   (cast-arg-set! node (do-substitute! (cast-arg node) site))
    node)
 
 ;*---------------------------------------------------------------------*/

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Sun Sep 23 16:21:14 2018 (serrano)                */
+/*    Last change :  Tue Jan 15 07:02:00 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -776,19 +776,17 @@ union scmobj {
       header_t header;
       /* string source */
       union scmobj *pat;
-#if( BGL_REGEXP_TYPE == BGL_REGEXP_regex )
-      /* posix regular expression */
-      regex_t preg;
-#else
+      /* the native regular expression */
+      void *preg;
+      /* native matching routines */
+      union scmobj *(*match)();
+      long (*match_n)();
+      union scmobj *(*free)();
 #  if( BGL_REGEXP_TYPE == BGL_REGEXP_pcre )
       /* pcre regular expression */
-      void *preg;
       void *study;
       int capturecount;
-#  else
-      union scmobj *preg;
 #  endif
-#endif      
    } regexp;
 
    /* custom objects */
@@ -1627,8 +1625,15 @@ BGL_RUNTIME_DECL void weakptr_data_set( obj_t , obj_t  );
 #define BGL_REGEXP( o ) (CREF( o )->regexp)
 #define BGL_REGEXP_PREG( o ) (BGL_REGEXP( o ).preg)   
 #define BGL_REGEXP_PREG_SET( o, v ) (BGL_REGEXP_PREG( o ) = (v))
-#define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)   
+#define BGL_REGEXP_PAT( o ) (BGL_REGEXP( o ).pat)
 
+#define BGL_REGEXP_MATCH( o, string, stringp, beg, len ) \
+   BGL_REGEXP( o ).match( o, string, stringp, beg, len )
+#define BGL_REGEXP_MATCH_N( o, string, vres, beg, len ) \
+   BGL_REGEXP( o ).match_n( o, string, vres, beg, len )
+#define BGL_REGEXP_FREE( o ) \
+   BGL_REGEXP( o ).free( o )
+   
 /*---------------------------------------------------------------------*/
 /*    opaque                                                           */
 /*---------------------------------------------------------------------*/
@@ -2429,13 +2434,15 @@ BGL_RUNTIME_DECL void bgl_init_trace( void );
 
 BGL_RUNTIME_DECL long bgl_rgc_blit_string( obj_t, char *, long, long );
 
-BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );
-BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );
-BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int );
+/* BGL_RUNTIME_DECL obj_t bgl_regcomp( obj_t, obj_t );                 */
+/* BGL_RUNTIME_DECL obj_t bgl_regfree( obj_t );                        */
+/* BGL_RUNTIME_DECL obj_t bgl_regmatch( obj_t, char *, bool_t, int, int ); */
 
 BGL_RUNTIME_DECL void bgl_restore_signal_handlers( void );
 extern void bps_bassign(obj_t *field, obj_t value, obj_t obj);
 extern void bps_bmassign(obj_t *field, obj_t value);
+
+BGL_RUNTIME_DECL obj_t bgl_make_regexp( obj_t pat );
 
 /* memory profiling */
 BGL_RUNTIME_DECL void bmem_set_allocation_type( long, long );

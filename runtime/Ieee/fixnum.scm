@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Sun Sep 30 11:50:58 2018 (serrano)                */
+;*    Last change :  Fri Jan 18 12:29:27 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -973,6 +973,8 @@
 	    (lcmu64::uint64 . pair)
 	    (lcmbx::bignum . pair)
 	    (exptfx::long ::long ::long)
+	    (expts32::int32 ::int32 ::int32)
+	    (exptu32::uint32 ::uint32 ::uint32)
 	    (exptbx::bignum ::bignum ::bignum)
 	    (integer->string::bstring ::long #!optional (radix::long 10))
 	    (fixnum->string::bstring ::long #!optional (radix::long 10))
@@ -1208,6 +1210,8 @@
  	    (lcmu64 no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
 	    (lcmbx no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (exptfx no-alloc side-effect-free no-cfa-top nesting (effect))
+	    (expts32 no-alloc side-effect-free no-cfa-top nesting (effect))
+	    (exptu32 no-alloc side-effect-free no-cfa-top nesting (effect))
 	    (exptbx side-effect-free no-cfa-top nesting (effect))
  	    (positivefx? no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
 	    (positiveelong? no-alloc side-effect-free no-cfa-top nesting (effect) fail-safe)
@@ -2035,7 +2039,21 @@
 ;*---------------------------------------------------------------------*/
 (define (remainder n1 n2) (int2op remainder n1 n2))
 
-(define-inline (remainderfx n1 n2) (c-remainderfx n1 n2))
+(define-inline (remainderfx n1 n2)
+   ;; on a 64bit machines, if the two arguments are 32bit integer, use
+   ;; a 32 bit division which is significantly faster than a 64bit operation
+   (cond-expand
+      ((and (or bint61 bint64) bigloo-c)
+       ;; should use bit-or and bit-and but this would force to import __bit
+       ;; in all library modules
+       ;; -2147483648 == 1111...111000...000
+       ;;                `--------'`--------'
+       ;;                 33 1-bit  31 0-bit
+       (if (=fx (pragma::long "((($1) | ($2)) & -2147483648)" n1 n2) 0)
+	   (int32->fixnum ($remainders32 (fixnum->int32 n1) (fixnum->int32 n2)))
+	   (c-remainderfx n1 n2)))
+      (else
+       (c-remainderfx n1 n2))))
 
 (define-inline (remainderelong n1 n2) (c-remainderelong n1 n2))
 (define-inline (remainderllong n1 n2) (c-remainderllong n1 n2))
@@ -2265,24 +2283,36 @@
 ;*---------------------------------------------------------------------*/
 (define (exptfx x y)
    (cond
-      ((zerofx? y)
-       1)
-      ((evenfx? y)
-       (exptfx (*fx x x) (quotientfx y 2)))
-      (else
-       (*fx x (exptfx x (-fx y 1))))))
+      ((zerofx? y) 1)
+      ((evenfx? y) (exptfx (*fx x x) (quotientfx y 2)))
+      (else (*fx x (exptfx x (-fx y 1))))))
+
+;*---------------------------------------------------------------------*/
+;*    expts32 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (expts32 x y)
+   (cond
+      ((zeros32? y) #s32:1)
+      ((evens32? y) (expts32 (*s32 x x) (quotients32 y #s32:2)))
+      (else (*s32 x (expts32 x (-s32 y #s32:1))))))
+
+;*---------------------------------------------------------------------*/
+;*    exptu32 ...                                                      */
+;*---------------------------------------------------------------------*/
+(define (exptu32 x y)
+   (cond
+      ((zerou32? y) #u32:1)
+      ((evenu32? y) (exptu32 (*u32 x x) (quotientu32 y #u32:2)))
+      (else (*u32 x (exptu32 x (-u32 y #u32:1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    exptbx ...                                                       */
 ;*---------------------------------------------------------------------*/
 (define (exptbx x y)
    (cond
-      ((zerobx? y)
-       #z1)
-      ((evenbx? y)
-       (exptbx (*bx x x) (quotientbx y #z2)))
-      (else
-       (*bx x (exptbx x (-bx y #z1))))))
+      ((zerobx? y) #z1)
+      ((evenbx? y) (exptbx (*bx x x) (quotientbx y #z2)))
+      (else (*bx x (exptbx x (-bx y #z1))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    integer->string-op ...                                           */

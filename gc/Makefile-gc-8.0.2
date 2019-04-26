@@ -1,0 +1,52 @@
+#*=====================================================================*/
+#*    serrano/prgm/project/bigloo/bigloo/gc/Makefile-gc-8.0.2          */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Sep  3 17:41:09 2009                          */
+#*    Last change :  Tue Jan 29 08:25:34 2019 (serrano)                */
+#*    Copyright   :  2009-19 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    gc-8.0.2 specific entries                                        */
+#*=====================================================================*/
+
+#*---------------------------------------------------------------------*/
+#*    Default configuration                                            */
+#*---------------------------------------------------------------------*/
+include ../Makefile.buildconfig
+include ../Makefile.config
+
+boot-gc:
+	$(MAKE) do-boot-gc
+
+boot-gc_fth:
+	if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
+          $(MAKE) LIBQ=_fth CFLAGS="$(CFLAGS) $(CGCFLAGS) $(CGCTHREADFLAGS)" \
+             ATOMICOBJ=$(CUSTOMGC)_fth/libatomic_ops/src/atomic_ops.o \
+             do-boot-gc; \
+	fi
+
+ATOMICOBJ=
+OUTDIR=$(CUSTOMGC)$(LIBQ)/.libs
+
+# this will build the gc. We can then use its '.a' and '.o's
+$(OUTDIR)/libgc.$(SHAREDSUFFIX):
+	$(MAKE) -C $(CUSTOMGC)$(LIBQ) CFLAGS="$(CFLAGS) $(CGCFLAGS)"
+
+do-boot-gc: $(OUTDIR)/libgc.$(SHAREDSUFFIX)
+	$(MAKE) $(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) && \
+	$(MAKE) $(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a
+
+$(BOOTLIBDIR)/libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX):
+	$(MAKE) shared-lib \
+             LIBDEST=$@ \
+	     LIBPATH=$(BOOTLIBDIR) \
+             SONAME=libbigloogc$(LIBSUF)$(LIBQ)-$(RELEASE).$(SHAREDSUFFIX) \
+             GCCLOSELIB= \
+             CLOSELIBS= \
+             LDLIBS=$(EXTRAGCLIBS) \
+             OBJECTS="$(OUTDIR)/*.o $(ATOMICOBJ)" \
+             EXTRALIBS=$(EXTRAGCLIBS)
+
+$(BOOTLIBDIR)/libbigloogc$(LIBQ)-$(RELEASE).a:
+	cp $(OUTDIR)/libgc.a $@
+	$(RANLIB) $@

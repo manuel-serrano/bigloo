@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 09:04:27 1995                          */
-;*    Last change :  Sat Apr 21 18:14:05 2018 (serrano)                */
-;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 26 10:50:34 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The ast inlining.                                                */
 ;*=====================================================================*/
@@ -159,7 +159,7 @@
 ;*    inline-node ::cast ...                                           */
 ;*---------------------------------------------------------------------*/
 (define-method (inline-node node::cast kfactor stack)
-   (inline-node (cast-arg node) kfactor stack)
+   (cast-arg-set! node (inline-node (cast-arg node) kfactor stack))
    node)
 
 ;*---------------------------------------------------------------------*/
@@ -211,6 +211,8 @@
    (for-each (lambda (local)
 		(inline-sfun! local kfactor stack))
       (let-fun-locals node))
+   (trace (inline inline+ 0)
+      "LET-FUN body=" (shape (let-fun-body node)) #\Newline)
    (let-fun-body-set! node (inline-node (let-fun-body node) kfactor stack))
    node)
 

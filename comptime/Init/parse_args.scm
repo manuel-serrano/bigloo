@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Init/parse_args.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Init/parse_args.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Aug 23 07:13:33 2017 (serrano)                */
-;*    Copyright   :  1992-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 24 08:14:48 2019 (serrano)                */
+;*    Copyright   :  1992-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -596,7 +596,7 @@
 ;*--- Profiling -------------------------------------------------------*/
       (section "Profiling")
       ;; -pg
-      (("-p" (help "-p[2g]" "Compile files for cpu profiling"))
+      (("-p" (help "-p[2g]" "Compile for cpu profiling"))
        (if (or (not (number? *profile-mode*))
 	       (<fx *profile-mode* 1))
 	   (begin
@@ -620,20 +620,20 @@
        (set! *strip* #f)
        (set! *profile-library* #t)
        (set! *cc-options* (append *cc-options* (list *cflags-prof*))))
-      (("-pmem" (help "-pmem[2]" "Compile files for memory profiling"))
-       (bigloo-compiler-debug-set! 1)
-       (set! *compiler-debug* 1)
-       (set! *compiler-debug-trace* 1)
-       (set! *jas-peephole* #f)
-       (set! *bmem-profiling* #t)
-       (bigloo-profile-set! 1))
-      (("-pmem2")
-       (bigloo-compiler-debug-set! 2)
-       (set! *compiler-debug-trace* 2)
-       (set! *compiler-debug* 2)
-       (set! *jas-peephole* #f)
-       (set! *bmem-profiling* #t)
-       (bigloo-profile-set! 2))
+      (("-pmem?level" (help "-pmem[level]" "Compile for memory profiling"))
+       ;;(bigloo-compiler-debug-set! 1)
+       ;; (set! *compiler-debug* 1)
+       (let ((l (max (string->integer level) 1)))
+	  (set! *compiler-debug-trace* (*fx 5 l))
+	  (set! *jas-peephole* #f)
+	  (set! *bmem-profiling* #t)
+	  (bigloo-profile-set! l)))
+;*        ;;(bigloo-compiler-debug-set! 2)                             */
+;*        (set! *compiler-debug-trace* 20)                             */
+;*        ;; (set! *compiler-debug* 2)                                 */
+;*        (set! *jas-peephole* #f)                                     */
+;*        (set! *bmem-profiling* #t)                                   */
+;*        (bigloo-profile-set! 2))                                     */
       (("-psync" (help "Profile synchronize expr (see $exitd-mutex-profile)"))
        (set! *sync-profiling* #t))
       

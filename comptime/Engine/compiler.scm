@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Engine/compiler.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Engine/compiler.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Fri Nov 24 14:33:55 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Jan 24 08:21:07 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
 ;*=====================================================================*/
@@ -296,10 +296,9 @@
 	       (bdb-spread-obj! ast))
 	    (stop-on-pass 'bdb-spread-obj (lambda () (write-ast ast)))
 
-	    ;; when the compiler is invoked in -g2 mode, we install
-	    ;; traces before the inlining
+	    ;; generate debug (and profiling) traces before inlining
 	    (when (and (>=fx *compiler-debug-trace* 1)
-		       (>=fx (bigloo-compiler-debug) 2)
+		       ;;(>=fx (bigloo-compiler-debug) 2)
 		       (backend-trace-support (the-backend)))
 	       (set! ast (profile trace (trace-walk! ast))))
 	    (check-sharing "trace" ast)
@@ -340,14 +339,14 @@
 	    (check-sharing "beta" ast)
 	    (check-type "beta" ast #f #f)
 	    
-	    ;; we introduce traces in `small debug mode'
-	    (when (and (>=fx *compiler-debug-trace* 1)
-		       (=fx (bigloo-compiler-debug) 1)
-		       (backend-trace-support (the-backend)))
-	       (set! ast (profile trace (trace-walk! ast))))
-	    (stop-on-pass 'trace (lambda () (write-ast ast)))
-	    (check-sharing "trace" ast)
-	    (check-type "trace" ast #f #f)
+;* 	    ;; we introduce traces in `small debug mode'               */
+;* 	    (when (and (>=fx *compiler-debug-trace* 1)                 */
+;* 		       (=fx (bigloo-compiler-debug) 1)                 */
+;* 		       (backend-trace-support (the-backend)))          */
+;* 	       (set! ast (profile trace (trace-walk! ast))))           */
+;* 	    (stop-on-pass 'trace (lambda () (write-ast ast)))          */
+;* 	    (check-sharing "trace" ast)                                */
+;* 	    (check-type "trace" ast #f #f)                             */
 	    
 	    ;; we replace `failure' invokation by `error/location' when
 	    ;; invoked in debug mode (to be performed after the coercion stage)

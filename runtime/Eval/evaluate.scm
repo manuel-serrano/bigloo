@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evaluate.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Fri Jul  2 10:01:28 2010                          */
-;*    Last change :  Fri Jan  6 10:05:31 2017 (serrano)                */
-;*    Copyright   :  2010-17 Manuel Serrano                            */
+;*    Last change :  Thu Jan 24 08:52:59 2019 (serrano)                */
+;*    Copyright   :  2010-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    New Bigloo interpreter                                           */
 ;*=====================================================================*/
@@ -128,7 +128,6 @@
 ;*---------------------------------------------------------------------*/
 (define (evaluate2 sexp env loc)
    (let ( (ast (extract-loops (convert sexp env loc))) )
-      (when (> (bigloo-debug) 10) (pp (uncompile ast)))
       (analyse-vars ast)
       (let ( (n (frame-size ast)) )
 	 (let ( (f (compile ast)) )

@@ -161,6 +161,10 @@ If the hash table is weak, @var{fun} will only be called on sets of key/datum
 which haven't dissapeared yet.
 @end deffn
 
+@deffn {bigloo procedure} hashtable-clear! table
+Remove all the elements from @var{table}.
+@end deffn
+
 Here is an example of hash table.
 
 @smalllisp

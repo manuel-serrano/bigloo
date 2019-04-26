@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sun Sep 23 15:43:01 2018 (serrano)                */
-#*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jan 29 08:14:39 2019 (serrano)                */
+#*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.3d
+release=4.3f
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
@@ -102,7 +102,7 @@ bglnantagging=0
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
 zip=zip
-jar="jar cfm"
+jar="jar cmf"
 zflags=
 javac=javac
 jcflags=-O
@@ -163,7 +163,7 @@ unistringsrc=$UNISTRINGSRC
 unistringconfigureopt=
 
 if [ "$unistringsrc " = " " ]; then
-  unistringversion=0.9.7
+  unistringversion=0.9.10
   unistringsrc=libunistring/libunistring-$unistringversion.tgz
 fi  
 
@@ -268,7 +268,8 @@ customgc=yes
 #gccustom=gc-7.3alpha2
 #gccustom=gc-7.3alpha3-20130330
 #gccustom=gc-7.5.0-27may2016
-gccustom=gc-7.6.2
+#gccustom=gc-7.6.2
+gccustom=gc-8.0.2
 gcversion=
 gcbump=0
 cgcflags=
@@ -2615,7 +2616,7 @@ fi
 #*---------------------------------------------------------------------*/
 # find out the C library for phidget
 if [ "$phidget " = " " ]; then
-   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion`
+   phidgetlibs=`$autoconf phidget --cflags="$phidgetcflags" --version=$phidgetversion` 2> /dev/null
 
    if [ "$?" != "0" ]; then
       phidget=no;
@@ -2786,7 +2787,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   likely=`$autoconf likely`
 
   # Does the C compiler support GCC attributes
-  gccattrs=`$autoconf likely`
+  gccattrs=`$autoconf gccattrs`
 
   # Is gmp available?
   buildgmplibdir=$buildlibdir
@@ -2794,7 +2795,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     havegmp=1;
     featureflags="-srfi enable-gmp $featureflags";
     extralibs="-lbigloogmp-$release $extralibs"
-    # buildgmplibdir=$buildlibdir/libuv/libuv-$libuvversion/lib/.libs
   elif [ "$gmpversion " = " " ]; then
     gmplib=`$autoconf bgl-pkg-config --libs gmp`;
 
@@ -2811,26 +2811,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	echo "Aborting";
  	exit 1;
       fi
-      if [ "$srfi27force " = "yes " ]; then
-	echo "*** ERROR:configure: Cannot find GMP library required by SRFI27."
-        echo "Please install GMP first or re-configure with \"--disable-srfi27\"."
-	echo "Aborting";
-	exit 1;
-      else
-        echo "*** WARNING:configure: Cannot find GMP library required by SRFI27."
-        echo "Disabling SRFI27."
-        napis=;
-        for a in $apis; do
-           if [ $a != "srfi27" ]; then
-             if [ "$napis " = " " ]; then
-               napis="$a";
-             else
-               napis="$napis $a";
-             fi
-           fi
-        done
-        apis=$napis;
-      fi
     else
       havegmp=1;
       featureflags="-srfi enable-gmp $featureflags";
@@ -2840,6 +2820,34 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     havegmp=0;
   fi
 
+  if [ "$havegmp " = "0 " ]; then
+    if [ "$srfi27force " = "yes " ]; then
+      echo "*** ERROR:configure: Cannot find GMP library required by SRFI27."
+      echo "Please install GMP first or re-configure with \"--disable-srfi27\"."
+      echo "Aborting";
+      exit 1;
+    else
+      echo "*** WARNING:configure: Cannot find GMP library required by SRFI27."
+      echo "Disabling SRFI27."
+      napis=;
+      for a in $apis; do
+        if [ $a != "srfi27" ]; then
+          if [ "$napis " = " " ]; then
+            napis="$a";
+          else
+            napis="$napis $a";
+          fi
+        fi
+      done
+      apis=$napis;
+    fi
+    long_limbs=0;
+    longlong_limbs=0;
+  else
+    long_limbs=`$autoconf limbs --type="long" --cflags="-I$bootdir/lib/$release -L$bootdir/lib/$release"` || exit 1
+    longlong_limbs=`$autoconf limbs --type="$longlong" --cflags="-I$bootdir/lib/$release -L$bootdir/lib/$release"` || exit 1
+  fi
+    
   # Is resolv available?
   if [ "$resolv " = " " ]; then
     resolv=`$autoconf resolv` || exit 1
@@ -2961,9 +2969,6 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
       strtoull="bgl_strtoull"
     fi
   fi
-
-  long_limbs=`$autoconf limbs --type="long" --cflags="-I$bootdir/lib/$release -L$bootdir/lib/$release"` || exit 1
-  longlong_limbs=`$autoconf limbs --type="$longlong" --cflags="-I$bootdir/lib/$release -L$bootdir/lib/$release"` || exit 1
 
   long_sign_bit=`$autoconf signbit --type=long --alignment="$alignment"` || exit 1
   elong_sign_bit=`$autoconf signbit --type=long --alignment=0` || exit 1

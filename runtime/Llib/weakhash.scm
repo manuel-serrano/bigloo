@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/weakhash.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/weakhash.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Sep  1 08:51:06 1994                          */
-;*    Last change :  Sat Oct  5 21:26:27 2013 (serrano)                */
+;*    Last change :  Mon Feb 25 14:08:36 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The weak hash tables.                                            */
 ;*    -------------------------------------------------------------    */
@@ -57,6 +57,7 @@
 	   (weak-hashtable-map::pair-nil ::struct ::procedure)
 	   (weak-hashtable-for-each ::struct ::procedure)
 	   (weak-hashtable-filter! ::struct ::procedure)
+	   (weak-hashtable-clear! ::struct)
 	   (weak-hashtable-contains?::bool ::struct ::obj)
 	   (weak-hashtable-get ::struct ::obj)
 	   (weak-hashtable-put! ::struct ::obj ::obj)
@@ -295,6 +296,12 @@
 					 keepgoing
 					 remove)))
 		(loop (+fx i 1)))))))
+
+;*---------------------------------------------------------------------*/
+;*    weak-hashtable-clear! ...                                        */
+;*---------------------------------------------------------------------*/
+(define (weak-hashtable-clear! table::struct)
+   (weak-hashtable-filter! table (lambda (k v) #f)))
 
 ;*---------------------------------------------------------------------*/
 ;*    plain-hashtable-filter! ...                                      */

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Pp/circle.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Pp/circle.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Vladimir Tsyshevsky                               */
 ;*    Creation    :  Sat Aug 14 08:52:29 1999                          */
-;*    Last change :  Fri Aug 28 05:30:04 2015 (serrano)                */
+;*    Last change :  Mon Jan 14 13:58:47 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The circular displayer.                                          */
 ;*    -------------------------------------------------------------    */
@@ -44,6 +44,7 @@
 	    __bexit
 	    __bignum
 	    __rgc
+	    __bit
 	    
             __r4_numbers_6_5
             __r4_numbers_6_5_fixnum

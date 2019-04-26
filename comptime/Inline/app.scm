@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 10 18:43:56 1995                          */
-;*    Last change :  Sat Apr 21 18:15:15 2018 (serrano)                */
-;*    Copyright   :  1995-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Tue Feb 26 09:05:35 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The inlining of application node                                 */
 ;*=====================================================================*/
@@ -39,12 +39,15 @@
 	  (args   (app-args node))
 	  (loc    (node-loc node)))
       (trace (inline inline+ 3) "inline-app: " (shape node)
-	 " mode=" *inline-mode* #\Newline)
+	 " mode=" *inline-mode*)
       (cond
 	 ((not (sfun? sfun))
 	  node)
 	 ((or (inline-app? var kfactor (call-size node) stack)
 	      (inline-closure? var stack))
+	  (trace (inline inline+ 3) "~~~ inline-app: " (shape node)
+	     " mode=" *inline-mode* " is-recursive=" (is-recursive? var)
+	     #\Newline)	  
 	  (unless (eq? (sfun-class sfun) 'sifun)
 	     (set! *inlined-calls* (+fx *inlined-calls* 1)))
 	  (when (and (global? var) (global-library var))
@@ -111,6 +114,7 @@
 	       (not *optim-unroll-loop?*)
 	       (memq var stack))
           ;; no we won't because we are already inlining a app to `fun'
+	  (trace (inline inline+ 0) " no (recursive)" #\Newline)
           #f)
 	 ((eq? (sfun-class sfun) 'snifun)
 	  (trace (inline inline+ 0) " no (declared snifun)" #\Newline)
@@ -123,8 +127,7 @@
 	  ;; recursive functions can be inlined only on the first inlining
 	  #f)
 	 ((eq? (sfun-class sfun) 'sgfun)
-	  (trace inline " no (generic)" #\Newline)
-	  (trace inline+ " no (generic)" #\Newline)
+	  (trace (inline inline+ 0) " no (generic)" #\Newline)
 	  ;; don't inline generic (they use find-method which is inline)
 	  #f)
 	 ((and (eq? (sfun-class sfun) 'sifun)
@@ -154,7 +157,7 @@
 	 ((and (=fx (node-size body) call-size) (not (memq var stack)))
 	  ;; yes, because the call and the body are of the same size
 	  ;; and we are not inlining an infinite loop
-	  (trace (inline inline+ 0) "yes, same size and not in stack (size: "
+	  (trace (inline inline+ 0) " yes, same size and not in stack (size: "
 	     (node-size body)
 	     ")"
 	     #\newline)
@@ -162,7 +165,7 @@
 	 ((and (=fx (variable-occurrence var) 1)
 	       (or (not (global? var)) (eq? (global-import var) 'static))
 	       (isa? (sfun-body (variable-value var)) retblock))
-	  (trace (inline inline+ 0) "yes, because static 1 occ retblock"
+	  (trace (inline inline+ 0)  " yes, because static 1 occ retblock"
 	     ")"
 	     #\newline)
 	  #t)

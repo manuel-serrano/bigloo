@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/vector.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/vector.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Thu Jul 27 08:01:00 2017 (serrano)                */
+;*    Last change :  Wed Jan 23 07:49:54 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -211,7 +211,10 @@
       ((>fx end (vector-length vec))
        (error "vector-fill!" "end index too large" end))
       ((>=fx start end)
-       (error "vector-fill!" "start index larger than end" (cons start end)))
+       (if (and (=fx start end) (=fx start 0))
+	   #unspecified
+	   (error "vector-fill!" "start index larger than end"
+	      (cons start end))))
       (else
        ($vector-fill! vec start end fill))))
 
