@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Tue Sep  5 09:55:58 1995                          */
-/*    Last change :  Sat Apr 21 11:12:07 2018 (serrano)                */
+/*    Last change :  Sun Apr 28 19:20:08 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    String management                                                */
 /*=====================================================================*/
@@ -516,11 +516,15 @@ bgl_ieee_string_to_float( obj_t s ) {
 BGL_RUNTIME_DEF
 bool_t
 bigloo_strcmp( obj_t o1, obj_t o2 ) {
-   int l1 = STRING_LENGTH( o1 );
+   if( BSTRING_TO_STRING( o1 )[ 0 ] == BSTRING_TO_STRING( o2 )[ 0 ] ) {
+      int l1 = STRING_LENGTH( o1 );
 
-   if( l1 == STRING_LENGTH( o2 ) ) {
-      return !memcmp( (void *)BSTRING_TO_STRING( o1 ),
-		      (void *)BSTRING_TO_STRING( o2 ), l1 );
+      if( l1 == STRING_LENGTH( o2 ) ) {
+	 return !memcmp( (void *)BSTRING_TO_STRING( o1 ),
+			 (void *)BSTRING_TO_STRING( o2 ), l1 );
+      } else {
+	 return 0;
+      }
    } else {
       return 0;
    }
