@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Sun Apr 14 06:33:21 2019 (serrano)                */
+;*    Last change :  Thu May  9 09:38:02 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
@@ -84,11 +84,12 @@
 					 global
 					 (find-global/module id 'foreign)))))
 		       (if (not (global? global))
-			   (user-warning/location
-			      (find-location pragma)
-			      "pragma"
-			      "Can't find global variable for pragma"
-			      `(@ ,id ,module))
+			   (when (eq? module *module*)
+			      (user-warning/location
+				 (find-location pragma)
+				 "pragma"
+				 "Can't find global variable for pragma"
+				 `(@ ,id ,module)))
 			   (set-pragma-properties! global prop* clause))))
 		   (else
 		    (internal-error "pragma-finalizer"
