@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Fri Apr 12 08:20:59 2019 (serrano)                */
+;*    Last change :  Fri May 10 16:08:30 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -518,30 +518,31 @@
       "(node->cop node::switch kont): " (shape node) #\Newline
       "  kont: " kont #\Newline)
    (with-access::switch node (clauses test item-type loc)
-      (for-each (lambda (clause)
-		   (set-cdr! clause (node->cop (cdr clause) kont inpushexit)))
-	 clauses)
-      (let* ((aux  (make-local-svar/name 'aux item-type))
-	     (cop (node->cop (node-setq aux test) *id-kont* inpushexit)))
-	 (if (and (csetq? cop) (eq? (varc-variable (csetq-var cop)) aux))
-	     (instantiate::cswitch
-		(loc  loc)
-		(test (csetq-value cop))
-		(clauses clauses))
-	     (instantiate::cblock
-		(loc loc)
-		(body (instantiate::csequence
-			 (loc loc)
-			 (cops (list (instantiate::local-var
+      (let ((cclauses (map (lambda (clause)
+			     (cons (car clause)
+				(node->cop (cdr clause) kont inpushexit)))
+			clauses)))
+	 (let* ((aux  (make-local-svar/name 'aux item-type))
+		(cop (node->cop (node-setq aux test) *id-kont* inpushexit)))
+	    (if (and (csetq? cop) (eq? (varc-variable (csetq-var cop)) aux))
+		(instantiate::cswitch
+		   (loc  loc)
+		   (test (csetq-value cop))
+		   (clauses cclauses))
+		(instantiate::cblock
+		   (loc loc)
+		   (body (instantiate::csequence
+			    (loc loc)
+			    (cops (list (instantiate::local-var
+					   (loc  loc)
+					   (vars (list aux)))
+				     cop
+				     (instantiate::cswitch
 					(loc  loc)
-					(vars (list aux)))
-				  cop
-				  (instantiate::cswitch
-				     (loc  loc)
-				     (test (instantiate::varc
-					      (loc loc)
-					      (variable aux)))
-				     (clauses clauses)))))))))))
+					(test (instantiate::varc
+						 (loc loc)
+						 (variable aux)))
+					(clauses cclauses))))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    node->cop ::let-fun ...                                          */
