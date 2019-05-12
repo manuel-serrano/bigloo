@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jun 29 18:18:45 1998                          */
-/*    Last change :  Tue Jul  3 08:00:49 2018 (serrano)                */
+/*    Last change :  Sun May 12 09:27:13 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Scheme sockets                                                   */
 /*    -------------------------------------------------------------    */
@@ -586,10 +586,12 @@ bglhostentbyname( obj_t hostname, struct bglhostent *bhp, int canon ) {
    struct hostent *hp;
    struct bglhostent *res;
    
-   BGL_MUTEX_LOCK( gethostby_mutex );
+   // MS: 12may19
+   // BGL_MUTEX_LOCK( gethostby_mutex );
    hp = gethostbyname( BSTRING_TO_STRING( hostname ) );
    bglhostent_fill_from_hostent( hostname, bhp, hp );
-   BGL_MUTEX_UNLOCK( gethostby_mutex );
+   // MS: 12may19
+   // BGL_MUTEX_UNLOCK( gethostby_mutex );
 #else
    struct addrinfo hints;
    struct addrinfo *res;
@@ -734,7 +736,8 @@ retry_cache:
 	 /* create the bglhostent entry with the request_pending mark */
 	 bhp = make_bglhostent( hostname, 0 );
 	 VECTOR_SET( hosttable, key, (obj_t)bhp );
-	 BGL_MUTEX_UNLOCK( socket_mutex );
+	 // MS: 12may19
+	 // BGL_MUTEX_UNLOCK( socket_mutex );
 
 #if( DEBUG_CACHE_DNS )
 	 fprintf( stderr, ">>> bglhostbyname (%s:%d) hostname=%s key=%d QUERYING DNS...\n",
@@ -751,7 +754,8 @@ retry_cache:
 		  BGLHOSTENT_STATE_OK );
 #endif	 
 	 /* store the address in the hashtable and notify */
-	 BGL_MUTEX_LOCK( socket_mutex );
+	 // MS: 12may19
+	 // BGL_MUTEX_LOCK( socket_mutex );
 	 socket_condv_value = bhp;
 	 BGL_CONDVAR_BROADCAST( socket_condv );
 	 BGL_MUTEX_UNLOCK( socket_mutex );
@@ -780,14 +784,16 @@ make_bglhostentbyaddr( obj_t hostaddr, struct sockaddr_in *sin ) {
    struct hostent *hp;
    struct bglhostent *res;
 
-   BGL_MUTEX_LOCK( gethostby_mutex );
+   // MS: 12may19
+   // BGL_MUTEX_LOCK( gethostby_mutex );
    hp = gethostbyaddr( (char *)&(sin->sin_addr),
 		       sizeof( sin->sin_addr ),
 		       AF_INET );
 
    res = make_bglhostent( hostaddr, hp );
 
-   BGL_MUTEX_UNLOCK( gethostby_mutex );
+   // MS: 12may19
+   // BGL_MUTEX_UNLOCK( gethostby_mutex );
    return res;
 #else
    char host[ 80 ];
@@ -847,10 +853,12 @@ bglhostbyaddr( struct sockaddr_in *sin ) {
       } else {
 	 obj_t hostaddr = string_to_bstring_len( (char *)&(sin->sin_addr),
 						 sizeof( sin->sin_addr ) );
-	 BGL_MUTEX_UNLOCK( socket_mutex );
+	 // MS: 12may19
+	 // BGL_MUTEX_UNLOCK( socket_mutex );
 	 if( bhp = make_bglhostentbyaddr( hostaddr, sin ) ) {
 	    
-	    BGL_MUTEX_LOCK( socket_mutex );
+	    // MS: 12may19
+	    // BGL_MUTEX_LOCK( socket_mutex );
 	    VECTOR_SET( addrtable, key, (obj_t)bhp );
 	    BGL_MUTEX_UNLOCK( socket_mutex );
 	    
