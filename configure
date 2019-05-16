@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Apr 12 08:01:03 2019 (serrano)                */
+#*    Last change :  Tue May 14 13:54:49 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -404,7 +404,7 @@ custompcre=
 pcresrc=$PCRESRC
 
 if [ "$pcresrc " = " " ]; then
-  pcreversion=8.39
+  pcreversion=8.43
   pcresrc=pcre/pcre-$pcreversion.tgz
 fi  
 
@@ -1787,6 +1787,8 @@ case $hostos in
         exit 1;
       fi
 
+      cstrip=no
+      strip=no
       ldbuildsharedopt=" -dynamiclib -single_module";
       ldinstallname="-install_name";
       sharedsuffix="dylib";
