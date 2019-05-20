@@ -70,7 +70,7 @@ int BGl_testz00zzbugz002(double BgL_lhs1029z00_4) {
    return (((double) 0.0) == BgL_tmpz00_1191);
 }
 
-int main( int argc, char *argv ) {
+int main( int argc, char *argv[] ) {
   fprintf( stderr, "%d\n", BGl_testz00zzbugz002( 5e-324 ) );
 }
 EOF
