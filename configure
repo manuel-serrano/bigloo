@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May 14 13:54:49 2019 (serrano)                */
+#*    Last change :  Mon May 20 10:47:07 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1797,6 +1797,12 @@ case $hostos in
       sharedcompiler=yes;
       sharedbde=yes;
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
+      customgmp=yes
+      customunistring=yes
+      customlibuv=yes
+      customgc=yes
+      custompcre=yes
+      
       tuning="MacOS X"
     fi
 
@@ -2484,6 +2490,7 @@ if [ "$regexp " = " " ]; then
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
       lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
+      buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
       cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
     else
       pcrelibs=no
@@ -2519,22 +2526,17 @@ buildlibunistringlibdir=$buildlibdir # dummy existing path
 
 if [ "$unistring " != "no " ]; then
   if [ "$customunistring " = "yes " ]; then
+    unistringlibs=yes
     haveunistring=1;
     featureflags="-srfi enable-unistring $featureflags";
     extraunistring=unistring
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
     lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+    buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
     cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-  else
-    extraunistring=`$autoconf unistring` || exit 1
-    
-    if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
-      customunistring=yes
-    fi
-  fi
-
-  if [ "$customunistring " = "yes " ]; then
     unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
+    buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
       
     echo "+ Installing custom unistring source code."
     (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
@@ -2542,12 +2544,12 @@ if [ "$unistring " != "no " ]; then
     echo "+ Configuring custom unistring..."
     (cd libunistring; . ./configure-unistring) || exit 1
     
-    unistringlibs=yes
-    extraunistring=unistring
-    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
-    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-    buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
+  else
+    extraunistring=`$autoconf unistring` || exit 1
+    
+    if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
+      customunistring=yes
+    fi
   fi
 
   if [ "$extraunistring " = "no " ]; then
