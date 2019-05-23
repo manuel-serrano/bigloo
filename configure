@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon May 20 10:47:07 2019 (serrano)                */
+#*    Last change :  Thu May 23 07:11:37 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2532,10 +2532,9 @@ if [ "$unistring " != "no " ]; then
     extraunistring=unistring
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
     lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
-    buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
+    buildlibdir="$bootdir/libunistring$libdir/$fildir:$buildlibdir"
     cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
     unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
-    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
     buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
       
     echo "+ Installing custom unistring source code."
