@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    /tmp/BGL/bigloo4.3b/gmp/Makefile                                 */
+#*    serrano/prgm/project/bigloo/bigloo/gmp/Makefile                  */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Sat Mar 24 16:14:54 2018 (serrano)                */
-#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Mon May 27 19:14:45 2019 (serrano)                */
+#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
 #*=====================================================================*/
@@ -17,7 +17,7 @@ include ../Makefile.buildconfig
 include ../Makefile.config
 include ../Makefile.misc
 
-POPULATION = Makefile configure-gmp install-gmp
+POPULATION = Makefile Makefile.macosx configure-gmp install-gmp
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
@@ -47,9 +47,15 @@ objects:
 $(OUTDIR)/libgmp.a:
 	$(MAKE) -C $(GMP) CFLAGS="$(CCFLAGS)"
 
+ifneq ($(CUSTOMGMPMAKEFILE),)
 $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX): $(OUTDIR)/libgmp.a
 	(mkdir -p GMP_OBJ; cd GMP_OBJ; ar x ../$(OUTDIR)/libgmp.a)
-	$(MAKE) ld LIBDEST=$@
+	$(MAKE) ld LIBDEST=$@ OBJECTS="$(wildcard GMP_OBJ/*.o)"
+else
+include $(CUSTOMGMPMAKEFILE)
+$(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX): $(OUTDIR)/libgmp.a
+	$(MAKE) ld LIBDEST=$@ OBJECTS="$(CUSTOMOBJECTS)"
+endif
 
 ld:
 	$(MAKE) shared-lib \
@@ -59,7 +65,8 @@ ld:
              CLOSELIBS= -lm -lc \
              EXTRALIBS= \
              LDLIBS= -lm -lc \
-             OBJECTS="$(wildcard GMP_OBJ/*.o)"
+	     OBJECTS=$(OBJECTS)
+             
 
 $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).a:
 	cp $(OUTDIR)/libgmp.a $@
