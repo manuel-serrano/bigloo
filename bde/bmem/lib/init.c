@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Mon May 14 09:21:47 2018 (serrano)                */
-/*    Copyright   :  2003-18 Manuel Serrano                            */
+/*    Last change :  Mon May 27 09:31:18 2019 (serrano)                */
+/*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
 /*=====================================================================*/
@@ -33,6 +33,8 @@ extern void thread_reset_statistics();
 extern void type_dump( FILE *f );
 
 extern long long GC_alloc_total();
+
+static void bmem_init();
 
 /*---------------------------------------------------------------------*/
 /*    Global variables                                                 */
@@ -313,6 +315,117 @@ bmem_dump( int _ ) {
 }
    
 /*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bglfth_setup_bmem ...                                            */
+/*---------------------------------------------------------------------*/
+void
+bglfth_setup_bmem() {
+   void *hdl;
+   char bigloothread_lib[ 1000 ];
+   static void (*____bglthread_setup_bmem)();
+   
+   bmem_thread = 1;
+   
+   /* Hello world */
+   fprintf( stderr, "Bmem Fthread initialization...\n" );
+
+   if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
+      strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
+   } else {
+      sprintf( bigloothread_lib, "%s/libbigloofth_s-%s.%s",
+	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
+	       SHARED_LIB_SUFFIX );
+   }
+
+   fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+
+   hdl = open_shared_library( bigloothread_lib );
+
+   ____bglthread_setup_bmem = (void (*)())get_function( hdl, "bglfth_setup_bmem" );
+   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglfth_thread_new" );
+
+   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglthread_new" );
+   ____bglthread_new_with_name = (void *(*)( void *, void * ))get_function( hdl, "bglthread_new_with_name" );
+   ____scheduler_start = get_function( hdl, "BGl_schedulerzd2startz12zc0zz__ft_schedulerz00" );
+   ____scheduler_react = get_function( hdl, "BGl_schedulerzd2reactz12zc0zz__ft_schedulerz00" );
+   ____bglthread_switch = (void (*)( void *, void * ))get_function( hdl, "bglthread_switch" );
+   ____bglasync_scheduler_notify = (void (*)( void * ))get_function( hdl, "bglasync_scheduler_notify" );
+   ____pthread_getspecific = get_function( hdl, "bglfth_pthread_getspecific" );
+   ____pthread_setspecific = (int (*)())get_function( hdl, "bglfth_pthread_setspecific" );
+   ____pthread_key_create = (int (*)())get_function( hdl, "bglfth_pthread_key_create" );
+   ____pthread_mutex_init = (int (*)())get_function( hdl, "bglfth_pthread_mutex_init" );
+
+   if( ____pthread_key_create( &bmem_key, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key" );
+      exit( -2 );
+   }
+
+   if( ____pthread_key_create( &bmem_key2, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key2" );
+      exit( -2 );
+   }
+
+   if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key" );
+      exit( -2 );
+   }
+
+   ____bglthread_setup_bmem();
+
+   bmem_init();
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bglpth_setup_bmem ...                                            */
+/*---------------------------------------------------------------------*/
+void
+bglpth_setup_bmem() {
+   void *hdl;
+   char bigloothread_lib[ 1000 ];
+   static void (*____bglthread_setup_bmem)();
+   
+   bmem_thread = 2;
+
+   /* Hello world */
+   fprintf( stderr, "Bmem Pthread initialization...\n" );
+
+   if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
+      strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
+   } else {
+      sprintf( bigloothread_lib, "%s/libbigloopthread_s-%s.%s",
+	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
+	       SHARED_LIB_SUFFIX );
+   }
+
+   fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+
+   hdl = open_shared_library( bigloothread_lib );
+
+   ____bglthread_setup_bmem = (void (*)())get_function( hdl, "bglpth_setup_bmem" );
+   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglpth_thread_new" );
+   ____pthread_getspecific = get_function( hdl, "bglpth_pthread_getspecific" );
+   ____pthread_setspecific = (int (*)())get_function( hdl, "bglpth_pthread_setspecific" );
+   ____pthread_key_create = (int (*)())get_function( hdl, "bglpth_pthread_key_create" );
+   ____pthread_mutex_init = (int (*)())get_function( hdl, "bglpth_pthread_mutex_init" );
+
+   if( ____pthread_key_create( &bmem_key, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key" );
+      exit( -2 );
+   }
+
+   if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key" );
+      exit( -2 );
+   }
+
+   ____bglthread_setup_bmem();
+
+
+   bmem_init();
+}
+
+/*---------------------------------------------------------------------*/
 /*    static void                                                      */
 /*    bmem_init_inner ...                                              */
 /*    -------------------------------------------------------------    */
@@ -327,7 +440,15 @@ bmem_init_inner() {
    char *bglsafe = "_u";
 
    /* Hello world */
-   fprintf( stderr, "Bmem initialization...\n" );
+   fprintf( stderr, "GLUP: %p\n", getenv( "BMEMTHREAD" ) );
+   if( !getenv( "BMEMTHREAD" ) ) {
+      fprintf( stderr, "Bmem initialization...\n" );
+   } else if( !strcmp( getenv( "BMEMTHREAD" ), "pth" ) ) {
+      fprintf( stderr, "GLOP\n" );
+      bglpth_setup_bmem();
+   } else {
+      bglfth_setup_bmem();
+   }
    
    if( getenv( "BMEMUNSAFE" ) ) {
       bglsafe = getenv( "BMEMUNSAFE" );
@@ -514,117 +635,6 @@ bmem_init() {
       initp = 1;
       bmem_init_inner();
    }
-}
-
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bglfth_setup_bmem ...                                            */
-/*---------------------------------------------------------------------*/
-void
-bglfth_setup_bmem() {
-   void *hdl;
-   char bigloothread_lib[ 1000 ];
-   static void (*____bglthread_setup_bmem)();
-   
-   bmem_thread = 1;
-   
-   /* Hello world */
-   fprintf( stderr, "Bmem Fthread initialization...\n" );
-
-   if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
-      strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
-   } else {
-      sprintf( bigloothread_lib, "%s/libbigloofth_s-%s.%s",
-	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
-	       SHARED_LIB_SUFFIX );
-   }
-
-   fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
-
-   hdl = open_shared_library( bigloothread_lib );
-
-   ____bglthread_setup_bmem = (void (*)())get_function( hdl, "bglfth_setup_bmem" );
-   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglfth_thread_new" );
-
-   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglthread_new" );
-   ____bglthread_new_with_name = (void *(*)( void *, void * ))get_function( hdl, "bglthread_new_with_name" );
-   ____scheduler_start = get_function( hdl, "BGl_schedulerzd2startz12zc0zz__ft_schedulerz00" );
-   ____scheduler_react = get_function( hdl, "BGl_schedulerzd2reactz12zc0zz__ft_schedulerz00" );
-   ____bglthread_switch = (void (*)( void *, void * ))get_function( hdl, "bglthread_switch" );
-   ____bglasync_scheduler_notify = (void (*)( void * ))get_function( hdl, "bglasync_scheduler_notify" );
-   ____pthread_getspecific = get_function( hdl, "bglfth_pthread_getspecific" );
-   ____pthread_setspecific = (int (*)())get_function( hdl, "bglfth_pthread_setspecific" );
-   ____pthread_key_create = (int (*)())get_function( hdl, "bglfth_pthread_key_create" );
-   ____pthread_mutex_init = (int (*)())get_function( hdl, "bglfth_pthread_mutex_init" );
-
-   if( ____pthread_key_create( &bmem_key, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
-   }
-
-   if( ____pthread_key_create( &bmem_key2, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key2" );
-      exit( -2 );
-   }
-
-   if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
-   }
-
-   ____bglthread_setup_bmem();
-
-   bmem_init();
-}
-
-/*---------------------------------------------------------------------*/
-/*    void                                                             */
-/*    bglpth_setup_bmem ...                                            */
-/*---------------------------------------------------------------------*/
-void
-bglpth_setup_bmem() {
-   void *hdl;
-   char bigloothread_lib[ 1000 ];
-   static void (*____bglthread_setup_bmem)();
-   
-   bmem_thread = 2;
-
-   /* Hello world */
-   fprintf( stderr, "Pthread initialization...\n" );
-
-   if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
-      strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
-   } else {
-      sprintf( bigloothread_lib, "%s/libbigloopthread_s-%s.%s",
-	       LIBRARY_DIRECTORY, BGL_RELEASE_NUMBER,
-	       SHARED_LIB_SUFFIX );
-   }
-
-   fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
-
-   hdl = open_shared_library( bigloothread_lib );
-
-   ____bglthread_setup_bmem = (void (*)())get_function( hdl, "bglpth_setup_bmem" );
-   ____bglthread_new = (void *(*)( void * ))get_function( hdl, "bglpth_thread_new" );
-   ____pthread_getspecific = get_function( hdl, "bglpth_pthread_getspecific" );
-   ____pthread_setspecific = (int (*)())get_function( hdl, "bglpth_pthread_setspecific" );
-   ____pthread_key_create = (int (*)())get_function( hdl, "bglpth_pthread_key_create" );
-   ____pthread_mutex_init = (int (*)())get_function( hdl, "bglpth_pthread_mutex_init" );
-
-   if( ____pthread_key_create( &bmem_key, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
-   }
-
-   if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
-      FAIL( IDENT, "Can't get thread key", "bmem_key" );
-      exit( -2 );
-   }
-
-   ____bglthread_setup_bmem();
-
-
-   bmem_init();
 }
 
 /*---------------------------------------------------------------------*/
