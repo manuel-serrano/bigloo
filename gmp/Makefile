@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Mon May 27 19:14:45 2019 (serrano)                */
+#*    Last change :  Mon May 27 20:42:03 2019 (serrano)                */
 #*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -47,7 +47,7 @@ objects:
 $(OUTDIR)/libgmp.a:
 	$(MAKE) -C $(GMP) CFLAGS="$(CCFLAGS)"
 
-ifneq ($(CUSTOMGMPMAKEFILE),)
+ifeq ($(CUSTOMGMPMAKEFILE),)
 $(BOOTLIBDIR)/libbigloogmp-$(RELEASE).$(SHAREDSUFFIX): $(OUTDIR)/libgmp.a
 	(mkdir -p GMP_OBJ; cd GMP_OBJ; ar x ../$(OUTDIR)/libgmp.a)
 	$(MAKE) ld LIBDEST=$@ OBJECTS="$(wildcard GMP_OBJ/*.o)"

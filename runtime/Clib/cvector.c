@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Thu Mar 28 16:02:39 2019 (serrano)                */
+/*    Last change :  Mon May 27 20:02:20 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -53,7 +53,7 @@ BGL_RUNTIME_DEF obj_t
 create_vector( long len ) {
    obj_t vector;
 
-#if(  VECTOR_SIZE_TAG_NB_BIT != 0 )  
+#if( VECTOR_SIZE_TAG_NB_BIT != 0 )  
    if( len & ~(VECTOR_LENGTH_MASK) ) { 
       C_FAILURE( "create_vector", "vector too large", BINT( len ) );
       return BUNSPEC;
@@ -84,7 +84,7 @@ BGL_RUNTIME_DEF obj_t
 create_vector_uncollectable( long len ) {
    obj_t vector;
    
-#if(  VECTOR_SIZE_TAG_NB_BIT != 0 )  
+#if( VECTOR_SIZE_TAG_NB_BIT != 0 )  
    if( len & ~(VECTOR_LENGTH_MASK) ) { 
       C_FAILURE( "create_vector", "vector too large", BINT( len ) );
       return BUNSPEC;
