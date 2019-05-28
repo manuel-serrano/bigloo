@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue May 28 07:24:21 2019 (serrano)                */
+#*    Last change :  Tue May 28 07:55:52 2019 (serrano)                */
 #*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -31,6 +31,7 @@ boot: boot-gmp
 
 boot-gmp: 
 	$(MAKE) -C $(GMP)
+	$(MAKE) -C $(GMP) install
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */

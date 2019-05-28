@@ -4,13 +4,13 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Tue May 28 07:22:54 2019 (serrano)                */
+#*    Last change :  Tue May 28 07:51:18 2019 (serrano)                */
 #*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
 
-echo "configure gmp with \"CC=$cc ./configure $gmpconfigureopt\"" >> ../configure.log
+echo "configure gmp with \"CC=$cc ./configure --libdir=$libdir/$fildir --includedir=$libdir/$fildir $gmpconfigureopt\"" >> ../configure.log
 
 src=$gmpversion
 (cd $src && \
