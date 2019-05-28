@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May 28 08:11:21 2019 (serrano)                */
+#*    Last change :  Tue May 28 08:36:39 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2799,7 +2799,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     havegmp=1;
     featureflags="-srfi enable-gmp $featureflags";
     extralibs="-lgmp"
-    gmpversion="`echo $gmpsrc | sed 's|gmp/gmp-||' | sed 's||.tgz|'`"
+    gmpversion="`echo $gmpsrc | sed 's|gmp/gmp-||' | sed 's|.tgz||'`"
   elif [ "$gmpversion " = " " ]; then
     gmplib=`$autoconf bgl-pkg-config --libs gmp`;
 
