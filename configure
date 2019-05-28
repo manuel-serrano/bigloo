@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May 28 09:36:38 2019 (serrano)                */
+#*    Last change :  Tue May 28 10:01:19 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3939,8 +3939,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   if [ "$havegmp " = "1 " ]; then
     if [ "$customgmp " = "yes " ]; then
-      ldcompshared="-lbigloogmp_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/libbigloogmp-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompshared="-lgmp $ldcompshared" >> $makefile_cfg
+      ldcompstatic="\$(BOOTLIBDIR)/libgmp.a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lgmp $ldcompshared" >> $makefile_cfg
       ldcompstatic="-lgmp $ldcompstatic" >> $makefile_cfg
