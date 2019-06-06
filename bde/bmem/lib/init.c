@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Mon May 27 09:31:18 2019 (serrano)                */
+/*    Last change :  Thu Jun  6 08:01:54 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -167,6 +167,16 @@ void *unknown_ident;
 
 /*---------------------------------------------------------------------*/
 /*    void *                                                           */
+/*    unbound ...                                                      */
+/*---------------------------------------------------------------------*/
+void *
+unbound() {
+   fprintf( stderr, "unbound function\n" );
+   exit( -2 );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void *                                                           */
 /*    open_shared_library ...                                          */
 /*---------------------------------------------------------------------*/
 void *open_shared_library( char *lib ) {
@@ -193,6 +203,25 @@ get_function( void *handle, char *id ) {
    if( !fun || (err = dlerror()) ) {
       FAIL( IDENT, "Can't find function", id );
       exit( -2 );
+   } else {
+      fprintf( stderr, "ok\n" );
+      return fun;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void *(*)()                                                      */
+/*    find_function ...                                                */
+/*---------------------------------------------------------------------*/
+fun_t
+find_function( void *handle, char *id ) {
+   char *err;
+   fun_t fun = dlsym( handle, id );
+
+   fprintf( stderr, "  %s...", id );
+   if( !fun || (err = dlerror()) ) {
+      fprintf( stderr, "no\n" );
+      return (fun_t)&unbound;
    } else {
       fprintf( stderr, "ok\n" );
       return fun;
@@ -440,11 +469,9 @@ bmem_init_inner() {
    char *bglsafe = "_u";
 
    /* Hello world */
-   fprintf( stderr, "GLUP: %p\n", getenv( "BMEMTHREAD" ) );
    if( !getenv( "BMEMTHREAD" ) ) {
       fprintf( stderr, "Bmem initialization...\n" );
    } else if( !strcmp( getenv( "BMEMTHREAD" ), "pth" ) ) {
-      fprintf( stderr, "GLOP\n" );
       bglpth_setup_bmem();
    } else {
       bglfth_setup_bmem();
