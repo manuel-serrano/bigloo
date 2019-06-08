@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Thu Jun  6 08:01:54 2019 (serrano)                */
+/*    Last change :  Sat Jun  8 06:37:02 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -43,6 +43,7 @@ int bmem_debug = 0;
 int bmem_thread = 0;
 pthread_key_t bmem_key;
 pthread_key_t bmem_key2;
+pthread_key_t bmem_key3;
 pthread_mutex_t bmem_mutex;
 
 /* garbage collector */
@@ -84,8 +85,7 @@ void *(*____c_substring)( void *, int, int ) = 0;
 void *(*____bgl_escape_C_string)( unsigned char *, long, long ) = 0;
 void *(*____bgl_escape_scheme_string)( unsigned char *, long, long ) = 0;
 void *(*____create_string_for_read)( void *, int ) = 0;
-void *(*____string_to_keyword)( char * ) = 0;
-void *(*____bstring_to_keyword)( void * ) = 0;
+void *(*____bgl_make_keyword)( void * ) = 0;
 
 /* vector */
 void *(*____create_vector)( int ) = 0;
@@ -99,7 +99,6 @@ void *(*____make_va_procedure)( void *(*)(), int, int );
 
 /* output port */
 void *(*____bgl_make_output_port)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
-void *(*____bgl_open_output_string)( void * );
 void *(*____bgl_output_port_timeout_set)( void *, long );
 
 /* input port */
@@ -131,6 +130,15 @@ void *(*____pthread_getspecific)( pthread_key_t );
 int (*____pthread_setspecific)( pthread_key_t, void * );
 int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
 int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
+
+void * (*____bgl_make_mutex)( void * );
+void * (*____bgl_make_nil_mutex)( void * );
+void * (*____bgl_make_spinlock)( void * );
+void * (*____bgl_make_condvar)( void * );
+void * (*____bgl_make_nil_condvar)( void * );
+
+/* regexp */
+void *(*____bgl_make_regexp)( void * );
 
 /* dynamic environment */
 void *(*____make_dynamic_env)();
@@ -394,6 +402,11 @@ bglfth_setup_bmem() {
       exit( -2 );
    }
 
+   if( ____pthread_key_create( &bmem_key3, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key3" );
+      exit( -2 );
+   }
+
    if( ____pthread_mutex_init( &bmem_mutex, 0L ) ) {
       FAIL( IDENT, "Can't get thread key", "bmem_key" );
       exit( -2 );
@@ -440,6 +453,16 @@ bglpth_setup_bmem() {
 
    if( ____pthread_key_create( &bmem_key, 0L ) ) {
       FAIL( IDENT, "Can't get thread key", "bmem_key" );
+      exit( -2 );
+   }
+
+   if( ____pthread_key_create( &bmem_key2, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key2" );
+      exit( -2 );
+   }
+
+   if( ____pthread_key_create( &bmem_key3, 0L ) ) {
+      FAIL( IDENT, "Can't get thread key", "bmem_key3" );
       exit( -2 );
    }
 
@@ -554,8 +577,7 @@ bmem_init_inner() {
    ____bgl_escape_C_string = get_function( hdl, "bgl_escape_C_string" );
    ____bgl_escape_scheme_string = get_function( hdl, "bgl_escape_scheme_string" );
    ____create_string_for_read = get_function( hdl, "create_string_for_read" );
-   ____string_to_keyword = get_function( hdl, "string_to_keyword" );
-   ____bstring_to_keyword = get_function( hdl, "bstring_to_keyword" );
+   ____bgl_make_keyword = get_function( hdl, "bgl_make_keyword" );
    /* vector */
    ____create_vector = get_function( hdl, "create_vector" );
    ____create_vector_uncollectable = get_function( hdl, "create_vector_uncollectable" );
@@ -566,7 +588,6 @@ bmem_init_inner() {
    ____make_va_procedure = get_function( hdl, "make_va_procedure" );
    /* output port */
    ____bgl_make_output_port = (void *(*)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() ))get_function( hdl, "bgl_make_output_port" );
-   ____bgl_open_output_string = (void *(*)( void * ))get_function( hdl, "bgl_open_output_string" );
    ____bgl_output_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_output_port_timeout_set" );
 
    /* input port */
@@ -576,7 +597,6 @@ bmem_init_inner() {
    ____bgl_open_input_resource = (void *(*)( void *, void * ))get_function( hdl, "bgl_open_input_pipe" );
    ____bgl_open_input_string = (void *(*)( void *, long ))get_function( hdl, "bgl_open_input_string" );
    ____bgl_open_input_substring = (void *(*)( void *, long, long ))get_function( hdl, "bgl_open_input_substring" );
-   ____bgl_open_input_substring_bang = (void *(*)( void *, long, long ))get_function( hdl, "bgl_open_input_substring_bang" );
    ____bgl_open_input_c_string = (void *(*)( char * ))get_function( hdl, "bgl_open_input_c_string" );
    ____bgl_reopen_input_c_string = (void *(*)( void *, char * ))get_function( hdl, "bgl_reopen_input_c_string" );
    ____bgl_input_port_timeout_set = (void *(*)( void *, long ))get_function( hdl, "bgl_input_port_timeout_set" );
@@ -600,14 +620,25 @@ bmem_init_inner() {
    ____register_class = get_function( hdl, "BGl_registerzd2classz12zc0zz__objectz00" );
    ____bgl_types_number = (int (*)())get_function( hdl, "bgl_types_number" );
 
+   /* regexp */
+   ____bgl_make_regexp = (void *(*)( void * ))get_function( hdl, "bgl_make_regexp" );
+   
    /* dynamic environment */
    ____make_dynamic_env = (void *(*)())get_function( hdl, "make_dynamic_env" );
    ____bgl_init_dynamic_env = (void (*)())get_function( hdl, "bgl_init_dynamic_env" );
    ____bgl_dup_dynamic_env = (void *(*)( void *))get_function( hdl, "bgl_dup_dynamic_env" );
 
+   /* thread (common) */
+   ____bgl_make_mutex = (void *(*)( void * ))get_function( hdl, "bgl_make_mutex" );
+   ____bgl_make_nil_mutex = (void *(*)( void * ))get_function( hdl, "bgl_make_nil_mutex" );
+   ____bgl_make_spinlock = (void *(*)( void * ))get_function( hdl, "bgl_make_spinlock" );
+   ____bgl_make_condvar = (void *(*)( void * ))get_function( hdl, "bgl_make_condvar" );
+   ____bgl_make_nil_condvar = (void *(*)( void * ))get_function( hdl, "bgl_make_nil_condvar" );
+
    /* declare types */
    declare_type( UNKNOWN_TYPE_NUM, "byte" );
    declare_type( UNKNOWN_ATOMIC_TYPE_NUM, "atomic byte" );
+   declare_type( UNKNOWN_UNCOLLECTABLE_TYPE_NUM, "uncollectable byte" );
    declare_type( UNKNOWN_REALLOC_TYPE_NUM, "realloc4 byte" );
    declare_type( _DYNAMIC_ENV_TYPE_NUM, "%dynamic-env" );
    declare_type( _THREAD_TYPE_NUM, "%native-thread" );
@@ -648,6 +679,9 @@ bmem_init_inner() {
    declare_type( UINT32_TYPE_NUM, "uint32" );
    declare_type( INT64_TYPE_NUM, "int64" );
    declare_type( UINT64_TYPE_NUM, "uint64" );
+   declare_type( MUTEX_TYPE_NUM, "mutex" );
+   declare_type( SPINLOCK_TYPE_NUM, "spinlock" );
+   declare_type( CONDVAR_TYPE_NUM, "condvar" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -697,4 +731,5 @@ bgl_init_objects() {
    /* exit registration */
    atexit( (void (*)(void))bmem_dump );
 }
+
 
