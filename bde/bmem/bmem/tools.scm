@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bde/bmem/bmem/tools.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/bde/bmem/bmem/tools.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:11:09 2003                          */
-;*    Last change :  Wed Oct 24 11:53:58 2012 (serrano)                */
-;*    Copyright   :  2003-12 Manuel Serrano                            */
+;*    Last change :  Sun Jun  9 09:09:22 2019 (serrano)                */
+;*    Copyright   :  2003-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various facilities                                               */
 ;*=====================================================================*/
@@ -154,7 +154,7 @@
    (multiple-value-bind (h s v)
       (rgb->hsv r g b)
       (multiple-value-bind (r g b)
-	 (hsv->rgb (+ h (*fx i 59)) s v)
+	 (hsv->rgb (+ h (*fx i 49)) s v)
 	 (format "rgb(~a,~a,~a)" r g b))))
    
 ;*---------------------------------------------------------------------*/

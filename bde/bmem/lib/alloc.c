@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Sat Jun  8 06:14:27 2019 (serrano)                */
+/*    Last change :  Sun Jun  9 06:30:29 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -45,6 +45,32 @@ unsigned long ante_bgl_init_dsz = 0;
 /*---------------------------------------------------------------------*/
 static char **all_types = 0;
 static int types_number = 0;
+
+/*---------------------------------------------------------------------*/
+/*    long                                                             */
+/*    bmem_get_alloc_index ...                                         */
+/*---------------------------------------------------------------------*/
+long
+bmem_get_alloc_index() {
+   if( bmem_thread ) {
+      return (long)____pthread_getspecific( bmem_key3 );
+   } else {
+      return alloc_index;
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    bmem_set_alloc_index ...                                         */
+/*---------------------------------------------------------------------*/
+void
+bmem_set_alloc_index( long idx ) {
+   if( bmem_thread ) {
+      ____pthread_setspecific( bmem_key3, (void *)idx );
+   } else {
+      alloc_index = idx;
+   }
+}
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
@@ -686,7 +712,7 @@ GC_malloc_find_type( int lb, int unknown ) {
       int ty = ((esymbol_t *)CSYMBOL( top ))->class_alloc;
       int to = ((esymbol_t *)CSYMBOL( top ))->class_offset;
 
-      bmem_set_alloc_type( GC_malloc_unknown( ty, to, unknown ), to );
+      bmem_set_alloc_type( ty == -1 ? GC_malloc_unknown( ty, to, unknown ) : ty, to );
 #if BMEMDEBUG
       if( bmem_debug >= 10 ) {
 	 fprintf( stderr, "UNKNOWN_TYPE_NUM(debug>=10) GC_malloc(%d): %s ty=%d type=%ld\n",
@@ -920,7 +946,7 @@ obj_t ident proto { \
 }
 
 /*---------------------------------------------------------------------*/
-/*    WRAPPER ...                                                      */
+/*    WRAPPER_DBG ...                                                  */
 /*---------------------------------------------------------------------*/
 #define WRAPPER_DBG( ident, tnum, proto, call ) \
 obj_t ident proto { \
@@ -942,7 +968,7 @@ obj_t ident proto { \
    tres __res; \
    DBG_INDEX_START( "" #ident ); \
    bmem_set_alloc_type( tnum, 0 ); \
-   __res = ____##ident call ; \
+   __res = ____##ident call; \
    DBG_INDEX_STOP( "" #ident ); \
    return __res; \
 }
@@ -1054,6 +1080,9 @@ WRAPPER( bgl_seconds_to_date, DATE_TYPE_NUM, (long s), (s) )
 WRAPPER( bgl_nanoseconds_to_date, DATE_TYPE_NUM, (long s), (s) )
 WRAPPER( bgl_make_date, DATE_TYPE_NUM, (BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst), (ns, s, m, hr, mday, mon, year, tz, istz, isdst) )
 WRAPPER( bgl_seconds_format, STRING_TYPE_NUM, (long s, obj_t f), (s, f) )
+
+/* bignum */
+WRAPPER( bgl_string_to_bignum, BIGNUM_TYPE_NUM, (char *s, int r), (s, r) )
 
 /* dynamic environment */
 WRAPPER3( obj_t, make_dynamic_env, _DYNAMIC_ENV_TYPE_NUM, (), () )

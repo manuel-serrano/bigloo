@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sat Jun  8 06:42:27 2019 (serrano)                */
+/*    Last change :  Sun Jun  9 06:58:27 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -74,6 +74,8 @@ extern void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 extern void *bgl_make_input_port_symbol;
 extern unsigned long gc_number;
 extern void bmem_set_alloc_type( long, long );
+extern long bmem_get_alloc_index();
+extern void bmem_set_alloc_index( long );
 extern unsigned long ante_bgl_init_dsz;
 
 extern pthread_key_t bmem_key;
@@ -158,6 +160,8 @@ extern void *(*____bgl_seconds_to_date )( long );
 extern void *(*____bgl_nanoseconds_to_date )( long );
 extern void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
 extern void *(*____bgl_seconds_format )( long, void * );
+
+extern obj_t(*____bgl_string_to_bignum)( char *s, int r );
 
 extern void *(*____scheduler_start)( void * );
 extern void *(*____scheduler_react)( void * );
@@ -263,6 +267,7 @@ extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 #define MUTEX_TYPE_NUM                 53
 #define SPINLOCK_TYPE_NUM              54
 #define CONDVAR_TYPE_NUM               55
+#define BIGNUM_TYPE_NUM                56
 
 /* a fake type */
 #define CLASS_TYPE_NUM                 99

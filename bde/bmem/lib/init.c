@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Sat Jun  8 06:37:02 2019 (serrano)                */
+/*    Last change :  Sun Jun  9 07:25:39 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -158,11 +158,14 @@ void *(*____bgl_host)( void * );
 void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 
 /* date */
-void *(*____bgl_seconds_to_date )( long );
-void *(*____bgl_nanoseconds_to_date )( long );
-void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
-void *(*____bgl_seconds_format )( long, void * );
-					   
+void *(*____bgl_seconds_to_date)( long );
+void *(*____bgl_nanoseconds_to_date)( long );
+void *(*____bgl_make_date)( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
+void *(*____bgl_seconds_format)( long, void * );
+
+/* bignum */
+obj_t (*____bgl_string_to_bignum)( char *, int );
+       
 /* classes */
 void *(*____register_class )( void *, void *, void *, long, void *, void *, void *, void *, void *, void *, void * );
 int (*____bgl_types_number)();
@@ -604,18 +607,23 @@ bmem_init_inner() {
    /* struct */
    ____create_struct = (void *(*)( void *, int ))get_function( hdl, "create_struct" );
    ____make_struct = (void *(*)( void *, int, void * ))get_function( hdl, "make_struct" );
+   
    /* socket */
    ____bgl_make_client_socket = (void *(*)( void *, int, int, void *, void * ))get_function( hdl, "bgl_make_client_socket" );
    ____bgl_make_server_socket = (void *(*)( void *, int, int, bool_t ))get_function( hdl, "bgl_make_server_socket" );
    ____bgl_socket_accept = (void *(*)( void *, int, void *, void * ))get_function( hdl, "bgl_socket_accept" );
    ____bgl_socket_accept_many = (long (*)( void *, int, void *, void *, void * ))get_function( hdl, "bgl_socket_accept_many" );
    ____bgl_host = (void *(*)( void * ))get_function( hdl, "bgl_host" );
+   
    /* date */
    ____bgl_seconds_to_date = (void *(*)( long ))get_function( hdl, "bgl_seconds_to_date" );
    ____bgl_nanoseconds_to_date = (void *(*)( long ))get_function( hdl, "bgl_nanoseconds_to_date" );
    ____bgl_make_date = (void *(*)( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int ))get_function( hdl, "bgl_make_date" );
    ____bgl_seconds_format = (void *(*)( long, void * ))get_function( hdl, "bgl_seconds_format" );
 
+   /* bignum */
+   ____bgl_string_to_bignum = (obj_t (*)( char *, int ))get_function( hdl, "bgl_string_to_bignum" );
+   
    /* class */
    ____register_class = get_function( hdl, "BGl_registerzd2classz12zc0zz__objectz00" );
    ____bgl_types_number = (int (*)())get_function( hdl, "bgl_types_number" );

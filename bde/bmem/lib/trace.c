@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/trace.c                 */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/trace.c          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:15:48 2003                          */
-/*    Last change :  Wed Oct 24 09:35:31 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Sun Jun  9 06:54:14 2019 (serrano)                */
+/*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Debug trace handling                                             */
 /*=====================================================================*/
@@ -12,6 +12,8 @@
 #ifdef BMEMDEBUG
 #include <pthread.h>
 #endif
+
+#include <esymbol.h>
 
 /*---------------------------------------------------------------------*/
 /*    Importations                                                     */
@@ -46,6 +48,10 @@ loop:
       if( !top ) goto unknown;
       if( !SYMBOLP( top->name ) ) goto unknown;
 
+      if( ((esymbol_t *)(CSYMBOL( top->name )))->class_alloc >= 0 ) {
+	 return top->name;
+      }
+      
       if( offset > 0 ) {
 	 top = top->link;
 	 offset--;
