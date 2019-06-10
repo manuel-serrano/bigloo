@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Sun Jun  9 07:25:39 2019 (serrano)                */
+/*    Last change :  Mon Jun 10 06:26:44 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -165,6 +165,10 @@ void *(*____bgl_seconds_format)( long, void * );
 
 /* bignum */
 obj_t (*____bgl_string_to_bignum)( char *, int );
+obj_t (*____bgl_long_to_bignum)( long );
+obj_t (*____bgl_llong_to_bignum)( long long );
+obj_t (*____bgl_uint64_to_bignum)( uint64_t );
+obj_t (*____bgl_flonum_to_bignum)( double );
        
 /* classes */
 void *(*____register_class )( void *, void *, void *, long, void *, void *, void *, void *, void *, void *, void * );
@@ -623,6 +627,10 @@ bmem_init_inner() {
 
    /* bignum */
    ____bgl_string_to_bignum = (obj_t (*)( char *, int ))get_function( hdl, "bgl_string_to_bignum" );
+   ____bgl_long_to_bignum = (obj_t (*)( long ))get_function( hdl, "bgl_long_to_bignum" );
+   ____bgl_llong_to_bignum = (obj_t (*)( long long ))get_function( hdl, "bgl_llong_to_bignum" );
+   ____bgl_uint64_to_bignum = (obj_t (*)( uint64_t ))get_function( hdl, "bgl_uint64_to_bignum" );
+   ____bgl_flonum_to_bignum = (obj_t (*)( double ))get_function( hdl, "bgl_flonum_to_bignum" );
    
    /* class */
    ____register_class = get_function( hdl, "BGl_registerzd2classz12zc0zz__objectz00" );

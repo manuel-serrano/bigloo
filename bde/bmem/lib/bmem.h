@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sun Jun  9 06:58:27 2019 (serrano)                */
+/*    Last change :  Mon Jun 10 06:25:33 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -162,6 +162,10 @@ extern void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int
 extern void *(*____bgl_seconds_format )( long, void * );
 
 extern obj_t(*____bgl_string_to_bignum)( char *s, int r );
+extern obj_t(*____bgl_long_to_bignum)( long );
+extern obj_t(*____bgl_llong_to_bignum)( long long );
+extern obj_t(*____bgl_uint64_to_bignum)( uint64_t );
+extern obj_t(*____bgl_flonum_to_bignum)( double );
 
 extern void *(*____scheduler_start)( void * );
 extern void *(*____scheduler_react)( void * );

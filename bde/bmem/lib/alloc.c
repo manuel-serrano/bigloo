@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Sun Jun  9 06:30:29 2019 (serrano)                */
+/*    Last change :  Mon Jun 10 06:23:00 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -36,8 +36,8 @@ unsigned long ante_bgl_init_dsz = 0;
       ((__idx < 0 || __idx >= 5) ? (fprintf( stderr, "*** bmem: stack overflow/underflow \"%s\" [%d]\n", name, __idx ), exit( -2 )) : 0)
 
 #define DBG_INDEX_STOP( name ) \
-   (long)____pthread_getspecific( bmem_key3 ) != (__idx -1) \
-      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%d/%d]\n", name, (long)____pthread_getspecific( bmem_key3 ), __idx - 1), exit( -1 ) : 0; } 0
+   (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index) != (__idx -1) \
+      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%d/%d]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
 
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
@@ -953,9 +953,9 @@ obj_t ident proto { \
    obj_t __res; \
    bmem_set_alloc_type( tnum, 0 ); \
    DBG_INDEX_START( "" #ident ); \
-   fprintf( stderr, ">>> wrapper %s tnum=%d stk=%d/%d\n", "" #ident, tnum, (long)____pthread_getspecific( bmem_key3 ), __idx ); \
+   fprintf( stderr, ">>> wrapper %s tnum=%d stk=%d/%d\n", "" #ident, tnum, bmem_get_alloc_index(), __idx ); \
    __res = ____##ident call ; \
-   fprintf( stderr, "<<< wrapper %s tnum=%d stk=%d/%d\n", "" #ident, tnum, (long)____pthread_getspecific( bmem_key3 ), __idx ); \
+   fprintf( stderr, "<<< wrapper %s tnum=%d stk=%d/%d\n", "" #ident, tnum, bmem_get_alloc_index(), __idx - 1); \
    DBG_INDEX_STOP( "" #ident ); \
    return __res; \
 }
@@ -1083,6 +1083,10 @@ WRAPPER( bgl_seconds_format, STRING_TYPE_NUM, (long s, obj_t f), (s, f) )
 
 /* bignum */
 WRAPPER( bgl_string_to_bignum, BIGNUM_TYPE_NUM, (char *s, int r), (s, r) )
+WRAPPER( bgl_long_to_bignum, BIGNUM_TYPE_NUM, (long l), (l) )
+WRAPPER( bgl_llong_to_bignum, BIGNUM_TYPE_NUM, (long long l), (l) )
+WRAPPER( bgl_uint64_to_bignum, BIGNUM_TYPE_NUM, (uint64_t l), (l) )
+WRAPPER( bgl_flonum_to_bignum, BIGNUM_TYPE_NUM, (double l), (l) )
 
 /* dynamic environment */
 WRAPPER3( obj_t, make_dynamic_env, _DYNAMIC_ENV_TYPE_NUM, (), () )
