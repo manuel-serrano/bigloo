@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue May 28 10:02:35 2019 (serrano)                */
+#*    Last change :  Wed Jun 12 20:23:20 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2526,6 +2526,14 @@ featureflags="-srfi enable-$regexp"
 buildlibunistringlibdir=$buildlibdir # dummy existing path
 
 if [ "$unistring " != "no " ]; then
+  if [ "$customunistring " != "yes " ]; then
+    extraunistring=`$autoconf unistring` || exit 1
+    
+    if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
+      customunistring=yes
+    fi
+  fi
+
   if [ "$customunistring " = "yes " ]; then
     unistringlibs=yes
     haveunistring=1;
@@ -2543,15 +2551,8 @@ if [ "$unistring " != "no " ]; then
   
     echo "+ Configuring custom unistring..."
     (cd libunistring; . ./configure-unistring) || exit 1
-    
-  else
-    extraunistring=`$autoconf unistring` || exit 1
-    
-    if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
-      customunistring=yes
-    fi
   fi
-
+    
   if [ "$extraunistring " = "no " ]; then
     haveunistring=0;
     extraunistring=no
