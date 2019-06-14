@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Jun 10 06:23:00 2019 (serrano)                */
+/*    Last change :  Fri Jun 14 08:48:28 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -759,7 +759,7 @@ GC_malloc( size_t lb ) {
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
 
-   bmem_pop_type();
+   if( get_alloc_type_offset() >= 0 ) bmem_pop_type();
    // bmem_set_alloc_type( -1, 0 );
 
    return ____GC_malloc( lb );
@@ -789,7 +789,7 @@ GC_realloc( obj_t old, size_t lb ) {
 		  UNKNOWN_TYPE_NUM, -1,
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
-   bmem_pop_type();
+   if( get_alloc_type_offset() >= 0 ) bmem_pop_type();
    // bmem_set_alloc_type( -1, 0 );
 
    return ____GC_realloc( old, lb );
@@ -821,7 +821,7 @@ GC_malloc_atomic( size_t lb ) {
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
    
-   bmem_pop_type();
+   if( get_alloc_type_offset() >= 0 ) bmem_pop_type();
    // bmem_set_alloc_type( -1, 0 );
 
    return ____GC_malloc_atomic( lb );
@@ -853,7 +853,7 @@ GC_malloc_uncollectable( size_t lb ) {
 		  ++stamp );
    for_each_trace( mark_rest_functions, 1, max_stack_size, (void *)lb );
    
-   bmem_pop_type();
+   if( get_alloc_type_offset() >= 0 ) bmem_pop_type();
    // bmem_set_alloc_type( -1, 0 );
 
    return ____GC_malloc_uncollectable( lb );

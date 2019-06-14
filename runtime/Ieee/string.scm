@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/string.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/string.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 20 19:17:18 1995                          */
-;*    Last change :  Sun May  7 07:54:33 2017 (serrano)                */
+;*    Last change :  Fri Jun 14 14:30:35 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.7. Strings (page 25, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -464,20 +464,22 @@
 ;*    string-contains ...                                              */
 ;*---------------------------------------------------------------------*/
 (define (string-contains s1 s2 #!optional (start::int 0))
-   (let ((l1 (string-length s1))
-	 (l2 (string-length s2))
-	 (i0 (if (<fx start 0) 0 start)))
-      (if (<fx l1 (+fx i0 l2))
-	  #f
-	  (let ((stop (-fx l1 l2)))
-	     (let loop ((i i0))
-		(cond
-		   ((substring-at? s1 s2 i)
-		    i)
-		   ((=fx i stop)
-		    #f)
-		   (else
-		    (loop (+fx i 1)))))))))
+   (let ((l2 (string-length s2)))
+      (if (=fx l2 1)
+	  (string-index s1 (string-ref s2 0) start)
+	  (let ((l1 (string-length s1))
+		(i0 (if (<fx start 0) 0 start)))
+	     (if (<fx l1 (+fx i0 l2))
+		 #f
+		 (let ((stop (-fx l1 l2)))
+		    (let loop ((i i0))
+		       (cond
+			  ((substring-at? s1 s2 i)
+			   i)
+			  ((=fx i stop)
+			   #f)
+			  (else
+			   (loop (+fx i 1)))))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    string-contains-ci ...                                           */
