@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Thu Jun 13 16:11:28 2019 (serrano)                */
+;*    Last change :  Sat Jun 15 08:43:30 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -94,11 +94,11 @@
 	    (macro procedure-el-ref::obj (::procedure-el ::int)
 		   "PROCEDURE_EL_REF")
 	    
-	    (macro $make-cell::obj (::obj)
+	    (macro $make-cell::cell (::obj)
 		   "MAKE_YOUNG_CELL")
-	    (macro $cell-set!::obj (::obj ::obj)
+	    (macro $cell-set!::obj (::cell ::obj)
 		   "CELL_SET")
-	    (macro $cell-ref::obj (::obj)
+	    (macro $cell-ref::obj (::cell)
 		   "CELL_REF")
 	    (macro $cell?::bool (::obj)
 		   "CELLP")
@@ -281,10 +281,10 @@
 	    (time::obj ::procedure)
 	    (bigloo-gc-verbose-set! ::bool)
 
-	    (inline make-cell ::obj)
+	    (inline make-cell::cell ::obj)
 	    (inline cell? ::obj)
-	    (inline cell-ref ::obj)
-	    (inline cell-set! ::obj ::obj))
+	    (inline cell-ref ::cell)
+	    (inline cell-set! ::cell ::obj))
 
    (pragma  (cnst-table-ref no-alloc fail-safe)
 	    (c-procedure-light? nesting fail-safe)
