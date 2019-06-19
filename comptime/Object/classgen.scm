@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Object/classgen.scm         */
+;*    .../prgm/project/bigloo/bigloo/comptime/Object/classgen.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Nov  6 06:14:12 2011                          */
-;*    Last change :  Tue Oct 24 02:46:01 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Wed Jun 19 14:34:24 2019 (serrano)                */
+;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Generate the class accessors.                                    */
 ;*=====================================================================*/
@@ -278,12 +278,10 @@
 		       `(let ((,tenv (current-dynamic-env))
 			      (,aid ',(symbol-append '%allocate- tid)))
 			   (let ()
-			      ($env-push-trace ,env ,aid #f)
 			      (pragma::void "bmem_set_allocation_type( $1, 0 )"
 				 ((@ class-num __object)
 				  (@ ,(global-id g) ,(global-module g))))
 			      (let ((,(make-typed-ident new tid) ,(c-malloc tid)))
-				 ($env-pop-trace ,env)
 				 (object-class-num-set! ,new
 				    ((@ class-num __object)
 				     (@ ,(global-id g) ,(global-module g))))
