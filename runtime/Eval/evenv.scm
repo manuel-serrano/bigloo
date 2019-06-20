@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evenv.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evenv.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 28 18:54:38 1994                          */
-;*    Last change :  Tue Nov 20 14:25:52 2012 (serrano)                */
+;*    Last change :  Thu Jun 20 08:48:07 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation de l'environnement global de l'interprete        */
 ;*=====================================================================*/
@@ -161,7 +161,7 @@
 		   (fname #f)
 		   (location #f)
 		   (stack #f)
-		   (args (list "Rebinding compiled constant" var))))))))
+		   (args (list "Overriding compiled constant" var))))))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-assert-primop-ref! ...                                    */
