@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Jun 12 20:23:20 2019 (serrano)                */
+#*    Last change :  Thu Jul  4 08:20:54 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.3f
+release=4.3g
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
@@ -144,9 +144,10 @@ gmpforce=no
 customgmp=no
 gmpsrc=$GMPSRC
 gmpconfigureopt=
+gmpcustomversion=6.1.2
 
 if [ "$gmpsrc " = " " ]; then
-  gmpsrc=gmp/gmp-6.1.2.tgz
+  gmpsrc=gmp/gmp-$gmpcustomversion.tgz
 fi  
 
 srfi27force=no
@@ -270,6 +271,7 @@ customgc=yes
 #gccustom=gc-7.5.0-27may2016
 #gccustom=gc-7.6.2
 gccustom=gc-8.0.2
+#gccustom=gc-8.0.4
 gcversion=
 gcbump=0
 cgcflags=
@@ -3837,11 +3839,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The GMP library
   if [ "$customgmp " = "yes " ]; then
     echo "GMPCUSTOM=yes" >> $makefile_cfg
-    echo "GMPCUSTOMVERSION=$gmpversion" >> $makefile_cfg
     echo "GMP_LD_LIBRARY_PATH=$buildgmplibdir" >> $makefile_cfg
   else
     echo "GMPCUSTOM=no" >> $makefile_cfg
   fi
+  echo "GMPCUSTOMVERSION=$gmpcustomversion" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The PCRE library

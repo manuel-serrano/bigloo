@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gc/Makefile                          */
+#*    serrano/prgm/project/bigloo/bigloo/gc/Makefile                   */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Thu Dec 28 05:51:07 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Jul  4 08:36:59 2019 (serrano)                */
+#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -38,6 +38,8 @@ POPULATION = Makefile \
   $(POP742) \
   $(POP75027MAY2016) \
   $(POP762) \
+  $(POP802) \
+  $(POP804) \
   sparc_linux_mach_dep.c \
   gc-7.1.tar.gz \
   $(CUSTOMGC).tar.gz
@@ -159,6 +161,20 @@ POP762 = install-gc-7.6.2 \
   gc-7.6.2.patch \
   libatomic_ops-7.6.2.tar.gz \
   Makefile-gc-7.6.2
+
+POP802 = install-gc-8.0.2 \
+  configure-gc-8.0.2 \
+  configure-gc-8.0.2-android \
+  gc-8.0.2.patch \
+  libatomic_ops-7.6.8.tar.gz \
+  Makefile-gc-8.0.2
+
+POP804 = install-gc-8.0.4 \
+  configure-gc-8.0.4 \
+  configure-gc-8.0.4-android \
+  gc-8.0.4.patch \
+  libatomic_ops-7.6.10.tar.gz \
+  Makefile-gc-8.0.4
 
 #*---------------------------------------------------------------------*/
 #*    Flags                                                            */
