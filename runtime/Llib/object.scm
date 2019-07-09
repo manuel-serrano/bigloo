@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed May  9 12:00:41 2018 (serrano)                */
+;*    Last change :  Fri Jul  5 10:57:49 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -47,9 +47,9 @@
 	    __pp_circle
 	    __evenv)
 
-   (extern  (macro object-widening::obj (::object)
+   (extern  (macro $object-widening::obj (::object)
 		   "BGL_OBJECT_WIDENING")
-	    (macro object-widening-set!::obj (::object ::obj)
+	    (macro $object-widening-set!::obj (::object ::obj)
 		   "BGL_OBJECT_WIDENING_SET")
 	    
 	    (macro object-header-size::long (::obj)
@@ -136,9 +136,9 @@
 		  "bigloo_generic_mutex")
 	       (field static %object-type-number::long
 		  "OBJECT_TYPE")
-	       (method static object-widening::obj (::object)
+	       (method static $object-widening::obj (::object)
 		  "BGL_OBJECT_WIDENING")
-	       (method static object-widening-set!::obj (::object ::obj)
+	       (method static $object-widening-set!::obj (::object ::obj)
 		  "BGL_OBJECT_WIDENING_SET")
 	       (method static %object?::bool (::obj)
 		  "BGL_OBJECTP")
@@ -324,6 +324,8 @@
 	    (call-virtual-setter ::object ::int ::obj)
 	    (call-next-virtual-getter ::obj ::object ::int)
 	    (call-next-virtual-setter ::obj ::object ::int ::obj)
+	    (inline object-widening::obj ::object)
+	    (inline object-widening-set!::obj ::object ::obj)
 	    (%object-widening::obj ::object)
 	    (%object-widening-set!::obj ::object ::obj)
 	    (generic-memory-statistics))
@@ -1455,6 +1457,19 @@
 (define (call-next-virtual-setter class obj::object num::int value)
    (let ((next-class (class-super class)))
       ((cdr (vector-ref-ur (class-virtual next-class) num)) obj value)))
+
+;*---------------------------------------------------------------------*/
+;*    object-widening ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (object-widening o)
+   ($object-widening o))
+
+;*---------------------------------------------------------------------*/
+;*    object-widening-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (object-widening-set! o v)
+   ($object-widening-set! o v)
+   o)
 
 ;*---------------------------------------------------------------------*/
 ;*    %object-widening ...                                             */

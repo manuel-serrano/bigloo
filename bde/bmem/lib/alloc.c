@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Jun 14 08:48:28 2019 (serrano)                */
+/*    Last change :  Mon Jul  8 11:36:35 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -1059,7 +1059,6 @@ WRAPPER( bgl_open_input_file, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_pipe, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_resource, INPUT_PORT_TYPE_NUM, (obj_t s, obj_t b), (s, b) )
 WRAPPER( bgl_open_input_string, INPUT_PORT_TYPE_NUM, (obj_t o, long i), (o, i) )
-WRAPPER( bgl_open_input_substring, INPUT_PORT_TYPE_NUM, (obj_t o, long i, long e), (o, i, e) )
 WRAPPER( bgl_open_input_c_string, INPUT_PORT_TYPE_NUM, (char *s), (s) )
 WRAPPER( bgl_reopen_input_c_string, INPUT_PORT_TYPE_NUM, (void *o, char *s), (o, s) )
 WRAPPER2( bgl_input_port_timeout_set, PORT_TIMEOUT_TYPE_NUM, -1, (void *o, long t), (o, t) )
@@ -1078,7 +1077,6 @@ WRAPPER( bgl_host, HOSTENT_TYPE_NUM, (obj_t s), (s) )
 /* date */
 WRAPPER( bgl_seconds_to_date, DATE_TYPE_NUM, (long s), (s) )
 WRAPPER( bgl_nanoseconds_to_date, DATE_TYPE_NUM, (long s), (s) )
-WRAPPER( bgl_make_date, DATE_TYPE_NUM, (BGL_LONGLONG_T ns, int s, int m, int hr, int mday, int mon, int year, long tz, bool_t istz, int isdst), (ns, s, m, hr, mday, mon, year, tz, istz, isdst) )
 WRAPPER( bgl_seconds_format, STRING_TYPE_NUM, (long s, obj_t f), (s, f) )
 
 /* bignum */
