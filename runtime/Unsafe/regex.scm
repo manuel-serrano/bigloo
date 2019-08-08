@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/regex.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/regex.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Tue Oct 10 08:27:51 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Thu Aug  8 13:58:05 2019 (serrano)                */
+;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
 ;*=====================================================================*/
@@ -44,7 +44,7 @@
 
             __evenv)
 
-   (extern ($regcomp::regexp (::bstring ::obj) "bgl_regcomp")
+   (extern ($regcomp::regexp (::bstring ::obj ::bool) "bgl_regcomp")
            ($regmatch::obj (::regexp ::string ::bool ::int ::int) "bgl_regmatch")
            ($regfree::obj (::regexp) "bgl_regfree")
 	   (macro $regexp?::bool (::obj) "BGL_REGEXPP")
@@ -160,7 +160,7 @@
 ;*    pregexp ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (pregexp re . opt-args)
-   ($regcomp (pregexp-normalize re) opt-args))
+   ($regcomp (pregexp-normalize re) opt-args #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */
@@ -168,7 +168,7 @@
 (define (match pat str stringp beg end)
    (if (regexp? pat)
        ($regmatch pat str stringp beg end)
-       (let* ((rx (pregexp pat))
+       (let* ((rx ($regcomp (pregexp-normalize path) '() #f))
 	      (val ($regmatch rx str stringp beg end)))
 	  ($regfree rx)
 	  val)))
