@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Mon Jan 14 15:53:37 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 09:29:06 2019 (serrano)                */
 ;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
@@ -25,6 +25,7 @@
             __bignum
             __object
             __thread
+	    __bit
             
             __r4_output_6_10_3
             
