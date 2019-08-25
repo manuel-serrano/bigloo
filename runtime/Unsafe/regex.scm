@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Thu Aug  8 13:58:05 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 09:38:04 2019 (serrano)                */
 ;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (REGEX)                                */
@@ -168,7 +168,7 @@
 (define (match pat str stringp beg end)
    (if (regexp? pat)
        ($regmatch pat str stringp beg end)
-       (let* ((rx ($regcomp (pregexp-normalize path) '() #f))
+       (let* ((rx ($regcomp (pregexp-normalize pat) '() #f))
 	      (val ($regmatch rx str stringp beg end)))
 	  ($regfree rx)
 	  val)))
