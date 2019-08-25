@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Jul  5 10:57:49 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 07:34:45 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -857,8 +857,25 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    method-array-ref ...                                             */
+;*    -------------------------------------------------------------    */
+;*    For some values of X and Y, on 64-bit machines it might be       */
+;*    faster to compute the division and the rest and 32-bit values    */
+;*    instead of 64-bit values.                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (method-array-ref generic::procedure array::vector offset::int)
+   (let* ((offset (-fx offset %object-type-number))
+	  (mod (uint32->fixnum
+		  (quotientu32
+		     (fixnum->uint32 offset)
+		     (fixnum->uint32 (bigloo-generic-bucket-size)))))
+	  (rest (uint32->fixnum
+		   (remainderu32
+		      (fixnum->uint32 offset)
+		      (fixnum->uint32 (bigloo-generic-bucket-size))))))
+      (let ((bucket (vector-ref-ur array mod)))
+	 (vector-ref-ur bucket rest))))
+
+(define-inline (method-array-ref-TOBEREMOVED-25aug2019 generic::procedure array::vector offset::int)
    (let* ((offset (-fx offset %object-type-number))
 	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
 	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
@@ -870,8 +887,14 @@
 ;*---------------------------------------------------------------------*/
 (define (method-array-set! generic array offset method)
    (let* ((offset (-fx offset %object-type-number))
-	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
-	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
+	  (mod (uint32->fixnum
+		  (quotientu32
+		     (fixnum->uint32 offset)
+		     (fixnum->uint32 (bigloo-generic-bucket-size)))))
+	  (rest (uint32->fixnum
+		   (remainderu32
+		      (fixnum->uint32 offset)
+		      (fixnum->uint32 (bigloo-generic-bucket-size))))))
       (let ((bucket (vector-ref-ur array mod)))
 	 (if (or (eq? method (generic-default generic))
 		 (not (eq? bucket (generic-default-bucket generic))))
@@ -1018,7 +1041,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-method-array def-bucket::vector)
    (let ((s (quotientfx *nb-classes-max* (bigloo-generic-bucket-size)))
-	 (a (remainder *nb-classes-max* (bigloo-generic-bucket-size))))
+	 (a (remainderfx *nb-classes-max* (bigloo-generic-bucket-size))))
       (if (>fx a 0)
 	  (begin
 	     (warning "make-method-array"
