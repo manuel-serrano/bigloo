@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgc.scm                  */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgc.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 10:56:28 1998                          */
-;*    Last change :  Sun Jul 19 15:53:14 2015 (serrano)                */
+;*    Last change :  Sun Aug 25 09:12:22 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The runtime module of the Bigloo regular expression system.      */
 ;*    -------------------------------------------------------------    */
@@ -28,6 +28,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

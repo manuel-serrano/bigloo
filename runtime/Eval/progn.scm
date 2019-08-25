@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/progn.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/progn.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 10:07:31 1994                          */
-;*    Last change :  Tue Apr 17 07:47:08 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:15:02 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La normalisation des formes `begin'                              */
 ;*=====================================================================*/
@@ -41,7 +41,8 @@
 	    __r4_output_6_10_3)
 
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (evepairify::obj ::obj ::obj)
 	    (evepairify*::obj ::obj ::obj)

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgcconfig.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgcconfig.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:10:07 1998                          */
-;*    Last change :  Tue Apr 17 07:39:24 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:11:51 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The configuration file for the new regular expression package.   */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    __bexit
 	    __bignum
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

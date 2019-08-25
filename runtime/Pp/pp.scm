@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Pp/pp.scm                    */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Pp/pp.scm             */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Nov 27 14:10:31 1993                          */
-;*    Last change :  Tue Dec 20 11:12:46 2016 (serrano)                */
+;*    Last change :  Sun Aug 25 09:12:32 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Le pretty-printer de Marc Feeley.                                */
 ;*=====================================================================*/
@@ -27,7 +27,8 @@
 	    __structure
 	    __tvector
 	    __rgc
-
+	    __bit
+	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

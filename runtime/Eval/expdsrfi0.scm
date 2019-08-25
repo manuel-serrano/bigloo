@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Sun Apr 14 06:59:06 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 09:15:32 2019 (serrano)                */
 ;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
@@ -46,7 +46,8 @@
    
    (use     __type
 	    __evenv
-	    __configure)
+	    __configure
+	    __bit)
    
    (extern  ($bigloo-backend::string () "bigloo_backend")
 	    (export register-eval-srfi! "bgl_register_eval_srfi"))

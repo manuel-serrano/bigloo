@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/bm.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/bm.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Mar 15 11:05:03 2016                          */
-;*    Last change :  Sat Dec 24 06:57:40 2016 (serrano)                */
-;*    Copyright   :  2016 Manuel Serrano                               */
+;*    Last change :  Sun Aug 25 09:18:37 2019 (serrano)                */
+;*    Copyright   :  2016-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    "Boyer Moore" search algorithm.                                  */
 ;*=====================================================================*/
@@ -26,6 +26,8 @@
 	   __thread
 	   __bignum
 	   __srfi4
+	   __bit
+	   
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum

@@ -25,6 +25,7 @@
 	   __object
 	   __thread
 	   __rgc
+	   __bit
 	   
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdlet.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expdlet.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:10:13 1993                          */
-;*    Last change :  Sun Jan 15 07:30:44 2017 (serrano)                */
-;*    Copyright   :  2004-17 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:13:25 2019 (serrano)                */
+;*    Copyright   :  2004-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Let forms expansion                                              */
 ;*=====================================================================*/
@@ -48,7 +48,8 @@
 	    __evutils)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (expand-eval-let <expression> <expander>)
 	    (expand-eval-let* <expression> <expander>)

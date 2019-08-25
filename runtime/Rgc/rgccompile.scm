@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgccompile.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Rgc/rgccompile.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Sep 13 07:46:39 1998                          */
-;*    Last change :  Tue Sep  9 14:58:14 2014 (serrano)                */
+;*    Last change :  Sun Aug 25 09:07:40 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implements the DFA compilation. Each state is        */
 ;*    compiled into a lambda expression.                               */
@@ -32,6 +32,7 @@
 	    __bexit
 	    __bignum
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

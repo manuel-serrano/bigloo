@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/process.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/process.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Erick Gallesio                                    */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Tue Mar 11 15:51:44 2008 (serrano)                */
+;*    Last change :  Sun Aug 25 09:09:19 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Process handling. This part is mostly compatible with            */
 ;*    STk. This code is extracted from STk by Erick Gallesio.          */
@@ -25,6 +25,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __bit
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

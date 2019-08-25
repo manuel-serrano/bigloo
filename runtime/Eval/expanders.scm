@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expanders.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expanders.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:58:05 1994                          */
-;*    Last change :  Sat May  6 08:48:11 2017 (serrano)                */
-;*    Copyright   :  2002-17 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:13:12 2019 (serrano)                */
+;*    Copyright   :  2002-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Expanders installation.                                          */
 ;*=====================================================================*/
@@ -51,6 +51,7 @@
 	    __tvector
 	    __os
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

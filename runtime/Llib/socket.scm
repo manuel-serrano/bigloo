@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/socket.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/socket.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun 29 18:45:17 1998                          */
-;*    Last change :  Thu Jun  2 15:21:38 2016 (serrano)                */
+;*    Last change :  Sun Aug 25 09:09:27 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Socket handling.                                                 */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    __dsssl
 	    __bexit
 	    __bignum
+	    __bit
 	    
 	    __r4_output_6_10_3
 	    __r4_numbers_6_5_fixnum

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/semaphore.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Llib/semaphore.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 20 09:27:10 2017                          */
-;*    Last change :  Thu Apr 20 10:51:02 2017 (serrano)                */
-;*    Copyright   :  2017 Manuel Serrano                               */
+;*    Last change :  Sun Aug 25 09:10:42 2019 (serrano)                */
+;*    Copyright   :  2017-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Semaphore                                                        */
 ;*=====================================================================*/
@@ -23,6 +23,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __bit
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

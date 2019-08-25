@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:14:30 1993                          */
-;*    Last change :  Mon Jan 28 11:26:44 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 09:13:48 2019 (serrano)                */
 ;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Macro expansions of DEFINE and LAMBDA forms.                     */
@@ -47,7 +47,8 @@
    
    (use     __type
 	    __evenv
-	    __evutils)
+	    __evutils
+	    __bit)
 
    (export  (eval-begin-expander ::procedure)
 	    (expand-eval-lambda ::obj ::procedure)

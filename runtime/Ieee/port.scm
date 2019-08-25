@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/port.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/port.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Feb 20 16:53:27 1995                          */
-;*    Last change :  Mon May 22 14:01:03 2017 (serrano)                */
+;*    Last change :  Sun Aug 25 09:19:02 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.1 Ports (page 29, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -37,6 +37,7 @@
 	    __base64
 	    __bignum
 	    __rgc
+	    __bit
 	    
 	    __r4_vectors_6_8
 	    __r4_strings_6_7

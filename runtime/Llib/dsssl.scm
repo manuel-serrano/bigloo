@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/dsssl.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/dsssl.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  3 11:30:29 1997                          */
-;*    Last change :  Fri Aug 18 18:41:57 2017 (serrano)                */
+;*    Last change :  Sun Aug 25 09:08:52 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo support for Dsssl (Iso/Iec 10179:1996)                    */
 ;*=====================================================================*/
@@ -23,6 +23,7 @@
 	    __bigloo
 	    __tvector
 	    __bignum
+	    __bit
 	    
 	    __r4_output_6_10_3
 	    __r4_ports_6_10_1

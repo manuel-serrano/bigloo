@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/library.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/library.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jun 23 15:31:39 2005                          */
-;*    Last change :  Thu Feb 16 18:17:53 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:16:04 2019 (serrano)                */
+;*    Copyright   :  2005-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The library-load facility                                        */
 ;*=====================================================================*/
@@ -35,6 +35,7 @@
 	    __evmodule
 	    __structure
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/trace.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/trace.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jun 11 10:01:47 2003                          */
-;*    Last change :  Fri Nov  3 20:25:53 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:10:19 2019 (serrano)                */
+;*    Copyright   :  2003-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Simple tracing facilities                                        */
 ;*=====================================================================*/
@@ -35,7 +35,8 @@
 	   __error
 	   __evenv
 	   __os
-	   __pp_circle)
+	   __pp_circle
+	   __bit)
 
    (import __param
 	   __object

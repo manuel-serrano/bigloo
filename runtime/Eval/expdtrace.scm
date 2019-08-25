@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdtrace.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdtrace.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Sat May 13 07:18:57 2017 (serrano)                */
+;*    Last change :  Sun Aug 25 09:15:55 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Trace forms expansion                                            */
 ;*=====================================================================*/
@@ -43,7 +43,8 @@
 	    __expand)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (make-expand-when-trace::procedure ::symbol)
 	    (make-expand-with-trace::procedure ::symbol)

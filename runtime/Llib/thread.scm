@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Sat Apr 13 12:56:24 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 09:10:10 2019 (serrano)                */
 ;*    Copyright   :  2004-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
@@ -27,6 +27,7 @@
 	    __structure
 	    __date
 	    __os
+	    __bit
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

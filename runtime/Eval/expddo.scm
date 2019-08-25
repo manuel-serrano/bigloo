@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expddo.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expddo.scm       */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Sep 28 16:06:31 1992                          */
-;*    Last change :  Tue Aug 13 07:29:31 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:14:12 2019 (serrano)                */
 ;*                                                                     */
 ;*    La macro `DO'                                                    */
 ;*---------------------------------------------------------------------*/
@@ -43,7 +43,8 @@
 	    __progn)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (expand-do <expression> <expander>)))
 

@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Fri Jul  5 10:57:49 2019 (serrano)                */
+;*    Last change :  Sun Aug 25 07:34:45 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -250,7 +250,9 @@
 	       (args read-only))
 	    (class &eval-warning::&warning)
 
+	    (inline bigloo-generic-bucket-pow::int)
 	    (inline bigloo-generic-bucket-size::int)
+	    (inline bigloo-generic-bucket-mask::int)
 	    (bigloo-types-number::long)
 	    *classes*
 	    (inline object?::bool ::obj)
@@ -386,7 +388,12 @@
 ;*    the generic vectors to be a multiple of                          */
 ;*    BIGLOO-GENERIC-BUCKET-SIZE.                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bigloo-generic-bucket-size) 16)
+(define-inline (bigloo-generic-bucket-pow)
+   4)
+(define-inline (bigloo-generic-bucket-size)
+   (bit-lsh 1 (bigloo-generic-bucket-pow)))
+(define-inline (bigloo-generic-bucket-mask)
+   (-fx (bigloo-generic-bucket-size) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-types-number ...                                          */
@@ -857,11 +864,15 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    method-array-ref ...                                             */
+;*    -------------------------------------------------------------    */
+;*    For some values of X and Y, on 64-bit machines it might be       */
+;*    faster to compute the division and the rest and 32-bit values    */
+;*    instead of 64-bit values.                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (method-array-ref generic::procedure array::vector offset::int)
    (let* ((offset (-fx offset %object-type-number))
-	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
-	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
+	  (mod (bit-rsh offset (bigloo-generic-bucket-pow)))
+	  (rest (bit-and offset (bigloo-generic-bucket-mask))))
       (let ((bucket (vector-ref-ur array mod)))
 	 (vector-ref-ur bucket rest))))
 
@@ -870,8 +881,14 @@
 ;*---------------------------------------------------------------------*/
 (define (method-array-set! generic array offset method)
    (let* ((offset (-fx offset %object-type-number))
-	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
-	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
+	  (mod (uint32->fixnum
+		  (quotientu32
+		     (fixnum->uint32 offset)
+		     (fixnum->uint32 (bigloo-generic-bucket-size)))))
+	  (rest (uint32->fixnum
+		   (remainderu32
+		      (fixnum->uint32 offset)
+		      (fixnum->uint32 (bigloo-generic-bucket-size))))))
       (let ((bucket (vector-ref-ur array mod)))
 	 (if (or (eq? method (generic-default generic))
 		 (not (eq? bucket (generic-default-bucket generic))))
@@ -1018,7 +1035,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-method-array def-bucket::vector)
    (let ((s (quotientfx *nb-classes-max* (bigloo-generic-bucket-size)))
-	 (a (remainder *nb-classes-max* (bigloo-generic-bucket-size))))
+	 (a (remainderfx *nb-classes-max* (bigloo-generic-bucket-size))))
       (if (>fx a 0)
 	  (begin
 	     (warning "make-method-array"
