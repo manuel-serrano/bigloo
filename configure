@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Jul  4 09:04:01 2019 (serrano)                */
+#*    Last change :  Thu Sep 12 13:14:27 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2044,7 +2044,9 @@ else
   fi
 
   # thread local storage
-  if [ "$pthreadlocalstorage " != " " -a "$threadsupport " != "no " ]; then
+  if [ "$pthreadlocalstorage " != " "
+       -a "$pthreadlocalstorage" != "no"
+       -a "$threadsupport " != "no " ]; then
     pthreaddecl=$pthreadlocalstorage
     pthreadhastls=1
     gcthread="$gcthread -DUSE_COMPILER_TLS"
