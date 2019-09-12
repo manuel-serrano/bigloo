@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Sep 12 13:14:27 2019 (serrano)                */
+#*    Last change :  Thu Sep 12 14:11:27 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -184,6 +184,7 @@ openssldtls=
 openssltls1=
 openssltls11=
 openssltls12=
+openssltls13=
 opensslrand=
 opensslv2=
 opensslv23=
@@ -2044,9 +2045,7 @@ else
   fi
 
   # thread local storage
-  if [ "$pthreadlocalstorage " != " "
-       -a "$pthreadlocalstorage" != "no"
-       -a "$threadsupport " != "no " ]; then
+  if [ "$pthreadlocalstorage " != " " -a "$pthreadlocalstorage" != "no" -a "$threadsupport " != "no " ]; then
     pthreaddecl=$pthreadlocalstorage
     pthreadhastls=1
     gcthread="$gcthread -DUSE_COMPILER_TLS"
@@ -2317,6 +2316,7 @@ if [ "$openssllibs" != "no" ]; then
   openssltls1=`$autoconf openssl-tls1 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   openssltls11=`$autoconf openssl-tls11 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   openssltls12=`$autoconf openssl-tls12 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  openssltls13=`$autoconf openssl-tls13 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslrand=`$autoconf openssl-rand --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv2=`$autoconf openssl-v2 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv3=`$autoconf openssl-v3 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
@@ -4080,6 +4080,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     if [ "$openssltls12" = "no" ]; then
       tls12=0;
     fi
+    if [ "$openssltls13" = "no" ]; then
+      tls13=0;
+    fi
     if [ "$opensslv2" = "no" ]; then
       sslv2=0;
     fi
@@ -4103,6 +4106,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 	    -e "s|@HAVETLS1@|$tls1|g" \
 	    -e "s|@HAVETLS1_1@|$tls11|g" \
 	    -e "s|@HAVETLS1_2@|$tls12|g" \
+	    -e "s|@HAVETLS1_3@|$tls13|g" \
             -e "s|@HAVEV2@|$sslv2|g" \
             -e "s|@HAVEV3@|$sslv3|g" \
             -e "s|@HAVEV23@|$sslv23|g" \

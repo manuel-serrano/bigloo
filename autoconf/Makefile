@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sun May  6 06:45:23 2018 (serrano)                */
-#*    Copyright   :  1997-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Thu Sep 12 14:08:23 2019 (serrano)                */
+#*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -52,7 +52,8 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   pthreadcondvtimedwait processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
                   openssl openssl-dtls openssl-tls11 openssl-tls1 \
-                  openssl-tls12 openssl-rand openssl-v2 openssl-v3 \
+                  openssl-tls12 openssl-tls13 openssl-rand \
+                  openssl-v2 openssl-v3 \
                   openssl-v23 openssl-getter \
                   stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
