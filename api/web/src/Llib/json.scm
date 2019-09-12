@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/web/src/Llib/json.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/api/web/src/Llib/json.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jan  4 06:12:28 2014                          */
-;*    Last change :  Tue Oct 25 18:53:48 2016 (serrano)                */
-;*    Copyright   :  2014-16 Manuel Serrano                            */
+;*    Last change :  Tue Sep 10 16:46:58 2019 (serrano)                */
+;*    Copyright   :  2014-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    JSON support                                                     */
 ;*=====================================================================*/
@@ -241,7 +241,7 @@
 		(let* ((key (cadr token))
 		       (val (parse-text #f)))
 		   (if reviver
-		       (let ((res (if reviver (reviver object key val) val)))
+		       (let ((res (reviver object key val)))
 			  (when res
 			     (object-set object key res)))
 		       (object-set object key val))
