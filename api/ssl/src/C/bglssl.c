@@ -1518,6 +1518,7 @@ bgl_ssl_connection_close( ssl_connection ssl ) {
    SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
 
    SSL_free( _ssl );
+   return 0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -2503,6 +2504,7 @@ unsupported:
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_close( secure_context sc ) {
    SSL_CTX_free( CSC( sc )->BgL_z42nativez42 );
+   return BNIL;
 }
    
 /*---------------------------------------------------------------------*/
