@@ -1,0 +1,7 @@
+#+FILETAGS: :bigloo:
+
+Bigloo TODO stuff
+=================
+
+*** TODO <2019-09-13 Fri> Stack overflow
+   Try the stack overflow detection as suggested on github [[https://github.com/manuel-serrano/bigloo/issues/28#issuecomment-510834652][stack overflow]] 
