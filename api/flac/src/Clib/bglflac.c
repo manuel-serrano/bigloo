@@ -122,6 +122,7 @@ int bgl_flac_dump( char *l, unsigned char *s, int o, int sz ) {
 
    fprintf( stderr, "\n" );
    fflush( stderr );
+   return 0;
 }
 
 /*---------------------------------------------------------------------*/

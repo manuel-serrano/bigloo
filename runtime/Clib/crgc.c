@@ -847,7 +847,7 @@ llong:
 /*    int                                                              */
 /*    rgc_debug_port ...                                               */
 /*---------------------------------------------------------------------*/
-int rgc_debug_port( obj_t port, char *msg ) {
+void rgc_debug_port( obj_t port, char *msg ) {
    long matchstart = INPUT_PORT( port ).matchstart;
    long matchstop = INPUT_PORT( port ).matchstop;
    long forward = INPUT_PORT( port ).forward;
