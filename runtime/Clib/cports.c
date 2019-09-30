@@ -1817,11 +1817,13 @@ BGL_RUNTIME_DEF obj_t
 bgl_input_port_seek( obj_t port, long pos ) {
    if( INPUT_PORT( port ).sysseek ) {
       INPUT_PORT( port ).sysseek( port, pos );
+      return port;
    } else {
       C_SYSTEM_FAILURE( BGL_IO_PORT_ERROR,
 			"set-input-port-position!",
 			"input-port does not support seeking",
 			port );
+      return 0;
    }
 }
 

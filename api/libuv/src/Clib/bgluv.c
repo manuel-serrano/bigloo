@@ -2020,6 +2020,8 @@ string_array_to_vector( char *array[] ) {
    for( i = 0, runner = array; i < len; i++, runner++ ) {
       VECTOR_SET( res, i, string_to_bstring( *runner ) );
    }
+
+   return res;
 }
 
 /*---------------------------------------------------------------------*/

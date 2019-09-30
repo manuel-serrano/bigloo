@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano & Stephane Epardaud                */
 /*    Creation    :  Wed Mar 23 16:54:42 2005                          */
-/*    Last change :  Tue Dec  4 15:54:20 2018 (serrano)                */
-/*    Copyright   :  2005-18 Manuel Serrano                            */
+/*    Last change :  Thu Sep 12 14:07:21 2019 (serrano)                */
+/*    Copyright   :  2005-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    SSL socket client-side support                                   */
 /*=====================================================================*/
@@ -151,7 +151,7 @@ DEFINE_STATIC_BGL_PROCEDURE( ssl_output_close_hook, _4, output_close_hook, 0L, B
 /*---------------------------------------------------------------------*/
 /*    The global SSL context                                           */
 /*---------------------------------------------------------------------*/
-static SSL_CTX *ctxc[ BGLSSL_TLSV1_2 + 1 ], *ctxs[ BGLSSL_TLSV1_2 + 1 ];
+static SSL_CTX *ctxc[ BGLSSL_TLSV1_3 + 1 ], *ctxs[ BGLSSL_TLSV1_3 + 1 ];
 
 extern obj_t bgl_make_certificate( X509 *cert );
 extern obj_t bgl_make_private_key( EVP_PKEY* pkey );
@@ -218,6 +218,11 @@ bgl_ssl_init() {
 #else      
       ctxc[ BGLSSL_TLSV1_2 ] = ctxc[ BGLSSL_TLSV1 ];
 #endif
+#if( BGLSSL_HAVE_TLSV1_3 )
+      ctxc[ BGLSSL_TLSV1_3 ] = SSL_CTX_new( TLSv1_3_client_method() );
+#else      
+      ctxc[ BGLSSL_TLSV1_3 ] = ctxc[ BGLSSL_TLSV1 ];
+#endif
 #if( BGLSSL_HAVE_DTLS )
       ctxc[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLSv1_client_method() );
 #else      
@@ -247,6 +252,11 @@ bgl_ssl_init() {
       ctxs[ BGLSSL_TLSV1_2 ] = SSL_CTX_new( TLSv1_2_server_method() );
 #else      
       ctxs[ BGLSSL_TLSV1_2 ] = ctxs[ BGLSSL_TLSV1 ];
+#endif
+#if( BGLSSL_HAVE_TLSV1_3 )
+      ctxs[ BGLSSL_TLSV1_3 ] = SSL_CTX_new( TLSv1_3_server_method() );
+#else      
+      ctxs[ BGLSSL_TLSV1_3 ] = ctxs[ BGLSSL_TLSV1 ];
 #endif
 #if( BGLSSL_HAVE_DTLS )
       ctxs[ BGLSSL_DTLSV1 ] = SSL_CTX_new( DTLSv1_server_method() );
@@ -1508,6 +1518,7 @@ bgl_ssl_connection_close( ssl_connection ssl ) {
    SSL *_ssl = CCON( ssl )->BgL_z42nativez42;
 
    SSL_free( _ssl );
+   return 0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -2493,6 +2504,7 @@ unsupported:
 BGL_RUNTIME_DEF obj_t
 bgl_ssl_ctx_close( secure_context sc ) {
    SSL_CTX_free( CSC( sc )->BgL_z42nativez42 );
+   return BNIL;
 }
    
 /*---------------------------------------------------------------------*/

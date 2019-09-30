@@ -69,15 +69,15 @@ argument @var{buffer} can either be:
 @item A string, it is used as buffer.
 @end itemize
 
-If the optional argument @var{timeout} is
-@code{0}, the execution blocks until the connection is established. If
-the @var{timeout} is provided, the execution unblocks after
-@var{timeout} microseconds unless the connection is established. If
-the @var{protocol} option argument is given, it specifies the
-encryption protocol. Accepted values are @code{'sslv2}, @code{'sslv3},
-@code{'sslv23} (alias @code{'ssl}), @code{'tls} (alias @code{'tlsv1})
-or @code{'dtls} (alias @code{'dtlsv1}). The default value is
-@code{'sslv23}.
+If the optional argument @var{timeout} is @code{0}, the execution
+blocks until the connection is established. If the @var{timeout} is
+provided, the execution unblocks after @var{timeout} microseconds
+unless the connection is established. If the @var{protocol} option
+argument is given, it specifies the encryption protocol. Accepted
+values are @code{'sslv2}, @code{'sslv3}, @code{'sslv23} (alias
+@code{'ssl}), @code{'tlsv1} (alias @code{'tls}), @code{'tlsv1_1},
+@code{'tlsv1_2}, @code{'tlsv1_3}, or @code{'dtlsv1} (alias @code{'dtls}). The default
+value is @code{'sslv23}.
 
 The SSL socket will sign the connection using the optional arguments
 @var{cert} (for the certificate) and @var{pkey} (for the private key).
@@ -152,19 +152,19 @@ context where a socket created by @code{make-server-socket} can be
 used (see @ref{Socket}).
 
 A SSL server socket opens the port @var{port} on the current host
-@var{name} (the server), 
-and allows remote applications (clients) to connect to it.
-listening on port @var{port-number} of @var{hostname}. If the optional
-argument @var{port} is not given or is @code{0}, the server socket will
-use the first availailable port number. If the optional argument 
-@var{name} is given, the server socket will be bound to the network 
-interface representing the given host name. If it is @code{#f} (the default)
-the socket will be bound on every local network interface.
-If the @var{protocol} option argument is
-given, it specifies the encryption protocol. Accepted values are
-@code{'sslv2}, @code{'sslv3}, @code{'sslv23} (alias @code{'ssl}), 
-@code{'tls} (alias @code{'tlsv1})
-or @code{'dtls} (alias @code{'dtlsv1}). The default value is @code{'sslv23}.
+@var{name} (the server), and allows remote applications (clients) to
+connect to it.  listening on port @var{port-number} of
+@var{hostname}. If the optional argument @var{port} is not given or is
+@code{0}, the server socket will use the first availailable port
+number. If the optional argument @var{name} is given, the server
+socket will be bound to the network interface representing the given
+host name. If it is @code{#f} (the default) the socket will be bound
+on every local network interface.  If the @var{protocol} option
+argument is given, it specifies the encryption protocol. Accepted
+values are @code{'sslv2}, @code{'sslv3}, @code{'sslv23} (alias
+@code{'ssl}), @code{'tlsv1} (alias @code{'tls}), @code{'tlsv1_1},
+@code{'tlsv1_2} @code{'tlsv1_3}, or @code{'dtlsv1} (alias
+@code{'dtls}). The default value is @code{'sslv23}.
 
 The SSL socket will sign the connection using the optional arguments
 @var{cert} (for the certificate) and @var{pkey} (for the private key).

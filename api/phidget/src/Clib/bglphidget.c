@@ -1647,6 +1647,7 @@ bgl_phidget_encoder_add_event_listener( CPhidgetEncoderHandle id, char *event, o
       return CPhidgetEncoder_set_OnIndex_Handler(
 	 id, &bgl_encoderindex_handler, hdl );
    }
+   return -1;
 }
 
 /*---------------------------------------------------------------------*/

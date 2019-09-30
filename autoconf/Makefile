@@ -52,7 +52,8 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   pthreadcondvtimedwait processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
                   openssl openssl-dtls openssl-tls11 openssl-tls1 \
-                  openssl-tls12 openssl-rand openssl-v2 openssl-v3 \
+                  openssl-tls12 openssl-tls13 openssl-rand \
+                  openssl-v2 openssl-v3 \
                   openssl-v23 openssl-getter \
                   stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
