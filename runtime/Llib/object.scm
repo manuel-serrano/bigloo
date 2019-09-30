@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Sun Aug 25 07:34:45 2019 (serrano)                */
+;*    Last change :  Mon Sep 23 18:07:46 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -239,6 +239,8 @@
 	    (class &io-connection-error::&io-error)
 	    
 	    (class &process-exception::&error)
+	    
+	    (class &stack-overflow-error::&error)
 	    
 	    (class &security-exception::&exception
 	       (message::bstring read-only (default "")))
