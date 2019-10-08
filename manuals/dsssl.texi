@@ -102,7 +102,6 @@ in a @emph{formal-argument-list}.
 Example:
 
 @smalllisp
-((lambda (x y) x) 3 4 5 6)   @result{}(3 4 5 6)
 ((lambda (x y #!rest z) z)
  3 4 5 6)                    @result{} (5 6)
 ((lambda (x y #!optional z #!rest r #!key i (j 1)) 
