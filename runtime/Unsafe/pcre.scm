@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Dec  6 15:43:19 2011                          */
-;*    Last change :  Sun Aug 25 09:29:06 2019 (serrano)                */
+;*    Last change :  Tue Oct  8 18:25:57 2019 (serrano)                */
 ;*    Copyright   :  2011-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions (PCRE)                                 */
@@ -44,7 +44,7 @@
 
             __evenv)
 
-   (extern ($regcomp::regexp (::bstring ::obj) "bgl_regcomp")
+   (extern ($regcomp::regexp (::bstring ::obj ::bool) "bgl_regcomp")
            (macro $regexp?::bool (::obj) "BGL_REGEXPP")
            (macro $regexp-pattern::bstring (::regexp) "BGL_REGEXP_PAT")
 	   (macro $regmatch::obj (::regexp ::string ::bool ::int ::int) "BGL_REGEXP_MATCH")
@@ -56,7 +56,7 @@
                  "BGL_REGEXPP")
               (method static $regexp-pattern::bstring (::obj)
                  "BGL_REGEXP_PAT")
-	      (method static $regcomp::regexp (::bstring ::obj)
+	      (method static $regcomp::regexp (::bstring ::obj ::bool)
 		 "bgl_regcomp")
 	      (method static $regmatch::obj (::regexp ::string ::bool ::int ::int)
 		 "bgl_regmatch")
@@ -107,7 +107,7 @@
 ;*    pregexp ...                                                      */
 ;*---------------------------------------------------------------------*/
 (define (pregexp re . opt-args)
-   ($regcomp re opt-args))
+   ($regcomp re opt-args #t))
 
 ;*---------------------------------------------------------------------*/
 ;*    match ...                                                        */
@@ -115,7 +115,7 @@
 (define (match pat str stringp beg end)
    (if (regexp? pat)
        ($regmatch pat str stringp beg end)
-       (let* ((rx (pregexp pat))
+       (let* ((rx ($regcomp pat '() #f))
 	      (val ($regmatch rx str stringp beg end)))
 	  ($regfree rx)
 	  val)))
