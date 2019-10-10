@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Sun Sep 29 08:32:57 2019 (serrano)                */
+;*    Last change :  Wed Oct  9 13:00:21 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -699,6 +699,8 @@
        (open-input-file fname))
       ((string=? fname "stdin")
        (open-input-string (input-port-buffer (current-input-port))))
+      ((string-prefix? "string://" fname)
+       (open-input-string (substring fname 9)))
       (else
        #f)))
 
@@ -709,6 +711,10 @@
    (cond
       ((file-exists? file)
        (relative-file-name file))
+      ((string-prefix? "string://" file)
+       (if (<=fx (string-length file) (+fx 9 sz))
+	   (substring file 9)
+	   (string-append (substring file 9 (+fx sz 6)) "...")))
       ((<=fx (string-length file) sz)
        file)
       (else
