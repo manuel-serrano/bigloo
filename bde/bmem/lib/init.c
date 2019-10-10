@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Mon Jun 10 06:26:44 2019 (serrano)                */
+/*    Last change :  Thu Oct 10 08:46:18 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -41,6 +41,8 @@ static void bmem_init();
 /*---------------------------------------------------------------------*/
 int bmem_debug = 0;
 int bmem_thread = 0;
+int bmem_verbose = 2;
+
 pthread_key_t bmem_key;
 pthread_key_t bmem_key2;
 pthread_key_t bmem_key3;
@@ -214,12 +216,16 @@ get_function( void *handle, char *id ) {
    char *err;
    fun_t fun = dlsym( handle, id );
 
-   fprintf( stderr, "  %s...", id );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "  %s...", id );
+   }
    if( !fun || (err = dlerror()) ) {
       FAIL( IDENT, "Can't find function", id );
       exit( -2 );
    } else {
-      fprintf( stderr, "ok\n" );
+      if( bmem_verbose >= 2 ) {
+	 fprintf( stderr, "ok\n" );
+      }
       return fun;
    }
 }
@@ -233,12 +239,18 @@ find_function( void *handle, char *id ) {
    char *err;
    fun_t fun = dlsym( handle, id );
 
-   fprintf( stderr, "  %s...", id );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "  %s...", id );
+   }
    if( !fun || (err = dlerror()) ) {
-      fprintf( stderr, "no\n" );
+      if( bmem_verbose >= 2 ) {
+	 fprintf( stderr, "no\n" );
+      }
       return (fun_t)&unbound;
    } else {
-      fprintf( stderr, "ok\n" );
+      if( bmem_verbose >= 2 ) {
+	 fprintf( stderr, "ok\n" );
+      }
       return fun;
    }
 }
@@ -252,12 +264,16 @@ get_variable( void *handle, char *id ) {
    char *err;
    fun_t fun = dlsym( handle, id );
 
-   fprintf( stderr, "  %s...", id );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "  %s...", id );
+   }
    if( !fun || (err = dlerror()) ) {
       FAIL( IDENT, "Can't find variable", id );
       exit( -2 );
    } else {
-      fprintf( stderr, "ok\n" );
+      if( bmem_verbose >= 2 ) {
+	 fprintf( stderr, "ok\n" );
+      }
       return fun;
    }
 }
@@ -296,7 +312,9 @@ dump_statistics() {
       }
    }
 
-   fprintf( stderr, "Dumping file...%s\n", n );
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "Dumping file...%s\n", n );
+   }
    
    if( !(f = fopen( n, "w" )) ) {
       FAIL( IDENT, "Can't open output file", n );
@@ -311,9 +329,11 @@ dump_statistics() {
    thread_dump_statistics( f );
    fprintf( f, ")\n" );
    
-   fprintf( stderr, "Dump done\n" );
-   fprintf( stderr, "Total size: %lldMB\n",
-	    GC_alloc_total() / 1024 / 1024 );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "Dump done\n" );
+   }
+   fprintf( stderr, "Total size: %lldMB (%lldKB)\n",
+	    GC_alloc_total() / 1024 / 1024, GC_alloc_total() / 1024 );
    fclose( f );
 }
 
@@ -371,7 +391,13 @@ bglfth_setup_bmem() {
    bmem_thread = 1;
    
    /* Hello world */
-   fprintf( stderr, "Bmem Fthread initialization...\n" );
+   if( getenv( "BMEMVERBOSE" ) ) {
+      bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
+   }
+   
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "Bmem Fthread initialization...\n" );
+   }
 
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
@@ -381,7 +407,9 @@ bglfth_setup_bmem() {
 	       SHARED_LIB_SUFFIX );
    }
 
-   fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+   }
 
    hdl = open_shared_library( bigloothread_lib );
 
@@ -437,7 +465,13 @@ bglpth_setup_bmem() {
    bmem_thread = 2;
 
    /* Hello world */
-   fprintf( stderr, "Bmem Pthread initialization...\n" );
+   if( getenv( "BMEMVERBOSE" ) ) {
+      bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
+   }
+   
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "Bmem Pthread initialization...\n" );
+   }
 
    if( getenv( "BMEMLIBBIGLOOTHREAD" ) ) {
       strcpy( bigloothread_lib, getenv( "BMEMLIBBIGLOOTHREAD" ) );
@@ -447,7 +481,9 @@ bglpth_setup_bmem() {
 	       SHARED_LIB_SUFFIX );
    }
 
-   fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "Loading thread library %s...\n", bigloothread_lib );
+   }
 
    hdl = open_shared_library( bigloothread_lib );
 
@@ -499,8 +535,14 @@ bmem_init_inner() {
    char *bglsafe = "_u";
 
    /* Hello world */
+   if( getenv( "BMEMVERBOSE" ) ) {
+      bmem_verbose = atoi( getenv( "BMEMVERBOSE" ) );
+   }
+   
    if( !getenv( "BMEMTHREAD" ) ) {
-      fprintf( stderr, "Bmem initialization...\n" );
+      if( bmem_verbose >= 1 ) {
+	 fprintf( stderr, "Bmem initialization...\n" );
+      }
    } else if( !strcmp( getenv( "BMEMTHREAD" ), "pth" ) ) {
       bglpth_setup_bmem();
    } else {
@@ -538,7 +580,9 @@ bmem_init_inner() {
       bmem_debug = atoi( getenv( "BMEMDEBUG" ) );
 
    /* The GC library */
-   fprintf( stderr, "Loading library %s...\n", gc_lib );
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "Loading library %s...\n", gc_lib );
+   }
    hdl = open_shared_library( gc_lib );
    ____GC_malloc = get_function( hdl, "GC_malloc" );
    ____GC_realloc = get_function( hdl, "GC_realloc" );
@@ -565,7 +609,9 @@ bmem_init_inner() {
    ____GC_reset_allocated_bytes = (void (*)())get_function( hdl, "GC_reset_allocated_bytes" );
 
    /* The Bigloo library */
-   fprintf( stderr, "Loading library %s...\n", bigloo_lib );
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "Loading library %s...\n", bigloo_lib );
+   }
    hdl = open_shared_library( bigloo_lib );
    ____executable_name = get_variable( hdl, "executable_name" );
    ____command_line = get_variable( hdl, "command_line" );

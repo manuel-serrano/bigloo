@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Jul  8 11:36:35 2019 (serrano)                */
+/*    Last change :  Thu Oct 10 09:03:17 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -16,6 +16,7 @@
 #include <string.h>
 
 extern void gc_alloc_size_add( int size );
+extern int bmem_verbose;
 
 /*---------------------------------------------------------------------*/
 /*    static pa_pair_t *                                               */
@@ -899,14 +900,18 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t module, obj_t super,
    obj_t class;
 
    if( !init ) {
-      fprintf( stderr, "Defining classes...\n" );
+      if( bmem_verbose >= 1 ) {
+	 fprintf( stderr, "Defining classes...\n" );
+      }
       init = 1;
    }
 
-   fprintf( stderr, "  %s@%s (%d)...",
-	    cname,
-	    BSTRING_TO_STRING( SYMBOL_TO_STRING( module ) ),
-	    tnum );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "  %s@%s (%d)...",
+	       cname,
+	       BSTRING_TO_STRING( SYMBOL_TO_STRING( module ) ),
+	       tnum );
+   }
 	       
    fflush( stderr );
    declare_type( tnum, cname );
@@ -927,7 +932,9 @@ BGl_registerzd2classz12zc0zz__objectz00( obj_t name, obj_t module, obj_t super,
 			       nil, shrink,
 			       plain, virtual );
 
-   fprintf( stderr, "ok\n" );
+   if( bmem_verbose >= 2 ) {
+      fprintf( stderr, "ok\n" );
+   }
 
    return class;
 }

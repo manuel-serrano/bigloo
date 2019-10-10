@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/gchook.c                */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/gchook.c         */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Mon Nov 20 08:28:40 2017 (serrano)                */
-/*    Copyright   :  2003-17 Manuel Serrano                            */
+/*    Last change :  Thu Oct 10 09:05:01 2019 (serrano)                */
+/*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
 /*=====================================================================*/
@@ -18,6 +18,7 @@
 static pa_pair_t *gcs_info = 0;
 static unsigned long gc_alloc_size = 0;
 unsigned long gc_number = 0;
+extern int bmem_verbose;
 
 /*---------------------------------------------------------------------*/
 /*    static gc_info_t *                                               */
@@ -45,18 +46,20 @@ GC_collect_hook( int heapsz, long livesz ) {
 
    gc_number++;
 
-   if( heapsz > (1024 * 1024) ) {
-      fprintf( stderr, "gc %3lu: alloc size=%.2fMB, heap size=%.2fMB, live size=%.2fMB\n",
-	       gc_number,
-	       ((double)gc_alloc_size / (1024. * 1024.)),
-	       ((double)heapsz / (1024. * 1024.)),
-	       ((double)livesz / (1024. * 1024.)) );
-   } else {
-      fprintf( stderr, "gc %3lu: alloc size=%luKB, heap size=%dKB, live size=%ldKB\n",
-	       gc_number,
-	       gc_alloc_size / 1024,
-	       heapsz / 1024,
-	       livesz / 1024 );
+   if( bmem_verbose >= 1 ) {
+      if( heapsz > (1024 * 1024) ) {
+	 fprintf( stderr, "gc %3lu: alloc size=%.2fMB, heap size=%.2fMB, live size=%.2fMB\n",
+		  gc_number,
+		  ((double)gc_alloc_size / (1024. * 1024.)),
+		  ((double)heapsz / (1024. * 1024.)),
+		  ((double)livesz / (1024. * 1024.)) );
+      } else {
+	 fprintf( stderr, "gc %3lu: alloc size=%luKB, heap size=%dKB, live size=%ldKB\n",
+		  gc_number,
+		  gc_alloc_size / 1024,
+		  heapsz / 1024,
+		  livesz / 1024 );
+      }
    }
       
    gc_alloc_size = 0;
