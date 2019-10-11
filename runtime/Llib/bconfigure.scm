@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Sat Apr 13 12:59:11 2019 (serrano)                */
+;*    Last change :  Fri Oct 11 11:18:03 2019 (serrano)                */
 ;*    Copyright   :  2000-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
@@ -288,7 +288,7 @@
 (define (bigloo-config #!optional config)
    (if (not config)
        (bigloo-configuration)
-       (let ((c (assq config (bigloo-configuration))))
+       (let ((c (assq config *bigloo-configuration*)))
 	  (if (pair? c)
 	      (cdr c)
 	      #unspecified))))

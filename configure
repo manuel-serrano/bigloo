@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Sep 25 13:44:09 2019 (serrano)                */
+#*    Last change :  Fri Oct 11 11:22:22 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1773,33 +1773,16 @@ case $hostos in
 
     if [ "$macosx" = "yes" ]; then
       echo "* MacOS X tuning enabled"; >&2;
-      if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
-        if [ "$threadsupport " = "no " ]; then
-          threadsupport=no;
-          pthreadlibs=no;
-          ldcomplibs="\$(GCCLOSELIB) -lc -lm";
-        else
-          customgclib=bigloogc_fth;
-          extralibs="$extralibs $pthreadlibs";
-          ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm";
-        fi
-      fi
-      if [ `dirname $bindir` != `dirname $libdir` ]; then
-        echo "*** ERROR: on MacOS X, bindir and libdir must have a";
-        echo "common parent directory. Please re-configure accordingly";
-        exit 1;
-      fi
-
       cstrip=no
       strip=no
-      ldbuildsharedopt=" -dynamiclib -single_module";
-      ldinstallname="-install_name";
-      sharedsuffix="dylib";
-      ldlibs="$ldlibs \$(GCCLOSELIB) -lc";
-      ldsonameopt="-install_name ~a";
-      sharedcompiler=yes;
-      sharedbde=yes;
-      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
+      ldbuildsharedopt=" -dynamiclib -single_module"
+      ldinstallname="-install_name"
+      sharedsuffix="dylib"
+      ldlibs="$ldlibs \$(GCCLOSELIB) -lc"
+      ldsonameopt="-install_name ~a"
+      sharedcompiler=yes
+      sharedbde=yes
+      ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress"
       customgmp=yes
       customgmpmakefile=Makefile.macosx
       customunistring=yes
@@ -1807,6 +1790,25 @@ case $hostos in
       customgc=yes
       custompcre=yes
       
+      if [ "$mode " != "benchmark " -a "$pthreadlibs " != "no " ]; then
+        if [ "$threadsupport " = "no " ]; then
+          threadsupport=no
+          pthreadlibs=no
+          ldcomplibs="\$(GCCLOSELIB) -lc -lm"
+        else
+          customgclib=bigloogc_fth
+          extralibs="$extralibs $pthreadlibs"
+	  if [ "$sharedcompiler " = "yes " ]; then
+            ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm"
+	  fi
+        fi
+      fi
+      if [ `dirname $bindir` != `dirname $libdir` ]; then
+        echo "*** ERROR: on MacOS X, bindir and libdir must have a"
+        echo "common parent directory. Please re-configure accordingly"
+        exit 1
+      fi
+
       tuning="MacOS X"
     fi
 
