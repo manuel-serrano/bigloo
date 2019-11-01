@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Oct 11 11:22:22 2019 (serrano)                */
+#*    Last change :  Fri Nov  1 09:37:16 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -235,6 +235,7 @@ avahicflags=
 #*--- libuv (left blank for autoconfiguration) ------------------------*/
 libuv=
 libuvlibs=
+libuvbootcflags=
 libuvcflags=
 customlibuv=yes
 libuvconfigureopt=
@@ -2599,10 +2600,12 @@ if [ "$libuv_is_enabled " = "yes " -a "$libuv " = " " ]; then
    if [ "$customlibuv " = "yes " ]; then
      libuvlibs="-luv"
      libuv="yes"
+     libuvbootcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
      libuvcflags="-I$bootdir/libuv/libuv-$libuvversion/include"
      buildlibuvlibdir=$bootdir/libuv/libuv-$libuvversion/.libs
    else
      libuvlibs=`$autoconf bgl-pkg-config --libs libuv`
+     libuvbootcflags=
      libuvcflags=`$autoconf bgl-pkg-config --cflags libuv`
 
      libuv=`$autoconf libuv --cflags="$libuvcflags" --libs="$libuvlibs"` || exit 1;
@@ -4346,7 +4349,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   echo "LIBUV=$libuv" >> $makefile_cfg
   if [ "$libuv_is_enabled " = "yes " -a "$libuv " != "no " ]; then
     echo "LIBUVLIBS=$libuvlibs" >> $makefile_cfg
-    echo "LIBUVCFLAGS=$libuvcflags" >> $makefile_cfg
+    echo "LIBUVCFLAGS=$libuvbootcflags" >> $makefile_cfg
 
     if [ "$customlibuv " = "yes " ]; then
       echo "LIBUVCUSTOM=yes" >> $makefile_cfg

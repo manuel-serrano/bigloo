@@ -1,11 +1,11 @@
 ;; -*- mode: bee -*-
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/libuv/src/Misc/libuv.init.in     */
+;*    .../project/bigloo/bigloo/api/libuv/src/Misc/libuv.init.in       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Nov  7 05:40:36 2001                          */
-;*    Last change :  Mon Jul 28 09:16:49 2014 (serrano)                */
-;*    Copyright   :  2001-14 Manuel Serrano                            */
+;*    Last change :  Fri Nov  1 09:21:10 2019 (serrano)                */
+;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The LIBUV init file.                                             */
 ;*=====================================================================*/
@@ -30,5 +30,6 @@
     ;; libuv libraries
     (set! *ld-post-options* (cons "@LIBUVLIBS@" *ld-post-options*))
     ;; libuv C compilation options
-    (set! *cc-options* (cons "@LIBUVCFLAGS@" *cc-options*))))
+    ;; (set! *cc-options* (cons "@LIBUVCFLAGS@" *cc-options*))
+    ))
 
