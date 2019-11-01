@@ -148,8 +148,9 @@ the result should be encoded. The allowed values are:
 Example:
 
 @smalllisp
-(rfc2047-decode "Poste =?ISO-8859-1?Q?t=E9l=E9phonique?=")
-  @result{} "Poste téléphonique"
+(map char->integer
+  (string->list (rfc2047-decode "Poste =?ISO-8859-1?Q?t=E9l=E9phonique?=")))
+  @result{} (80 111 115 116 101 32 116 233 108 233 112 104 111 110 105 113 117 101)
 (string-for-read (rfc2047-decode "Poste =?ISO-8859-1?Q?t=E9l=E9phonique?=" :charset 'utf8))
   @result{} "Poste t\303\251l\303\251phonique"
 @end smalllisp
