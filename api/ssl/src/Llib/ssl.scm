@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/ssl/src/Llib/ssl.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/api/ssl/src/Llib/ssl.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano & Stephane Epardaud                */
 ;*    Creation    :  Thu Mar 24 10:24:38 2005                          */
-;*    Last change :  Tue Oct  3 10:43:21 2017 (serrano)                */
-;*    Copyright   :  2005-17 Manuel Serrano                            */
+;*    Last change :  Thu Sep 12 14:04:14 2019 (serrano)                */
+;*    Copyright   :  2005-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    SSL Bigloo library                                               */
 ;*=====================================================================*/
@@ -157,6 +157,7 @@
 	   (macro $ssl-client-tlsv1::int "BGLSSL_TLSV1")
 	   (macro $ssl-client-tlsv1_1::int "BGLSSL_TLSV1_1")
 	   (macro $ssl-client-tlsv1_2::int "BGLSSL_TLSV1_2")
+	   (macro $ssl-client-tlsv1_3::int "BGLSSL_TLSV1_3")
 	   (macro $ssl-client-dtlsv1::int "BGLSSL_DTLSV1")
 
 	   (macro $DH-GENERATOR-2::int "DH_GENERATOR_2")
@@ -285,6 +286,7 @@
 	 (field static dtlsv1::int "BGLSSL_DTLSV1")
 	 (field static tlsv1_1::int "BGLSSL_TLSV1_1")
 	 (field static tlsv1_2::int "BGLSSL_TLSV1_2")
+	 (field static tlsv1_3::int "BGLSSL_TLSV1_3")
 	 "bigloo.ssl.ssl_client_socket")
       
       (class $ssl-server
@@ -669,6 +671,7 @@
       ((tls tlsv1) $ssl-client-tlsv1)
       ((tlsv1_1) $ssl-client-tlsv1_1)
       ((tlsv1_2) $ssl-client-tlsv1_2)
+      ((tlsv1_3) $ssl-client-tlsv1_3)
       ((dtls dtlsv1) $ssl-client-dtlsv1)
       (else (error "ssl" "Unknown protocols" protocol))))
 

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/glo_decl.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/glo_decl.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jun  3 09:17:44 1996                          */
-;*    Last change :  Wed Jan 29 08:22:08 2014 (serrano)                */
+;*    Last change :  Sun Apr 14 08:27:05 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    This module implement the functions used to declare a global     */
 ;*    variable (i.e. in the module language compilation). Global       */
@@ -55,7 +55,7 @@
 ;*---------------------------------------------------------------------*/
 (define (declare-global-sfun! id alias args module import class srce srci)
    (trace (ast 3) "declare-global-sfun!: "
-	  (shape id) " " (shape args) #\newline)
+      (shape id) " " (shape args) #\newline)
    (cond
       ((dsssl-optional-only-prototype? args)
        (declare-global-opt-sfun! id alias args module import class srce srci))

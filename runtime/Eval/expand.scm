@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expand.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expand.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:57:39 1994                          */
-;*    Last change :  Tue Aug 13 07:17:39 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:12:58 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La macro expansion de l'interprete                               */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    __object
 	    __thread
 	    __reader
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:06:49 2019                          */
-/*    Last change :  Mon Jan 14 15:51:56 2019 (serrano)                */
+/*    Last change :  Thu Aug  8 13:59:30 2019 (serrano)                */
 /*    Copyright   :  2019 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Basic C regex support.                                           */
@@ -86,7 +86,7 @@ bgl_regmatch_n( obj_t re, char *string, obj_t vres, int beg, int end ) {
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_regcomp( obj_t pat, obj_t _ ) {
+bgl_regcomp( obj_t pat, obj_t _, bool_t finalize ) {
    int err;
    obj_t re = bgl_make_regexp( pat );
 

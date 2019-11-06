@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/tvector.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/tvector.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Mar 27 09:38:41 1995                          */
-;*    Last change :  Fri Aug 24 08:16:31 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:08:27 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The typed vectors Scheme management.                             */
 ;*=====================================================================*/
@@ -38,7 +38,8 @@
 	    __r4_output_6_10_3
 	    __r4_ports_6_10_1
 	    __r4_control_features_6_9
-	    __evenv)
+	    __evenv
+	    __bit)
 
    (extern (macro $tvector?::bool (::obj)
 		  "TVECTORP")

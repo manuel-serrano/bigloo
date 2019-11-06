@@ -4,7 +4,7 @@
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
 #*    Last change :  Mon Oct 23 19:43:06 2017 (serrano)                */
-#*    Copyright   :  2003-17 Manuel Serrano                            */
+#*    Copyright   :  2003-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
 #*=====================================================================*/

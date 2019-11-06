@@ -180,7 +180,7 @@ boot-c: checkgmake
 	if [ "$(UNISTRINGCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libunistring boot; \
         fi
-	if [ -x $(BGLBUILBINDIR)/bigloo ]; then \
+	if [ -x $(BGLBUILDBINDIR)/bigloo ]; then \
 	  $(MAKE) -C runtime .afile && \
 	  $(MAKE) -C runtime heap && \
 	  $(MAKE) -C runtime boot && \

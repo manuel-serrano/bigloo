@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/input.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/input.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Aug  4 15:42:25 1992                          */
-;*    Last change :  Fri Aug 18 16:43:25 2017 (serrano)                */
+;*    Last change :  Sun Aug 25 09:19:22 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.10.2 Input (page 30, r4)                                       */
 ;*=====================================================================*/
@@ -26,6 +26,7 @@
 	    __thread
 	    __rgc
 	    __bignum
+	    __bit
 	    
 	    __r4_output_6_10_3
 	    __r4_equivalence_6_2

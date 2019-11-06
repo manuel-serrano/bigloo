@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/macro.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/macro.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 08:59:04 1994                          */
-;*    Last change :  Sat Oct 15 09:12:53 2016 (serrano)                */
+;*    Last change :  Sun Aug 25 09:15:10 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La manipulation des macros (de l'interprete et du compilateur).  */
 ;*=====================================================================*/
@@ -33,6 +33,7 @@
 	    __bexit
 	    __bignum
 	    __param
+	    __bit
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

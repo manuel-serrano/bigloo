@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/api/alsa/src/Misc/make_lib.scm       */
+;*    .../project/bigloo/bigloo/api/alsa/src/Misc/make_lib.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  6 15:09:37 2001                          */
-;*    Last change :  Tue Jan 26 13:40:54 2016 (serrano)                */
-;*    Copyright   :  2001-16 Manuel Serrano                            */
+;*    Last change :  Mon Mar  4 11:53:53 2019 (serrano)                */
+;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The module used to build the heap file.                          */
 ;*=====================================================================*/
@@ -21,7 +21,8 @@
 	    __alsa_music
 	    __alsa_card
 	    __alsa_control
-	    __alsa_mixer)
+	    __alsa_mixer
+	    __alsa_rawmidi)
 
    (eval    (export-all)
 

@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdcase.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expdcase.scm     */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul  3 10:13:16 1992                          */
-;*    Last change :  Tue Aug 13 07:23:29 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:14:00 2019 (serrano)                */
 ;*                                                                     */
 ;*    On macro-expanse ce satane-case                                  */
 ;*---------------------------------------------------------------------*/
@@ -43,7 +43,8 @@
 	    __expand)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (expand-eval-case <expression> <expander>)))
 	   

@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/custom.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/custom.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Aug 16 17:22:43 1999                          */
-;*    Last change :  Tue Mar 11 15:50:17 2008 (serrano)                */
+;*    Last change :  Sun Aug 25 09:09:39 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Scheme custom type manipulation.                                 */
 ;*=====================================================================*/
@@ -24,6 +24,7 @@
 	    __bignum
 	    __object
 	    __thread
+	    __bit
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

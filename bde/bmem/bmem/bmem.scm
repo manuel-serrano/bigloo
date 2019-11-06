@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bde/bmem/bmem/bmem.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/bde/bmem/bmem/bmem.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Apr 15 09:59:09 2003                          */
-;*    Last change :  Tue Oct 24 15:50:58 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Last change :  Sun Jun  9 09:06:30 2019 (serrano)                */
+;*    Copyright   :  2003-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Allocation profiler visualizer. This tool generates an HTML file */
 ;*    from a monitor file.                                             */
@@ -411,7 +411,9 @@
 	 (map (lambda (t)
 		 (let* ((i (car t))
 			(selector (format "div.profile td.type~a" i))
-			(color (css-color i 200 40 80)))
+			(color (if (string=? (cadr t) "byte")
+				   "rgb( 60, 60, 60 )"
+				   (css-color i 200 40 80))))
 		    `(,selector background: ,color cursor: help)))
 	    types)))
    (list->css

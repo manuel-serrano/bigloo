@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jul  6 14:18:49 1992                          */
-;*    Last change :  Wed Jan 23 07:49:54 2019 (serrano)                */
+;*    Last change :  Wed Mar 13 07:24:23 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.8. Vectors (page 26, r4)                                       */
 ;*    -------------------------------------------------------------    */
@@ -111,6 +111,7 @@
 	    (sort ::obj ::obj)
 	    (vector-map::vector ::procedure ::vector . rests)
 	    (vector-map!::vector ::procedure ::vector . rests)
+	    (vector-for-each ::procedure ::vector . rests)
 	    (inline vector-shrink!::vector ::vector ::long))
    
    (pragma  ($make-vector no-cfa-top nesting)
@@ -409,6 +410,44 @@
 	  (vector-mapN! proc v v rest))
 	 (else
 	  (error "vector-map!" "Illegal arguments" rest)))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-for-each2 ...                                             */
+;*---------------------------------------------------------------------*/
+(define (vector-for-each2 proc vdest vsrc)
+   (let ((len (vector-length vdest)))
+      (let loop ((i 0))
+	 (if (<fx i len)
+	     (begin
+		(proc (vector-ref-ur vsrc i))
+		(loop (+fx i 1)))
+	     vdest))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-for-eachN ...                                             */
+;*---------------------------------------------------------------------*/
+(define (vector-for-eachN proc vdest vsrc vrest)
+   (let ((len (vector-length vdest)))
+      (let loop ((i 0))
+	 (if (<fx i len)
+	     (let ((args (map (lambda (v) (vector-ref v i)) vrest)))
+		(apply proc (vector-ref vsrc i) args)
+		(loop (+fx i 1)))
+	     vdest))))
+
+;*---------------------------------------------------------------------*/
+;*    vector-for-each ...                                              */
+;*---------------------------------------------------------------------*/
+(define (vector-for-each proc v . rest)
+   (let* ((len (vector-length v))
+	  (nv ($create-vector len)))
+      (cond
+	 ((null? rest)
+	  (vector-for-each2 proc nv v))
+	 ((every (lambda (v) (and (vector? v) (=fx (vector-length v) len))))
+	  (vector-for-eachN proc nv v rest))
+	 (else
+	  (error "vector-for-each" "Illegal arguments" rest)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    vector-shrink! ...                                               */

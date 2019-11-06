@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdstruct.scm          */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdstruct.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jul 30 11:48:02 1992                          */
-;*    Last change :  Tue Aug 13 07:28:31 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:14:36 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Structure expansion                                              */
 ;*    -------------------------------------------------------------    */
@@ -49,7 +49,8 @@
 	    __expand)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (expand-eval-define-struct x e)))
 

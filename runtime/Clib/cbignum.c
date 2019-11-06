@@ -1,10 +1,10 @@
 /*=====================================================================*/
 /*    serrano/prgm/project/bigloo/bigloo/runtime/Clib/cbignum.c        */
 /*    -------------------------------------------------------------    */
-/*    Author      :  José Romildo Malaquias                            */
+/*    Author      :  JosÃ© Romildo Malaquias                            */
 /*    Creation    :  Fri Nov 10 11:51:17 2006                          */
-/*    Last change :  Mon Apr 23 07:57:36 2018 (serrano)                */
-/*    Copyright   :  2003-18 Manuel Serrano                            */
+/*    Last change :  Mon Jun 10 07:46:56 2019 (serrano)                */
+/*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    C implementation of bignum                                       */
 /*=====================================================================*/
@@ -100,7 +100,7 @@ mpz_to_bignum( const mpz_t z ) {
 /*---------------------------------------------------------------------*/
 BGL_RUNTIME_DEF obj_t
 bgl_long_to_bignum( const long n ) {
-#if BGL_LONGLONG_LIMBS == 1
+#if( BGL_LONGLONG_LIMBS == 1 )
    obj_t x = make_bignum( BGL_LONG_LIMBS );
    
    if( n < 0 ) {
@@ -130,7 +130,7 @@ BGL_RUNTIME_DEF obj_t
 bgl_llong_to_bignum( const BGL_LONGLONG_T n ) {
    obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
    
-#if BGL_LONGLONG_LIMBS == 1
+#if( BGL_LONGLONG_LIMBS == 1 )
    if( n < 0 ) {
       BXLIMBS( x )[ 0 ] = (mp_limb_t) (unsigned BGL_LONGLONG_T) -n;
       BXSIZ( x ) = -1;
@@ -162,7 +162,7 @@ BGL_RUNTIME_DEF obj_t
 bgl_uint64_to_bignum( const uint64_t n ) {
    obj_t x = make_bignum( BGL_LONGLONG_LIMBS );
    
-#if BGL_LONGLONG_LIMBS == 1
+#if( BGL_LONGLONG_LIMBS == 1 )
    BXLIMBS( x )[ 0 ] = (mp_limb_t) (uint64_t) n;
    BXSIZ( x ) = (n!=0);
 #else

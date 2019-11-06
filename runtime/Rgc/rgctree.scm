@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgctree.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgctree.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 17:51:46 1998                          */
-;*    Last change :  Tue Apr 17 07:39:50 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:11:40 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the tree from the list representation.       */
 ;*=====================================================================*/
@@ -27,6 +27,7 @@
 	    __bexit
 	    __bignum
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Sun May  6 06:45:23 2018 (serrano)                */
-#*    Copyright   :  1997-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Sep 25 13:44:17 2019 (serrano)                */
+#*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   ascpp getwd ranlib unix dirname \
                   bcopy indent setjmp setjmp.sparc winreg \
                   bigendian ldshare ldpreload ldsoname sigprocmask \
-                  sigchld sigaction \
+                  sigchld sigaction siginfo \
                   doubleprec xemacspath ldstaticopt ldsharedopt \
                   readline ldextraopt \
                   socket getaddrinfo getifaddrs gethwaddrs socklen setsockopt \
@@ -52,7 +52,8 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   pthreadcondvtimedwait processor sendfile sleep posixfileops \
                   timezone timeval gcflags mmap macosx sqlite \
                   openssl openssl-dtls openssl-tls11 openssl-tls1 \
-                  openssl-tls12 openssl-rand openssl-v2 openssl-v3 \
+                  openssl-tls12 openssl-tls13 openssl-rand \
+                  openssl-v2 openssl-v3 \
                   openssl-v23 openssl-getter \
                   stdint stdlibint unistdint maemo.arm android \
                   gcversion gchavedoblocking gchavestartblocking nbprocs \
@@ -63,7 +64,7 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   gcconfigureopt ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
                   gmtoff libuv getgroups ioctl pthreadkill syslog overflow \
-                  semaphore lockf patch likely gccattrs
+                  semaphore lockf patch likely gccattrs getrlimit
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

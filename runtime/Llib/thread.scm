@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/thread.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/thread.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:19:50 2004                          */
-;*    Last change :  Fri May 24 17:53:13 2013 (serrano)                */
-;*    Copyright   :  2004-13 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:10:10 2019 (serrano)                */
+;*    Copyright   :  2004-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Not an implementation of threads (see Fthread for instance).     */
 ;*    This is simply an implementation of lock and synchronization     */
@@ -27,6 +27,7 @@
 	    __structure
 	    __date
 	    __os
+	    __bit
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum
@@ -55,6 +56,8 @@
 		   "BGL_MUTEXP")
 	    (macro $make-mutex::mutex (::obj)
 		   "bgl_make_mutex")
+	    (macro $make-spinlock::mutex (::obj)
+		   "bgl_make_spinlock")
 	    ($make-nil-mutex::mutex () "bgl_make_nil_mutex")
 	    (macro $mutex-name::obj (::mutex)
 		   "BGL_MUTEX_NAME")
@@ -106,6 +109,8 @@
 	       (method static $mutex?::bool (::obj)
 		       "BGL_MUTEXP")
 	       (method static $make-mutex::mutex (::obj)
+		       "bgl_make_mutex")
+	       (method static $make-spinlock::mutex (::obj)
 		       "bgl_make_mutex")
 	       (method static $make-nil-mutex::mutex ()
 		       "bgl_make_nil_mutex")
@@ -207,6 +212,7 @@
 	    ;; mutex
 	    (inline mutex?::bool ::obj)
 	    (inline make-mutex::mutex #!optional (name (gensym 'mutex)))
+	    (inline make-spinlock::mutex #!optional (name (gensym 'spinlock)))
 	    (mutex-nil::mutex)
 	    (inline mutex-name::obj ::mutex)
 	    (inline mutex-lock!::obj ::mutex #!optional (timeout::long 0))
@@ -228,6 +234,7 @@
             ($dynamic-env? (predicate-of dynamic-env))
 	    ($mutex? fail-safe)
 	    ($make-mutex fail-safe)
+	    ($make-spinlock fail-safe)
 	    ($mutex-name fail-safe)
 	    ($mutex-backend fail-safe)
 	    ($mutex-state fail-safe)
@@ -575,6 +582,12 @@
 ;*---------------------------------------------------------------------*/
 (define-inline (make-mutex #!optional (name (gensym 'mutex)))
    ($make-mutex name))
+
+;*---------------------------------------------------------------------*/
+;*    make-spinlock ...                                                */
+;*---------------------------------------------------------------------*/
+(define-inline (make-spinlock #!optional (name (gensym 'spinlock)))
+   ($make-spinlock name))
 
 ;*---------------------------------------------------------------------*/
 ;*    mutex-nil ...                                                    */

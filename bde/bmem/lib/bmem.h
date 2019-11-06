@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/bmem.h                  */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/bmem.h           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Sat Dec 16 09:55:23 2017 (serrano)                */
-/*    Copyright   :  2003-18 Manuel Serrano                            */
+/*    Last change :  Mon Jun 10 06:25:33 2019 (serrano)                */
+/*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
 /*=====================================================================*/
@@ -74,10 +74,13 @@ extern void *bgl_socket_accept_symbol, *bgl_socket_accept_many_symbol;
 extern void *bgl_make_input_port_symbol;
 extern unsigned long gc_number;
 extern void bmem_set_alloc_type( long, long );
+extern long bmem_get_alloc_index();
+extern void bmem_set_alloc_index( long );
 extern unsigned long ante_bgl_init_dsz;
 
 extern pthread_key_t bmem_key;
 extern pthread_key_t bmem_key2;
+extern pthread_key_t bmem_key3;
 extern pthread_mutex_t bmem_mutex;
 
 extern void mark_function( void *, long, long, long, int, int, long );
@@ -107,8 +110,7 @@ extern void *(*____c_substring)( void *, int, int );
 extern void *(*____bgl_escape_C_string)( unsigned char *, long, long );
 extern void *(*____bgl_escape_scheme_string)( unsigned char *, long, long );
 extern void *(*____create_string_for_read)( void *, int );
-extern void *(*____string_to_keyword)( char * );
-extern void *(*____bstring_to_keyword)( void * );
+extern void *(*____bgl_make_keyword)( void * );
 extern void *(*____string_to_llong)( char * );
 extern void *(*____string_to_elong)( char * );
 
@@ -122,7 +124,6 @@ extern void *(*____make_va_procedure)( void *(*)(), int, int );
 
 extern void *(*____bgl_make_output_port)( void *, bgl_stream_t, int, void *, void *, ssize_t (*)(), long (*)(), int (*)() );
                                         
-extern void *(*____bgl_open_output_string)( void * );
 extern void *(*____bgl_output_port_timeout_set)( void *, long );
 
 extern void *(*____bgl_make_input_port)( void *, FILE *, void *, void * );
@@ -132,10 +133,11 @@ extern void *(*____bgl_open_input_pipe)( void *, void * );
 extern void *(*____bgl_open_input_resource)( void *, void * );
 extern void *(*____bgl_open_input_string)( void *, long );
 extern void *(*____bgl_open_input_substring)( void *, long, long );
-extern void *(*____bgl_open_input_substring_bang)( void *, long, long );
 extern void *(*____bgl_open_input_c_string)( char * );
 extern void *(*____bgl_reopen_input_c_string)( void *, char * );
 extern void *(*____bgl_input_port_timeout_set)( void *, long );
+
+extern void *(*____bgl_make_regexp)( void * );
 
 extern void *(*____bgl_dynamic_env)();
 extern void *(*____make_dynamic_env)();
@@ -159,6 +161,12 @@ extern void *(*____bgl_nanoseconds_to_date )( long );
 extern void *(*____bgl_make_date )( BGL_LONGLONG_T, int, int, int, int, int, int, long, bool_t, int );
 extern void *(*____bgl_seconds_format )( long, void * );
 
+extern obj_t(*____bgl_string_to_bignum)( char *s, int r );
+extern obj_t(*____bgl_long_to_bignum)( long );
+extern obj_t(*____bgl_llong_to_bignum)( long long );
+extern obj_t(*____bgl_uint64_to_bignum)( uint64_t );
+extern obj_t(*____bgl_flonum_to_bignum)( double );
+
 extern void *(*____scheduler_start)( void * );
 extern void *(*____scheduler_react)( void * );
 extern void (*____bglthread_switch)( void *, void * );
@@ -175,6 +183,12 @@ extern void *(*____pthread_getspecific)( pthread_key_t );
 extern int (*____pthread_setspecific)( pthread_key_t, void * );
 extern int (*____pthread_key_create)( pthread_key_t *, void (*)( void *) );
 extern int (*____pthread_mutex_init)( pthread_mutex_t *, void * );
+
+extern void *(*____bgl_make_mutex)( void * );
+extern void *(*____bgl_make_nil_mutex)( void * );
+extern void *(*____bgl_make_spinlock)( void * );
+extern void *(*____bgl_make_condvar)( void * );
+extern void *(*____bgl_make_nil_condvar)( void * );
 
 extern long (*____get_hash_power_number)( char *, unsigned long );
 extern long (*____get_hash_power_number_len)( char *, unsigned long, long );
@@ -253,5 +267,11 @@ extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 #define UINT32_TYPE_NUM                49
 #define INT64_TYPE_NUM                 50
 #define UINT64_TYPE_NUM                51
+#define UNKNOWN_UNCOLLECTABLE_TYPE_NUM 52
+#define MUTEX_TYPE_NUM                 53
+#define SPINLOCK_TYPE_NUM              54
+#define CONDVAR_TYPE_NUM               55
+#define BIGNUM_TYPE_NUM                56
+
 /* a fake type */
 #define CLASS_TYPE_NUM                 99

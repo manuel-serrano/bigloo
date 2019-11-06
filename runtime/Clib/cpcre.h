@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Jan 14 15:13:55 2019                          */
-/*    Last change :  Tue Jan 15 15:29:31 2019 (serrano)                */
+/*    Last change :  Thu Aug  8 13:35:02 2019 (serrano)                */
 /*    Copyright   :  2019 Manuel Serrano                               */
 /*    -------------------------------------------------------------    */
 /*    Bigloo PCRE binding.                                             */
@@ -250,7 +250,7 @@ bgl_pcre_regcomp_finalize( obj_t re, obj_t _ ) {
 /*    bgl_regcomp ...                                                  */
 /*---------------------------------------------------------------------*/
 obj_t
-bgl_regcomp( obj_t pat, obj_t optargs ) {
+bgl_regcomp( obj_t pat, obj_t optargs, bool_t finalize ) {
    obj_t re = bgl_make_regexp( pat );
    const char *error;
    int erroffset;
@@ -266,7 +266,7 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
       
       return re;
    } else {
-      if( !init-- ) { 
+      if( finalize && !init-- ) { 
 	 init = 1000;
 	 /* force finalizers to free unused regexp */
 	 GC_invoke_finalizers();
@@ -289,8 +289,10 @@ bgl_regcomp( obj_t pat, obj_t optargs ) {
 			PCRE_INFO_CAPTURECOUNT,
 			&(BGL_REGEXP( re ).capturecount) );
 
-	 GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
-				0, 0L, 0L );
+	 if( finalize ) {
+	    GC_register_finalizer( re, (GC_finalization_proc)&bgl_pcre_regcomp_finalize,
+				   0, 0L, 0L );
+	 }
 
 	 BGL_REGEXP( re ).match = bgl_regmatch;
 	 BGL_REGEXP( re ).match_n = bgl_regmatch_n;

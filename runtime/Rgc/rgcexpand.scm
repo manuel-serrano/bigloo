@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgcexpand.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgcexpand.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Sep  9 09:21:29 1998                          */
-;*    Last change :  Fri Aug 18 16:42:52 2017 (serrano)                */
+;*    Last change :  Sun Aug 25 09:12:02 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The expanders that implements the RGC user forms.                */
 ;*    -------------------------------------------------------------    */
@@ -39,6 +39,7 @@
 	    __thread
 	    __bexit
 	    __bignum
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

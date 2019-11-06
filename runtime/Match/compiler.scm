@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/runtime/Match/compiler.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Match/compiler.scm        */
 ;*                                                                     */
 ;*    Author      :  Jean-Marie Geffroy                                */
 ;*    Creation    :  Thu Jan 14 10:29:50 1993                          */
-;*    Last change :  Tue Apr 17 07:50:17 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:16:40 2019 (serrano)                */
 ;*                                                                     */
 ;*---------------------------------------------------------------------*/
 ;*    A hand-written pattern "compiler"                                */
@@ -42,6 +42,7 @@
 	    __object
 	    __thread
 	    __rgc
+	    __bit
 
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

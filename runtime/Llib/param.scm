@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/param.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/param.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Oct  8 05:29:58 2004                          */
-;*    Last change :  Sat Nov 15 07:40:14 2014 (serrano)                */
-;*    Copyright   :  2004-14 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:10:00 2019 (serrano)                */
+;*    Copyright   :  2004-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Bigloo global parameters                                         */
 ;*=====================================================================*/
@@ -33,7 +33,8 @@
 	   __foreign
 	   __error
 	   __evenv
-	   __os)
+	   __os
+	   __bit)
    
    (import  __object
 	    __thread

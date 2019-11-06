@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan 29 08:14:39 2019 (serrano)                */
+#*    Last change :  Wed Sep 25 13:44:09 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -16,7 +16,7 @@
 #*---------------------------------------------------------------------*/
 #*    Bigloo revision number                                           */
 #*---------------------------------------------------------------------*/
-release=4.3f
+release=4.3g
 version=
 bigloourl=http://www-sop.inria.fr/indes/fp/Bigloo
 
@@ -144,9 +144,10 @@ gmpforce=no
 customgmp=no
 gmpsrc=$GMPSRC
 gmpconfigureopt=
+gmpcustomversion=6.1.2
 
 if [ "$gmpsrc " = " " ]; then
-  gmpsrc=gmp/gmp-6.1.2.tgz
+  gmpsrc=gmp/gmp-$gmpcustomversion.tgz
 fi  
 
 srfi27force=no
@@ -183,6 +184,7 @@ openssldtls=
 openssltls1=
 openssltls11=
 openssltls12=
+openssltls13=
 opensslrand=
 opensslv2=
 opensslv23=
@@ -269,7 +271,8 @@ customgc=yes
 #gccustom=gc-7.3alpha3-20130330
 #gccustom=gc-7.5.0-27may2016
 #gccustom=gc-7.6.2
-gccustom=gc-8.0.2
+#gccustom=gc-8.0.2
+gccustom=gc-8.0.4
 gcversion=
 gcbump=0
 cgcflags=
@@ -404,7 +407,7 @@ custompcre=
 pcresrc=$PCRESRC
 
 if [ "$pcresrc " = " " ]; then
-  pcreversion=8.39
+  pcreversion=8.43
   pcresrc=pcre/pcre-$pcreversion.tgz
 fi  
 
@@ -922,7 +925,7 @@ while : ; do
       apis=$napis;;
 
     --enable-thread-local-storage)
-      pthreadlocalstorage=yes;;
+      pthreadlocalstorage=;;
 
     --disable-thread-local-storage)
       pthreadlocalstorage=no;;
@@ -1787,6 +1790,8 @@ case $hostos in
         exit 1;
       fi
 
+      cstrip=no
+      strip=no
       ldbuildsharedopt=" -dynamiclib -single_module";
       ldinstallname="-install_name";
       sharedsuffix="dylib";
@@ -1795,6 +1800,13 @@ case $hostos in
       sharedcompiler=yes;
       sharedbde=yes;
       ldflags="$ldflags -dynamiclib -single_module -Wl,-read_only_relocs,suppress";
+      customgmp=yes
+      customgmpmakefile=Makefile.macosx
+      customunistring=yes
+      customlibuv=yes
+      customgc=yes
+      custompcre=yes
+      
       tuning="MacOS X"
     fi
 
@@ -2033,8 +2045,8 @@ else
   fi
 
   # thread local storage
-  if [ "$pthreadlocalstorage" = "yes" -a "$threadsupport " != "no " ]; then
-    pthreaddecl=__thread
+  if [ "$pthreadlocalstorage " != " " -a "$pthreadlocalstorage" != "no" -a "$threadsupport " != "no " ]; then
+    pthreaddecl=$pthreadlocalstorage
     pthreadhastls=1
     gcthread="$gcthread -DUSE_COMPILER_TLS"
   else
@@ -2304,6 +2316,7 @@ if [ "$openssllibs" != "no" ]; then
   openssltls1=`$autoconf openssl-tls1 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   openssltls11=`$autoconf openssl-tls11 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   openssltls12=`$autoconf openssl-tls12 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
+  openssltls13=`$autoconf openssl-tls13 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslrand=`$autoconf openssl-rand --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv2=`$autoconf openssl-v2 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
   opensslv3=`$autoconf openssl-v3 --cflags="$opensslcflags" --lib="$openssllibs"` || exit 1;
@@ -2482,6 +2495,7 @@ if [ "$regexp " = " " ]; then
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
       lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
+      buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
       cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
     else
       pcrelibs=no
@@ -2516,14 +2530,7 @@ featureflags="-srfi enable-$regexp"
 buildlibunistringlibdir=$buildlibdir # dummy existing path
 
 if [ "$unistring " != "no " ]; then
-  if [ "$customunistring " = "yes " ]; then
-    haveunistring=1;
-    featureflags="-srfi enable-unistring $featureflags";
-    extraunistring=unistring
-    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
-    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-  else
+  if [ "$customunistring " != "yes " ]; then
     extraunistring=`$autoconf unistring` || exit 1
     
     if [ "$extraunistring " = "no " -a "$customunistring " != "no " ]; then
@@ -2532,22 +2539,24 @@ if [ "$unistring " != "no " ]; then
   fi
 
   if [ "$customunistring " = "yes " ]; then
+    unistringlibs=yes
+    haveunistring=1;
+    featureflags="-srfi enable-unistring $featureflags";
+    extraunistring=unistring
+    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
+    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+    buildlibdir="$bootdir/libunistring$libdir/$fildir:$buildlibdir"
+    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
     unistringversion=`echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
+    buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
       
     echo "+ Installing custom unistring source code."
     (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
   
     echo "+ Configuring custom unistring..."
     (cd libunistring; . ./configure-unistring) || exit 1
-    
-    unistringlibs=yes
-    extraunistring=unistring
-    libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
-    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
-    buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
   fi
-
+    
   if [ "$extraunistring " = "no " ]; then
     haveunistring=0;
     extraunistring=no
@@ -2794,7 +2803,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   if [ "$customgmp" != "no" ]; then
     havegmp=1;
     featureflags="-srfi enable-gmp $featureflags";
-    extralibs="-lbigloogmp-$release $extralibs"
+    extralibs="-lgmp $extralibs"
+    libgmpbuildpath="\$(BOOTLIBDIR)"
+    gmpversion="`echo $gmpsrc | sed 's|gmp/gmp-||' | sed 's|.tgz||'`"
   elif [ "$gmpversion " = " " ]; then
     gmplib=`$autoconf bgl-pkg-config --libs gmp`;
 
@@ -2979,6 +2990,12 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 
   # Is sigaction available
   sigaction=`$autoconf sigaction` || exit 1
+
+  # Is sigaction available
+  siginfo=`$autoconf siginfo` || exit 1
+
+  # Is sigaction available
+  getrlimit=`$autoconf getrlimit` || exit 1
 
   # Is setenv available for us
   setenv=`$autoconf setenv` || exit 1
@@ -3340,6 +3357,8 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_SIGCHLD@|$sigchld|" \
               -e "s|@HAVE_SETENV@|$setenv|" \
               -e "s|@HAVE_SIGACTION@|$sigaction|" \
+              -e "s|@HAVE_SIGINFO@|$siginfo|" \
+              -e "s|@HAVE_GETRLIMIT@|$getrlimit|" \
               -e "s|@BGL_HAVE_SELECT@|$select|" \
               -e "s|@BGL_HAVE_FCNTL@|$fcntl|" \
               -e "s|@HAVE_TERMIO@|$termio|" \
@@ -3830,11 +3849,11 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   # The GMP library
   if [ "$customgmp " = "yes " ]; then
     echo "GMPCUSTOM=yes" >> $makefile_cfg
-    echo "CUSTOMGMP=$gmpversion" >> $makefile_cfg
     echo "GMP_LD_LIBRARY_PATH=$buildgmplibdir" >> $makefile_cfg
   else
     echo "GMPCUSTOM=no" >> $makefile_cfg
   fi
+  echo "GMPCUSTOMVERSION=$gmpcustomversion" >> $makefile_cfg
   echo >> $makefile_cfg
 
   # The PCRE library
@@ -3934,8 +3953,8 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 
   if [ "$havegmp " = "1 " ]; then
     if [ "$customgmp " = "yes " ]; then
-      ldcompshared="-lbigloogmp_s-\$(RELEASE) $ldcompshared" >> $makefile_cfg
-      ldcompstatic="\$(BOOTLIBDIR)/libbigloogmp-\$(RELEASE).a $ldcompstatic" >> $makefile_cfg
+      ldcompshared="-lgmp $ldcompshared" >> $makefile_cfg
+      ldcompstatic="$libgmpbuildpath/libgmp.a $ldcompstatic" >> $makefile_cfg
     else
       ldcompshared="-lgmp $ldcompshared" >> $makefile_cfg
       ldcompstatic="-lgmp $ldcompstatic" >> $makefile_cfg
@@ -4069,6 +4088,9 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
     if [ "$openssltls12" = "no" ]; then
       tls12=0;
     fi
+    if [ "$openssltls13" = "no" ]; then
+      tls13=0;
+    fi
     if [ "$opensslv2" = "no" ]; then
       sslv2=0;
     fi
@@ -4092,6 +4114,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
 	    -e "s|@HAVETLS1@|$tls1|g" \
 	    -e "s|@HAVETLS1_1@|$tls11|g" \
 	    -e "s|@HAVETLS1_2@|$tls12|g" \
+	    -e "s|@HAVETLS1_3@|$tls13|g" \
             -e "s|@HAVEV2@|$sslv2|g" \
             -e "s|@HAVEV3@|$sslv3|g" \
             -e "s|@HAVEV23@|$sslv23|g" \

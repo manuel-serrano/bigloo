@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/bexit.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/bexit.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 31 15:00:41 1995                          */
-;*    Last change :  Thu Sep 29 11:37:06 2016 (serrano)                */
+;*    Last change :  Sun Aug 25 09:08:06 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `bind-exit' manipulation.                                    */
 ;*=====================================================================*/
@@ -27,6 +27,7 @@
 	    __structure
 	    __bignum
 	    __evaluate
+	    __bit
 	    
 	    __r4_equivalence_6_2
 	    __r4_vectors_6_8

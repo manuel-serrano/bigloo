@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Dec 29 09:31:00 2000                          */
-;*    Last change :  Mon May  7 09:53:26 2018 (serrano)                */
-;*    Copyright   :  2000-18 Manuel Serrano                            */
+;*    Last change :  Sat Apr 13 12:59:11 2019 (serrano)                */
+;*    Copyright   :  2000-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The machine dependent configuration.                             */
 ;*    -------------------------------------------------------------    */
@@ -114,6 +114,8 @@
 	   (macro $configure-os-name::string "OS_NAME")
 	   (macro $configure-os-arch::string "OS_ARCH")
 	   (macro $configure-os-version::string "OS_VERSION")
+	   (macro $configure-thread-local-storage::bool "BGL_HAS_THREAD_LOCALSTORAGE")
+	   (macro $configure-have-spinlock::bool "BGL_HAVE_SPINLOCK")
 	   (macro $cfg-no-gc::long "BGL_NO_GC")
 	   (macro $cfg-boehm-gc::long "BGL_BOEHM_GC")
 	   (macro $cfg-saw-gc::long "BGL_SAW_GC"))
@@ -276,7 +278,9 @@
      (os-class . ,$configure-os-class)
      (os-name . ,$configure-os-name)
      (os-arch . ,$configure-os-arch)
-     (os-version . ,$configure-os-version)))
+     (os-version . ,$configure-os-version)
+     (thread-local-storage . ,(cond-expand (bigloo-c $configure-thread-local-storage) (else #f)))
+     (have-spinlock . ,(cond-expand (bigloo-c $configure-have-spinlock) (else #f)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-config ...                                                */

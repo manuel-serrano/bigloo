@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/os.scm                  */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/os.scm           */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  SERRANO Manuel                                    */
 ;*    Creation    :  Tue Aug  5 10:57:59 1997                          */
-;*    Last change :  Thu Nov 17 16:10:10 2016 (serrano)                */
+;*    Last change :  Thu Mar 14 14:53:53 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Os dependant variables (setup by configure).                     */
 ;*    -------------------------------------------------------------    */
@@ -29,6 +29,7 @@
 	    __thread
 	    __rgc
 	    __bit
+	    __custom
 	    
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum
@@ -130,7 +131,11 @@
 	    (macro $syslog-log-warning::int "LOG_WARNING")
 	    (macro $syslog-log-notice::int "LOG_NOTICE")
 	    (macro $syslog-log-info::int "LOG_INFO")
-	    (macro $syslog-log-debug::int "LOG_DEBUG"))
+	    (macro $syslog-log-debug::int "LOG_DEBUG")
+
+	    ($bgl-dlsym::custom (::bstring ::bstring ::bstring) "bgl_dlsym")
+	    ($bgl-dlsym-get::obj (::custom) "bgl_dlsym_get")
+	    ($bgl-dlsym-set::obj (::custom ::obj) "bgl_dlsym_set"))
 
    (java    (class foreign
 	       (field static *the-command-line*::obj
@@ -174,7 +179,13 @@
 	       (method static %dload-error::string ()
 		  "bgl_dload_error")
 	       (method static $umask::int (::int)
-		  "bgl_umask"))
+		  "bgl_umask")
+	       (method static $bgl-dlsym::custom (::bstring ::bstring ::bstring)
+		  "bgl_dlsym")
+	       (method static $bgl-dlsym-get::obj (::custom)
+		  "bgl_dlsym_get")
+	       (method static $bgl-dlsym-set::obj (::custom ::obj)
+		  "bgl_dlsym_set"))
       
       (class runtime
 	 (field static default-executable-name::string
@@ -253,6 +264,9 @@
 			  (init %dload-init-sym)
 			  (module #f))
 	    (dynamic-unload ::bstring)
+	    (dynamic-load-symbol::obj ::bstring ::bstring #!optional module)
+	    (inline dynamic-load-symbol-get::obj ::custom)
+	    (inline dynamic-load-symbol-set::obj ::custom ::obj)
 	    (unix-path->list::pair-nil ::bstring)
 	    (getuid::int)
 	    (setuid ::int)
@@ -1043,7 +1057,26 @@
       (if (not (string? flib))
 	  (error "dynamic-unload" "Can't find library" lib)
 	  (=fx (%dunload flib) 0))))
-   
+
+;*---------------------------------------------------------------------*/
+;*    dynamic-load-symbol ...                                          */
+;*---------------------------------------------------------------------*/
+(define (dynamic-load-symbol lib name #!optional module)
+   (let ((sym (if (string? module) (bigloo-module-mangle name module) name)))
+      ($bgl-dlsym lib name sym)))
+
+;*---------------------------------------------------------------------*/
+;*    dynamic-load-symbol-get ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (dynamic-load-symbol-get sym::custom)
+   ($bgl-dlsym-get sym))
+
+;*---------------------------------------------------------------------*/
+;*    dynamic-load-symbol-set ...                                      */
+;*---------------------------------------------------------------------*/
+(define-inline (dynamic-load-symbol-set sym::custom val::obj)
+   ($bgl-dlsym-set sym val))
+
 ;*---------------------------------------------------------------------*/
 ;*    unix-path->list ...                                              */
 ;*---------------------------------------------------------------------*/

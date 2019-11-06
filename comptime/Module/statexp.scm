@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/statexp.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/statexp.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 10:58:45 1996                          */
-;*    Last change :  Wed Nov 21 07:29:46 2012 (serrano)                */
-;*    Copyright   :  1996-2012 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Sun Apr 14 08:20:20 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The static clauses compilation.                                  */
 ;*=====================================================================*/

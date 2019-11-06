@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Ast/venv.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Ast/venv.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Dec 25 11:32:49 1994                          */
-;*    Last change :  Sat Feb 13 18:39:58 2016 (serrano)                */
+;*    Last change :  Sun Apr 14 08:04:18 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The global environment manipulation                              */
 ;*=====================================================================*/
@@ -286,13 +286,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    warning-override-global! ...                                     */
 ;*---------------------------------------------------------------------*/
-(define (warning-override-global! n o . msg)
+(define (warning-override-global! n o srce)
    (when (and (>fx (bigloo-warning) 0) *warning-overriden-variables*)
       (with-access::global o (id module src)
-	 (let ((loc (find-location src))
+	 (let ((loc (or (find-location src) (find-location srce)))
 	       (old `(@ ,id ,module))
 	       (new `(@ ,(global-id n) ,(global-module n)))
-	       (msg (if (pair? msg) (car msg) "Variable overridden by")))
+	       (msg "Variable overridden by"))
 	    (if loc
 		(user-warning/location loc old msg new)
 		(user-warning old msg new))))))
@@ -374,13 +374,13 @@
 		       ((eq? (global-module (car old*)) *module*)
 			;; hidden by a local variable
 			(if (and (not (eq? ident mid)) (not *lib-mode*))
-			    (warning-override-global! (car old*) new))
+			    (warning-override-global! (car old*) new src))
 			(set-cdr! (cdr bucket) (cons new (cddr bucket)))
 			new)
 		       (else
 			(let ((new* (cons new old*)))
 			   (if (and (not (eq? ident mid)) (not *lib-mode*))
-			       (warning-override-global! new (car old*)))
+			       (warning-override-global! new (car old*) src))
 			   (set-cdr! bucket new*)
 			   new))))))))))
 

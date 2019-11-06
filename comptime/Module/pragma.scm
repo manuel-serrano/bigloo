@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/pragma.scm           */
+;*    .../prgm/project/bigloo/bigloo/comptime/Module/pragma.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jun  7 08:44:07 1996                          */
-;*    Last change :  Thu Aug  3 08:40:42 2017 (serrano)                */
-;*    Copyright   :  1996-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu May  9 09:38:02 2019 (serrano)                */
+;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The pragma clause compilation                                    */
 ;*=====================================================================*/
@@ -46,7 +46,8 @@
    (lambda (clause)
       (match-case clause
 	 ((?- . ?protos)
-	  (for-each (lambda (proto) (pragma-parser proto module clause))
+	  (for-each (lambda (proto)
+		       (pragma-parser proto module clause))
 		    protos)
 	  '())
 	 (else
@@ -58,7 +59,11 @@
 (define (pragma-parser proto module clause)
    (match-case proto
       (((and ?id (? symbol?)) . ?prop)
-       (set! *pragma-list* (cons (list id module prop clause) *pragma-list*)))
+       (set! *pragma-list*
+	  (let ((prag (if (epair? proto)
+			  (econs id (list module prop clause) (cer proto))
+			  (list id module prop clause))))
+	     (cons prag *pragma-list*))))
       (else
        (user-error "pragma" "Illegal clause" clause '()))))
 
@@ -79,9 +84,12 @@
 					 global
 					 (find-global/module id 'foreign)))))
 		       (if (not (global? global))
-			   (warning `(@ ,id ,module)
-				    "Can't find global variable for pragma -- "
-				    pragma)
+			   (when (eq? module *module*)
+			      (user-warning/location
+				 (find-location pragma)
+				 "pragma"
+				 "Can't find global variable for pragma"
+				 `(@ ,id ,module)))
 			   (set-pragma-properties! global prop* clause))))
 		   (else
 		    (internal-error "pragma-finalizer"
@@ -95,7 +103,8 @@
 ;*    set-pragma-properties! ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (set-pragma-properties! global prop* clause)
-   (for-each (lambda (prop) (set-pragma-property! global prop clause))
+   (for-each (lambda (prop)
+		(set-pragma-property! global prop clause))
 	     prop*))
  
 ;*---------------------------------------------------------------------*/
@@ -173,6 +182,13 @@
 	      (when (or (sfun? val) (cfun? val))
 		 (global-pragma-set! global
 		    (cons 'default-inline
+		       (global-pragma global))))))
+	  ((thread-local)
+	   ;; thread local variable
+	   (let ((val (global-value global)))
+	      (unless (or (sfun? val) (cfun? val))
+		 (global-pragma-set! global
+		    (cons 'thread-local
 		       (global-pragma global))))))
 	  (else
 	   (user-error "Parse error" "Illegal \"pragma\" form" clause '()))))

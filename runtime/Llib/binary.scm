@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/binary.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/binary.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  7 10:38:25 1994                          */
-;*    Last change :  Sun Sep  9 12:19:45 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:08:39 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Les entrees/sorties compactees des objets Scheme (eventuellement */
 ;*    circulaires).                                                    */
@@ -28,6 +28,7 @@
 	    __tvector
 	    __bignum
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

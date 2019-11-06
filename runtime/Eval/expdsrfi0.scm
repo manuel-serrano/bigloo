@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdsrfi0.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdsrfi0.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Feb 24 15:25:03 1999                          */
-;*    Last change :  Mon May 23 16:18:16 2016 (serrano)                */
-;*    Copyright   :  2001-16 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:15:32 2019 (serrano)                */
+;*    Copyright   :  2001-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The expander for srfi forms.                                     */
 ;*=====================================================================*/
@@ -46,7 +46,8 @@
    
    (use     __type
 	    __evenv
-	    __configure)
+	    __configure
+	    __bit)
    
    (extern  ($bigloo-backend::string () "bigloo_backend")
 	    (export register-eval-srfi! "bgl_register_eval_srfi"))

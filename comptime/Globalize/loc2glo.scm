@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/loc2glo.scm       */
+;*    .../project/bigloo/bigloo/comptime/Globalize/loc2glo.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 27 11:39:39 1995                          */
-;*    Last change :  Tue Dec 19 11:27:18 2017 (serrano)                */
-;*    Copyright   :  1995-2017 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jun 12 10:34:47 2019 (serrano)                */
+;*    Copyright   :  1995-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `local' -> `global' transformation.                          */
 ;*=====================================================================*/
@@ -52,6 +52,8 @@
 	  (info      (local-value local))
 	  (new-body  (sfun/Ginfo-new-body info))
 	  (kaptured  (sfun/Ginfo-kaptured info)))
+      (trace (globalize 2) "local->global " (shape local) " escaping: "
+	 (local/Ginfo-escape? local) #\Newline)
       (if (local/Ginfo-escape? local)
 	  (fix-escaping-definition global local args kaptured new-body)
 	  (fix-non-escaping-definition global local args kaptured new-body))
@@ -193,6 +195,8 @@
 ;*---------------------------------------------------------------------*/
 (define (fix-non-escaping-definition global local args kaptured body)
    (let* ((add-args (map (lambda (old)
+			    (trace (globalize 2) "arg=" (shape old)
+			       " access=" (local-access old) #\Newline)
 			    (let ((new (make-local-svar
 					  (local-id old)
 					  (local-type old))))
@@ -201,10 +205,15 @@
 			       (widen!::svar/Ginfo (local-value new)
 				  (kaptured? #t))
 			       ;; MS: 24oct2016
-			       (when (eq? (local-access old) 'write)
-				  ;; MS: 19Decl2017
-				  (local-type-set! new *cell*)
-				  (local-access-set! new 'cell-globalize))
+			       (case (local-access old)
+				  ((write)
+				   ;; MS: 19Decl2017
+				   (local-type-set! new *cell*)
+				   (local-access-set! new 'cell-globalize))
+				  ((cell-globalize)
+				   ;; MS: 12Jun2019
+				   (local-type-set! new *cell*)
+				   (local-access-set! new 'cell-globalize)))
 			       ;;(local-access-set! new (local-access old))
 			       new))
 			 kaptured))

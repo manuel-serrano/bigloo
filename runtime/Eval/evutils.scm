@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evutils.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/evutils.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jul 30 08:07:53 2010                          */
-;*    Last change :  Sat Sep  7 09:28:41 2013 (serrano)                */
-;*    Copyright   :  2010-13 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:16:17 2019 (serrano)                */
+;*    Copyright   :  2010-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Utility functions for eval                                       */
 ;*=====================================================================*/
@@ -44,7 +44,8 @@
 	    __r4_output_6_10_3
 	    
 	    __evenv
-	    __macro)
+	    __macro
+	    __bit)
    
    (export  (parse-formal-ident ::obj ::obj)
 	    (args->list ::obj)

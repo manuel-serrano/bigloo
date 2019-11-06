@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/recette/vector.scm                   */
+;*    serrano/prgm/project/bigloo/bigloo/recette/vector.scm            */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Nov  3 09:39:09 1992                          */
-;*    Last change :  Tue Oct  7 13:39:50 2014 (serrano)                */
+;*    Last change :  Wed Mar 13 07:13:58 2019 (serrano)                */
 ;*                                                                     */
 ;*    On test les operations primitives sur les vecteurs               */
 ;*---------------------------------------------------------------------*/
@@ -104,5 +104,38 @@
       (vector-copy! v 2 v 0 6)
       (test "vector-copy! with from and to being the same vector and the range is overlapped"
          v '#(1 2 1 2 3 4 1 2)))
-
+   
+   (let ((n 0))
+      (vector-for-each (lambda (x) (set! n (+ n x))) '#(0 1 2))
+      (test "vector-for-each.1" n 3))
+   (let ((n 0))
+      ((car (list vector-for-each)) (lambda (x) (set! n (+ n x))) '#(0 1 2))
+      (test "vector-for-each.1" n 3))
+   
+   (let ((n 0))
+      (vector-for-each (lambda (x y) (set! n (+ n (+ x y)))) '#(0 1 2) '#(1 2 3))
+      (test "vector-for-each.2" n 9))
+   (let ((n 0))
+      ((car (list vector-for-each)) (lambda (x y) (set! n (+ n (+ x y)))) '#(0 1 2) '#(1 2 3))
+      (test "vector-for-each.2" n 9))
+   
+   (let ((v (vector-map (lambda (x) (+ 1 x)) '#(0 1 2))))
+      (test "vector-map.1" v '#(1 2 3)))
+   (let ((v ((car (list vector-map)) (lambda (x) (+ 1 x)) '#(0 1 2))))
+      (test "vector-map.1" v '#(1 2 3)))
+   
+   (let ((v (vector-map (lambda (x y) (+ x y)) '#(0 1 2) '#(1 2 3))))
+      (test "vector-map.2" v '#(1 3 5)))
+   (let ((v ((car (list vector-map)) (lambda (x y) (+ x y)) '#(0 1 2) '#(1 2 3))))
+      (test "vector-map.2" v '#(1 3 5)))
+   
+   (let ((v (vector-map! (lambda (x) (+ 1 x)) (vector 0 1 2))))
+      (test "vector-map!.1" v '#(1 2 3)))
+   (let ((v ((car (list vector-map!)) (lambda (x) (+ 1 x)) (vector 0 1 2))))
+      (test "vector-map!.1" v '#(1 2 3)))
+   
+   (let ((v (vector-map! (lambda (x y) (+ x y)) (vector 0 1 2) '#(1 2 3))))
+      (test "vector-map!.2" v '#(1 3 5)))
+   (let ((v ((car (list vector-map!)) (lambda (x y) (+ x y)) (vector 0 1 2) '#(1 2 3))))
+      (test "vector-map!.2" v '#(1 3 5)))
    )

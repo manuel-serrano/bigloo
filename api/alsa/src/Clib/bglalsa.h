@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/api/alsa/src/Clib/bglalsa.h          */
+/*    .../prgm/project/bigloo/bigloo/api/alsa/src/Clib/bglalsa.h       */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Jun 23 18:06:29 2011                          */
-/*    Last change :  Mon Oct 24 14:06:19 2016 (serrano)                */
-/*    Copyright   :  2011-16 Manuel Serrano                            */
+/*    Last change :  Mon Mar  4 08:23:20 2019 (serrano)                */
+/*    Copyright   :  2011-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Prototype of the Bigloo specific alsa functions                  */
 /*=====================================================================*/
@@ -44,6 +44,9 @@ extern obj_t bgl_snd_devices_list( char * );
 
 extern int bgl_snd_ctl_open( obj_t, char *, int );
 extern void bgl_snd_ctl_card_info_init( obj_t );
+
+extern int bgl_snd_ctl_rawmidi_next_device( obj_t, int );
+extern void bgl_snd_ctl_rawmidi_info_init( obj_t );
 
 extern int bgl_snd_mixer_open( obj_t );
 

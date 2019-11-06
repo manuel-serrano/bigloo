@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdrecord.scm          */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdrecord.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Sven Hartrumpf                                    */
 ;*    Creation    :  Thu Mar 30 08:02:33 2000                          */
-;*    Last change :  Tue Apr 17 07:47:43 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:15:44 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    SRFI-9 Record expansion.                                         */
 ;*    -------------------------------------------------------------    */
@@ -48,7 +48,8 @@
 	    __progn)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (expand-define-record-type x e)))
 

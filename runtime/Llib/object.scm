@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Apr 25 14:20:42 1996                          */
-;*    Last change :  Wed May  9 12:00:41 2018 (serrano)                */
+;*    Last change :  Mon Sep 23 18:07:46 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The `object' library                                             */
 ;*    -------------------------------------------------------------    */
@@ -47,9 +47,9 @@
 	    __pp_circle
 	    __evenv)
 
-   (extern  (macro object-widening::obj (::object)
+   (extern  (macro $object-widening::obj (::object)
 		   "BGL_OBJECT_WIDENING")
-	    (macro object-widening-set!::obj (::object ::obj)
+	    (macro $object-widening-set!::obj (::object ::obj)
 		   "BGL_OBJECT_WIDENING_SET")
 	    
 	    (macro object-header-size::long (::obj)
@@ -136,9 +136,9 @@
 		  "bigloo_generic_mutex")
 	       (field static %object-type-number::long
 		  "OBJECT_TYPE")
-	       (method static object-widening::obj (::object)
+	       (method static $object-widening::obj (::object)
 		  "BGL_OBJECT_WIDENING")
-	       (method static object-widening-set!::obj (::object ::obj)
+	       (method static $object-widening-set!::obj (::object ::obj)
 		  "BGL_OBJECT_WIDENING_SET")
 	       (method static %object?::bool (::obj)
 		  "BGL_OBJECTP")
@@ -240,6 +240,8 @@
 	    
 	    (class &process-exception::&error)
 	    
+	    (class &stack-overflow-error::&error)
+	    
 	    (class &security-exception::&exception
 	       (message::bstring read-only (default "")))
 	    (class &access-control-exception::&security-exception
@@ -250,7 +252,9 @@
 	       (args read-only))
 	    (class &eval-warning::&warning)
 
+	    (inline bigloo-generic-bucket-pow::int)
 	    (inline bigloo-generic-bucket-size::int)
+	    (inline bigloo-generic-bucket-mask::int)
 	    (bigloo-types-number::long)
 	    *classes*
 	    (inline object?::bool ::obj)
@@ -324,6 +328,8 @@
 	    (call-virtual-setter ::object ::int ::obj)
 	    (call-next-virtual-getter ::obj ::object ::int)
 	    (call-next-virtual-setter ::obj ::object ::int ::obj)
+	    (inline object-widening::obj ::object)
+	    (inline object-widening-set!::obj ::object ::obj)
 	    (%object-widening::obj ::object)
 	    (%object-widening-set!::obj ::object ::obj)
 	    (generic-memory-statistics))
@@ -384,7 +390,12 @@
 ;*    the generic vectors to be a multiple of                          */
 ;*    BIGLOO-GENERIC-BUCKET-SIZE.                                      */
 ;*---------------------------------------------------------------------*/
-(define-inline (bigloo-generic-bucket-size) 16)
+(define-inline (bigloo-generic-bucket-pow)
+   4)
+(define-inline (bigloo-generic-bucket-size)
+   (bit-lsh 1 (bigloo-generic-bucket-pow)))
+(define-inline (bigloo-generic-bucket-mask)
+   (-fx (bigloo-generic-bucket-size) 1))
 
 ;*---------------------------------------------------------------------*/
 ;*    bigloo-types-number ...                                          */
@@ -855,11 +866,15 @@
 
 ;*---------------------------------------------------------------------*/
 ;*    method-array-ref ...                                             */
+;*    -------------------------------------------------------------    */
+;*    For some values of X and Y, on 64-bit machines it might be       */
+;*    faster to compute the division and the rest and 32-bit values    */
+;*    instead of 64-bit values.                                        */
 ;*---------------------------------------------------------------------*/
 (define-inline (method-array-ref generic::procedure array::vector offset::int)
    (let* ((offset (-fx offset %object-type-number))
-	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
-	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
+	  (mod (bit-rsh offset (bigloo-generic-bucket-pow)))
+	  (rest (bit-and offset (bigloo-generic-bucket-mask))))
       (let ((bucket (vector-ref-ur array mod)))
 	 (vector-ref-ur bucket rest))))
 
@@ -868,8 +883,14 @@
 ;*---------------------------------------------------------------------*/
 (define (method-array-set! generic array offset method)
    (let* ((offset (-fx offset %object-type-number))
-	  (mod (quotientfx offset (bigloo-generic-bucket-size)))
-	  (rest (remainderfx offset (bigloo-generic-bucket-size))))
+	  (mod (uint32->fixnum
+		  (quotientu32
+		     (fixnum->uint32 offset)
+		     (fixnum->uint32 (bigloo-generic-bucket-size)))))
+	  (rest (uint32->fixnum
+		   (remainderu32
+		      (fixnum->uint32 offset)
+		      (fixnum->uint32 (bigloo-generic-bucket-size))))))
       (let ((bucket (vector-ref-ur array mod)))
 	 (if (or (eq? method (generic-default generic))
 		 (not (eq? bucket (generic-default-bucket generic))))
@@ -1016,7 +1037,7 @@
 ;*---------------------------------------------------------------------*/
 (define (make-method-array def-bucket::vector)
    (let ((s (quotientfx *nb-classes-max* (bigloo-generic-bucket-size)))
-	 (a (remainder *nb-classes-max* (bigloo-generic-bucket-size))))
+	 (a (remainderfx *nb-classes-max* (bigloo-generic-bucket-size))))
       (if (>fx a 0)
 	  (begin
 	     (warning "make-method-array"
@@ -1455,6 +1476,19 @@
 (define (call-next-virtual-setter class obj::object num::int value)
    (let ((next-class (class-super class)))
       ((cdr (vector-ref-ur (class-virtual next-class) num)) obj value)))
+
+;*---------------------------------------------------------------------*/
+;*    object-widening ...                                              */
+;*---------------------------------------------------------------------*/
+(define-inline (object-widening o)
+   ($object-widening o))
+
+;*---------------------------------------------------------------------*/
+;*    object-widening-set! ...                                         */
+;*---------------------------------------------------------------------*/
+(define-inline (object-widening-set! o v)
+   ($object-widening-set! o v)
+   o)
 
 ;*---------------------------------------------------------------------*/
 ;*    %object-widening ...                                             */

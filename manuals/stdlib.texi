@@ -1793,6 +1793,13 @@ Examples:
 
 @end deffn
 
+@deffn {bigloo procedure} vector-for-each proc vector @dots{}
+Apply @var{proc} to all the elements of the @var{vectors}. The arity
+of @var{proc} must be the number of passed vectors. All vectors
+must have the same length. The procedure is applied from elements
+of index @code{0} to @code{(vector-length vector) - 1}.
+@end deffn
+
 @deffn {bigloo procedure} vector-map proc vector @dots{}
 @deffnx {bigloo procedure} vector-map! proc vector @dots{}
 

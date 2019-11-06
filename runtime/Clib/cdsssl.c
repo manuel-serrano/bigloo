@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  SERRANO Manuel                                    */
 /*    Creation    :  Thu Apr  3 11:37:14 1997                          */
-/*    Last change :  Tue Apr 17 08:00:11 2018 (serrano)                */
+/*    Last change :  Sat Jun  8 09:40:59 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C Dsssl support.                                                 */
 /*=====================================================================*/
@@ -38,10 +38,12 @@ void bgl_init_keyword_table() {
 }
            
 /*---------------------------------------------------------------------*/
-/*    make_keyword ...                                                 */
+/*    bgl_make_keyword ...                                             */
+/*    -------------------------------------------------------------    */
+/*    This function is exported for bmem profiling.                    */
 /*---------------------------------------------------------------------*/
-static obj_t
-make_keyword( obj_t name ) {
+BGL_RUNTIME_DEF obj_t
+bgl_make_keyword( obj_t name ) {
    obj_t keyword;
 
    keyword = GC_MALLOC( KEYWORD_SIZE );
@@ -69,7 +71,7 @@ bstring_to_keyword( obj_t name ) {
    bucket = VECTOR_REF( c_keytab, hash_number );
    
    if( NULLP( bucket ) ) {
-      obj_t keyword = make_keyword( name );
+      obj_t keyword = bgl_make_keyword( name );
       obj_t pair = MAKE_PAIR( keyword, BNIL );
       
       VECTOR_SET( c_keytab, hash_number, pair );
@@ -88,7 +90,7 @@ bstring_to_keyword( obj_t name ) {
          return CAR( run );
       }
       else {
-         obj_t keyword = make_keyword( name );
+         obj_t keyword = bgl_make_keyword( name );
 	 obj_t pair = MAKE_PAIR( keyword, BNIL );
 	 
          SET_CDR( back, pair );

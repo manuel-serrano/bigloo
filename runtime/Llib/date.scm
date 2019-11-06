@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/date.scm                */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/date.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Sat Dec 19 06:57:36 2015 (serrano)                */
-;*    Copyright   :  2003-15 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:09:48 2019 (serrano)                */
+;*    Copyright   :  2003-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -30,6 +30,7 @@
 	    __param
 	    __rgc
 	    __r5_control_features_6_4
+	    __bit
 	    	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

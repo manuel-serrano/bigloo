@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Mon Sep 24 14:53:29 2018 (serrano)                */
+;*    Last change :  Fri Apr 12 11:00:21 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -144,7 +144,8 @@
 	   =>
 	   (lambda (i) (variable->node i loc site)))
 	  (else
-	   (let ((global (find-global atom)))
+	   (let ((global (find-global atom))
+		 (loc (find-location/loc atom loc)))
 	      (cond
 		 ((not (global? global))
 		  (error-sexp->node "Unbound variable" exp loc))
@@ -169,7 +170,8 @@
        (let ((loc (find-location/loc exp loc)))
 	  (match-case exp
 	     ((@ (and (? symbol?) ?name) (and (? symbol?) ?module))
-	      (let ((global (find-global/module name module)))
+	      (let ((global (find-global/module name module))
+		    (loc (find-location/loc name loc)))
 		 (cond
 		    ((not (global? global))
 		     (error-sexp->node "Unbound variable" exp loc))

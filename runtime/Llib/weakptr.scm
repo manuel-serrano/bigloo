@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/weakptr.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/weakptr.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Stephane Epardaud                                 */
 ;*    Creation    :  Wed Dec 13 15:32:17 CET 2006                      */
-;*    Last change :  Fri Feb 18 15:19:28 2011 (serrano)                */
+;*    Last change :  Sun Aug 25 09:09:06 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Weak pointers.                                                   */
 ;*=====================================================================*/
@@ -38,7 +38,8 @@
 	    __r4_output_6_10_3
 	    __r4_ports_6_10_1
 	    __r4_control_features_6_9
-	    __evenv)
+	    __evenv
+	    __bit)
 
    (extern (macro c-weakptr?::bool (::obj)
 		  "BGL_WEAKPTRP")

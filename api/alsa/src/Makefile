@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/alsa/src/Makefile                */
+#*    serrano/prgm/project/bigloo/bigloo/api/alsa/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 09:59:40 2017 (serrano)                */
+#*    Last change :  Thu Mar  7 17:57:28 2019 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -56,7 +56,7 @@ endif
 #*---------------------------------------------------------------------*/
 #*    Scheme extended objects                                          */
 #*---------------------------------------------------------------------*/
-_BGL_OBJECTS	= alsa pcm card control mixer music
+_BGL_OBJECTS	= alsa pcm card control mixer music rawmidi
 
 ifeq "$(ALSALIBS) " " "
 _C_OBJECTS	= 
@@ -139,9 +139,15 @@ $(C_SRC_DIR)/bglctl.h: Llib/control.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
 
 #*---------------------------------------------------------------------*/
-#*    bglmixer.h                                                         */
+#*    bglmixer.h                                                       */
 #*---------------------------------------------------------------------*/
 $(C_SRC_DIR)/bglmixer.h: Llib/mixer.scm
+	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
+
+#*---------------------------------------------------------------------*/
+#*    bglrawmidi.h                                                     */
+#*---------------------------------------------------------------------*/
+$(C_SRC_DIR)/bglrawmidi.h: Llib/rawmidi.scm
 	$(BIGLOO) $(EFLAGS) $(BAPIFLAGS) -copt $(CPICFLAGS) -copt "-I$(C_SRC_DIR)" -copt "$(CEFLAGS)" $< -o $@ -hgen
 
 #*---------------------------------------------------------------------*/
@@ -157,6 +163,7 @@ clean: api-clean
 	$(RM) -f $(C_SRC_DIR)/bglpcm.h
 	$(RM) -f $(C_SRC_DIR)/bglctl.h
 	$(RM) -f $(C_SRC_DIR)/bglmixer.h
+	$(RM) -f $(C_SRC_DIR)/bglrawmidi.h
 
 cleanall: api-cleanall
 
@@ -172,7 +179,8 @@ include ../../Makefile.api
 #*---------------------------------------------------------------------*/
 $(C_SRC_DIR)/bglalsa.c: $(C_SRC_DIR)/bglpcm.h \
   $(C_SRC_DIR)/bglctl.h \
-  $(C_SRC_DIR)/bglmixer.h
+  $(C_SRC_DIR)/bglmixer.h \
+  $(C_SRC_DIR)/bglrawmidi.h
 
 #bdepend start (don't edit)
 #*---------------------------------------------------------------------*/

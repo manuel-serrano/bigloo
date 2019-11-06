@@ -1,20 +1,21 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/gmp/configure-gmp                    */
+#*    serrano/prgm/project/bigloo/bigloo/gmp/configure-gmp             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Mon Oct  2 08:28:03 2017 (serrano)                */
-#*    Copyright   :  2009-17 Manuel Serrano                            */
+#*    Last change :  Tue May 28 08:24:05 2019 (serrano)                */
+#*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the GC.                                 */
 #*=====================================================================*/
 
-echo "configure gmp with \"CC=$cc ./configure $gmpconfigureopt\"" >> ../configure.log
+echo "configure gmp with \"CC=$cc ./configure --libdir=$bootdir/lib/bigloo/$release --includedir=$bootdir/lib/bigloo/$release $gmpconfigureopt\"" >> ../configure.log
 
-(cd $gmpversion && \
+src=$gmpversion
+(cd $src && \
  export CC=$cc && \
- ./configure $gmpconfigureopt 2>&1 >> ../../configure.log && \
+ ./configure --libdir=$bootdir/lib/bigloo/$release --includedir=$bootdir/lib/bigloo/$release $gmpconfigureopt 2>&1 >> ../../configure.log && \
  cp gmp.h $bootdir/lib/bigloo/$release || \
  (echo "configure gmp fail, see configure.log file." && exit 1)) || exit 1
 

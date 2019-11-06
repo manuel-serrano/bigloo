@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:24:40 1995                          */
-;*    Last change :  Sun Sep 23 16:15:32 2018 (serrano)                */
+;*    Last change :  Sat Jun 15 08:43:30 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The bigloo runtime utility functions                             */
 ;*=====================================================================*/
@@ -94,13 +94,13 @@
 	    (macro procedure-el-ref::obj (::procedure-el ::int)
 		   "PROCEDURE_EL_REF")
 	    
-	    (macro make-cell::obj (::obj)
+	    (macro $make-cell::cell (::obj)
 		   "MAKE_YOUNG_CELL")
-	    (macro cell-set!::obj (::obj ::obj)
+	    (macro $cell-set!::obj (::cell ::obj)
 		   "CELL_SET")
-	    (macro cell-ref::obj (::obj)
+	    (macro $cell-ref::obj (::cell)
 		   "CELL_REF")
-	    (macro cell?::bool (::obj)
+	    (macro $cell?::bool (::obj)
 		   "CELLP")
 	    
 	    (macro c-cnst?::bool (::obj)
@@ -207,13 +207,13 @@
 	       (method static procedure-el-ref::obj (::procedure-el ::int)
 		       "PROCEDURE_EL_REF")
 	       
-	       (method static make-cell::cell (::obj)
+	       (method static $make-cell::cell (::obj)
 		       "MAKE_CELL")
-	       (method static cell-set!::obj (::cell ::obj)
+	       (method static $cell-set!::obj (::cell ::obj)
 		       "CELL_SET")
-	       (method static cell-ref::obj (::cell)
+	       (method static $cell-ref::obj (::cell)
 		       "CELL_REF")
-	       (method static cell?::bool (::obj)
+	       (method static $cell?::bool (::obj)
 		       "CELLP")
 	       
 	       (method static c-cnst?::bool (::obj)
@@ -279,7 +279,12 @@
 	    (bmem-reset!)
 	    
 	    (time::obj ::procedure)
-	    (bigloo-gc-verbose-set! ::bool))
+	    (bigloo-gc-verbose-set! ::bool)
+
+	    (inline make-cell::cell ::obj)
+	    (inline cell? ::obj)
+	    (inline cell-ref ::cell)
+	    (inline cell-set! ::cell ::obj))
 
    (pragma  (cnst-table-ref no-alloc fail-safe)
 	    (c-procedure-light? nesting fail-safe)
@@ -297,6 +302,9 @@
 	    (procedure-l-ref nesting args-safe fail-safe)
 	    (procedure-el-set! nesting args-safe fail-safe)
 	    (procedure-el-ref nesting args-safe fail-safe)
+	    ($cell? (predicate-of cell) nesting fail-safe)
+	    ($cell-set! nesting args-safe fail-safe)
+	    ($cell-ref nesting  args-safe fail-safe)
 	    (cell? (predicate-of cell) nesting fail-safe)
 	    (cell-set! nesting args-safe fail-safe)
 	    (cell-ref nesting  args-safe fail-safe)
@@ -681,3 +689,26 @@
       (bigloo-c ($bgl-gc-verbose-set! proc))
       (else #f)))
    
+;*---------------------------------------------------------------------*/
+;*    make-cell ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-inline (make-cell val)
+   ($make-cell val))
+
+;*---------------------------------------------------------------------*/
+;*    cell? ...                                                        */
+;*---------------------------------------------------------------------*/
+(define-inline (cell? obj)
+   ($cell? obj))
+
+;*---------------------------------------------------------------------*/
+;*    cell-ref ...                                                     */
+;*---------------------------------------------------------------------*/
+(define-inline (cell-ref cell)
+   ($cell-ref cell))
+
+;*---------------------------------------------------------------------*/
+;*    cell-set! ...                                                    */
+;*---------------------------------------------------------------------*/
+(define-inline (cell-set! cell val)
+   ($cell-set! cell val))

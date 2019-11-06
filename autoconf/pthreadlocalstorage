@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/pthreadlocalstorage         */
+#*    .../prgm/project/bigloo/bigloo/autoconf/pthreadlocalstorage      */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 13:27:23 1995                          */
-#*    Last change :  Wed Dec 16 06:45:23 2015 (serrano)                */
+#*    Last change :  Fri Apr 12 07:59:46 2019 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Check if the host supports pthread local storage.                */
 #*=====================================================================*/
@@ -42,7 +42,8 @@ aout=$TMP/Xactest$USER
 #*---------------------------------------------------------------------*/
 #*    compile                                                          */
 #*---------------------------------------------------------------------*/
-compile="$CC $cflags $file.c -o $aout $pthreadlibs >/dev/null"
+compile_thread_local="$CC $cflags $file.c -DTLS=thread_local -o $aout $pthreadlibs >/dev/null"
+compile__thread="$CC $cflags $file.c -DTLS=__thread -o $aout $pthreadlibs >/dev/null"
 
 #*---------------------------------------------------------------------*/
 #*    The test C file                                                  */
@@ -58,7 +59,7 @@ cat > $file.c <<EOF
 #include <pthread.h>
 #include <stdio.h>
 
-static __thread int tls;
+static TLS int tls;
 
 main( int argc, char *argv[] ) {
 #if defined( __GNUC__ )
@@ -93,10 +94,12 @@ EOF
 #*---------------------------------------------------------------------*/
 #*    Compilation test                                                 */
 #*---------------------------------------------------------------------*/
-if eval "$BUILDSH $compile"; then
-   echo "yes"
+if eval "$BUILDSH $compile_thread_local"; then
+   echo "thread_local"
+elif eval "$BUILDSH $compile__thread"; then
+   echo "__thread"
 else
-   echo "no"
+   echo ""
 fi
 
 \rm -f $file.*

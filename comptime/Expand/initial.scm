@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Dec 28 15:41:05 1994                          */
-;*    Last change :  Sun Sep 30 11:50:12 2018 (serrano)                */
-;*    Copyright   :  1994-2018 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Mar 13 06:52:06 2019 (serrano)                */
+;*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    Initial compiler expanders.                                      */
 ;*=====================================================================*/
@@ -554,7 +554,12 @@
 				 res))))
 		 ,v)
 	     e))))
-   
+
+   ;; vector-for-each
+   (install-O-comptime-expander 'vector-for-each expand-vector-for-each)
+   (install-O-comptime-expander 'vector-map expand-vector-map)
+   (install-O-comptime-expander 'vector-map! expand-vector-map!)
+
    ;; make-vector
    (install-O-comptime-expander
     'make-vector

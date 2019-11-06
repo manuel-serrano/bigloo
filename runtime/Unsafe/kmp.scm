@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Unsafe/kmp.scm               */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Unsafe/kmp.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Apr 10 13:43:22 2006                          */
-;*    Last change :  Sun Mar 13 08:59:18 2016 (serrano)                */
-;*    Copyright   :  2006-16 Manuel Serrano                            */
+;*    Last change :  Sun Aug 25 09:18:21 2019 (serrano)                */
+;*    Copyright   :  2006-19 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    "Knuth, Morris, and Pratt" search algorithm implementation.      */
 ;*=====================================================================*/
@@ -25,6 +25,8 @@
 	   __object
 	   __thread
 	   __bignum
+	   __bit
+	   
 	   __r4_numbers_6_5
 	   __r4_numbers_6_5_fixnum
 	   __r4_numbers_6_5_flonum

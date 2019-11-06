@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdtry.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expdtry.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel SERRANO                                    */
 ;*    Creation    :  Tue Sep  1 16:21:59 1992                          */
-;*    Last change :  Tue Aug 13 07:21:16 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:14:23 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Try form expansion                                               */
 ;*=====================================================================*/
@@ -43,7 +43,8 @@
 	    __expand)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
    
    (export  (expand-try <expression> <expander>)))
 

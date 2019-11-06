@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdquote.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/expdquote.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov  3 09:53:05 1994                          */
-;*    Last change :  Tue Aug 13 07:27:19 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:15:18 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    L'expansion des formes `',@                                      */
 ;*=====================================================================*/
@@ -42,7 +42,8 @@
 	    __expand)
    
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
     
    (export  (expand-quote   <expr> <expander>)
 	    (quasiquotation <integer> <expr>)))

@@ -105,6 +105,7 @@ bglpkg/configure.scm
 api/alsa/src/Clib/bglctl.h
 api/alsa/src/Clib/bglmixer.h
 api/alsa/src/Clib/bglpcm.h
+api/alsa/src/Clib/bglrawmidi.h
 api/alsa/src/Misc/alsa.init
 
 # avahi
@@ -188,6 +189,8 @@ gc/gc-7.6.2
 gc/gc-7.6.2_fth
 gc/gc-8.0.2
 gc/gc-8.0.2_fth
+gc/gc-8.0.4
+gc/gc-8.0.4_fth
 
 # libuv
 libuv/libuv-1.x-24jan2015/

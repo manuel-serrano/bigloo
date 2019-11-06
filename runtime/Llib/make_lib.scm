@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Llib/make_lib.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Llib/make_lib.scm     */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Jan  8 10:11:38 1995                          */
-;*    Last change :  Thu Apr 20 09:28:21 2017 (serrano)                */
+;*    Last change :  Tue Apr  9 12:33:31 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The construction of the library                                  */
 ;*=====================================================================*/
@@ -91,8 +91,11 @@
 	    (call-with-eval-module __evmodule)
 	    
 	    (register-eval-srfi! __expander_srfi0)
+	    (unregister-eval-srfi! __expander_srfi0)
 	    (register-compile-srfi! __expander_srfi0)
+	    (unregister-compile-srfi! __expander_srfi0)
 	    (register-srfi! __expander_srfi0)
+	    (unregister-srfi! __expander_srfi0)
 	    (eval-srfi? __expander_srfi0)
 	    (compile-srfi? __expander_srfi0)
 	    (expand-compile-cond-expand __expander_srfi0)

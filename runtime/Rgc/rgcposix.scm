@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Rgc/rgcposix.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Rgc/rgcposix.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Olin Shivers                                      */
 ;*    Creation    :  Fri Sep 18 14:40:45 1998                          */
-;*    Last change :  Tue Apr 17 07:39:38 2012 (serrano)                */
+;*    Last change :  Sun Aug 25 09:12:13 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Parse Spencer-style regexps into a Bigloo RGC expressions.       */
 ;*=====================================================================*/
@@ -25,6 +25,7 @@
 	    __bexit
 	    __bignum
 	    __rgc
+	    __bit
 	    
 	    __r4_numbers_6_5
 	    __r4_numbers_6_5_fixnum

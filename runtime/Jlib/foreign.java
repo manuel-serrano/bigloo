@@ -5793,6 +5793,22 @@ public final class foreign
 	 return bigloo.dlopen.dload_error();
       }
 
+   public static custom bgl_dlsym( byte[] filename, byte[] id, byte[] mod ) {
+      // MS 12mar2019: TODO
+      return bgl_custom_nil();
+   }
+
+   public static Object bgl_dlsym_get( custom obj ) {
+      // MS 12mar2019: TODO
+      return BFALSE;
+   }
+
+   public static Object bgl_dlsym_set( custom obj, Object val ) {
+      // MS 12mar2019: TODO
+      return BFALSE;
+   }
+
+   
    //////
    // SOCKET
    //////
@@ -6044,7 +6060,7 @@ public final class foreign
       return o;
    }
 
-   public static regexp bgl_regcomp(byte[] pat, Object opt_args ) {
+   public static regexp bgl_regcomp(byte[] pat, Object opt_args, boolean finalize ) {
       return new regexp(pat,true);
    }
 

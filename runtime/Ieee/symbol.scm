@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Ieee/symbol.scm              */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Ieee/symbol.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sat Jul  4 15:05:26 1992                          */
-;*    Last change :  Sun Feb  2 10:18:38 2014 (serrano)                */
+;*    Last change :  Sun Aug 25 09:19:14 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.4. Symbols (page 18, r4)                                       */
 ;*=====================================================================*/
@@ -20,6 +20,8 @@
 	    __bigloo
 	    __object
 	    __thread
+	    __bit
+	    
 	    __r4_control_features_6_9
 	    __r4_numbers_6_5_fixnum
 	    __r4_numbers_6_5_flonum

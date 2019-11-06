@@ -1,9 +1,9 @@
 ;*---------------------------------------------------------------------*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/expdbool.scm            */
+;*    serrano/prgm/project/bigloo/bigloo/runtime/Eval/expdbool.scm     */
 ;*                                                                     */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Mon Jan  4 17:12:21 1993                          */
-;*    Last change :  Tue Aug 13 07:20:59 2013 (serrano)                */
+;*    Last change :  Sun Aug 25 09:13:35 2019 (serrano)                */
 ;*                                                                     */
 ;*    Les expanseurs des formes booleenes.                             */
 ;*---------------------------------------------------------------------*/
@@ -43,7 +43,8 @@
 	    __expand)
 
    (use     __type
-	    __evenv)
+	    __evenv
+	    __bit)
 
    (export  (expand-cond <expression>)))
 
