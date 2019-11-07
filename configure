@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov  7 15:17:48 2019 (serrano)                */
+#*    Last change :  Thu Nov  7 15:32:19 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1656,7 +1656,8 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --tmp="$buildtmp" \
    --user="$user" \
    --cc="$cc" \
-   --cflags="$cflags"
+   --cflags="$cflags" \
+   --echo=$echo
 
 #*---------------------------------------------------------------------*/
 #*    Cross Compilation                                                */
