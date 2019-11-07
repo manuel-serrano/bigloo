@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov  7 15:04:39 2019 (serrano)                */
+#*    Last change :  Thu Nov  7 15:17:48 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1600,6 +1600,7 @@ $autoconfdir/mkruntest $autoconfdir/runtest \
    --log=$configurelog \
    --hostsh="$hostsh" \
    --hostos=$hostos \
+   --echo=$echo \
    --user=""
 
 # Grab the hostos info
