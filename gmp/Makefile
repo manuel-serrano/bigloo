@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue May 28 08:17:50 2019 (serrano)                */
+#*    Last change :  Fri Nov  8 11:52:16 2019 (serrano)                */
 #*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -32,6 +32,7 @@ boot: boot-gmp
 boot-gmp: 
 	$(MAKE) -C $(GMP)
 	$(MAKE) -C $(GMP) install
+	cp $(BOOTLIBDIR)/gmp/lib/* $(BOOTLIBDIR)
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */
@@ -67,7 +68,6 @@ distrib:
 .PHONY: install
 
 install:
-	$(MAKE) -C $(GMP) install
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) install-lib LIB=libgmp; \
           cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
