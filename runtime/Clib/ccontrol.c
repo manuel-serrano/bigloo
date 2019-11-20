@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Apr 17 07:59:26 2018 (serrano)                */
+/*    Last change :  Wed Nov 20 10:55:13 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -341,16 +341,22 @@ opt_generic_entry( obj_t proc, ... ) {
    obj_t runner;
    long i;
    int byte_size;
+   obj_t res;
    
    /* compute the number of arguments */
    va_start( argl, proc );
    while( va_arg( argl, obj_t ) != BEOA ) len++;
    va_end( argl );
    
-   /* Stack allocated the argument vector, see         */
+   /* Stack allocate the argument vector, see          */
    /* cvector.c:create_vector for regular vector alloc */
    byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
+
+#if( __APPLE__ == 1 && __APPLE_CC__ >= 6000 )    
+   args = (obj_t)malloc( byte_size );
+#else   
    args = (obj_t)alloca( byte_size );
+#endif   
 
 #if( !defined( TAG_VECTOR ) )
    args->vector.header = MAKE_HEADER( VECTOR_TYPE, byte_size );
@@ -366,7 +372,13 @@ opt_generic_entry( obj_t proc, ... ) {
 
    /* jump to the function */
 #define CALL( proc ) ((obj_t (*)())PROCEDURE_VA_ENTRY( proc ))
-   return CALL( proc )( proc, args );
+   res = CALL( proc )( proc, args );
+
+#if( __APPLE__ == 1 )
+   free( CVECTOR( args ) );
+#endif
+
+   return res;
 }
 
 /*---------------------------------------------------------------------*/

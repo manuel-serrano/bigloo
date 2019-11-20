@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evcompile.scm           */
+;*    .../prgm/project/bigloo/bigloo/runtime/Eval/evcompile.scm        */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Mar 25 09:09:18 1994                          */
-;*    Last change :  Tue Aug  6 15:28:42 2013 (serrano)                */
+;*    Last change :  Tue Nov 19 13:10:00 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    La pre-compilation des formes pour permettre l'interpretation    */
 ;*    rapide                                                           */
@@ -103,20 +103,6 @@
 	      atom))
 	  (else
 	   (evcompile-cnst atom loc))))
-      ;; MS: 20 Jul 2013, I don't understand anymore why the following
-      ;; should be needed. It seems redondant with the general application
-      ;; compilation rules given below
-;*       (((and (? symbol?)                                            */
-;* 	     (? (lambda (x) (not (dynamic? (variable loc x env genv))))) */
-;* 	     ?fun)                                                     */
-;* 	. ?args)                                                       */
-;*        (let* ((loc (get-location exp loc))                          */
-;* 	      (actuals (map (lambda (a)                                */
-;* 			       (evcompile a env genv where #f loc lkp #f)) */
-;* 			  args)))                                      */
-;* 	  (let* ((proc (variable loc fun env genv))                    */
-;* 		 (ref (evcompile-ref proc genv loc lkp)))              */
-;* 	     (evcompile-application fun ref actuals tail loc))))       */
       ((@ (and ?id (? symbol?)) (and ?mod (? symbol?)))
        (let ((@var (@variable loc id env genv mod)))
 	  (evcompile-ref 2 @var genv loc lkp)))
