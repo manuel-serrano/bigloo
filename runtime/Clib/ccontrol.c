@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Nov 19 16:28:45 2019 (serrano)                */
+/*    Last change :  Wed Nov 20 10:55:13 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -375,7 +375,7 @@ opt_generic_entry( obj_t proc, ... ) {
    res = CALL( proc )( proc, args );
 
 #if( __APPLE__ == 1 )
-   free( args );
+   free( CVECTOR( args ) );
 #endif
 
    return res;
