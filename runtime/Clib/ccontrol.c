@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 17 13:16:31 1995                          */
-/*    Last change :  Tue Nov 19 16:09:44 2019 (serrano)                */
+/*    Last change :  Tue Nov 19 16:28:45 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Closure allocations.                                             */
 /*=====================================================================*/
@@ -374,7 +374,7 @@ opt_generic_entry( obj_t proc, ... ) {
 #define CALL( proc ) ((obj_t (*)())PROCEDURE_VA_ENTRY( proc ))
    res = CALL( proc )( proc, args );
 
-#if( __APPLE__ = 1 )
+#if( __APPLE__ == 1 )
    free( args );
 #endif
 
