@@ -33,7 +33,7 @@
 		  read-only
 		  (get (lambda (o)
 			  (with-access::gst-plugin-feature o ($builtin)
-			     ($gst-plugin-feature-plugin-name
+			     ($gst-plugin-feature-get-plugin-name
 				($gst-plugin-feature $builtin))))))
 	       (rank::uint
 		  (get (lambda (o)

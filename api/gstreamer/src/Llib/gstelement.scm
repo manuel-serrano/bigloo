@@ -16,12 +16,13 @@
 
    (include "gst.sch")
 
-   (import  __gstreamer_gsterror
+   (use	    __gstreamer_gsterror
 	    __gstreamer_gstobject
-	    __gstreamer_gstpluginfeature
 	    __gstreamer_gststructure
+	    __gstreamer_gstcaps)
+
+   (import  __gstreamer_gstpluginfeature
 	    __gstreamer_gstelementfactory
-	    __gstreamer_gstcaps
 	    __gstreamer_gstpad
 	    __gstreamer_gstreamer)
 
@@ -162,7 +163,7 @@
 	 (with-access::gst-caps caps ((caps-builtin $builtin))
 	    (unless ($gst-element-link-filtered! ($gst-element e0-builtin)
 		       ($gst-element e1-builtin)
-		       ($gst-caps caps-builtin))
+		       caps-builtin)
 	       (raise (instantiate::&gst-error
 			 (proc 'gst-element-link-filtered!)
 			 (msg "Element cannot be linked")

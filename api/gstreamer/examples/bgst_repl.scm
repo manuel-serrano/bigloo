@@ -21,5 +21,4 @@
 ;*---------------------------------------------------------------------*/
 (define (main argv)
    (print "Welcome to the Bigloo+Gstreamer repl...")
-   (eval '(library-load 'gstreamer))
    (repl))

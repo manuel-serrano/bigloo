@@ -16,8 +16,7 @@
    
    (include "gst.sch")
    
-   (import  __gstreamer_gstreamer
-	    __gstreamer_gstobject)
+   (import  __gstreamer_gstobject)
    
    (export  (class gst-plugin::gst-object
 	       (name::string
