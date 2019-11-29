@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Sep  4 13:50:03 2009                          */
-#*    Last change :  Thu Nov  7 15:27:41 2019 (serrano)                */
+#*    Last change :  Fri Nov 29 14:50:16 2019 (serrano)                */
 #*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Generate the runtest file                                        */
@@ -83,8 +83,6 @@ while : ; do
   esac
   shift
 done
-
-echo "E=$echo"
 
 cat $dest.in \
    | sed -e "s|@DATE@|`date`|" \

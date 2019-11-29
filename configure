@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Nov  7 15:32:19 2019 (serrano)                */
+#*    Last change :  Fri Nov 29 14:54:06 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -480,7 +480,7 @@ while : ; do
       cflags="$cflags -Wpointer-arith -Wswitch -Wtrigraphs -DBGL_BOOTCONFIG";
       coflags="$coflags";
       bootflags="$bootflags -cg";
-      jvmbackend="force";
+      jvmbackend="no";
       mode=standard;
       configureinfo="yes";
       bee="full";
