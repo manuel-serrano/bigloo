@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Mon Mar  4 15:33:24 2019 (serrano)                */
+/*    Last change :  Thu Dec  5 18:24:52 2019 (serrano)                */
 /*    Copyright   :  2016-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -323,6 +323,33 @@ BGL_RUNTIME_DECL obj_t alloc_hvector( int, int, int );
    memmove( (void *)&BGL_F64VREF( target, tstart ), (void *)&BGL_F64VREF( source, sstart ), \
       (ssend - sstart) * 8 )
    
+/*---------------------------------------------------------------------*/
+/*    Vector stack allocation                                          */
+/*---------------------------------------------------------------------*/
+#if( HAVE_ALLOCA && defined( __GNUC__ ) )
+#  if( !defined( TAG_VECTOR ) )
+#     define BGL_CREATE_STACK_VECTOR( len ) \
+      ({ \
+      obj_t vector; \
+      long byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE ); \
+      vector = alloca( byte_size ); \
+      vector->vector.header = MAKE_HEADER( VECTOR_TYPE, 0 ); \
+      vector->vector.length = len; \
+      BVECTOR( vector ); \
+      })
+#   else
+#     define BGL_CREATE_STACK_VECTOR( len ) \
+      ({ \
+      obj_t vector; \
+      long byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE ); \
+      vector = alloca( byte_size ); \
+      vector->vector.length = len; \
+      BVECTOR( vector ); \
+      })
+#   endif
+#else
+#  define BGL_CREATE_STACK_VECTOR( len ) create_vector( len )
+#endif   
 
 /*---------------------------------------------------------------------*/
 /*    C++                                                              */

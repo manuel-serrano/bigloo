@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon May  8 14:16:24 1995                          */
-/*    Last change :  Mon May 27 20:02:20 2019 (serrano)                */
+/*    Last change :  Thu Dec  5 18:25:40 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    C vector managment                                               */
 /*=====================================================================*/
@@ -60,9 +60,7 @@ create_vector( long len ) {
    } else
 #endif
    {
-      long byte_size;
-
-      byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
+      long byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
 
       vector = GC_MALLOC( byte_size );
 
@@ -91,9 +89,7 @@ create_vector_uncollectable( long len ) {
    } else
 #endif
    {
-      long byte_size;
-
-      byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
+      long byte_size = VECTOR_SIZE + ( (len-1) * OBJ_SIZE );
       
       vector = GC_MALLOC_UNCOLLECTABLE( byte_size );
 
