@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Thu Dec  5 18:24:52 2019 (serrano)                */
+/*    Last change :  Fri Dec  6 11:19:41 2019 (serrano)                */
 /*    Copyright   :  2016-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
@@ -132,11 +132,11 @@ struct bgl_hvector {
 #if( VECTOR_SIZE_TAG_NB_BIT != 0 )
 #   define BGL_VECTOR_SHRINK( v, l ) \
    ((l >= 0 && l < BGL_VLENGTH( v )) ? \
-    VECTOR( v ).length = (l | (VECTOR( v ).length & ~VECTOR_LENGTH_MASK)), v : v)
+    VECTOR( v ).length = (l & ~VECTOR_LENGTH_MASK)), v : v)
 #else
 #   define BGL_VECTOR_SHRINK( v, l ) \
    ((l >= 0 && l < BGL_VLENGTH( v )) ? \
-    VECTOR( v ).length = (l | (VECTOR( v ).length)), v : v)
+    VECTOR( v ).length = (l), v : v)
 #endif
 
 /*---------------------------------------------------------------------*/
