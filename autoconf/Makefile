@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Wed Sep 25 13:44:17 2019 (serrano)                */
+#*    Last change :  Sat Dec  7 18:44:37 2019 (serrano)                */
 #*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -64,7 +64,8 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   gcconfigureopt ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
                   gmtoff libuv getgroups ioctl pthreadkill syslog overflow \
-                  semaphore lockf patch likely gccattrs getrlimit
+                  semaphore lockf patch likely gccattrs getrlimit \
+                  c99stackalloc
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */

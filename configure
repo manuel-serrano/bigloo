@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri Nov 29 14:54:06 2019 (serrano)                */
+#*    Last change :  Sat Dec  7 18:41:52 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2794,6 +2794,9 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
     allocah=`$autoconf allocah` || exit 1
   fi
 
+  # Does the system have c99 stack alloc ?
+  c99stackalloc=`$autoconf c99stackalloc` || exit 1
+
   # native mach_dep target
   nativemachdep=`$autoconf machdep` || exit 1
 
@@ -3341,6 +3344,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@HAVE_SIGPROCMASK@|$sigprocmask|" \
               -e "s|@HAVE_ALLOCA@|$alloca|" \
               -e "s|@HAVE_ALLOCAH@|$allocah|" \
+              -e "s|@HAVE_C99STACKALLOC@|$c99stackalloc|" \
               -e "s|@HAVE_MMAP@|$mmap|" \
               -e "s|@HAVE_GETCWD@|$getcwd|" \
               -e "s|@HAVE_GETWD@|$getwd|" \

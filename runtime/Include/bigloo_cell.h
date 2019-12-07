@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Fri Dec  6 08:11:05 2019 (serrano)                */
+/*    Last change :  Sat Dec  7 18:56:05 2019 (serrano)                */
 /*    Copyright   :  2016-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo CELLs                                                     */
@@ -94,7 +94,7 @@ struct bgl_cell {
 #endif
 
 /* stack allocation */
-#if( HAVE_ALLOCA && defined( __GNUC__ ) )
+#if( BGL_HAVE_ALLOCA && defined( __GNUC__ ) )
 #   define MAKE_STACK_CELL( v ) \
         ({ obj_t an_object; \
            an_object = alloca( CELL_SIZE ); \
