@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Dec  7 18:41:52 2019 (serrano)                */
+#*    Last change :  Mon Dec  9 15:57:36 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1118,10 +1118,11 @@ while : ; do
       echo "   --clang (configure for clang LLVM C compiler)"  >&2;
       echo "   --shell=cmd [default $shell]" >&2;
       echo "   --mv=cmd [default $shell_mv]" >&2;
-      echo "   --rm=dmd [default $shell_rm]" >&2;
+      echo "   --rm=cmd [default $shell_rm]" >&2;
       echo "" >&2;
       echo "Host configuration:"  >&2;
       echo "   --arch=[i586|i686|athlon|athlon-tbird|athlon-mp|athlon-xp|k6-2|k6-3|pentium3|pentium4] (configure for specified hardware)"  >&2;
+      echo "   --hostsh=script (cross configuration script, see the doc)" >&2;
       echo "   --a.out=file" >&2;
       echo "   --a.bat=file" >&2;
       echo "   --dirname=file-or-command" >&2;
