@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Thu Oct 10 09:03:17 2019 (serrano)                */
+/*    Last change :  Mon Dec  9 13:03:44 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -34,11 +34,11 @@ unsigned long ante_bgl_init_dsz = 0;
    { long __idx = bmem_thread ?			 \
       (long)____pthread_getspecific( bmem_key3 ) \
       : alloc_index; \
-      ((__idx < 0 || __idx >= 5) ? (fprintf( stderr, "*** bmem: stack overflow/underflow \"%s\" [%d]\n", name, __idx ), exit( -2 )) : 0)
+      ((__idx < 0 || __idx >= 5) ? (fprintf( stderr, "*** bmem: stack overflow/underflow \"%s\" [%ld]\n", name, __idx ), exit( -2 )) : 0)
 
 #define DBG_INDEX_STOP( name ) \
    (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index) != (__idx -1) \
-      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%d/%d]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
+      ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
 
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
