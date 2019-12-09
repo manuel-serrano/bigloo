@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Dec  9 15:57:36 2019 (serrano)                */
+#*    Last change :  Mon Dec  9 20:21:26 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -406,6 +406,7 @@ enable_bglpkg="no"
 enable_configure_pcre="yes"
 custompcre=
 pcresrc=$PCRESRC
+pcreconfigureopt=
 
 if [ "$pcresrc " = " " ]; then
   pcreversion=8.43
@@ -1005,6 +1006,9 @@ while : ; do
 
     --custompcre=yes|--custompcre)
       custompcre=yes;;
+
+    --pcreconfigureopt=*)
+      pcreconfigureopt="`echo $1 | sed 's/^[^=]*=//'`";;
 
     --pcresrc=*)
       pcresrc="`echo $1 | sed 's/^[^=]*=//'`";;
@@ -2236,6 +2240,8 @@ if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
   (cd libuv; . ./install-libuv) || exit 1
 
   $echo "+ Configuring custom libuv..."
+  autoopts=`$autoconf libuvconfigureopt --libuv-dir="$pwd/libuv/libuv-$libuvversion"`
+  libuvconfigureopt="$autoopts $libuvconfigureopt"
   (cd libuv; . ./configure-libuv) || exit 1
 fi
 
