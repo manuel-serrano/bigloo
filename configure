@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 10 11:36:51 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 14:40:06 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2240,6 +2240,8 @@ if [ "$_custom " = "yes " ]; then
   $echo "Preparing and configuring custom gmp ($gmpsrc)..."
   $echo "+ gmp configuration ($gmpsrc)..." >> $configurelog
 
+  customgmp=yes
+  
   gmpversion=`basename $gmpsrc .tar.gz`
   gmpversion=`basename $gmpversion .tgz`
   gmpversion=`basename $gmpversion .tar.bz2`
