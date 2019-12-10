@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 10 07:29:22 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 07:45:13 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -141,7 +141,7 @@ ln_s="ln -s"
 gmplib=
 gmpversion=
 gmpforce=no
-customgmp=no
+customgmp=
 gmpsrc=$GMPSRC
 gmpconfigureopt=
 gmpcustomversion=6.1.2
@@ -2216,7 +2216,26 @@ fi
 #*---------------------------------------------------------------------*/
 #*    GMP configuration                                                */
 #*---------------------------------------------------------------------*/
+buildgmplibdir=$buildlibdir
+if [ "$customgmp " != "yes " ]; then
+  if [ "$gmpversion " = " " ]; then
+    gmplib=`$autoconf bgl-pkg-config --libs gmp`;
+
+    if [ "$gmplib " = " " ]; then
+      gmplib=-lgmp
+    fi
+
+    gmpversion=`$autoconf gmp --lib=$gmplib` || exit 1
+  fi
+fi  
+
 if [ "$customgmp " = "yes " ]; then
+  _custom=yes
+elif [ "$customgmp " != "no " -a "$gmpversion" = "no" ]; then
+  _custom=yes
+fi  
+  
+if [ "$_custom " = "yes " ]; then
   $echo ""
   $echo "Preparing and configuring custom gmp ($gmpsrc)..."
   $echo "+ gmp configuration ($gmpsrc)..." >> $configurelog
@@ -2226,11 +2245,24 @@ if [ "$customgmp " = "yes " ]; then
   gmpversion=`basename $gmpversion .tar.bz2`
   gmpversion=`basename $gmpversion .tar.xz`
 
-  autoopts=`$autoconf config.guess --dir="$pwd/gmp/gmp-$gmpversion"`
+  (cd gmp && GMP=$gmpsrc; export GMP && . ./install-gmp) || exit 1
+  autoopts=`$autoconf configfsf.guess --dir="$pwd/gmp/$gmpversion"`
   gmpconfigureopt="$autoopts $gmpconfigureopt"
   
-  (cd gmp && GMP=$gmpsrc; export GMP && . ./install-gmp) || exit 1
   (cd gmp; . ./configure-gmp) || exit 1
+fi
+
+if [ $gmpversion = "no" ]; then
+  havegmp=0;
+  if [ $gmpforce = "yes" ]; then
+    $echo "*** ERROR:configure:--enable-gmp. Cannot find GMP library."
+    $echo "Aborting";
+    exit 1;
+  fi
+else
+  havegmp=1;
+  featureflags="-srfi enable-gmp $featureflags";
+  extralibs="$gmplib $extralibs"
 fi
 
 #*---------------------------------------------------------------------*/
@@ -2241,8 +2273,9 @@ if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
 
   $echo "+ Installing custom libuv ($libuvsrc) source code."
   (cd libuv; . ./install-libuv) || exit 1
-
+  
   $echo "+ Configuring custom libuv..."
+  (cd libuv/libuv-$libuvversion; autogen.sh)
   autoopts=`$autoconf config.guess --dir="$pwd/libuv/libuv-$libuvversion"`
   libuvconfigureopt="$autoopts $libuvconfigureopt"
   (cd libuv; . ./configure-libuv) || exit 1
@@ -2496,9 +2529,6 @@ if [ "$regexp " = " " ]; then
 	  rpath="$pcreprefix/lib $rpath"
 	fi
       fi
-    else
-      autoopts=`$autoconf config.guess --dir="$pwd/pcre/pcre-$pcreversion"`
-      pcreconfigureopt="$autoopts $pcreconfigureopt"
     fi
   else
     custompcre=no
@@ -2514,6 +2544,8 @@ if [ "$regexp " = " " ]; then
       (cd pcre &&  PCRE=$pcresrc && export PCRE && ./install-pcre) || exit 1
 
       $echo "+ Configuring custom pcre..."
+      autoopts=`$autoconf config.guess --dir="$pwd/pcre/pcre-$pcreversion"`
+      pcreconfigureopt="$autoopts $pcreconfigureopt"
       (cd pcre; . ./configure-pcre) || exit 1
 	
       pcrelibs=yes
@@ -2578,6 +2610,9 @@ if [ "$unistring " != "no " ]; then
     $echo "+ Installing custom unistring source code."
     (cd libunistring && UNISTRING=$unistringsrc && export UNISTRING && ./install-unistring) || exit 1
   
+    autoopts=`$autoconf config.guess --dir="$pwd/libunistring"`
+    unistringconfigureopt="$autoopts $unistringconfigureopt"
+    
     $echo "+ Configuring custom unistring..."
     (cd libunistring; . ./configure-unistring) || exit 1
   fi
@@ -2828,39 +2863,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
   # Does the C compiler support GCC attributes
   gccattrs=`$autoconf gccattrs`
 
-  # Is gmp available?
-  buildgmplibdir=$buildlibdir
-  if [ "$customgmp" != "no" ]; then
-    havegmp=1;
-    featureflags="-srfi enable-gmp $featureflags";
-    extralibs="-lgmp $extralibs"
-    libgmpbuildpath="\$(BOOTLIBDIR)"
-    gmpversion="`$echo $gmpsrc | sed 's|gmp/gmp-||' | sed 's|.tgz||'`"
-  elif [ "$gmpversion " = " " ]; then
-    gmplib=`$autoconf bgl-pkg-config --libs gmp`;
-
-    if [ "$gmplib " = " " ]; then
-      gmplib=-lgmp
-    fi
-
-    gmpversion=`$autoconf gmp --lib=$gmplib` || exit 1
-
-    if [ $gmpversion = "no" ]; then
-      havegmp=0;
-      if [ $gmpforce = "yes" ]; then
-	$echo "*** ERROR:configure:--enable-gmp. Cannot find GMP library."
-	$echo "Aborting";
- 	exit 1;
-      fi
-    else
-      havegmp=1;
-      featureflags="-srfi enable-gmp $featureflags";
-      extralibs="$gmplib $extralibs"
-    fi
-  else
-    havegmp=0;
-  fi
-
+  # srfi27
   if [ "$havegmp " = "0 " ]; then
     if [ "$srfi27force " = "yes " ]; then
       $echo "*** ERROR:configure: Cannot find GMP library required by SRFI27."
