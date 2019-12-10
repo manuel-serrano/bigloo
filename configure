@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 10 14:40:06 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 15:51:46 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2566,7 +2566,6 @@ if [ "$regexp " = " " ]; then
   fi
 
   if [ "$pcrelibs " != "no " ]; then
-    featureflags="-srfi enable-pcre $featureflags";
     extralibs="-l$extrapcre $extralibs"
     regexp=pcre
 
@@ -2585,7 +2584,7 @@ if [ -f runtime/objs/obj_u/Unsafe/$regexp.c ]; then
   cp runtime/objs/obj_u/Unsafe/$regexp.c runtime/objs/obj_u/Unsafe/regexp.c;
 fi
 
-featureflags="-srfi enable-$regexp"
+featureflags="-srfi enable-$regexp $featureflags"
 
 #*---------------------------------------------------------------------*/
 #*    unistring                                                        */
