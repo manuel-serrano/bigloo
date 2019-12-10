@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Dec  9 20:21:26 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 07:29:22 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2163,7 +2163,7 @@ if [ "$action" != "bigloo_config_el" ]; then
       fi
   
       if [ -f gc/configure-$gccustom ]; then
-        autoopts=`$autoconf gcconfigureopt --gc-dir="$pwd/gc/$gccustom"`
+        autoopts=`$autoconf config.guess --dir="$pwd/gc/$gccustom"`
         gcconfigureopt="$autoopts $gcconfigureopt"
         gcconfigurethreadsopt="$gcconfigurethreadsopt"
         $echo "+ Configuring custom GC ($gccustom)..." && \
@@ -2226,6 +2226,9 @@ if [ "$customgmp " = "yes " ]; then
   gmpversion=`basename $gmpversion .tar.bz2`
   gmpversion=`basename $gmpversion .tar.xz`
 
+  autoopts=`$autoconf config.guess --dir="$pwd/gmp/gmp-$gmpversion"`
+  gmpconfigureopt="$autoopts $gmpconfigureopt"
+  
   (cd gmp && GMP=$gmpsrc; export GMP && . ./install-gmp) || exit 1
   (cd gmp; . ./configure-gmp) || exit 1
 fi
@@ -2240,7 +2243,7 @@ if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
   (cd libuv; . ./install-libuv) || exit 1
 
   $echo "+ Configuring custom libuv..."
-  autoopts=`$autoconf libuvconfigureopt --libuv-dir="$pwd/libuv/libuv-$libuvversion"`
+  autoopts=`$autoconf config.guess --dir="$pwd/libuv/libuv-$libuvversion"`
   libuvconfigureopt="$autoopts $libuvconfigureopt"
   (cd libuv; . ./configure-libuv) || exit 1
 fi
@@ -2493,6 +2496,9 @@ if [ "$regexp " = " " ]; then
 	  rpath="$pcreprefix/lib $rpath"
 	fi
       fi
+    else
+      autoopts=`$autoconf config.guess --dir="$pwd/pcre/pcre-$pcreversion"`
+      pcreconfigureopt="$autoopts $pcreconfigureopt"
     fi
   else
     custompcre=no

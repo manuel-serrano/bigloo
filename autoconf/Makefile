@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Mon Dec  9 20:28:43 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 07:33:51 2019 (serrano)                */
 #*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
@@ -61,11 +61,11 @@ POPULATION	= Makefile bigloo.sh.in bglafile.sh.in bglmco.sh.in \
                   alsa pulseaudio mpg123 flac pcre pcrefreestudy avahi \
                   dbus gmp resolv resolvsym unistring limbs signbit rdynamic \
                   getuid getgid gecos getprotoent machdep arflags mixer \
-                  gcconfigureopt ccfortify environ setenv symlink \
+                  config.guess ccfortify environ setenv symlink \
                   androidmkdir bgl-pkg-config phidget phidgetlibdir \
                   gmtoff libuv getgroups ioctl pthreadkill syslog overflow \
                   semaphore lockf patch likely gccattrs getrlimit \
-                  c99stackalloc libuvconfigureopt
+                  c99stackalloc
 
 #*---------------------------------------------------------------------*/
 #*    pop ...                                                          */
