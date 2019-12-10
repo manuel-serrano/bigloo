@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 10 07:45:13 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 11:36:51 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2250,6 +2250,10 @@ if [ "$_custom " = "yes " ]; then
   gmpconfigureopt="$autoopts $gmpconfigureopt"
   
   (cd gmp; . ./configure-gmp) || exit 1
+
+  libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
+  lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+  buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
 fi
 
 if [ $gmpversion = "no" ]; then
