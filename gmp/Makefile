@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue Dec 10 14:14:16 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 15:03:30 2019 (serrano)                */
 #*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -32,7 +32,6 @@ boot: boot-gmp
 boot-gmp: 
 	$(MAKE) -C $(GMP)
 	$(MAKE) -C $(GMP) install DESTDIR=$(BOOTDIR)/gmp
-	cp $(BOOTLIBDIR)/gmp/lib/* $(BOOTLIBDIR)
 
 #*---------------------------------------------------------------------*/
 #*    the population goal                                              */
