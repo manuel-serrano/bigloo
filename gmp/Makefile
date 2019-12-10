@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Tue Dec 10 15:03:30 2019 (serrano)                */
+#*    Last change :  Tue Dec 10 18:36:15 2019 (serrano)                */
 #*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -66,12 +66,18 @@ distrib:
 #*---------------------------------------------------------------------*/
 .PHONY: install
 
-install:
+install.old:
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) install-lib LIB=libgmp; \
           cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/gmp.h; \
 	fi
+
+install:
+	$(MAKE) -C $(GMP) install
+	rm -rf $bootdir/BGLINSTALLTMP
+	cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
+	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/gmp.h; \
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */
