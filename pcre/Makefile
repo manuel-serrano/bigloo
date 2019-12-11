@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Wed Dec 11 10:07:07 2019 (serrano)                */
+#*    Last change :  Wed Dec 11 10:52:59 2019 (serrano)                */
 #*    Copyright   :  2014-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom PCRE library.                  */
@@ -69,7 +69,7 @@ distrib:
 
 install:
 	$(MAKE) -C $(PCRE) install exec_prefix=$(BINDIR)/BGLINSTALLTMP
-	rm -rf $(BINDIR)/BGLINSTALLTMP
+	rm -rf $(DESTDIR)$(BINDIR)/BGLINSTALLTMP
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */

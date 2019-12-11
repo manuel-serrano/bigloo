@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Wed Dec 11 10:06:56 2019 (serrano)                */
+#*    Last change :  Wed Dec 11 10:52:54 2019 (serrano)                */
 #*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
@@ -75,7 +75,7 @@ install.old:
 
 install:
 	$(MAKE) -C $(GMP) install exec_prefix=$(BINDIR)/BGLINSTALLTMP
-	rm -rf $(BINDIR)/BGLINSTALLTMP
+	rm -rf $(DESTDIR)$(BINDIR)/BGLINSTALLTMP
 	cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
 	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/gmp.h
 
