@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Marc Feeley                                       */
 ;*    Creation    :  Tue Mar 11 11:32:17 2008                          */
-;*    Last change :  Wed Dec 11 06:58:07 2019 (serrano)                */
+;*    Last change :  Wed Dec 11 07:43:40 2019 (serrano)                */
 ;*    Copyright   :  2006-19 Marc Feeley                               */
 ;*    -------------------------------------------------------------    */
 ;*    Portable implementation of bignums. This is used only when no    */
@@ -305,7 +305,7 @@
 			  (bignum-digit-set!
 			   r
 			   i
-			   (-fx 0 ($$elong->long (remainderelong x ($long->elong (bignum-radix))))))
+			   (-fx 0 ($elong->long (remainderelong x ($long->elong (bignum-radix))))))
 			  (loop2 (+fx i 1) (quotientelong x (bignum-radix))))
 		       r)))))))
 
@@ -325,7 +325,7 @@
 			  (bignum-digit-set!
 			   r
 			   i
-			   (-fx 0 ($$llong->long (remainderllong x ($long->llong (bignum-radix))))))
+			   (-fx 0 ($llong->long (remainderllong x ($long->llong (bignum-radix))))))
 			  (loop2 (+fx i 1) (quotientllong x (bignum-radix))))
 		       r)))))))
 
