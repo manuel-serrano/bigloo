@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Dec 10 15:51:46 2019 (serrano)                */
+#*    Last change :  Wed Dec 11 07:29:56 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2277,11 +2277,11 @@ fi
 if [ "$libuv_is_enabled " = "yes " -a "$customlibuv " = "yes " ]; then
   $echo ""
 
-  $echo "+ Installing custom libuv ($libuvsrc) source code."
+  $echo "+ Installing custom libuv ($libuvversion) source code."
   (cd libuv; . ./install-libuv) || exit 1
   
   $echo "+ Configuring custom libuv..."
-  (cd libuv/libuv-$libuvversion; autogen.sh)
+  (cd libuv/libuv-$libuvversion; ./autogen.sh)
   autoopts=`$autoconf config.guess --dir="$pwd/libuv/libuv-$libuvversion"`
   libuvconfigureopt="$autoopts $libuvconfigureopt"
   (cd libuv; . ./configure-libuv) || exit 1

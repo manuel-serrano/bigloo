@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Fri Jan 18 12:29:27 2019 (serrano)                */
+;*    Last change :  Wed Dec 11 07:23:22 2019 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -2319,7 +2319,9 @@
 ;*---------------------------------------------------------------------*/
 (define-macro (integer->string-op op x radix)
    (let* ((op->string (symbol-append op '->string))
-	  (c-op->string (symbol-append 'c- op->string))
+	  (c-op->string (if (eq? op 'bignum)
+			    '$bignum->string
+			    (symbol-append 'c- op->string)))
 	  (radixv (gensym 'radix)))
       `(let ((,radixv ,radix))
 	  (cond

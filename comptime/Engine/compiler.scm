@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 08:22:54 1996                          */
-;*    Last change :  Sun Apr 14 06:43:01 2019 (serrano)                */
+;*    Last change :  Wed Dec 11 06:54:31 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compiler driver                                              */
@@ -85,8 +85,7 @@
 	    cc_ld
 	    cc_roots
 	    backend_backend
-	    backend_walk
-	    patch_patch)
+	    backend_walk)
 
    (with    backend_c
 	    backend_jvm)
@@ -260,10 +259,6 @@
 	 ;; explicit GC roots registration
 	 (when *gc-force-register-roots?*
 	    (set! units (cons (make-gc-roots-unit) units)))
-
-	 ;; patch support
-;* 	 (when *patch-support*                                         */
-;* 	    (set! units (cons (make-patch-unit) units)))               */
 
 	 ;; ok, now we build the ast
 	 (let ((ast (profile ast (build-ast units))))
@@ -508,9 +503,6 @@
 	       (check-sharing "reduce+" ast2)
 	       (check-type "reduce+" ast2 #t #t)
 
-	       ;; patches initialization
-;* 	       (patch-initialization! ast2 (the-backend))              */
-	       
 	       (backend-walk (remove-var 'now ast2)))
 	    
 	    0))))

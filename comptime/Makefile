@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Thu Sep 20 10:20:16 2018 (serrano)                */
-#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Dec 11 06:54:40 2019 (serrano)                */
+#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -322,11 +322,6 @@ ISA_FILE	= walk
 
 ISA_OBJ	        = $(ISA_FILE:%=Isa/%.o)
 
-#*--- patch -----------------------------------------------------------*/
-PATCH_FILE	= patch
-
-PATCH_OBJ	= $(PATCH_FILE:%=Patch/%.o)
-
 #*---------------------------------------------------------------------*/
 #*    The object files                                                 */
 #*---------------------------------------------------------------------*/
@@ -341,8 +336,7 @@ O_OBJECTS_NOIJ  = $(ENGINE_OBJ) $(WRITE_OBJ) \
                   $(FAIL_OBJ) $(REDUCE_OBJ) $(EFFECT_OBJ) $(OBJECT_OBJ) \
                   $(TOOLS_OBJ) $(BDB_OBJ) $(PROF_OBJ) $(ABOUND_OBJ) \
                   $(JAS_OBJ) $(BACKEND_OBJ) $(SAW_OBJ) $(SAW_C_OBJ) \
-                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ) \
-                  $(PATCH_OBJ)
+                  $(SAW_JVM_OBJ) $(SYNC_OBJ) $(ISA_OBJ) $(RETURN_OBJ)
 
 O_OBJECTS_NOINIT=$(O_OBJECTS_NOIJ)
 
