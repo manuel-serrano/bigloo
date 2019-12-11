@@ -967,7 +967,7 @@ while : ; do
       resolv=""
       resolvforce="yes";;
 
-    --no-unistring|--disable-unistring)
+    --no-unistring|--disable-unistring|--disable-libunistring)
       unistring="no";;
 
     --enable-unistring)

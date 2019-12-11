@@ -1,19 +1,19 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/pcre/configure-pcre                  */
+#*    serrano/prgm/project/bigloo/bigloo/pcre/configure-pcre           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Sep  7 09:49:25 2009                          */
-#*    Last change :  Tue Oct  3 19:09:58 2017 (serrano)                */
-#*    Copyright   :  2009-17 Manuel Serrano                            */
+#*    Last change :  Wed Dec 11 10:08:26 2019 (serrano)                */
+#*    Copyright   :  2009-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Ad-hoc configuration for the PCRE library.                       */
 #*=====================================================================*/
 
-echo "configure pcre with \"CC=$cc ./configure --enable-utf --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt\"" >> ../configure.log
+echo "configure pcre with \"CC=$cc ./configure --enable-utf --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bindir/BGLINSTALLTMP --docdir=$docdir --mandir=$mandir --infodir=$infodir --disable-cpp $pcreconfigureopt\"" >> ../configure.log
 
 (cd pcre-$pcreversion && \
  export CC=$cc && \
- ./configure --enable-utf --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bootdir/BGLINSTALLTMP --docdir=$bootdir/BGLINSTALLTMP --mandir=$bootdir/BGLINSTALLTMP --infodir=$bootdir/BGLINSTALLTMP --disable-cpp $pcreconfigureopt 2>&1 >> ../../configure.log || \
+ ./configure --enable-utf --libdir=$libdir/$fildir --includedir=$libdir/$fildir --bindir=$bindir/BGLINSTALLTMP --docdir=$docdir --mandir=$mandir --infodir=$infodir --disable-cpp $pcreconfigureopt 2>&1 >> ../../configure.log || \
  (echo "configure pcre fail, see configure.log file." && exit 1)) || exit 1
 

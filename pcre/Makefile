@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/pcre/Makefile                        */
+#*    serrano/prgm/project/bigloo/bigloo/pcre/Makefile                 */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Jul 18 17:53:07 2014                          */
-#*    Last change :  Sun Jul  9 10:26:56 2017 (serrano)                */
-#*    Copyright   :  2014-17 Manuel Serrano                            */
+#*    Last change :  Wed Dec 11 10:52:59 2019 (serrano)                */
+#*    Copyright   :  2014-19 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    A small Makefile to handle custom PCRE library.                  */
 #*=====================================================================*/
@@ -68,7 +68,8 @@ distrib:
 .PHONY: install
 
 install:
-	$(MAKE) -C $(PCRE) install
+	$(MAKE) -C $(PCRE) install exec_prefix=$(BINDIR)/BGLINSTALLTMP
+	rm -rf $(DESTDIR)$(BINDIR)/BGLINSTALLTMP
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */
