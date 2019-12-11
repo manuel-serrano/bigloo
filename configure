@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 11 07:29:56 2019 (serrano)                */
+#*    Last change :  Wed Dec 11 11:03:48 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2231,7 +2231,7 @@ fi
 
 if [ "$customgmp " = "yes " ]; then
   _custom=yes
-elif [ "$customgmp " != "no " -a "$gmpversion" = "no" ]; then
+elif [ "$customgmp " != "no " -a "$gmpversion" != "no" ]; then
   _custom=yes
 fi  
   
