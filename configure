@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Wed Dec 11 11:36:11 2019 (serrano)                */
+#*    Last change :  Wed Dec 11 21:34:21 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -2217,45 +2217,48 @@ fi
 #*    GMP configuration                                                */
 #*---------------------------------------------------------------------*/
 buildgmplibdir=$buildlibdir
-if [ "$customgmp " != "yes " ]; then
-  if [ "$gmpversion " = " " ]; then
-    gmplib=`$autoconf bgl-pkg-config --libs gmp`;
 
-    if [ "$gmplib " = " " ]; then
-      gmplib=-lgmp
+if [ "$gmpversion " != "no " ]; then
+  if [ "$customgmp " != "yes " ]; then
+    if [ "$gmpversion " = " " ]; then
+      gmplib=`$autoconf bgl-pkg-config --libs gmp`;
+  
+      if [ "$gmplib " = " " ]; then
+        gmplib=-lgmp
+      fi
+  
+      gmpversion=`$autoconf gmp --lib=$gmplib` || exit 1
     fi
-
-    gmpversion=`$autoconf gmp --lib=$gmplib` || exit 1
+  fi  
+  
+  if [ "$customgmp " = "yes " ]; then
+    _custom=yes
+  elif [ "$customgmp " != "no " -a "$gmpversion" = "no" ]; then
+    _custom=yes
+  fi  
+    
+  if [ "$_custom " = "yes " ]; then
+    $echo ""
+    $echo "Preparing and configuring custom gmp ($gmpsrc)..."
+    $echo "+ gmp configuration ($gmpsrc)..." >> $configurelog
+  
+    customgmp=yes
+    
+    gmpversion=`basename $gmpsrc .tar.gz`
+    gmpversion=`basename $gmpversion .tgz`
+    gmpversion=`basename $gmpversion .tar.bz2`
+    gmpversion=`basename $gmpversion .tar.xz`
+  
+    (cd gmp && GMP=$gmpsrc; export GMP && . ./install-gmp) || exit 1
+    autoopts=`$autoconf configfsf.guess --dir="$pwd/gmp/$gmpversion"`
+    gmpconfigureopt="$autoopts $gmpconfigureopt"
+    
+    (cd gmp; . ./configure-gmp) || exit 1
+  
+    libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
+    lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+    buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
   fi
-fi  
-
-if [ "$customgmp " = "yes " ]; then
-  _custom=yes
-elif [ "$customgmp " != "no " -a "$gmpversion" != "no" ]; then
-  _custom=yes
-fi  
-  
-if [ "$_custom " = "yes " ]; then
-  $echo ""
-  $echo "Preparing and configuring custom gmp ($gmpsrc)..."
-  $echo "+ gmp configuration ($gmpsrc)..." >> $configurelog
-
-  customgmp=yes
-  
-  gmpversion=`basename $gmpsrc .tar.gz`
-  gmpversion=`basename $gmpversion .tgz`
-  gmpversion=`basename $gmpversion .tar.bz2`
-  gmpversion=`basename $gmpversion .tar.xz`
-
-  (cd gmp && GMP=$gmpsrc; export GMP && . ./install-gmp) || exit 1
-  autoopts=`$autoconf configfsf.guess --dir="$pwd/gmp/$gmpversion"`
-  gmpconfigureopt="$autoopts $gmpconfigureopt"
-  
-  (cd gmp; . ./configure-gmp) || exit 1
-
-  libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
-  lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
-  buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
 fi
 
 if [ $gmpversion = "no" ]; then
