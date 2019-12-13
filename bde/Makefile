@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Mon Jun  4 08:07:52 2018 (serrano)                */
-#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Dec 13 09:26:29 2019 (serrano)                */
+#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -104,16 +104,21 @@ POPULATION	= $(SOURCES_FILES) \
 #*---------------------------------------------------------------------*/
 #*    all                                                              */
 #*---------------------------------------------------------------------*/
-all: $(BOOTBINDIR)/bglafile \
-     $(BOOTBINDIR)/bgljfile \
+all: all-common dobmem 
+	if [ "$(JVMBACKEND) " != "no " ]; then \
+	  $(MAKE) all-jvm; \
+	fi
+
+all-common: $(BOOTBINDIR)/bglafile \
      $(BOOTBINDIR)/bgldepend \
      $(BOOTBINDIR)/bglmco \
      $(BOOTBINDIR)/bglmake \
      $(BOOTBINDIR)/bglpp \
      $(BOOTBINDIR)/bgltags \
-     $(BOOTBINDIR)/bglprof \
+     $(BOOTBINDIR)/bglprof
+
+all-jvm: $(BOOTBINDIR)/bgljfile \
      $(BOOTBINDIR)/bgljas \
-     dobmem
 
 boot:
 	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative"
@@ -166,12 +171,17 @@ $(BOOTBINDIR)/bgljas: $(JAS_LINKSRC) $(JAS_AFILE) $(JAS_OBJ) $(JAS_LINKOBJ)
 #*---------------------------------------------------------------------*/
 install: all
 	if [ $(BINDIR) != $(BOOTBINDIR) ]; then \
-          for p in bglafile bgljfile bgldepend bglmake bglprof bglmco bglpp bgltags bgljas; do \
+	  targets="bglafile bgldepend bglmake bglprof bglmco bglpp bgltags"; \
+	  if [ "$(JVMBACKEND) " != "no " ]; then \
+	     targets="$$targets bgljfile bgljas"; \
+          fi; \
+	  for p in $$targets; do \
 	    cp $(BOOTBINDIR)/$$p$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
             chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
             cat $(BOOTBINDIR)/$$p.sh | \
               sed -e "s|$(BOOTBINDIR)|$(DESTDIR)$(BINDIR)|" \
                   -e "s|$(BOOTLIBDIR)|$(DESTDIR)$(LIBDIR)/$(FILDIR)|" \
+                  -e "s|$(BGLBUILDBINDIR)|$(BINDIR)|" \
               > $(DESTDIR)$(BINDIR)/$$p.sh && \
             chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p.sh; \
           done; \
