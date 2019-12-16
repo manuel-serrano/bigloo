@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Thu Jan 24 08:14:48 2019 (serrano)                */
+;*    Last change :  Mon Dec 16 05:40:51 2019 (serrano)                */
 ;*    Copyright   :  1992-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -147,10 +147,6 @@
 	 ((c native)
 	  (set! *target-language* (if *saw* 'c-saw 'c))
 	  (register-srfi! 'bigloo-c)))
-      ;; runtime code patching
-      (when *patch-support*
-	 (use-library! 'patch)
-	 (register-srfi! 'runtime-code-patching))
       ;; and we are done for the arguments parsing
       pres))
  
@@ -393,11 +389,6 @@
       ;; type refefinition
       (("-fallow-type-redefinition" (help "allow type redifinition"))
        (set! *allow-type-redefinition* #t))
-      ;; patch support
-      (("-runtime-code-patching" (help "Enable runtime code patching"))
-       (set! *patch-support* #t))
-      (("-no-runtime-code-patching" (help "Disable runtime code patching"))
-       (set! *patch-support* #f))
 ;*--- Optimization ----------------------------------------------------*/
       (section "Optimization")
       ;; benchmarking
@@ -511,10 +502,6 @@
        (set! *optim-return-goto?* #t))
       (("-fno-return-goto" (help "Disable local set-exit replacement"))
        (set! *optim-return-goto?* #f))
-;*       (("-fruntime-code-patching" (help "Optimize self-modifying code")) */
-;*        (set! *optim-patch?* #t))                                    */
-;*       (("-fno-runtime-code-paching" (help "Disable self-modifying code optimization")) */
-;*        (set! *optim-patch?* #f))                                    */
       ;; saw register allocation
       (("-fsaw-realloc" (help "Enable saw register re-allocation"))
        (set! *saw-register-reallocation?* #t))
