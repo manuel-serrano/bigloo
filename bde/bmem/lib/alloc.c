@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Mon Dec  9 13:03:44 2019 (serrano)                */
+/*    Last change :  Tue Dec 24 17:16:37 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -39,6 +39,9 @@ unsigned long ante_bgl_init_dsz = 0;
 #define DBG_INDEX_STOP( name ) \
    (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index) != (__idx -1) \
       ? fprintf( stderr, "*** bmem: illegal stack after \"%s\" [%ld/%ld]\n", name, (bmem_thread ? (long)____pthread_getspecific( bmem_key3 ) : alloc_index), __idx - 1), exit( -1 ) : 0; } 0
+
+#define DBG_INDEX_RESET() \
+   (alloc_index = __idx)
 
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
@@ -434,8 +437,13 @@ make_pair( obj_t car, obj_t cdr ) {
 
    pair = ____make_pair( car, cdr );
 
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      bmem_pop_type();
+      //bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "make_pair" );
-   // bmem_set_alloc_type( -1, 0 );
+   
    return pair;
 }
 
@@ -462,8 +470,13 @@ make_cell( obj_t val ) {
    cell = ____make_cell( val );
 
    // bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      bmem_pop_type();
+      // bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "make_cell" );
+   
    return cell;
 }
 
@@ -491,9 +504,13 @@ make_real( double d ) {
 
    a_real = ____make_real( d );
 
-   // bmem_pop_type();
-   // bmem_set_alloc_type( -1,0  );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      bmem_pop_type();
+      //bmem_set_alloc_type( -1,0  );
+   }
    DBG_INDEX_STOP( "make_real" );
+      
    return a_real;
 }
 #endif
@@ -524,8 +541,12 @@ make_belong( long l ) {
    a_elong->elong.val = l;
 
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      //bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "make_belong" );
+   
    return BREF( a_elong );
 }
 
@@ -554,8 +575,12 @@ make_bllong( BGL_LONGLONG_T l ) {
    a_llong->llong.header = MAKE_HEADER( LLONG_TYPE, LLONG_SIZE );
    a_llong->llong.val = l;
 
+
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      //bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "make_bllong" );
    return BREF( a_llong );
 }
@@ -586,8 +611,11 @@ bgl_make_bint32( int32_t l ) {
    a_int32->sint32.header = MAKE_HEADER( INT32_TYPE_NUM, BGL_INT32_SIZE );
    a_int32->sint32.val = l;
 
-   bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
+   if( !bme_thread ) {
+      bmem_pop_type();
+      //bmem_set_alloc_type( -1, 0 );
+   }
+   
    DBG_INDEX_STOP( "bgl_make_bint32" );
    return BREF( a_int32 );
 }
@@ -620,7 +648,11 @@ bgl_make_buint32( uint32_t l ) {
    a_uint32->uint32.val = l;
 
    bmem_pop_type();
-   // bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      //bmem_set_alloc_type( -1, 0 );
+   }
+   
    DBG_INDEX_STOP( "bgl_make_buint32" );
    return BREF( a_uint32 );
 }
@@ -652,7 +684,10 @@ bgl_make_bint64( int64_t l ) {
    a_int64->sint64.val = l;
 
    bmem_pop_type();
-   //bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      //bmem_set_alloc_type( -1, 0 );
+   }
    DBG_INDEX_STOP( "bgl_make_bint64" );
    return BREF( a_int64 );
 }
@@ -683,7 +718,11 @@ bgl_make_buint64( uint64_t l ) {
    a_uint64->uint64.val = l;
 
    bmem_pop_type();
-   //bmem_set_alloc_type( -1, 0 );
+   if( !bmem_thread ) {
+      DBG_INDEX_RESET();
+      //bmem_set_alloc_type( -1, 0 );
+   }
+   
    DBG_INDEX_STOP( "bgl_make_buint64" );
    return BREF( a_uint64 );
 }

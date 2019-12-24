@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jul  2 13:17:04 1996                          */
-;*    Last change :  Mon Dec 16 05:37:53 2019 (serrano)                */
+;*    Last change :  Sun Dec 22 18:23:24 2019 (serrano)                */
 ;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production code.                                           */
@@ -456,7 +456,7 @@
 	  "  loc: " (node-loc node) #\Newline
 	  "  kont: " kont #\Newline)
    (with-access::conditional node (test true false loc)
-      (let* ((aux   (make-local-svar/name 'test *bool*))
+      (let* ((aux   (make-local-svar/name (gensym 'test) *bool*))
 	     (ctest (node->cop (node-setq aux test) *id-kont* inpushexit)))
 	 (if (and (csetq? ctest) (eq? (varc-variable (csetq-var ctest)) aux))
 	     (instantiate::cif
