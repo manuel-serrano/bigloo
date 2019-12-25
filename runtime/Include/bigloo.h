@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Aug  8 13:59:54 2019 (serrano)                */
+/*    Last change :  Wed Dec 25 08:21:36 2019 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -1071,8 +1071,13 @@ typedef obj_t (*function_t)();
 #define BREST BCNST( 28L )
 #define BKEY BCNST( 30L )
 
-#define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
-   (((long)(obj) & (long)BNIL) == (long)BNIL)
+#if( !BGL_NAN_TAGGING )
+#  define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   ((((long)(obj)) & ((TAG_MASK << 1) + 1)) == (long)BNIL)
+#else
+#  define BGL_NULL_OR_UNSPECIFIEDP( obj ) \
+   ((obj) == BNIL || ((obj) == BUNSPEC))
+#endif
 
 /*---------------------------------------------------------------------*/
 /*    Booleans                                                         */
