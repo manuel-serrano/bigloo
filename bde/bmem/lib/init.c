@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Thu Oct 10 08:46:18 2019 (serrano)                */
+/*    Last change :  Wed Dec 25 06:58:28 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -313,7 +313,8 @@ dump_statistics() {
    }
 
    if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "Dumping file...%s\n", n );
+      fprintf( stderr, "\nDumping file \"%s\"...", n );
+      fflush( stderr );
    }
    
    if( !(f = fopen( n, "w" )) ) {
@@ -329,9 +330,15 @@ dump_statistics() {
    thread_dump_statistics( f );
    fprintf( f, ")\n" );
    
-   if( bmem_verbose >= 2 ) {
-      fprintf( stderr, "Dump done\n" );
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, " done\n" );
    }
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "(export \"BMEMVERBOSE=0\" to disable bmem messages)\n\n" );
+      fflush( stderr );
+      fflush( stdout );
+   }
+   
    fprintf( stderr, "Total size: %lldMB (%lldKB)\n",
 	    GC_alloc_total() / 1024 / 1024, GC_alloc_total() / 1024 );
    fclose( f );

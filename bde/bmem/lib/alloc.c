@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Tue Dec 24 17:16:37 2019 (serrano)                */
+/*    Last change :  Wed Dec 25 06:47:54 2019 (serrano)                */
 /*    Copyright   :  2003-19 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -541,10 +541,10 @@ make_belong( long l ) {
    a_elong->elong.val = l;
 
    bmem_pop_type();
-   if( !bmem_thread ) {
-      DBG_INDEX_RESET();
-      //bmem_set_alloc_type( -1, 0 );
-   }
+/*    if( !bmem_thread ) {                                             */
+/*       DBG_INDEX_RESET();                                            */
+/*       //bmem_set_alloc_type( -1, 0 );                               */
+/*    }                                                                */
    DBG_INDEX_STOP( "make_belong" );
    
    return BREF( a_elong );
@@ -577,10 +577,6 @@ make_bllong( BGL_LONGLONG_T l ) {
 
 
    bmem_pop_type();
-   if( !bmem_thread ) {
-      DBG_INDEX_RESET();
-      //bmem_set_alloc_type( -1, 0 );
-   }
    DBG_INDEX_STOP( "make_bllong" );
    return BREF( a_llong );
 }
@@ -611,11 +607,7 @@ bgl_make_bint32( int32_t l ) {
    a_int32->sint32.header = MAKE_HEADER( INT32_TYPE_NUM, BGL_INT32_SIZE );
    a_int32->sint32.val = l;
 
-   if( !bme_thread ) {
-      bmem_pop_type();
-      //bmem_set_alloc_type( -1, 0 );
-   }
-   
+   bmem_pop_type();
    DBG_INDEX_STOP( "bgl_make_bint32" );
    return BREF( a_int32 );
 }
@@ -648,11 +640,6 @@ bgl_make_buint32( uint32_t l ) {
    a_uint32->uint32.val = l;
 
    bmem_pop_type();
-   if( !bmem_thread ) {
-      DBG_INDEX_RESET();
-      //bmem_set_alloc_type( -1, 0 );
-   }
-   
    DBG_INDEX_STOP( "bgl_make_buint32" );
    return BREF( a_uint32 );
 }
@@ -684,10 +671,6 @@ bgl_make_bint64( int64_t l ) {
    a_int64->sint64.val = l;
 
    bmem_pop_type();
-   if( !bmem_thread ) {
-      DBG_INDEX_RESET();
-      //bmem_set_alloc_type( -1, 0 );
-   }
    DBG_INDEX_STOP( "bgl_make_bint64" );
    return BREF( a_int64 );
 }
