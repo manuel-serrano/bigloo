@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Mon Dec 16 05:42:18 2019 (serrano)                */
+#*    Last change :  Thu Dec 26 07:03:39 2019 (serrano)                */
 #*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -98,6 +98,7 @@ belong_prealloc_min=-10
 belong_prealloc_max=100
 
 bglnantagging=0
+bglsmi=0
 
 #*--- Java back-end user configuration --------------------------------*/
 jvmbackend=no # set to "no" not to install the Jvm back-end
@@ -884,6 +885,9 @@ while : ; do
     --nan-tagging)
       bglnantagging=1;;
       
+    --smi)
+      bglsmi=1;;
+      
     --enable-thread|--enable-threads)
       threadsupport=yes;
       addp=1;
@@ -1196,7 +1200,8 @@ while : ; do
       echo "" >&2;
       echo "Experimental features:"  >&2;
       echo "   --gcbump=[yes|no] (configure the gc for bump allocation)" >&2;
-      echo "   --nan-tagging" >&2;
+      echo "   --nan-tagging (nan-tagging schema)" >&2;
+      echo "   --smi (32 bit wide integers for 64 bit architectures)" >&2;
       echo "" >&2;
       echo "Environment variables:" >&2;
       echo "CC         C compiler command" >&2;
@@ -1682,6 +1687,8 @@ alignment=`$autoconf alignment` || exit 1
 
 if [ "$alignment" = "3" ]; then
   if [ "$bglnantagging " != "0 " ]; then
+    intsize=32
+  elif [ "$bglsmi " != "0 " ]; then
     intsize=32
   else
     intsize=61
@@ -3322,6 +3329,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
               -e "s|@INT_BIT_SIZE@|$intsize|" \
               -e "s|@ELONG_BIT_SIZE@|$elongsize|" \
               -e "s|@BGL_NAN_TAGGING@|$bglnantagging|" \
+              -e "s|@BGL_SMI@|$bglsmi|" \
               -e "s|@BGL_ISOC99@|$isoc99|" \
               -e "s|@BGL_HAS_ERRNOH@|$errnoh|" \
               -e "s|@BGL_CCDIV0@|$ccdiv0|" \

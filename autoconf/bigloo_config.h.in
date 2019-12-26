@@ -85,6 +85,9 @@
 #undef BGL_NAN_TAGGING
 #define BGL_NAN_TAGGING @BGL_NAN_TAGGING@
 
+#undef BGL_SMI
+#define BGL_SMI @BGL_SMI@
+
 #undef HAVE_BCOPY
 #define HAVE_BCOPY @HAVE_BCOPY@
 
