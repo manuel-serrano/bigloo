@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 10:06:37 1995                          */
-;*    Last change :  Wed Dec 11 07:23:22 2019 (serrano)                */
+;*    Last change :  Sun Jan  5 18:36:39 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `fixnum' functions                */
 ;*=====================================================================*/
@@ -1393,7 +1393,7 @@
        ($int64? obj)
        ($uint64? obj)
        ($bignum? obj)
-       (and (c-flonum? obj) (=fl obj (roundfl obj)))))
+       (and (c-flonum? obj) (integerfl? obj))))
 
 ;*---------------------------------------------------------------------*/
 ;*    predicates ...                                                   */

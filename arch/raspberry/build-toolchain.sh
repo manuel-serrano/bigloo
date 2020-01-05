@@ -1,4 +1,17 @@
 #!/bin/bash
+#*=====================================================================*/
+#*    .../project/bigloo/bigloo/arch/raspberry/build-toolchain.sh      */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Thu Jan  2 06:56:37 2020                          */
+#*    Last change :                                                    */
+#*    Copyright   :  2020 Manuel Serrano                               */
+#*    -------------------------------------------------------------    */
+#*    This script install a complete toolchain for raspian cross       */
+#*    compilation.                                                     */
+#*=====================================================================*/
+
+# inspired by:
 # https://solarianprogrammer.com/2018/05/06/building-gcc-cross-compiler-raspberry-pi/
 
 guest=rpi

@@ -4,20 +4,21 @@ Bigloo Raspberry Cross Compilation - 9 Dec 2019
 This note describes how to cross compile and install Bigloo on a
 Raspberry PI. The procedure is complex because of the different ARM
 platforms and because of the variety of tools that are needed for
-completing this installation. In all these documents we refer to the
-"host", as the machine used to compile Bigloo (typically a laptop or a
-desktop, running an x86 or x86_64 architecture), and we refer to the
-"guest" as the arm platform that is the target of the cross
-compilation.
+completing this installation. 
 
-In this document, we use the Qemu emulator for the cross compilation.
+In all these documents we refer to the "host", as the machine used to
+compile Bigloo (typically a laptop or a desktop, running an x86 or
+x86_64 architecture), and we refer to the "guest" as the arm platform
+that is the target of the cross compilation.
+
+In this document, we use the Qemu emulator for cross compilation.
 Qemu can be replaced with an actual raspberry device.
 
 The three main steps of the cross compilation procedure are:
 
-  1- get a toolchain that is used for the low level cross compilation.
-  2- prepare qemu to emulate a raspberry device.
-  3- cross compile Bigloo.
+  1- getting a toolchain that is used for the low level cross compilation.
+  2- preparing qemu to emulate a raspberry device.
+  3- cross compiling Bigloo.
   
   
 0. Prerequisite
@@ -29,6 +30,7 @@ version. Any complete GNU C development kit (gcc, autoconf, automake, libtool,
 ...) should work.
 
 We are assuming that raspbian is the operating system running on the guest.
+
 
 1. Qemu
 -------
@@ -66,11 +68,9 @@ have to adapt the Bigloo ssh-copy.sh script used for the cross-compiation
    
    (in guest) sudo adduser --home /home/hop --shell /bin/bash hop
    
-   
 8. Generate an ssh-key
 
    (in guest) ssh-keygen
-   
    
 9. Copy personnal public key
    (in guest) cat > ~/.ssh/authorized_keys
@@ -81,7 +81,7 @@ have to adapt the Bigloo ssh-copy.sh script used for the cross-compiation
 
 Getting a correct toolchain for compiling C files executable on the
 guest is challenging. Arm processors have different characteristics
-(arm <= 6 that support soft floats and arm >= 7 that support hard floats)
+(arm <= 6 that supports soft floats and arm >= 7 that supports hard floats)
 and the Raspbian distribution probably uses different versions of the
 glibc and gcc compiler than the host. Before proceeding to the Bigloo
 cross compilation a compatible toochain must be build. The following
@@ -102,7 +102,7 @@ installed with:
 
   (host) sudo apt install gcc-arm-linux-gnueabihf
   
-If the versions differ, then you have to install your own cursom
+If the versions differ, then you have to install your own curstom
 version. This can be done with
 
   (host) bigloo/arch/raspberry/build-toolchain.sh
