@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Jan  8 11:20:35 2020 (serrano)                */
+/*    Last change :  Wed Jan  8 16:45:35 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -331,7 +331,7 @@ dump_statistics() {
    }
 
    if( bmemdumpfmt == BMEMDUMPFORMAT_JSON ) {
-      fprintf( f, "{\"monitor\":\n   { \"info\": { \"exec\": \"~a\", \"version\": \"~a\", \"sizeWord\": ~d } }\n", e, VERSION, BMEMSIZEOFWORD );
+      fprintf( f, "{\"monitor\":\n  { \"info\": { \"exec\": \"%s\", \"version\": \"%s\", \"sizeWord\": %d } },\n", e, VERSION, BMEMSIZEOFWORD );
       GC_dump_statistics_json( f );
       fprintf( f, "}\n" );
    } else {

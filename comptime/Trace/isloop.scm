@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jan  8 13:51:43 2020                          */
-;*    Last change :  Wed Jan  8 14:39:38 2020 (serrano)                */
+;*    Last change :  Wed Jan  8 16:29:52 2020 (serrano)                */
 ;*    Copyright   :  2020 Manuel Serrano                               */
 ;*    -------------------------------------------------------------    */
 ;*    implementation of the isloop? predicate                          */
@@ -48,7 +48,6 @@
 ;*    tail? ::node ...                                                 */
 ;*---------------------------------------------------------------------*/
 (define-generic (tail? node::node fun::variable tailp)
-   (tprint "PAS TAIL " (typeof node))
    #f)
 
 ;*---------------------------------------------------------------------*/
