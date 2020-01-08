@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Thu Oct 10 09:05:01 2019 (serrano)                */
-/*    Copyright   :  2003-19 Manuel Serrano                            */
+/*    Last change :  Wed Jan  8 11:25:27 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
 /*=====================================================================*/
@@ -25,13 +25,15 @@ extern int bmem_verbose;
 /*    make_gc_info ...                                                 */
 /*---------------------------------------------------------------------*/
 static gc_info_t *
-make_gc_info( long num, long asize, long hsize, long lsize ) {
+make_gc_info( long num, long asize, long hsize, long lsize, void *lastfun ) {
    gc_info_t *info = (gc_info_t *)malloc( sizeof( gc_info_t ) );
    
    info->number = num;
    info->alloc_size = asize;
    info->heap_size = hsize;
    info->live_size = lsize;
+   info->lastfun = bgl_debug_trace_top( 0 );
+   info->time = ____bgl_current_nanoseconds();
 
    return info;
 }
@@ -42,7 +44,8 @@ make_gc_info( long num, long asize, long hsize, long lsize ) {
 /*---------------------------------------------------------------------*/
 void
 GC_collect_hook( int heapsz, long livesz ) {
-   gc_info_t *info = make_gc_info( gc_number, gc_alloc_size, heapsz, livesz );
+   void *lf = bgl_debug_trace_top( 0 );
+   gc_info_t *info = make_gc_info( gc_number, gc_alloc_size, heapsz, livesz, lf );
 
    gc_number++;
 
@@ -54,7 +57,7 @@ GC_collect_hook( int heapsz, long livesz ) {
 		  ((double)heapsz / (1024. * 1024.)),
 		  ((double)livesz / (1024. * 1024.)) );
       } else {
-	 fprintf( stderr, "gc %3lu: alloc size=%luKB, heap size=%dKB, live size=%ldKB\n",
+	 fprintf( stderr, "gc %3lu: alloc size=%luKB, heap size=%dKB, live size=%ldKB, fun=%s\n",
 		  gc_number,
 		  gc_alloc_size / 1024,
 		  heapsz / 1024,
@@ -81,15 +84,32 @@ gc_alloc_size_add( int size ) {
 
 /*---------------------------------------------------------------------*/
 /*    static void                                                      */
-/*    GC_dump_gc ...                                                   */
+/*    GC_dump_gc_sexp ...                                              */
 /*---------------------------------------------------------------------*/
 static void
-GC_dump_gc( gc_info_t *i, FILE *f ) {
-   fprintf( f, "    (%lu #l%lu #l%lu #l%lu)\n",
+GC_dump_gc_sexp( gc_info_t *i, FILE *f ) {
+   fprintf( f, "    (%lu #l%lu #l%lu #l%lu \"%s\" #l%ld)\n",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
 	    i->heap_size,
-	    BMEMSIZE( i->live_size ) );
+	    BMEMSIZE( i->live_size ),
+	    bgl_debug_trace_symbol_name( i->lastfun ),
+	    i->time );
+}
+
+/*---------------------------------------------------------------------*/
+/*    static void                                                      */
+/*    GC_dump_gc_json ...                                              */
+/*---------------------------------------------------------------------*/
+static void
+GC_dump_gc_json( gc_info_t *i, FILE *f ) {
+   fprintf( f, "    { \"number\": %lu, \"alloc\": %lu, \"heap\": %lu, \"live\": %lu, \"lastfun\": \"%s\", \"time\": %ld}",
+	    i->number,
+	    BMEMSIZE( i->alloc_size ),
+	    i->heap_size,
+	    BMEMSIZE( i->live_size ),
+	    bgl_debug_trace_symbol_name( i->lastfun ),
+	    i->time );
 }
 
 /*---------------------------------------------------------------------*/
@@ -99,10 +119,23 @@ GC_dump_gc( gc_info_t *i, FILE *f ) {
 void
 GC_dump_statistics( FILE *f ) {
    fprintf( f, "  (gc\n" );
-   for_each( (void (*)(void *, void *))GC_dump_gc,
+   for_each( (void (*)(void *, void *))GC_dump_gc_sexp,
 	     pa_reverse( gcs_info ),
 	     (void *)f );
    fprintf( f, "    )\n" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    GC_dump_statistics_json ...                                      */
+/*---------------------------------------------------------------------*/
+void
+GC_dump_statistics_json( FILE *f ) {
+   fprintf( f, "  { \"gc\":\n" );
+   for_each_json( f, (void (*)(void *, void *))GC_dump_gc_json,
+		  pa_reverse( gcs_info ),
+		  (void *)f );
+   fprintf( f, "    }\n" );
 }
 
 /*---------------------------------------------------------------------*/

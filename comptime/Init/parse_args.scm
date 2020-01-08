@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Mon Dec 16 05:40:51 2019 (serrano)                */
-;*    Copyright   :  1992-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  8 13:05:23 2020 (serrano)                */
+;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
 ;*=====================================================================*/
@@ -564,9 +564,12 @@
        (set! *error-localization* #f))
       (("-gjvm" (help "Annote JVM classes for debug"))
        (set! *jvm-debug* #t))
-      (("-gtrace?opt" (help "-gtrace[12]" "Producing stack traces"))
+      (("-gtrace?opt" (help "-gtrace[12all]" "Instrument for stack tracing"))
        (set! *compiler-debug-trace*
-	     (if (=fx (string-length opt) 0) 1 (string->integer opt))))
+	  (cond
+	     ((=fx (string-length opt) 0) 1)
+	     ((string=? opt "all") 10000000)
+	     (else (string->integer opt)))))
       (("-g?opt" (help "-g[234]" "Produce Bigloo debug informations"))
        (parse-debug-args opt))
       (("-cg" (help "Compile C files with debug option"))

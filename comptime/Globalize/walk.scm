@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Globalize/walk.scm          */
+;*    .../prgm/project/bigloo/bigloo/comptime/Globalize/walk.scm       */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Jan 26 14:25:07 1995                          */
-;*    Last change :  Tue Feb  9 09:32:39 2016 (serrano)                */
-;*    Copyright   :  1995-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Wed Jan  8 13:49:53 2020 (serrano)                */
+;*    Copyright   :  1995-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The `globalization' stage                                        */
 ;*=====================================================================*/
@@ -29,7 +29,7 @@
 ;*---------------------------------------------------------------------*/
 (define (globalize-walk! globals remove)
    (pass-prelude "Globalization")
-   ;; we compute the escape! property for all function (local and global)
+   ;; compute the escape! property for all functions (locals and globals)
    (for-each escape-fun! globals)
    ;; we perform the globalization
    (let loop ((globals globals)

@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:15:48 2003                          */
-/*    Last change :  Sun Jun  9 06:54:14 2019 (serrano)                */
-/*    Copyright   :  2003-19 Manuel Serrano                            */
+/*    Last change :  Wed Jan  8 11:43:00 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Debug trace handling                                             */
 /*=====================================================================*/
@@ -67,17 +67,24 @@ loop:
 
 /*---------------------------------------------------------------------*/
 /*    char *                                                           */
-/*    bgl_debug_trace_top_name ...                                     */
+/*    bgl_debug_trace_symbol_name ...                                  */
 /*---------------------------------------------------------------------*/
 char *
-bgl_debug_trace_top_name( int offset ) {
-   obj_t sym = bgl_debug_trace_top( offset );
-
+bgl_debug_trace_symbol_name( obj_t sym ) {
    if( SYMBOLP( sym ) ) {
       return BSTRING_TO_STRING( SYMBOL_TO_STRING( sym ) );
    } else {
       return "unknown";
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    bgl_debug_trace_top_name ...                                     */
+/*---------------------------------------------------------------------*/
+char *
+bgl_debug_trace_top_name( int offset ) {
+   return bgl_debug_trace_symbol_name( bgl_debug_trace_top( offset ) );
 }
 
 /*---------------------------------------------------------------------*/

@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Wed Dec 11 15:34:48 2019 (serrano)                */
-#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Jan  8 13:52:08 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
 #*    This Makefile has to be processed by Gnu make.                   */
@@ -255,7 +255,7 @@ TVECTOR_FILE	= tvector access cnst
 TVECTOR_OBJ	= $(TVECTOR_FILE:%=Tvector/%.o)
 
 #*--- trace -----------------------------------------------------------*/
-TRACE_FILE	= walk
+TRACE_FILE	= walk isloop
 
 TRACE_OBJ	= $(TRACE_FILE:%=Trace/%.o)
 

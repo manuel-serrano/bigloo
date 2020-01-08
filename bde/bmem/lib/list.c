@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bde/bmem/lib/list.c                  */
+/*    serrano/prgm/project/bigloo/bigloo/bde/bmem/lib/list.c           */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:52:54 2003                          */
-/*    Last change :  Fri Dec 14 10:50:57 2012 (serrano)                */
-/*    Copyright   :  2003-12 Manuel Serrano                            */
+/*    Last change :  Wed Jan  8 11:52:59 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Simple and naive list library                                    */
 /*=====================================================================*/
@@ -52,6 +52,23 @@ for_each( void (*fun)(void *, void *), pa_pair_t *lst, void *arg ) {
       fun( PA_CAR( lst ), arg );
       lst = PA_CDR( lst );
    }
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    for_each_json ...                                                */
+/*---------------------------------------------------------------------*/
+void
+for_each_json( FILE *f, void (*fun)(void *, void *), pa_pair_t *lst, void *arg ) {
+   fprintf( f, "[" );
+   while( PA_PAIRP( lst ) ) {
+      fun( PA_CAR( lst ), arg );
+      lst = PA_CDR( lst );
+      if( PA_PAIRP( lst ) ) {
+	 fprintf( f, ",\n" );
+      }
+   }
+   fprintf( f, "]\n" );
 }
 
 /*---------------------------------------------------------------------*/

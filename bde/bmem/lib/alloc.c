@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Dec 25 06:47:54 2019 (serrano)                */
-/*    Copyright   :  2003-19 Manuel Serrano                            */
+/*    Last change :  Wed Jan  8 11:24:33 2020 (serrano)                */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
 /*=====================================================================*/
@@ -541,10 +541,6 @@ make_belong( long l ) {
    a_elong->elong.val = l;
 
    bmem_pop_type();
-/*    if( !bmem_thread ) {                                             */
-/*       DBG_INDEX_RESET();                                            */
-/*       //bmem_set_alloc_type( -1, 0 );                               */
-/*    }                                                                */
    DBG_INDEX_STOP( "make_belong" );
    
    return BREF( a_elong );
