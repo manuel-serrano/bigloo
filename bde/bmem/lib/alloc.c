@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Fri Jan 10 08:54:38 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 13:54:19 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -248,15 +248,15 @@ alloc_dump( fun_alloc_info_t *i, FILE *f ) {
 /*---------------------------------------------------------------------*/
 void
 alloc_dump_json( fun_alloc_info_t *i, FILE *f ) {
-   fprintf( f, "      { \"gc\": %lu, \"dsize\": %lu, \"isize\": %lu\n",
+   fprintf( f, "      { \"gc\": %lu, \"dsize\": %lu, \"isize\": %lu,\n",
 	    i->gc_num,
 	    BMEMSIZE( i->dsize ), BMEMSIZE( i->isize ) );
-   fprintf( f, "        { \"dtype\": " );
+   fprintf( f, "        \"dtype\": " );
    for_each_json( (void (*)(void *, void *))alloc_dump_type_json, i->dtypes, f );
-   fprintf( f, " }\n" );
-   fprintf( f, "        { \"itype\": " );
+   fprintf( f, " ,\n" );
+   fprintf( f, "        \"itype\": " );
    for_each_json( (void (*)(void *, void *))alloc_dump_type_json, i->itypes, f );
-   fprintf( f, " }}" );
+   fprintf( f, " }" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -302,9 +302,9 @@ alloc_dump_statistics( FILE *f ) {
 /*---------------------------------------------------------------------*/
 void
 alloc_dump_statistics_json( FILE *f ) {
-   fprintf( f, "  { \"function\": " );
+   fprintf( f, "  \"function\": " );
    for_each_json( (void (*)(void *, void *))fun_dump_json, all_functions, (void *)f );
-   fprintf( f, "}\n" );
+   fprintf( f, "\n" );
 }
 
 /*---------------------------------------------------------------------*/

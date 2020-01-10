@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri Jan 10 08:45:07 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 17:08:22 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -131,11 +131,11 @@ GC_dump_statistics( FILE *f ) {
 /*---------------------------------------------------------------------*/
 void
 GC_dump_statistics_json( FILE *f ) {
-   fprintf( f, "  { \"gc\": " );
+   fprintf( f, "   \"gc\": " );
    for_each_json( (void (*)(void *, void *))GC_dump_gc_json,
 		  pa_reverse( gcs_info ),
 		  (void *)f );
-   fprintf( f, "}\n" );
+   fprintf( f, "\n" );
 }
 
 /*---------------------------------------------------------------------*/
