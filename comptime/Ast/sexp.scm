@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Wed Jan  8 16:08:14 2020 (serrano)                */
+;*    Last change :  Fri Jan 10 11:44:08 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -776,8 +776,10 @@
       (if (location? loc)
 	  (let ((file (location-full-fname loc))
 		(line (location-lnum loc))
-		(base (symbol->string (gensym (string-append "<" pref ":")))))
+		(base (symbol->string (gensym (string-append "<@" pref ":")))))
 	     (cond
+		((string-contains pref "<@")
+		 (symbol-append (string->symbol pref) (gensym 'anonymous)))
 		((or (and (>=fx *bdb-debug* 1)
 			  (memq 'bdb (backend-debug-support (the-backend))))
 		     (>=fx *compiler-debug* 1))
@@ -788,10 +790,10 @@
 		     (string-append base ":"
 				    (string-replace file #\. #\,)
 				    ":" (number->string line)
-				    ">"))))
+				    "@>"))))
 		(else
 		 (string->symbol (string-replace (string-append base ">") #\. #\,)))))
-	  (symbol-append (gensym (string-append "<" pref "-")) '>))))
+	  (symbol-append (gensym (string-append "<@" pref "-")) '@>))))
 	  
 ;*---------------------------------------------------------------------*/
 ;*    synchronize->node ...                                            */

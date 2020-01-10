@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:28:06 2003                          */
-/*    Last change :  Wed Jan  8 16:45:35 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 08:22:50 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation profiling initialization                              */
@@ -24,6 +24,7 @@
 #endif
 
 extern void alloc_dump_statistics( FILE *f );
+extern void alloc_dump_statistics_json( FILE *f );
 extern void alloc_reset_statistics();
 extern void declare_type( int tnum, char *tname );
 extern void GC_dump_statistics( FILE *f );
@@ -331,10 +332,14 @@ dump_statistics() {
    }
 
    if( bmemdumpfmt == BMEMDUMPFORMAT_JSON ) {
+      // json dump
       fprintf( f, "{\"monitor\":\n  { \"info\": { \"exec\": \"%s\", \"version\": \"%s\", \"sizeWord\": %d } },\n", e, VERSION, BMEMSIZEOFWORD );
       GC_dump_statistics_json( f );
+      fprintf( f, "   ,\n" );
+      alloc_dump_statistics_json( f );
       fprintf( f, "}\n" );
    } else {
+      // text dump
       fprintf( f, ";; sizes are expressed in word (e.g., 4 bytes)\n" );
       fprintf( f, "(monitor\n" );
       fprintf( f, "  (info (exec \"%s\") (version \"%s\") (sizeof-word %d))\n",
@@ -346,16 +351,18 @@ dump_statistics() {
       fprintf( f, ")\n" );
    }
    if( bmem_verbose >= 1 ) {
-      fprintf( stderr, " done\n" );
-   }
-   if( bmem_verbose >= 1 ) {
-      fprintf( stderr, "(export \"BMEMVERBOSE=0\" to disable bmem messages)\n\n" );
-      fflush( stderr );
-      fflush( stdout );
+      fprintf( stderr, " done\n\n" );
    }
    
    fprintf( stderr, "Total size: %lldMB (%lldKB)\n",
 	    GC_alloc_total() / 1024 / 1024, GC_alloc_total() / 1024 );
+   
+   if( bmem_verbose >= 1 ) {
+      fprintf( stderr, "\n(export \"BMEMVERBOSE=0\" to disable bmem messages)\n" );
+      fprintf( stderr, "(export \"BMEMFORMAT=json\" to generate json format)\n" );
+      fflush( stderr );
+      fflush( stdout );
+   }
    fclose( f );
 }
 

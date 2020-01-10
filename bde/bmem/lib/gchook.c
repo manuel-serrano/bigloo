@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Wed Jan  8 11:25:27 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 08:45:07 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -103,12 +103,12 @@ GC_dump_gc_sexp( gc_info_t *i, FILE *f ) {
 /*---------------------------------------------------------------------*/
 static void
 GC_dump_gc_json( gc_info_t *i, FILE *f ) {
-   fprintf( f, "    { \"number\": %lu, \"alloc\": %lu, \"heap\": %lu, \"live\": %lu, \"lastfun\": \"%s\", \"time\": %ld}",
+   fprintf( f, "    { \"number\": %lu, \"alloc\": %lu, \"heap\": %lu, \"live\": %lu, \"lastfun\": %s, \"time\": %ld }",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
 	    i->heap_size,
 	    BMEMSIZE( i->live_size ),
-	    bgl_debug_trace_symbol_name( i->lastfun ),
+	    bgl_debug_trace_symbol_name_json( i->lastfun ),
 	    i->time );
 }
 
@@ -131,11 +131,11 @@ GC_dump_statistics( FILE *f ) {
 /*---------------------------------------------------------------------*/
 void
 GC_dump_statistics_json( FILE *f ) {
-   fprintf( f, "  { \"gc\":\n" );
-   for_each_json( f, (void (*)(void *, void *))GC_dump_gc_json,
+   fprintf( f, "  { \"gc\": " );
+   for_each_json( (void (*)(void *, void *))GC_dump_gc_json,
 		  pa_reverse( gcs_info ),
 		  (void *)f );
-   fprintf( f, "    }\n" );
+   fprintf( f, "}\n" );
 }
 
 /*---------------------------------------------------------------------*/

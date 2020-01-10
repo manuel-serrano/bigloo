@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 15:15:48 2003                          */
-/*    Last change :  Wed Jan  8 11:43:00 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 08:27:34 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Debug trace handling                                             */
@@ -75,6 +75,57 @@ bgl_debug_trace_symbol_name( obj_t sym ) {
       return BSTRING_TO_STRING( SYMBOL_TO_STRING( sym ) );
    } else {
       return "unknown";
+   }
+}
+
+/*---------------------------------------------------------------------*/
+/*    char *                                                           */
+/*    bgl_debug_trace_symbol_name ...                                  */
+/*---------------------------------------------------------------------*/
+char *
+bgl_debug_trace_symbol_name_json( obj_t sym ) {
+   if( SYMBOLP( sym ) ) {
+      obj_t s = SYMBOL_TO_STRING( sym );
+      int len = STRING_LENGTH( s );
+      char *name = BSTRING_TO_STRING( s );
+      char *beg = strstr( name, "<@" );
+      char *buf;
+
+      fprintf( stderr, "name=[%s] -> [%s]\n", name, beg );
+	    
+      if( beg ) {
+	 char *end = strstr( beg, "@>" );
+
+	 if( end ) {
+	    char *res = malloc( end - beg - 1 );
+	    char *sep;
+	    strncpy( res, beg + 2, end - beg );
+	    res[ end - beg - 2 ] = 0;
+
+	    sep = strchr( res, ':' );
+
+	    if( sep ) {
+	       char *buf = malloc( strlen( name ) + 27 );
+	       *sep = 0;
+	       
+	    fprintf( stderr, "name=[%s] => [%s:%s]\n", name, sep + 1, res );
+	       sprintf( buf, "{ \"point\": %s, \"file\": \"%s\" }",
+			sep + 1, res );
+	       return buf;
+	    }
+	 }
+      }
+
+      buf = malloc( len + 2 );
+      buf[ 0 ] = '"';
+      strcpy( buf + 1, name );
+      buf[ len ] = '"';
+      buf[ len + 1 ] = 0;
+
+      fprintf( stderr, "name=[%s] ~> [%s]\n", name, buf );
+      return buf;
+   } else {
+      return "\"unknown\"";
    }
 }
 

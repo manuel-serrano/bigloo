@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:42:57 2003                          */
-/*    Last change :  Wed Jan  8 11:24:33 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 08:54:38 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Allocation replacement routines                                  */
@@ -215,6 +215,19 @@ alloc_dump_type( pa_pair_t *i, FILE *f ) {
 
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    alloc_dump_type_json ...                                         */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_type_json( pa_pair_t *i, FILE *f ) {
+   type_alloc_info_t *tai = (type_alloc_info_t *)PA_CDR( i );
+   
+   fprintf( f, "            { \"type\": %ld, \"cnt\": %ld, \"size\": %ld }",
+	    (long)PA_CAR( i ),
+	    tai->num, BMEMSIZE( tai->size ) );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    alloc_dump ...                                                   */
 /*---------------------------------------------------------------------*/
 void
@@ -227,6 +240,23 @@ alloc_dump( fun_alloc_info_t *i, FILE *f ) {
    fprintf( f, "        (itype" );
    for_each( (void (*)(void *, void *))alloc_dump_type, i->itypes, f );
    fprintf( f, "))\n" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    alloc_dump_json ...                                              */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_json( fun_alloc_info_t *i, FILE *f ) {
+   fprintf( f, "      { \"gc\": %lu, \"dsize\": %lu, \"isize\": %lu\n",
+	    i->gc_num,
+	    BMEMSIZE( i->dsize ), BMEMSIZE( i->isize ) );
+   fprintf( f, "        { \"dtype\": " );
+   for_each_json( (void (*)(void *, void *))alloc_dump_type_json, i->dtypes, f );
+   fprintf( f, " }\n" );
+   fprintf( f, "        { \"itype\": " );
+   for_each_json( (void (*)(void *, void *))alloc_dump_type_json, i->itypes, f );
+   fprintf( f, " }}" );
 }
 
 /*---------------------------------------------------------------------*/
@@ -244,6 +274,19 @@ fun_dump( void *ident, FILE *f ) {
    
 /*---------------------------------------------------------------------*/
 /*    void                                                             */
+/*    fun_dump ...                                                     */
+/*---------------------------------------------------------------------*/
+void
+fun_dump_json( void *ident, FILE *f ) {
+   esymbol_t *fun = (esymbol_t *)ident;
+
+   fprintf( f, "   { \"function\": %s, \"allocs\": ", bgl_debug_trace_symbol_name_json( (obj_t)fun ) );
+   for_each_json( (void (*)(void *, void *))alloc_dump_json, CESYMBOL( fun )->alloc_info, f );
+   fprintf( f, " }" );
+}
+   
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
 /*    alloc_dump_statistics ...                                        */
 /*---------------------------------------------------------------------*/
 void
@@ -251,6 +294,17 @@ alloc_dump_statistics( FILE *f ) {
    fprintf( f, "  (function" );
    for_each( (void (*)(void *, void *))fun_dump, all_functions, (void *)f );
    fprintf( f, ")\n" );
+}
+
+/*---------------------------------------------------------------------*/
+/*    void                                                             */
+/*    alloc_dump_statistics_json ...                                   */
+/*---------------------------------------------------------------------*/
+void
+alloc_dump_statistics_json( FILE *f ) {
+   fprintf( f, "  { \"function\": " );
+   for_each_json( (void (*)(void *, void *))fun_dump_json, all_functions, (void *)f );
+   fprintf( f, "}\n" );
 }
 
 /*---------------------------------------------------------------------*/

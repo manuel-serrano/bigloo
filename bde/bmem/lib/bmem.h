@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:29:17 2003                          */
-/*    Last change :  Wed Jan  8 11:27:30 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 08:45:51 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    The allocation profiler include                                  */
@@ -221,7 +221,7 @@ typedef struct pa_pair {
 #define PA_CDR( l ) ((l)->cdr)
 
 extern void for_each( void (*)(void *, void *), pa_pair_t *, void * );
-extern void for_each_json( FILE *, void (*)(void *, void *), pa_pair_t *, void * );
+extern void for_each_json( void (*)(void *, void *), pa_pair_t *, void * );
 extern pa_pair_t *pa_cons( void *, pa_pair_t * );
 extern pa_pair_t *pa_reverse( pa_pair_t * );
 extern pa_pair_t *pa_assq( void *, pa_pair_t * );
@@ -232,6 +232,7 @@ extern pa_pair_t *pa_assq( void *, pa_pair_t * );
 extern void *bgl_debug_trace_top( int );
 extern char *bgl_debug_trace_top_name( int );
 extern char *bgl_debug_trace_symbol_name( void * );
+extern char *bgl_debug_trace_symbol_name_json( void * );
 extern void for_each_trace( void (*)(void *, void *), int, int, void * );
 
 /*---------------------------------------------------------------------*/

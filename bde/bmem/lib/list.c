@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:52:54 2003                          */
-/*    Last change :  Wed Jan  8 11:52:59 2020 (serrano)                */
+/*    Last change :  Fri Jan 10 09:05:24 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Simple and naive list library                                    */
@@ -59,16 +59,18 @@ for_each( void (*fun)(void *, void *), pa_pair_t *lst, void *arg ) {
 /*    for_each_json ...                                                */
 /*---------------------------------------------------------------------*/
 void
-for_each_json( FILE *f, void (*fun)(void *, void *), pa_pair_t *lst, void *arg ) {
+for_each_json( void (*fun)(void *, void *), pa_pair_t *lst, void *arg ) {
+   FILE *f = (FILE *)arg;
    fprintf( f, "[" );
    while( PA_PAIRP( lst ) ) {
-      fun( PA_CAR( lst ), arg );
+      fprintf( f, "\n" );
+      fun( PA_CAR( lst ), f );
       lst = PA_CDR( lst );
       if( PA_PAIRP( lst ) ) {
-	 fprintf( f, ",\n" );
+	 fprintf( f, "," );
       }
    }
-   fprintf( f, "]\n" );
+   fprintf( f, "]" );
 }
 
 /*---------------------------------------------------------------------*/
