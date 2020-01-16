@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_int.h      */
+/*    /tmp/BGL/bigloo4.3g/runtime/Include/bigloo_int.h                 */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Thu Dec 26 07:09:02 2019 (serrano)                */
-/*    Copyright   :  2017-19 Manuel Serrano                            */
+/*    Last change :  Thu Jan 16 07:56:31 2020 (serrano)                */
+/*    Copyright   :  2017-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
 /*=====================================================================*/
@@ -46,12 +46,11 @@ extern "C" {
 #  define BGL_LONG_MIN (INT32_MIN)
 #  define BGL_LONG_MAX (INT32_MAX)
 
-#  define BINT( i ) (((long)(((int32_t)i) << 32)) + TAG_INT)
+#  define BINT( i ) ((obj_t)((((long)((int32_t)i)) << 32) + TAG_INT))
 #  define CINT( i ) ((long)((int32_t)((long)i)) >> 32)
 #  define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
 #  define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
 
-#  define EGFX( x, y ) (((long)(x)) == ((long)(y)))
 #  define LTFX( x, y ) ((long)(x) < (long)(y))
 #  define LEFX( x, y ) ((long)(x) <= (long)(y))
 #  define GTFX( x, y ) ((long)(x) > (long)(y))
