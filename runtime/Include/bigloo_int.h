@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar  2 05:40:03 2017                          */
-/*    Last change :  Thu Jan 16 07:56:31 2020 (serrano)                */
+/*    Last change :  Thu Jan 16 08:59:29 2020 (serrano)                */
 /*    Copyright   :  2017-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo INTEGERs                                                  */
@@ -47,7 +47,7 @@ extern "C" {
 #  define BGL_LONG_MAX (INT32_MAX)
 
 #  define BINT( i ) ((obj_t)((((long)((int32_t)i)) << 32) + TAG_INT))
-#  define CINT( i ) ((long)((int32_t)((long)i)) >> 32)
+#  define CINT( i ) ((long)((int32_t)((long)((long)i) >> 32)))
 #  define ADDFX( x, y ) (obj_t)((long)(x) + ((long)(y)) - TAG_INT)
 #  define SUBFX( x, y ) (obj_t)((long)(x) - ((long)(y)) + TAG_INT)
 

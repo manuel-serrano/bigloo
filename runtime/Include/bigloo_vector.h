@@ -3,8 +3,8 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sat Mar  5 08:05:01 2016                          */
-/*    Last change :  Sat Dec  7 18:56:23 2019 (serrano)                */
-/*    Copyright   :  2016-19 Manuel Serrano                            */
+/*    Last change :  Thu Jan 16 08:25:00 2020 (serrano)                */
+/*    Copyright   :  2016-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo VECTORs                                                   */
 /*=====================================================================*/
@@ -114,8 +114,7 @@ struct bgl_hvector {
 #   define BGL_VLENGTH( v ) (VECTOR( v ).length)
 #endif
 
-#define VECTOR_LENGTH( v ) \
-   BGL_VLENGTH( v )
+#define VECTOR_LENGTH( v ) BGL_VLENGTH( v )
 
 #if( VECTOR_SIZE_TAG_NB_BIT != 0 )
 #  define VECTOR_TAG_SET( v, tag ) \
