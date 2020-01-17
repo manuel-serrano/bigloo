@@ -4,8 +4,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Dec 26 07:03:39 2019 (serrano)                */
-#*    Copyright   :  1994-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Fri Jan 17 15:08:28 2020 (serrano)                */
+#*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
 #*    -------------------------------------------------------------    */
@@ -2258,6 +2258,7 @@ if [ "$gmpversion " != "no " ]; then
     libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
     lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
     buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
+    gmplib=-lgmp
   fi
 fi
 
