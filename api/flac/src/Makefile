@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jan 20 19:14:21 2020 (serrano)                */
+#*    Last change :  Mon Jan 20 19:27:10 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -62,7 +62,6 @@ ifeq "$(PULSEAUDIOLIBS) " " "
 EXTRALIBS	+= -lbigloomultimedia_u-$(RELEASE)
 else
 EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
-endif
 endif
 
 #*---------------------------------------------------------------------*/
