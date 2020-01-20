@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Dec 26 06:57:54 2019 (serrano)                */
+/*    Last change :  Thu Jan 16 13:53:13 2020 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -87,7 +87,7 @@ extern "C" {
 /*    This number is used to ensure the compatibility between the      */
 /*    compiler and the blib library.                                   */
 /*---------------------------------------------------------------------*/
-#define BDB_LIBRARY_MAGIC_NUMBER ((char *)0x1024)
+#define BDB_LIBRARY_MAGIC_NUMBER (0x1024)
        
 /*---------------------------------------------------------------------*/
 /*    BIGLOO_EXIT                                                      */

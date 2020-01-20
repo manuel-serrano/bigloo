@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Wed Jul  3 07:50:47 1996                          */
-;*    Last change :  Sat Jan 11 06:46:08 2020 (serrano)                */
+;*    Last change :  Wed Jan  8 20:00:53 2020 (serrano)                */
 ;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The C production for application (apply, funcall, app) nodes.    */
@@ -121,7 +121,7 @@
 		 (exps         '()))
 	 (if (null? old-actuals)
 	     (let* ((type (get-type node #f))
-		    (aux (make-local-svar/name 'tmp *obj*))
+		    (aux (make-local-svar/name 'tmpfun *procedure*))
 		    (cop (node->cop (node-setq aux fun) *id-kont* inpushexit)))
 		(if (and (csetq? cop)
 			 (var? fun)
