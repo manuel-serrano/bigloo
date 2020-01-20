@@ -6,7 +6,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Sun Jan 19 09:04:55 2020 (serrano)                */
+#*    Last change :  Mon Jan 20 18:44:31 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -31,6 +31,7 @@ bglconfigureopt=
 #* builddepend=libpcre3-dev                                           */
 builddepend=
 depend=
+debformat="3.0 (native)"
 
 fakeroot=fakeroot
 
@@ -104,7 +105,7 @@ cd build.$pkg
 tar xfz $repodir/bigloo$version$minor.tar.gz
 mv bigloo$version$minor bigloo-$version
 
-cp $repodir/bigloo$version$minor.tar.gz bigloo-$version.tar.gz
+cp $repodir/bigloo$version$minor.tar.gz bigloo_$version.orig.tar.gz
 cd bigloo-$version
 
 dh_make -c gpl -s -e Manuel.Serrano@inria.fr -f ../bigloo-$version.tar.gz <<EOF
@@ -179,6 +180,11 @@ for p in control rules postinst changelog changelog compat; do
     configure $basedir/$p debian/$p
   fi
 done
+
+chmod a+x debian/rules
+
+mkdir -p debian/source
+echo $debformat > debian/source/format
 
 dpkg-buildpackage -r$fakeroot && 
 

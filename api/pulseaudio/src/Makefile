@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/pulseaudio/src/Makefile          */
+#*    .../prgm/project/bigloo/bigloo/api/pulseaudio/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:16:17 2017 (serrano)                */
+#*    Last change :  Mon Jan 20 19:07:30 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,7 +50,7 @@ CEFLAGS		= $(PULSEAUDIOCFLAGS)
 ifeq "$(PULSEAUDIOLIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(PULSEAUDIOLIBS)
+EXTRALIBS	= $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

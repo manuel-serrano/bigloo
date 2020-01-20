@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/flac/src/Makefile                */
+#*    serrano/prgm/project/bigloo/bigloo/api/flac/src/Makefile         */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:08:59 2017 (serrano)                */
+#*    Last change :  Mon Jan 20 19:14:21 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,15 +50,18 @@ CEFLAGS		= $(FLACCFLAGS)
 ifeq "$(FLACLIBS) " " "
 EXTRALIBS	= 
 else
+EXTRALIBS	= $(FLACLIBS)
+endif
+
 ifeq "$(ALSALIBS) " " "
-EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS	+= -lbigloomultimedia_u-$(RELEASE)
 else
-EXTRALIBS	= $(FLACLIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
 endif
 ifeq "$(PULSEAUDIOLIBS) " " "
-EXTRALIBS	= $(FLACLIBS) -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS	+= -lbigloomultimedia_u-$(RELEASE)
 else
-EXTRALIBS	= $(FLACLIBS) $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
 endif
 endif
 
