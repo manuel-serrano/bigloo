@@ -18,4 +18,4 @@ example:
 To build the debian packages on a remote machine via ssh
 --------------------------------------------------------
   
-  ./makedebremote.sh rasppi
+  ./makedebremote.sh rasppi -O /tmp/debrasppi
