@@ -18,4 +18,11 @@ example:
 To build the debian packages on a remote machine via ssh
 --------------------------------------------------------
   
+  ./makedebremote.sh host -O /tmp/debbigloo.host
+  
+Warning! This assumes that bash is available on the remote host
+
+example:
+
   ./makedebremote.sh rasppi -O /tmp/debrasppi
+
