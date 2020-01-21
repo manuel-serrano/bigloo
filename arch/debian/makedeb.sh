@@ -6,7 +6,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Mon Jan 20 18:44:31 2020 (serrano)                */
+#*    Last change :  Tue Jan 21 09:33:43 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -18,7 +18,7 @@ minor=
 
 bglprefix=/opt/bigloo
 
-repodir=/home/serrano/prgm/distrib
+repodir=$HOME/prgm/distrib
 basedir=`dirname $0`
 
 if [ "$basedir " = ". " ]; then
@@ -34,6 +34,7 @@ depend=
 debformat="3.0 (native)"
 
 fakeroot=fakeroot
+targetdir=$PWD
 
 libs="sqlite ssl alsa pulseaudio flac wav mpg123 gstreamer avahi"
 
@@ -42,7 +43,7 @@ while : ; do
     "")
       break;;
     -h|--help)
-      echo "usage makedeb.sh [-l LIB] [--depend DEP] [--builddepend DEP] opt1 opt2 ...";
+      echo "usage makedeb.sh [-O dir] --repodir [dir] [-l LIB] [--depend DEP] [--builddepend DEP] opt1 opt2 ...";
       exit 1;;
     -l|--lib)
       shift;
@@ -62,6 +63,12 @@ while : ; do
     --version)
       shift;
       version=$1;;
+    --repo)
+      shift;
+      repodir=$1;;
+    -O)
+      shift
+      targetdir=$1;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
@@ -96,7 +103,11 @@ fi
 
 curdir=`pwd`
 
-cd $curdir
+if [ ! -d $targetdir ]; then
+  mkdir -p $targetdir
+fi
+
+cd $targetdir
 
 /bin/rm -rf build.$pkg
 mkdir build.$pkg

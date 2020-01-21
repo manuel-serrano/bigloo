@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Jan 21 09:00:56 2020 (serrano)                */
+#*    Last change :  Tue Jan 21 09:53:52 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4669,17 +4669,19 @@ fi
 #*    Debian scripting                                                 */
 #*---------------------------------------------------------------------*/
 # debian
-deb=arch/debian/makedeb.sh
-rm -f $deb 2> /dev/null
-$echo "#!/bin/sh" > $deb
-$echo "#* Automatically generated file (don't edit) */" >> $deb
+for file in makedeb.sh makedebremote.sh; do
+  deb=arch/debian/$file
+  rm -f $deb 2> /dev/null
+  $echo "#!/bin/sh" > $deb
+  $echo "#* Automatically generated file (don't edit) */" >> $deb
 
-cat $deb.in \
-   | sed -e "s|#!/bin/sh||" \
-         -e "s|@VERSION@|$release|" \
-         -e "s|@APIS@|$apis|" \
-   >> $deb  
-chmod a+rx $deb
+  cat $deb.in \
+     | sed -e "s|#!/bin/sh||" \
+           -e "s|@VERSION@|$release|" \
+           -e "s|@APIS@|$apis|" \
+     >> $deb  
+  chmod a+rx $deb
+done  
 
 #*---------------------------------------------------------------------*/
 #*    Checking missing dependencies                                    */
