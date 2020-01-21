@@ -6,7 +6,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Tue Jan 21 09:33:43 2020 (serrano)                */
+#*    Last change :  Tue Jan 21 10:11:26 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -63,7 +63,7 @@ while : ; do
     --version)
       shift;
       version=$1;;
-    --repo)
+    --repodir)
       shift;
       repodir=$1;;
     -O)
