@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Sat Jan 18 18:46:55 2020 (serrano)                */
+#*    Last change :  Tue Jan 21 09:00:56 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -314,6 +314,7 @@ fi
 sharedsuffix=so
 sharedlibraryclosed=yes
 sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
+sharedlibrarygcfthclosed='-l$(GCLIB)_fth-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
 # the legal value for that variable is `yes' or `no'
@@ -1583,7 +1584,7 @@ case $hostos in
     cflags="$cflags -DBGL_ANDROID"
     gcspecial=-DIGNORE_DYNAMIC_LOADING;
     # Use the multithreaded libbigloogc to close the other shared libraries
-    sharedlibrarygcclosed='-l$(GCLIB)_fth-$(RELEASE)'
+    sharedlibrarygcclosed=$sharedlibrarygcfthclosed
   
     ;;
 esac
@@ -3521,6 +3522,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@FILDIR@|$fildir|" \
 	      -e "s|@EXTRALIBS@|$extralibs $extragclibs|" \
 	      -e "s|@GCLIBS@|$sharedlibrarygcclosed|" \
+	      -e "s|@GCLIBS_FTH@|$sharedlibrarygcfthclosed|" \
 	      -e "s|@GCLIB@|$gclib|" \
 	      -e "s|@SHAREDSUFFIX@|$sharedsuffix|" \
 	      -e "s|@SONAME@|$ldsoname|" \
@@ -3863,10 +3865,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   $echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   $echo "GCLIB=$gclib" >> $makefile_cfg
+  $echo "GCLIB_FTH=$gclib_fth" >> $makefile_cfg
   if [ $customgc = "yes" ]; then
      $echo "GCCUSTOM=yes" >> $makefile_cfg
      $echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$""(CUSTOMGC)/include" >> $makefile_cfg
      $echo "GCCLOSELIB=$sharedlibrarygcclosed" >> $makefile_cfg
+     $echo "GCCLOSELIB_FTH=$sharedlibrarygcfthclosed" >> $makefile_cfg
      $echo "GCSTDOBJ=" >> $makefile_cfg
   else
      $echo "GCCUSTOM=no" >> $makefile_cfg
