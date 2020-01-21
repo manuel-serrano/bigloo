@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jan 20 20:39:38 2020 (serrano)                */
+#*    Last change :  Tue Jan 21 07:38:28 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -48,9 +48,9 @@ CEFLAGS		= $(MPG123CFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(MPG123LIBS) " " "
-EXTRALIBS	= 
+EXTRALIBS	=
 else
-EXTRALIBS	= $(MPG123LIBS)
+EXTRALIBS	= $(MPG123LIBS) -lm
 endif
 
 ifeq "$(ALSALIBS) " " "

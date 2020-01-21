@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jan 20 19:27:10 2020 (serrano)                */
+#*    Last change :  Tue Jan 21 07:49:09 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,7 +50,7 @@ CEFLAGS		= $(FLACCFLAGS)
 ifeq "$(FLACLIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(FLACLIBS)
+EXTRALIBS	= $(FLACLIBS) -lm
 endif
 
 ifeq "$(ALSALIBS) " " "

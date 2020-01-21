@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/bde/bmem/bmem/gc.scm                 */
+;*    serrano/prgm/project/bigloo/bigloo/bde/bmem/bmem/gc.scm          */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:53:55 2003                          */
-;*    Last change :  Fri Oct 27 18:45:49 2017 (serrano)                */
-;*    Copyright   :  2003-17 Manuel Serrano                            */
+;*    Last change :  Mon Jan 20 08:52:24 2020 (serrano)                */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Visualize GC information                                         */
 ;*=====================================================================*/
@@ -47,6 +47,7 @@
 ;*    make-gc-function-table ...                                       */
 ;*---------------------------------------------------------------------*/
 (define (make-gc-function-table maxhsize::llong gc*::pair-nil fun*::pair-nil)
+   
    (define (gc->cell gc)
       (let* ((n (car gc))
 	     (hsize (caddr gc))
@@ -77,7 +78,8 @@
 		 (list (list (-fx (% hsize maxhsize) per)
 			     "gc0"
 			     (format "heap size: ~a"
-				     (word->size (caddr gc))))))))
+				(word->size (caddr gc))))))))
+   
    (let* ((gc* (filter (lambda (gc)
 			  (>llong (cadr gc) 0))
 		       gc*))

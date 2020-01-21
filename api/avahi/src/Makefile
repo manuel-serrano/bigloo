@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Feb  6 11:38:12 2018 (serrano)                */
+#*    Last change :  Tue Jan 21 07:47:51 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -49,7 +49,7 @@ CEFLAGS		=
 ifeq "$(AVAHILIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(AVAHILIBS)
+EXTRALIBS	= $(AVAHILIBS) $(GCCLOSELIB)
 endif
 
 DISTRIB_FILES	= $(C_SRC_DIR)/bglavahi.h
