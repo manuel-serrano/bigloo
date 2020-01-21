@@ -109,7 +109,7 @@ binary-arch: build install
 #	dh_python
 	LD_LIBRARY_PATH=$(LDLIBPATH) dh_makeshlibs
 	dh_installdeb
-	LD_LIBRARY_PATH=$(LDLIBPATH) dh_shlibdeps -X bmem.so
+#	LD_LIBRARY_PATH=$(LDLIBPATH) dh_shlibdeps -X bmem.so
 	dh_shlibdeps -l$(LDLIBPATH) -X bmem.so
 	dh_gencontrol
 	dh_md5sums
