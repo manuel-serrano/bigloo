@@ -1,10 +1,10 @@
 /*=====================================================================*/
-/*    /tmp/bigloo_real.h                                               */
+/*    .../prgm/project/bigloo/bigloo/runtime/Include/bigloo_real.h     */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Mar  6 07:07:32 2016                          */
-/*    Last change :  Sat Jun  2 06:07:12 2018 (serrano)                */
-/*    Copyright   :  2016-18 Manuel Serrano                            */
+/*    Last change :  Fri Jan 17 18:25:18 2020 (serrano)                */
+/*    Copyright   :  2016-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Bigloo REALs                                                     */
 /*=====================================================================*/
@@ -70,8 +70,7 @@ union nanobj {
 
 #   define FLONUMP( c ) (((unsigned long)c >> 48 & 0x7ff8) != 0x7ff8)
 #   define NANP( c ) ((unsigned long)c == TAG_QNAN)
-#   define REALP( c ) (FLONUMP( c ) || NANP( c ))
-//|| (((unsigned long)c >> 48) == 0xfff8)  // MS: don't think this is needed
+#   define REALP( c ) (FLONUMP( c ) || NANP( c ) || (((unsigned long)c >> 48) == 0xfff8))
 #elif( defined( TAG_REAL ) )
 #   define BREAL( p ) ((obj_t)((long)p + TAG_REAL))
 #   define CREAL( p ) ((obj_t)((long)p - TAG_REAL))

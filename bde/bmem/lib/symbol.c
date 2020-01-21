@@ -4,7 +4,7 @@
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Mon Apr 14 14:48:11 2003                          */
 /*    Last change :  Tue Apr 17 09:01:52 2018 (serrano)                */
-/*    Copyright   :  2003-18 Manuel Serrano                            */
+/*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Custom symbol implementation                                     */
 /*=====================================================================*/

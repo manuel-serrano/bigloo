@@ -314,6 +314,7 @@ fi
 sharedsuffix=so
 sharedlibraryclosed=yes
 sharedlibrarygcclosed='-l$(GCLIB)-$(RELEASE)'
+sharedlibrarygcfthclosed='-l$(GCLIB)_fth-$(RELEASE)'
 
 #*--- should the compiler be dynamically linked?  ---------------------*/
 # the legal value for that variable is `yes' or `no'
@@ -1583,7 +1584,7 @@ case $hostos in
     cflags="$cflags -DBGL_ANDROID"
     gcspecial=-DIGNORE_DYNAMIC_LOADING;
     # Use the multithreaded libbigloogc to close the other shared libraries
-    sharedlibrarygcclosed='-l$(GCLIB)_fth-$(RELEASE)'
+    sharedlibrarygcclosed=$sharedlibrarygcfthclosed
   
     ;;
 esac
@@ -3521,6 +3522,7 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
 	      -e "s|@FILDIR@|$fildir|" \
 	      -e "s|@EXTRALIBS@|$extralibs $extragclibs|" \
 	      -e "s|@GCLIBS@|$sharedlibrarygcclosed|" \
+	      -e "s|@GCLIBS_FTH@|$sharedlibrarygcfthclosed|" \
 	      -e "s|@GCLIB@|$gclib|" \
 	      -e "s|@SHAREDSUFFIX@|$sharedsuffix|" \
 	      -e "s|@SONAME@|$ldsoname|" \
@@ -3863,10 +3865,12 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   $echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   $echo "GCLIB=$gclib" >> $makefile_cfg
+  $echo "GCLIB_FTH=$gclib_fth" >> $makefile_cfg
   if [ $customgc = "yes" ]; then
      $echo "GCCUSTOM=yes" >> $makefile_cfg
      $echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$""(CUSTOMGC)/include" >> $makefile_cfg
      $echo "GCCLOSELIB=$sharedlibrarygcclosed" >> $makefile_cfg
+     $echo "GCCLOSELIB_FTH=$sharedlibrarygcfthclosed" >> $makefile_cfg
      $echo "GCSTDOBJ=" >> $makefile_cfg
   else
      $echo "GCCUSTOM=no" >> $makefile_cfg
@@ -4665,17 +4669,19 @@ fi
 #*    Debian scripting                                                 */
 #*---------------------------------------------------------------------*/
 # debian
-deb=arch/debian/makedeb.sh
-rm -f $deb 2> /dev/null
-$echo "#!/bin/sh" > $deb
-$echo "#* Automatically generated file (don't edit) */" >> $deb
+for file in makedeb.sh makedebremote.sh; do
+  deb=arch/debian/$file
+  rm -f $deb 2> /dev/null
+  $echo "#!/bin/sh" > $deb
+  $echo "#* Automatically generated file (don't edit) */" >> $deb
 
-cat $deb.in \
-   | sed -e "s|#!/bin/sh||" \
-         -e "s|@VERSION@|$release|" \
-         -e "s|@APIS@|$apis|" \
-   >> $deb  
-chmod a+rx $deb
+  cat $deb.in \
+     | sed -e "s|#!/bin/sh||" \
+           -e "s|@VERSION@|$release|" \
+           -e "s|@APIS@|$apis|" \
+     >> $deb  
+  chmod a+rx $deb
+done  
 
 #*---------------------------------------------------------------------*/
 #*    Checking missing dependencies                                    */

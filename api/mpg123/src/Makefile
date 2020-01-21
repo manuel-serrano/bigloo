@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/mpg123/src/Makefile              */
+#*    serrano/prgm/project/bigloo/bigloo/api/mpg123/src/Makefile       */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:13:45 2017 (serrano)                */
+#*    Last change :  Tue Jan 21 07:38:28 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -48,16 +48,18 @@ CEFLAGS		= $(MPG123CFLAGS)
 
 # Additional pthread lib for C
 ifeq "$(MPG123LIBS) " " "
-EXTRALIBS	= 
+EXTRALIBS	=
 else
+EXTRALIBS	= $(MPG123LIBS) -lm
+endif
+
 ifeq "$(ALSALIBS) " " "
 else
-EXTRALIBS	+= $(MPG123LIBS) $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
 endif
 ifeq "$(PULSEAUDIOLIBS) " " "
 else
-EXTRALIBS	+= $(MPG123LIBS) $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
-endif
+EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

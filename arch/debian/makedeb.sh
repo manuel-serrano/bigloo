@@ -2,12 +2,12 @@
 #* Automatically generated file (don't edit) */
 
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/arch/debian/makedeb.sh.in            */
+#*    serrano/prgm/project/bigloo/bigloo/arch/debian/makedeb.sh.in     */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Sun Jun  5 13:26:04 2016 (serrano)                */
-#*    Copyright   :  2012-16 Manuel Serrano                            */
+#*    Last change :  Tue Jan 21 09:33:43 2020 (serrano)                */
+#*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
 #*=====================================================================*/
@@ -18,16 +18,23 @@ minor=
 
 bglprefix=/opt/bigloo
 
-repodir=/users/serrano/prgm/distrib
+repodir=$HOME/prgm/distrib
 basedir=`dirname $0`
+
+if [ "$basedir " = ". " ]; then
+  basedir=`pwd`
+fi
+
 bglconfigureopt=
 
 #* depend=libpcre3                                                    */
 #* builddepend=libpcre3-dev                                           */
 builddepend=
 depend=
+debformat="3.0 (native)"
 
 fakeroot=fakeroot
+targetdir=$PWD
 
 libs="sqlite ssl alsa pulseaudio flac wav mpg123 gstreamer avahi"
 
@@ -36,7 +43,7 @@ while : ; do
     "")
       break;;
     -h|--help)
-      echo "usage makedeb.sh [-l LIB] [--depend DEP] [--builddepend DEP] opt1 opt2 ...";
+      echo "usage makedeb.sh [-O dir] --repodir [dir] [-l LIB] [--depend DEP] [--builddepend DEP] opt1 opt2 ...";
       exit 1;;
     -l|--lib)
       shift;
@@ -56,6 +63,12 @@ while : ; do
     --version)
       shift;
       version=$1;;
+    --repo)
+      shift;
+      repodir=$1;;
+    -O)
+      shift
+      targetdir=$1;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
@@ -90,7 +103,11 @@ fi
 
 curdir=`pwd`
 
-cd $curdir
+if [ ! -d $targetdir ]; then
+  mkdir -p $targetdir
+fi
+
+cd $targetdir
 
 /bin/rm -rf build.$pkg
 mkdir build.$pkg
@@ -99,10 +116,10 @@ cd build.$pkg
 tar xfz $repodir/bigloo$version$minor.tar.gz
 mv bigloo$version$minor bigloo-$version
 
-cp $repodir/bigloo$version$minor.tar.gz bigloo-$version.tar.gz
+cp $repodir/bigloo$version$minor.tar.gz bigloo_$version.orig.tar.gz
 cd bigloo-$version
 
-dh_make -C gpl -s -e Manuel.Serrano@inria.fr -f ../bigloo-$version.tar.gz <<EOF
+dh_make -c gpl -s -e Manuel.Serrano@inria.fr -f ../bigloo-$version.tar.gz <<EOF
 
 EOF
 
@@ -121,7 +138,12 @@ else
   if [ $? = 0 ]; then
      libssldepend=libssl1.0.0
   else
-     libssldepend=libssl
+     apt-cache search 'libssl' | grep 1\.1
+     if [ $? = 0 ]; then
+       libssldepend=libssl1.1
+     else
+       libssldepend=libssl
+     fi
   fi
 fi
 
@@ -158,7 +180,9 @@ configure() {
 }  
 
 # debian specific configuration
-for p in control rules postinst changelog; do
+mkdir -p debian
+
+for p in control rules postinst changelog changelog compat; do
   if [ -f $basedir/$p.in ]; then
     configure $basedir/$p.in debian/$p
   elif [ -f $basedir/$p.$pkg ]; then
@@ -167,6 +191,11 @@ for p in control rules postinst changelog; do
     configure $basedir/$p debian/$p
   fi
 done
+
+chmod a+x debian/rules
+
+mkdir -p debian/source
+echo $debformat > debian/source/format
 
 dpkg-buildpackage -r$fakeroot && 
 

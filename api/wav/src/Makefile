@@ -1,9 +1,9 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/wav/src/Makefile                 */
+#*    serrano/prgm/project/bigloo/bigloo/api/wav/src/Makefile          */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Sun Jul  9 10:18:58 2017 (serrano)                */
+#*    Last change :  Mon Jan 20 19:19:56 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -36,7 +36,7 @@ DEPEND		= $(BGLBUILDBINDIR)/bglbdepend.sh
 BTAGS		= $(BGLBUILDBINDIR)/bgltags.sh
 CIGLOO		= $(BGLBUILDBINDIR)/cigloo
 # Bigloo compilation options
-BAPISAFE	= -safee #-unsafe
+BAPISAFE	= -safee -unsafe
 BAPIFLAGS	= $(BFLAGS) -I Llib -lib-dir $(BOOTLIBDIR) $(BAPISAFE) \
                   -srfi $(API) -copt "$(WAVCFLAGS)"
 CAPIFLAGS       = $(WAVCFLAGS) $(CGCTHREADFLAGS)

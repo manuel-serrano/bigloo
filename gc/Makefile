@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Thu Jul  4 08:36:59 2019 (serrano)                */
-#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Jan 21 08:28:25 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle the GC library compilation          */
 #*=====================================================================*/
@@ -232,7 +232,7 @@ install:
 	if [ "$(GCCUSTOM)" = "yes" ]; then \
 	  $(MAKE) install-lib LIB=libbigloogc-$(RELEASE); \
 	  if [ "$(GCTHREADSUPPORT) " = "yes " ]; then \
-	    $(MAKE) install-lib LIB=libbigloogc_fth-$(RELEASE); \
+	    $(MAKE) install-lib EXTRALIB=$(PTHREADLIBS) LIB=libbigloogc_fth-$(RELEASE); \
           fi; \
 	fi
 
