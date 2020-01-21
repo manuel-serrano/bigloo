@@ -1,0 +1,49 @@
+#!/bin/sh
+#*=====================================================================*/
+#*    .../project/bigloo/bigloo/arch/debian/makedebremote.sh.in        */
+#*    -------------------------------------------------------------    */
+#*    Author      :  Manuel Serrano                                    */
+#*    Creation    :  Wed May 23 05:45:55 2012                          */
+#*    Last change :  Tue Jan 21 10:03:53 2020 (serrano)                */
+#*    Copyright   :  2012-20 Manuel Serrano                            */
+#*    -------------------------------------------------------------    */
+#*    Script to build the debian Bigloo packages on a remote machine   */
+#*=====================================================================*/
+
+# configuration and variables
+version=@VERSION@
+minor=
+
+host=
+repodir=$HOME/prgm/distrib
+targetdir=
+
+while : ; do
+  case $1 in
+    "")
+      break;;
+    -h|--help)
+      echo "usage makedebremote.sh [-O dir] --repodir [dir] host"
+      exit 1;;
+    -O)
+      shift
+      targetdir=$1;;
+    *)
+      host="$1";;
+  esac
+  shift
+done
+
+if [ "$targetdir " = " " ]; then
+  targetdit=/tmp/debbigloo/$host
+fi
+
+ssh $host "mkdir -p /tmp/debbigloo"
+scp * $host:/tmp/debbigloo
+
+scp $repodir/bigloo$version$minor.tar.gz $host:/tmp
+
+ssh $host "cd /tmp/debbigloo; ./makedeb.sh --repodir /tmp"
+
+mkdir -p $targetdir
+scp $host "/tmp/debbigloo/build.bigloo/*.{deb,buildinfo,changes,dsc}" $targetdir
