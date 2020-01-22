@@ -35,6 +35,10 @@ We are assuming that raspbian is the operating system running on the guest.
 1. Qemu
 -------
 
+The cross compilation can be executed with a hardware guest platform
+(i.e., a real raspberry computer) or with the Qemu emulator. This section
+explains how to prepare the emulator if the option is chosen.
+
 1. Download the raspbian image
 
   (in host) wget https://downloads.raspberrypi.org/raspbian_lite_latest

@@ -6,6 +6,3 @@ and install it natively on the device. With current devices performance
 (speed and stotage capacity), this is the recommended procedure.
 However, if cross compilation is to be used, read the README.cross.md
 file for the procedure.
-
-
-
