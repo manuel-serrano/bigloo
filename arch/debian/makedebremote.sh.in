@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Jan 22 07:30:52 2020 (serrano)                */
+#*    Last change :  Thu Jan 23 07:29:28 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages on a remote machine   */
@@ -17,6 +17,7 @@ minor=
 user=$USER
 host=
 port=
+tmp=/tmp
 
 repodir=$HOME/prgm/distrib
 targetdir=
@@ -26,7 +27,7 @@ while : ; do
     "")
       break;;
     -h|--help)
-      echo "usage makedebremote.sh [-p port] [-O dir] --repodir [dir] host[:port] [user]"
+      echo "usage makedebremote.sh [-p port] [-O dir] --repodir [dir] --tmp [dir] host[:port] [user]"
       exit 1;;
     -O)
       shift
@@ -34,6 +35,11 @@ while : ; do
     -p)
       shift
       port=$1;;
+    --repodir)
+      shift;
+      repodir=$1;;
+    --tmp)
+      tmp=$1;;
     *)
       if [ "$host " = " " ]; then
 	host="$1"
@@ -56,15 +62,15 @@ if [ "$port " != " " ]; then
 fi  
 
 if [ "$targetdir " = " " ]; then
-  targetdir=/tmp/debbigloo/$host
+  targetdir=$tmp/debbigloo/$host
 fi
 
-ssh $sshport $host -l $user "mkdir -p /tmp/debbigloo.remote"
-scp $scpport * $user@$host:/tmp/debbigloo.remote
+ssh $sshport $host -l $user "mkdir -p $tmp/debbigloo.remote"
+scp $scpport * $user@$host:$tmp/debbigloo.remote
 
-scp $scpport $repodir/bigloo$version$minor.tar.gz $user@$host:/tmp/debbigloo.remote
+scp $scpport $repodir/bigloo$version$minor.tar.gz $user@$host:$tmp/debbigloo.remote
 
-ssh $sshport $host -l $user "bash -c \"cd /tmp/debbigloo.remote; ./makedeb.sh --repodir /tmp/debbigloo.remote\""
+ssh $sshport $host -l $user "bash -c \"cd $tmp/debbigloo.remote; ./makedeb.sh --repodir $tmp/debbigloo.remote\""
 
 mkdir -p $targetdir
-scp $scpport "$user@$host:/tmp/debbigloo.remote/build.bigloo/*.{deb,buildinfo,changes,dsc}" $targetdir
+scp $scpport "$user@$host:$tmp/debbigloo.remote/build.bigloo/*.{deb,buildinfo,changes,dsc}" $targetdir
