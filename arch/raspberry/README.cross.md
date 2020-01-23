@@ -51,11 +51,7 @@ explains how to prepare the emulator if the option is chosen.
 
   (in host) qemu-img convert -f raw -O qcow2 2019-09-26-raspbian-buster-lite.img 2019-09-26-raspbian-buster-lite.qcow
 
-4. Expand the image size
-
-  (in host) qemu-img resize 2019-09-26-raspbian-buster-lite.qcow +6G
-  
-5. Run qemu
+4. Run qemu
 
    (in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22
    
@@ -64,22 +60,46 @@ The port forwarding 2022:22 can be changed, but if you do so, you will
 have to adapt the Bigloo ssh-copy.sh script used for the cross-compiation
 (see below section 3).
    
-6. Configure ssh
+5. Configure ssh
 
    (in guest) sudo update-rc.d ssh defaults
+   
+   or 
+   
+   (in guest) sudo update-rc.d ssh enable 2
 
-7. Create the hop user
+6. Create the hop user
    
    (in guest) sudo adduser --home /home/hop --shell /bin/bash hop
    
-8. Generate an ssh-key
+7. Generate an ssh-key
 
    (in guest) ssh-keygen
    
-9. Copy personnal public key
+8. Copy personnal public key
    (in guest) cat > ~/.ssh/authorized_keys
 
+9. Expand the image size
 
+  (in host) qemu-img resize 2019-09-26-raspbian-buster-lite.qcow +16G
+  (in host) cp 2019-09-26-raspbian-buster-lite.qcow 2019-09-26-raspbian-buster-lite16GB.qcow
+  
+   Boot qemy with a second disk
+   
+   (in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22 -hdb 2019-09-26-raspbian-buster-lite16GB.qcow
+
+   Resize the partition from guest
+   
+   (in guest) sudo cfdisk /dev/sdb
+   
+   Delete sdb2 and create a new partitition with all the space
+   
+   (in guest) sudo fsck -f /dev/sdb2
+   (in guest) sudo resize2fs /dev/sdb2
+   (in guest) sudo fsck -f /dev/sdb2
+   (in guest) sudo halt
+   
+   
 2. The toolchain
 ----------------
 
