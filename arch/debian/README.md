@@ -38,3 +38,12 @@ Warning! This assumes that bash is available on the remote host
 example:
 
   ./makedebremote.sh -O /tmp/debraspbian raspbian hop
+
+
+4. Building Debian packages with Qemu
+-------------------------------------
+
+The file bigloo/arch/raspian/README.cross.md contains informations on
+how to prepare an ARM image suitable for the Qemu emulator and how to
+spawn the emulator so that it can be used to build a Debian package
+on the emulated architecture.
