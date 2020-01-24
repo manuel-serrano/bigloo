@@ -15,7 +15,7 @@ on the host. In particular
   sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev
   sudo apt install -y libasound2-dev libflac-dev libmpg123-dev libavahi-core-dev
   sudo apt install -y libavahi-common-dev libavahi-client-dev libpulse-dev
-  sudo apt install -y automake libtool
+  sudo apt install -y libgmp-dev automake libtool
 
 
 2. To build the debian packages on the local machine
