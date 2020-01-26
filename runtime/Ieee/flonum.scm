@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Thu Nov 26 14:04:03 1992                          */
-;*    Last change :  Mon Jan  6 17:54:16 2020 (serrano)                */
+;*    Last change :  Sun Jan 26 17:53:08 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    6.5. Numbers (page 18, r4) The `flonum' functions                */
 ;*=====================================================================*/
@@ -568,13 +568,7 @@
 ;*    integerfl? ...                                                   */
 ;*---------------------------------------------------------------------*/
 (define-inline (integerfl? r)
-   (cond-expand
-      (bigloo-c
-       (let ((intpart::double 0.0))
-	  (and (finitefl? r)
-	       (=fl ($modf r (pragma::void* "&($1)" (pragma intpart))) 0.0))))
-      (else
-       (and (finitefl? r) (=fl r (floorfl r))))))
+   (and (finitefl? r) (=fl r (floorfl r))))
 
 ;*---------------------------------------------------------------------*/
 ;*    evenfl? ...                                                      */
