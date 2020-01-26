@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Apr 20 09:11:09 2003                          */
-;*    Last change :  Sun Jun  9 09:09:22 2019 (serrano)                */
-;*    Copyright   :  2003-19 Manuel Serrano                            */
+;*    Last change :  Sat Jan 25 08:12:26 2020 (serrano)                */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Various facilities                                               */
 ;*=====================================================================*/
@@ -164,8 +164,9 @@
 ;*    100 cells.                                                       */
 ;*---------------------------------------------------------------------*/
 (define (html-row-gauge cell*::pair-nil tdl tdr)
-   (let ((cell* (filter (lambda (c) (> (car c) 0)) cell*))
-	 (total (apply + (map car cell*))))
+   (let* ((cell* (filter (lambda (c) (> (car c) 0)) cell*))
+	  (cell* (sort (lambda (x y) (> (car x) (car y))) cell*))
+	  (total (apply + (map car cell*))))
       (if (=fx total 0)
 	  (html-tr (list tdl (html-td :class "empty" :colspan 100 " ") tdr))
 	  (let loop ((cell* cell*)
