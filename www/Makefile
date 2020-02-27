@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Fri Oct  5 01:24:16 2001                          */
-#*    Last change :  Thu Jul  4 08:18:48 2019 (serrano)                */
-#*    Copyright   :  2001-19 Manuel Serrano                            */
+#*    Last change :  Thu Feb 27 07:59:02 2020 (serrano)                */
+#*    Copyright   :  2001-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The Makefile that handles the Bigloo web page.                   */
 #*=====================================================================*/
@@ -14,8 +14,8 @@ include ../Makefile.config
 #*---------------------------------------------------------------------*/
 #*    Official release (not necessarily the configured release)        */
 #*---------------------------------------------------------------------*/
-OFFICIALRELEASE	= 4.3f
-OFFICIALDATE	= July 2019
+OFFICIALRELEASE	= 4.3g
+OFFICIALDATE	= February 2020
 
 #*---------------------------------------------------------------------*/
 #*    Destination                                                      */
