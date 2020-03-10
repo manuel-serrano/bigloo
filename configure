@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Thu Feb 27 08:26:50 2020 (serrano)                */
+#*    Last change :  Mon Mar  9 11:20:32 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -1813,6 +1813,7 @@ case $hostos in
           ldcomplibs="\$(GCCLOSELIB) -lc -lm"
         else
           customgclib=bigloogc_fth
+	  sharedlibrarygcfthclosed='-l$(GCLIB)-$(RELEASE)'
           extralibs="$extralibs $pthreadlibs"
 	  if [ "$sharedcompiler " = "yes " ]; then
             ldcomplibs="\$(GCCLOSELIB) $pthreadlibs -lc -lm"
@@ -3865,7 +3866,6 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "EXTRAGCLIBS=$extragclibs" >> $makefile_cfg
   $echo "CUSTOMGC=$gccustom" >> $makefile_cfg
   $echo "GCLIB=$gclib" >> $makefile_cfg
-  $echo "GCLIB_FTH=$gclib_fth" >> $makefile_cfg
   if [ $customgc = "yes" ]; then
      $echo "GCCUSTOM=yes" >> $makefile_cfg
      $echo "GCINCLUDE=-I$""(BOOTDIR)/gc/$""(CUSTOMGC)/include" >> $makefile_cfg
