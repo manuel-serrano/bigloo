@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Nov  2 17:38:43 1992                          */
-#*    Last change :  Tue Mar 10 20:09:30 2020 (serrano)                */
+#*    Last change :  Wed Mar 11 05:28:28 2020 (serrano)                */
 #*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the recette                                */
@@ -181,8 +181,6 @@ distrib:
              exit 1; \
           fi
 	@ $(MAKE) cleanall
-
-distrib-with-jvm:
 	@ $(MAKE) .jfile-jvm
 
 #*---------------------------------------------------------------------*/
