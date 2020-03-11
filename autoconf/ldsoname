@@ -1,10 +1,10 @@
 #!/bin/sh
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/autoconf/ldsoname                    */
+#*    serrano/prgm/project/bigloo/bigloo/autoconf/ldsoname             */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Aug  9 14:04:49 1995                          */
-#*    Last change :  Mon May 16 14:45:24 2016 (serrano)                */
+#*    Last change :  Tue Mar 10 18:51:56 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    Checking for shared libraries                                    */
 #*=====================================================================*/
@@ -67,6 +67,9 @@ obj=`basename $file`
 if( test "$ldopt" = "" ); then
 
 cat > $file-guess.c <<EOF
+#include <stdio.h>
+#include <stdlib.h>
+
 int main () 
 {
 #if( defined( sparc ) && !defined( linux ) )
@@ -129,8 +132,11 @@ fi
 #*---------------------------------------------------------------------*/
 eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib.o $soname=$file.so" > /dev/null
 if [ ! -f $file.so ]; then
-  soopt=-Wl,$soname
-  eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib.o $soopt=$file.so" > /dev/null
+
+  if [ "$soname " != " " ]; then
+    soopt=-Wl,$soname
+    eval "$BUILDSH $ld $ldopt -o $file.so $obj-lib.o $soopt=$file.so" > /dev/null
+  fi
 
   if [ ! -f $file.so ]; then
     soopt=-Wl,-soname
