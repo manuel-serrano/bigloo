@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bmacs/Makefile                       */
+#*    serrano/prgm/project/bigloo/bigloo/bmacs/Makefile                */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Sun Jul  9 10:22:14 2017 (serrano)                */
-#*    Copyright   :  1998-2017 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 10 17:49:34 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Unified Development environment.            */
 #*=====================================================================*/
@@ -197,31 +197,31 @@ doinstall: bmacs-config.el site-lisp
 	@ for f in $(EMACS_DIST_OBJ) bmacs-config.el; do \
           if [ -f $$f ]; then \
             echo "   ...$$f"; \
-	    cp $$f $(DESTDIR)$(EMACSDIR); \
+	    cp $$f "$(DESTDIR)$(EMACSDIR)"; \
           else \
             echo "   ...$$f (can't find)"; \
           fi; \
         done
-	chmod $(MODFILE) $(DESTDIR)$(EMACSDIR)/*.el*
-	if [ ! -d $(DESTDIR)$(EMACSDIR)/etc ]; then \
-          mkdir -p $(DESTDIR)$(EMACSDIR)/etc && \
-            chmod $(MODDIR) $(DESTDIR)$(EMACSDIR)/etc; \
+	(cd "$(DESTDIR)$(EMACSDIR)"; chmod $(MODFILE) *.el*)
+	if [ ! -d "$(DESTDIR)$(EMACSDIR)/etc" ]; then \
+          mkdir -p "$(DESTDIR)$(EMACSDIR)/etc" && \
+            chmod $(MODDIR) "$(DESTDIR)$(EMACSDIR)/etc"; \
         fi
-	cp etc/bass-snap.au $(DESTDIR)$(EMACSDIR)/etc
-	if [ ! -d $(DESTDIR)$(EMACSDIR)/images ]; then \
-          mkdir -p $(DESTDIR)$(EMACSDIR)/images && \
-            chmod $(MODDIR) $(DESTDIR)$(EMACSDIR)/images; \
+	cp etc/bass-snap.au "$(DESTDIR)$(EMACSDIR)/etc"
+	if [ ! -d "$(DESTDIR)$(EMACSDIR)/images" ]; then \
+          mkdir -p "$(DESTDIR)$(EMACSDIR)/images" && \
+            chmod $(MODDIR) "$(DESTDIR)$(EMACSDIR)/images"; \
         fi
-	cp images/*.xpm $(DESTDIR)$(EMACSDIR)/images
+	cp images/*.xpm "$(DESTDIR)$(EMACSDIR)/images"
 
 site-lisp:
 	if [ "$(EMACSDIR) " = " " ]; then \
           echo "*** ERROR: Emacs lisp dir not configured!"; \
           exit 1; \
         else \
-	  if [ ! -d $(DESTDIR)$(EMACSDIR) ]; then \
-            mkdir -p $(DESTDIR)$(EMACSDIR) && \
-              chmod $(MODDIR) $(DESTDIR)$(EMACSDIR); \
+	  if [ ! -d "$(DESTDIR)$(EMACSDIR)" ]; then \
+            mkdir -p "$(DESTDIR)$(EMACSDIR)" && \
+              chmod $(MODDIR) "$(DESTDIR)$(EMACSDIR)"; \
           fi \
         fi
 
