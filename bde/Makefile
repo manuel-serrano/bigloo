@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Fri Dec 13 09:26:29 2019 (serrano)                */
-#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Wed Mar 11 05:28:50 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
 #*=====================================================================*/
@@ -115,10 +115,10 @@ all-common: $(BOOTBINDIR)/bglafile \
      $(BOOTBINDIR)/bglmake \
      $(BOOTBINDIR)/bglpp \
      $(BOOTBINDIR)/bgltags \
-     $(BOOTBINDIR)/bglprof
+     $(BOOTBINDIR)/bglprof \
+     $(BOOTBINDIR)/bgljfile
 
-all-jvm: $(BOOTBINDIR)/bgljfile \
-     $(BOOTBINDIR)/bgljas \
+all-jvm: $(BOOTBINDIR)/bgljas
 
 boot:
 	$(MAKE) all BFLAGS="$(BFLAGS) -ld-relative"
