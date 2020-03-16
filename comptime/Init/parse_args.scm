@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Sun Aug  7 11:47:46 1994                          */
-;*    Last change :  Wed Jan  8 13:05:23 2020 (serrano)                */
+;*    Last change :  Mon Mar 16 06:02:14 2020 (serrano)                */
 ;*    Copyright   :  1992-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The command line arguments parsing                               */
@@ -618,12 +618,6 @@
 	  (set! *jas-peephole* #f)
 	  (set! *bmem-profiling* #t)
 	  (bigloo-profile-set! l)))
-;*        ;;(bigloo-compiler-debug-set! 2)                             */
-;*        (set! *compiler-debug-trace* 20)                             */
-;*        ;; (set! *compiler-debug* 2)                                 */
-;*        (set! *jas-peephole* #f)                                     */
-;*        (set! *bmem-profiling* #t)                                   */
-;*        (bigloo-profile-set! 2))                                     */
       (("-psync" (help "Profile synchronize expr (see $exitd-mutex-profile)"))
        (set! *sync-profiling* #t))
       
@@ -680,6 +674,17 @@
        (load-extend name)
        (when (procedure? *extend-entry*)
 	  (set! the-remaining-args (*extend-entry* the-remaining-args))))
+      (("-extend-module" ?exp (help "Extend the module syntax"))
+       (call-with-input-string exp
+	  (lambda (in)
+	     (let ((proc (eval (read in))))
+		(cond
+		   ((not (procedure? proc))
+		    (error "-extend-module" "Extension not a procedure" exp))
+		   ((not (correct-arity? proc 1))
+		    (error "-extend-module" "Illegal extension procedure" exp))
+		   (else
+		    (bigloo-module-extension-handler-set! proc)))))))
       (("-fsharing" (help "Attempt to share constant data"))
        (set! *shared-cnst?* #t))
       (("-fno-sharing" (help "Do not attempt to share constant data"))

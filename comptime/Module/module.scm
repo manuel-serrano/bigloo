@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 10:29:03 1996                          */
-;*    Last change :  Sun Apr 14 06:43:42 2019 (serrano)                */
-;*    Copyright   :  1996-2019 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Mon Mar 16 06:06:24 2020 (serrano)                */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The compilation of a Module clause                               */
 ;*=====================================================================*/
@@ -81,6 +81,14 @@
 (define *module-location* #f)    ;; the location of the module clause
 
 ;*---------------------------------------------------------------------*/
+;*    module-mclause ...                                               */
+;*---------------------------------------------------------------------*/
+(define (module-mclause mod)
+   (if (procedure? (bigloo-module-extension-handler))
+       ((bigloo-module-extension-handler) mod)
+       mod))
+
+;*---------------------------------------------------------------------*/
 ;*    produce-module! ...                                              */
 ;*    -------------------------------------------------------------    */
 ;*    The library load order is very tricky. To be short, library      */
@@ -90,13 +98,14 @@
 ;*    restore the additional heaps (that may also be requested         */
 ;*    by compiler options) and we start the real module processing.    */
 ;*---------------------------------------------------------------------*/
-(define (produce-module! mclause)
+(define (produce-module! mod)
    (pass-prelude "Module")
-   (match-case mclause
-      ((module (and (? symbol?) ?name) . ?clauses)
-       (do-module mclause name clauses))
-      (else
-       (user-error "Parse error" "Illegal module form" mclause))))
+   (let ((mclause (module-mclause mod)))
+      (match-case mclause
+	 ((module (and (? symbol?) ?name) . ?clauses)
+	  (do-module mclause name clauses))
+	 (else
+	  (user-error "Parse error" "Illegal module form" mod)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    do-module ...                                                    */
@@ -279,12 +288,13 @@
 ;*---------------------------------------------------------------------*/
 ;*    consume-module! ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (consume-module! pname mclause)
-   (match-case mclause
-      ((module (and (? symbol?) ?name) . ?clauses)
-       (do-consume-module pname mclause name clauses))
-      (else
-       (user-error "Parse error" "Illegal module declaration" mclause '()))))
+(define (consume-module! pname mod)
+   (let ((mclause (module-mclause mod)))
+      (match-case mclause
+	 ((module (and (? symbol?) ?name) . ?clauses)
+	  (do-consume-module pname mclause name clauses))
+	 (else
+	  (user-error "Parse error" "Illegal module declaration" mod '())))))
    
 ;*---------------------------------------------------------------------*/
 ;*    consume-module-clause! ...                                       */
@@ -327,16 +337,17 @@
 ;*---------------------------------------------------------------------*/
 ;*    checksum-module ...                                              */
 ;*---------------------------------------------------------------------*/
-(define (checksum-module mclause)
-   (match-case mclause
-      ((module (and (? symbol?) ?name) . ?clauses)
-       (cond
-	  ((not (legal-module-name? name))
-	   (user-error "Parse error" "Illegal module name" mclause '()))
-	  (else
-	   (module-checksum mclause *mco-include-path*))))
-      (else
-       (user-error "Parse error" "Illegal module declaration" mclause '()))))
+(define (checksum-module mod)
+   (let ((mclause (module-mclause mod)))
+      (match-case mclause
+	 ((module (and (? symbol?) ?name) . ?clauses)
+	  (cond
+	     ((not (legal-module-name? name))
+	      (user-error "Parse error" "Illegal module name" mod '()))
+	     (else
+	      (module-checksum mclause *mco-include-path*))))
+	 (else
+	  (user-error "Parse error" "Illegal module declaration" mod '())))))
 
 ;*---------------------------------------------------------------------*/
 ;*    dump-module ...                                                  */
