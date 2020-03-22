@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Fri Jan 26 18:49:34 2018 (serrano)                */
-;*    Copyright   :  2006-18 Manuel Serrano                            */
+;*    Last change :  Thu Mar 19 12:17:15 2020 (serrano)                */
+;*    Copyright   :  2006-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
 ;*=====================================================================*/
@@ -75,7 +75,9 @@
 	    (evmodule-bind-global! ::obj ::symbol ::obj ::obj)
 	    (evmodule-macro-table ::obj)
 	    (evmodule-extension ::obj)
+	    (evmodule-extension-set! ::obj ::obj)
 	    (evmodule ::pair-nil ::obj)
+	    (evmodule-comp! ::symbol ::pair ::obj . bindings)
 	    (evmodule-check-unbound mod loc)
 	    (eval-find-module ::symbol)
 	    (eval-module)
@@ -165,6 +167,12 @@
        (bigloo-type-error "evmodule-extension" 'module mod)))
 
 ;*---------------------------------------------------------------------*/
+;*    evmodule-extension-set! ...                                      */
+;*---------------------------------------------------------------------*/
+(define (evmodule-extension-set! mod ext)
+   (%evmodule-extension-set! mod ext))
+
+;*---------------------------------------------------------------------*/
 ;*    make-evmodule ...                                                */
 ;*---------------------------------------------------------------------*/
 (define (make-evmodule id path loc)
@@ -243,7 +251,7 @@
        (let ((v (hashtable-get (%evmodule-env mod) id)))
 	  (if (evalias? v)
 	      (evmodule-find-global (evalias-module v) (eval-global-value v))
-	      (or (hashtable-get (%evmodule-env mod) id) (eval-lookup id))))
+	      (or v (eval-lookup id))))
        (eval-lookup id)))
 
 ;*---------------------------------------------------------------------*/
@@ -445,11 +453,11 @@
    (let ((var (evmodule-find-global from-mod from-ident)))
       (if (not var)
 	  (evcompile-error loc "eval"
-			   (string-append
-			    "Cannot find imported variable from module `"
-			    (symbol->string (evmodule-name from-mod))
-			    "'")
-			   from-ident)
+	     (string-append
+		"Cannot find imported variable from module `"
+		(symbol->string (evmodule-name from-mod))
+		"'")
+	     from-ident)
 	  (evmodule-bind-global! to-mod to-ident var loc))))
 
 ;*---------------------------------------------------------------------*/
@@ -509,13 +517,13 @@
    (let ((load (or (user-load-module) evmodule-loadq)))
       (for-each (lambda (p) (load p mod)) paths))
    
-   (let ((mod (eval-find-module ident)))
-      (if (evmodule? mod)
+   (let ((m (eval-find-module ident)))
+      (if (evmodule? m)
 	  (begin
-	     (evmodule-check-unbound mod loc)
-	     mod)
+	     (evmodule-check-unbound m loc)
+	     m)
 	  (evcompile-error loc "eval"
-	     (format "Cannot find module \"~a\"" ident)
+	     (format "~a:cannot find module \"~a\"" (evmodule-name mod) ident)
 	     (if (pair? (cdr paths))
 		 paths
 		 (car paths))))))
@@ -567,7 +575,7 @@
       ;; bind variables
       (for-each (lambda (b)
 		   (when (or (null? set) (memq (car b) set))
-		      (evmodule-import-binding! mod (car b) (cdr b) (car b) loc)))
+		      (evmodule-import-binding! mod (car b) mod2 (car b) loc)))
 		(%evmodule-exports mod2)))
 
    (define (load-module)
@@ -894,12 +902,29 @@
 		     (mod (make-evmodule name path loc)))
 		 (module-load-access-file (dirname path))
 		 (when (procedure? hdl)
-		    (%evmodule-extension-set! mod (hdl exp)))
+		    (evmodule-extension-set! mod (hdl exp)))
 		 (unwind-protect
 		    (evmodule-module mod clauses loc)
 		    ($eval-module-set! mod)))))
 	 (else
 	  (evcompile-error loc "eval" "Illegal module expression" exp)))))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-comp! ...                                               */
+;*---------------------------------------------------------------------*/
+(define (evmodule-comp! id path loc . exports)
+   (let ((mod (make-evmodule id path loc)))
+      (for-each (lambda (g)
+		   (let ((id (eval-global-name g))
+			 (val (eval-global-value g)))
+		      (when (class? val)
+			 (eval-expand-instantiate val)
+			 (eval-expand-duplicate val)
+			 (eval-expand-with-access val))
+		      (evmodule-export! mod id g)
+		      (evmodule-bind-global! mod id g loc)))
+	 exports)
+      #f))
 
 ;*---------------------------------------------------------------------*/
 ;*    evmodule-static-class ...                                        */

@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/runtime/Eval/evaluate_comp.scm       */
+;*    .../project/bigloo/bigloo/runtime/Eval/evaluate_comp.scm         */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Bernard Serpette                                  */
 ;*    Creation    :  Tue Feb  8 16:49:34 2011                          */
-;*    Last change :  Wed Jan 25 14:28:45 2017 (serrano)                */
-;*    Copyright   :  2011-17 Manuel Serrano                            */
+;*    Last change :  Fri Mar 20 08:23:48 2020 (serrano)                */
+;*    Copyright   :  2011-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Compile AST to closures                                          */
 ;*=====================================================================*/
@@ -353,12 +353,19 @@
 		(EVA '(global read check) (name)
 		     (unless slot
 			(set! slot (evmodule-find-global mod name))
-			(unless slot (everror loc "eval" "Unbound variable" name)) )
+			(unless slot
+			   (let ( (id (if (evmodule? mod)
+					  `(@ ,name ,(evmodule-name mod))
+					  name)) )
+			      (everror loc "eval" "Unbound variable" id) )))
 		     (let ( (v (eval-global-value slot)) )
 			(if (eq? v #unspecified)
 			    (let ( (t (eval-global-tag slot)) )
 			       (if (or (=fx t 3) (=fx t 4))
-				   (everror loc "eval" "Uninitialized variable" name)
+				   (let ( (id (if (evmodule? mod)
+						  `(@ ,name ,(evmodule-name mod))
+						  name)) )
+				      (everror loc "eval" "Uninitialized variable" id) )
 				   v ))
 			    v ))))))))
 

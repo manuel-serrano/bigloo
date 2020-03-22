@@ -457,8 +457,8 @@ presentation of compilation flags that enable compilation tuning for
 The first clause, @code{(export-all)}, exports all the variables bound
 in the module (i.e., the variables defined in the module and the
 imported variables).  The second clause, @code{(export-module)}, exports
-all the module's variables (those declared static and exported) to the
-interpreter; the third exports all the exports (i.e. the ones present
+the module to eval to so that it can be imported by other evaluated
+modules; the third exports all the exports (i.e. the ones present
 inside an @code{export} clause) variables to the interpreter; the fourth
 and fifth clause each export one variable to the interpreter. The last
 clause imports a variable from the interpreter and all such imported

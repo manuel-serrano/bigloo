@@ -1,10 +1,10 @@
 ;*=====================================================================*/
-;*    serrano/prgm/project/bigloo/comptime/Module/eval.scm             */
+;*    serrano/prgm/project/bigloo/bigloo/comptime/Module/eval.scm      */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jun  4 16:28:03 1996                          */
-;*    Last change :  Sun Jan 24 03:20:08 2016 (serrano)                */
-;*    Copyright   :  1996-2016 Manuel Serrano, see LICENSE file        */
+;*    Last change :  Thu Mar 19 12:09:34 2020 (serrano)                */
+;*    Copyright   :  1996-2020 Manuel Serrano, see LICENSE file        */
 ;*    -------------------------------------------------------------    */
 ;*    The eval clauses compilation.                                    */
 ;*=====================================================================*/
@@ -150,7 +150,7 @@
       (cond
 	 ((svar? (global-value g))
 	  (variable-access-set! g 'write)
-	  (define-primop-ref->node g (location->node g)))
+	  (define-primop-ref/src->node g (location->node g) (global-src g)))
 	 ((scnst? (global-value g))
 	  (define-primop-ref->node g (location->node g)))
 	 (else
@@ -166,7 +166,11 @@
 	  (unit 'eval
 	     (-fx (get-toplevel-unit-weight) 2)
 	     (delay
-		(let loop ((globals (append (get-evaluated-globals)
+		(let loop ((globals (append (get-evaluated-globals
+					       (cond
+						  (*all-eval?* 'all)
+						  (*all-export-eval?* 'export)
+						  (else 'one)))
 				       (get-evaluated-class-holders)))
 			   (init*  '(#unspecified)))
 		   (if (null? globals)
@@ -179,6 +183,8 @@
 			   ,@(get-evaluated-class-macros)
 			   ;; the variables
 			   ,@(reverse! init*)
+			   ;; the module
+			   ,@(evmodule-comp)
 			   #unspecified)
 		       (let ((g (car globals)))
 			  (set-eval-types! g)
@@ -189,6 +195,32 @@
 	     #f
 	     #f))
        'void))
+
+;*---------------------------------------------------------------------*/
+;*    evmodule-comp ...                                                */
+;*---------------------------------------------------------------------*/
+(define (evmodule-comp)
+   
+   (define (export-global g)
+      (global-eval?-set! g #t)
+      (let ((id (global-id g)))
+	 (cond
+	    ((svar? (global-value g))
+	     (variable-access-set! g 'write)
+	     `(vector 1 ',id (__evmeaning_address ,id) #f #f))
+	    ((scnst? (global-value g))
+	     `(vector 1 ',id (__evmeaning_address ,id) #f #f))
+	    (else
+	     `(vector 0 ',id ,id #f #f)))))
+   
+   (if *all-module-eval?*
+       (list
+	  (sexp->node
+	     `((@ evmodule-comp! __evmodule)
+	       ',*module* ',*src-files* ',*module-location*
+	       ,@(map export-global (get-evaluated-globals 'module)))
+	     '() #f 'value))
+       '()))
 
 ;*---------------------------------------------------------------------*/
 ;*    get-library-info ...                                             */
@@ -225,14 +257,7 @@
 	     (if (backend-pragma-support (the-backend))
 		 `(begin
 		     ((@ library-load-init __library) ',lib (bigloo-library-path))
-		     ;; MS: 24 Jan 2016, use a global variable instead of
-		     ;; a pragma
 		     (,glo 0 (pragma::string ,(format "~s" (symbol->string *module*))))
-;* 		     (pragma ,(format "~a( 0, ~s )"                    */
-;* 				      (bigloo-module-mangle            */
-;* 				       (symbol->string init)           */
-;* 				       (symbol->string (libinfo-module_e info))) */
-;* 				      (symbol->string *module*)))      */
 		     ((@ library-mark-loaded! __library) ',lib))
 		 `((@ library-load __library) ',lib)))
 	  (warning lib "cannot initialize library for eval"))))
@@ -258,19 +283,19 @@
 ;*---------------------------------------------------------------------*/
 ;*    get-evaluated-globals ...                                        */
 ;*---------------------------------------------------------------------*/
-(define (get-evaluated-globals)
+(define (get-evaluated-globals scope)
    (let* ((globals (get-evaluated-classes-accesses)))
-      (if (or *all-eval?* *all-export-eval?* *all-module-eval?*)
-	  (let ((scope-lst (cond
-			      (*all-eval?* '(import static export))
-			      (*all-module-eval?* '(static export))
-			      (else '(export)))))
-	     (for-each-global!
-		(lambda (g)
-		   (if (and (memq (global-import g) scope-lst)
-			    (global-evaluable? g)
-			    (or *lib-mode* (not (global-library g))))
-		       (set! globals (cons g globals)))))))
+      (when (memq scope '(all module export))
+	 (let ((scope-lst (case scope
+			     ((all) '(import static export))
+			     ((module) '(export))
+			     (else '(export)))))
+	    (for-each-global!
+	       (lambda (g)
+		  (if (and (memq (global-import g) scope-lst)
+			   (global-evaluable? g)
+			   (or *lib-mode* (not (global-library g))))
+		      (set! globals (cons g globals)))))))
       (let loop ((eval-exported *eval-exported*)
 		 (res globals))
 	 (if (null? eval-exported)

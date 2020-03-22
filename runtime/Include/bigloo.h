@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Jan 16 13:53:13 2020 (serrano)                */
+/*    Last change :  Thu Mar 19 07:43:17 2020 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -2313,6 +2313,7 @@ BGL_RUNTIME_DECL obj_t opt_generic_entry( obj_t, ... );
 BGL_RUNTIME_DECL obj_t apply( obj_t, obj_t );
 
 BGL_RUNTIME_DECL void bgl_init_module_debug_start( char * );
+BGL_RUNTIME_DECL void bgl_init_module_debug_string( char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_library( char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_import( char *, char * );
 BGL_RUNTIME_DECL void bgl_init_module_debug_object( char * );

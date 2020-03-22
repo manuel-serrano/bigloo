@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri May 31 15:05:39 1996                          */
-;*    Last change :  Fri Jan 10 11:44:08 2020 (serrano)                */
+;*    Last change :  Fri Mar 20 07:57:01 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    We build an `ast node' from a `sexp'                             */
 ;*---------------------------------------------------------------------*/
@@ -52,6 +52,7 @@
 	    (sexp->node::node ::obj <obj> ::obj ::symbol)
 	    (sexp*->node::pair-nil ::pair-nil <obj> ::obj ::symbol)
 	    (define-primop-ref->node::node ::global ::node)
+	    (define-primop-ref/src->node::node ::global ::node ::obj)
 	    (define-primop->node::node ::global)
 	    (location->node::node ::global)
 	    (error-sexp->node::node ::bstring ::obj ::obj)
@@ -735,6 +736,28 @@
 	     (fun fun)
 	     (args (list (sexp->node `',(global-id global) '() #f 'value) ref)))
 	  fun)))
+
+;*---------------------------------------------------------------------*/
+;*    define-primop-ref/src->node ...                                  */
+;*---------------------------------------------------------------------*/
+(define (define-primop-ref/src->node global ref src)
+   (if (not (epair? src))
+       (define-primop-ref->node global ref)
+       (match-case (cer src)
+	  ((at ?fname ?loc)
+	   (let ((fun (sexp->node '(@ define-primop-ref/loc! __evenv) '() #f 'app)))
+	      (if (var? fun)
+		  (instantiate::app
+		     (type *_*)
+		     (fun fun)
+		     (args (list
+			      (sexp->node `',(global-id global) '() #f 'value)
+			      ref
+			      (sexp->node fname '() #f 'value)
+			      (sexp->node loc '() #f 'value))))
+		  fun)))
+	  (else
+	   (define-primop-ref->node global ref)))))
 
 ;*---------------------------------------------------------------------*/
 ;*    define-primop->node ...                                          */
