@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 08:29:03 1998                          */
-#*    Last change :  Tue Mar 24 11:57:26 2020 (serrano)                */
+#*    Last change :  Tue Mar 24 15:34:29 2020 (serrano)                */
 #*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile to build the compiler part of Bigloo (bootstrap).   */
@@ -653,9 +653,9 @@ install-compiler:
 	   cp $(BOOTBINDIR)/bigloo$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/bigloo$(RELEASE)$(EXE_SUFFIX) && \
 	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bigloo$(RELEASE)$(EXE_SUFFIX); \
            cat $(BOOTBINDIR)/bigloo.sh | \
-              sed -e "s|$(DESTDIR)$(BOOTBINDIR)|$(BINDIR)|" \
-                  -e "s|$(DESTDIR)$(BOOTLIBDIR)|$(LIBDIR)/$(FILDIR)|" \
-                  -e "s|$(BIGLOO)|$(BINDIR)/bigloo|" \
+              sed -e "s|$(BOOTBINDIR)|$(BINDIR)|" \
+                  -e "s|$(BOOTLIBDIR)|$(LIBDIR)/$(FILDIR)|" \
+                  -e "s|(BIGLOO)|$(BINDIR)/bigloo|" \
               > $(DESTDIR)$(BINDIR)/bigloo.sh && \
 	   chmod $(MODEXE) $(DESTDIR)$(BINDIR)/bigloo.sh; \
         fi
