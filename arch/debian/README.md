@@ -31,7 +31,7 @@ example:
 3. To build the debian packages on a remote machine via ssh
 -----------------------------------------------------------
   
-  ./makedebremote.sh host -O /tmp/debbigloo.host
+  ./makedebremote.sh [-O targetdir] [host] [user]
   
 Warning! This assumes that bash is available on the remote host
 

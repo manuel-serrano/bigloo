@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Sep 20 11:11:02 2018 (serrano)                */
-#*    Copyright   :  1998-2018 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 08:29:53 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -772,6 +772,9 @@ install-dirs:
          bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
          if [ ! -d $(LIBDIR) ]; then \
             mkdir -p $(LIBDIR) && chmod $(MODDIR) $(LIBDIR); \
+         fi && \
+         if [ ! -d $(LIBDIR)/pkgconfig ]; then \
+            mkdir -p $(LIBDIR) && chmod $(MODDIR) $(LIBDIR)/pkgconfig; \
          fi && \
          if [ ! -d $$bbase ]; then \
             mkdir -p $$bbase && chmod $(MODDIR) $$bbase; \

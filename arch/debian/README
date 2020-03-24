@@ -1,4 +1,4 @@
-== To build a .deb package for Arm/qemu ==
+== To build a .deb package for Arm/qemu (obsolote, check README.md) ==
 
   1. start qemu
 
