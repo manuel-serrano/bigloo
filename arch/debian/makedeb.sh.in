@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Tue Jan 21 10:11:26 2020 (serrano)                */
+#*    Last change :  Tue Mar 24 09:33:51 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -117,9 +117,7 @@ mv bigloo$version$minor bigloo-$version
 cp $repodir/bigloo$version$minor.tar.gz bigloo_$version.orig.tar.gz
 cd bigloo-$version
 
-dh_make -c gpl -s -e Manuel.Serrano@inria.fr -f ../bigloo-$version.tar.gz <<EOF
-
-EOF
+dh_make -y -c gpl -s -e Manuel.Serrano@inria.fr -f ../bigloo-$version.tar.gz
 
 if [ ! -f $basedir/makedeb.sh ]; then
   echo "ERROR: Cannot find \"$basedir/makedeb.sh\"" >&2 
