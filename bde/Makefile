@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Mon Jun  8 08:36:43 1998                          */
-#*    Last change :  Tue Mar 24 11:37:33 2020 (serrano)                */
+#*    Last change :  Tue Mar 24 11:57:42 2020 (serrano)                */
 #*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Makefile for the Bigloo development environment.             */
@@ -179,9 +179,9 @@ install: all
 	    cp $(BOOTBINDIR)/$$p$(EXE_SUFFIX) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
             chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p$(EXE_SUFFIX); \
             cat $(BOOTBINDIR)/$$p.sh | \
-              sed -e "s|$(BOOTBINDIR)|$(BINDIR)|" \
-                  -e "s|$(BOOTLIBDIR)|$(LIBDIR)/$(FILDIR)|" \
-                  -e "s|$(BGLBUILDBINDIR)|$(BINDIR)|" \
+              sed -e "s|$(DESTDIR)$(BOOTBINDIR)|$(BINDIR)|" \
+                  -e "s|$(DESTDIR)$(BOOTLIBDIR)|$(LIBDIR)/$(FILDIR)|" \
+                  -e "s|$(DESTDIR)$(BGLBUILDBINDIR)|$(BINDIR)|" \
               > $(DESTDIR)$(BINDIR)/$$p.sh && \
             chmod $(MODEXE) $(DESTDIR)$(BINDIR)/$$p.sh; \
           done; \
