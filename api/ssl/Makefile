@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/api/ssl/Makefile                     */
+#*    serrano/prgm/project/bigloo/bigloo/api/ssl/Makefile              */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Oct  3 05:37:54 2001                          */
-#*    Last change :  Sun Jul  9 10:17:57 2017 (serrano)                */
-#*    Copyright   :  2001-17 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:21:46 2020 (serrano)                */
+#*    Copyright   :  2001-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
 #*    -------------------------------------------------------------    */
@@ -99,15 +99,15 @@ install-c:
         fi
 
 install-jvm: api-install-jvm
-	if [ $(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
-	  cp $(BOOTLIBDIR)/commons-ssl.zip $(LIBDIR)/$(FILDIR) && \
-	  chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BOOTLIBDIR) ]; then \
+	  cp $(BOOTLIBDIR)/commons-ssl.zip $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
+	  chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/commons-ssl.zip; \
         fi
 
 uninstall: api-uninstall-init \
            api-uninstall-c \
            api-uninstall-jvm
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/commons-ssl.zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/commons-ssl.zip
 
 #*---------------------------------------------------------------------*/
 #*    distrib                                                          */

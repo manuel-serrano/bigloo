@@ -1,10 +1,10 @@
 #*=====================================================================*/
-#*    serrano/prgm/project/bigloo/bglpkg/etc/Makefile                  */
+#*    serrano/prgm/project/bigloo/bigloo/bglpkg/etc/Makefile           */
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan  2 08:48:29 2007                          */
-#*    Last change :  Sun Jul  9 10:21:41 2017 (serrano)                */
-#*    Copyright   :  2007-17 Manuel Serrano                            */
+#*    Last change :  Tue Mar 24 12:23:14 2020 (serrano)                */
+#*    Copyright   :  2007-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The generic Makefile for building Bigloo ScmPkg packages.        */
 #*    -------------------------------------------------------------    */
@@ -36,7 +36,7 @@ BACKEND		= native
 LIBNAME		= @LIBNAME@
 VERSION		= @VERSION@
 
-CBGLFLAGS	= -I$(LIBDIR)/$(FILDIR)
+CBGLFLAGS	= -I$(DESTDIR)$(LIBDIR)/$(FILDIR)
 
 #*---------------------------------------------------------------------*/
 #*    Private variables                                                */
@@ -89,11 +89,11 @@ include $(BGLLIBDIR)/Makefile.config
 #*    Common targets                                                   */
 #*---------------------------------------------------------------------*/
 install-init:
-	cp $(LIBNAME).init $(LIBDIR)/$(FILDIR)/$(LIBNAME).init \
-          && chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
+	cp $(LIBNAME).init $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).init \
+          && chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).init
 
 uninstall-init:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/$(LIBNAME).init
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).init
 
 .afile:
 	$(BGLAFILE) $(BGLAFILEFLAGS) $(SOURCES) -o $@
@@ -131,14 +131,14 @@ clean.native:
 cleanall.native:
 
 install.native:
-	cp $(LIBNAME).heap $(LIBDIR)/$(FILDIR)/$(LIBNAME).heap \
-          && chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).heap; \
+	cp $(LIBNAME).heap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).heap \
+          && chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).heap; \
 	$(MAKE) install-lib LIB=libbigloo$(LIBNAME)_s-$(VERSION);
 	$(MAKE) install-shared-lib LIB=libbigloo$(LIBNAME)_e-$(VERSION);
 	$(MAKE) install-lnlib LIB=libbigloo$(LIBNAME)_s-$(VERSION) LN=libbigloo$(LIBNAME)_u-$(VERSION);
 
 uninstall.native:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/$(LIBNAME).heap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).heap
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_s-$(VERSION)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_e-$(VERSION)
 	-$(MAKE) uninstall-lib LIB=libbigloo$(LIBNAME)_u-$(VERSION)
@@ -253,35 +253,35 @@ $(ODIR)/class_s/bigloo/$(LIBNAME)/%.class: %.scm
 .PHONY: install install-c install-jvm uninstall
 
 install-jvm:
-	if [ $(LIBDIR)/$(FILDIR) != $(BUILDLIBDIR) ]; then \
-	  cp $(BUILDLIBDIR)/$(LIBNAME).jheap $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
-	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
-	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
-	  (cd $(LIBDIR)/$(FILDIR) && \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BUILDLIBDIR) ]; then \
+	  cp $(BUILDLIBDIR)/$(LIBNAME).jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
+	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip && \
+	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip && \
+	  (cd $(DESTDIR)$(LIBDIR)/$(FILDIR) && \
            $(RM) -f bigloo$(LIBNAME)_u-$(VERSION).zip && \
            ln bigloo$(LIBNAME)_s-$(VERSION).zip bigloo$(LIBNAME)_u-$(VERSION).zip); \
         fi
 
 install-dotnet:
-	if [ $(LIBDIR)/$(FILDIR) != $(BUILDLIBDIR) ]; then \
-	  cp $(BUILDLIBDIR)/$(LIBNAME).jheap $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
-	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
-	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
-	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll && \
-	  chmod $(BMASKFILE) $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll ; \
+	if [ $(DESTDIR)$(LIBDIR)/$(FILDIR) != $(BUILDLIBDIR) ]; then \
+	  cp $(BUILDLIBDIR)/$(LIBNAME).jheap $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap && \
+	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll && \
+	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll && \
+	  cp $(BUILDLIBDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll && \
+	  chmod $(BMASKFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll ; \
         fi
 
 uninstall:
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).zip
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll
-	-$(RM) -f $(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/$(LIBNAME).jheap
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).zip
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_s-$(VERSION).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_e-$(VERSION).dll
+	-$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo$(LIBNAME)_u-$(VERSION).dll

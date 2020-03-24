@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Thu Jun 19 20:48:50 1997                          */
-#*    Last change :  Mon Dec 16 05:42:51 2019 (serrano)                */
-#*    Copyright   :  1997-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 12:22:05 2020 (serrano)                */
+#*    Copyright   :  1997-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The global autoconf Makefile.                                    */
 #*=====================================================================*/
@@ -107,8 +107,8 @@ distrib:
 .PHONY: install uninstall
 
 install:
-	cp runtest $(LIBDIR)/$(FILDIR)/runtest && \
-          chmod $(MODEXE) $(LIBDIR)/$(FILDIR)/runtest; \
+	cp runtest $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest && \
+          chmod $(MODEXE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest; \
 
 uninstall:
-	$(RM) -f $(LIBDIR)/$(FILDIR)/runtest
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(FILDIR)/runtest

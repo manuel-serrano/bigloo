@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Mar 24 09:45:12 2020 (serrano)                */
+#*    Last change :  Tue Mar 24 12:25:35 2020 (serrano)                */
 #*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -566,7 +566,7 @@ true-comptime-jvm:
 	 (cd comptime && \
            $(MAKE) .afile .jfile jvm \
                    JARPATH=`echo '$(BINDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`\
-                   CLASSPATH=`echo '$(LIBDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`\
+                   CLASSPATH=`echo '$(DESTDIR)$(LIBDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`\
                    LIBDIR=`echo '$(BOOTLIBDIR)' | sed -e 's/\\\\/\\\\\\\\/g'`)
 
 #*---------------------------------------------------------------------*/
@@ -724,14 +724,14 @@ install-libs: install-dirs
 	if [ "$(LIBUVCUSTOM)" = "yes" ]; then \
 	  $(MAKE) -C libuv install; \
         fi
-	(cp Makefile.config $(LIBDIR)/$(FILDIR)/Makefile.config && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.config)
-	(if [ $(BOOTLIBDIR) != $(LIBDIR)/$(FILDIR) ]; then \
-           cp $(BOOTLIBDIR)/bigloo_config.sch $(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
-           chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
+	(cp Makefile.config $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.config && \
+         chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.config)
+	(if [ $(BOOTLIBDIR) != $(DESTDIR)$(LIBDIR)/$(FILDIR) ]; then \
+           cp $(BOOTLIBDIR)/bigloo_config.sch $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_config.sch && \
+           chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/bigloo_config.sch; \
          fi)
-	(cp Makefile.misc $(LIBDIR)/$(FILDIR)/Makefile.misc && \
-         chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/Makefile.misc)
+	(cp Makefile.misc $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.misc && \
+         chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/Makefile.misc)
 
 install-apis: install-dirs
 	$(MAKE) -C api install
@@ -768,13 +768,13 @@ install-dirs:
 	   mkdir -p $(DESTDIR)$(BINDIR) && \
              chmod $(MODDIR) $(DESTDIR)$(BINDIR) || exit 1; \
         fi;
-	(base=`echo $(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
+	(base=`echo $(DESTDIR)$(LIBDIR)/$(FILDIR) | sed 's/[/][^/]*$$//'`; \
          bbase=`echo $$base | sed 's/[/][^/]*$$//'`; \
-         if [ ! -d $(LIBDIR) ]; then \
-            mkdir -p $(LIBDIR) && chmod $(MODDIR) $(LIBDIR); \
+         if [ ! -d $(DESTDIR)$(LIBDIR) ]; then \
+            mkdir -p $(DESTDIR)$(LIBDIR) && chmod $(MODDIR) $(DESTDIR)$(LIBDIR); \
          fi && \
-         if [ ! -d $(LIBDIR)/pkgconfig ]; then \
-            mkdir -p $(LIBDIR)/pkgconfig && chmod $(MODDIR) $(LIBDIR)/pkgconfig; \
+         if [ ! -d $(DESTDIR)$(LIBDIR)/pkgconfig ]; then \
+            mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/pkgconfig; \
          fi && \
          if [ ! -d $$bbase ]; then \
             mkdir -p $$bbase && chmod $(MODDIR) $$bbase; \
@@ -782,8 +782,8 @@ install-dirs:
          if [ ! -d $$base ]; then \
             mkdir -p $$base && chmod $(MODDIR) $$base; \
          fi)
-	if [ ! -d $(LIBDIR)/$(FILDIR) ]; then \
-          mkdir -p $(LIBDIR)/$(FILDIR) && chmod $(MODDIR) $(LIBDIR)/$(FILDIR); \
+	if [ ! -d $(DESTDIR)$(LIBDIR)/$(FILDIR) ]; then \
+          mkdir -p $(DESTDIR)$(LIBDIR)/$(FILDIR) && chmod $(MODDIR) $(DESTDIR)$(LIBDIR)/$(FILDIR); \
         fi
 	if [ ! -d $(DOCDIR) ]; then \
 	  mkdir -p $(DOCDIR) && chmod $(MODDIR) $(DOCDIR); \
@@ -814,8 +814,8 @@ uninstall: uninstall-bee
 	$(MAKE) -C runtime uninstall
 	-$(MAKE) -C manuals uninstall
 	$(MAKE) -C api uninstall
-	$(RM) -f $(LIBDIR)/Makefile.config
-	$(RM) -f $(LIBDIR)/Makefile.misc
+	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.config
+	$(RM) -f $(DESTDIR)$(LIBDIR)/Makefile.misc
 	$(MAKE) -C bglpkg uninstall
 	$(MAKE) -C api uninstall-devel
 

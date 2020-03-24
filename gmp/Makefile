@@ -3,8 +3,8 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 15:43:12 1998                          */
-#*    Last change :  Wed Dec 11 10:52:54 2019 (serrano)                */
-#*    Copyright   :  1998-2019 Manuel Serrano, see LICENSE file        */
+#*    Last change :  Tue Mar 24 12:24:54 2020 (serrano)                */
+#*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The small Makefile to handle custom GMP libraries.               */
 #*=====================================================================*/
@@ -69,15 +69,15 @@ distrib:
 install.old:
 	if [ "$(GMPCUSTOM)" = "yes" ]; then \
 	  $(MAKE) install-lib LIB=libgmp; \
-          cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
-          chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/gmp.h; \
+          cp $(GMP)/gmp.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/gmp.h && \
+          chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/gmp.h; \
 	fi
 
 install:
 	$(MAKE) -C $(GMP) install exec_prefix=$(BINDIR)/BGLINSTALLTMP
 	rm -rf $(DESTDIR)$(BINDIR)/BGLINSTALLTMP
-	cp $(GMP)/gmp.h $(LIBDIR)/$(FILDIR)/gmp.h && \
-	chmod $(MODFILE) $(LIBDIR)/$(FILDIR)/gmp.h
+	cp $(GMP)/gmp.h $(DESTDIR)$(LIBDIR)/$(FILDIR)/gmp.h && \
+	chmod $(MODFILE) $(DESTDIR)$(LIBDIR)/$(FILDIR)/gmp.h
 
 #*---------------------------------------------------------------------*/
 #*    uninstall                                                        */
