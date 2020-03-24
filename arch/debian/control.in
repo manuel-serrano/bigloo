@@ -16,6 +16,11 @@ Description: Bigloo core Libraries
 @IFSSL@ Depends: @LIBSSLDEPEND@, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
 @IFSSL@ Description: Bigloo bindings for OpenSSL.
 
+@IFMULTIMEDIA@ Package: libmultimedia-bigloo
+@IFMULTIMEDIA@ Architecture: any
+@IFMULTIMEDIA@ Depends: bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @EXTRADEPEND@
+@IFMULTIMEDIA@ Description: Bigloo bindings for multimedia the library
+
 @IFALSA@ Package: libalsa-bigloo
 @IFALSA@ Architecture: any
 @IFALSA@ Depends: libasound2, bigloo-libs, ${shlibs:Depends}, ${misc:Depends}, @SSLDEPEND@, @EXTRADEPEND@

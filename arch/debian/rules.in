@@ -67,10 +67,11 @@ install: build
 	$(MAKE) install-libs DESTDIR=$(CURDIR)/debian/bigloo-libs
 	$(MAKE) install-devel DESTDIR=$(CURDIR)/debian/bigloo
 	$(MAKE) install-docs DESTDIR=$(CURDIR)/debian/bigloo-doc
-	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl alsa pulseaudio flac wav mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
+	$(MAKE) install-apis NOAPIS="sqlite pkglib ssl multimedia alsa pulseaudio flac wav mpg123 avahi gstreamer phidget" DESTDIR=$(CURDIR)/debian/bigloo-libs
 	@IFSQLITE@ $(MAKE) install-api API=sqlite DESTDIR=$(CURDIR)/debian/libsqlite-bigloo
 	@IFPKGLIB@ $(MAKE) install-api API=pkglib DESTDIR=$(CURDIR)/debian/libpkglib-bigloo
 	@IFSSL@ $(MAKE) install-api API=ssl DESTDIR=$(CURDIR)/debian/libssl-bigloo
+	@IFMULTIMEDIA@ $(MAKE) install-api API=multimedia DESTDIR=$(CURDIR)/debian/libmultimedia-bigloo
 	@IFALSA@ $(MAKE) install-api API=alsa DESTDIR=$(CURDIR)/debian/libalsa-bigloo
 	@IFPULSEAUDIO@ $(MAKE) install-api API=pulseaudio DESTDIR=$(CURDIR)/debian/libpulseaudio-bigloo
 	@IFFLAC@ $(MAKE) install-api API=flac DESTDIR=$(CURDIR)/debian/libflac-bigloo
