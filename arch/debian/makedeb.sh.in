@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Mar 25 16:15:59 2020 (serrano)                */
+#*    Last change :  Wed Mar 25 16:52:21 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -29,7 +29,7 @@ bglconfigureopt=
 #* builddepend=libpcre3-dev                                           */
 builddepend=
 depend=
-debformat="3.0 (native)"
+debformat="3.0 (quilt)"
 
 fakeroot=fakeroot
 targetdir=$PWD/build.bigloo
@@ -120,15 +120,15 @@ if [ ! -f $basedir/makedeb.sh ]; then
 fi
 
 # check which ssl is available
-apt-cache search 'libssl' | grep 0\.9\.8
+apt-cache search 'libssl' | grep 0\.9\.8 > /dev/null 2> /dev/null
 if [ $? = 0 ]; then
   libssldepend=libssl0.9.8
 else
-  apt-cache search 'libssl' | grep 1\.0\.0
+  apt-cache search 'libssl' | grep 1\.0\.0 > /dev/null 2> /dev/null
   if [ $? = 0 ]; then
      libssldepend=libssl1.0.0
   else
-     apt-cache search 'libssl' | grep 1\.1
+     apt-cache search 'libssl' | grep 1\.1 > /dev/null 2> /dev/null
      if [ $? = 0 ]; then
        libssldepend=libssl1.1
      else
@@ -172,7 +172,7 @@ configure() {
 # debian specific configuration
 mkdir -p debian
 
-for p in control rules postinst changelog changelog compat; do
+for p in control rules postinst compat; do
   if [ -f $basedir/$p.in ]; then
     configure $basedir/$p.in debian/$p
   elif [ -f $basedir/$p.$pkg ]; then
@@ -184,15 +184,14 @@ done
 
 chmod a+x debian/rules
 
+# changelog
+(cd $curdir; git log -n 20 --pretty=format:"bigloo ($version-1) unstable; urgency=low%n%n  * %s%n%n -- %an <%ae>  %cD%n") > debian/changelog || exit 1
+
 mkdir -p debian/source
 echo $debformat > debian/source/format
 
-dpkg-buildpackage -r$fakeroot && 
-
-if [ -d $repodir/$debian ]; then
-  cp ../*_"$version""$minor"_*.deb $repodir/$debian
-fi
+dpkg-buildpackage -r$fakeroot
 
 cd $curdir
 
-echo "Done. .deb files generated in directory $targetdir"
+echo "Done. .deb files generated in directory \"$targetdir\""
