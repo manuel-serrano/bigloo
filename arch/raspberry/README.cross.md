@@ -53,6 +53,8 @@ explains how to prepare the emulator if the option is chosen.
 
 4. Run qemu
 
+From the directory containing the img file:
+
    (in host) sudo qemu-system-arm -nographic -kernel qemu-rpi-kernel/kernel-qemu-4.19.50-buster -dtb qemu-rpi-kernel/versatile-pb.dtb -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda 2019-09-26-raspbian-buster-lite.qcow -cpu arm1176 -m 256 -M versatilepb -no-reboot -nic user,hostfwd=tcp::2022-:22
    
 
@@ -77,9 +79,14 @@ have to adapt the Bigloo ssh-copy.sh script used for the cross-compiation
    (in guest) ssh-keygen
    
 8. Copy personnal public key
+
    (in guest) cat > ~/.ssh/authorized_keys
 
-9. Expand the image size
+9. Add ho in the sudoers list
+
+   (in guest) sudo sh -c "echo \"hop ALL=NOPASSWD: ALL\" > /etc/sudoers.d/hop"
+
+10. Expand the image size
 
   (in host) qemu-img resize 2019-09-26-raspbian-buster-lite.qcow +16G
   (in host) cp 2019-09-26-raspbian-buster-lite.qcow 2019-09-26-raspbian-buster-lite16GB.qcow
@@ -175,3 +182,11 @@ and use credentials).
    (in guest) sudo chown $USER -R /opt/bigloo
    (in guest) chmod a+rx -R /opt/bigloo
    
+
+4. Bigloo installation
+----------------------
+
+Before installing Bigloo, the following packages should be installed:
+
+   (in guest) sudo apt update
+   (in guest) sudo apt install -y dh-make libssl1.0.2 libssl-dev libsqlite3-0 libsqlite3-dev libasound2 libasound2-dev libflac8 libflac-dev libmpg123-0 libmpg123-dev libavahi-core7 libavahi-core-dev libavahi-common-dev libavahi-common3 libavahi-client3 libavahi-client-dev libunistring2 libunistring-dev libpulse-dev libpulse0 automake libtool libgmp-dev libgmp3-dev libgmp10

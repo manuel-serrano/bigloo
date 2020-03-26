@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu Mar 26 10:25:49 2020 (serrano)                */
+#*    Last change :  Thu Mar 26 17:57:12 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -190,7 +190,7 @@ done
 chmod a+x debian/rules
 
 # changelog
-(cd $curdir; git log -n 20 --pretty=format:"bigloo ($version-1) unstable; urgency=low%n%n  * %s%n%n -- %an <%ae>  %cD%n") > debian/changelog || exit 1
+cp ChangeLog debian/changelog
 
 mkdir -p debian/source
 echo $debformat > debian/source/format
