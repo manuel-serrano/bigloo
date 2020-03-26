@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Thu Mar 26 10:13:59 2020 (serrano)                */
+#*    Last change :  Thu Mar 26 18:14:29 2020 (serrano)                */
 #*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -445,7 +445,7 @@ include Makefile.$(REVISIONSYSTEM)
 #*---------------------------------------------------------------------*/
 #*    distrib ...                                                      */
 #*---------------------------------------------------------------------*/
-distrib:
+distrib: ChangeLog
 	@ (cd $(DISTRIBTMPDIR) && \
 	   $(RM) -rf bigloo-$(RELEASE) && $(RM) -rf bigloo && \
            $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \

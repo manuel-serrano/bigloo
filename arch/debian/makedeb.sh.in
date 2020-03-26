@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu Mar 26 17:57:12 2020 (serrano)                */
+#*    Last change :  Thu Mar 26 18:23:06 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -25,8 +25,6 @@ fi
 
 bglconfigureopt=
 
-#* depend=libpcre3                                                    */
-#* builddepend=libpcre3-dev                                           */
 builddepend=
 depend=
 debformat="3.0 (quilt)"
