@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Mar 25 18:12:59 2020 (serrano)                */
+#*    Last change :  Wed Mar 25 19:00:07 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -34,6 +34,7 @@ debformat="3.0 (quilt)"
 fakeroot=fakeroot
 targetdir=$PWD/build.bigloo
 
+postinstall=yes
 libs="sqlite ssl multimedia alsa pulseaudio flac wav mpg123 gstreamer avahi"
 
 while : ; do
@@ -67,6 +68,9 @@ while : ; do
     -O)
       shift
       targetdir=$1;;
+    --no-postinstall)
+      shift
+      postinstall=no;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
@@ -192,6 +196,23 @@ echo $debformat > debian/source/format
 
 dpkg-buildpackage -r$fakeroot
 
+# install the packages
+if [ "$postinstall " = "yes " ]; then
+  pkgs=`grep Package: debian/control | awk -F: '{print $2}' | tr -d '\n'`
+  arch=`dpkg --print-architecture`
+
+  for p in `echo $pkgs`; do
+    if [ -f $targetdir/${p}_$version-1_$arch.deb ]; then
+      sudo dpkg -i $targetdir/${p}_$version-1_$arch.deb
+    elif [ -f $targetdir/${p}_$version-1_all.deb ]; then
+      sudo dpkg -i $targetdir/${p}_$version-1_all.deb
+    else
+      echo "*** ERROR: cannot find .deb file for package $p"
+      exit 1
+    fi
+  done
+fi
+
 cd $curdir
 
-echo "Done. .deb files generated in directory \"$targetdir\""
+echo "Done generating .deb files in directory \"$targetdir\""
