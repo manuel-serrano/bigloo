@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Jan 14 13:40:15 1998                          */
-#*    Last change :  Tue Mar 24 12:25:35 2020 (serrano)                */
+#*    Last change :  Thu Mar 26 10:13:59 2020 (serrano)                */
 #*    Copyright   :  1998-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    This Makefile *requires* GNU-Make.                               */
@@ -73,10 +73,6 @@ DISTRIBTMPDIR	= /tmp
 DISTRIBDIR	= $$HOME/prgm/distrib
 # The Bigloo html page directory
 HTMLPAGEDIR	= $$HOME/public_html/bigloo
-# The ftp host and location where to store Bigloo
-FTPHOSTNAME	= tahoe
-FTPHOST		= $(FTPHOSTNAME).unice.fr
-FTPDIR		= $$HOME/public_ftp
 # The library to be installed on the ftp server
 FTP_LIBRARIES	= contrib/lib-example.tar.gz
 # the libc we are testing for version
@@ -451,18 +447,18 @@ include Makefile.$(REVISIONSYSTEM)
 #*---------------------------------------------------------------------*/
 distrib:
 	@ (cd $(DISTRIBTMPDIR) && \
-	   $(RM) -rf bigloo$(RELEASE) && $(RM) -rf bigloo && \
+	   $(RM) -rf bigloo-$(RELEASE) && $(RM) -rf bigloo && \
            $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
            cd bigloo && \
            cat $(BOOTDIR)/Makefile.config | sed 's/BFEATUREFLAGS=.*/BFEATUREFLAGS=-srfi enable-gmp/' | sed 's/BOOTFLAGS=.*/BOOTFLAGS=/' > Makefile.config \
            && cp $(BOOTDIR)/Makefile.buildconfig Makefile.buildconfig \
            && $(MAKE) true-distrib)
-	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo$(RELEASE)
+	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo-$(RELEASE)
 
-true-distrib: $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
+true-distrib: $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz
 
-$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
-	@ $(RM) -f $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
+$(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz:
+	@ $(RM) -f $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz
 	@ for p in $(NO_DIST_FILES); do \
              $(RM) -rf $$p; \
           done
@@ -476,8 +472,8 @@ $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz:
 	@ $(RM) -f Makefile.config;
 	@ $(RM) -f Makefile.buildconfig;
 	@ (cd .. && \
-           mv bigloo bigloo$(RELEASE)$(VERSION) && \
-           tar cfz $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz bigloo$(RELEASE)$(VERSION))
+           mv bigloo bigloo-$(RELEASE)$(VERSION) && \
+           tar cfz $(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).tar.gz bigloo-$(RELEASE)$(VERSION))
 	@ echo "$@ done..."
 	@ echo "-------------------------------"
 
@@ -493,24 +489,24 @@ zip: distrib-jvm
 distrib-jvm: 
 	@ (cd $(DISTRIBTMPDIR) && \
 	   $(RM) -rf bigloo && \
-	   $(RM) -rf bigloo$(RELEASE) && \
+	   $(RM) -rf bigloo-$(RELEASE) && \
            $(RM) -rf bigloo && mkdir bigloo && cd bigloo && \
            $(MAKE) -I $(BOOTDIR) -f $(BOOTDIR)/Makefile checkout && \
            cd bigloo && \
            cp $(BOOTDIR)/Makefile.config Makefile.config && \
            $(MAKE) true-distrib-jvm)
 	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo
-	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo$(RELEASE)
+	@ $(RM) -rf $(DISTRIBTMPDIR)/bigloo-$(RELEASE)
 
-true-distrib-jvm: $(DISTRIBDIR)/bigloo$(RELEASE).zip
+true-distrib-jvm: $(DISTRIBDIR)/bigloo-$(RELEASE).zip
 
-$(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
+$(DISTRIBDIR)/bigloo-$(RELEASE).zip: manual-pdf
 	@ mkdir -p bin
-	@ mkdir -p bigloo$(RELEASE)/lib/$(RELEASE)
-	@ mkdir -p bigloo$(RELEASE)/bin
-	@ (ver=`echo $(RELEASE) | sed -e 's/[.]//'` && \
-           cat win32/install.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo$(RELEASE)/install.bat && \
-           cat win32/uninstall.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo$(RELEASE)/uninstall.bat)
+	@ mkdir -p bigloo-$(RELEASE)/lib/-$(RELEASE)
+	@ mkdir -p bigloo-$(RELEASE)/bin
+	@ (ver=`echo -$(RELEASE) | sed -e 's/[.]//'` && \
+           cat win32/install.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo-$(RELEASE)/install.bat && \
+           cat win32/uninstall.bat | sed -e "s/THE-VERSION/$$ver/g" > bigloo-$(RELEASE)/uninstall.bat)
 	@ (cp $(BOOTBINDIR)/bigloo bin/bigloo)
 	@ (cp $(BOOTBINDIR)/bglafile bin/bglafile)
 	@ (cp $(BOOTBINDIR)/bgljfile bin/bgljfile)
@@ -530,32 +526,32 @@ $(DISTRIBDIR)/bigloo$(RELEASE).zip: manual-pdf
 	@ $(MAKE) -f $(BOOTDIR)/Makefile true-comptime-jvm
 	@ (cd bde && $(MAKE) jvm)
 	@ (cd jigloo && $(MAKE) jvm)
-	@ mkdir bigloo$(RELEASE)/lib/BGL-TMP
-	@ cp lib/$(RELEASE)/*.jheap bigloo$(RELEASE)/lib/BGL-TMP
-	@ cp lib/$(RELEASE)/*.zip bigloo$(RELEASE)/lib/BGL-TMP
-	@ mkdir bigloo$(RELEASE)/lib/bigloo
-	@ mv bigloo$(RELEASE)/lib/BGL-TMP bigloo$(RELEASE)/lib/bigloo/`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ cp bin/bigloo.jar bigloo$(RELEASE)/bin/bigloo.jar
-	@ cat bin/bigloo.jvm | sed -e "s/\/tmp\/bigloo\/bin\//$(JVMBASEDIR)\\\\bin\\\\/" > bigloo$(RELEASE)/bin/bigloo.bat
-	@ cp bde/afile.class bigloo$(RELEASE)/bin
-	@ cp bde/jfile.class bigloo$(RELEASE)/bin
-	@ cp jigloo/jigloo.class bigloo$(RELEASE)/bin
-	@ cp INSTALL.jvm bigloo$(RELEASE)/INSTALL
-	@ cp doc/README.jvm bigloo$(RELEASE)/README
-	@ cp manuals/bigloo.pdf bigloo$(RELEASE)/bigloo.pdf
-	@ (mkdir bigloo$(RELEASE)/demo; \
-           mkdir bigloo$(RELEASE)/demo/awt; \
-           mkdir bigloo$(RELEASE)/demo/maze; \
-           cp examples/Jawt/README.jvm bigloo$(RELEASE)/demo/awt/README; \
-           cp examples/Jawt/Utils.java bigloo$(RELEASE)/demo/awt/Utils.java; \
-           cp examples/Jawt/awt.scm bigloo$(RELEASE)/demo/awt/awt.scm; \
-           cp examples/Maze/README.jvm bigloo$(RELEASE)/demo/maze/README; \
-           cp examples/Maze/maze.scm bigloo$(RELEASE)/demo/maze/maze.scm)
-	@ $(RM) -r bigloo$(RELEASE)/lib/$(RELEASE)
-	@ mv bigloo$(RELEASE) bgl`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ $(RM) -f $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip
-	@ $(ZIP) -r $(DISTRIBDIR)/bigloo`echo $(RELEASE) | sed -e 's/[.]//'`.zip bgl`echo $(RELEASE) | sed -e 's/[.]//'`
-	@ echo "$(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).zip done..."
+	@ mkdir bigloo-$(RELEASE)/lib/BGL-TMP
+	@ cp lib/-$(RELEASE)/*.jheap bigloo-$(RELEASE)/lib/BGL-TMP
+	@ cp lib/-$(RELEASE)/*.zip bigloo-$(RELEASE)/lib/BGL-TMP
+	@ mkdir bigloo-$(RELEASE)/lib/bigloo
+	@ mv bigloo-$(RELEASE)/lib/BGL-TMP bigloo-$(RELEASE)/lib/bigloo/`echo -$(RELEASE) | sed -e 's/[.]//'`
+	@ cp bin/bigloo.jar bigloo-$(RELEASE)/bin/bigloo.jar
+	@ cat bin/bigloo.jvm | sed -e "s/\/tmp\/bigloo\/bin\//$(JVMBASEDIR)\\\\bin\\\\/" > bigloo-$(RELEASE)/bin/bigloo.bat
+	@ cp bde/afile.class bigloo-$(RELEASE)/bin
+	@ cp bde/jfile.class bigloo-$(RELEASE)/bin
+	@ cp jigloo/jigloo.class bigloo-$(RELEASE)/bin
+	@ cp INSTALL.jvm bigloo-$(RELEASE)/INSTALL
+	@ cp doc/README.jvm bigloo-$(RELEASE)/README
+	@ cp manuals/bigloo.pdf bigloo-$(RELEASE)/bigloo.pdf
+	@ (mkdir bigloo-$(RELEASE)/demo; \
+           mkdir bigloo-$(RELEASE)/demo/awt; \
+           mkdir bigloo-$(RELEASE)/demo/maze; \
+           cp examples/Jawt/README.jvm bigloo-$(RELEASE)/demo/awt/README; \
+           cp examples/Jawt/Utils.java bigloo-$(RELEASE)/demo/awt/Utils.java; \
+           cp examples/Jawt/awt.scm bigloo-$(RELEASE)/demo/awt/awt.scm; \
+           cp examples/Maze/README.jvm bigloo-$(RELEASE)/demo/maze/README; \
+           cp examples/Maze/maze.scm bigloo-$(RELEASE)/demo/maze/maze.scm)
+	@ $(RM) -r bigloo-$(RELEASE)/lib/-$(RELEASE)
+	@ mv bigloo-$(RELEASE) bgl`echo -$(RELEASE) | sed -e 's/[.]//'`
+	@ $(RM) -f $(DISTRIBDIR)/bigloo`echo -$(RELEASE) | sed -e 's/[.]//'`.zip
+	@ $(ZIP) -r $(DISTRIBDIR)/bigloo`echo -$(RELEASE) | sed -e 's/[.]//'`.zip bgl`echo -$(RELEASE) | sed -e 's/[.]//'`
+	@ echo "$(DISTRIBDIR)/bigloo-$(RELEASE)$(VERSION).zip done..."
 	@ echo "-------------------------------"
 
 # This entry as to be isolated from the general bigloo_s.zip rule
@@ -613,18 +609,6 @@ ftplibrary:
           done
 	@ chmod a+r -R library
 	@ chmod a+x library
-
-#*---------------------------------------------------------------------*/
-#*    ftp                                                              */
-#*    -------------------------------------------------------------    */
-#*    Set up the ftp file for the Bigloo distribution                  */
-#*---------------------------------------------------------------------*/
-ftp:
-	@ rcp $(DISTRIBDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm \
-              $(FTPHOSTNAME):$(FTPDIR)/bigloo-$(RELEASE)-$(LIBCVERSION).$(RPMARCH).rpm
-	@ rcp $(DISTRIBDIR)/bigloo$(RELEASE)$(VERSION).tar.gz         \
-              $(FTPHOSTNAME):$(FTPDIR)/bigloo$(RELEASE)$(VERSION).tar.gz
-	@ (rsh $(FTPHOSTNAME) chmod a+rx -R $(FTPDIR))
 
 #*---------------------------------------------------------------------*/
 #*    test                                                             */
