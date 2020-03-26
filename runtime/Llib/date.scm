@@ -3,8 +3,8 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Feb  4 10:35:59 2003                          */
-;*    Last change :  Sun Aug 25 09:09:48 2019 (serrano)                */
-;*    Copyright   :  2003-19 Manuel Serrano                            */
+;*    Last change :  Thu Mar 26 14:29:39 2020 (serrano)                */
+;*    Copyright   :  2003-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    The operations on time and date.                                 */
 ;*    -------------------------------------------------------------    */
@@ -76,6 +76,7 @@
 	    ($date-current-microseconds::llong () "bgl_current_microseconds")
 	    ($date-current-nanoseconds::llong () "bgl_current_nanoseconds")
 	    ($date-from-seconds::date (::elong) "bgl_seconds_to_date")
+	    ($date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
 	    ($date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
 	    ($date-to-seconds::elong (::date) "bgl_date_to_seconds")
 	    ($date-to-nanoseconds::llong (::date) "bgl_date_to_nanoseconds")
@@ -86,6 +87,7 @@
 	       (method static c-date?::bool (::obj) "DATEP")
 	       (method static $date-new::date (::llong ::int ::int ::int ::int ::int ::int ::long ::bool ::int) "bgl_make_date")
 	       (method static $date-from-seconds::date (::elong) "bgl_seconds_to_date")
+	       (method static $date-from-seconds-gmt::date (::elong) "bgl_seconds_to_gmtdate")
 	       (method static $date-from-nanoseconds::date (::llong) "bgl_nanoseconds_to_date")
 	       (method static $date-current-seconds::elong () "bgl_current_seconds")
 	       (method static $date-current-microseconds::llong () "bgl_current_microseconds")
@@ -142,6 +144,7 @@
 	    (inline current-nanoseconds::llong)
 	    (inline current-date::date)
 	    (inline seconds->date::date ::elong)
+	    (inline seconds->gmtdate::date ::elong)
 	    (inline nanoseconds->date::date ::llong)
 	    (inline date->seconds::elong ::date)
 	    (inline date->nanoseconds::llong ::date)
@@ -336,6 +339,12 @@
    ($date-from-seconds elong))
 
 ;*---------------------------------------------------------------------*/
+;*    seconds->gmtdate ...                                             */
+;*---------------------------------------------------------------------*/
+(define-inline (seconds->gmtdate elong)
+   ($date-from-seconds-gmt elong))
+
+;*---------------------------------------------------------------------*/
 ;*    nanoseconds->date ...                                            */
 ;*---------------------------------------------------------------------*/
 (define-inline (nanoseconds->date elong)
@@ -488,7 +497,7 @@
 (define (date->rfc2822-date date)
    (let ((tz (date-timezone date)))
       (if (=fx tz 0)
-	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d"
+	  (format "~a, ~a ~a ~a ~2,0d:~2,0d:~2,0d GMT"
 	     (day-aname (date-wday date))
 	     (date-day date)
 	     (month-aname (date-month date))

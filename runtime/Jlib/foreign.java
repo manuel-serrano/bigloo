@@ -3542,6 +3542,12 @@ public final class foreign
 	 return new bigloo.date(sec);
       }
 
+   public static date bgl_seconds_to_gmtdate(long sec)
+      {
+	 System.out.println( "bgl_seconds_to_gmtdate not implemented using local time" );
+	 return bgl_seconds_to_date( sec );
+      }
+
    public static date bgl_nanoseconds_to_date(long nsec)
       {
 	 return new bigloo.date(nsec, true);
