@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Wed Mar 25 19:00:07 2020 (serrano)                */
+#*    Last change :  Thu Mar 26 09:35:17 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -33,6 +33,7 @@ debformat="3.0 (quilt)"
 
 fakeroot=fakeroot
 targetdir=$PWD/build.bigloo
+sign=
 
 postinstall=yes
 libs="sqlite ssl multimedia alsa pulseaudio flac wav mpg123 gstreamer avahi"
@@ -71,6 +72,8 @@ while : ; do
     --no-postinstall)
       shift
       postinstall=no;;
+    --no-sign)
+      sign=--no-sign;;
     *)
       bglconfigureopt="$1 $bglconfigureopt";;
 
@@ -194,7 +197,7 @@ chmod a+x debian/rules
 mkdir -p debian/source
 echo $debformat > debian/source/format
 
-dpkg-buildpackage -r$fakeroot
+dpkg-buildpackage -r$fakeroot $sign
 
 # install the packages
 if [ "$postinstall " = "yes " ]; then
