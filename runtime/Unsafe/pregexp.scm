@@ -1,9 +1,9 @@
 ;*=====================================================================*/
-;*    .../prgm/project/bigloo/bigloo/runtime/Unsafe/pregexp.scm        */
+;*    /tmp/BUFOV/bigloo-4.3h/runtime/Unsafe/pregexp.scm                */
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Dorai Sitaram                                     */
 ;*    Creation    :  Mon Jan 19 17:35:12 1998                          */
-;*    Last change :  Fri Mar 27 17:30:15 2020 (serrano)                */
+;*    Last change :  Fri Mar 27 18:08:35 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    Posix regular expressions                                        */
 ;*    Portable regular expressions for Scheme                          */
@@ -778,19 +778,21 @@
    (lambda (pat str res beg end)
       (let ((pos (pregexp-match-positions pat str beg end))
 	    (len (bit-and (vector-length res) (bit-not 1))))
-	 (let loop ((i 0)
-		    (pos pos))
-	    (cond
-	       ((or (=fx i len) (null? pos))
-		i)
-	       ((pair? (car pos))
-		(vector-set! res i (caar pos))
-		(vector-set! res (+fx i 2) (cadr pos))
-		(loop (+fx i 2) (cdr pos)))
-	       (else
-		(vector-set! res i -1)
-		(vector-set! res (+fx i 2) -1)
-		(loop (+fx i 2) (cdr pos))))))))
+	 (if (not pos)
+	     -1
+	     (let loop ((i 0)
+			(pos pos))
+		(cond
+		   ((or (=fx i len) (null? pos))
+		    i)
+		   ((pair? (car pos))
+		    (vector-set! res i (caar pos))
+		    (vector-set! res (+fx i 1) (cdar pos))
+		    (loop (+fx i 2) (cdr pos)))
+		   (else
+		    (vector-set! res i -1)
+		    (vector-set! res (+fx i 1) -1)
+		    (loop (+fx i 2) (cdr pos)))))))))
 		
 (define pregexp-match
   (lambda (pat str #!optional (beg 0) (end (string-length str)))
