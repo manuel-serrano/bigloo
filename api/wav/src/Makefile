@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jan 20 19:19:56 2020 (serrano)                */
+#*    Last change :  Fri Mar 27 13:16:02 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -47,12 +47,18 @@ BHEAPFLAGS	= -unsafe -q -mkaddheap -mkaddlib -L $(BOOTLIBDIR) -I Llib \
 CEFLAGS		= $(WAVCFLAGS)
 
 # Additional libraries
-EXTRALIBS	= $(WAVLIBS) -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS	= $(WAVLIBS)
+EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
 ifneq "$(ALSALIBS) " " "
-EXTRALIBS	+= $(ALSALIBS) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(ALSALIBS)
+EXTRALIBS_U	+= -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS_S	+= -lbiglooalsa_s-$(RELEASE)
 endif
 ifneq "$(PULSEAUDIOLIBS) " " "
-EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS	+= $(PULSEAUDIOLIBS)
+EXTRALIBS_U	+= -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloopulseaudio_s-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

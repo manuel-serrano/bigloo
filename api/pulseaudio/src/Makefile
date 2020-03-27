@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jan 20 19:07:30 2020 (serrano)                */
+#*    Last change :  Fri Mar 27 12:34:47 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,7 +50,9 @@ CEFLAGS		= $(PULSEAUDIOCFLAGS)
 ifeq "$(PULSEAUDIOLIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS	= $(PULSEAUDIOLIBS)
+EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

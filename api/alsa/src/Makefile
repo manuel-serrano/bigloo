@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Mon Jan 20 19:07:22 2020 (serrano)                */
+#*    Last change :  Fri Mar 27 12:34:05 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,7 +50,9 @@ CEFLAGS		= $(ALSACFLAGS)
 ifeq "$(ALSALIBS) " " "
 EXTRALIBS	= 
 else
-EXTRALIBS	= $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS	= $(ALSALIBS)
+EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

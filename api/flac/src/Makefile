@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Tue Jan 21 07:49:09 2020 (serrano)                */
+#*    Last change :  Fri Mar 27 13:15:02 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -54,14 +54,19 @@ EXTRALIBS	= $(FLACLIBS) -lm
 endif
 
 ifeq "$(ALSALIBS) " " "
-EXTRALIBS	+= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE)
 else
-EXTRALIBS	+= $(ALSALIBS) -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS	+= $(ALSALIBS)
+EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE) -lbiglooalsa_s-$(RELEASE)
 endif
 ifeq "$(PULSEAUDIOLIBS) " " "
-EXTRALIBS	+= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE)
 else
-EXTRALIBS	+= $(PULSEAUDIOLIBS) -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE) -lbigloopulseaudio_s-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/
