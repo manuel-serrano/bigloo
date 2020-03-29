@@ -82,7 +82,7 @@ have to adapt the Bigloo ssh-copy.sh script used for the cross-compiation
 
    (in guest) cat > ~/.ssh/authorized_keys
 
-9. Add ho in the sudoers list
+9. Add hop in the sudoers list (as "pi" user)
 
    (in guest) sudo sh -c "echo \"hop ALL=NOPASSWD: ALL\" > /etc/sudoers.d/hop"
 
