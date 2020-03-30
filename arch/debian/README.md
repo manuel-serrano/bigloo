@@ -6,7 +6,7 @@ build the Bigloo Debian packages.
 
 This script install the Bigloo version out of a tarball stored in:
 
-   $HOME/prgm/distrib
+   `$HOME/prgm/distrib`
 
 It uses the currently "configured" Bigloo version.
 
@@ -17,34 +17,48 @@ It uses the currently "configured" Bigloo version.
 Install the Debian development toolchain and the Bigloo dependencies
 on the host. In particular
 
-  sudo apt -qq update
-  sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev
-  sudo apt install -y libasound2-dev libflac-dev libmpg123-dev libavahi-core-dev
-  sudo apt install -y libavahi-common-dev libavahi-client-dev libpulse-dev
-  sudo apt install -y libgmp-dev automake libtool
+```shell
+sudo apt -qq update
+sudo apt install -y dh-make libssl1.1 libssl-dev libsqlite3-0 libsqlite3-dev
+sudo apt install -y libasound2-dev libflac-dev libmpg123-dev libavahi-core-dev
+sudo apt install -y libavahi-common-dev libavahi-client-dev libpulse-dev
+sudo apt install -y libgmp-dev automake libtool
+```
+
+Optionally, it might be usefull to install alsa utils
+
+```
+sudo apt install alsa-utils
+```
 
 
 2. To build the debian packages on the local machine
 ----------------------------------------------------
-  
-  ./makedeb.sh [-O targetdir] [--repodir dir]
-  
+
+```shell
+./makedeb.sh [-O targetdir] [--repodir dir]
+```
+
 example:
 
-  ./makedeb.sh -O /tmp/debbigloo
-
+```shell
+./makedeb.sh -O /tmp/debbigloo
+```
 
 3. To build the debian packages on a remote machine via ssh
 -----------------------------------------------------------
-  
-  ./makedebremote.sh [-O targetdir] [host] [user]
-  
+
+```shell
+./makedebremote.sh [-O targetdir] [host] [user]
+```
+
 Warning! This assumes that bash is available on the remote host
 
 example:
 
-  ./makedebremote.sh -O /tmp/debraspbian raspbian hop
-
+```shell
+./makedebremote.sh -O /tmp/debraspbian raspbian hop
+```
 
 4. Building Debian packages with Qemu
 -------------------------------------
