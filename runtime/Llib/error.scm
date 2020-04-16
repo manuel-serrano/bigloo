@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Fri Jan 20 08:19:23 1995                          */
-;*    Last change :  Wed Oct  9 13:00:21 2019 (serrano)                */
+;*    Last change :  Wed Apr  8 15:51:59 2020 (serrano)                */
 ;*    -------------------------------------------------------------    */
 ;*    The error machinery                                              */
 ;*    -------------------------------------------------------------    */
@@ -570,16 +570,10 @@
 		  ((fixnum? len) len)
 		  ((string? len) (string->integer len))
 		  (else 0)))
-	  (msg (if (>=fx i 0)
-		   ;; we have a significant info about the wrong index
-		   (string-append
-		      "index " (integer->string i) " out of range [0.."
-		      (integer->string (-fx len 1))
-		      "]")
-		   ;; no real info about the index
-		   (string-append "index out of range [0.."
-		      (integer->string (-fx len 1))
-		      "]"))))
+	  (msg (string-append
+		  "index " (integer->string i) " out of range [0.."
+		  (integer->string (-fx len 1))
+		  "]")))
       (instantiate::&index-out-of-bounds-error
 	 (fname fname)
 	 (location loc)

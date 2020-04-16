@@ -3,7 +3,7 @@
 ;*    -------------------------------------------------------------    */
 ;*    Author      :  Manuel Serrano                                    */
 ;*    Creation    :  Tue Jan 17 09:40:04 2006                          */
-;*    Last change :  Thu Mar 19 12:17:15 2020 (serrano)                */
+;*    Last change :  Thu Apr 16 16:14:18 2020 (serrano)                */
 ;*    Copyright   :  2006-20 Manuel Serrano                            */
 ;*    -------------------------------------------------------------    */
 ;*    Eval module management                                           */
@@ -452,12 +452,14 @@
 (define (evmodule-import-binding! to-mod to-ident from-mod from-ident loc)
    (let ((var (evmodule-find-global from-mod from-ident)))
       (if (not var)
-	  (evcompile-error loc "eval"
-	     (string-append
-		"Cannot find imported variable from module `"
-		(symbol->string (evmodule-name from-mod))
-		"'")
-	     from-ident)
+	  (begin
+	     (tprint "ERROR: " (hashtable-key-list (%evmodule-env from-mod)))
+	     (evcompile-error loc "eval"
+		(string-append
+		   "Cannot find imported variable from module `"
+		   (symbol->string (evmodule-name to-mod))
+		   "'")
+		`(@ ,from-ident ,(evmodule-name from-mod))))
 	  (evmodule-bind-global! to-mod to-ident var loc))))
 
 ;*---------------------------------------------------------------------*/
@@ -695,11 +697,14 @@
    (define (from-error msg obj)
       (evcompile-error loc "eval" msg obj))
    (define (from-module mod2)
-      (let ((nx (append (if (pair? set)
-			    (filter (lambda (b) (memq (car b) set))
-				    (%evmodule-exports mod2))
-			    (%evmodule-exports mod2))
-			(%evmodule-exports mod))))
+      (let* ((ex (if (pair? set)
+		     (filter (lambda (b) (memq (car b) set))
+			(%evmodule-exports mod2))
+		     (%evmodule-exports mod2)))
+	     (nx (append ex (%evmodule-exports mod))))
+	 (for-each (lambda (b)
+		      (bind-alias! mod mod2 (car b) (car b) loc))
+	    ex)
 	 (%evmodule-exports-set! mod nx)))
    (let ((mod2 (eval-find-module ident)))
       (cond
