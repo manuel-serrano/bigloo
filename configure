@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Mar 24 12:20:40 2020 (serrano)                */
+#*    Last change :  Tue Apr 21 16:50:07 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -4681,6 +4681,22 @@ for file in makedeb.sh makedebremote.sh; do
            -e "s|@APIS@|$apis|" \
      >> $deb  
   chmod a+rx $deb
+done  
+
+#*---------------------------------------------------------------------*/
+#*    Homebrew scripting                                               */
+#*---------------------------------------------------------------------*/
+for file in makebrew.sh; do
+  brew=arch/homebrew/$file
+  rm -f $brew 2> /dev/null
+  $echo "#!/bin/sh" > $brew
+  $echo "#* Automatically generated file (don't edit) */" >> $brew
+
+  cat $brew.in \
+     | sed -e "s|#!/bin/sh||" \
+           -e "s|@VERSION@|$release|" \
+     >> $brew  
+  chmod a+rx $brew
 done  
 
 #*---------------------------------------------------------------------*/

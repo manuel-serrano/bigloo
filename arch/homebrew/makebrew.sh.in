@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Apr 21 16:39:11 2020                          */
-#*    Last change :  Tue Apr 21 16:46:46 2020 (serrano)                */
+#*    Last change :  Tue Apr 21 16:54:05 2020 (serrano)                */
 #*    Copyright   :  2020 Manuel Serrano                               */
 #*    -------------------------------------------------------------    */
 #*    Script to build the homebrew formula                             */
@@ -54,5 +54,6 @@ fi
 sha256=`sha256sum $repodir/bigloo-$version.tar.gz | awk '{ print $1 }'`
 
 cat bigloo-latest.rb.in | \
-  sed -e 's/@VERSION@/$version/' \
-      -e 's/@SHA256SUM@/$sha256/' > $targetdir/bigloo-latest.rb
+  sed -e "s/@RELEASE@/$version/" \
+      -e "s/@SHA256SUM@/$sha256/" \
+      > $targetdir/bigloo-latest.rb
