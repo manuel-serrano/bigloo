@@ -706,7 +706,7 @@ is an instance of @code{object}.
 This generic function returns an hash number of @var{object}.
 @end deffn
 
-@deffn {bigloo procedure} is-a? obj class
+@deffn {bigloo procedure} isa? obj class
 Returns @code{#t} if @var{obj} belongs to @var{class} otherwise it
 returns @code{#f}.
 @end deffn

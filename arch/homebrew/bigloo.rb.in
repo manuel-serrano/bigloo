@@ -1,9 +1,9 @@
-class BiglooLatest < Formula
+class Bigloo@Release@ < Formula
   desc "Scheme implementation with object system, C, and Java interfaces"
   homepage "https://www-sop.inria.fr/indes/fp/Bigloo/"
-  url "ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-@RELEASE@.tar.gz"
+  url "ftp://ftp-sop.inria.fr/indes/fp/Bigloo/bigloo-@release@.tar.gz"
   version "@RELEASE@"
-  sha256 "@SHA256SUM@"
+  sha256 "@SHA256@"
   revision 1
 
   depends_on "autoconf" => :build
@@ -26,7 +26,7 @@ class BiglooLatest < Formula
       --customgc=yes
     ]
 
-    ENV.PKG_CONFIG_PATH = "/usr/local/opt/openssl@1.1/lib/pkgconfig"
+    ENV['PKG_CONFIG_PATH'] = "/usr/local/opt/openssl@1.1/lib/pkgconfig"
     system "./configure", *args
 
     system "make"
