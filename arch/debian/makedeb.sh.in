@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed May 23 05:45:55 2012                          */
-#*    Last change :  Thu Apr 23 05:56:08 2020 (serrano)                */
+#*    Last change :  Thu Apr 23 09:02:23 2020 (serrano)                */
 #*    Copyright   :  2012-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Script to build the debian Bigloo packages                       */
@@ -211,6 +211,7 @@ if [ "$postinstall " = "yes " ]; then
       sudo dpkg -i $targetdir/${p}_$version-1_all.deb
     else
       echo "*** ERROR: cannot find .deb file for package $p"
+      echo "file \"$targetdir/${p}_$version-1_$arch.deb\" missing..."
       exit 1
     fi
   done

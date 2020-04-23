@@ -33,6 +33,7 @@ arch/maemo
 arch/debian/makedeb.sh
 arch/debian/makedebremote.sh
 arch/vm
+arch/homebrew/makebrew.sh
 bmacs/bmacs-config.el
 bmacs/bee/bee-jinsight.el
 tools/diff.scm
