@@ -1,9 +1,9 @@
 /*=====================================================================*/
-/*    serrano/prgm/project/bigloo/bigloo/runtime/Include/bigloo.h      */
+/*    /tmp/OFAOT/nan/lib/bigloo/4.3h/bigloo.h                          */
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Thu Mar 16 18:48:21 1995                          */
-/*    Last change :  Thu Mar 19 07:43:17 2020 (serrano)                */
+/*    Last change :  Tue Apr 28 10:36:27 2020 (serrano)                */
 /*    -------------------------------------------------------------    */
 /*    Bigloo's stuff                                                   */
 /*=====================================================================*/
@@ -234,6 +234,7 @@ extern "C" {
 /*---------------------------------------------------------------------*/
 #if( BGL_NAN_TAGGING )
 #  define TAG_QNAN (0x7ff8UL<<48)
+#  define TAG_SNAN (0xfff8UL<<48)
 #  define TAG_INT (0x7ff9L<<48)       /*  Int tagging       011...1000 */
 #  define TAG_STRUCT (0x7ffaUL<<48)   /*  Pointers tagging  011...1001 */
 #  define TAG_CNST (0x7ffbUL<<48)     /*  Constants tagging 011...1010 */
