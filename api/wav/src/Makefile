@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Mar 27 13:16:02 2020 (serrano)                */
+#*    Last change :  Thu Apr 30 08:16:49 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -50,6 +50,7 @@ CEFLAGS		= $(WAVCFLAGS)
 EXTRALIBS	= $(WAVLIBS)
 EXTRALIBS_U	= -lbigloomultimedia_u-$(RELEASE)
 EXTRALIBS_S	= -lbigloomultimedia_s-$(RELEASE)
+
 ifneq "$(ALSALIBS) " " "
 EXTRALIBS	+= $(ALSALIBS)
 EXTRALIBS_U	+= -lbiglooalsa_u-$(RELEASE)

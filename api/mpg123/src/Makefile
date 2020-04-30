@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Wed Apr  1 18:45:46 1998                          */
-#*    Last change :  Fri Mar 27 12:41:45 2020 (serrano)                */
+#*    Last change :  Thu Apr 30 08:15:05 2020 (serrano)                */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build the library.                               */
 #*=====================================================================*/
@@ -53,17 +53,18 @@ else
 EXTRALIBS	= $(MPG123LIBS) -lm
 endif
 
-ifeq "$(ALSALIBS) " " "
-else
+EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE)
+
+ifneq "$(ALSALIBS) " " "
 EXTRALIBS	+= $(ALSALIBS)
-EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE) -lbiglooalsa_u-$(RELEASE)
-EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE) -lbiglooalsa_s-$(RELEASE)
+EXTRALIBS_U	+= -lbiglooalsa_u-$(RELEASE)
+EXTRALIBS_S	+= -lbiglooalsa_s-$(RELEASE)
 endif
-ifeq "$(PULSEAUDIOLIBS) " " "
-else
+ifneq "$(PULSEAUDIOLIBS) " " "
 EXTRALIBS	+= $(PULSEAUDIOLIBS)
-EXTRALIBS_U	+= -lbigloomultimedia_u-$(RELEASE) -lbigloopulseaudio_u-$(RELEASE)
-EXTRALIBS_S	+= -lbigloomultimedia_s-$(RELEASE) -lbigloopulseaudio_s-$(RELEASE)
+EXTRALIBS_U	+= -lbigloopulseaudio_u-$(RELEASE)
+EXTRALIBS_S	+= -lbigloopulseaudio_s-$(RELEASE)
 endif
 
 #*---------------------------------------------------------------------*/

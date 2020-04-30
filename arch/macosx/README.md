@@ -7,7 +7,7 @@ Here is the configuration used for the experiment
 
 ```shell
 uname -a
-# Darwin ciosx 13.4.0 Darwin Kernel Version 13.4.0: ... /RELEASE_X86_64 x86_64
+Darwin macOSFull 17.3.0 Darwin Kernel Version 17.3.0: ... RELEASE_X86_64 x86_64
 ```
 
 ```shell
