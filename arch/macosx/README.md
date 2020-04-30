@@ -11,6 +11,7 @@ Darwin macOSFull 17.3.0 Darwin Kernel Version 17.3.0: ... RELEASE_X86_64 x86_64
 ```
 
 ```shell
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew install automake
 ```
 
