@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Tue Apr 21 16:50:07 2020 (serrano)                */
+#*    Last change :  Fri May  1 08:12:32 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -56,6 +56,8 @@ cc=$CC  # left blank for default automatic configuration
 cflags=$CFLAGS
 lflags=$LDFLAGS
 lcustomflags=
+
+cbuildflags=
 
 bigloo=$BIGLOO # used only for cross compiling
 if [ "$BFLAGS " != " " ]; then
@@ -2258,7 +2260,7 @@ if [ "$gmpversion " != "no " ]; then
     (cd gmp; . ./configure-gmp) || exit 1
   
     libgmpbuildpath="\$(BOOTDIR)/gmp\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
+    #lcustomflags="-L$bootdir/gmp$libdir/$fildir $lcustomflags"
     buildlibdir="$bootdir/gmp$libdir/$fildir:$buildlibdir"
     gmplib=-lgmp
   fi
@@ -2563,9 +2565,10 @@ if [ "$regexp " = " " ]; then
       pcrelibs=yes
       extrapcre=pcre
       libpcrebuildpath="\$(BOOTDIR)/pcre\$(LIBDIR)/\$(FILDIR)"
-      lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
+      #lcustomflags="-L$bootdir/pcre$libdir/$fildir $lcustomflags"
       buildlibdir="$bootdir/pcre$libdir/$fildir:$buildlibdir"
-      cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
+      #cflags="-I$bootdir/pcre$libdir/$fildir $cflags"
+      cbuildflags="-I$bootdir/pcre$libdir/$fildir $cbuildflags"
     else
       pcrelibs=no
     fi
@@ -2612,9 +2615,10 @@ if [ "$unistring " != "no " ]; then
     featureflags="-srfi enable-unistring $featureflags";
     extraunistring=unistring
     libunistringbuildpath="\$(BOOTDIR)/libunistring\$(LIBDIR)/\$(FILDIR)"
-    lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
+    #lcustomflags="-L$bootdir/libunistring$libdir/$fildir $lcustomflags"
     buildlibdir="$bootdir/libunistring$libdir/$fildir:$buildlibdir"
-    cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+    #cflags="-I$bootdir/libunistring$libdir/$fildir $cflags"
+    cbuildflags="-I$bootdir/libunistring$libdir/$fildir $cbuildflags"
     unistringversion=`$echo $unistringsrc | sed 's/[^0-9]*//' | sed 's/[.][^0-9]*$//'`
     buildlibunistringlibdir=$bootdir/libunistring/libunistring-$unistringversion/lib/.libs
       
@@ -3853,6 +3857,7 @@ if [ $action = "all" -o $action = "Makefile.config" ]; then
   $echo "CFLAGS=$coflags $cflags" >> $makefile_cfg
   $echo "CSTRIPFLAGS=$csflags" >> $makefile_cfg
   $echo "CPICFLAGS=$cpicflags" >> $makefile_cfg
+  $echo "CBUILDFLAGS=$cbuildflags" >> $makefile_cfg
   $echo "CNANFLAGS=$cnanflags" >> $makefile_cfg
   $echo "CFLAGS_P=$""(CFLAGS) $cpflags" >> $makefile_cfg
   
