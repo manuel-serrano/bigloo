@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Jan 25 16:05:10 1994                          */
-#*    Last change :  Fri May  1 09:19:20 2020 (serrano)                */
+#*    Last change :  Fri May  1 10:00:07 2020 (serrano)                */
 #*    Copyright   :  1994-2020 Manuel Serrano, see LICENSE file        */
 #*    -------------------------------------------------------------    */
 #*    The Bigloo configuration file                                    */
@@ -3539,6 +3539,18 @@ if [ $action = "all" -o $action = "bigloo_config" ]; then
         > $p
     fi
   done
+
+  # bigloo.sh adjuments
+  if [ "$ldbuildopts " != " " ]; then
+    cat bigloo.sh | \
+      sed -e "s|@LDBIGLOOOPT@|-ldopt \\\\\"$ldbuildopts\\\\\"|" \
+	  > bigloo.sh.tmp
+  else
+    cat bigloo.sh | \
+      sed -e "s|@LDBIGLOOOPT@ ||" \
+	  > bigloo.sh.tmp
+  fi
+  mv bigloo.sh.tmp bigloo.sh
 
   # bigloo_h
   cp runtime/Include/`basename $bigloo_h` $bigloo_h
