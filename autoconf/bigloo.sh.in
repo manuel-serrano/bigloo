@@ -4,7 +4,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Tue Oct 13 14:06:20 2015                          */
-#*    Last change :  Fri May  1 09:59:34 2020 (serrano)                */
+#*    Last change :  Fri May  1 15:35:51 2020 (serrano)                */
 #*    Copyright   :  2015-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    Bigloo wrapper                                                   */
@@ -16,4 +16,4 @@ DYLD_LIBRARY_PATH=@BGLBUILDLIBDIR@:$DYLD_LIBRARY_PATH
 export LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH
 
-exec @BIGLOO@ "@LDBIGLOOOPT@ $@"
+exec @BIGLOO@ @LDBIGLOOOPT@ "$@"
