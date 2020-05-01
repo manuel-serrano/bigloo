@@ -3,7 +3,7 @@
 /*    -------------------------------------------------------------    */
 /*    Author      :  Manuel Serrano                                    */
 /*    Creation    :  Sun Apr 13 06:44:45 2003                          */
-/*    Last change :  Fri Jan 10 17:08:22 2020 (serrano)                */
+/*    Last change :  Fri May  1 16:06:28 2020 (serrano)                */
 /*    Copyright   :  2003-20 Manuel Serrano                            */
 /*    -------------------------------------------------------------    */
 /*    Hook to be ran after each gc                                     */
@@ -61,7 +61,8 @@ GC_collect_hook( int heapsz, long livesz ) {
 		  gc_number,
 		  gc_alloc_size / 1024,
 		  heapsz / 1024,
-		  livesz / 1024 );
+		  livesz / 1024,
+		  lf );
       }
    }
       
@@ -88,7 +89,7 @@ gc_alloc_size_add( int size ) {
 /*---------------------------------------------------------------------*/
 static void
 GC_dump_gc_sexp( gc_info_t *i, FILE *f ) {
-   fprintf( f, "    (%lu #l%lu #l%lu #l%lu \"%s\" #l%ld)\n",
+   fprintf( f, "    (%lu #l%lu #l%lu #l%lu \"%s\" #l%lld)\n",
 	    i->number,
 	    BMEMSIZE( i->alloc_size ),
 	    i->heap_size,

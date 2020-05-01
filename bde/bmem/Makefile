@@ -3,7 +3,7 @@
 #*    -------------------------------------------------------------    */
 #*    Author      :  Manuel Serrano                                    */
 #*    Creation    :  Sun Apr 20 09:34:24 2003                          */
-#*    Last change :  Tue Mar 24 12:51:57 2020 (serrano)                */
+#*    Last change :  Fri May  1 16:08:47 2020 (serrano)                */
 #*    Copyright   :  2003-20 Manuel Serrano                            */
 #*    -------------------------------------------------------------    */
 #*    The makefile to build bmem                                       */
@@ -88,6 +88,7 @@ $(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_u.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
@@ -97,6 +98,7 @@ $(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_s.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
@@ -106,6 +108,7 @@ $(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_u.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_fth_u.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            CLOSELIBS="-lbigloo_u-$(RELEASE)"
 
 $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
@@ -115,6 +118,7 @@ $(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX): $(LIBOBJECT) $(BOOTLIBDIR)/bmem
            LIBDEST=$(BOOTLIBDIR)/bmem/bmem_fth_s.$(SHAREDSUFFIX) \
 	   LIBPATH=$(BOOTLIBDIR) \
            SONAME=bmem_fth_s.$(SHAREDSUFFIX) \
+	   LDOPTS="$(LDOPTS) $(LDBUILDOPTS)" \
            CLOSELIBS="-lbigloo_s-$(RELEASE)"
 
 #*--- lib/bmem --------------------------------------------------------*/
